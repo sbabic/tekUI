@@ -1,16 +1,9 @@
 /*
 **	$Id: display_x11_font.c,v 2006/09/10 14:38:04 fschulze Exp $
-**	teklib/src/display_x11/display_x11_font.c - font management
+**	tekui/src/display_x11/display_x11_font.c - x11 font management
 **
 **  Written by Franciska Schulze <fschulze@schulze-mueller.de>
-**
-**	TODO:
-**	- implement xft version of drawtext2					(OK)
-**	- convert pens to xftcolors								(OK)
-**	- xft font matching										(OK)
-**	- dlopen fontconfig and bind symbols					(OK)
-**	- remove TDBFATAL from closefont						(OK)
-**	- convert utf8 string to latin when using xlib			(OK)
+**	See copyright notice in tekui/COPYRIGHT
 */
 
 #include <math.h>
@@ -25,9 +18,6 @@
 #include <tek/proto/hal.h>
 
 #include "display_x11_mod.h"
-/*#include "display_x11_font.h"*/
-
-/*#include "utf8-tools.c"*/
 
 #define DISABLE_XFT	TFALSE
 
