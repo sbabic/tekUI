@@ -89,7 +89,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 6.2"
+_VERSION = "Window 6.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -394,7 +394,7 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_NEWSIZE] = function(self, msg)
-		self:addLayoutGroup(self)
+		self:addLayoutGroup(self, 0)
 		return msg
 	end,
 	[ui.MSG_REFRESH] = function(self, msg)
@@ -549,24 +549,20 @@ end
 
 -------------------------------------------------------------------------------
 --	addLayoutGroup: mark a group for relayout
---	markdamage = false/nil: do not mark as damaged
---	markdamage = 1/true: mark as damaged only if coodinates changed
+--	markdamage = 0: do not mark as damaged
+--	markdamage = 1: mark as damaged only if coodinates changed
 --	markdamage = 2: unconditionally mark as damaged
 -------------------------------------------------------------------------------
 
 function Window:addLayoutGroup(group, markdamage)
-	if markdamage == true then
-		markdamage = 1
-	end
 	if group:checkDescend(Group) then
 		local record = self.LayoutGroup[group]
 		if not record then
-			record = { group }
+			record = { group, markdamage }
 			self.LayoutGroup[group] = record
 			insert(self.LayoutGroup, record)
-		end
-		-- ugly:
-		if markdamage and (not record[2] or markdamage > record[2]) then
+		elseif markdamage > record[2] then
+			-- increase damage level in already existing group:
 			record[2] = markdamage
 		end
 	else
@@ -628,19 +624,13 @@ function Window:update()
 					group:calcWeights()
 					local r = group.Rect
 					local m = group.MarginAndBorder
-					db.trace("relayout group %s - markdamage: %s",
-						group:getClassName(), markdamage)
 
-					local res, changed =
-						self:relayout(group, r[1] - m[1], r[2] - m[2],
+					self:relayout(group, r[1] - m[1], r[2] - m[2],
 						r[3] + m[3], r[4] + m[4])
 
-					if markdamage and (changed or markdamage == 2) then
-						-- in a group, this redraws only the background:
+					if markdamage == 1 then
 						group.Redraw = true
-					end
-
-					if markdamage == 2 then -- mark always?
+					elseif markdamage == 2 then
 						group:markDamage(r[1], r[2], r[3], r[4])
 					end
 
@@ -670,7 +660,6 @@ end
 -------------------------------------------------------------------------------
 
 function Window:layout(_, _, _, _, markdamage)
-	local changed
 	self.FreeRegion = false
 	local w, h = self.Drawable:getAttrs()
 	return Group.layout(self, 0, 0, w - 1, h - 1, markdamage)

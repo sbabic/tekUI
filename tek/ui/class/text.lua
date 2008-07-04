@@ -94,7 +94,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 11.0"
+_VERSION = "Text 11.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -376,7 +376,7 @@ end
 function Text:onSetText(text)
 	self:makeTextRecords(text)
 	self.Redraw = true
-	self:rethinkLayout(true)
+	self:rethinkLayout(1)
 end
 
 -------------------------------------------------------------------------------

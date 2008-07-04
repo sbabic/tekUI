@@ -92,7 +92,7 @@
 --				- san
 --			* drei
 --
---	'''NOTE''': Although not striclty required, it is recommended to
+--	'''NOTE''': Although not strictly required, it is recommended to
 --	indent lists by one level. This will help the parser to avoid
 --	ambiguities; otherwise, when a regular block follows an unindented
 --	list, it would be concatenated with the last item, as empty lines are

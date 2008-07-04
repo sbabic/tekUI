@@ -124,7 +124,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 9.0"
+_VERSION = "ListGadget 9.1"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -485,7 +485,7 @@ function ListGadget:prepare(damage)
 
 		if self:layout(0, 0, c.CanvasWidth - 1, c.CanvasHeight - 1, damage)
 			and damage then
-			c:rethinkLayout()
+			c:rethinkLayout(1)
 			self.Redraw = true
 		end
 

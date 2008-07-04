@@ -1720,7 +1720,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v11.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1940,7 +1940,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v3.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v3.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1995,7 +1995,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2309,7 +2309,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v9.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2622,16 +2622,26 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:rethinkLayout" id="Area:rethinkLayout"><code>Area:rethinkLayout(damage)</code></a></h3>
+		<div class="node"><h3><a name="Area:rethinkLayout" id="Area:rethinkLayout"><code>Area:rethinkLayout([damage])</code></a></h3>
 			<p>
 				This method causes a relayout of the
 				element and possibly the <a href="#tek.ui.class.group">Group</a> in which it
-				resides. While the request bubbles up to the topmost group (the
-				<a href="#tek.ui.class.window">Window</a>), the argument <code>damage</code> (a boolean)
-				can be used to avoid unconditionally marking parent groups as damaged,
-				thus allowing them to be repainted only if their layout actually changed
-				due to modifications in their children.
+				resides. The optional numeric argument <code>damage</code> indicates the kind
+				of damage to apply to the element:
 			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						0 - do not mark the element as damaged
+					</li>
+					<li style="list-style-type: none">
+						1 - slate the group (not its contents) for repaint &#091;default&#093;
+					</li>
+					<li style="list-style-type: none">
+						2 - mark the whole group and its contents as damaged
+					</li>
+				</ul>
+			</blockquote>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Area:onSetWeight" id="Area:onSetWeight"><code>onSetWeight(weight)</code></a></h3>
@@ -3125,7 +3135,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v8.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v8.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3354,7 +3364,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v9.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3430,7 +3440,7 @@
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Child &#091;IG&#093;</code> (object)
+							<code>Child &#091;ISG&#093;</code> (object)
 							<blockquote>
 								<p>
 									The element being contained by the Canvas for scrolling
@@ -3478,7 +3488,10 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Canvas:updateUnusedRegion"><code>Canvas:updateUnusedRegion()</code></a> 
+							<a href="#Canvas:onSetChild"><code>Canvas:onSetChild()</code></a> - Handler called when Child is set
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Canvas:updateUnusedRegion"><code>Canvas:updateUnusedRegion()</code></a> - Update region not covered by Child
 						</li>
 					</ul>
 				</blockquote>
@@ -3546,7 +3559,14 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v12.0)</a></h2>
+		<div class="node"><h3><a name="Canvas:onSetChild" id="Canvas:onSetChild"><code>Canvas:onSetChild(child)</code></a></h3>
+			<p>
+				This handler is invoked when the canvas'
+				child element has changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v13.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3916,7 +3936,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v9.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v9.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4338,7 +4358,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v6.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v6.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5646,7 +5666,7 @@ end
 					</ul>
 				</blockquote>
 				<p>
-					<strong>NOTE</strong>: Although not striclty required, it is recommended to
+					<strong>NOTE</strong>: Although not strictly required, it is recommended to
 					indent lists by one level. This will help the parser to avoid
 					ambiguities; otherwise, when a regular block follows an unindented
 					list, it would be concatenated with the last item, as empty lines are
@@ -6523,7 +6543,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Mon Jun 30 12:18:53 2008
+			Document generated on Fri Jul  4 15:33:35 2008
 		</p>
 	</div>
 	</body>

@@ -39,7 +39,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.gadget)
-_VERSION = "Handle 3.0"
+_VERSION = "Handle 3.1"
 
 local Handle = _M
 
@@ -245,7 +245,7 @@ function Handle:doMove(x, y)
 			e.Weight = nw
 		end
 	end
-	self.Window:addLayoutGroup(g, true)
+	self.Window:addLayoutGroup(g, 1)
 end
 
 -------------------------------------------------------------------------------

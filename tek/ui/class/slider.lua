@@ -59,6 +59,7 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Region = require "tek.lib.region"
 
@@ -71,7 +72,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.4"
+_VERSION = "Slider 6.5"
 
 -------------------------------------------------------------------------------
 --	SliderKnob:
@@ -240,7 +241,6 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:getKnobRect()
-
 	local r = self.Rect
 	if r[1] >= 0 then
 		local p = self.PaddingAndBorder
@@ -385,10 +385,15 @@ end
 -------------------------------------------------------------------------------
 
 local function updateslider(self)
-	local x0, y0, x1, y1 = self:getKnobRect()
-	if x0 then
-		self.Window:relayout(self.Child, x0, y0, x1, y1)
-		self.Redraw = true
+	local win = self.Window
+	if win then
+		local x0, y0, x1, y1 = self:getKnobRect()
+		if x0 then
+			local _, changed = win:relayout(self.Child, x0, y0, x1, y1)
+			if changed then
+				self.Redraw = true
+			end
+		end
 	end
 end
 

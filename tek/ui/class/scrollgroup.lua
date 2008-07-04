@@ -55,6 +55,7 @@ local ui = require "tek.ui"
 local Region = require "tek.lib.region"
 local Group = ui.Group
 local Image = ui.Image
+local ScrollBar = ui.ScrollBar
 
 local floor = math.floor
 local insert = table.insert
@@ -67,7 +68,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 8.2"
+_VERSION = "ScrollGroup 8.3"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -99,7 +100,7 @@ function ScrollGroup.new(class, self)
 	local hslider, vslider
 
 	if self.HSliderMode ~= "off" and not self.HSliderGroup then
-		hslider = ui.ScrollBar:new
+		hslider = ScrollBar:new
 		{
 			Orientation = "horizontal",
 			Min = 0,
@@ -109,7 +110,7 @@ function ScrollGroup.new(class, self)
 	end
 
 	if self.VSliderMode ~= "off" and not self.VSliderGroup then
-		vslider = ui.ScrollBar:new
+		vslider = ScrollBar:new
 		{
 			Orientation = "vertical",
 			Min = 0,
@@ -304,13 +305,13 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollGroup:layout(r1, r2, r3, r4, markdamage)
-	if Group.layout(self, r1, r2, r3, r4, markdamage) then
-		self:onSetCanvasWidth(self.Canvas.CanvasWidth)
-		self:onSetCanvasHeight(self.Canvas.CanvasHeight)
-		self:onSetCanvasTop(self.Canvas.CanvasTop)
-		self:onSetCanvasLeft(self.Canvas.CanvasLeft)
-		return true
-	end
+	local res = Group.layout(self, r1, r2, r3, r4, markdamage)
+	local c = self.Canvas
+	self:onSetCanvasWidth(c.CanvasWidth)
+	self:onSetCanvasHeight(c.CanvasHeight)
+	self:onSetCanvasTop(c.CanvasTop)
+	self:onSetCanvasLeft(c.CanvasLeft)
+	return res
 end
 
 -------------------------------------------------------------------------------
@@ -422,21 +423,6 @@ function ScrollGroup:refresh()
 	Group.refresh(self)
 
 	remove(self.Window.CanvasStack)
-end
-
-function ScrollGroup:calcCanvasSize()
-	local co = self.Canvas.Child
-	if co then
-		local m1, m2, m3, m4 = co:askMinMax(0, 0, 0, 0)
-		local w = max(m1, self.Canvas.CanvasWidth or 0)
-		self.Canvas.CanvasWidth =
-			(self.Canvas.KeepMinWidth and m3 and m3 < ui.HUGE)
-				and min(w, m3) or w
-		local h = max(m2, self.Canvas.CanvasHeight or 0)
-		self.Canvas.CanvasHeight =
-			(self.Canvas.KeepMinHeight and m2 and m2 < ui.HUGE)
-				and min(h, m2) or h
-	end
 end
 
 function ScrollGroup:onSetSliderTop(val)

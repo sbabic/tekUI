@@ -122,7 +122,7 @@ local remove = table.remove
 local tonumber = tonumber
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 9.0"
+_VERSION = "Area 10.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -256,22 +256,22 @@ function Area:calcOffsets()
 end
 
 -------------------------------------------------------------------------------
---	Area:rethinkLayout(damage): This method causes a relayout of the
+--	Area:rethinkLayout([damage]): This method causes a relayout of the
 --	element and possibly the [[#tek.ui.class.group : Group]] in which it
---	resides. While the request bubbles up to the topmost group (the
---	[[#tek.ui.class.window : Window]]), the argument {{damage}} (a boolean)
---	can be used to avoid unconditionally marking parent groups as damaged,
---	thus allowing them to be repainted only if their layout actually changed
---	due to modifications in their children.
+--	resides. The optional numeric argument {{damage}} indicates the kind
+--	of damage to apply to the element:
+--		- 0 - do not mark the element as damaged
+--		- 1 - slate the group (not its contents) for repaint [default]
+--		- 2 - mark the whole group and its contents as damaged
 -------------------------------------------------------------------------------
 
 function Area:rethinkLayout(damage)
 	if self.Display then
 		self:calcOffsets()
 		local parent = self:getElement("parent")
-		self.Window:addLayoutGroup(parent, damage)
+		self.Window:addLayoutGroup(parent, damage or 1)
 		-- this causes the rethink to bubble up until it reaches the window:
-		parent:rethinkLayout(false) -- cause no more damage
+		parent:rethinkLayout(0)
 	else
 		db.info("%s : Cannot rethink layout - not connected to a display",
 			self:getClassName())
@@ -286,7 +286,7 @@ end
 function Area:onSetWeight(w)
 	self.Weight = tonumber(w) or false
 	self.Parent:calcWeights()
-	self:rethinkLayout(true)
+	self:rethinkLayout(1)
 end
 
 -------------------------------------------------------------------------------
@@ -359,10 +359,6 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 				else
 					ca[key] = { dx, dy, Region.new(s1, s2, s3, s4) }
 				end
-				-- redraw background:
-				if self.Parent then
-					self.Parent.Redraw = true
-				end
 			end
 
 			if dw > 0 or dh > 0 then
@@ -385,7 +381,6 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 				self.Redraw = true
 			end
 		end
-
 		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
 		return true
 

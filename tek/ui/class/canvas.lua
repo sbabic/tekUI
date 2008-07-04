@@ -32,7 +32,7 @@
 --			The width of the canvas (in pixels)
 --		- {{CanvasTop [ISG]}} (number)
 --			Top visible offset of the canvas (in pixels)
---		- {{Child [IG]}} (object)
+--		- {{Child [ISG]}} (object)
 --			The element being contained by the Canvas for scrolling
 --		- {{KeepMinHeight [IG]}} (boolean)
 --			Report the minimum height of the Canvas's child object as the
@@ -46,7 +46,8 @@
 --			Vertical scroll step (used for mousewheel)
 --
 --	IMPLEMENTS::
---		- Canvas:updateUnusedRegion()
+--		- Canvas:onSetChild() - Handler called when Child is set
+--		- Canvas:updateUnusedRegion() - Update region not covered by Child
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
@@ -69,19 +70,27 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Region = require "tek.lib.region"
+local Application = ui.Application
 local Area = ui.Area
+local Element = ui.Element
+local Region = require "tek.lib.region"
 local assert = assert
 local max = math.max
 local min = math.min
-local unpack = unpack
 local overlap = Region.overlapCoords
+local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.area)
-_VERSION = "Canvas 9.0"
+_VERSION = "Canvas 10.0"
 local Canvas = _M
 
+-------------------------------------------------------------------------------
+--	Constants & Class data:
+-------------------------------------------------------------------------------
+
 local DEF_MARGIN = { 0, 0, 0, 0 }
+local NOTIFY_CHILD = { ui.NOTIFY_SELF, "onSetChild", ui.NOTIFY_VALUE,
+	ui.NOTIFY_OLDVALUE }
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -97,7 +106,8 @@ function Canvas.init(self)
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
 	self.Margin = self.Margin or DEF_MARGIN
-	self.Child = self.Child or ui.Area:new { Margin = DEF_MARGIN }
+	self.ChildArea = self.ChildArea or Area:new { Margin = DEF_MARGIN }
+	self.Child = self.Child or self.ChildArea
 	self.VScrollStep = self.VScrollStep or 10
 	self.TempMsg = { }
 	-- track intra-area damages, so that they can be applied to child object:
@@ -112,7 +122,7 @@ end
 
 function Canvas:connect(parent)
 	-- this connects recursively:
-	ui.Application.connect(self.Child, self)
+	Application.connect(self.Child, self)
 	return Area.connect(self, parent)
 end
 
@@ -122,7 +132,7 @@ end
 
 function Canvas:disconnect(parent)
 	Area.disconnect(self, parent)
-	return ui.Element.disconnect(self.Child, parent)
+	return Element.disconnect(self.Child, parent)
 end
 
 -------------------------------------------------------------------------------
@@ -132,6 +142,7 @@ end
 function Canvas:setup(app, window)
 	Area.setup(self, app, window)
 	self.Child:setup(app, window)
+	self:addNotify("Child", ui.NOTIFY_CHANGE, NOTIFY_CHILD)
 end
 
 -------------------------------------------------------------------------------
@@ -139,6 +150,7 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:cleanup()
+	self:remNotify("Child", ui.NOTIFY_CHANGE, NOTIFY_CHILD)
 	self.Child:cleanup()
 	Area.cleanup(self)
 end
@@ -415,4 +427,27 @@ function Canvas:getElement(mode)
 		return { self.Child }
 	end
 	return Area.getElement(self, mode)
+end
+
+-------------------------------------------------------------------------------
+--	Canvas:onSetChild(child): This handler is invoked when the canvas'
+--	child element has changed.
+-------------------------------------------------------------------------------
+
+function Canvas:onSetChild(child, oldchild)
+	if oldchild then
+		if oldchild == self.Window.FocusElement then
+			self.Window:setFocusElement()
+		end
+		oldchild:hide()
+		oldchild:cleanup()
+	end
+	child = child or self.ChildArea
+	self.Child = child
+	child:setup(self.Application, self.Window)
+	if child:show(self.Display, self.Drawable) then
+		if child:connect(self) then
+			self:rethinkLayout(2)
+		end
+	end
 end

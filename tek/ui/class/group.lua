@@ -76,6 +76,7 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Region = require "tek.lib.region"
 local Family = ui.Family
@@ -86,7 +87,7 @@ local floor = math.floor
 local ipairs = ipairs
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 12.0"
+_VERSION = "Group 13.0"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -273,7 +274,7 @@ function Group:addMember(child, pos)
 		child:setup(self.Application, self.Window)
 		if child:show(self.Display, self.Drawable) then
 			if Family.addMember(self, child, pos) then
-				self:rethinkLayout(true)
+				self:rethinkLayout(1)
 				return child
 			end
 			child:hide()
@@ -294,7 +295,7 @@ function Group:remMember(child)
 	Family.remMember(self, child)
 	child:hide()
 	child:cleanup()
-	self:rethinkLayout(true)
+	self:rethinkLayout(1)
 end
 
 -------------------------------------------------------------------------------
@@ -372,7 +373,7 @@ end
 -------------------------------------------------------------------------------
 
 function Group:layout(r1, r2, r3, r4, markdamage)
-	Gadget.layout(self, r1, r2, r3, r4, markdamage)
+	local res = Gadget.layout(self, r1, r2, r3, r4, markdamage)
 	-- layout and update free region:
 	local f = Region.new(r1, r2, r3, r4)
 	self.FreeRegion = f
@@ -383,7 +384,7 @@ function Group:layout(r1, r2, r3, r4, markdamage)
 			f:subRect(b:getRect(r))
  		end
  	end
-	return true
+	return res
 end
 
 -------------------------------------------------------------------------------

@@ -154,9 +154,9 @@ ui.application:new
 									ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self, val)
 										local e = self.Application:getElementById("border-button")
 										e.Border = { val, val, val, val }
-										e:rethinkLayout(true)
+										e:rethinkLayout(1)
 										self.Border = { val, val, val, val }
-										self:rethinkLayout(true)
+										self:rethinkLayout(1)
 									end, ui.NOTIFY_VALUE
 								}
 							}
