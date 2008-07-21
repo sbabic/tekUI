@@ -27,14 +27,13 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.spacer", tek.ui.class.frame)
-_VERSION = "Spacer 1.3"
+_VERSION = "Spacer 1.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
 local DEF_BORDER = { 1, 1, 1, 1 }
-local DEF_PADDING = { 0, 0, 0, 0 }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -53,7 +52,7 @@ function Spacer:show(display, drawable)
 	-- outer border:
 	self.Border = self.Border or theme.SpacerBorder or DEF_BORDER
 	-- inner spacing:
-	self.Padding = self.Padding or theme.SpacerPadding or DEF_PADDING
+	self.Padding = self.Padding or theme.SpacerPadding or ui.NULLOFFS
 	-- outer borderstyle:
 	self.BorderStyle = self.BorderStyle or theme.SpacerBorderStyle or "recess"
 	return Frame.show(self, display, drawable)

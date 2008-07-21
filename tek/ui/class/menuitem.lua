@@ -42,14 +42,13 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 3.1"
+_VERSION = "MenuItem 3.2"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
 -------------------------------------------------------------------------------
 
 local DEF_PADDING_BASE = { 4, 2, 4, 2 }
-local DEF_MARGIN_SUB = { 0, 0, 0, 0 }
 local DEF_PADDING_SUB = { 4, 2, 16, 2 }
 
 local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_BUTTONTEXT } }
@@ -103,7 +102,7 @@ function MenuItem:show(display, drawable)
 		self.Padding = self.Padding or theme.MenuItemPadding or
 			DEF_PADDING_BASE
 	else
-		self.Margin = self.Margin or theme.MenuItemMargin or DEF_MARGIN_SUB
+		self.Margin = self.Margin or theme.MenuItemMargin or ui.NULLOFFS
 		self.Border = self.Border or theme.MenuItemBorder or false
 		self.IBorder = self.IBorder or theme.MenuItemIBorder or false
 		self.Padding = self.Padding or theme.MenuItemPadding or DEF_PADDING_SUB

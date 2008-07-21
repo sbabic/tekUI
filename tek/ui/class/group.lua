@@ -78,6 +78,7 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
+local Area = ui.Area
 local Region = require "tek.lib.region"
 local Family = ui.Family
 local Gadget = ui.Gadget
@@ -87,15 +88,13 @@ local floor = math.floor
 local ipairs = ipairs
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 13.0"
+_VERSION = "Group 13.2"
 local Group = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local DEF_MARGIN = { 0, 0, 0, 0 }
-local DEF_PADDING = { 0, 0, 0, 0 }
 local DEF_BORDER_MENUBAR = { 0, 0, 0, 1 }
 
 -------------------------------------------------------------------------------
@@ -160,9 +159,9 @@ end
 function Group:show(display, drawable)
 	local theme = display.Theme
 	if self.Style == "menubar" then
-		self.Margin = self.Margin or theme.GroupMargin or DEF_MARGIN
+		self.Margin = self.Margin or theme.GroupMargin or ui.NULLOFFS
 		self.Border = self.Border or theme.MenuBarBorder or DEF_BORDER_MENUBAR
-		self.Padding = self.Padding or theme.GroupPadding or DEF_PADDING
+		self.Padding = self.Padding or theme.GroupPadding or ui.NULLOFFS
 		self.BorderStyle = self.BorderStyle or theme.MenuBarBorderStyle or
 			"group"
 		self.BGPen = self.BGPen or theme.MenuBarBackPen or ui.PEN_MENUBACK
@@ -176,9 +175,9 @@ function Group:show(display, drawable)
 			theme.GroupLegendFontSpec or "__small"
 		self.LegendFont = display:openFont(self.LegendFontSpec)
 	else
-		self.Margin = self.Margin or theme.GroupMargin or DEF_MARGIN
+		self.Margin = self.Margin or theme.GroupMargin or ui.NULLOFFS
 		self.Border = self.Border or theme.GroupBorder or false
-		self.Padding = self.Padding or theme.GroupPadding or DEF_PADDING
+		self.Padding = self.Padding or theme.GroupPadding or ui.NULLOFFS
 		self.BorderStyle = self.BorderStyle or theme.GroupBorderStyle or ""
 	end
 	if Gadget.show(self, display, drawable) then
@@ -262,7 +261,7 @@ end
 
 function Group:checkMember(child)
 	-- only elements descending from Area can be children of a group:
-	return child:checkDescend(ui.Area)
+	return child:checkDescend(Area)
 end
 
 -------------------------------------------------------------------------------

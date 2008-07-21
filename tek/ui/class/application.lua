@@ -70,7 +70,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 2.6"
+_VERSION = "Application 2.7"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -363,9 +363,10 @@ function Application:wait()
 	self.Display:wait(vt, numv)
 
 	-- service windows that have messages pending:
+	local ma = self.MsgActive
 	for i = 1, numv do
 		if vt[i] then
-			insert(self.MsgActive, ct[i])
+			insert(ma, ct[i])
 		end
 	end
 
@@ -377,6 +378,58 @@ end
 --	to "quit".
 -------------------------------------------------------------------------------
 
+--	state[1] = self (application)
+--	state[2] = current window
+--	state[3] = newmsg
+--	state[4] = bundled newsize msg
+--	state[5] = bundled refresh msg
+
+local function passmsg_always(state, msg)
+	state[2]:passMsg(msg)
+end
+
+local function passmsg_checkmodal(state, msg)
+	local mw = state[1].ModalWindow
+	if not mw or mw == state[2] then
+		state[2]:passMsg(msg)
+	end
+end
+
+local msgdispatch =
+{
+	[ui.MSG_CLOSE] = passmsg_always,
+	[ui.MSG_FOCUS] = passmsg_always,
+	[ui.MSG_NEWSIZE] = function(state, msg)
+		-- bundle newsizes:
+		if not state[4] then
+			state[4] = msg
+			state[3] = nil
+		else
+			state[4][1] = msg[1] -- update timestamp
+		end
+	end,
+	[ui.MSG_REFRESH] = function(state, msg)
+		-- bundle damage rects:
+		local refresh = state[5]
+		if not refresh then
+			state[5] = msg
+			state[3] = nil
+		else
+			refresh[1] = msg[1] -- update timestamp
+			refresh[7] = min(refresh[7], msg[7])
+			refresh[8] = min(refresh[8], msg[8])
+			refresh[9] = max(refresh[9], msg[9])
+			refresh[10] = max(refresh[10], msg[10])
+		end
+	end,
+	[ui.MSG_MOUSEOVER] = passmsg_checkmodal,
+	[ui.MSG_KEYDOWN] = passmsg_checkmodal,
+	[ui.MSG_MOUSEMOVE] = passmsg_checkmodal,
+	[ui.MSG_MOUSEBUTTON] = passmsg_checkmodal,
+	[ui.MSG_INTERVAL] = passmsg_always,
+	[ui.MSG_KEYUP] = passmsg_checkmodal,
+}
+
 function Application:run()
 
 	assert(self.Status == "connected", "Application not in connected state")
@@ -386,50 +439,28 @@ function Application:run()
 
 	self.Status = "running"
 
+	local state = { self }
+	local ma = self.MsgActive
+
 	while self.Status == "running" and #self.OpenWindows > 0 do
 		self:serviceCoroutines()
 		self:wait()
-		while #self.MsgActive > 0 do
-			local window = remove(self.MsgActive, 1)
-			local msg = window:getMsg()
-			if msg then
-				local refresh, newsize
-				repeat
-					local mt = msg[2]
-					if mt == 8 then
-						-- while we have messages pending, bundle damagerects:
-						if not refresh then
-							refresh = { unpack(msg) }
-						else
-							refresh[1] = msg[1] -- update timestamp
-							refresh[7] = min(refresh[7], msg[7])
-							refresh[8] = min(refresh[8], msg[8])
-							refresh[9] = max(refresh[9], msg[9])
-							refresh[10] = max(refresh[10], msg[10])
-						end
-					elseif mt == 4 then
-						-- while we have messages pending, bundle newsizes:
-						if not newsize then
-							newsize = { unpack(msg) }
-						else
-							newsize[1] = msg[1] -- update timestamp
-						end
-					else
-						-- pass other messages to the respective handler:
-						local mw = self.ModalWindow
-						if not mw or mw == window or
-							mt == 2 or mt == 4 or mt == 8 or mt == 2048 then
-							window:passMsg(msg)
-						end
-					end
-					msg = window:getMsg()
-				until not msg
-				if newsize then
-					window:passMsg(newsize)
+		while #ma > 0 do
+			state[2] = remove(ma, 1)
+			repeat
+				state[3] = state[3] or { }
+				msg = state[2]:getMsg(state[3])
+				if msg then
+					msgdispatch[msg[2]](state, msg)
 				end
-				if refresh then
-					window:passMsg(refresh)
-				end
+			until not msg
+			if state[4] then
+				state[2]:passMsg(state[4])
+				state[4] = nil
+			end
+			if state[5] then
+				state[2]:passMsg(state[5])
+				state[5] = nil
 			end
 		end
 	end

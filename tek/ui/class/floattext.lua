@@ -42,8 +42,9 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Region = require "tek.lib.region"
 local Area = ui.Area
+local Display = ui.Display
+local Region = require "tek.lib.region"
 
 local concat = table.concat
 local insert = table.insert
@@ -54,7 +55,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 3.1"
+_VERSION = "FloatText 3.3"
 
 local FloatText = _M
 
@@ -62,7 +63,6 @@ local FloatText = _M
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local DEF_MARGIN = { 0, 0, 0, 0 }
 local NOTIFY_TEXT = { ui.NOTIFY_SELF, "onSetText" }
 
 -------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ function FloatText.init(self)
 	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
 	self.Lines = false
-	self.Margin = DEF_MARGIN
+	self.Margin = ui.NULLOFFS
 	self.TrackDamage = self.TrackDamage or true
 	self.UnusedRegion = false
 	self.WordLengths = false
@@ -114,7 +114,7 @@ end
 function FloatText:show(display, drawable)
 	if Area.show(self, display, drawable) then
 		self.Font = display:openFont(self.FontSpec)
-		self.FWidth, self.FHeight = ui.Display:getTextSize(self.Font, "W")
+		self.FWidth, self.FHeight = Display:getTextSize(self.Font, "W")
 		self:prepareText()
 		return true
 	end
@@ -191,12 +191,12 @@ function FloatText:prepareText()
 	self.WordLengths = wl
 	local i = 0
 	for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
-		w, h = ui.Display:getTextSize(self.Font, word)
+		w, h = Display:getTextSize(self.Font, word)
 		lw = max(lw, w)
 		i = i + 1
 		wl[i] = w
 	end
-	self.WordSpacing = ui.Display:getTextSize(self.Font, " ")
+	self.WordSpacing = Display:getTextSize(self.Font, " ")
 	self.MinWidth, self.MinHeight = lw, h
 	return lw, h
 end

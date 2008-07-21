@@ -33,7 +33,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 1.2"
+_VERSION = "PopupWindow 1.4"
 
 local PopupWindow = _M
 
@@ -41,7 +41,6 @@ local PopupWindow = _M
 --	Constants and class data:
 -------------------------------------------------------------------------------
 
-local DEF_POPUPMARGIN = { 0, 0, 0, 0 }
 local DEF_SHORTCUT_XOFFS = 20
 local MSG_MOUSEOVER = ui.MSG_MOUSEOVER
 local MSG_INTERVAL = ui.MSG_INTERVAL
@@ -58,31 +57,42 @@ function PopupWindow.init(self)
 	self.BorderStyle = self.BorderStyle or "socket"
 	self.DelayedBeginPopup = false
 	self.DelayedEndPopup = false
-	self.Margin = self.Margin or DEF_POPUPMARGIN
+	self.Margin = self.Margin or ui.NULLOFFS
 	self.MaxWidth = self.MaxWidth or 0
 	self.MaxHeight = self.MaxHeight or 0
 	self.Padding = self.Padding or false
 	return Window.init(self)
 end
 
+-------------------------------------------------------------------------------
+--	show: overrides
+-------------------------------------------------------------------------------
+
 function PopupWindow:show(display)
 	if Window.show(self, display) then
-		-- determine width of menuitems in group:
-		local maxw = 0
-		for _, e in ipairs(self.Children) do
-			if e:checkDescend(ui.MenuItem) then
-				maxw = max(maxw, e:getTextSize())
+		local miclass = ui.MenuItem
+		if miclass then
+			-- determine width of menuitems in group:
+			local maxw = 0
+			for _, e in ipairs(self.Children) do
+				if e:checkDescend(miclass) then
+					maxw = max(maxw, e:getTextSize())
+				end
 			end
-		end
-		for _, e in ipairs(self.Children) do
+			for _, e in ipairs(self.Children) do
 				-- align shortcut text (if present):
-			if e:checkDescend(ui.MenuItem) and e.TextRecords[2] then
-				e.TextRecords[2][5] = maxw + DEF_SHORTCUT_XOFFS
+				if e:checkDescend(miclass) and e.TextRecords[2] then
+					e.TextRecords[2][5] = maxw + DEF_SHORTCUT_XOFFS
+				end
 			end
 		end
 		return true
 	end
 end
+
+-------------------------------------------------------------------------------
+--	passMsg: overrides
+-------------------------------------------------------------------------------
 
 function PopupWindow:passMsg(msg)
 	if msg[2] == MSG_INTERVAL then

@@ -9,7 +9,7 @@ local ui = require "tek.ui"
 local unpack = unpack
 
 module("tek.ui.border.cursor", tek.ui.class.border)
-_VERSION = "Cursor Border 2.1"
+_VERSION = "Cursor Border 2.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -24,8 +24,7 @@ local DEF_BORDER = { 1, 1, 1, 1 }
 local Cursor = _M
 
 function Cursor:getBorder(element, border)
-	return unpack(border or
-		element.Display.Theme.BorderCursorBorder or DEF_BORDER)
+	return unpack(border or DEF_BORDER)
 end
 
 function Cursor:draw(element, border, r1, r2, r3, r4)

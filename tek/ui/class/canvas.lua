@@ -36,10 +36,10 @@
 --			The element being contained by the Canvas for scrolling
 --		- {{KeepMinHeight [IG]}} (boolean)
 --			Report the minimum height of the Canvas's child object as the
---			Canvas' minimum height on the display
+--			Canvas' minimum display height
 --		- {{KeepMinWidth [IG]}} (boolean)
 --			Report the minimum width of the Canvas's child object as the
---			Canvas' minimum width on the display
+--			Canvas' minimum display width
 --		- {{UnusedRegion [G]}} ([[#tek.lib.region : Region]])
 --			Region of the Canvas which isn't covered by its {{Child}}
 --		- {{VScrollStep [IG]}} (number)
@@ -81,14 +81,13 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.area)
-_VERSION = "Canvas 10.0"
+_VERSION = "Canvas 10.1"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local DEF_MARGIN = { 0, 0, 0, 0 }
 local NOTIFY_CHILD = { ui.NOTIFY_SELF, "onSetChild", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
 
@@ -105,7 +104,7 @@ function Canvas.init(self)
 	self.CanvasWidth = self.CanvasWidth or 0
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
-	self.Margin = self.Margin or DEF_MARGIN
+	self.Margin = self.Margin or ui.NULLOFFS
 	self.ChildArea = self.ChildArea or Area:new { Margin = DEF_MARGIN }
 	self.Child = self.Child or self.ChildArea
 	self.VScrollStep = self.VScrollStep or 10

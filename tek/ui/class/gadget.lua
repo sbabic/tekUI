@@ -106,7 +106,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 9.3"
+_VERSION = "Gadget 9.4"
 
 local Gadget = _M
 
@@ -115,7 +115,7 @@ local Gadget = _M
 -------------------------------------------------------------------------------
 
 local DEF_IBORDERSTYLE = "none"
-local DEF_NULL = { 0, 0, 0, 0 }
+local DEF_KNOBPADDING = { 4, 4, 4, 4 }
 
 local NOTIFY_HOVER = { ui.NOTIFY_SELF, "onHover", ui.NOTIFY_VALUE }
 local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate", ui.NOTIFY_VALUE }
@@ -190,8 +190,8 @@ function Gadget:show(display, drawable)
 	local theme = display.Theme
 
 	if self.Style == "knob" then
-		self.Margin = self.Margin or DEF_NULL
-		self.Padding = self.Padding or DEF_NULL
+		self.Margin = self.Margin or ui.NULLOFFS
+		self.Padding = self.Padding or DEF_KNOBPADDING
 		self.BorderStyle = self.BorderStyle or "socket"
 		self.IBorderStyle = self.IBorderStyle or "button"
 	else

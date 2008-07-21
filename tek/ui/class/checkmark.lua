@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 2.16"
+_VERSION = "CheckMark 2.17"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -91,10 +91,6 @@ local CheckImage2 = VectorImage:new
 	}
 }
 
-local DEF_MARGIN = { 0, 0, 0, 0 }
-local DEF_PADDING = { 0, 0, 0, 0 }
-local DEF_BORDERSTYLE = "blank"
-local DEF_IBORDERSTYLE = ""
 local DEF_IMAGEMINHEIGHT = 18
 
 -------------------------------------------------------------------------------
@@ -128,19 +124,19 @@ end
 function CheckMark:show(display, drawable)
 	local theme = display.Theme
 	-- outer spacing:
-	self.Margin = self.Margin or theme.CheckMarkMargin or DEF_MARGIN
+	self.Margin = self.Margin or theme.CheckMarkMargin or ui.NULLOFFS
 	-- outer border:
 	self.Border = self.Border or theme.CheckMarkBorder or false
 	-- inner border:
 	self.IBorder = self.IBorder or theme.CheckMarkIBorder or false
 	-- inner spacing:
-	self.Padding = self.Padding or theme.CheckMarkPadding or DEF_PADDING
+	self.Padding = self.Padding or theme.CheckMarkPadding or ui.NULLOFFS
 	-- outer borderstyle:
 	self.BorderStyle = self.BorderStyle or theme.CheckMarkBorderStyle or
-		DEF_BORDERSTYLE
+		"blank"
 	-- inner borderstyle:
 	self.IBorderStyle = self.IBorderStyle or theme.CheckMarkIBorderStyle or
-		DEF_IBORDERSTYLE
+		""
 	return Text.show(self, display, drawable)
 end
 

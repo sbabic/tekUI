@@ -46,20 +46,18 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 3.0"
+_VERSION = "Gauge 3.1"
 
 -------------------------------------------------------------------------------
 -- GaugeFill:
 -------------------------------------------------------------------------------
-
-local DEF_KNOBMARGIN = { 0, 0, 0, 0 }
 
 local GaugeFill = Frame:newClass { _NAME = "_gaugefill" }
 
 function GaugeFill.init(self)
 	self.BorderStyle = "socket"
 	self.IBorderStyle = ""
-	self.Margin = DEF_KNOBMARGIN
+	self.Margin = ui.NULLOFFS
 	if self.Orientation == "vertical" then
 		self.Padding = { 6, 0, 6, 0 }
 	else

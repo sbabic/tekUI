@@ -68,7 +68,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 8.3"
+_VERSION = "ScrollGroup 8.4"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -104,6 +104,7 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "horizontal",
 			Min = 0,
+			Step = 10,
 		}
 		self.HSliderGroup = hslider
 		self.HSliderEnabled = true
@@ -114,6 +115,7 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "vertical",
 			Min = 0,
+			Step = 10,
 		}
 		self.VSliderGroup = vslider
 		self.VSliderEnabled = true
@@ -422,7 +424,7 @@ function ScrollGroup:refresh()
 
 	Group.refresh(self)
 
-	remove(self.Window.CanvasStack)
+	remove(cs)
 end
 
 function ScrollGroup:onSetSliderTop(val)

@@ -89,7 +89,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 6.3"
+_VERSION = "Window 7.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -114,8 +114,6 @@ function Window.init(self)
 	self.ActiveElement = false
 	-- Item in this window in which an active popup is anchored:
 	self.ActivePopup = false
-	-- Root window in a cascade of popup windows:
-	self.PopupRootWindow = self.PopupRootWindow or false
 	self.CanvasStack = { }
 	self.Center = self.Center or false
 	self.CopyArea = { }
@@ -140,6 +138,7 @@ function Window.init(self)
 	self.Interval = false
 	self.KeyShortcuts = { }
 	self.LayoutGroup = { }
+	self.Left = self.Left or false
 	if self.BorderStyle then
 		self.Margin = self.Margin or DEF_MARGIN
 	end
@@ -147,12 +146,13 @@ function Window.init(self)
 	self.MouseX = false
 	self.MouseY = false
 	self.MovingElement = false
+	-- Root window in a cascade of popup windows:
+	self.PopupRootWindow = self.PopupRootWindow or false
 	self.Status = self.Status or "initializing"
 	self.Title = self.Title or false
+	self.Top = self.Top or false
 	self.WindowFocus = false
 	self.WindowMinMax = { }
-	self.Left = self.Left or false
-	self.Top = self.Top or false
 	return Group.init(self)
 end
 
@@ -346,9 +346,9 @@ end
 --	getMsg:
 -------------------------------------------------------------------------------
 
-function Window:getMsg()
+function Window:getMsg(msg)
 	if self.Status == "show" then
-		return self.Drawable:getMsg()
+		return self.Drawable:getMsg(msg)
 	end
 end
 
@@ -489,9 +489,11 @@ local MsgHandlers =
 		local s = self:getShortcutElements(msg[7], msg[6])
 		if s then
 			for _, e in ipairs(s) do
-				self:setHiliteElement(e)
-				self:setFocusElement(e)
-				self:setActiveElement(e)
+				if not e.Disabled then
+					self:setHiliteElement(e)
+					self:setFocusElement(e)
+					self:setActiveElement(e)
+				end
 			end
 		end
 		return msg
@@ -516,7 +518,9 @@ local MsgHandlers =
 		local s = self:getShortcutElements(msg[7], msg[6])
 		if s then
 			for _, e in ipairs(s) do
-				self:setActiveElement()
+				if not e.Disabled then
+					self:setActiveElement()
+				end
 			end
 			-- self:setHiliteElement(self.HoverElement)
 		end

@@ -94,14 +94,14 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 11.1"
+_VERSION = "Text 11.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
 local NOTIFY_SETTEXT = { ui.NOTIFY_SELF, "onSetText", ui.NOTIFY_VALUE }
-local DEF_PADDING = { 2, 1, 2, 1 }
+local DEF_PADDING = { 4, 2, 4, 2 }
 
 -------------------------------------------------------------------------------
 --	Class implementation:

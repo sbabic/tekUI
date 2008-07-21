@@ -54,6 +54,7 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
+local Application = ui.Application
 local PopupWindow = ui.PopupWindow
 local Text = ui.Text
 
@@ -61,7 +62,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 4.0"
+_VERSION = "PopItem 4.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -202,7 +203,7 @@ function PopItem:beginPopup()
 	}
 
 	-- connect children recursively:
-	ui.Application.connect(self.PopupWindow)
+	Application.connect(self.PopupWindow)
 
 	self.Window.ActivePopup = self
 

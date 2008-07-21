@@ -9,9 +9,10 @@ local ui = require "tek.ui"
 local Region = require "tek.lib.region"
 
 local floor = math.floor
+local min = math.min
 
 module("tek.ui.border.group", tek.ui.class.border)
-_VERSION = "GroupBorder 3.1"
+_VERSION = "GroupBorder 4.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -27,7 +28,7 @@ local Group = _M
 
 local function getsizes(e, b)
 	local tw, th
-	b = b or e.Display.Theme.BorderGroupBorder or DEF_BORDER
+	b = b or DEF_BORDER
 	if e and e.Legend and e.LegendFont then
 		tw, th = ui.Display:getTextSize(e.LegendFont, e.Legend)
 	end
@@ -39,12 +40,12 @@ function Group:getBorder(element, border)
 	return b1, th or b2, b3, b4
 end
 
-function Group:draw(element, border, r1, r2, r3, r4)
+function Group:draw(element, border, r1, r2, r3, r4, is_outer)
 	local b1, b2, b3, b4, tw, th = getsizes(element, border)
 	local d = element.Drawable
 
 	local p1, p2
-	if element.Focus then
+	if is_outer and element.Focus then
 		p1, p2 = d.Pens[ui.PEN_FOCUSSHINE], d.Pens[ui.PEN_FOCUSSHADOW]
 	else
 		p1, p2 = d.Pens[ui.PEN_HALFSHADOW], d.Pens[ui.PEN_SHADOW]
@@ -69,6 +70,7 @@ function Group:getRegion(element, border, x0, y0, x1, y1)
 	local b1, b2, b3, b4, tw, th = getsizes(element, border)
 	local b = Region.new(x0 - b1, y0 - b2, x1 + b3, y1 + b4)
 	if tw then
+		tw = min(tw, x1 - x0 + 1)
 		local w = x1 - x0 + 1
 		local tx = x0 + floor((w - tw) / 2)
 		b:orRect(tx, y0 - th, tx + tw - 1, y0 - 1)

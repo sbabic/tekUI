@@ -72,7 +72,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.5"
+_VERSION = "Slider 6.7"
 
 -------------------------------------------------------------------------------
 --	SliderKnob:
@@ -85,7 +85,7 @@ local OFFS = 4
 
 function SliderKnob:draw()
 	Gadget.draw(self)
-	if self.Style == "scrollbar" then
+	if self.SliderStyle == "scrollbar" then
 		local d = self.Drawable
 		local r = self.Rect
 		local p1 = d.Pens[ui.PEN_HALFSHADOW]
@@ -128,9 +128,6 @@ end
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local DEF_KNOBMARGIN = { 1, 1, 1, 1 }
-local DEF_KNOBPADDING = { 4, 4, 4, 4 }
-
 local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
@@ -140,23 +137,21 @@ local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 local Slider = _M
 
 function Slider.init(self)
-	self.Mode = "button"
-	self.Orientation = self.Orientation or "horizontal"
 	self.ForceInteger = self.ForceInteger or false
+	self.Height = self.Height or "fill"
+	self.HoldXY = { }
+	self.Mode = "button"
+	self.Move0 = false
+	self.Orientation = self.Orientation or "horizontal"
+	self.Pos0 = 0
 	self.Range = self.Range or false
+	self.Style = self.Style or "normal"
+	self.Width = self.Width or "fill"
 	self.Child = self.Child or SliderKnob:new
 	{
-		IBorderStyle = "button",
-		Margin = DEF_KNOBMARGIN,
-		Padding = DEF_KNOBPADDING,
-		Style = self.Style,
-		Parent = self
+		Style = "knob",
+		SliderStyle = self.Style
 	}
-	self.Width = self.Width or "fill"
-	self.Height = self.Height or "fill"
-	self.Move0 = false
-	self.Pos0 = 0
-	self.HoldXY = { }
 	self = Numeric.init(self)
 	self.Range = max(self.Max, self.Range or self.Max)
 	return self
@@ -193,9 +188,10 @@ function Slider:show(display, drawable)
 	self.Margin = self.Margin or theme.SliderMargin or false
 	self.Border = self.Border or theme.SliderBorder or false
 	self.IBorder = self.IBorder or theme.SliderIBorder or false
-	self.Padding = self.Padding or theme.SliderPadding or false
-	self.BorderStyle = self.BorderStyle or theme.SliderBorderStyle or "recess"
-	self.IBorderStyle = self.IBorderStyle or theme.SliderIBorderStyle or ""
+	self.Padding = self.Padding or theme.SliderPadding or ui.NULLOFFS
+	self.BorderStyle = self.BorderStyle or theme.SliderBorderStyle or "blank"
+	self.IBorderStyle = self.IBorderStyle or theme.SliderIBorderStyle or
+		"recess"
 	self.Child.Margin = self.Child.Margin or theme.SliderKnobMargin or false
 	self.Child.Border = self.Child.Border or theme.SliderKnobBorder or false
 	self.Child.IBorder = self.Child.IBorder or theme.SliderKnobIBorder or false
@@ -296,9 +292,11 @@ end
 
 function Slider:draw()
 	local d = self.Drawable
-	local b1, b2, b3, b4 = self:getIBorder()
 	local r = self.Rect
-	local bg = Region.new(r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4)
+	local b1, b2, b3, b4 = self:getIBorder()
+	b1, b2, b3, b4 = r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4
+	self.IBorderClass:draw(self, self.IBorder, b1, b2, b3, b4)
+	local bg = Region.new(b1, b2, b3, b4)
 	local c = self.Child.Rect
 	local x0, y0, x1, y1 = c[1], c[2], c[3], c[4]
 	local m = self.Child.MarginAndBorder
@@ -448,6 +446,17 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:passMsg(msg)
+	if self:getElementByXY(msg[4], msg[5]) then
+		if msg[2] == ui.MSG_MOUSEBUTTON then
+			if msg[3] == 64 then -- wheelup
+				self:decrease()
+				return false -- absorb
+			elseif msg[3] == 128 then -- wheeldown
+				self:increase()
+				return false -- absorb
+			end
+		end
+	end
 	local win = self.Window
 	if win then
 		if msg[2] == ui.MSG_MOUSEBUTTON then

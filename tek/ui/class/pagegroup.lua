@@ -45,20 +45,20 @@
 local ui = require "tek.ui"
 local Gadget = ui.Gadget
 local Group = ui.Group
+local Text = ui.Text
 
 local ipairs = ipairs
 local tostring = tostring
 local type = type
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 5.0"
+_VERSION = "PageGroup 5.2"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local DEF_NULL = { 0, 0, 0, 0 }
 local DEF_TABBORDER = { 1, 1, 1, 0 }
 local DEF_TABIBORDER = { 2, 2, 2, 0 }
 local DEF_TABPADDING = { 4, 3, 4, 3 }
@@ -68,7 +68,7 @@ local DEF_PAGEGROUPMARGIN = { 0, 2, 0, 0 }
 --	TabButton:
 -------------------------------------------------------------------------------
 
-local TabButton = ui.Text:newClass { _NAME = "_tabbutton" }
+local TabButton = Text:newClass { _NAME = "_tabbutton" }
 
 function TabButton.init(self)
 	self.BorderStyle = "blank"
@@ -79,11 +79,11 @@ function TabButton.init(self)
 	self.Padding = DEF_TABPADDING
 	self.Mode = "touch"
 	self.Width = "auto"
-	return ui.Text.init(self)
+	return Text.init(self)
 end
 
 function TabButton:setState(bg, fg)
-	ui.Text.setState(self, bg, fg)
+	Text.setState(self, bg, fg)
 end
 
 -------------------------------------------------------------------------------
@@ -146,8 +146,8 @@ function PageGroup.new(class, self)
 			Group:new
 			{
 				Width = "fill",
-				Padding = DEF_NULL,
-				Border = DEF_NULL,
+				Padding = ui.NULLOFFS,
+				Border = ui.NULLOFFS,
 				BorderStyle = "socket",
 				MaxHeight = 0,
 				Children = tabbuttons,
@@ -172,9 +172,9 @@ end
 
 function PageGroup:show(display, drawable)
 	local theme = display.Theme
-	self.Margin = self.Margin or theme.GroupMargin or DEF_NULL
+	self.Margin = self.Margin or theme.GroupMargin or ui.NULLOFFS
 	self.Border = self.Border or theme.GroupBorder or false
-	self.Padding = self.Padding or theme.GroupPadding or DEF_NULL
+	self.Padding = self.Padding or theme.GroupPadding or ui.NULLOFFS
 	self.BorderStyle = self.BorderStyle or theme.GroupBorderStyle or ""
 	if Gadget.show(self, display, drawable) then
 		if not self.PageElement:show(display, drawable) then

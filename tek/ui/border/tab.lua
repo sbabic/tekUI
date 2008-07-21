@@ -24,15 +24,16 @@ local DEF_BORDER = { 2, 2, 2, 2 }
 local Tab = _M
 
 function Tab:getBorder(element, border)
-	return unpack(border or element.Display.Theme.BorderTabBorder or
-		DEF_BORDER)
+	return unpack(border or DEF_BORDER)
 end
 
-function Tab:draw(element, border, r1, r2, r3, r4)
+function Tab:draw(element, border, r1, r2, r3, r4, is_outer)
 	local b1, b2, b3, b4 = self:getBorder(element, border)
 	local d = element.Drawable
 	local p1, p2
-	if element.Selected then
+	if is_outer and element.Focus then
+		p1, p2 = d.Pens[ui.PEN_FOCUSSHINE], d.Pens[ui.PEN_FOCUSSHADOW]
+	elseif not is_outer and element.Selected then
 		p1, p2 = d.Pens[ui.PEN_HALFSHINE], d.Pens[ui.PEN_HALFSHADOW]
 	else
 		p1, p2 = d.Pens[ui.PEN_HALFSHADOW], d.Pens[ui.PEN_HALFSHINE]

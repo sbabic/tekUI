@@ -48,7 +48,7 @@ local overlap = Region.overlapCoords
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 7.0"
+_VERSION = "Drawable 8.0"
 
 DELAY = 0.003
 
@@ -203,11 +203,13 @@ function Drawable:getTextSize(...)
 end
 
 -------------------------------------------------------------------------------
---	msg = Drawable:getMsg(): Gets the next pending message from the Drawable.
+--	msg = Drawable:getMsg([msg]): Gets the next pending message from the
+--	Drawable. Optionally, the fields of the new message are inserted into
+--	the specified table.
 -------------------------------------------------------------------------------
 
-function Drawable:getMsg()
-	return self.Visual:getmsg()
+function Drawable:getMsg(msg)
+	return self.Visual:getmsg(msg)
 end
 
 function Drawable:setAttrs(...)

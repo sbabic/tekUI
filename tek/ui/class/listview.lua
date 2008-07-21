@@ -48,30 +48,27 @@ local Text = ui.Text
 local ipairs = ipairs
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 4.2"
+_VERSION = "ListView 4.3"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
 -------------------------------------------------------------------------------
 
-local DEF_HEADITEM_BORDER = { 0, 0, 0, 0 }
 local DEF_HEADITEM_IBORDER = { 1, 1, 1, 1 }
-local DEF_HEADITEM_MARGIN = { 0, 0, 0, 0 }
-local DEF_HEADITEM_PADDING = { 0, 0, 0, 0 }
 
 local HeadItem = Text:newClass { _NAME = "_listviewhead" }
 
 function HeadItem.init(self)
 	self = self or { }
 	self.TextHAlign = "left"
-	self.Margin = DEF_HEADITEM_MARGIN
+	self.Margin = ui.NULLOFFS
 	self.BorderStyle = "none"
 	self.IBorderStyle = "button"
 	self.Mode = "inert"
 	self.IBorder = DEF_HEADITEM_IBORDER
-	self.Border = DEF_HEADITEM_BORDER
+	self.Border = ui.NULLOFFS
 	self.Width = "auto"
-	self.Padding = DEF_HEADITEM_PADDING
+	self.Padding = ui.NULLOFFS
 	return Text.init(self)
 end
 

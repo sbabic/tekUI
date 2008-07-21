@@ -124,14 +124,13 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 9.1"
+_VERSION = "ListGadget 9.2"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local DEF_NULL = { 0, 0, 0, 0 }
 local NOTIFY_CURSOR = { ui.NOTIFY_SELF, "onSetCursor", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
 local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE,
@@ -147,7 +146,7 @@ function ListGadget.init(self)
 	self.AlignElement = self.AlignElement or false
 	self.BGPen = self.BGPen or false
 	self.BackPens = { }
-	self.Border = DEF_NULL
+	self.Border = ui.NULLOFFS
 	self.BorderStyle = false
 	self.Canvas = false
 	self.CanvasHeight = false -- !!
@@ -163,14 +162,14 @@ function ListGadget.init(self)
 	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
 	self.HeaderGroup = self.HeaderGroup or false
-	self.Margin = DEF_NULL
+	self.Margin = ui.NULLOFFS
 	self.Mode = "button"
-	self.IBorder = DEF_NULL
+	self.IBorder = ui.NULLOFFS
 	self.IBorderStyle = false
 	self.ListObject = self.ListObject or List:new()
 	self.NumColumns = 1
 	self.NumSelectedLines = 0
-	self.Padding = DEF_NULL
+	self.Padding = ui.NULLOFFS
 	self.SelectedLines = false
 	self.SelectedLine = self.SelectedLine or 0
 	-- selection modes ("none", "single", "multi"):

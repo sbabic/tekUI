@@ -341,7 +341,11 @@ tek_lib_visual_getmsg(lua_State *L)
 		if (fp->name == TNULL)
 			TDBPRINTF(TDB_ERROR,("Unknown message at port\n"));
 
-		lua_newtable(L);
+		if (lua_istable(L, 2))
+			lua_pushvalue(L, 2);
+		else
+			lua_newtable(L);
+
 		lua_pushnumber(L, (lua_Number) imsg->timsg_TimeStamp.ttm_Sec * 1000 +
 			imsg->timsg_TimeStamp.ttm_USec / 1000);
 		lua_rawseti(L, -2, 1);

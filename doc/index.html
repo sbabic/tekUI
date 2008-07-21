@@ -519,22 +519,23 @@
 		</div>
 		<div class="node"><h2><a name="installation" id="installation">3.4. Installation</a></h2>
 			<p>
-				Please note that for the x11 driver, a system-wide installation of
-				tekUI is not strictly required. Once it is built, it can be worked
-				with and developed against, as long as you stay in the top-level
-				directory of the distribution. All required modules and classes will
-				be found if programs are started from there, e.g.:
+				A system-wide installation of tekUI is not strictly required (in so
+				far as the X11 driver is concerned. The DirectFB driver, in
+				contrast, looks up fonts and cursors globally and must be installed
+				anyway).
+			</p>
+			<p>
+				Once tekUI is built, it can be worked with and developed against, as
+				long as you stay in the top-level directory of the distribution; all
+				required modules and classes will be found if programs are started
+				from there, e.g.:
 			</p>
 <pre>
 # bin/demo.lua
 </pre>
 			<p>
 				If staying in the top-level directory is not desirable, then tekUI
-				must be installed globally. (The same applies if the dfb driver is
-				used, as its fonts and cursors will be searched only globally.)
-			</p>
-			<p>
-				By default, the installation paths are
+				must be installed globally. By default, the installation paths are
 			</p>
 			<blockquote>
 				<ul>

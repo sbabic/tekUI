@@ -33,6 +33,7 @@
 --		- {{NOTIFY_COROUTINE}} - see [[Object][#tek.class.object]] -
 --		defined in [[#tek.ui.class.element]]
 --		- {{HUGE}} - use this value to express a "huge" spatial extent
+--		- {{NULLOFFS}} - table {{ { 0, 0, 0, 0 } }} (read-only)
 --		- {{MSG_CLOSE}} - Input message type: Window closed
 --		- {{MSG_FOCUS}} - Window activated/deactivated
 --		- {{MSG_NEWSIZE}} - Window resized
@@ -58,7 +59,7 @@ local require = require
 local setmetatable = setmetatable
 
 module "tek.ui"
-_VERSION = "tekUI 6.2"
+_VERSION = "tekUI 7.0"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -288,9 +289,11 @@ MSG_CLOSE = 1
 MSG_FOCUS = 2
 MSG_NEWSIZE = 4
 MSG_REFRESH = 8
-MSG_MOUSEOVER	= 16
+MSG_MOUSEOVER = 16
 MSG_KEYDOWN = 256
 MSG_MOUSEMOVE = 512
 MSG_MOUSEBUTTON = 1024
 MSG_INTERVAL = 2048
 MSG_KEYUP = 4096
+
+NULLOFFS = { 0, 0, 0, 0 }

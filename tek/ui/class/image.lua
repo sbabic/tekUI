@@ -12,13 +12,7 @@ local floor = math.floor
 local max = math.max
 
 module("tek.ui.class.image", tek.ui.class.gadget)
-_VERSION = "Image 1.6"
-
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
-
-local DEF_IMAGEMARGIN = { 0, 0, 0, 0 }
+_VERSION = "Image 1.7"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -38,7 +32,7 @@ end
 
 function Image:show(display, drawable)
 	local theme = display.Theme
-	self.ImageMargin = self.ImageMargin or DEF_IMAGEMARGIN
+	self.ImageMargin = self.ImageMargin or ui.NULLOFFS
 	return Gadget.show(self, display, drawable)
 end
 

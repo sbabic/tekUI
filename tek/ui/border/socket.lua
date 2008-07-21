@@ -9,7 +9,7 @@ local ui = require "tek.ui"
 local unpack = unpack
 
 module("tek.ui.border.socket", tek.ui.class.border)
-_VERSION = "SocketBorder 2.1"
+_VERSION = "SocketBorder 3.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -24,15 +24,14 @@ local DEF_BORDER = { 1, 1, 1, 1 }
 local Socket = _M
 
 function Socket:getBorder(element, border)
-	return unpack(border or element.Display.Theme.BorderSocketBorder or
-		DEF_BORDER)
+	return unpack(border or DEF_BORDER)
 end
 
-function Socket:draw(element, border, r1, r2, r3, r4)
+function Socket:draw(element, border, r1, r2, r3, r4, is_outer)
 	local b1, b2, b3, b4 = self:getBorder(element, border)
 	local d = element.Drawable
 	local p1, p2
-	if element.Focus then
+	if is_outer and element.Focus then
 		p1, p2 = d.Pens[ui.PEN_FOCUSSHINE], d.Pens[ui.PEN_FOCUSSHADOW]
 	else
 		p1, p2 = d.Pens[ui.PEN_SHADOW], d.Pens[ui.PEN_SHADOW]

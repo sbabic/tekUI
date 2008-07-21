@@ -55,12 +55,14 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Image = ui.Image
 local Group = ui.Group
+local Slider = ui.Slider
+local VectorImage = ui.VectorImage
 
 local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 5.2"
+_VERSION = "ScrollBar 5.5"
 
 local ScrollBar = _M
 
@@ -68,11 +70,6 @@ local ScrollBar = _M
 --	Data:
 -------------------------------------------------------------------------------
 
-local SLIDERMARGIN = { 0, 0, 0, 0 }
-local SLIDERPADDING = { 0, 0, 0, 0 }
-
-local ARROWMARGIN = { 0, 0, 0, 0 }
-local ARROWPADDING = { 0, 0, 0, 0 }
 local ARROWIMAGEMARGIN = { 1, 1, 1, 1 }
 local ARROWBORDER1_HORIZ = { 1, 1, 0, 1 }
 local ARROWBORDER2_HORIZ = { 0, 1, 1, 1 }
@@ -83,13 +80,13 @@ local coordx = { 0,0, 10,10, 10,-10 }
 local coordy = { 0,0, 10,10, -10,10 }
 local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_BUTTONTEXT } }
 
-local ArrowUpImage = ui.VectorImage:new { ImageData = { Coords = coordy,
+local ArrowUpImage = VectorImage:new { ImageData = { Coords = coordy,
 	Primitives = prims, MinMax = { 12,12, -12,-2 } } }
-local ArrowDownImage = ui.VectorImage:new { ImageData = { Coords = coordy,
+local ArrowDownImage = VectorImage:new { ImageData = { Coords = coordy,
 	Primitives = prims, MinMax = { -12,-2, 12,12 } } }
-local ArrowLeftImage = ui.VectorImage:new { ImageData = { Coords = coordx,
+local ArrowLeftImage = VectorImage:new { ImageData = { Coords = coordx,
 	Primitives = prims, MinMax = { -2,-12, 12,12 } } }
-local ArrowRightImage = ui.VectorImage:new { ImageData = { Coords = coordx,
+local ArrowRightImage = VectorImage:new { ImageData = { Coords = coordx,
 	Primitives = prims, MinMax = { 12,12, -2,-12 } } }
 
 local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
@@ -106,8 +103,8 @@ local ArrowButton = Image:newClass { _NAME = "_sbarrow" }
 function ArrowButton.init(self)
 	self.Mode = "button"
 	self.IBorderStyle = "button"
-	self.Padding = ARROWPADDING
-	self.Margin = ARROWMARGIN
+	self.Padding = ui.NULLOFFS
+	self.Margin = ui.NULLOFFS
 	self.ImageMargin = ARROWIMAGEMARGIN
 	self.MinWidth = self.MinWidth or 14
 	self.MinHeight = self.MinWidth or 14
@@ -147,11 +144,11 @@ end
 --	Slider:
 -------------------------------------------------------------------------------
 
-local SBSlider = ui.Slider:newClass { _NAME = "_sbslider" }
+local SBSlider = Slider:newClass { _NAME = "_sbslider" }
 
 function SBSlider:onSetValue(v)
 	self.ScrollBar:setValue("Value", v)
-	ui.Slider.onSetValue(self, v)
+	Slider.onSetValue(self, v)
 end
 
 local function updateSlider(self)
@@ -166,19 +163,19 @@ end
 
 function SBSlider:onSetRange(r)
 	self.ScrollBar:setValue("Range", r)
-	ui.Slider.onSetRange(self, r)
+	Slider.onSetRange(self, r)
 	updateSlider(self)
 end
 
 function SBSlider:onSetMin(m)
 	self.ScrollBar:setValue("Min", m)
-	ui.Slider.onSetMin(self, m)
+	Slider.onSetMin(self, m)
 	updateSlider(self)
 end
 
 function SBSlider:onSetMax(m)
 	self.ScrollBar:setValue("Max", m)
-	ui.Slider.onSetMax(self, m)
+	Slider.onSetMax(self, m)
 	updateSlider(self)
 end
 
@@ -214,8 +211,7 @@ function ScrollBar.new(class, self)
 		Range = self.Range,
 		Step = self.Step,
 		Notifications = self.Notifications,
-		Margin = SLIDERMARGIN,
-		Padding = SLIDERPADDING,
+		Margin = ui.NULLOFFS,
 		Orientation = self.Orientation,
 		ForceInteger = self.ForceInteger,
 		Style = self.Style or "scrollbar",
@@ -223,7 +219,7 @@ function ScrollBar.new(class, self)
 	self.Notifications = false
 
 	if self.Orientation == "vertical" then
-		local increase = -1
+		local increase = -self.Step
 		local border1, border2 = false, false
 		local img1, img2 = ArrowUpImage, ArrowDownImage
 		if self.ArrowOrientation == "horizontal" then
@@ -249,7 +245,7 @@ function ScrollBar.new(class, self)
 		self.Height = self.Height or "fill"
 	else
 		local border1, border2 = false, false
-		local increase = -1
+		local increase = -self.Step
 		local img1, img2 = ArrowLeftImage, ArrowRightImage
 		if self.ArrowOrientation == "vertical" then
 			img1, img2 = ArrowUpImage, ArrowDownImage
@@ -278,7 +274,7 @@ function ScrollBar.new(class, self)
 		self.Children =
 		{
 			self.Slider,
-			ui.Group:new
+			Group:new
 			{
 				Orientation = "horizontal" and "vertical" or self.Orientation,
 				Children =

@@ -80,7 +80,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 2.11"
+_VERSION = "Frame 2.12"
 
 local Frame = _M
 
@@ -274,7 +274,8 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:drawBorder()
-	self.BorderClass:draw(self, self.Border, unpack(self.Rect))
+	local r = self.Rect
+	self.BorderClass:draw(self, self.Border, r[1], r[2], r[3], r[4], true)
 end
 
 -------------------------------------------------------------------------------
@@ -285,8 +286,8 @@ function Frame:draw()
 	Area.draw(self)
 	local b1, b2, b3, b4 = self:getIBorder()
 	local r = self.Rect
-	b1, b2, b3, b4 = r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4
-	self.IBorderClass:draw(self, self.IBorder, b1, b2, b3, b4)
+	self.IBorderClass:draw(self, self.IBorder,
+		r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4)
 end
 
 -------------------------------------------------------------------------------
