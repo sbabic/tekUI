@@ -46,7 +46,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 3.1"
+_VERSION = "Gauge 3.3"
 
 -------------------------------------------------------------------------------
 -- GaugeFill:
@@ -207,7 +207,7 @@ end
 function Gauge:draw()
 
 	local d = self.Drawable
-	local b1, b2, b3, b4 = self:getIBorder()
+	local b1, b2, b3, b4 = self:getBorder(2)
 	local r = self.Rect
 
 	local bg = Region.new(r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4)

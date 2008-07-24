@@ -29,7 +29,7 @@ local newRegion = Region.new
 local unpack = unpack
 
 module("tek.ui.class.border", tek.class.object)
-_VERSION = "Border 3.0"
+_VERSION = "Border 4.0"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -62,27 +62,37 @@ function Border:getBorder()
 end
 
 -------------------------------------------------------------------------------
---	Border:draw(element, bordertab, x0, y0, x1, y1): Draws the specified table
---	of border thicknesses into the given rectangle, with possible style
---	variations for the given element.
+--	Border:draw(element, bordertab, x0, y0, x1, y1[, nr]): Draws the
+--	specified table of border thicknesses into the given rectangle, with
+--	possible style variations for the given element. The optional {{nr}}
+--	argument determines which border to draw; {{1}} (default) is indicative
+--	of the the outer border, {{2}} specifies the element's inner border.
 -------------------------------------------------------------------------------
 
 function Border:draw()
 end
 
 -------------------------------------------------------------------------------
---	region = Border:getRegion(element, bordertab, x0, y0, x1, y1): Returns a
---	[[#tek.lib.region : Region]] representing the outline of the specified
---	border thicknesses for the given rectangle, with possible style variations
---	for the given element.
+--	region = Border:getRegion(element, border, x0, y0, x1, y1[, inner]):
+--	Returns a [[#tek.lib.region : Region]] representing the outline of the
+--	specified border for the given rectangle, with possible style variations
+--	for the given element. The optional boolean {{inner}} specifies whether
+--	the region is representative of the element's inner border. By default,
+--	the region applies to the outer border.
 -------------------------------------------------------------------------------
 
-function Border:getRegion(element, border, x0, y0, x1, y1)
+function Border:getRegion(element, border, x0, y0, x1, y1, inner)
 	local b1, b2, b3, b4 = self:getBorder(element, border)
 	if b1 > 0 or b2 > 0 or b3 > 0 or b4 > 0 then
-		local b = newRegion(x0 - b1, y0 - b2, x1 + b3, y1 + b4)
-		b:subRect(x0, y0, x1, y1)
-		return b
+		if inner then
+			local b = newRegion(x0, y0, x1, y1)
+			b:subRect(x0 + b1, y0 + b2, x1 - b3, y1 - b4)
+			return b
+		else
+			local b = newRegion(x0 - b1, y0 - b2, x1 + b3, y1 + b4)
+			b:subRect(x0, y0, x1, y1)
+			return b
+		end
 	end
 	return false
 end

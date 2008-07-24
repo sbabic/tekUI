@@ -9,7 +9,7 @@ local ui = require "tek.ui"
 local unpack = unpack
 
 module("tek.ui.border.blank", tek.ui.class.border)
-_VERSION = "BlankBorder 3.0"
+_VERSION = "BlankBorder 3.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -27,11 +27,11 @@ function Blank:getBorder(element, border)
 	return unpack(border or DEF_BORDER)
 end
 
-function Blank:draw(element, border, r1, r2, r3, r4, is_outer)
+function Blank:draw(element, border, r1, r2, r3, r4, nr)
 	local b1, b2, b3, b4 = self:getBorder(element, border)
 	local d = element.Drawable
 	local p1, p2
-	if is_outer and element.Focus then
+	if nr == 1 and element.Focus then
 		p1, p2 = d.Pens[ui.PEN_FOCUSSHINE], d.Pens[ui.PEN_FOCUSSHADOW]
 	else
 		p1 = d.Pens[element.Parent and element.Parent.Background or

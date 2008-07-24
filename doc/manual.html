@@ -203,7 +203,7 @@
 			</blockquote>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v2.12)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v3.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -314,13 +314,10 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Frame:drawBorder"><code>Frame:drawBorder()</code></a> - Draws the element's outer border
+							<a href="#Frame:drawBorder"><code>Frame:drawBorder()</code></a> - Draws one of the element's borders
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Frame:getBorder"><code>Frame:getBorder()</code></a> - Returns the element's outer border
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Frame:getIBorder"><code>Frame:getIBorder()</code></a> - Returns the element's inner border
+							<a href="#Frame:getBorder"><code>Frame:getBorder()</code></a> - Returns one of the element's borders
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Frame:onFocus"><code>Frame:onFocus()</code></a> - Handler for <code>Focus</code> 
@@ -372,23 +369,21 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>border = Frame:getBorder()</code></a></h3>
+		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>border = Frame:getBorder([nr])</code></a></h3>
 			<p>
-				Returns an element's table of outer border
-				strengths &#091;pixels&#093; in the order left, top, right, bottom.
+				Returns an element's table of border
+				thicknesses in the order left, top, right, bottom. The optional argument
+				<code>nr</code> determines what border to return; <code>1</code> (default) is the outer
+				border, <code>2</code> is the element's inner border.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Frame:getIBorder" id="Frame:getIBorder"><code>iborder = Frame:getIBorder()</code></a></h3>
+		<div class="node"><h3><a name="Frame:drawBorder" id="Frame:drawBorder"><code>Frame:drawBorder([nr])</code></a></h3>
 			<p>
-				Returns an element's table of
-				inner border strengths &#091;pixels&#093; in the order left, top, right, bottom.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Frame:drawBorder" id="Frame:drawBorder"><code>Frame:drawBorder()</code></a></h3>
-			<p>
-				This function draws the element's outer border.
+				This function draws one of an element's
+				borders. The optional argument <code>nr</code> determines which border is to be
+				drawn; <code>1</code> (default) indicates the outer border, <code>2</code> is the
+				element's inner border.
 			</p>
 			<hr />
 		</div>
@@ -399,7 +394,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v3.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v4.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -964,7 +959,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v3.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v3.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1284,7 +1279,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.border" id="tek.ui.class.border">Border (v3.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.border" id="tek.ui.class.border">Border (v4.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1338,20 +1333,23 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Border:draw" id="Border:draw"><code>Border:draw(element, bordertab, x0, y0, x1, y1)</code></a></h3>
+		<div class="node"><h3><a name="Border:draw" id="Border:draw"><code>Border:draw(element, bordertab, x0, y0, x1, y1[, nr])</code></a></h3>
 			<p>
-				Draws the specified table
-				of border thicknesses into the given rectangle, with possible style
-				variations for the given element.
+				Draws the
+				specified table of border thicknesses into the given rectangle, with
+				possible style variations for the given element. The optional <code>nr</code> 
+				argument determines which border to draw; <code>1</code> (default) is indicative
+				of the the outer border, <code>2</code> specifies the element's inner border.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Border:getRegion" id="Border:getRegion"><code>region = Border:getRegion(element, bordertab, x0, y0, x1, y1)</code></a></h3>
+		<div class="node"><h3><a name="Border:getRegion" id="Border:getRegion"><code>region = Border:getRegion(element, border, x0, y0, x1, y1[, inner])</code></a></h3>
 			<p>
-				Returns a
-				<a href="#tek.lib.region">Region</a> representing the outline of the specified
-				border thicknesses for the given rectangle, with possible style variations
-				for the given element.
+				Returns a <a href="#tek.lib.region">Region</a> representing the outline of the
+				specified border for the given rectangle, with possible style variations
+				for the given element. The optional boolean <code>inner</code> specifies whether
+				the region is representative of the element's inner border. By default,
+				the region applies to the outer border.
 			</p>
 			<hr />
 		</div>
@@ -1997,7 +1995,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.7)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.9)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3366,7 +3364,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v10.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3568,7 +3566,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v13.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v13.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3938,7 +3936,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v9.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v10.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4262,6 +4260,14 @@
 		<div class="node"><h3><a name="ListGadget:getItem" id="ListGadget:getItem"><code>ListGadget:getItem(line)</code></a></h3>
 			<p>
 				Returns the item at the specified line.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="ListGadget:getSelectedLines" id="ListGadget:getSelectedLines"><code>ListGadget:getSelectedLines([mode])</code></a></h3>
+			<p>
+				Returns a table of all
+				selected entries, sorted by (by default) their line number. Currently
+				defined modes are &quot;ascending&quot; or &quot;descending&quot;. Default: &quot;ascending&quot;
 			</p>
 			<hr />
 		</div>
@@ -4794,7 +4800,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">Layout (v3.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">Layout (v3.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6223,15 +6229,21 @@ Notifications =
 { object, method, arg1, ... }
 </pre>
 		<p>
-			<code>object</code> indicates the target of the notification.
+			<code>object</code> denotes the target of the notification, i.e. the <code>self</code> 
+			that will be passed to the invoked <code>method</code> as its first argument.
+			Possible placeholders for <code>object</code> are <code>ui.NOTIFY_SELF</code>,
+			<code>ui.NOTIFY_WINDOW</code>, <code>ui.NOTIFY_APPLICATION</code> (see below).
 			<code>method</code> can be either a string denoting the name of a function in the
-			addressed object, or a function itself. However, for passing a function
-			value in <code>method</code> or in the list of arguments, it must be preceded by
-			the <code>ui.NOTIFY_FUNCTION</code> placeholder.
+			addressed object, or a function value itself. For passing a function
+			value, however, it must be preceded by the <code>ui.NOTIFY_FUNCTION</code> 
+			placeholder.
 			The following placeholders are supported:
 		</p>
 		<blockquote>
 			<ul>
+				<li>
+					<code>ui.NOTIFY_SELF</code>, the object causing the notification
+				</li>
 				<li>
 					<code>ui.NOTIFY_VALUE</code>, the value causing the notification
 				</li>
@@ -6243,11 +6255,10 @@ Notifications =
 				</li>
 				<li>
 					<code>ui.NOTIFY_FORMAT</code>, taking the next argument as a format string
-					to format the value
+					for formatting the value
 				</li>
 				<li>
-					<code>ui.NOTIFY_FUNCTION</code> to pass the next argument without inspection
-					for placeholders - this is needed for function values.
+					<code>ui.NOTIFY_FUNCTION</code> to pass a function in the next argument
 				</li>
 			</ul>
 		</blockquote>
@@ -6285,7 +6296,7 @@ method(object, arg1, ...)
 </pre>
 		<p>
 			The optional <code>pos</code> argument allows for insertion at an arbitrary
-			position in the notification list. By default, notifications are
+			position in the list of notifications. By default, notifications are
 			added at the end, and the only reasonable value for <code>pos</code> would be
 			<code>1</code>.
 		</p>
@@ -6548,7 +6559,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Mon Jul 21 01:56:22 2008
+			Document generated on Fri Jul 25 01:13:21 2008
 		</p>
 	</div>
 	</body>

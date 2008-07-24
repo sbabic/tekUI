@@ -7,7 +7,7 @@
 
 local ui = require "tek.ui"
 local db = require "tek.lib.debug"
-local Frame = ui.Area
+local Area = ui.Area
 
 local cos = math.cos
 local floor = math.floor
@@ -18,7 +18,7 @@ local sin = math.sin
 local unpack = unpack
 
 module("tek.ui.class.plasma", tek.ui.class.area)
-_VERSION = "Plasma 1.0"
+_VERSION = "Plasma 1.1"
 
 local WIDTH = 80
 local HEIGHT = 60
@@ -54,7 +54,7 @@ function Plasma.new(class, self)
 	self.PalIndex = 0
 	self.SinTab = { }
 	self.Params = { 0, 0, 0, 0, 0 } -- xp1, xp2, yp1, yp2, yp3
-	return Frame.new(class, self)
+	return Area.new(class, self)
 end
 
 function Plasma.init(self)
@@ -69,11 +69,11 @@ function Plasma.init(self)
 	self.MaxWidth = WIDTH * PIXWIDTH
 	self.MaxHeight = HEIGHT * PIXHEIGHT
 	self.IntervalNotify = { self, "update" }
-	return Frame.init(self)
+	return Area.init(self)
 end
 
 function Plasma:show(display, drawable)
-	if Frame.show(self, display, drawable) then
+	if Area.show(self, display, drawable) then
 		self.Window:addNotify("Interval", ui.NOTIFY_ALWAYS,
 			self.IntervalNotify)
 		return true
@@ -81,7 +81,7 @@ function Plasma:show(display, drawable)
 end
 
 function Plasma:hide()
-	Frame.hide(self)
+	Area.hide(self)
 	self.Window:remNotify("Interval", ui.NOTIFY_ALWAYS, self.IntervalNotify)
 end
 

@@ -213,19 +213,22 @@ end
 --	{{dest}} is a table describing the action to take when the notification
 --	occurs; it has the form
 --			{ object, method, arg1, ... }
---	{{object}} indicates the target of the notification.
+--	{{object}} denotes the target of the notification, i.e. the {{self}}
+--	that will be passed to the invoked {{method}} as its first argument.
+--	Possible placeholders for {{object}} are {{ui.NOTIFY_SELF}},
+--	{{ui.NOTIFY_WINDOW}}, {{ui.NOTIFY_APPLICATION}} (see below).
 --	{{method}} can be either a string denoting the name of a function in the
---	addressed object, or a function itself. However, for passing a function
---	value in {{method}} or in the list of arguments, it must be preceded by
---	the {{ui.NOTIFY_FUNCTION}} placeholder.
+--	addressed object, or a function value itself. For passing a function
+--	value, however, it must be preceded by the {{ui.NOTIFY_FUNCTION}}
+--	placeholder.
 --	The following placeholders are supported:
+--		* {{ui.NOTIFY_SELF}}, the object causing the notification
 --		* {{ui.NOTIFY_VALUE}}, the value causing the notification
 --		* {{ui.NOTIFY_TOGGLE}}, the logical negation of the value
 --		* {{ui.NOTIFY_OLDVALUE}}, the attributes's value prior to setting it
 --		* {{ui.NOTIFY_FORMAT}}, taking the next argument as a format string
---		to format the value
---		* {{ui.NOTIFY_FUNCTION}} to pass the next argument without inspection
---		for placeholders - this is needed for function values.
+--		for formatting the value
+--		* {{ui.NOTIFY_FUNCTION}} to pass a function in the next argument
 --	If the value is set in a child of the [[Element][#tek.ui.class.element]]
 --	class, the following additional placeholders are supported:
 --		* {{ui.NOTIFY_ID}} to address the [[Element][#tek.ui.class.element]]
@@ -242,7 +245,7 @@ end
 --	In any case, the {{method}} will be invoked as follows:
 --			method(object, arg1, ...)
 --	The optional {{pos}} argument allows for insertion at an arbitrary
---	position in the notification list. By default, notifications are
+--	position in the list of notifications. By default, notifications are
 --	added at the end, and the only reasonable value for {{pos}} would be
 --	{{1}}.
 --

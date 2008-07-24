@@ -51,9 +51,8 @@
 --			initialization, the class' default paddings are used.
 --
 --	IMPLEMENTS::
---		- Frame:drawBorder() - Draws the element's outer border
---		- Frame:getBorder() - Returns the element's outer border
---		- Frame:getIBorder() - Returns the element's inner border
+--		- Frame:drawBorder() - Draws one of the element's borders
+--		- Frame:getBorder() - Returns one of the element's borders
 --		- Frame:onFocus() - Handler for {{Focus}}
 --
 --	OVERRIDES::
@@ -80,7 +79,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 2.12"
+_VERSION = "Frame 3.1"
 
 local Frame = _M
 
@@ -213,21 +212,17 @@ function Frame:calcOffsets()
 end
 
 -------------------------------------------------------------------------------
---	border = Frame:getBorder(): Returns an element's table of outer border
---	strengths [pixels] in the order left, top, right, bottom.
+--	border = Frame:getBorder([nr]): Returns an element's table of border
+--	thicknesses in the order left, top, right, bottom. The optional argument
+--	{{nr}} determines what border to return; {{1}} (default) is the outer
+--	border, {{2}} is the element's inner border.
 -------------------------------------------------------------------------------
 
-function Frame:getBorder()
+function Frame:getBorder(nr)
+	if nr == 2 then
+		return self.IBorderClass:getBorder(self, self.IBorder)
+	end
 	return self.BorderClass:getBorder(self, self.Border)
-end
-
--------------------------------------------------------------------------------
---	iborder = Frame:getIBorder(): Returns an element's table of
---	inner border strengths [pixels] in the order left, top, right, bottom.
--------------------------------------------------------------------------------
-
-function Frame:getIBorder()
-	return self.IBorderClass:getBorder(self, self.IBorder)
 end
 
 -------------------------------------------------------------------------------
@@ -270,12 +265,21 @@ function Frame:punch(region)
 end
 
 -------------------------------------------------------------------------------
---	Frame:drawBorder(): This function draws the element's outer border.
+--	Frame:drawBorder([nr]): This function draws one of an element's
+--	borders. The optional argument {{nr}} determines which border is to be
+--	drawn; {{1}} (default) indicates the outer border, {{2}} is the
+--	element's inner border.
 -------------------------------------------------------------------------------
 
-function Frame:drawBorder()
+function Frame:drawBorder(nr)
 	local r = self.Rect
-	self.BorderClass:draw(self, self.Border, r[1], r[2], r[3], r[4], true)
+	if nr == 2 then
+		local b1, b2, b3, b4 = self:getBorder(2)
+		self.IBorderClass:draw(self, self.IBorder,
+			r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4, 2)
+	else
+		self.BorderClass:draw(self, self.Border, r[1], r[2], r[3], r[4], 1)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -284,10 +288,7 @@ end
 
 function Frame:draw()
 	Area.draw(self)
-	local b1, b2, b3, b4 = self:getIBorder()
-	local r = self.Rect
-	self.IBorderClass:draw(self, self.IBorder,
-		r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4)
+	self:drawBorder(2)
 end
 
 -------------------------------------------------------------------------------

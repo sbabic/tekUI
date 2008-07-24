@@ -9,7 +9,7 @@ local ui = require "tek.ui"
 local unpack = unpack
 
 module("tek.ui.border.recess", tek.ui.class.border)
-_VERSION = "RecessBorder 3.0"
+_VERSION = "RecessBorder 3.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -27,11 +27,11 @@ function Recess:getBorder(element, border)
 	return unpack(border or DEF_BORDER)
 end
 
-function Recess:draw(element, border, r1, r2, r3, r4, is_outer)
+function Recess:draw(element, border, r1, r2, r3, r4, nr)
 	local b1, b2, b3, b4 = self:getBorder(element, border)
 	local d = element.Drawable
 	local p1, p2
-	if is_outer and element.Focus then
+	if nr == 1 and element.Focus then
 		p1, p2 = d.Pens[ui.PEN_FOCUSSHADOW], d.Pens[ui.PEN_FOCUSSHINE]
 	else
 		p1, p2 = d.Pens[ui.PEN_HALFSHADOW], d.Pens[ui.PEN_HALFSHINE]

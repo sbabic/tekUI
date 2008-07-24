@@ -119,12 +119,13 @@ local min = math.min
 local overlap = Region.overlapCoords
 local pairs = pairs
 local remove = table.remove
+local sort = table.sort
 local tostring = tostring
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 9.2"
+_VERSION = "ListGadget 10.1"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -483,7 +484,7 @@ function ListGadget:prepare(damage)
 		c:setValue("CanvasWidth", cx + b1 + b3)
 
 		if self:layout(0, 0, c.CanvasWidth - 1, c.CanvasHeight - 1, damage)
-			and damage then
+			or damage then
 			c:rethinkLayout(1)
 			self.Redraw = true
 		end
@@ -872,4 +873,23 @@ end
 function ListGadget:getItem(lnr)
 	local lo = self.ListObject
 	return lo and lo:getItem(lnr)
+end
+
+-------------------------------------------------------------------------------
+--	ListGadget:getSelectedLines([mode]): Returns a table of all
+--	selected entries, sorted by (by default) their line number. Currently
+--	defined modes are "ascending" or "descending". Default: "ascending"
+-------------------------------------------------------------------------------
+
+function ListGadget:getSelectedLines(mode)
+	local t = { }
+	for i in pairs(self.SelectedLines) do
+		insert(t, i)
+	end
+	if mode == "descending" then
+		sort(t, function(a, b) return a > b end)
+	else
+		sort(t)
+	end
+	return t
 end

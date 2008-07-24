@@ -72,13 +72,13 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.7"
+_VERSION = "Slider 6.9"
 
 -------------------------------------------------------------------------------
 --	SliderKnob:
 -------------------------------------------------------------------------------
 
-local SliderKnob = Gadget:newClass { Name = "_sliderknob" }
+local SliderKnob = Gadget:newClass { _NAME = "_sliderknob" }
 
 local RATIO = 0x23 -- of 0x100
 local OFFS = 4
@@ -293,19 +293,14 @@ end
 function Slider:draw()
 	local d = self.Drawable
 	local r = self.Rect
-	local b1, b2, b3, b4 = self:getIBorder()
-	b1, b2, b3, b4 = r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4
-	self.IBorderClass:draw(self, self.IBorder, b1, b2, b3, b4)
-	local bg = Region.new(b1, b2, b3, b4)
-	local c = self.Child.Rect
-	local x0, y0, x1, y1 = c[1], c[2], c[3], c[4]
-	local m = self.Child.MarginAndBorder
-	local kb1, kb2, kb3, kb4 = self.Child:getBorder()
-	x0 = x0 + m[1] - kb1
-	y0 = y0 + m[2] - kb2
-	x1 = x1 - m[3] + kb3
-	y1 = y1 - m[4] + kb4
-	bg:subRect(x0, y0, x1, y1)
+	self:drawBorder(2)
+	local b1, b2, b3, b4 = self:getBorder(2)
+	local bg = Region.new(r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4)
+	local c = self.Child
+	r = c.Rect
+	local c1, c2, c3, c4 = c:getBorder()
+	c1, c2, c3, c4  = r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4
+	bg:subRect(c1, c2, c3, c4)
 	local bgpen = d.Pens[self.Background]
 	for _, r in bg:getRects() do
 		local r1, r2, r3, r4 = bg:getRect(r)

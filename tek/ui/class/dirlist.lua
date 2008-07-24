@@ -70,15 +70,15 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 3.2"
+_VERSION = "DirList 4.0"
 
 local DirList = _M
 
 -------------------------------------------------------------------------------
---	readDir: returns an iterator over entries in a directory
+--	getDirectoryIterator: returns an iterator over entries in a directory
 -------------------------------------------------------------------------------
 
-local function readDir(path)
+function DirList:getDirectoryIterator(path)
 	local success, dir = pcall(dir, path)
 	if success then
 		return function()
@@ -89,6 +89,14 @@ local function readDir(path)
 			return e
 		end
 	end
+end
+
+-------------------------------------------------------------------------------
+--	getFileStat:
+-------------------------------------------------------------------------------
+
+function DirList:getFileStat(path, name, attr, n)
+	return stat(path .. "/" .. name, attr)
 end
 
 -------------------------------------------------------------------------------
@@ -161,9 +169,7 @@ function DirList.new(class, self)
 	}
 
 	self.ReloadButton:addNotify("Pressed", false,
-		{ self, ui.NOTIFY_FUNCTION, function(self)
-			self:scanDir(self.PathField.Text)
-		end })
+		{ self, "reload" })
 
 	self.StatusText = Text:new
 	{
@@ -356,7 +362,8 @@ function DirList:scanDir(path)
 		obj:setValue("CursorLine", 0)
 		obj:setList(List:new())
 
-		diri = readDir(path)
+		self.Selection = { }
+		diri = self:getDirectoryIterator(path)
 		if diri then
 			local list = { }
 			local n = 0
@@ -375,13 +382,12 @@ function DirList:scanDir(path)
 				n = n + 1
 
 				local fullname = path .. "/" .. name
-				local isdir = stat(fullname, "mode") == "directory"
-
+				local isdir = self:getFileStat(path, name, "mode", n) == "directory"
 				insert(list,
 				{
 					{
 						name,
-						isdir and "[Directory]" or stat(fullname, "size")
+						isdir and "[Directory]" or self:getFileStat(path, name, "size", n)
 					},
 					isdir
 				})
@@ -443,7 +449,7 @@ function DirList:setFileEntry(entry)
 	local path = pathfield.Text:match("(.*[^/])/?$") or ""
 	local fullpath = pathfield.Text .. "/" .. entry
 	fullpath = fullpath:gsub("//*", "/")
-	if stat(fullpath, "mode") == "directory" then
+	if self:getFileStat(path, entry, "mode") == "directory" then
 		self:showDirectory(fullpath)
 		return true -- is directory
 	end
@@ -471,4 +477,8 @@ function DirList:dblClickList()
 			self.Window:clickElement(self.OpenGadget)
 		end
 	end
+end
+
+function DirList:reload()
+	self:scanDir(self.PathField.Text)
 end

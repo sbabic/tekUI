@@ -86,9 +86,10 @@ local Gadget = ui.Gadget
 local assert = assert
 local floor = math.floor
 local ipairs = ipairs
+local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 13.2"
+_VERSION = "Group 13.4"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -321,6 +322,7 @@ function Group:draw()
 		local r1, r2, r3, r4 = f:getRect(r)
 		d:fillRect(r1, r2, r3, r4, p)
 	end
+	self:drawBorder(2)
 end
 
 -------------------------------------------------------------------------------
@@ -378,6 +380,13 @@ function Group:layout(r1, r2, r3, r4, markdamage)
 	self.FreeRegion = f
 	self.Layout:layout(self, r1, r2, r3, r4, markdamage)
 	local b = self.BorderRegion
+	if b then
+		for _, r in b:getRects() do
+			f:subRect(b:getRect(r))
+ 		end
+ 	end
+	b = self.IBorderClass:getRegion(self, self.IBorder, unpack(self.Rect),
+		true)
 	if b then
 		for _, r in b:getRects() do
 			f:subRect(b:getRect(r))

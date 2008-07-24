@@ -300,7 +300,7 @@ static int lib_layout(lua_State *L)
 
 		lua_getfield(L, 2, "MarginAndBorder");
 		lua_getfield(L, 2, "Rect");
-		lua_getfield(L, 2, "Padding");
+		lua_getfield(L, 2, "PaddingAndBorder");
 		lua_rawgeti(L, -1, i1);
 		lua_rawgeti(L, -4, i1);
 		goffs = lua_tonumber(L, -1) + lua_tonumber(L, -2);

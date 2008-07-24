@@ -12,7 +12,7 @@ local floor = math.floor
 local min = math.min
 
 module("tek.ui.border.group", tek.ui.class.border)
-_VERSION = "GroupBorder 4.0"
+_VERSION = "GroupBorder 4.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -40,12 +40,12 @@ function Group:getBorder(element, border)
 	return b1, th or b2, b3, b4
 end
 
-function Group:draw(element, border, r1, r2, r3, r4, is_outer)
+function Group:draw(element, border, r1, r2, r3, r4, nr)
 	local b1, b2, b3, b4, tw, th = getsizes(element, border)
 	local d = element.Drawable
 
 	local p1, p2
-	if is_outer and element.Focus then
+	if nr == 1 and element.Focus then
 		p1, p2 = d.Pens[ui.PEN_FOCUSSHINE], d.Pens[ui.PEN_FOCUSSHADOW]
 	else
 		p1, p2 = d.Pens[ui.PEN_HALFSHADOW], d.Pens[ui.PEN_SHADOW]
