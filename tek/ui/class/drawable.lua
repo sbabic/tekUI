@@ -33,12 +33,14 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Object = require "tek.class.object"
 local Region = require "tek.lib.region"
 
 local assert = assert
 local ipairs = ipairs
+local pairs = pairs
 local unpack = unpack
 local insert = table.insert
 local remove = table.remove
@@ -48,7 +50,7 @@ local overlap = Region.overlapCoords
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 8.0"
+_VERSION = "Drawable 9.0"
 
 DELAY = 0.003
 
@@ -112,13 +114,16 @@ function Drawable:open(title, w, h, minw, minh, maxw, maxh, x, y, center,
 			"focus")
 
 		local penalloc = { }
-		for i, v in ipairs(self.Display.Theme.RGBTab) do
+		for i, v in ipairs(self.Display.RGBTab) do
 			penalloc[i] = self.Visual:allocpen(unpack(v))
 		end
 
-		local pentab = self.Display.Theme.PenTab
+		local pentab = self.Display.PenTab
 		for i = 1, #pentab do
 			self.Pens[i] = penalloc[pentab[i]]
+		end
+		for k, v in pairs(self.Display.ColorNames) do
+			self.Pens[k] = penalloc[pentab[v]]
 		end
 
 		return true

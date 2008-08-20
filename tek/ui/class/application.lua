@@ -24,9 +24,6 @@
 --			Status of the application, can be: "connected", "connecting",
 --			"disconnected", "disconnecting", "initializing", "error",
 --			"running"
---		- {{Theme [IG]}}
---			Optional custom theme object; if unspecified, a default
---			theme will be created
 --		- {{Title [IG]}}
 --			Title of the application, which will be inherited by windows;
 --			if unspecified, {{ProgramName}} will be used
@@ -57,6 +54,7 @@ local Window = ui.Window
 
 local assert = assert
 local cocreate = coroutine.create
+local collectgarbage = collectgarbage
 local coresume = coroutine.resume
 local corunning = coroutine.running
 local costatus = coroutine.status
@@ -65,12 +63,13 @@ local insert = table.insert
 local ipairs = ipairs
 local max = math.max
 local min = math.min
+local pairs = pairs
 local remove = table.remove
 local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 2.7"
+_VERSION = "Application 4.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -80,11 +79,20 @@ local Application = _M
 
 function Application.new(class, self)
 	self = Family.new(class, self)
+	
+	-- load/get properties:
+	self.InternalProperties = self.InternalProperties or
+		ui.Theme.getStyleSheet(self.ThemeName)
+		
+	-- prepare properties:
+	ui.prepareProperties(self.InternalProperties)
+	
 	-- Check linkage of members and connect them recursively:
 	if self:connect() then
 		self.Status = "disconnected"
+		self.Display = self.Display or Display:new { }
+		self:decodeProperties(self.InternalProperties)
 		self:setup()
-		self.Display = self.Display or Display:new { Theme = self.Theme }
 		self:show(self.Display)
 	else
 		db.error("Could not connect elements")
@@ -104,8 +112,9 @@ function Application.init(self)
 	self.OpenWindows = { }
 	self.ProgramName = self.ProgramName or self.Title or false
 	self.Status = "initializing"
-	self.Theme = self.Theme or false
+	self.InternalProperties = self.InternalProperties or false
 	self.Title = self.Title or self.ProgramName or false
+	self.ThemeName = self.ThemeName or false
 	self.WaitVisuals = { }
 	self.WaitWindows = { }
 	return Family.init(self)
@@ -118,8 +127,9 @@ end
 -------------------------------------------------------------------------------
 
 function Application:connect(parent)
-	if self.Children then -- TODO: must always have children
-		for _, child in ipairs(self.Children) do
+	local c = self:getElement("children")
+	if c then
+		for _, child in ipairs(c) do
 			if not self:checkMember(child) then
 				db.error("Connection failed: %s <- %s", self:getClassName(),
 					child:getClassName())
@@ -142,6 +152,8 @@ function Application:connect(parent)
 			return self:connect(parent)
 		end
 		return true
+	else
+		db.info("%s : has no children", self:getClassName())
 	end
 end
 
@@ -160,7 +172,7 @@ end
 
 function Application:addMember(child, pos)
 	if self:checkMember(child) then
-		assert(child:checkDescend(Window), "Child must be a window")
+		child:decodeProperties(self.InternalProperties)
 		child:setup(self, child)
 		if child:show(self.Display) then
 			-- this will also invoke checkMember():
@@ -213,11 +225,21 @@ function Application:getElementById(Id)
 end
 
 -------------------------------------------------------------------------------
+--	decodeProperties:
+-------------------------------------------------------------------------------
+
+function Application:decodeProperties(p)
+	self.Display:decodeProperties(p)
+	for _, child in ipairs(self.Children) do
+		child:decodeProperties(p)
+	end
+end
+
+-------------------------------------------------------------------------------
 --	setup: internal
 -------------------------------------------------------------------------------
 
 function Application:setup()
-	db.trace("setup")
 	if self.Status == "disconnected" then
 		self.Status = "connecting"
 		for _, child in ipairs(self.Children) do
@@ -232,7 +254,6 @@ end
 -------------------------------------------------------------------------------
 
 function Application:cleanup()
-	db.trace("cleanup")
 	assert(self.Status == "connected")
 	self.Status = "disconnecting"
 	for _, child in ipairs(self.Children) do
@@ -246,7 +267,6 @@ end
 -------------------------------------------------------------------------------
 
 function Application:show(display)
-	db.trace("setup")
 	self.Display = display
 	for _, w in ipairs(self.Children) do
 		w:show(display)
@@ -259,7 +279,6 @@ end
 -------------------------------------------------------------------------------
 
 function Application:hide()
-	db.trace("cleanup")
 	for _, w in ipairs(self.Children) do
 		w:hide()
 	end
@@ -444,6 +463,9 @@ function Application:run()
 
 	while self.Status == "running" and #self.OpenWindows > 0 do
 		self:serviceCoroutines()
+		if collectgarbage then
+			collectgarbage("step")
+		end
 		self:wait()
 		while #ma > 0 do
 			state[2] = remove(ma, 1)
@@ -456,11 +478,11 @@ function Application:run()
 			until not msg
 			if state[4] then
 				state[2]:passMsg(state[4])
-				state[4] = nil
+				state[4] = false
 			end
 			if state[5] then
 				state[2]:passMsg(state[5])
-				state[5] = nil
+				state[5] = false
 			end
 		end
 	end
@@ -546,7 +568,7 @@ function Application:requestFile(args)
 	local dirlist = ui.DirList:new
 	{
 		Path = args.Path or "/",
-		Style = "requester",
+		Kind = "requester",
 		SelectMode = args.SelectMode or "single",
 	}
 
@@ -584,4 +606,14 @@ function Application:requestFile(args)
 
 	return dirlist.Status
 
+end
+
+-------------------------------------------------------------------------------
+--	getElement(mode) - equivalent to Area:getElement(), see there
+-------------------------------------------------------------------------------
+
+function Application:getElement(mode)
+	if mode == "children" then
+		return self.Children
+	end
 end

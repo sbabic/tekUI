@@ -5,8 +5,7 @@ local ui = require "tek.ui"
 local window = ui.Window:new
 {
 	Orientation = "vertical",
-	Width = 400,
-	Height = 400,
+	Style = "width: 400; height: 400",
 	Id = "anims-window",
 	Title = "Animations",
 	Status = "hide",
@@ -36,18 +35,27 @@ local window = ui.Window:new
 					Orientation = "vertical",
 					Children =
 					{
-						ui.Tunnel:new { Id = "the-tunnel", HAlign = "center" },
+						ui.Tunnel:new 
+						{ 
+							Id = "the-tunnel", 
+							Style = "horizontal-align: center",
+						},
 						ui.Group:new
 						{
-							Width = "fill",
-							Height = "auto",
+							Style = "width: fill; height: auto;",
 							Legend = "Parameters",
 							GridWidth = 2,
 							Children =
 							{
-								ui.text:new { Text = "Speed", Style = "caption", Width = "fill" },
-								ui.Slider:new {
-									Width = "free",
+								ui.text:new 
+								{
+									Text = "Speed", 
+									Class = "caption", 
+									Style = "width: fill",
+								},
+								ui.Slider:new 
+								{
+									Style = "width: free",
 									Min = 1,
 									Max = 19,
 									Value = 13,
@@ -61,9 +69,15 @@ local window = ui.Window:new
 										}
 									},
 								},
-								ui.text:new { Text = "Focus", Style = "caption", Width = "fill" },
-								ui.Slider:new {
-									Width = "free",
+								ui.text:new 
+								{ 
+									Text = "Focus", 
+									Class = "caption", 
+									Style = "width: fill",
+								},
+								ui.Slider:new 
+								{
+									Style = "width: free",
 									Min = 0x10,
 									Max = 0x1ff,
 									Value = 0x50,
@@ -77,9 +91,14 @@ local window = ui.Window:new
 										}
 									},
 								},
-								ui.text:new { Text = "Segments", Style = "caption", Width = "fill" },
+								ui.text:new 
+								{ 
+									Text = "Segments", 
+									Class = "caption", 
+									Style = "width: fill",
+								},
 								ui.Slider:new {
-									Width = "free",
+									Style = "width: free",
 									Min = 1,
 									Max = 19,
 									Value = 6,
@@ -105,13 +124,13 @@ local window = ui.Window:new
 						ui.Boing:new { Id = "the-boing" },
 						ui.Group:new
 						{
-							Height = "auto",
+							Style = "height: auto",
 							Children =
 							{
 								ui.text:new
 								{
 									Mode = "button",
-									Style = "button",
+									Class = "button",
 									Text = "_Start",
 									Notifications =
 									{
@@ -129,7 +148,7 @@ local window = ui.Window:new
 								ui.text:new
 								{
 									Mode = "button",
-									Style = "button",
+									Class = "button",
 									Text = "Sto_p",
 									Notifications =
 									{

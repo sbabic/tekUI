@@ -12,7 +12,7 @@ local floor = math.floor
 local max = math.max
 
 module("tek.ui.class.image", tek.ui.class.gadget)
-_VERSION = "Image 1.7"
+_VERSION = "Image 1.8"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -31,7 +31,6 @@ end
 -------------------------------------------------------------------------------
 
 function Image:show(display, drawable)
-	local theme = display.Theme
 	self.ImageMargin = self.ImageMargin or ui.NULLOFFS
 	return Gadget.show(self, display, drawable)
 end
@@ -56,7 +55,7 @@ end
 function Image:layout(x0, y0, x1, y1, markdamage)
 	if Gadget.layout(self, x0, y0, x1, y1, markdamage) then
 		local r = self.Rect
-		local p = self.PaddingAndBorder
+		local p = self.Padding
 		local m = self.ImageMargin
 		local w = r[3] - r[1] - p[1] - p[3] - m[1] - m[3] + 1
 		local h = r[4] - r[2] - p[2] - p[4] - m[2] - m[3] + 1

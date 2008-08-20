@@ -22,6 +22,10 @@
 --		- {{Enter [ISG]}} - Text that is being 'entered' (by pressing the
 --		return key) into the TextInput field.
 --
+--	STYLE PROPERTIES::
+--		- {{cursor-background-color}}
+--		- {{cursor-color}}
+--
 --	IMPLEMENTS::
 --		- TextInput:onEnter() - Handler invoked when {{Enter}} ist set
 --
@@ -56,13 +60,11 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 4.3"
+_VERSION = "TextInput 5.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
-
-local DEF_BORDERSTYLE = "recess"
 
 local NOTIFY_ENTER = { ui.NOTIFY_SELF, "onEnter", ui.NOTIFY_VALUE }
 
@@ -73,12 +75,15 @@ local NOTIFY_ENTER = { ui.NOTIFY_SELF, "onEnter", ui.NOTIFY_VALUE }
 local TextInput = _M
 
 function TextInput.init(self)
+	self.FGPenCursor = false
+	self.BGPenCursor = false
 	self.BlinkState = false
 	self.BlinkTick = false
 	self.BlinkTickInit = false
 	self.Editing = false
 	self.Enter = false
 	self.FHeight = false
+	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
 	self.IntervalNotify = { self, "interval" }
 	self.Text = self.Text or ""
@@ -94,6 +99,16 @@ function TextInput.init(self)
 	-- max. visible width in characters:
 	self.TextWidth = false
 	return Text.init(self)
+end
+
+-------------------------------------------------------------------------------
+--	getProperties: overrides
+-------------------------------------------------------------------------------
+
+function TextInput:getProperties(p, pclass)
+	self.FGPenCursor = self:getProperty(p, pclass, "cursor-color")
+	self.BGPenCursor = self:getProperty(p, pclass, "cursor-background-color")
+	Text.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -119,10 +134,6 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:show(display, drawable)
-	local theme = display.Theme
-	self.FontSpec = self.FontSpec or theme.TextInputFontSpec or "__fixed"
-	self.BorderStyle = self.BorderStyle or theme.TextInputBorderStyle or
-		DEF_BORDERSTYLE
 	if Text.show(self, display, drawable) then
 		self.FWidth, self.FHeight =
 			Display:getTextSize(self.TextRecords[1][2], " ")
@@ -164,12 +175,9 @@ end
 
 function TextInput:draw()
 
-	Area.draw(self)
-
 	local r = self.Rect
 	local d = self.Drawable
 	local pens = d.Pens
-	local bgpen = pens[self.Background]
 
 	local tr = self.TextRect
 	local to = self.TextOffset
@@ -179,7 +187,7 @@ function TextInput:draw()
 	d:setFont(text[2])
 
 	local fw, fh = self.FWidth, self.FHeight
-	local p = self.PaddingAndBorder
+	local p = self.Padding
 	local w = r[3] - r[1] + 1 - p[1] - p[3]
 	local h = r[4] - r[2] + 1 - p[2] - p[4]
 
@@ -222,21 +230,24 @@ function TextInput:draw()
 
 	local x, y = tr[1], tr[2]
 
+	local tpen = pens[self.Foreground]
+	
+	self:erase()
+	
 	if self.Disabled then
-		d:drawText(x + 1, y + 1, text, pens[ui.PEN_BUTTONDISABLEDSHINE])
-		d:drawText(x, y, text, pens[ui.PEN_BUTTONDISABLEDSHADOW])
-	else
-		d:drawText(x, y, text, pens[ui.PEN_TEXTINPUTTEXT], bgpen)
-		if self.Window.FocusElement == self then
-			local s = self.TextBuffer:sub(tc + to + 1, tc + to + 1)
-			s = s == "" and " " or s
-			if self.BlinkState == 1 then
-				d:drawText(tr[1] + tc * fw, tr[2], s, pens[ui.PEN_CURSORTEXT],
-					pens[ui.PEN_CURSOR])
-			else
-				d:drawText(tr[1] + tc * fw, tr[2], s,
-					pens[ui.PEN_TEXTINPUTTEXT], bgpen)
-			end
+		local tpen2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
+		d:drawText(x + 1, y + 1, text, tpen2)
+	end
+	d:drawText(x, y, text, tpen)
+	if not self.Disabled and self.Window.FocusElement == self then
+		local s = self.TextBuffer:sub(tc + to + 1, tc + to + 1)
+		s = s == "" and " " or s
+		if self.BlinkState == 1 then
+			d:drawText(tr[1] + tc * fw, tr[2], s,
+				pens[self.FGPenCursor or ui.PEN_CURSORDETAIL],
+				pens[self.BGPenCursor or ui.PEN_CURSOR])
+		else
+			d:drawText(tr[1] + tc * fw, tr[2], s, tpen)
 		end
 	end
 end
@@ -412,25 +423,6 @@ function TextInput.handleInput(self, msg)
 	end
 	-- pass to next handler:
 	return msg
-end
-
--------------------------------------------------------------------------------
---	setState:
--------------------------------------------------------------------------------
-
-function TextInput:setState(bg, fg)
-	if not bg then
-		if self.Disabled then
-			bg = ui.PEN_BUTTONDISABLED
-		elseif self.Selected then
-			bg = ui.PEN_TEXTINPUTACTIVE
-		elseif self.Hilite then
-			bg = ui.PEN_TEXTINPUTOVER
-		else
-			bg = ui.PEN_TEXTINPUTBACK
-		end
-	end
-	Text.setState(self, bg, fg)
 end
 
 -------------------------------------------------------------------------------

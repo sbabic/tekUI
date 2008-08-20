@@ -7,8 +7,6 @@ local window = ui.Window:new
 	Id = "slider-window",
 	Title = "Slider",
 	Status = "hide",
-	MaxWidth = ui.HUGE,
-	MaxHeight = ui.HUGE,
 	Orientation = "vertical",
 	Notifications =
 	{
@@ -35,15 +33,15 @@ local window = ui.Window:new
 				ui.Text:new
 				{
 					Text = "Continuous",
-					Width = "fill",
+					Style = "width: fill",
 				},
 				ui.ScrollBar:new
 				{
 					Id = "slider-slider-1",
-					Width = "free",
+					Style = "width: free",
 					Min = 0,
 					Max = 10,
-					Style = "number",
+					Kind = "number",
 					Notifications =
 					{
 						["Value"] =
@@ -60,7 +58,7 @@ local window = ui.Window:new
 				ui.Text:new
 				{
 					Id = "slider-text-1",
-					Width = "fill",
+					Style = "width: fill",
 					Text = "  0.00  ",
 					KeepMinWidth = true,
 				},
@@ -68,16 +66,16 @@ local window = ui.Window:new
 				ui.Text:new
 				{
 					Text = "Integer Step",
-					Width = "fill",
+					Style = "width: fill",
 				},
 				ui.ScrollBar:new
 				{
 					Id = "slider-slider-2",
-					Width = "free",
+					Style = "width: free",
 					Min = 0,
 					Max = 10,
 					ForceInteger = true,
-					Style = "number",
+					Kind = "number",
 					Notifications =
 					{
 						["Value"] =
@@ -94,7 +92,7 @@ local window = ui.Window:new
 				ui.Text:new
 				{
 					Id = "slider-text-2",
-					Width = "fill",
+					Style = "width: fill",
 					Text = "  0  ",
 					KeepMinWidth = true,
 				},
@@ -102,16 +100,16 @@ local window = ui.Window:new
 				ui.Text:new
 				{
 					Text = "Range",
-					Width = "fill",
+					Style = "width: fill",
 				},
 				ui.ScrollBar:new
 				{
 					Id = "slider-slider-3",
-					Width = "free",
+					Style = "width: free",
 					Min = 10,
 					Max = 20,
 					ForceInteger = true,
-					Style = "number",
+					Kind = "number",
 					Notifications =
 					{
 						["Value"] =
@@ -128,7 +126,7 @@ local window = ui.Window:new
 				ui.Text:new
 				{
 					Id = "slider-text-3",
-					Width = "fill",
+					Style = "width: fill",
 					Text = "  0  ",
 					KeepMinWidth = true,
 				},
@@ -145,7 +143,6 @@ local window = ui.Window:new
 					Min = 0,
 					Max = 10,
 					Id = "slider-gauge-1",
-					Width = "free",
 				},
 			}
 		},

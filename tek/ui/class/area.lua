@@ -21,10 +21,10 @@
 --			see {{TrackDamage}}
 --		- {{Disabled [ISG]}} (boolean)
 --			If '''true''', the element is in disabled state. This attribute is
---			not handled by Area; see [[#tek.ui.class.gadget : Gadget]]
+--			handled by the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{Focus [ISG]}} (boolean)
 --			If '''true''', the element has the input focus. This attribute
---			is not handled by Area; see [[#tek.ui.class.frame : Frame]]
+--			is handled by the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{HAlign [IG]}} ("left", "center", "right")
 --			Horizontal alignment of the element in its group [default:
 --			"left"]
@@ -39,8 +39,8 @@
 --			Note: Normally, "fill" is useful only once per group.
 --		- {{Hilite [ISG]}} (boolean)
 --			If '''true''', the element is in highlighted state. This
---			attribute is not handled by Area; see
---			[[#tek.ui.class.gadget : Gadget]]
+--			attribute is handled by the [[#tek.ui.class.gadget : Gadget]]
+--			class.
 --		- {{Margin [IG]}} (table)
 --			An array of four offsets for the element's outer margin in the
 --			order left, right, top, bottom [pixels]. If unspecified during
@@ -53,10 +53,13 @@
 --			Minimum height of the element, in pixels [default: 0]
 --		- {{MinWidth [IG]}} (number)
 --			Minimum width of the element, in pixels [default: 0]
+--		- {{Padding [IG]}} (table)
+--			An array of four offsets for the element's inner padding in the
+--			order left, right, top, bottom [pixels]. If unspecified during
+--			initialization, the class' default paddings are used.
 --		- {{Selected [ISG]}} (boolean)
---			If '''true''', the element is in selected state. This
---			attribute is not handled by Area; see
---			[[#tek.ui.class.gadget : Gadget]]
+--			If '''true''', the element is in selected state. This attribute
+--			is handled by the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{TrackDamage [IG]}} (boolean)
 --			If '''true''', the element gathers intra-area damages in a
 --			Region named {{DamageRegion}}, which can be used by class writers
@@ -64,13 +67,10 @@
 --			'''false''', the element is redrawn in its entirety.)
 --		- {{VAlign [IG]}} ("top", "center", "bottom")
 --			Vertical alignment of the element in its group [default: "top"]
---		- {{Weight [ISG]}} (number)
+--		- {{Weight [IG]}} (number)
 --			Determines the weight that is attributed to the element, relative
---			to its siblings in its group. Invokes the Area:onSetWeight()
---			method. Area:onSetWeight() recalculates all weights in the group
---			and possibly causes relayouting and redrawing it. Note: By
---			recommendation, the weights set in a group should sum up to
---			0x10000.
+--			to its siblings in its group. Note: By recommendation, the weights
+--			in a group should sum up to 0x10000.
 --		- {{Width [IG]}} (number, '''false''', or "auto", "fill", "free")
 --			Width of the element, in pixels, or
 --				- '''false''' - unspecified; during initialization, the class'
@@ -81,6 +81,27 @@
 --				in the same group have left, but does not claim more.
 --			Note: Normally, "fill" is useful only once per group.
 --
+--	STYLE PROPERTIES::
+--		- {{background-color}}
+--		- {{height}}
+--		- {{horizontal-grid-align}}
+--		- {{margin}}
+--		- {{margin-bottom}}
+--		- {{margin-left}}
+--		- {{margin-right}}
+--		- {{margin-top}}
+--		- {{max-height}}
+--		- {{max-width}}
+--		- {{min-height}}
+--		- {{min-width}}
+--		- {{padding}}
+--		- {{padding-bottom}}
+--		- {{padding-left}}
+--		- {{padding-right}}
+--		- {{padding-top}}
+--		- {{vertical-grid-align}}
+--		- {{width}}
+--
 --	IMPLEMENTS::
 --		- Area:askMinMax() - Query minimum and maximum dimensions
 --		- Area:checkFocus() - Check if the element can receive the focus
@@ -90,7 +111,6 @@
 --		- Area:hide() - Removes an Area from its Display and Drawable
 --		- Area:layout() - Layout the element into a rectangle
 --		- Area:markDamage() - Pass a damage rectangle to an element
---		- Area:onSetWeight() - Handler called when Area's weight is changed
 --		- Area:passMsg() - Filters an input message
 --		- Area:punch() - Subtract Element from a [[#tek.lib.region : Region]]
 --		- Area:refresh() - Redraws an element
@@ -111,26 +131,21 @@ local db = require "tek.lib.debug"
 local Region = require "tek.lib.region"
 local ui = require "tek.ui"
 local Element = ui.Element
-local overlap = Region.overlapCoords
 
+local assert = assert
 local floor = math.floor
 local insert = table.insert
 local ipairs = ipairs
 local max = math.max
 local min = math.min
+local overlap = Region.overlapCoords
 local remove = table.remove
 local tonumber = tonumber
+local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 10.0"
+_VERSION = "Area 12.0"
 local Area = _M
-
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
-
-local DEF_MARGIN = { 2, 2, 2, 2 }
-local NOTIFY_WEIGHT = { ui.NOTIFY_SELF, "onSetWeight", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	new:
@@ -139,11 +154,11 @@ local NOTIFY_WEIGHT = { ui.NOTIFY_SELF, "onSetWeight", ui.NOTIFY_VALUE }
 function Area.new(class, self)
 	self = self or { }
 	-- Combined margin and border offsets of the element:
-	self.MarginAndBorder = { 0, 0, 0, 0 }
+	self.MarginAndBorder = { }
 	-- Calculated minimum/maximum sizes of the element:
-	self.MinMax = { 0, 0, 0, 0 }
+	self.MinMax = { }
 	-- The layouted rectangle of the element on the display:
-	self.Rect = { -1, -1, -1, -1 }
+	self.Rect = { }
 	return Element.new(class, self)
 end
 
@@ -152,67 +167,95 @@ end
 -------------------------------------------------------------------------------
 
 function Area.init(self)
-	-- Element's background properties (color, pattern...) [internal]:
 	self.Background = false
-	-- Background pen:
 	self.BGPen = self.BGPen or false
-	-- Region to collect damages to this element:
 	self.DamageRegion = false
-	-- Disabled state of the element (defined, but not handled by Area):
 	self.Disabled = self.Disabled or false
-	-- The Display this element is connected to [internal]:
 	self.Display = false
-	-- The Drawable this element is connected to [internal]:
 	self.Drawable = false
-	-- Focus state of the element (defined, but not handled by Area):
 	self.Focus = self.Focus or false
-	-- Horizontal alignment in group ("left", "center", "right")
-	self.HAlign = self.HAlign or "left"
-	-- Fixed height:
+	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
-	-- Hilite state of the element (defined, but not handled by Area):
 	self.Hilite = false
-	-- Margin offsets of the element:
-	self.Margin = self.Margin or false
-	-- Maximum height of the element:
-	self.MaxHeight = self.MaxHeight or ui.HUGE
-	-- Maximum width of the element:
-	self.MaxWidth = self.MaxWidth or ui.HUGE
-	-- Minimum height of the element:
-	self.MinHeight = self.MinHeight or 0
-	-- Minimum width of the element:
-	self.MinWidth = self.MinWidth or 0
-	-- Indicates whether the element needs to be redrawn [internal]:
+	self.Margin = self.Margin or { }
+	self.MaxHeight = self.MaxHeight or false
+	self.MaxWidth = self.MaxWidth or false
+	self.MinHeight = self.MinHeight or false
+	self.MinWidth = self.MinWidth or false
+	self.Padding = self.Padding or { }
 	self.Redraw = false
-	-- Selected state of the element (defined, but not handled by Area):
 	self.Selected = self.Selected or false
-	-- Boolean to indicate whether intra-area damages are to be collected:
 	self.TrackDamage = self.TrackDamage or false
-	-- Vertical alignment in group ("top", "center", "bottom")
-	self.VAlign = self.VAlign or "top"
-	-- Weight of the element, relative to its siblings in the same group:
+	self.VAlign = self.VAlign or false
 	self.Weight = self.Weight or false
-	-- Fixed width:
 	self.Width = self.Width or false
 	return Element.init(self)
+end
+
+-------------------------------------------------------------------------------
+--	getProperties(props, [pseudoclass]): This function is called to obtain
+--	properties for the given {{pseudoclass}}.
+-------------------------------------------------------------------------------
+
+function Area:getProperties(p, pclass)
+	self.BGPen = self.BGPen or self:getProperty(p, pclass, "background-color")
+	self.HAlign = self.HAlign or
+		self:getProperty(p, pclass, "horizontal-grid-align")
+	self.VAlign = self.VAlign or 
+		self:getProperty(p, pclass, "vertical-grid-align")
+	self.Width = self.Width or self:getProperty(p, pclass, "width")
+	self.Height = self.Height or self:getProperty(p, pclass, "height")
+	
+	local m = self.Margin
+	m[1] = m[1] or tonumber(self:getProperty(p, pclass, "margin-left"))
+	m[2] = m[2] or tonumber(self:getProperty(p, pclass, "margin-top"))
+	m[3] = m[3] or tonumber(self:getProperty(p, pclass, "margin-right"))
+	m[4] = m[4] or tonumber(self:getProperty(p, pclass, "margin-bottom"))
+	
+	self.MaxHeight = self.MaxHeight or
+		self:getProperty(p, pclass, "max-height")
+	self.MaxWidth = self.MaxWidth or self:getProperty(p, pclass, "max-width")
+	self.MinHeight = self.MinHeight or
+		self:getProperty(p, pclass, "min-height")
+	self.MinWidth = self.MinWidth or self:getProperty(p, pclass, "min-width")
+	
+	local q = self.Padding
+	q[1] = q[1] or tonumber(self:getProperty(p, pclass, "padding-left"))
+	q[2] = q[2] or tonumber(self:getProperty(p, pclass, "padding-top"))
+	q[3] = q[3] or tonumber(self:getProperty(p, pclass, "padding-right"))
+	q[4] = q[4] or tonumber(self:getProperty(p, pclass, "padding-bottom"))
+
+	Element.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
 --	setup: overrides
 -------------------------------------------------------------------------------
 
-function Area:setup(app, window)
-	Element.setup(self, app, window)
-	self:addNotify("Weight", ui.NOTIFY_CHANGE, NOTIFY_WEIGHT)
-end
-
--------------------------------------------------------------------------------
---	cleanup: overrides
--------------------------------------------------------------------------------
-
-function Area:cleanup()
-	self:remNotify("Weight", ui.NOTIFY_CHANGE, NOTIFY_WEIGHT)
-	Element.cleanup(self)
+function Area:setup(app, win)
+	Element.setup(self, app, win)
+	
+	-- consolidation of properties:
+	
+	self.Width = tonumber(self.Width) or self.Width
+	self.Height = tonumber(self.Height) or self.Height
+	
+	local m = self.Margin
+	m[1], m[2], m[3], m[4] = tonumber(m[1]) or 0, tonumber(m[2]) or 0, 
+		tonumber(m[3]) or 0, tonumber(m[4]) or 0
+	local p = self.Padding
+	p[1], p[2], p[3], p[4] = tonumber(p[1]) or 0, tonumber(p[2]) or 0,
+		tonumber(p[3]) or 0, tonumber(p[4]) or 0
+		
+	if not self.MaxHeight or self.MaxHeight == "free" then
+		self.MaxHeight = ui.HUGE
+	end
+	if not self.MaxWidth or self.MaxWidth == "free" then
+		self.MaxWidth = ui.HUGE
+	end
+	
+	self.MinHeight = self.MinHeight or 0
+	self.MinWidth = self.MinWidth or 0
 end
 
 -------------------------------------------------------------------------------
@@ -225,7 +268,6 @@ end
 -------------------------------------------------------------------------------
 
 function Area:show(display, drawable)
-	self.Margin = self.Margin or display.Theme.AreaMargin or DEF_MARGIN
 	self.Display = display
 	self.Drawable = drawable
 	self:calcOffsets()
@@ -241,13 +283,16 @@ end
 
 function Area:hide()
 	self.DamageRegion = false
-	self.Drawable = false
 	self.Display = false
+	self.Drawable = false
+	self.MinMax = { }
+	self.Rect = { }
+	self.MarginAndBorder = { }
 end
 
 -------------------------------------------------------------------------------
 --	Area:calcOffsets() [internal] - This function calculates the
---	{{MarginAndBorder}} property. See also Frame:calcOffsets().
+--	{{MarginAndBorder}} property.
 -------------------------------------------------------------------------------
 
 function Area:calcOffsets()
@@ -279,17 +324,6 @@ function Area:rethinkLayout(damage)
 end
 
 -------------------------------------------------------------------------------
---	onSetWeight(weight): Sets the weight of the element relative to the
---	group in which it resides, and causes a relayout of this group.
--------------------------------------------------------------------------------
-
-function Area:onSetWeight(w)
-	self.Weight = tonumber(w) or false
-	self.Parent:calcWeights()
-	self:rethinkLayout(1)
-end
-
--------------------------------------------------------------------------------
 --	minw, minh, maxw, maxh = Area:askMinMax(minw, minh, maxw, maxh): This
 --	method is called during the layouting process for adding the required
 --	spatial extents (width and height) of this class to the min/max values
@@ -300,16 +334,15 @@ end
 -------------------------------------------------------------------------------
 
 function Area:askMinMax(m1, m2, m3, m4)
-	m1 = max(self.MinWidth, m1)
-	m2 = max(self.MinHeight, m2)
-	m3 = max(min(self.MaxWidth, m3), m1)
-	m4 = max(min(self.MaxHeight, m4), m2)
-	local m = self.MarginAndBorder
+	local p, m, mm = self.Padding, self.MarginAndBorder, self.MinMax
+	m1 = max(self.MinWidth, m1 + p[1] + p[3])
+	m2 = max(self.MinHeight, m2 + p[2] + p[4])
+	m3 = max(min(self.MaxWidth, m3 + p[1] + p[3]), m1)
+	m4 = max(min(self.MaxHeight, m4 + p[2] + p[4]), m2)
 	m1 = m1 + m[1] + m[3]
 	m2 = m2 + m[2] + m[4]
 	m3 = m3 + m[1] + m[3]
 	m4 = m4 + m[2] + m[4]
-	local mm = self.MinMax
 	mm[1], mm[2], mm[3], mm[4] = m1, m2, m3, m4
 	return m1, m2, m3, m4
 end
@@ -412,8 +445,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:punch(region)
-	local r = self.Rect
-	region:subRect(r[1], r[2], r[3], r[4])
+	region:subRect(unpack(self.Rect))
 end
 
 -------------------------------------------------------------------------------
@@ -424,14 +456,18 @@ end
 function Area:markDamage(r1, r2, r3, r4)
 	if self.TrackDamage or not self.Redraw then
 		local r = self.Rect
-		r1, r2, r3, r4 = overlap(r1, r2, r3, r4, r[1], r[2], r[3], r[4])
-		if r1 then
-			self.Redraw = true
-			if self.DamageRegion then
-				self.DamageRegion:orRect(r1, r2, r3, r4)
-			elseif self.TrackDamage then
-				self.DamageRegion = Region.new(r1, r2, r3, r4)
+		if r[1] then
+			r1, r2, r3, r4 = overlap(r1, r2, r3, r4, r[1], r[2], r[3], r[4])
+			if r1 then
+				self.Redraw = true
+				if self.DamageRegion then
+					self.DamageRegion:orRect(r1, r2, r3, r4)
+				elseif self.TrackDamage then
+					self.DamageRegion = Region.new(r1, r2, r3, r4)
+				end
 			end
+		else
+			db.warn("%s : layout not available", self:getClassName())
 		end
 	end
 end
@@ -443,13 +479,20 @@ end
 -------------------------------------------------------------------------------
 
 function Area:draw()
+	self:erase()
+end
+
+-------------------------------------------------------------------------------
+--	Area:erase(): Clears the element's background.
+-------------------------------------------------------------------------------
+
+function Area:erase()
 	local d = self.Drawable
 	local bgpen = d.Pens[self.Background]
 	local dr = self.DamageRegion
 	if dr then
 		-- repaint intra-area damagerects:
-		for _, r in dr:getRects() do
-			local r1, r2, r3, r4 = dr:getRect(r)
+		for _, r1, r2, r3, r4 in dr:getRects() do
 			d:fillRect(r1, r2, r3, r4, bgpen)
 		end
 		self.DamageRegion = false
@@ -480,7 +523,10 @@ end
 
 function Area:getElementByXY(x, y)
 	local r = self.Rect
-	return x >= r[1] and x <= r[3] and y >= r[2] and y <= r[4] and self
+	if r[1] then
+		return x >= r[1] and x <= r[3] and y >= r[2] and y <= r[4] and self
+	end
+	db.warn("%s : layout not available", self:getClassName())
 end
 
 -------------------------------------------------------------------------------
@@ -503,8 +549,11 @@ end
 --	for repainting.
 -------------------------------------------------------------------------------
 
-function Area:setState(bg)
-	bg = bg or self.BGPen or ui.PEN_AREABACK
+function Area:setState(bg, fg)
+	bg = bg or self.BGPen or ui.PEN_BACKGROUND
+	if bg == ui.PEN_PARENTGROUP then
+		bg = self:getElement("group").Background
+	end
 	if bg ~= self.Background then
 		self.Background = bg
 		self.Redraw = true
@@ -546,17 +595,21 @@ end
 --		- "lastchild" - returns the element's last child, or '''nil''' if
 --		the element has no children.
 --
---	Note: Tables returned by this function must be considered read-only.
+--	Note: Tables returned by this function must be treated read-only.
 -------------------------------------------------------------------------------
 
 function Area:getElement(mode)
 	if mode == "parent" then
+		assert(self.Parent)
 		return self.Parent
 	elseif mode == "children" then
 		return -- an area has no children
 	elseif mode == "siblings" then
 		local p = self:getElement("parent")
 		return p and p:getElement("children")
+	elseif mode == "group" then
+		assert(self.Parent)
+		return self.Parent
 	end
 	local g = self:getElement("siblings")
 	if g then

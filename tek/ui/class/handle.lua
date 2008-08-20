@@ -39,15 +39,9 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.gadget)
-_VERSION = "Handle 3.1"
+_VERSION = "Handle 3.2"
 
 local Handle = _M
-
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
-
-local DEF_PADDING = { 5, 5, 5, 5 }
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -60,27 +54,6 @@ function Handle.init(self)
 	self.Orientation = self.Orientation or 1
 	self.SizeList = false
 	return Gadget.init(self)
-end
-
--------------------------------------------------------------------------------
---	show: overrides
--------------------------------------------------------------------------------
-
-function Handle:show(display, drawable)
-	local theme = display.Theme
-	-- outer spacing:
-	self.Margin = self.Margin or theme.HandleMargin or false
-	-- outer border:
-	self.Border = self.Border or theme.HandleBorder or false
-	-- inner border:
-	self.IBorder = self.IBorder or theme.HandleIBorder or false
-	-- inner spacing:
-	self.Padding = self.Padding or theme.HandlePadding or DEF_PADDING
-	-- outer borderstyle:
-	self.BorderStyle = self.BorderStyle or theme.HandleBorderStyle or "none"
-	-- inner borderstyle:
-	self.IBorderStyle = self.IBorderStyle or theme.HandleIBorderStyle or "none"
-	return Gadget.show(self, display, drawable)
 end
 
 -------------------------------------------------------------------------------
@@ -278,21 +251,6 @@ function Handle:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	setState: overrides
--------------------------------------------------------------------------------
-
-function Handle:setState(bg)
-	if not bg then
-		if self.Hilite or self.Active then
-			bg = ui.PEN_LIGHTSHINE
-		else
-			bg = ui.PEN_GROUPBACK
-		end
-	end
-	Gadget.setState(self, bg)
-end
-
--------------------------------------------------------------------------------
 --	onHover: overrides
 -------------------------------------------------------------------------------
 
@@ -310,44 +268,4 @@ end
 
 function Handle:checkFocus()
 	return false
-end
-
--------------------------------------------------------------------------------
---	draw: overrides
--------------------------------------------------------------------------------
-
-local RATIO = 0x44 -- of 0x100
-local OFFS = 9
-
-function Handle:draw()
-	Gadget.draw(self)
-	local d = self.Drawable
-	local r = self.Rect
-	local p1 = d.Pens[ui.PEN_HALFSHADOW]
-	local p2 = d.Pens[ui.PEN_HALFSHINE]
-	if self.Orientation == 2 then
-		local w = r[3] - r[1] + 1
-		local n = floor(w * RATIO / (OFFS * 0x100))
-		if n > 0 then
-			local x = r[1] + floor((w - (n - 1) * OFFS) / 2)
-			local y = r[2] + floor((r[4] - r[2] + 1) / 2)
-			for i = 1, n do
-				d:drawLine(x - 2, y, x, y - 2, p1)
-				d:drawLine(x, y + 2, x + 2, y, p2)
-				x = x + OFFS
-			end
-		end
-	else
-		local h = r[4] - r[2] + 1
-		local n = floor(h * RATIO / (OFFS * 0x100))
-		if n > 0 then
-			local x = r[1] + floor((r[3] - r[1] + 1) / 2)
-			local y = r[2] + floor((h - (n - 1) * OFFS) / 2)
-			for i = 1, n do
-				d:drawLine(x - 2, y, x, y - 2, p1)
-				d:drawLine(x, y + 2, x + 2, y, p2)
-				y = y + OFFS
-			end
-		end
-	end
 end

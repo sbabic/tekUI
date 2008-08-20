@@ -1,15 +1,22 @@
-
+-------------------------------------------------------------------------------
 --
 --	tek.ui.class.theme
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
+--	LINEAGE::
+--		[[#ClassOverview]] :
+--		[[#tek.class : Class]] /
+--		Theme
+--
+--	IMPLEMENTS::
+--		- Theme.getStyleSheet() - get a stylesheet for a named theme
+--
+-------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-
-local Object = require "tek.class.object"
-
+local Class = require "tek.class"
 local getenv = os.getenv
 local insert = table.insert
 local ipairs = ipairs
@@ -17,269 +24,324 @@ local min = math.min
 local open = io.open
 local tonumber = tonumber
 
-module("tek.ui.class.theme", tek.class.object)
-_VERSION = "Theme 4.3"
-
--------------------------------------------------------------------------------
---	Class data and constants:
--------------------------------------------------------------------------------
-
-local DEF_MAINFONT = "sans-serif,helvetica,Vera:12"
-local DEF_SMALLFONT = "sans-serif,helvetica,Vera:10"
-local DEF_MENUFONT = "sans-serif,helvetica,Vera:14"
-local DEF_FIXEDFONT = "monospace,fixed,VeraMono:14"
-local DEF_LARGEFONT = "sans-serif,helvetica,Vera:20"
-local DEF_HUGEFONT = "sans-serif,helvetica,Vera:28"
-
-local DEF_RGBTAB =
-{
-	{ 210, 210, 210 },	-- 1: background
-	{ 000, 000, 000 },	-- 2: black
-	{ 255, 255, 255 },	-- 3: white
-	{ 110, 130, 160 },	-- 4: active
-	{ 225, 225, 225 },	-- 5: bright gray
-	{ 120, 120, 120 },	-- 6: dark gray
-	{ 200, 080, 020 },	-- 7: signal/focus
-	{ 190, 190, 190 },	-- 8: medium gray
-}
-
-local DEF_PENTAB =
-{
-	[ui.PEN_AREABACK] = 1,
-
-	[ui.PEN_BUTTONTEXT] = 2,
-	[ui.PEN_BUTTONOVER] = 5,
-	[ui.PEN_BUTTONACTIVE] = 8,
-	[ui.PEN_BUTTONACTIVETEXT] = 2,
-	[ui.PEN_BUTTONOVERDETAIL] = 2,
-
-	[ui.PEN_BUTTONDISABLED] = 1,
-	[ui.PEN_BUTTONDISABLEDSHADOW] = 6,
-	[ui.PEN_BUTTONDISABLEDSHINE] = 3,
-	[ui.PEN_BUTTONDISABLEDTEXT] = 1,
-
-	[ui.PEN_TEXTINPUTBACK] = 1,
-	[ui.PEN_TEXTINPUTTEXT] = 2,
-	[ui.PEN_TEXTINPUTOVER] = 5,
-	[ui.PEN_TEXTINPUTACTIVE] = 5,
-
-	[ui.PEN_LISTVIEWBACK] = 1,
-	[ui.PEN_LISTVIEWTEXT] = 2,
-	[ui.PEN_LISTVIEWACTIVE] = 4,
-	[ui.PEN_LISTVIEWACTIVETEXT] = 3,
-	[ui.PEN_ALTLISTVIEWBACK] = 5,
-
-	[ui.PEN_CURSOR] = 7,
-	[ui.PEN_CURSORTEXT] = 3,
-
-	[ui.PEN_SHINE] = 3,
-	[ui.PEN_SHADOW] = 2,
-	[ui.PEN_HALFSHINE] = 5,
-	[ui.PEN_HALFSHADOW] = 6,
-
-	[ui.PEN_SLIDERBACK] = 1,
-	[ui.PEN_SLIDEROVER] = 5,
-	[ui.PEN_SLIDERACTIVE] = 5,
-
-	[ui.PEN_GROUPBACK] = 8,
-	[ui.PEN_GROUPLABELTEXT] = 2,
-
-	[ui.PEN_MENUBACK] = 1,
-	[ui.PEN_MENUACTIVE] = 4,
-	[ui.PEN_MENUACTIVETEXT] = 3,
-
-	[ui.PEN_FOCUSSHINE] = 7,
-	[ui.PEN_FOCUSSHADOW] = 7,
-
-	[ui.PEN_LIGHTSHINE] = 5,
-
-	[ui.PEN_FILL] = 4,
-}
-
--------------------------------------------------------------------------------
---	Class implementation:
--------------------------------------------------------------------------------
-
+module("tek.ui.class.theme", tek.class)
+_VERSION = "Theme 6.0"
 local Theme = _M
 
-function Theme.new(class, self)
+local DEF_STYLESHEET =
+{ 
+	-- element classes:
 
-	self = self or { }
+	["tek.ui.class.area"] = {
+		["margin"] = 1,
+	},
 
-	self.DefFonts = self.DefFonts or { }
-	self.DefFonts.__main = self.DefFonts.__main or DEF_MAINFONT
-	self.DefFonts.__small = self.DefFonts.__small or DEF_SMALLFONT
-	self.DefFonts.__menu = self.DefFonts.__menu or DEF_MENUFONT
-	self.DefFonts.__fixed = self.DefFonts.__fixed or DEF_FIXEDFONT
-	self.DefFonts.__large = self.DefFonts.__large or DEF_LARGEFONT
-	self.DefFonts.__huge = self.DefFonts.__huge or DEF_HUGEFONT
-	self.DefFonts[""] = self.DefFonts[""] or self.DefFonts.__main
+	["tek.ui.class.checkmark"] = {
+		["padding"] = 0,
+		["margin"] = 0,
+		["border-width"] = 1,
+		["border-focus-width"] = 1,
+		["text-align"] = "left",
+		["vertical-align"] = "center",
+		["background-color"] = "parent-group",
+	},
+	
+	["tek.ui.class.floattext"] = {
+		["background-color"] = "list",
+	},
+	
+	["tek.ui.class.frame"] = {
+		["border-width"] = 2,
+		["border-style"] = "inset",
+	},
+	
+	["tek.ui.class.gadget"] = {
+		["border-width"] = 3,
+		["border-style"] = "outset",
+		["border-focus-width"] = 1,
+	},
+	
+	["tek.ui.class.gadget:active"] = {
+		["border-style"] = "inset",
+		["background-color"] = "active",
+		["color"] = "active-detail",
+	},
+	
+	["tek.ui.class.gadget:disabled"] = {
+		["background-color"] = "disabled",
+		["color"] = "disabled-detail",
+	},
+	
+	["tek.ui.class.gadget:focus"] = {
+		["background-color"] = "focus",
+		["color"] = "focus-detail",
+	},
+	
+	["tek.ui.class.gadget:hover"] = {
+		["background-color"] = "hover",
+		["color"] = "hover-detail",
+	},
+	
+	["tek.ui.class.gadget.knob-scrollbar"] = {
+		["effect"] = "ripple",
+		["effect-orientation"] = "inline",
+		["effect-kind"] = "dot",
+	},
+	
+	["tek.ui.class.gauge"] = {
+		["padding"] = 0,
+		["border-style"] = "inset",
+		["height"] = "auto",
+	},
+	
+	["tek.ui.class.group"] = {
+		["margin"] = 0,
+		["background-color"] = "group",
+		["border-width"] = 0,
+		["border-focus-width"] = 0,
+	},
+	
+	["tek.ui.class.handle"] = {
+		["effect"] = "ripple",
+		["effect-orientation"] = "across",
+		["effect-kind"] = "slant",
+		["border-width"] = 0,
+		["background-color"] = "parent-group",
+		["padding"] = 5,
+	},
+	
+	["tek.ui.class.handle:active"] = {
+		["border-style"] = "outset",
+		["background-color"] = "hover",
+	},
+	
+	["tek.ui.class.handle:hover"] = {
+		["background-color"] = "hover",
+	},
+	
+	["tek.ui.class.listgadget"] = {
+		["background-color"] = "list",
+		["background-color2"] = "list2",
+		["color"] = "list-detail",
+	},
+	["tek.ui.class.listgadget:active"] = {
+		["background-color"] = "list-active",
+		["color"] = "list-active-detail",
+	},
+	
+	["tek.ui.class.menuitem"] = {
+		["font"] = "default-menu-font",
+		["border-width"] = 0,
+		["margin"] = 0,
+		["width"] = "fill",
+	},
+	
+	["tek.ui.class.menuitem:active"] = {
+		["background-color"] = "menu-active",
+		["color"] = "menu-active-detail",
+	},
+	
+	["tek.ui.class.menuitem:hover"] = {
+		["background-color"] = "menu-active",
+		["color"] = "menu-active-detail",
+	},
+	
+	["tek.ui.class.menuitem:focus"] = {
+		["background-color"] = "menu-active",
+		["color"] = "menu-active-detail",
+	},
+	
+	["tek.ui.class.menuitem:popup-root"] = {
+		["margin"] = 2,
+		["width"] = "auto",
+	},
+	
+	["tek.ui.class.popitem"] = {
+		["border-width"] = 4,
+		["border-style"] = "outset",
+		["border-focus-width"] = 1,
+		["border-rim-width"] = 1,
+		["width"] = "fill",
+	},
+	
+	["tek.ui.class.popitem:active"] = {
+		["background-color"] = "hover",
+	},
+	
+	["tek.ui.class.popupwindow"] = {
+		["background-color"] = "background",
+		["border-width"] = 1,
+		["border-style"] = "solid",
+		["border-color"] = "dark",
+		["padding"] = 0,
+	},
+	
+	["tek.ui.class.slider"] = {
+		["padding"] = 0,
+		["border-style"] = "inset",
+		["width"] = "fill",
+		["height"] = "fill",
+	},
+	
+	["tek.ui.class.slider:active"] = {
+		["border-style"] = "inset",
+	},
+	
+	["tek.ui.class.spacer"] = {
+		["border-style"] = "inset",
+		["border-width"] = 1,
+	},
+	
+	["tek.ui.class.text"] = {
+		["border-style"] = "inset",
+		["padding"] = "2 5 2 5",
+		["height"] = "auto",
+	},
+	
+	["tek.ui.class.textinput"] = {
+		["font"] = "default-fixed-font",
+		["border-style"] = "inset",
+	},
+	
+	["tek.ui.class.window"] = {
+		["padding"] = 0,
+		["margin"] = 0,
+	},
+	
+	-- pre-defined classes:
+	
+	[".button"] = {
+		["border-style"] = "outset",
+		["border-width"] = 4,
+		["border-rim-width"] = 1,
+	},
+	
+	[".button:active"] = {
+		["border-style"] = "inset",
+	},
+	
+	[".caption"] = {
+		["border-width"] = 0,
+		["background-color"] = "parent-group",
+		["horizontal-align"] = "center",
+		["vertical-align"] = "center",
+	},
+	
+	[".gauge-fill"] = {
+		["border-style"] = "solid",
+		["border-color"] = "dark",
+		["border-width"] = 1,
+		["background-color"] = "fill",
+		["padding"] = 4,
+	},
+	
+	[".knob"] = {
+		["border-width"] = 3,
+		["border-focus-width"] = 0,
+		["border-rim-width"] = 1,
+		["margin"] = 0,
+		["padding"] = 4,
+	},
+	
+	[".legend"] = {
+		["border-legend-font"] = "default-small-font",
+		["border-style"] = "groove",
+		["border-width"] = 2,
+		["margin"] = 2,
+		["padding"] = 1,
+	},
+	
+	[".menubar"] = {
+		["margin"] = 0,
+		["border-style"] = "solid",
+		["border-width"] = "0 0 1 0",
+		["padding"] = 0,
+		["background-color"] = "background",
+		["width"] = "fill",
+		["height"] = "auto",
+	},
+	
+	[".page-button"] = {
+		["border-style"] = "inset",
+		["border-width"] = 2,
+		["border-focus-width"] = 0,
+		["margin"] = 0,
+	},
+	
+	[".page-button:active"] = {
+		["border-style"] = "outset",
+		["border-bottom-color"] = "group",
+	},
+	
+	[".page-button:focus"] = {
+		["background-color"] = "hover",
+	},
+	
+	-- internal classes:
+	
+	["_listviewheaditem"] = {
+		["background-color"] = "active",
+		["padding"] = 0,
+	},
+	
+	["_pagebuttongroup"] = {
+		["margin"] = "4 2 0 2",
+		["padding-left"] = 2,
+	},
+	
+	["_pagecontainer"] = {
+		["border-width"] = "0 2 2 2",
+		["margin"] = "0 2 2 2",
+		["padding"] = 2,
+	},
+	
+	["_scrollbar-arrow"] = {
+		["margin"] = 0,
+		["border-width"] = 4,
+		["border-rim-width"] = 1,
+		["min-width"] = 12,
+		["min-height"] = 12,
+	},
 
-	self.RGBTab = self.RGBTab or DEF_RGBTAB
-	self.PenTab = self.PenTab or DEF_PENTAB
+	["_scrollbar-slider"] = {
+		["margin"] = 0,
+	},
+}
 
-	self.AreaMargin = self.AreaMargin or self.AreaMargin or false
+-------------------------------------------------------------------------------
+--	GTK+ settings import:
+-------------------------------------------------------------------------------
 
-	self.BorderButtonBorder = self.BorderButtonBorder or false
-	self.BorderGroupBorder = self.BorderGroupBorder or false
-	self.BorderRecessBorder = self.BorderRecessBorder or false
-	self.BorderSocketBorder = self.BorderSocketBorder or false
-	self.BorderBlankBorder = self.BorderBlankBorder or false
-	self.BorderCursorBorder = self.BorderCursorBorder or false
-
-	self.TextPadding = self.TextPadding or false
-	self.TextFontSpec = self.TextFontSpec or false
-	self.TextBorderStyle = self.TextBorderStyle or false
-	self.TextIBorderStyle = self.TextIBorderStyle or false
-
-	self.ButtonBorderStyle = self.ButtonBorderStyle or false
-	self.ButtonIBorderStyle = self.ButtonIBorderStyle or false
-
-	self.FrameMargin = self.FrameMargin or false
-	self.FrameBorder = self.FrameBorder or false
-	self.FrameIBorder = self.FrameIBorder or false
-	self.FramePadding = self.FramePadding or false
-	self.FrameBorderStyle = self.FrameBorderStyle or false
-	self.FrameIBorderStyle = self.FrameIBorderStyle or false
-
-	self.GadgetBorder = self.GadgetBorder or false
-	self.GadgetBorderStyle = self.GadgetBorderStyle or false
-	self.GadgetIBorder = self.GadgetIBorder or false
-	self.GadgetIBorderStyle = self.GadgetIBorderStyle or false
-	self.GadgetMargin = self.GadgetMargin or false
-	self.GadgetPadding = self.GadgetPadding or false
-
-	self.GaugeBorder = self.GaugeBorder or false
-	self.GaugeBorderStyle = self.GaugeBorderStyle or false
-	self.GaugeIBorder = self.GaugeIBorder or false
-	self.GaugeIBorderStyle = self.GaugeIBorderStyle or false
-	self.GaugeKnobBorder = self.GaugeKnobBorder or false
-	self.GaugeKnobBorderStyle = self.GaugeKnobBorderStyle or false
-	self.GaugeKnobIBorder = self.GaugeKnobIBorder or false
-	self.GaugeKnobIBorderStyle = self.GaugeKnobIBorderStyle or false
-	self.GaugeKnobMargin = self.GaugeKnobMargin or false
-	self.GaugeKnobMinHeight = self.GaugeKnobMinHeight or false
-	self.GaugeKnobMinWidth = self.GaugeKnobMinWidth or false
-	self.GaugeMargin = self.GaugeMargin or false
-	self.GaugePadding = self.GaugePadding or false
-
-	self.GroupBorder = self.GroupBorder or false
-	self.GroupBorderLegend = self.GroupBorderLegend or false
-	self.GroupBorderStyle = self.GroupBorderStyle or false
-	self.GroupBorderStyleLegend = self.GroupBorderStyleLegend or false
-	self.GroupLegendFontSpec = self.GroupLegendFontSpec or false
-	self.GroupMargin = self.GroupMargin or false
-	self.GroupMarginLegend = self.GroupMarginLegend or false
-	self.GroupPadding = self.GroupPadding or false
-	self.GroupPaddingLegend = self.GroupPaddingLegend or false
-
-	self.HandleBorder = self.HandleBorder or false
-	self.HandleBorderStyle = self.HandleBorderStyle or false
-	self.HandleIBorder = self.HandleIBorder or false
-	self.HandleIBorderStyle = self.HandleIBorderStyle or false
-	self.HandleMargin = self.HandleMargin or false
-	self.HandlePadding = self.HandlePadding or false
-
-	self.ImageAreaMargin = self.ImageAreaMargin or false
-
-	self.ListAreaFontSpec = self.ListAreaFontSpec or false
-	self.ListAreaMargin = self.ListAreaMargin or false
-	self.ListAreaPadding = self.ListAreaPadding or false
-
-	self.MenuBarBackPen = self.MenuBarBackPen or false
-	self.MenuBarBorder = self.MenuBarBorder or false
-	self.MenuBarBorderStyle = self.MenuBarBorderStyle or false
-
-	self.MenuItemBorder = self.MenuItemBorder or false
-	self.MenuItemBorderStyle = self.MenuItemBorderStyle or false
-	self.MenuItemChildrenBorderStyle = self.MenuItemChildrenBorderStyle or false
-	self.MenuItemChildrenIBorderStyle = self.MenuItemChildrenIBorderStyle or false
-	self.MenuItemFontSpec = self.MenuItemFontSpec or false
-	self.MenuItemIBorder = self.MenuItemIBorder or false
-	self.MenuItemIBorderStyle = self.MenuItemIBorderStyle or false
-	self.MenuItemMargin = self.MenuItemMargin or false
-	self.MenuItemPadding = self.MenuItemPadding or false
-
-	self.PopItemBorder = self.PopItemBorder or false
-	self.PopItemBorderStyle = self.PopItemBorderStyle or false
-	self.PopItemChildrenBorderStyle = self.PopItemChildrenBorderStyle or false
-	self.PopItemChildrenIBorderStyle = self.PopItemChildrenIBorderStyle or false
-	self.PopItemFontSpec = self.PopItemFontSpec or false
-	self.PopItemIBorder = self.PopItemIBorder or false
-	self.PopItemIBorderStyle = self.PopItemIBorderStyle or false
-	self.PopItemMargin = self.PopItemMargin or false
-	self.PopItemPadding = self.PopItemPadding or false
-
-	self.PopupBorder = self.PopupBorder or false
-	self.PopupBorderStyle = self.PopupBorderStyle or false
-	self.PopupMargin = self.PopupMargin or false
-	self.PopupPadding = self.PopupPadding or false
-
-	self.RadioButtonBorder = self.RadioButtonBorder or false
-	self.RadioButtonBorderStyle = self.RadioButtonBorderStyle or false
-	self.RadioButtonIBorder = self.RadioButtonIBorder or false
-	self.RadioButtonIBorderStyle = self.RadioButtonIBorderStyle or false
-	self.RadioButtonMargin = self.RadioButtonMargin or false
-	self.RadioButtonPadding = self.RadioButtonPadding or false
-
-	self.SliderBorder = self.SliderBorder or false
-	self.SliderBorderStyle = self.SliderBorderStyle or false
-	self.SliderIBorder = self.SliderIBorder or false
-	self.SliderIBorderStyle = self.SliderIBorderStyle or false
-	self.SliderKnobBorder = self.SliderKnobBorder or false
-	self.SliderKnobBorderStyle = self.SliderKnobBorderStyle or false
-	self.SliderKnobIBorder = self.SliderKnobIBorder or false
-	self.SliderKnobIBorderStyle = self.SliderKnobIBorderStyle or false
-	self.SliderKnobMargin = self.SliderKnobMargin or false
-	self.SliderKnobMinHeight = self.SliderKnobMinHeight or false
-	self.SliderKnobMinWidth = self.SliderKnobMinWidth or false
-	self.SliderMargin = self.SliderMargin or false
-	self.SliderPadding = self.SliderPadding or false
-
-	self.SpacerBorder = self.SpacerBorder or false
-	self.SpacerBorderStyle = self.SpacerBorderStyle or false
-	self.SpacerMargin = self.SpacerMargin or false
-	self.SpacerPadding = self.SpacerPadding or false
-
-	self.TextInputBorderStyle = self.TextInputBorderStyle or false
-	self.TextInputFontSpec = self.TextInputFontSpec or false
-
-	self.CheckMarkMargin = self.CheckMarkMargin or false
-	self.CheckMarkBorder = self.CheckMarkBorder or false
-	self.CheckMarkIBorder = self.CheckMarkIBorder or false
-	self.CheckMarkPadding = self.CheckMarkPadding or false
-	self.CheckMarkBorderStyle = self.CheckMarkBorderStyle or false
-	self.CheckMarkIBorderStyle = self.CheckMarkIBorderStyle or false
-
-	self.ImportConfig = self.ImportConfig == nil and true or self.ImportConfig
-
-	self = Object.new(class, self)
-
-	if self.ImportConfig ~= false then
-		importConfig(self)
+local function fmtrgb(r, g, b, l)
+	l = l or 1
+	r = min(r * l * 255, 255)
+	g = min(g * l * 255, 255)
+	b = min(b * l * 255, 255)
+	return ("#%02x%02x%02x"):format(r, g, b)
+end
+ 
+local function getclass(s, class)
+	local c = s[class]
+	if not c then
+		c = { }
+		s[class] = c
 	end
-
-	return self
-
+	return c
 end
-
--------------------------------------------------------------------------------
---	getconfig: determine colors from GTK+ configuration
--------------------------------------------------------------------------------
-
-local function lum(rgb, l)
--- 	local y = 0.299 * rgb[1] + 0.587 * rgb[2] + 0.114 * rgb[3]
--- 	local u = -0.147 * rgb[1] - 0.289 * rgb[2] + 0.436 * rgb[3]
--- 	local v = 0.615 * rgb[1] - 0.515 * rgb[2] - 0.100 * rgb[3]
--- 	y = y * l
--- 	return { min(255, y + 1.140 * v), min(255, y - 0.396 * u - 0.581 * v),
--- 		min(255, y + 2.029 * u) }
-	return { min(255, rgb[1] * l), min(255, rgb[2] * l), min(255, rgb[3] * l) }
+ 
+local function setclass(s, class, key, val)
+	local c = getclass(s, class)
+	c[key] = val
 end
-
-function Theme:importConfig()
+ 
+local function importGTKConfig(def_s)
+	if 3 / 2 == 1 then
+		db.error("Need floating point support for GTK+ settings import")
+		return def_s
+	end
 	local p = getenv("GTK2_RC_FILES")
 	if p then
+		local s = def_s
 		local paths = { }
 		p:gsub("([^:]+):?", function(p)
 			insert(paths, p)
@@ -288,83 +350,119 @@ function Theme:importConfig()
 			db.info("Trying config file %s", fname)
 			local f = open(fname)
 			if f then
+				local d = getclass(s, "tek.ui.class.display")
 				local style
+				local found = false
 				for line in f:lines() do
 					line = line:match("^%s*(.*)%s*$")
 					local newstyle = line:match("^style%s+\"(%w+)\"$")
 					if newstyle then
-						style = newstyle
+						style = newstyle:lower()
 					end
-					if style == "default" then
-						local color, r, g, b =
-							line:match("^(%w+%[%w+%])%s*=%s*{%s*([%d.]+)%s*,%s*([%d.]+)%s*,%s*([%d.]+)%s*}$")
-						if color then
+					local color, r, g, b =
+						line:match("^(%w+%[%w+%])%s*=%s*{%s*([%d.]+)%s*,%s*([%d.]+)%s*,%s*([%d.]+)%s*}$")
+					if color and r then
+						local r, g, b = tonumber(r), tonumber(g), tonumber(b)
+						local c = fmtrgb(r, g, b)
+						if style == "default" then
+							found = true
 							if color == "bg[NORMAL]" then
-								self.RGBTab[9] = { tonumber(r) * 255,
-									tonumber(g) * 255, tonumber(b) * 255 }
-								self.RGBTab[14] = lum(self.RGBTab[9], 1.4)
-								self.RGBTab[15] = lum(self.RGBTab[9], 0.6)
-								self.RGBTab[16] = lum(self.RGBTab[9], 1.2)
-								self.RGBTab[17] = lum(self.RGBTab[9], 0.85)
-								self.RGBTab[19] = lum(self.RGBTab[9], 1.3)
-								self.PenTab[ui.PEN_LIGHTSHINE] = 19
-								self.PenTab[ui.PEN_GROUPBACK] = 16
-								self.PenTab[ui.PEN_HALFSHINE] = 14
-								self.PenTab[ui.PEN_HALFSHADOW] = 15
-								self.PenTab[ui.PEN_BUTTONOVER] = 16
-								self.PenTab[ui.PEN_SLIDERBACK] = 17
-								self.PenTab[ui.PEN_SLIDEROVER] = 17
-								self.PenTab[ui.PEN_SLIDERACTIVE] = 17
-								self.PenTab[ui.PEN_BUTTONDISABLED] = 9
-								self.PenTab[ui.PEN_BUTTONDISABLEDSHADOW] = 15
-								self.PenTab[ui.PEN_BUTTONDISABLEDSHINE] = 14
-								self.PenTab[ui.PEN_BUTTONDISABLEDTEXT] = 9
-								self.PenTab[ui.PEN_MENUBACK] = 9
-								self.PenTab[ui.PEN_AREABACK] = 9
-							elseif color == "base[NORMAL]" then
-								self.RGBTab[18] = { tonumber(r) * 255,
-									tonumber(g) * 255, tonumber(b) * 255 }
-								self.RGBTab[20] = lum(self.RGBTab[18], 1.05)
-								self.RGBTab[18] = lum(self.RGBTab[18], 0.95)
-								self.PenTab[ui.PEN_LISTVIEWBACK] = 18
-								self.PenTab[ui.PEN_TEXTINPUTBACK] = 18
-								self.PenTab[ui.PEN_TEXTINPUTOVER] = 18
-								self.PenTab[ui.PEN_ALTLISTVIEWBACK] = 20
-							elseif color == "bg[SELECTED]" then
-								self.RGBTab[10] = { tonumber(r) * 255,
-									tonumber(g) * 255, tonumber(b) * 255 }
-								self.PenTab[ui.PEN_LISTVIEWACTIVE] = 10
-								self.PenTab[ui.PEN_CURSOR] = 10
-								self.PenTab[ui.PEN_FOCUSSHADOW] = 10
-								self.PenTab[ui.PEN_FOCUSSHINE] = 10
-								self.PenTab[ui.PEN_MENUACTIVE] = 10
-								self.PenTab[ui.PEN_FILL] = 10
+								d["rgb-background"] = fmtrgb(r, g, b, 0.95)
+								d["rgb-group"] = fmtrgb(r, g, b, 1.05)
+								d["rgb-shadow"] = fmtrgb(r, g, b, 0.45)
+								d["rgb-border-shine"] = fmtrgb(r, g, b, 1.3)
+								d["rgb-border-shadow"] = fmtrgb(r, g, b, 0.65)
+								d["rgb-half-shine"] = fmtrgb(r, g, b, 1.3)
+								d["rgb-half-shadow"] = fmtrgb(r, g, b, 0.65)
+							elseif color == "bg[INSENSITIVE]" then
+								d["rgb-disabled"] = c
 							elseif color == "bg[ACTIVE]" then
-								self.RGBTab[11] = { tonumber(r) * 255,
-									tonumber(g) * 255, tonumber(b) * 255 }
-								self.PenTab[ui.PEN_BUTTONACTIVE] = 11
-								self.PenTab[ui.PEN_TEXTINPUTACTIVE] = 11
-							elseif color == "text[NORMAL]" then
-								self.RGBTab[12] = { tonumber(r) * 255,
-									tonumber(g) * 255, tonumber(b) * 255 }
-								self.PenTab[ui.PEN_BUTTONTEXT] = 12
-								self.PenTab[ui.PEN_LISTVIEWTEXT] = 12
-								self.PenTab[ui.PEN_BUTTONACTIVETEXT] = 12
-								self.PenTab[ui.PEN_BUTTONOVERDETAIL] = 12
-								self.PenTab[ui.PEN_TEXTINPUTTEXT] = 12
-								self.PenTab[ui.PEN_GROUPLABELTEXT] = 12
-								self.PenTab[ui.PEN_MENUACTIVETEXT] = 12
+								d["rgb-active"] = c
+							elseif color == "bg[PRELIGHT]" then
+								d["rgb-hover"] = c
+								d["rgb-focus"] = c
+							elseif color == "bg[SELECTED]" then
+								d["rgb-fill"] = c
+								d["rgb-border-focus"] = c
+								d["rgb-cursor"] = c
+								
 							elseif color == "fg[NORMAL]" then
-								self.RGBTab[13] = { tonumber(r) * 255,
-									tonumber(g) * 255, tonumber(b) * 255 }
+								d["rgb-detail"] = c
+								d["rgb-border-legend"] = c
+							elseif color == "fg[INSENSITIVE]" then
+								d["rgb-disabled-detail"] = c
+								d["rgb-disabled-detail2"] = 
+									fmtrgb(r, g, b, 2)
+							elseif color == "fg[ACTIVE]" then
+								d["rgb-active-detail"] = c
+							elseif color == "fg[PRELIGHT]" then
+								d["rgb-hover-detail"] = c
+								d["rgb-focus-detail"] = c
+							elseif color == "fg[SELECTED]" then
+								d["rgb-cursor-detail"] = c
+								
+							elseif color == "base[NORMAL]" then
+								d["rgb-list"] = fmtrgb(r, g, b, 1.05)
+								d["rgb-list2"] = fmtrgb(r, g, b, 0.95)
+							elseif color == "base[SELECTED]" then
+								d["rgb-list-active"] = c
+								
+							elseif color == "text[NORMAL]" then
+								d["rgb-list-detail"] = c
+							elseif color == "text[ACTIVE]" then
+								d["rgb-list-active-detail"] = c
+							end
+						elseif style == "menuitem" then
+							if color == "bg[NORMAL]" then
+								d["rgb-menu"] = c
+							elseif color == "bg[PRELIGHT]" then
+								d["rgb-menu-active"] = c
+							elseif color == "fg[NORMAL]" then
+								d["rgb-menu-detail"] = c
+							elseif color == "fg[PRELIGHT]" then
+								d["rgb-menu-active-detail"] = c
 							end
 						end
 					end
 				end
 				f:close()
+				if found then
+					setclass(s, ".page-button", "background-color", "active")
+					setclass(s, ".page-button:active", "background-color",
+						"group")
+					setclass(s, "tek.ui.class.display", "rgb-border-rim",
+						"#000")
+					setclass(s, "tek.ui.class.display", "rgb-border-light",
+						"#fff")
+					return s
+				end
 			end
-
 		end
 	end
+	return def_s
 end
+ 
+-------------------------------------------------------------------------------
+--	stylesheet = Theme.getStyleSheet([themename]): Get a stylesheet of a named
+--	theme. Theme names currently defined are:
+--		- "default" - the default external stylesheet (or hardcoded defaults),
+--		including an imported color scheme (if available)
+--		- "internal" - the hardcoded internal stylesheet
+-------------------------------------------------------------------------------
 
+function Theme.getStyleSheet(themename)
+	themename = themename or "default"
+	local s, msg
+	if themename == "internal" then
+		s = DEF_STYLESHEET
+	else
+		local fname = ("tek/ui/style/%s.css"):format(themename)
+		s, msg = ui.loadStyleSheet(fname)
+		if not s then
+			db.error("failed to load style sheet '%s' : %s", fname, msg)
+			s = DEF_STYLESHEET
+		end
+		s = importGTKConfig(s)
+	end
+	return s
+end

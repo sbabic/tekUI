@@ -67,7 +67,7 @@ ui.application:new
 							Knob = ui.Text:new
 							{
 								Id = "slider-knob",
-								Style = "button",
+								Class = "button",
 								Text = "$08000",
 							},
 							Id = "slider-2",
@@ -82,9 +82,12 @@ ui.application:new
 								{
 									[ui.NOTIFY_CHANGE] =
 									{
-										{ ui.NOTIFY_ID, "slider-weight-1", "setValue", "Text", ui.NOTIFY_FORMAT, "$%05x" },
-										{ ui.NOTIFY_ID, "slider-weight-1", "setValue", "Weight", ui.NOTIFY_VALUE },
-										{ ui.NOTIFY_ID, "slider-knob", "setValue", "Text", ui.NOTIFY_FORMAT, "$%05x" },
+										{ ui.NOTIFY_ID, "slider-weight-1", ui.NOTIFY_FUNCTION, function(self, val)
+											self:setValue("Text", ("$%05x"):format(val))
+											self:setValue("Weight", val)
+											self.Parent:calcWeights()
+											self:rethinkLayout(1)
+										end, ui.NOTIFY_VALUE }
 									},
 								},
 							},
@@ -92,7 +95,7 @@ ui.application:new
 						ui.text:new
 						{
 							Mode = "button",
-							Style = "button",
+							Class = "button",
 							Text = "Reset",
 							Width = "auto",
 							Notifications =
@@ -102,11 +105,7 @@ ui.application:new
 									[false] =
 									{
 										{
-											ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self)
-												local e = self.Application:getElementById("slider-weight-1")
-												self.Application:getElementById("slider-2"):reset()
-												e:setValue("Weight", false)
-											end
+											ui.NOTIFY_ID, "slider-2", "reset"
 										}
 									}
 								}
@@ -126,21 +125,24 @@ ui.application:new
 		},
 		ui.window:new
 		{
-			Title = "Border Thickness",
-			Legend = "Border Thickness",
+			Title = "Dynamic Border Thickness",
+			Legend = "Dynamic Border Thickness",
 			Children =
 			{
 				ui.text:new
 				{
+					Border = { 2, 2, 2, 2 },
 					Mode = "button",
-					Style = "button",
+					Class = "button",
 					Width = "auto",
 					Id = "border-button",
 					Text = "Watch borders",
 				},
 				ui.Slider:new
 				{
+					Border = { 2, 2, 2, 2 },
 					Width = "free",
+					Value = 2,
 					Min = 0,
 					Max = 20,
 					ForceInteger = true,
@@ -153,9 +155,11 @@ ui.application:new
 								{
 									ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self, val)
 										local e = self.Application:getElementById("border-button")
-										e.Border = { val, val, val, val }
+										local b = e.Border
+										b[1], b[2], b[3], b[4] = val, val, val, val
 										e:rethinkLayout(1)
-										self.Border = { val, val, val, val }
+										local b = self.Border
+										b[1], b[2], b[3], b[4] = val, val, val, val
 										self:rethinkLayout(1)
 									end, ui.NOTIFY_VALUE
 								}

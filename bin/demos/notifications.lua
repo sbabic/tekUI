@@ -26,12 +26,14 @@ local window = ui.Window:new
 	{
 		ui.Group:new
 		{
-			Width = "free",
-			Height = "free",
+			Style = "width: free; height: free",
 			Legend = "Connections",
 			Children =
 			{
-				ui.Slider:new { Id = "slider-1", Orientation = "vertical",
+				ui.Slider:new 
+				{ 
+					Id = "slider-1", 
+					Orientation = "vertical",
 					Notifications =
 					{
 						["Value"] =
@@ -43,7 +45,10 @@ local window = ui.Window:new
 						}
 					}
 				},
-				ui.Slider:new { Id = "slider-2", Orientation = "vertical",
+				ui.Slider:new 
+				{ 
+					Id = "slider-2", 
+					Orientation = "vertical",
 					Notifications =
 					{
 						["Value"] =
@@ -58,11 +63,12 @@ local window = ui.Window:new
 				ui.Group:new
 				{
 					Orientation = "vertical",
-					Height = "auto",
-					VAlign = "center",
+					Style = "height: auto; vertical-grid-align: center",
 					Children =
 					{
-						ui.Slider:new { Id = "slider-7",
+						ui.Slider:new 
+						{ 
+							Id = "slider-7",
 							Notifications =
 							{
 								["Value"] =
@@ -77,16 +83,27 @@ local window = ui.Window:new
 						},
 						ui.Group:new
 						{
-							Width = "free",
+							Style = "Width: free",
 							Children =
 							{
-								ui.Gauge:new { Id = "slider-3", Width = "free" },
-								ui.Gauge:new { Id = "slider-4", Width = "free" },
+								ui.Gauge:new 
+								{ 
+									Id = "slider-3", 
+									Style = "Width: free",
+								},
+								ui.Gauge:new 
+								{
+									Id = "slider-4", 
+									Style = "width: free",
+								},
 							},
 						},
 					},
 				},
-				ui.Slider:new { Id = "slider-5", Orientation = "vertical",
+				ui.Slider:new 
+				{ 
+					Id = "slider-5", 
+					Orientation = "vertical",
 					Notifications =
 					{
 						["Value"] =
@@ -98,7 +115,10 @@ local window = ui.Window:new
 						}
 					}
 				},
-				ui.Slider:new { Id = "slider-6", Orientation = "vertical",
+				ui.Slider:new 
+				{ 
+					Id = "slider-6", 
+					Orientation = "vertical",
 					Notifications =
 					{
 						["Value"] =

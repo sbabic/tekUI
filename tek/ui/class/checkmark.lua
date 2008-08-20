@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 2.17"
+_VERSION = "CheckMark 2.18"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -70,8 +70,8 @@ local CheckImage1 = VectorImage:new
 		Coords = coords,
 		Primitives =
 		{
-			{ 0x1000, 8, Points = points1, Pen = ui.PEN_HALFSHINE },
-			{ 0x1000, 8, Points = points2, Pen = ui.PEN_HALFSHADOW },
+			{ 0x1000, 8, Points = points1, Pen = ui.PEN_BORDERSHINE },
+			{ 0x1000, 8, Points = points2, Pen = ui.PEN_BORDERSHADOW },
 		},
 		MinMax = { -5, 5, 5, -5 },
 	}
@@ -83,9 +83,9 @@ local CheckImage2 = VectorImage:new
 	{
 		Coords = coords,
 		Primitives = {
-			{ 0x1000, 8, Points = points1, Pen = ui.PEN_HALFSHINE },
-			{ 0x1000, 8, Points = points2, Pen = ui.PEN_HALFSHADOW },
-			{ 0x2000, 14, Points = points3, Pen = ui.PEN_BUTTONTEXT },
+			{ 0x1000, 8, Points = points1, Pen = ui.PEN_BORDERSHINE },
+			{ 0x1000, 8, Points = points2, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x2000, 14, Points = points3, Pen = ui.PEN_DETAIL },
 		},
 		MinMax = { -5, 5, 5, -5 },
 	}
@@ -113,31 +113,7 @@ function CheckMark.init(self)
 	self.ImageWidth = false
 	self.Mode = self.Mode or "toggle"
 	self.OldSelected = false
-	self.TextHAlign = self.TextHAlign or "left"
 	return Text.init(self)
-end
-
--------------------------------------------------------------------------------
---	show: set display and drawable
--------------------------------------------------------------------------------
-
-function CheckMark:show(display, drawable)
-	local theme = display.Theme
-	-- outer spacing:
-	self.Margin = self.Margin or theme.CheckMarkMargin or ui.NULLOFFS
-	-- outer border:
-	self.Border = self.Border or theme.CheckMarkBorder or false
-	-- inner border:
-	self.IBorder = self.IBorder or theme.CheckMarkIBorder or false
-	-- inner spacing:
-	self.Padding = self.Padding or theme.CheckMarkPadding or ui.NULLOFFS
-	-- outer borderstyle:
-	self.BorderStyle = self.BorderStyle or theme.CheckMarkBorderStyle or
-		"blank"
-	-- inner borderstyle:
-	self.IBorderStyle = self.IBorderStyle or theme.CheckMarkIBorderStyle or
-		""
-	return Text.show(self, display, drawable)
 end
 
 -------------------------------------------------------------------------------
@@ -176,7 +152,7 @@ function CheckMark:layout(x0, y0, x1, y1, markdamage)
 	if Text.layout(self, x0, y0, x1, y1, markdamage) then
 		local i = self.ImageRect
 		local r = self.Rect
-		local p = self.PaddingAndBorder
+		local p = self.Padding
 		local eh = r[4] - r[2] - p[4] - p[2] + 1
 		local iw = self.ImageWidth
 		local ih = self.ImageHeight
@@ -209,7 +185,5 @@ function CheckMark:setState(bg, fg)
 		self.OldSelected = self.Selected
 		self.Redraw = true
 	end
-	fg = fg or ui.PEN_BUTTONTEXT
-	bg = bg or self.Parent and self.Parent.Background or ui.PEN_AREABACK
 	Text.setState(self, bg, fg)
 end

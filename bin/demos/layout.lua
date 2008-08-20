@@ -32,15 +32,15 @@ local window = ui.Window:new
 			Legend = "Relative Sizes",
 			Children =
 			{
-				ui.Text:new { Text = "1", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "1", Style = "max-width: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "12", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "12", Style = "max-width: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "123", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "123", Style = "max-width: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "1234", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "1234", Style = "max-width: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "12345", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "12345", Style = "max-width: free" },
 			},
 		},
 		ui.Group:new
@@ -49,15 +49,15 @@ local window = ui.Window:new
 			Legend = "Same Sizes",
 			Children =
 			{
-				ui.Text:new { Text = "1", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "1", Style = "max-width: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "12", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "12", Style = "max-width: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "123", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "123", Style = "max-width: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "1234", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "1234", Style = "max-width: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "12345", MaxWidth = ui.HUGE },
+				ui.Text:new { Text = "12345", Style = "max-width: free" },
 			},
 		},
 		ui.Group:new
@@ -65,28 +65,28 @@ local window = ui.Window:new
 			Legend = "Balancing Group",
 			Children =
 			{
-				ui.Text:new { Id="1", Text = "free", Height = "fill" },
-				ui.Handle:new { Id="2" },
-				ui.Text:new { Id="3", Text = "free", Height = "fill" },
-				ui.Handle:new { Id="4" },
-				ui.Text:new { Id="5", Text = "free", Height = "fill" },
+				ui.Text:new { Text = "free", Style = "height: fill" },
+				ui.Handle:new { },
+				ui.Text:new { Text = "free", Style = "height: fill" },
+				ui.Handle:new { },
+				ui.Text:new { Text = "free", Style = "height: fill" },
 			},
 		},
 		ui.Handle:new { },
 		ui.Group:new
 		{
-			Height = "free",
+			Style = "height: free",
 			Legend = "Grid",
 			GridWidth = 3,
 			SameSize = true,
 			Children =
 			{
-				ui.Text:new { Text = "1", Height = "free" },
-				ui.Text:new { Text = "12", Height = "free" },
-				ui.Text:new { Text = "123", Height = "free" },
-				ui.Text:new { Text = "1234", Height = "free" },
-				ui.Text:new { Text = "12345", Height = "free" },
-				ui.Text:new { Text = "123456", Height = "free" },
+				ui.Text:new { Text = "1", Style = "height: free" },
+				ui.Text:new { Text = "12", Style = "height: free" },
+				ui.Text:new { Text = "123", Style = "height: free" },
+				ui.Text:new { Text = "1234", Style = "height: free" },
+				ui.Text:new { Text = "12345", Style = "height: free" },
+				ui.Text:new { Text = "123456", Style = "height: free" },
 			},
 		},
 		ui.Group:new
@@ -95,23 +95,26 @@ local window = ui.Window:new
 			Children =
 			{
 				ui.Text:new { Text = "fix" },
-				ui.Text:new { Text = "25%", MaxWidth = ui.HUGE, Weight = 0x4000 },
+				ui.Text:new { Text = "25%", Style = "max-width: free", Weight = 0x4000 },
 				ui.Text:new { Text = "fix" },
-				ui.Text:new { Text = "75%", MaxWidth = ui.HUGE, Weight = 0xc000 },
+				ui.Text:new { Text = "75%", Style = "max-width: free", Weight = 0xc000 },
 				ui.Text:new { Text = "fix" },
 			},
 		},
 		ui.Group:new
 		{
-			MaxHeight = ui.HUGE,
+			Style = "max-height: free",
 			Legend = "Different Weights",
 			Children =
 			{
-				ui.Text:new { Text = "25%", MaxWidth = ui.HUGE, MaxHeight = ui.HUGE, Weight = 0x4000 },
+				ui.Text:new { Text = "25%", Weight = 0x4000,
+					Style = "max-width: free; max-height: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "25%", MaxWidth = ui.HUGE, MaxHeight = ui.HUGE, Weight = 0x4000 },
+				ui.Text:new { Text = "25%", Weight = 0x4000,
+					Style = "max-width: free; max-height: free" },
 				ui.Spacer:new { },
-				ui.Text:new { Text = "50%", MaxWidth = ui.HUGE, MaxHeight = ui.HUGE, Weight = 0x8000 },
+				ui.Text:new { Text = "50%", Weight = 0x8000,
+					Style = "max-width: free; max-height: free" },
 			},
 		},
 	},

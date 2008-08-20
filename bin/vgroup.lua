@@ -18,7 +18,7 @@ ui.Application:new
 					Height = 500,
 					HSliderMode = "on",
 					VSliderMode = "on",
-					Canvas = ui.Canvas:new
+					Child = ui.Canvas:new
 					{
 						MaxWidth = 500,
 						MaxHeight = 500,
@@ -29,9 +29,9 @@ ui.Application:new
 							GridWidth = 2,
 							Children =
 							{
-								ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
-								ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
-								ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
+								ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+								ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+								ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
 								ui.ScrollGroup:new
 								{
 									Legend = "Virtual Group",
@@ -39,7 +39,7 @@ ui.Application:new
 									Height = 500,
 									HSliderMode = "on",
 									VSliderMode = "on",
-									Canvas = ui.Canvas:new
+									Child = ui.Canvas:new
 									{
 										CanvasWidth = 500,
 										CanvasHeight = 500,
@@ -48,9 +48,9 @@ ui.Application:new
 											GridWidth = 2,
 											Children =
 											{
-												ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
-												ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
-												ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
+												ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+												ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+												ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
 												ui.ScrollGroup:new
 												{
 													Legend = "Virtual Group",
@@ -58,7 +58,7 @@ ui.Application:new
 													Height = 500,
 													HSliderMode = "on",
 													VSliderMode = "on",
-													Canvas = ui.Canvas:new
+													Child = ui.Canvas:new
 													{
 														CanvasWidth = 500,
 														CanvasHeight = 500,
@@ -67,10 +67,10 @@ ui.Application:new
 															GridWidth = 2,
 															Children =
 															{
-																ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
-																ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
-																ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
-																ui.text:new { Mode = "button", Style = "button", Width = "free", Height = "free", Text = "foo" },
+																ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+																ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+																ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+																ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
 															}
 														}
 													}

@@ -6,33 +6,21 @@
 --
 
 local ui = require "tek.ui"
-local unpack = unpack
+local Border = require "tek.ui.class.border"
+local Region = require "tek.lib.region"
 
 module("tek.ui.border.cursor", tek.ui.class.border)
-_VERSION = "Cursor Border 2.2"
+_VERSION = "CursorBorder 3.0"
 
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
+local CursorBorder = _M
 
-local DEF_BORDER = { 1, 1, 1, 1 }
-
--------------------------------------------------------------------------------
---	Class implementation:
--------------------------------------------------------------------------------
-
-local Cursor = _M
-
-function Cursor:getBorder(element, border)
-	return unpack(border or DEF_BORDER)
-end
-
-function Cursor:draw(element, border, r1, r2, r3, r4)
-	local b1, b2, b3, b4 = self:getBorder(element, border)
-	local d = element.Drawable
-	local p1 = d.Pens[ui.PEN_SHINE]
-	d:fillRect(r1 - b1, r2 - b2, r3 + b3, r2 - 1, p1)
-	d:fillRect(r3 + 1, r2, r3 + b3, r4 + b4, p1)
-	d:fillRect(r1 - b1, r4 + 1, r3 + b3, r4 + b4, p1)
-	d:fillRect(r1 - b1, r2, r1 - 1, r4, p1)
+function CursorBorder:draw()
+	local d = self.Parent.Drawable
+	local r = self.Rect
+	local b1, b2, b3, b4 = self:getBorder()
+	local p1 = d.Pens[ui.PEN_CURSORDETAIL]
+	d:fillRect(r[1] - b1, r[2] - b2, r[3] + b3, r[2] - 1, p1)
+	d:fillRect(r[3] + 1, r[2], r[3] + b3, r[4] + b4, p1)
+	d:fillRect(r[1] - b1, r[4] + 1, r[3] + b3, r[4] + b4, p1)
+	d:fillRect(r[1] - b1, r[2], r[1] - 1, r[4], p1)
 end

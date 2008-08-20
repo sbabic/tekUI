@@ -27,13 +27,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.spacer", tek.ui.class.frame)
-_VERSION = "Spacer 1.4"
-
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
-
-local DEF_BORDER = { 1, 1, 1, 1 }
+_VERSION = "Spacer 1.5"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -42,28 +36,11 @@ local DEF_BORDER = { 1, 1, 1, 1 }
 local Spacer = _M
 
 -------------------------------------------------------------------------------
---	show:
--------------------------------------------------------------------------------
-
-function Spacer:show(display, drawable)
-	local theme = display.Theme
-	-- outer spacing:
-	self.Margin = self.Margin or theme.SpacerMargin or false
-	-- outer border:
-	self.Border = self.Border or theme.SpacerBorder or DEF_BORDER
-	-- inner spacing:
-	self.Padding = self.Padding or theme.SpacerPadding or ui.NULLOFFS
-	-- outer borderstyle:
-	self.BorderStyle = self.BorderStyle or theme.SpacerBorderStyle or "recess"
-	return Frame.show(self, display, drawable)
-end
-
--------------------------------------------------------------------------------
 --	askMinMax:
 -------------------------------------------------------------------------------
 
 function Spacer:askMinMax(m1, m2, m3, m4)
-	local o = self.Parent and self.Parent:getStructure()
+	local o = self.Parent:getStructure()
 	if o == 1 then
 		self.Height = "fill"
 		self.Width = "auto"

@@ -36,8 +36,6 @@
 
 local ui = require "tek.ui"
 local Region = require "tek.lib.region"
-
-local Frame = ui.Frame
 local Numeric = ui.Numeric
 
 local floor = math.floor
@@ -46,29 +44,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 3.3"
-
--------------------------------------------------------------------------------
--- GaugeFill:
--------------------------------------------------------------------------------
-
-local GaugeFill = Frame:newClass { _NAME = "_gaugefill" }
-
-function GaugeFill.init(self)
-	self.BorderStyle = "socket"
-	self.IBorderStyle = ""
-	self.Margin = ui.NULLOFFS
-	if self.Orientation == "vertical" then
-		self.Padding = { 6, 0, 6, 0 }
-	else
-		self.Padding = { 0, 6, 0, 6 }
-	end
-	return Frame.init(self)
-end
-
-function GaugeFill:setState(bg)
-	Frame.setState(self, bg or ui.PEN_FILL)
-end
+_VERSION = "Gauge 4.1"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -79,10 +55,28 @@ local Gauge = _M
 function Gauge.init(self)
 	self.Mode = "inert"
 	self.Orientation = self.Orientation or "horizontal"
-	self.Knob = self.Knob or GaugeFill:new { Orientation = self.Orientation }
-	self.Width = self.Width or "fill"
-	self.Height = self.Height or "fill"
+	self.Child = self.Child or ui.Frame:new { Class = "gauge-fill" }
 	return Numeric.init(self)
+end
+
+-------------------------------------------------------------------------------
+--	connect: overrides
+-------------------------------------------------------------------------------
+
+function Gauge:connect(parent)
+	-- our parent is also our knob's parent
+	-- (suggesting it that it rests in a Group):
+	self.Child:connect(parent)
+	return Numeric.connect(self, parent)
+end
+
+-------------------------------------------------------------------------------
+--	decodeProperties: overrides
+-------------------------------------------------------------------------------
+
+function Gauge:decodeProperties(p)
+	Numeric.decodeProperties(self, p)
+	self.Child:decodeProperties(p)
 end
 
 -------------------------------------------------------------------------------
@@ -91,7 +85,7 @@ end
 
 function Gauge:setup(app, window)
 	Numeric.setup(self, app, window)
-	self.Knob:setup(app, window)
+	self.Child:setup(app, window)
 end
 
 -------------------------------------------------------------------------------
@@ -99,7 +93,7 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:cleanup()
-	self.Knob:cleanup()
+	self.Child:cleanup()
 	Numeric.cleanup(self)
 end
 
@@ -108,22 +102,8 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:show(display, drawable)
-	local theme = display.Theme
-	self.Margin = self.Margin or theme.GaugeMargin or false
-	self.Border = self.Border or theme.GaugeBorder or false
-	self.IBorder = self.IBorder or theme.GaugeIBorder or false
-	self.Padding = self.Padding or theme.GaugePadding or false
-	self.BorderStyle = self.BorderStyle or theme.GaugeBorderStyle or "recess"
-	self.IBorderStyle = self.IBorderStyle or theme.GaugeIBorderStyle or ""
-	self.Knob.Margin = self.Knob.Margin or theme.GaugeKnobMargin or false
-	self.Knob.Border = self.Knob.Border or theme.GaugeKnobBorder or false
-	self.Knob.IBorder = self.Knob.IBorder or theme.GaugeKnobIBorder or false
-	self.Knob.BorderStyle = self.Knob.BorderStyle or
-		theme.GaugeKnobBorderStyle or false
-	self.Knob.IBorderStyle = self.Knob.IBorderStyle or
-		theme.GaugeKnobIBorderStyle or false
 	Numeric.show(self, display, drawable)
-	self.Knob:show(display, drawable)
+	self.Child:show(display, drawable)
 	return true
 end
 
@@ -132,7 +112,7 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:hide()
-	self.Knob:hide()
+	self.Child:hide()
 	Numeric.hide(self)
 	return true
 end
@@ -142,12 +122,8 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:askMinMax(m1, m2, m3, m4)
-	local w, h = self.Knob:askMinMax(0, 0, 0, 0)
-	m1 = m1 + w
-	m2 = m2 + h
-	m3 = m3 + w
-	m4 = m4 + h
-	return Numeric.askMinMax(self, m1, m2, m3, m4)
+	local w, h = self.Child:askMinMax(0, 0, 0, 0)
+	return Numeric.askMinMax(self, m1 + w, m2 + h, m3 + w, m4 + h)
 end
 
 -------------------------------------------------------------------------------
@@ -157,9 +133,9 @@ end
 function Gauge:getKnobRect()
 	local r = self.Rect
 	if r[1] >= 0 then
-		local p = self.PaddingAndBorder
-		local m = self.Knob.MarginAndBorder
-		local km = self.Knob.MinMax
+		local p = self.Padding
+		local m = self.Child.MarginAndBorder
+		local km = self.Child.MinMax
 		local x0 = r[1] + p[1] + m[1]
 		local y0 = r[2] + p[2] + m[2]
 		local x1 = r[3] - p[3] - m[3]
@@ -183,7 +159,7 @@ end
 function Gauge:layout(r1, r2, r3, r4, markdamage)
 	if Numeric.layout(self, r1, r2, r3, r4, markdamage) then
 		local x0, y0, x1, y1 = self:getKnobRect()
-		self.Knob:layout(x0, y0, x1, y1, markdamage)
+		self.Child:layout(x0, y0, x1, y1, markdamage)
 		return true
 	end
 end
@@ -197,7 +173,16 @@ function Gauge:relayout(e, r1, r2, r3, r4)
 	if res then
 		return res, changed
 	end
-	return self.Knob:relayout(e, r1, r2, r3, r4)
+	return self.Child:relayout(e, r1, r2, r3, r4)
+end
+
+-------------------------------------------------------------------------------
+--	markDamage: overrides
+-------------------------------------------------------------------------------
+
+function Gauge:markDamage(r1, r2, r3, r4)
+	Numeric.markDamage(self, r1, r2, r3, r4)
+	self.Child:markDamage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
@@ -207,29 +192,26 @@ end
 function Gauge:draw()
 
 	local d = self.Drawable
-	local b1, b2, b3, b4 = self:getBorder(2)
 	local r = self.Rect
-
-	local bg = Region.new(r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4)
+	local bg = Region.new(r[1], r[2], r[3], r[4])
 
 	local x0, y0, x1, y1 = self:getKnobRect()
-	local m = self.Knob.MarginAndBorder
-	local kb1, kb2, kb3, kb4 = self.Knob:getBorder()
+	local m = self.Child.MarginAndBorder
+	local kb1, kb2, kb3, kb4 = self.Child:getBorder()
 	x0 = x0 + m[1] - kb1
 	y0 = y0 + m[2] - kb2
 	x1 = x1 - m[3] + kb3
 	y1 = y1 - m[4] + kb4
 
-	bg:subRect(x0, y0, x1, y1)
-
-	local bgpen = d.Pens[self.Background]
-	for _, r in bg:getRects() do
-		local r1, r2, r3, r4 = bg:getRect(r)
-		d:fillRect(r1, r2, r3, r4, bgpen)
+	if self.Value ~= self.Min then
+		bg:subRect(x0, y0, x1, y1)
+		self.Child:refresh()
 	end
 
-	self.Knob:draw()
-	self.Knob:drawBorder()
+	local bgpen = d.Pens[self.Background]
+	for _, r1, r2, r3, r4 in bg:getRects() do
+		d:fillRect(r1, r2, r3, r4, bgpen)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -240,26 +222,7 @@ function Gauge:onSetValue(v)
 	Numeric.onSetValue(self, v)
 	local x0, y0, x1, y1 = self:getKnobRect()
 	if x0 then
-		self.Window:relayout(self.Knob, x0, y0, x1, y1)
+		self.Window:relayout(self.Child, x0, y0, x1, y1)
 		self.Redraw = true
 	end
-end
-
--------------------------------------------------------------------------------
---	setState: overrides
--------------------------------------------------------------------------------
-
-function Gauge:setState(bg)
-	if not bg then
-		if self.Disabled then
-			bg = ui.PEN_BUTTONDISABLED
-		elseif self.Selected then
-			bg = ui.PEN_SLIDERACTIVE
-		elseif self.Hilite then
-			bg = ui.PEN_SLIDEROVER
-		else
-			bg = ui.PEN_SLIDERBACK
-		end
-	end
-	return Numeric.setState(self, bg)
 end

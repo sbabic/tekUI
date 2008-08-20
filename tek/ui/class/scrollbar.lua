@@ -20,20 +20,18 @@
 --		[[#tek.ui.class.slider : Slider]] and arrow buttons.
 --
 --	ATTRIBUTES::
---		- {{Orientation [IG]}} (string)
---			The orientation of the scrollbar, which can be "horizontal"
---			or "vertical"
 --		- {{Max [ISG]}} (number)
 --			The maximum value the slider can accept. Setting this value
 --			invokes the ScrollBar:onSetMax() method.
 --		- {{Min [ISG]}} (number)
 --			The minimum value the slider can accept. Setting this value
 --			invokes the ScrollBar:onSetMin() method.
+--		- {{Orientation [IG]}} (string)
+--			The orientation of the scrollbar, which can be "horizontal"
+--			or "vertical"
 --		- {{Range [ISG]}} (number)
 --			The range of the slider, i.e. the size it represents. Setting
 --			this value invokes the ScrollBar:onSetRange() method.
---		- {{Style [IG]}} (string)
---			See [[#tek.ui.class.slider : Slider]]
 --		- {{Value [ISG]}} (number)
 --			The value of the slider. Setting this value invokes the
 --			ScrollBar:onSetValue() method.
@@ -51,7 +49,6 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Image = ui.Image
 local Group = ui.Group
@@ -62,7 +59,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 5.5"
+_VERSION = "ScrollBar 7.1"
 
 local ScrollBar = _M
 
@@ -78,7 +75,7 @@ local ARROWBORDER2_VERT = { 1, 0, 1, 0 }
 
 local coordx = { 0,0, 10,10, 10,-10 }
 local coordy = { 0,0, 10,10, -10,10 }
-local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_BUTTONTEXT } }
+local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_DETAIL } }
 
 local ArrowUpImage = VectorImage:new { ImageData = { Coords = coordy,
 	Primitives = prims, MinMax = { 12,12, -12,-2 } } }
@@ -98,31 +95,20 @@ local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 --	ArrowButton:
 -------------------------------------------------------------------------------
 
-local ArrowButton = Image:newClass { _NAME = "_sbarrow" }
+local ArrowButton = Image:newClass { _NAME = "_scrollbar-arrow" }
 
 function ArrowButton.init(self)
-	self.Mode = "button"
-	self.IBorderStyle = "button"
-	self.Padding = ui.NULLOFFS
-	self.Margin = ui.NULLOFFS
-	self.ImageMargin = ARROWIMAGEMARGIN
-	self.MinWidth = self.MinWidth or 14
-	self.MinHeight = self.MinWidth or 14
-	self.MaxWidth = 14
-	self.MaxHeight = 14
 	self.Width = "fill"
 	self.Height = "fill"
+	self.Mode = "button"
+	self.ImageMargin = ARROWIMAGEMARGIN
 	self.Increase = self.Increase or 1
 	return Image.init(self)
 end
 
 function ArrowButton:draw()
-	-- TODO: modifying static data is ugly and wouldn't be thread-safe:
-	prims[1].Pen =
-		self.Disabled and ui.PEN_BUTTONDISABLEDSHADOW or
-		self.Selected and ui.PEN_BUTTONACTIVETEXT or
-		self.Hover and ui.PEN_BUTTONOVERDETAIL or
-		ui.PEN_BUTTONTEXT
+	-- TODO: static data modified (ugly):
+	prims[1].Pen = self.Foreground
 	Image.draw(self)
 end
 
@@ -144,7 +130,7 @@ end
 --	Slider:
 -------------------------------------------------------------------------------
 
-local SBSlider = Slider:newClass { _NAME = "_sbslider" }
+local SBSlider = Slider:newClass { _NAME = "_scrollbar-slider" }
 
 function SBSlider:onSetValue(v)
 	self.ScrollBar:setValue("Value", v)
@@ -185,8 +171,6 @@ end
 
 function ScrollBar.new(class, self)
 	self = self or { }
-
-	self.Orientation = self.Orientation or "horizontal"
 	self.Min = self.Min or 1
 	self.Max = self.Max or 100
 	self.Default = max(self.Min, min(self.Max, self.Default or self.Min))
@@ -194,12 +178,9 @@ function ScrollBar.new(class, self)
 	self.Range = max(self.Max, self.Range or self.Max)
 	self.Step = self.Step or 1
 	self.ForceInteger = self.ForceInteger or false
-	self.VAlign = self.VAlign or "center"
-	self.HAlign = self.HAlign or "center"
 	self.Child = self.Child or false
 	self.ArrowOrientation = self.ArrowOrientation or self.Orientation
-
-	self.Style = self.Style or false
+	self.Kind = self.Kind or "scrollbar"
 
 	self.Slider = self.Slider or SBSlider:new
 	{
@@ -211,64 +192,48 @@ function ScrollBar.new(class, self)
 		Range = self.Range,
 		Step = self.Step,
 		Notifications = self.Notifications,
-		Margin = ui.NULLOFFS,
 		Orientation = self.Orientation,
 		ForceInteger = self.ForceInteger,
-		Style = self.Style or "scrollbar",
+		Kind = self.Kind,
 	}
 	self.Notifications = false
 
+	local img1, img2
+	local class1, class2 = "ScrollBarArrowLeft", "ScrollBarArrowRight"
+	local increase = self.Step
+
 	if self.Orientation == "vertical" then
-		local increase = -self.Step
-		local border1, border2 = false, false
-		local img1, img2 = ArrowUpImage, ArrowDownImage
 		if self.ArrowOrientation == "horizontal" then
 			img1, img2 = ArrowLeftImage, ArrowRightImage
-			border1 = ARROWBORDER1_HORIZ
-			increase = -increase
+			increase = -self.Step
+		else
+			img1, img2 = ArrowUpImage, ArrowDownImage
+			class1, class2 = "ScrollBarArrowUp", "ScrollBarArrowDown"
 		end
-		self.ArrowButton1 = ArrowButton:new
-		{
-			Image = img1,
-			Border = border1,
-			Slider = self.Slider,
-			Increase = increase,
-		}
-		self.ArrowButton2 = ArrowButton:new
-		{
-			Border = border2,
-			Image = img2,
-			Slider = self.Slider,
-			Increase = -increase,
-		}
-		self.Width = self.Width or "auto"
-		self.Height = self.Height or "fill"
 	else
-		local border1, border2 = false, false
-		local increase = -self.Step
-		local img1, img2 = ArrowLeftImage, ArrowRightImage
 		if self.ArrowOrientation == "vertical" then
 			img1, img2 = ArrowUpImage, ArrowDownImage
-			border1 = ARROWBORDER1_VERT
-			increase = -increase
+			increase = -self.Step
+			class1, class2 = "ScrollBarArrowUp", "ScrollBarArrowDown"
+		else
+			img1, img2 = ArrowLeftImage, ArrowRightImage
 		end
-		self.ArrowButton1 = ArrowButton:new
-		{
-			Image = img1,
-			Border = border1,
-			Slider = self.Slider,
-			Increase = increase,
-		}
-		self.ArrowButton2 = ArrowButton:new
-		{
-			Image = img2,
-			Border = border2,
-			Slider = self.Slider,
-			Increase = -increase,
-		}
-		self.Width = self.Width or "fill"
-		self.Height = self.Height or "auto"
 	end
+
+	self.ArrowButton1 = ArrowButton:new
+	{
+		Image = img1,
+		Class = class1,
+		Slider = self.Slider,
+		Increase = -increase,
+	}
+	self.ArrowButton2 = ArrowButton:new
+	{
+		Image = img2,
+		Class = class2,
+		Slider = self.Slider,
+		Increase = increase,
+	}
 
 	if self.ArrowOrientation ~= self.Orientation then
 		self.Children =
@@ -301,7 +266,17 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollBar:setup(app, window)
+
 	Group.setup(self, app, window)
+	
+	if self.Orientation == "vertical" then
+		self.Width = self.Width or "auto"
+		self.Height = self.Height or "fill"
+	else
+		self.Width = self.Width or "fill"
+		self.Height = self.Height or "auto"
+	end
+
 	self:addNotify("Value", ui.NOTIFY_CHANGE, NOTIFY_VALUE, 1)
 	self:addNotify("Min", ui.NOTIFY_CHANGE, NOTIFY_MIN, 1)
 	self:addNotify("Max", ui.NOTIFY_CHANGE, NOTIFY_MAX, 1)

@@ -785,6 +785,8 @@ x11_setattrs(TMOD_X11 *mod, struct TVRequest *req)
 		neww = TMAX(neww, v->sizehints->min_width);
 		newh = TMAX(newh, v->sizehints->min_height);
 		XResizeWindow(mod->x11_Display, v->window, neww, newh);
+		mod->x11_RequestInProgress = req;
+		v->waitforresize = TTRUE;
 	}
 
 	XSetWMNormalHints(mod->x11_Display, v->window, v->sizehints);
@@ -836,7 +838,7 @@ x11_drawtext(TMOD_X11 *mod, struct TVRequest *req)
 			TINT w = x11_hosttextsize(mod, v->curfont, text);
 
 			(*mod->x11_xftiface.XftDrawRect)(v->draw, &bgpen->xftcolor,
-							x, y, w, f->height);
+							x, y, w, f->height + 1);
 
 			(*mod->x11_xftiface.XftDrawStringUtf8)(v->draw, &fgpen->xftcolor,
 				f, x, y + f->ascent, (FcChar8 *)text, len);

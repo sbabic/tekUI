@@ -22,7 +22,7 @@ app = ui.Application:new
 						{
 							Text = "_Path:",
 							Width = "auto",
-							Style = "caption",
+							Class = "caption",
 							HAlign = "right",
 						},
 						ui.TextInput:new
@@ -35,7 +35,7 @@ app = ui.Application:new
 						{
 							Text = "Selected:",
 							Width = "auto",
-							Style = "caption",
+							Class = "caption",
 							HAlign = "right",
 						},
 						ui.TextInput:new
@@ -46,7 +46,7 @@ app = ui.Application:new
 						{
 							Text = "Status:",
 							Width = "auto",
-							Style = "caption",
+							Class = "caption",
 							HAlign = "right",
 						},
 						ui.Text:new
@@ -58,20 +58,21 @@ app = ui.Application:new
 						{
 							Text = "_Multiselect:",
 							Width = "auto",
-							Style = "caption",
+							Class = "caption",
 							HAlign = "right",
 						},
 						ui.CheckMark:new
 						{
 							Id = "multiselect",
 							KeyCode = "m",
+							VAlign = "center",
 						},
 					}
 				},
 				ui.Text:new
 				{
 					Text = "_Choose File...",
-					Style = "button",
+					Class = "button",
 					Mode = "button",
 					Width = "auto",
 					HAlign = "right",

@@ -36,7 +36,7 @@ local PROXY = true
 local DEBUG = true
 
 module "tek.class"
-_VERSION = "Class 6.1"
+_VERSION = "Class 6.2"
 
 local Class = _M
 
@@ -54,14 +54,14 @@ if PROXY then
 				local val = mt[key]
 				if not val then
 					error(("Uninitialized read: %s.%s"):format(
-						tab:getClassName(), key))
+						tab:getClassName(), key), 2)
 				end
 				return val
 			end
 			function mt.__newindex(tab, key, val)
 				error(("Uninitialized write: %s.%s=%s"):format(
 					tab:getClassName(), key,
-					tostring(val)))
+					tostring(val)), 2)
 				mt[key] = val
 			end
 		else

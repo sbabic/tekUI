@@ -19,27 +19,27 @@
 --		This class implements a directory lister.
 --
 --	ATTRIBUTES::
---		- {{Path [IG]}} (string)
---			Directory in the file system
---		- {{Location [IG]}} (string)
---			The entry currently selected, may be a file or directory
---		- {{Selection [G]}} (table)
---			An array of selected entries
---		- {{Status [G]}} (string)
---			Status of the lister:
---				- "running" - the lister is currently being shown
---				- "selected" - the user has selected one or more entries
---				- "cancelled" - the lister has been cancelled by the user
---		- {{Style [IG]}} (string)
+--		- {{Kind [IG]}} (string)
 --			The visual appearance or purpose of the lister, which will
 --			determine the arrangement of some interface elements:
 --				- "requester" - for being used as a standalone file requester
 --				- "lister" - for being used as a lister component
 --				- "simple" - without accompanying user interface elements
+--		- {{Location [IG]}} (string)
+--			The entry currently selected, may be a file or directory
+--		- {{Path [IG]}} (string)
+--			Directory in the file system
+--		- {{Selection [G]}} (table)
+--			An array of selected entries
 --		- {{SelectMode [IG]}} (String)
 --			Mode of selection:
 --				- "single" - allows selections of one entry at a time
 --				- "multi" - allows selections of multiple entries
+--		- {{Status [G]}} (string)
+--			Status of the lister:
+--				- "running" - the lister is currently being shown
+--				- "selected" - the user has selected one or more entries
+--				- "cancelled" - the lister has been cancelled by the user
 --
 --	IMPLEMENTS::
 --		- DirList:ShowDirectory() - Reads and shows a directory
@@ -70,7 +70,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 4.0"
+_VERSION = "DirList 5.0"
 
 local DirList = _M
 
@@ -121,8 +121,8 @@ function DirList.new(class, self)
 	self.Path = self.Path or ""
 	self.Location = self.Location or ""
 
-	-- Style: "requester", "lister", "simple"
-	self.Style = self.Style or "lister"
+	-- Kind: "requester", "lister", "simple"
+	self.Kind = self.Kind or "lister"
 
 	self.Selection = { }
 	-- Status: "running", "cancelled", "selected"
@@ -144,7 +144,7 @@ function DirList.new(class, self)
 	{
 		Text = "_Parent",
 		Mode = "button",
-		Style = "button",
+		Class = "button",
 		Width = "auto",
 	}
 
@@ -164,7 +164,7 @@ function DirList.new(class, self)
 	{
 		Text = "_Reload",
 		Mode = "button",
-		Style = "button",
+		Class = "button",
 		Width = "auto",
 	}
 
@@ -201,7 +201,7 @@ function DirList.new(class, self)
 	{
 		Text = "_Open",
 		Mode = "button",
-		Style = "button",
+		Class = "button",
 		Width = "fill",
 	}
 
@@ -220,7 +220,7 @@ function DirList.new(class, self)
 	{
 		Text = "_Cancel",
 		Mode = "button",
-		Style = "button",
+		Class = "button",
 		Width = "fill",
 	}
 
@@ -232,7 +232,7 @@ function DirList.new(class, self)
 
 	self.Orientation = "vertical"
 
-	if self.Style == "requester" then
+	if self.Kind == "requester" then
 
 		self.Children =
 		{
@@ -245,7 +245,7 @@ function DirList.new(class, self)
 					{
 						Text = "_Directory:",
 						Width = "auto",
-						Style = "caption",
+						Class = "caption",
 					},
 					self.PathField,
 					self.ParentButton,
@@ -267,7 +267,7 @@ function DirList.new(class, self)
 							{
 								Text = "_Location:",
 								Width = "auto",
-								Style = "caption",
+								Class = "caption",
 							},
 							self.LocationField,
 						}
@@ -287,7 +287,7 @@ function DirList.new(class, self)
 			}
 		}
 
-	elseif self.Style == "lister" then
+	elseif self.Kind == "lister" then
 
 		self.Children =
 		{
@@ -300,7 +300,7 @@ function DirList.new(class, self)
 					{
 						Text = "_Dir:",
 						Width = "auto",
-						Style = "caption",
+						Class = "caption",
 					},
 					self.PathField,
 					self.ParentButton,
@@ -382,12 +382,14 @@ function DirList:scanDir(path)
 				n = n + 1
 
 				local fullname = path .. "/" .. name
-				local isdir = self:getFileStat(path, name, "mode", n) == "directory"
+				local isdir =
+					self:getFileStat(path, name, "mode", n) == "directory"
 				insert(list,
 				{
 					{
 						name,
-						isdir and "[Directory]" or self:getFileStat(path, name, "size", n)
+						isdir and "[Directory]" or
+							self:getFileStat(path, name, "size", n)
 					},
 					isdir
 				})

@@ -18,8 +18,6 @@
 --		This gadget implements text rendering.
 --
 --	ATTRIBUTES::
---		- {{FGPen [IG]}} (userdata)
---			A colored pen for rendering the foreground of the element
 --		- {{FontSpec [IG]}} (string)
 --			A font specification in the form
 --					"[fontname1,fontname2,...][:][size]"
@@ -69,6 +67,12 @@
 --		- Text:makeTextRecords() - Break text into multiple text records
 --		- Text:onSetText() - handler for the {{Text}} attribute
 --
+--	STYLE PROPERTIES::
+--		- {{color2}} - secondary color used in disabled state
+--		- {{font}}
+--		- {{text-align}}
+--		- {{vertical-align}}
+--
 --	OVERRIDES::
 --		- Area:askMinMax()
 --		- Object.init()
@@ -94,14 +98,13 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 11.2"
+_VERSION = "Text 12.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
 local NOTIFY_SETTEXT = { ui.NOTIFY_SELF, "onSetText", ui.NOTIFY_VALUE }
-local DEF_PADDING = { 4, 2, 4, 2 }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -110,23 +113,34 @@ local DEF_PADDING = { 4, 2, 4, 2 }
 local Text = _M
 
 function Text.init(self)
+	self.FGPenDisabled2 = self.FGPenDisabled2 or false
 	self.FontSpec = self.FontSpec or false
-	self.FGPen = self.FGPen or false
-	self.Foreground = false
-	self.HAlign = self.HAlign or "center"
-	self.Height = self.Height or "auto"
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
 	self.Mode = self.Mode or "inert"
 	self.ShortcutMark = self.ShortcutMark == nil and "_" or self.ShortcutMark
-	self.Style = self.Style or "normal"
 	self.Text = self.Text or ""
-	self.TextHAlign = self.TextHAlign or "center"
+	self.TextHAlign = self.TextHAlign or false
 	self.TextRecords = self.TextRecords or false
-	self.TextVAlign = self.TextVAlign or "center"
-	self.VAlign = self.VAlign or "center"
-	self.Width = self.Width or "free"
+	self.TextVAlign = self.TextVAlign or false
 	return Gadget.init(self)
+end
+
+-------------------------------------------------------------------------------
+--	getProperties:
+-------------------------------------------------------------------------------
+
+function Text:getProperties(p, pclass)
+	if not pclass then
+		self.FGPenDisabled2 = self.FGPenDisabled2 or
+			self:getProperty(p, "disabled", "color2")
+	end
+	self.FontSpec = self.FontSpec or self:getProperty(p, pclass, "font")
+	self.TextHAlign = self.TextHAlign or
+		self:getProperty(p, pclass, "text-align") or "center"
+	self.TextVAlign = self.TextVAlign or
+		self:getProperty(p, pclass, "vertical-align") or "center"
+	Gadget.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -159,22 +173,6 @@ end
 -------------------------------------------------------------------------------
 
 function Text:show(display, drawable)
-	local theme = display.Theme
-	-- inner spacing:
-	self.Padding = self.Padding or theme.TextPadding or DEF_PADDING
-	local theme = display.Theme
-	self.FontSpec = self.FontSpec or theme.TextFontSpec or false
-
-	if self.Style == "caption" then
-		self.BorderStyle = self.BorderStyle or "none"
-		self.IBorderStyle = self.IBorderStyle or "none"
-	elseif self.Style == "button" then
-		self.BorderStyle = self.BorderStyle or "socket"
-		self.IBorderStyle = self.IBorderStyle or "button"
-	elseif self.Style == "normal" then
-		self.BorderStyle = self.BorderStyle or "none"
-		self.IBorderStyle = self.IBorderStyle or "recess"
-	end
 	if Gadget.show(self, display, drawable) then
 		if not self.TextRecords then
 			self:makeTextRecords(self.Text)
@@ -216,10 +214,10 @@ end
 -------------------------------------------------------------------------------
 
 function Text:askMinMax(m1, m2, m3, m4)
-	local p = self.PaddingAndBorder
+	local p = self.Padding
 	local w, h = self:getTextSize()
-	w = w + 1 -- for disabled state
-	h = h + 1 -- for disabled state
+	-- w = w + 1 -- for disabled state
+	-- h = h + 1 -- for disabled state
 	if self.KeepMinWidth and self.MinWidth == 0 then
 		self.MinWidth = w + p[1] + p[3]
 	end
@@ -250,12 +248,9 @@ function Text:draw()
 	Gadget.draw(self)
 	local d = self.Drawable
 	local r = self.Rect
-	local p = self.PaddingAndBorder
+	local p = self.Padding
 	d:pushClipRect(r[1] + p[1], r[2] + p[2], r[3] - p[3], r[4] - p[4])
-	local fp1 = self.Disabled and d.Pens[ui.PEN_BUTTONDISABLEDSHADOW]
-		or d.Pens[self.Foreground]
-	local fp2 = self.Disabled and d.Pens[ui.PEN_BUTTONDISABLEDSHINE]
-	local p = self.PaddingAndBorder
+	local fp = d.Pens[self.Foreground]
 	local x0 = r[1] + p[1]
 	local y0 = r[2] + p[2]
 	local w0, h0 = self:getTextSize()
@@ -272,14 +267,21 @@ function Text:draw()
 		x = aligntext(tr[3], "right", x, w, tw)
 		y = aligntext(tr[4], "bottom", y, h, th)
 		d:setFont(tr[2])
+		
 		if self.Disabled then
-			d:drawText(x + 1, y + 1, tr[1], fp2)
+			local fp2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
+			d:drawText(x + 2, y + 2, tr[1], fp2)
+			if tr[11] then
+				-- draw underline:
+				d:fillRect(x + tr[11] + 2, y + tr[12] + 2,
+					x + tr[11] + tr[13] + 1, y + tr[12] + tr[14] + 1, fp2)
+			end
 		end
-		d:drawText(x, y, tr[1], fp1)
-		-- draw underline:
+		d:drawText(x + 1, y + 1, tr[1], fp)
 		if tr[11] then
-			d:fillRect(x + tr[11], y + tr[12], x + tr[11] + tr[13] - 1,
-				y + tr[12] + tr[14] - 1, fp1)
+			-- draw underline:
+			d:fillRect(x + tr[11] + 1, y + tr[12] + 1,
+				x + tr[11] + tr[13], y + tr[12] + tr[14], fp)
 		end
 	end
 	d:popClipRect()
@@ -307,7 +309,8 @@ function Text:newTextRecord(line, font, halign, valign, m1, m2, m3, m4)
 			r[1] = a .. b
 		end
 	end
-	r[9], r[10] = Display:getTextSize(font, r[1])
+	local w, h = Display:getTextSize(font, r[1])
+	r[9], r[10] = w + 2, h + 2 -- for disabled state
 	return r, keycode
 end
 
@@ -377,26 +380,4 @@ function Text:onSetText(text)
 	self:makeTextRecords(text)
 	self.Redraw = true
 	self:rethinkLayout(1)
-end
-
--------------------------------------------------------------------------------
---	setState:
--------------------------------------------------------------------------------
-
-function Text:setState(bg, fg)
-	fg = fg or
-		self.Selected and ui.PEN_BUTTONACTIVETEXT or
-		(self.Hover and self.Mode ~= "inert") and ui.PEN_BUTTONOVERDETAIL or
-		self.FGPen or ui.PEN_BUTTONTEXT
-	if fg ~= self.Foreground then
-		self.Foreground = fg
-		self.Redraw = true
-	end
-	if not bg then
-		if self.Style == "caption" then
-			bg = self.Parent and self.Parent.Background or
-				self.Disabled and ui.PEN_BUTTONDISABLED or ui.PEN_GROUPBACK
-		end
-	end
-	Gadget.setState(self, bg)
 end

@@ -15,7 +15,7 @@ ui.Application:new
 				ui.Text:new
 				{
 					Text = "Poems",
-					FontSpec = "__huge",
+					Style = "font: default-huge-font",
 				},
 				ui.Group:new
 				{
@@ -27,8 +27,7 @@ ui.Application:new
 							CanvasHeight = 500,
 							Child = ui.FloatText:new
 							{
-								BGPen = ui.PEN_SHINE,
-								FGPen = ui.PEN_SHADOW,
+								Style = "font: default-large-font; background-color: dark; color: light;",
 								Text = [[
 
 									Ecce homo
@@ -48,13 +47,11 @@ ui.Application:new
 						{
 							HSliderMode = "off",
 							VSliderMode = "on",
-							Canvas = ui.Canvas:new
+							Child = ui.Canvas:new
 							{
 								AutoWidth = true,
 								Child = ui.FloatText:new
 								{
-									BGPen = ui.PEN_SHINE,
-									FGPen = ui.PEN_SHADOW,
 									Text = [[
 
 										Under der linden
@@ -109,7 +106,7 @@ ui.Application:new
 				{
 					Text = "_Okay",
 					Mode = "button",
-					Style = "button",
+					Class = "button",
 					Notifications =
 					{
 						["Pressed"] =

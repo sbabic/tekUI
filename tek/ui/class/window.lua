@@ -25,6 +25,8 @@
 --			Instructs the Window to open borderless and in fullscreen mode;
 --			this however may be in conflict with the {{MaxWidth}},
 --			{{MinWidth}} attributes, which have precedence in this case.
+--		- {{Left [IG]}} (number)
+--			The window's left offset on the display
 --		- {{Modal [IG]}} (boolean)
 --			Instructs all other windows to deny input while this window is
 --			open.
@@ -43,8 +45,6 @@
 --			method.
 --		- {{Title [IG]}} (string)
 --			The window's title.
---		- {{Left [IG]}} (number)
---			The window's left offset on the display
 --		- {{Top [IG]}} (number)
 --			The window's top offset on the display
 --
@@ -74,8 +74,8 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
 local Drawable = ui.Drawable
-local Group = ui.Group
 local Gadget = ui.Gadget
+local Group = ui.Group
 
 local assert = assert
 local insert = table.insert
@@ -89,7 +89,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 7.0"
+_VERSION = "Window 7.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -99,7 +99,6 @@ local HUGE = ui.HUGE
 
 local NOTIFY_STATUS = { ui.NOTIFY_SELF, "onChangeStatus", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
-local DEF_MARGIN = { 2, 2, 2, 2 }
 
 local DEF_DBLCLICKTIMELIMIT = 0.32 -- in seconds
 local DEF_DBLCLICKDISTLIMIT = 25 -- pixel_distance^2 between clicks
@@ -139,9 +138,6 @@ function Window.init(self)
 	self.KeyShortcuts = { }
 	self.LayoutGroup = { }
 	self.Left = self.Left or false
-	if self.BorderStyle then
-		self.Margin = self.Margin or DEF_MARGIN
-	end
 	self.Modal = self.Modal or false
 	self.MouseX = false
 	self.MouseY = false
@@ -274,14 +270,11 @@ function Window:getWindowDimensions()
 	local x, y, w, h = self.Left, self.Top, self.Width, self.Height
 	w = type(w) == "number" and max(w, m1)
 	h = type(h) == "number" and max(h, m2)
-	-- if x and x >= 0 then
-	-- 	h = h and m4 and min(h, m4) or m2
-	-- end
-	m3 = (m3 and m3 > 0 and m3 < HUGE) and m3 or nil
-	m4 = (m4 and m4 > 0 and m4 < HUGE) and m4 or nil
+	m3 = (m3 and m3 > 0 and m3 < HUGE) and m3
+	m4 = (m4 and m4 > 0 and m4 < HUGE) and m4
 	w = w or self.MaxWidth == 0 and m1 or w
 	h = h or self.MaxHeight == 0 and m2 or h
-	return m1, m2, m3, m4, x or nil, y or nil, w or nil, h or nil
+	return m1, m2, m3, m4, x, y, w, h
 end
 
 -------------------------------------------------------------------------------
@@ -291,7 +284,7 @@ end
 function Window:openWindow()
 	if self.Status ~= "show" then
 		local m1, m2, m3, m4, x, y, w, h = self:getWindowDimensions()
-		if self.Drawable:open(self.Title or self.Application.Title or nil,
+		if self.Drawable:open(self.Title or self.Application.Title,
 			w, h, m1, m2, m3, m4, x, y, self.Center, self.Fullscreen) then
 			local wm = self.WindowMinMax
 			wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
@@ -587,8 +580,7 @@ function Window:handleCopies()
 		for key, e in pairs(ca) do
 			local dx, dy, region = e[1], e[2], e[3]
 			local dir = (dx == 0 and dy or dx) > 0 and 1 or -1
-			for _, r in region:getRects() do
-				local r1, r2, r3, r4 = region:getRect(r)
+			for _, r1, r2, r3, r4 in region:getRects() do
 				insert(t, { (dx == 0 and r2 or r1) * dir,
 					dx, dy, r1, r2, r3, r4 })
 			end
@@ -629,8 +621,13 @@ function Window:update()
 					local r = group.Rect
 					local m = group.MarginAndBorder
 
-					self:relayout(group, r[1] - m[1], r[2] - m[2],
-						r[3] + m[3], r[4] + m[4])
+					if r[1] then
+						self:relayout(group, r[1] - m[1], r[2] - m[2],
+							r[3] + m[3], r[4] + m[4])
+					else
+						db.warn("%s : layout not available",
+							group:getClassName())
+					end
 
 					if markdamage == 1 then
 						group.Redraw = true

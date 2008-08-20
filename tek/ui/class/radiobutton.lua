@@ -34,7 +34,7 @@ local VectorImage = ui.VectorImage
 local ipairs = ipairs
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 1.5"
+_VERSION = "RadioButton 1.6"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -43,7 +43,7 @@ _VERSION = "RadioButton 1.5"
 local coords =
 {
 	-- dot:
-	0, 0, -1,	2, -2, 1, -2, -1, -1, -2, 1, -2, 2, -1, 2, 1, 1, 2,
+	0, 0, -1, 2, -2, 1, -2, -1, -1, -2, 1, -2, 2, -1, 2, 1, 1, 2,
 	-- shadow:
 	-3, 4, -4, 3, -3, -2, -4, -3, -2, -3, -3, -4, 4, -3, 3, -4,
 	-- shine:
@@ -64,8 +64,8 @@ local RadioImage1 = VectorImage:new
 		Coords = coords,
 		Primitives =
 		{
-			{	0x1000, 8, Points = points1, Pen = ui.PEN_HALFSHADOW },
-			{ 0x1000, 8, Points = points2, Pen = ui.PEN_HALFSHINE },
+			{ 0x1000, 8, Points = points1, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x1000, 8, Points = points2, Pen = ui.PEN_BORDERSHINE },
 		},
 		MinMax = { -4, 4, 4, -4 },
 	}
@@ -77,9 +77,9 @@ local RadioImage2 = VectorImage:new
 	{
 		Coords = coords,
 		Primitives = {
-			{	0x1000, 8, Points = points1, Pen = ui.PEN_HALFSHINE },
-			{ 0x1000, 8, Points = points2, Pen = ui.PEN_HALFSHADOW },
-			{	0x2000, 10, Points = points3, Pen = ui.PEN_BUTTONTEXT },
+			{ 0x1000, 8, Points = points1, Pen = ui.PEN_BORDERSHINE },
+			{ 0x1000, 8, Points = points2, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x2000, 10, Points = points3, Pen = ui.PEN_DETAIL },
 		},
 		MinMax = { -4, 4, 4, -4 },
 	}
@@ -106,7 +106,7 @@ function RadioButton:onSelect(selected)
 	if selected then
 		-- unselect siblings in group:
 		local myclass = self:getClass()
-		for _, e in ipairs(self.Parent.Children) do
+		for _, e in ipairs(self:getElement("siblings")) do
 			if e ~= self and e:getClass() == myclass and e.Selected then
 				e:setValue("Selected", false) -- no notify
 			end

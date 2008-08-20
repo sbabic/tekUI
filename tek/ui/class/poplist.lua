@@ -53,15 +53,16 @@ local Text = ui.Text
 local VectorImage = ui.VectorImage
 
 local insert = table.insert
+local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 3.0"
+_VERSION = "PopList 4.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
 -------------------------------------------------------------------------------
 
-local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_BUTTONTEXT } }
+local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_DETAIL } }
 
 local ArrowImage = VectorImage:new
 {
@@ -69,7 +70,7 @@ local ArrowImage = VectorImage:new
 	{
 		Coords = { -2, 1, 3, 1, 0, -1 },
 		Primitives = prims,
-		MinMax = { -3, -3, 4, 3 },
+		MinMax = { -3, -3, 5, 4 },
 	}
 }
 
@@ -83,13 +84,11 @@ local PopListGadget = ListGadget:newClass()
 
 function PopListGadget:passMsg(msg)
 	if msg[2] == ui.MSG_MOUSEMOVE then
-		if msg[4] >= 0 and msg[4] < self.CanvasHeight then
-			local lnr = self:findLine(msg[5])
-			if lnr then
-				if lnr ~= self.SelectedLine then
-					self:setValue("CursorLine", lnr)
-					self:setValue("SelectedLine", lnr)
-				end
+		local lnr = self:findLine(msg[5])
+		if lnr then
+			if lnr ~= self.SelectedLine then
+				self:setValue("CursorLine", lnr)
+				self:setValue("SelectedLine", lnr)
 			end
 		end
 	end
@@ -127,7 +126,9 @@ local PopList = _M
 
 function PopList.init(self)
 	self.ImageRect = { 0, 0, 0, 0 }
-	self.TextHAlign = self.TextHAlign or "left"
+	self.Image = ArrowImage
+	self.TextHAlign = "left"
+	self.Width = "fill"
 	self.SelectedEntry = self.SelectedEntry or 0
 	return PopItem.init(self)
 end
@@ -141,7 +142,7 @@ function PopList.new(class, self)
 		ScrollGroup:new
 		{
 			VSliderMode = "auto",
-			Canvas = Canvas:new
+			Child = Canvas:new
 			{
 				KeepMinWidth = true,
 				KeepMinHeight = true,
@@ -163,58 +164,24 @@ function PopList:cleanup()
 	PopItem.cleanup(self)
 end
 
-
 function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
 	if lo then
-		local w, h = 0, 0
 		local tr = { }
 		local font = self.Display:openFont(self.FontSpec)
 		for lnr = 1, lo:getN() do
 			local entry = lo:getItem(lnr)
 			local t = self:newTextRecord(entry[1][1], font, self.TextHAlign,
-				self.TextVAlign, 0, 0, 20, 0)
+				self.TextVAlign, 0, 0, 0, 0)
 			insert(tr, t)
 		end
-		w, h = self:getTextSize(tr)
-		w = w + 1 -- for disabled state
-		h = h + 1
-		if self.KeepMinWidth and self.MinWidth == 0 then
-			self.MinWidth = w
-		end
-		if self.KeepMinHeight and self.MinHeight == 0 then
-			self.MinHeight = h
-		end
-		m1 = m1 + w
-		m2 = m2 + h
-		m3 = m3 + w
-		m4 = m4 + h
+		local lw = self:getTextSize(tr) -- max width of items in list
+		local w, h = self:getTextSize() -- width/height of our own text
+		w = max(w, lw) - w -- minus own width, as it gets added in super class
+		m1 = m1 + w -- + iw
+		m3 = m3 + w -- + iw
 	end
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
-end
-
-function PopList:layout(x0, y0, x1, y1, markdamage)
-	if PopItem.layout(self, x0, y0, x1, y1, markdamage) then
-		local r = self.Rect
-		local p = self.PaddingAndBorder
-		local ih = r[4] - r[2] - p[4] - p[2] + 1
-		local d = self.Drawable
-		local iw = ih * d.AspectX / d.AspectY
-		local x = r[3] - iw
-		local y = r[2] + p[2]
-		local i = self.ImageRect
-		i[1], i[2], i[3], i[4] = x, y, x + iw - 1, y + ih - 1
-		return true
-	end
-end
-
-function PopList:draw()
-	PopItem.draw(self)
-	local img = ArrowImage
-	if img then
-		prims[1].Pen = self.Foreground
-		img:draw(self.Drawable, self.ImageRect)
-	end
+	return PopItem.askMinMax(self, m1, m2, m3, m4)
 end
 
 function PopList:beginPopup()

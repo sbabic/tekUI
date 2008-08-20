@@ -53,9 +53,9 @@ function Boing:draw()
 	local h2 = h - h / 20
 	x0 = (self.Boing[1] * w2) / 0x10000 + self.Rect[1]
 	y0 = (self.Boing[2] * h2) / 0x10000 + self.Rect[2]
-	d:fillRect(r[1], r[2], r[3], r[4], d.Pens[ui.PEN_SHINE])
+	d:fillRect(r[1], r[2], r[3], r[4], d.Pens[ui.PEN_LIGHT])
 	d:fillRect(x0, y0, x0 + w/20 - 1, y0 + h/20 - 1,
-		d.Pens[ui.PEN_SHADOW])
+		d.Pens[ui.PEN_DARK])
 end
 
 function Boing:updateInterval()

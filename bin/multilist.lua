@@ -107,7 +107,7 @@ ui.Application:new
 					SameSize = true,
 					Children =
 					{
-						ui.Text:new { Mode = "button", Style = "button", Id = "new-button", Text = "_New",
+						ui.Text:new { Mode = "button", Class = "button", Id = "new-button", Text = "_New",
 							Notifications =
 							{
 								["Pressed"] =
@@ -125,7 +125,7 @@ ui.Application:new
 								}
 							}
 						},
-						ui.Text:new { Mode = "button", Style = "button", Id = "insert-button", Text = "_Insert",
+						ui.Text:new { Mode = "button", Class = "button", Id = "insert-button", Text = "_Insert",
 							Notifications =
 							{
 								["Pressed"] =
@@ -146,7 +146,7 @@ ui.Application:new
 								}
 							}
 						},
-						ui.Text:new { Mode = "button", Style = "button", Text = "D_elete",
+						ui.Text:new { Mode = "button", Class = "button", Text = "D_elete",
 							Notifications =
 							{
 								["Pressed"] =
@@ -177,7 +177,7 @@ ui.Application:new
 								}
 							}
 						},
-						ui.Text:new { Mode = "button", Style = "button", Text = "_Up",
+						ui.Text:new { Mode = "button", Class = "button", Text = "_Up",
 							Notifications =
 							{
 								["Pressed"] =
@@ -198,7 +198,7 @@ ui.Application:new
 								}
 							}
 						},
-						ui.Text:new { Mode = "button", Style = "button", Text = "_Down",
+						ui.Text:new { Mode = "button", Class = "button", Text = "_Down",
 							Notifications =
 							{
 								["Pressed"] =

@@ -43,6 +43,10 @@
 --				"PageUp", "PageDown", "Pos1", "End", "Print", "Scroll",
 --				and "Pause".
 --
+--	STYLE PSEUDO CLASSES::
+--		- {{popup-root}} - for the root element in a popup tree
+--		- {{popup-children}} - for an element that has children
+--
 --	OVERRIDES::
 --		- Element:cleanup()
 --		- Object.init()
@@ -58,11 +62,12 @@ local Application = ui.Application
 local PopupWindow = ui.PopupWindow
 local Text = ui.Text
 
+local floor = math.floor
 local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 4.1"
+_VERSION = "PopItem 5.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -84,6 +89,9 @@ local NOTIFY_ONRELEASEITEM = { ui.NOTIFY_SELF, "setValue", "Pressed", false }
 local PopItem = _M
 
 function PopItem.init(self)
+	self.Children = self.Children or false
+	self.Image = self.Image or false
+	self.ImageRect = self.ImageRect or false
 	self.PopupBase = false
 	self.PopupWindow = false
 	self.DelayedBeginPopup = false
@@ -95,8 +103,22 @@ function PopItem.init(self)
 		self.Mode = "button"
 	end
 	self.Shortcut = self.Shortcut or false
-	self.Width = "fill"
 	return Text.init(self)
+end
+
+-------------------------------------------------------------------------------
+--	getProperties: overrides
+-------------------------------------------------------------------------------
+
+function PopItem:getProperties(p, pclass)
+	if not pclass then
+		if not self.PopupBase then
+			Text.getProperties(self, p, "popup-root")
+		elseif self.Children then
+			Text.getProperties(self, p, "popup-children")
+		end
+	end
+	Text.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -126,21 +148,56 @@ function PopItem:cleanup()
 end
 
 -------------------------------------------------------------------------------
---	show: overrides
+--	askMinMax:
 -------------------------------------------------------------------------------
 
-function PopItem:show(display, drawable)
-	local theme = display.Theme
-	self.FontSpec = self.FontSpec or theme.PopItemFontSpec or false
-	self.Margin = self.Margin or theme.PopItemMargin or false
-	self.Border = self.Border or theme.PopItemBorder or false
-	self.IBorder = self.IBorder or theme.PopItemIBorder or false
-	self.Padding = self.Padding or theme.PopItemPadding or false
-	self.BorderStyle = self.BorderStyle or
-		theme.PopItemChildrenBorderStyle or "socket"
-	self.IBorderStyle = self.IBorderStyle or
-		theme.PopItemChildrenIBorderStyle or "button"
-	return Text.show(self, display, drawable)
+function PopItem:askMinMax(m1, m2, m3, m4)
+	local n1, n2, n3, n4 = Text.askMinMax(self, m1, m2, m3, m4)
+	if self.Image then
+		local p = self.Padding
+		local m = self.MarginAndBorder
+		local d = self.Drawable
+		local ih = n2 - m2 - p[2] - p[4] - m[2] - m[4]
+		local iw = ih * d.AspectX / d.AspectY -- image width
+		n1 = n1 + iw
+		n3 = n3 + iw
+	end
+	return n1, n2, n3, n4
+end
+
+-------------------------------------------------------------------------------
+--	layout:
+-------------------------------------------------------------------------------
+
+function PopItem:layout(x0, y0, x1, y1, markdamage)
+	if Text.layout(self, x0, y0, x1, y1, markdamage) then
+		if self.Image then
+			local r = self.Rect
+			local p = self.Padding
+			local ih = r[4] - r[2] - p[4] - p[2] + 1
+			local d = self.Drawable
+			local iw = ih * d.AspectX / d.AspectY
+			-- use half the padding that was granted for the right edge:
+			local x = r[3] - floor(p[3] / 2) - iw
+			local y = r[2] + p[2]
+			local i = self.ImageRect
+			i[1], i[2], i[3], i[4] = x, y, x + iw - 1, y + ih - 1
+		end
+		return true
+	end
+end
+
+-------------------------------------------------------------------------------
+--	draw:
+-------------------------------------------------------------------------------
+
+function PopItem:draw()
+	Text.draw(self)
+	local i = self.Image
+	if i then
+		i.ImageData.Primitives[1].Pen = self.Foreground
+		i:draw(self.Drawable, self.ImageRect)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -168,8 +225,6 @@ end
 
 function PopItem:beginPopup()
 
-	local theme = self.Display.Theme
-
 	local winx, winy, winw, winh = self:calcPopup()
 
 	if self.Window.ActivePopup then
@@ -185,7 +240,7 @@ function PopItem:beginPopup()
 		if c:checkDescend(PopItem) then
 			c.PopupBase = self.PopupBase or self
 		end
-		c:setState()
+		-- c:setState()
 	end
 
 	self.PopupWindow = PopupWindow:new
@@ -319,8 +374,9 @@ end
 
 function PopItem:connectPopItems(app, window)
 	if self:checkDescend(PopItem) then
-		db.info("adding popitem %s", self:getClassName())
-		if self.Children then
+		db.info("adding %s", self:getClassName())
+		local c = self:getElement("children")
+		if c then
 			self:addNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_SUBMENU)
 			self:addNotify("Selected", true, NOTIFY_ONSELECT)
 			self:addNotify("Selected", false, NOTIFY_ONUNSELECT)
@@ -361,4 +417,15 @@ function PopItem:disconnectPopItems(window)
 			self:remNotify("Active", false, NOTIFY_ONRELEASEITEM)
 		end
 	end
+end
+
+-------------------------------------------------------------------------------
+--	getElement: overrides
+-------------------------------------------------------------------------------
+
+function PopItem:getElement(mode)
+	if mode == "children" then
+		return self.Children
+	end
+	return Text.getElement(self, mode)
 end

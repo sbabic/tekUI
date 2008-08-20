@@ -14,7 +14,7 @@ ui.Application:new
 				ui.Text:new
 				{
 					Text = "_Hello, World!",
-					Style = "button",
+					Class = "button",
 					Mode = "button",
 					Notifications =
 					{

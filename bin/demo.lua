@@ -49,8 +49,7 @@ function loaddemos(app)
 			Text = demo.Name,
 			Mode = "toggle",
 			Width = "free",
-			Padding = { 10, 4, 10, 4 },
-			Style = "button",
+			Class = "button",
 			UserData = demo.Window
 		}
 		button:addNotify("Selected", true, { ui.NOTIFY_ID, "info-text", "setValue", "Text", demo.Description })
@@ -76,8 +75,7 @@ app = ui.Application:new
 	{
 		ui.Window:new
 		{
-			Width = 400,
-			Height = 500,
+			Style = "width: 400; height: 500",
 			UserData =
 			{
 				MemRefreshTickCount = 0,
@@ -92,11 +90,16 @@ app = ui.Application:new
 						local m = collectgarbage("count")
 						data.MinMem = math.min(data.MinMem or m, m)
 						data.MaxMem = math.max(data.MaxMem or m, m)
-						self.Application:getElementById("about-mem-used"):setValue("Text", ("%dk - min: %dk - max: %dk"):format(m, data.MinMem, data.MaxMem))
+						local mem = self.Application:getElementById("about-mem-used")
+						if mem then
+							mem:setValue("Text", ("%dk - min: %dk - max: %dk"):format(m, data.MinMem, data.MaxMem))
+						end
 						local gauge = self.Application:getElementById("about-mem-gauge")
-						gauge:setValue("Min", data.MinMem)
-						gauge:setValue("Max", data.MaxMem)
-						gauge:setValue("Value", m)
+						if gauge then
+							gauge:setValue("Min", data.MinMem)
+							gauge:setValue("Max", data.MaxMem)
+							gauge:setValue("Value", m)
+						end
 					end
 				end },
 			},
@@ -136,7 +139,7 @@ app = ui.Application:new
 			},
 			Children =
 			{
-				ui.Text:new { FontSpec = "__large", Text = "About tekUI" },
+				ui.Text:new { Text = "About tekUI", Style = "font: default-large-font" },
 				ui.PageGroup:new
 				{
 					PageCaptions = { "_Application", "_License", "_System" },
@@ -155,6 +158,8 @@ app = ui.Application:new
 									{
 										ui.ListView:new
 										{
+											HSliderMode = "auto",
+											VSliderMode = "auto",
 											Headers = { "Property", "Value" },
 											Child = ui.ListGadget:new
 											{
@@ -188,8 +193,8 @@ app = ui.Application:new
 										ui.ScrollGroup:new
 										{
 											Legend = "tekUI License",
-											VSliderMode = "on",
-											Canvas = ui.Canvas:new
+											VSliderMode = "auto",
+											Child = ui.Canvas:new
 											{
 												KeepMinHeight = true,
 												AutoWidth = true,
@@ -213,8 +218,8 @@ app = ui.Application:new
 										ui.ScrollGroup:new
 										{
 											Legend = "Lua license",
-											VSliderMode = "on",
-											Canvas = ui.Canvas:new
+											VSliderMode = "auto",
+											Child = ui.Canvas:new
 											{
 												KeepMinHeight = true,
 												AutoWidth = true,
@@ -235,8 +240,8 @@ app = ui.Application:new
 										ui.ScrollGroup:new
 										{
 											Legend = "Disclaimer",
-											VSliderMode = "on",
-											Canvas = ui.Canvas:new
+											VSliderMode = "auto",
+											Child = ui.Canvas:new
 											{
 												KeepMinHeight = true,
 												AutoWidth = true,
@@ -267,8 +272,8 @@ app = ui.Application:new
 									{
 										ui.ScrollGroup:new
 										{
-											VSliderMode = "on",
-											Canvas = ui.Canvas:new
+											VSliderMode = "auto",
+											Child = ui.Canvas:new
 											{
 												AutoWidth = true,
 												Child = ui.FloatText:new
@@ -285,7 +290,12 @@ app = ui.Application:new
 											GridWidth = 2,
 											Children =
 											{
-												ui.Text:new { Text = "Memory usage:", TextHAlign = "right", Style = "caption", Width = "fill" },
+												ui.Text:new 
+												{ 
+													Text = "Memory usage:", 
+													Class = "caption", 
+													Style = "text-align: right; width: fill"
+												},
 												ui.Group:new
 												{
 													Orientation = "vertical",
@@ -296,7 +306,12 @@ app = ui.Application:new
 															Children =
 															{
 																ui.Text:new { Id = "about-mem-used" },
-																ui.Text:new { Width = "auto", Text = "_Reset", Style = "button", Mode = "button",
+																ui.Text:new 
+																{ 
+																	Text = "_Reset", 
+																	Class = "button", 
+																	Mode = "button",
+																	Style = "width: auto",
 																	Notifications =
 																	{
 																		["Pressed"] =
@@ -325,7 +340,12 @@ app = ui.Application:new
 											GridWidth = 2,
 											Children =
 											{
-												ui.Text:new { Text = "Debug Level:", Width = "fill", TextHAlign = "right", Style = "caption" },
+												ui.Text:new 
+												{ 
+													Text = "Debug Level:",
+													Class = "caption",
+													Style = "width: fill; text-align: right",
+												},
 												ui.ScrollBar:new
 												{
 													ArrowOrientation = "vertical",
@@ -336,9 +356,9 @@ app = ui.Application:new
 													Child = ui.Text:new
 													{
 														Id = "about-system-debuglevel",
-														FontSpec = "__small",
-														Style = "knob",
-														Text = tostring(db.level)
+														Class = "knob button",
+														Text = tostring(db.level),
+														Style = "font: default-small-font;",
 													},
 													Notifications =
 													{
@@ -354,8 +374,12 @@ app = ui.Application:new
 														}
 													}
 												},
-
-												ui.Text:new { Text = "Debug Options:", Width = "fill", TextHAlign = "right", Style = "caption" },
+												ui.Text:new 
+												{
+													Text = "Debug Options:", 
+													Class = "caption",
+													Style = "width: fill; text-align: right",
+												},
 												ui.CheckMark:new
 												{
 													Selected = ui.DEBUG,
@@ -386,9 +410,9 @@ app = ui.Application:new
 				{
 					Focus = true,
 					Mode = "button",
-					Style = "button",
+					Class = "button",
 					Text = "_Okay",
-					Width = "fill",
+					Style = "width: fill",
 					Notifications =
 					{
 						["Pressed"] =
@@ -415,13 +439,11 @@ app = ui.Application:new
 					},
 				},
 			},
-			MaxWidth = ui.HUGE,
-			MaxHeight = ui.HUGE,
 			Children =
 			{
 				ui.Group:new
 				{
-					Style = "menubar",
+					Class = "menubar",
 					Children =
 					{
 						ui.MenuItem:new
@@ -466,37 +488,94 @@ app = ui.Application:new
 						},
 					},
 				},
-				ui.Text:new { FontSpec = "__large", Text = "tekUI demo" },
+				ui.Text:new 
+				{ 
+					Text = "tekUI demo",
+					Style = "font: default-large-font"
+				},
 				ui.Group:new
 				{
 					Children =
 					{
-						ui.ScrollGroup:new
+						ui.Group:new
 						{
 							Weight = 0,
-							Legend = "Available Demos",
-							MaxWidth = ui.HUGE,
-							VSliderMode = "on",
-							Canvas = ui.Canvas:new
+							Orientation = "vertical",
+							Children =
 							{
-								KeepMinWidth = true,
-								AutoWidth = true,
-								AutoHeight = true,
-								Child = ui.Group:new
+								ui.ScrollGroup:new
 								{
-									Id = "demo-group",
-									MaxWidth = ui.HUGE,
-									Orientation = "vertical",
+									Legend = "Available Demos",
+									Style = "max-width: free",
+									VSliderMode = "auto",
+									Child = ui.Canvas:new
+									{
+										KeepMinWidth = true,
+										AutoWidth = true,
+										AutoHeight = true,
+										Child = ui.Group:new
+										{
+											Id = "demo-group",
+											Style = "max-width: free",
+											Orientation = "vertical",
+										},
+									},
 								},
-							},
+								ui.Group:new
+								{
+									Children =
+									{
+										ui.Text:new
+										{
+											Text = "_Open all",
+											Mode = "button",
+											Class = "button",
+											Notifications =
+											{
+												["Pressed"] =
+												{
+													[false] =
+													{
+														{ ui.NOTIFY_ID, "demo-group", ui.NOTIFY_FUNCTION, function(self)
+															for _, c in ipairs(self.Children) do
+																c:setValue("Selected", true)
+															end
+														end }
+													}
+												}
+											}
+										},
+										ui.Text:new
+										{
+											Text = "_Close all",
+											Mode = "button",
+											Class = "button",
+											Notifications =
+											{
+												["Pressed"] =
+												{
+													[false] =
+													{
+														{ ui.NOTIFY_ID, "demo-group", ui.NOTIFY_FUNCTION, function(self)
+															for _, c in ipairs(self.Children) do
+																c:setValue("Selected", false)
+															end
+														end }
+													}
+												}
+											}
+										},
+									}
+								}
+							}
 						},
 						ui.Handle:new { },
 						ui.ScrollGroup:new
 						{
 							Weight = 0x10000,
 							Legend = "Comment",
-							VSliderMode = "on",
-							Canvas = ui.Canvas:new
+							VSliderMode = "auto",
+							Child = ui.Canvas:new
 							{
 								AutoWidth = true,
 								Child = ui.FloatText:new

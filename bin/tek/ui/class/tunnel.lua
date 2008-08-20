@@ -83,7 +83,7 @@ end
 
 function Tunnel:draw()
 	local d = self.Drawable
-	local p0, p1 = d.Pens[ui.PEN_SHADOW], d.Pens[ui.PEN_SHINE]
+	local p0, p1 = d.Pens[ui.PEN_DARK], d.Pens[ui.PEN_LIGHT]
 	local r = self.Rect
 
 	d:fillRect(r[1], r[2], r[3], r[4], p0)

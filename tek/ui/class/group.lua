@@ -21,17 +21,14 @@
 --	ATTRIBUTES::
 --		- {{Children [G]}} (table)
 --			Array of child objects
+--		- {{Children [IG]}} (table)
+--			A numerically indexed table of the object's children
 --		- {{FreeRegion [G]}} ([[#tek.lib.region : Region]])
 --			Region inside the group that is not covered by child elements
 --		- {{GridHeight [IG]}} (number)
 --			Grid height, in number of elements. [Default: 1, not a grid]
 --		- {{GridWidth [IG]}} (number)
 --			Grid width, in number of elements [Default: 1, not a grid]
---		- {{Legend [IG]}} (string)
---			Legend, group caption text [Default: '''false''']
---		- {{LegendFontSpec [IG]}} (string)
---			Font specifier for the group legend [Default: undefined]. See
---			also [[#tek.ui.class.text : Text]] for a format description.
 --		- {{Orientation [IG]}} (string)
 --			Orientation of the group; can be
 --				- "horizontal" - The elements are layouted horizontally
@@ -45,10 +42,6 @@
 --			elements in the group [Default: '''false''']
 --		- {{SameSize [IG]}} (boolean)
 --			A shortcut for {{SameWidth}} and {{SameHeight}}
---		- {{Style [IG]}} (string)
---			Style of the group, can be
---				- "menubar" - The group is used for a menubar
---				- "normal" - This is a regular group
 --
 --	IMPLEMENTS::
 --		- Group:getStructure() - Get group's structural parameters
@@ -76,7 +69,6 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Area = ui.Area
 local Region = require "tek.lib.region"
@@ -89,14 +81,8 @@ local ipairs = ipairs
 local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 13.4"
+_VERSION = "Group 14.1"
 local Group = _M
-
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
-
-local DEF_BORDER_MENUBAR = { 0, 0, 0, 1 }
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -109,26 +95,12 @@ function Group.init(self)
 	self.GridWidth = self.GridWidth or false
 	self.GridHeight = self.GridHeight or false
 	self.Layout = self.Layout or ui.loadClass("layout", "default"):new { }
-	self.Legend = self.Legend or false
-	self.LegendFont = false
-	self.LegendFontSpec = self.LegendFontSpec or false
 	self.Orientation = self.Orientation or "horizontal"
 	self.SameHeight = self.SameHeight or false
 	self.SameSize = self.SameSize or false
 	self.SameWidth = self.SameWidth or false
-	self.Style = self.Style or "normal"
-	if self.Style == "menubar" then
-		self.Width = "fill"
-		self.Height = "auto"
-	end
 	self.Weights = self.Weights or { }
 	return Gadget.init(self)
-end
-
-function Group.new(class, self)
-	self = Gadget.new(class, self)
-	self:calcWeights()
-	return self
 end
 
 -------------------------------------------------------------------------------
@@ -137,8 +109,20 @@ end
 
 function Group:setup(app, window)
 	Gadget.setup(self, app, window)
+	self:calcWeights()
 	for _, c in ipairs(self.Children) do
 		c:setup(app, window)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	decodeProperties: overrides
+-------------------------------------------------------------------------------
+
+function Group:decodeProperties(p)
+	Gadget.decodeProperties(self, p)
+	for _, c in ipairs(self.Children) do
+		c:decodeProperties(p)
 	end
 end
 
@@ -158,29 +142,6 @@ end
 -------------------------------------------------------------------------------
 
 function Group:show(display, drawable)
-	local theme = display.Theme
-	if self.Style == "menubar" then
-		self.Margin = self.Margin or theme.GroupMargin or ui.NULLOFFS
-		self.Border = self.Border or theme.MenuBarBorder or DEF_BORDER_MENUBAR
-		self.Padding = self.Padding or theme.GroupPadding or ui.NULLOFFS
-		self.BorderStyle = self.BorderStyle or theme.MenuBarBorderStyle or
-			"group"
-		self.BGPen = self.BGPen or theme.MenuBarBackPen or ui.PEN_MENUBACK
-	elseif self.Legend then
-		self.Margin = self.Margin or theme.GroupMarginLegend or false
-		self.Padding = self.Padding or theme.GroupPaddingLegend or false
-		self.Border = self.Border or theme.GroupBorderLegend or false
-		self.BorderStyle = self.BorderStyle or theme.GroupBorderStyleLegend or
-			"group"
-		self.LegendFontSpec = self.LegendFontSpec or
-			theme.GroupLegendFontSpec or "__small"
-		self.LegendFont = display:openFont(self.LegendFontSpec)
-	else
-		self.Margin = self.Margin or theme.GroupMargin or ui.NULLOFFS
-		self.Border = self.Border or theme.GroupBorder or false
-		self.Padding = self.Padding or theme.GroupPadding or ui.NULLOFFS
-		self.BorderStyle = self.BorderStyle or theme.GroupBorderStyle or ""
-	end
 	if Gadget.show(self, display, drawable) then
 		for _, c in ipairs(self.Children) do
 			if not c:show(display, drawable) then
@@ -199,8 +160,6 @@ function Group:hide()
 	for _, c in ipairs(self.Children) do
 		c:hide()
 	end
-	self.Display:closeFont(self.LegendFont)
-	self.LegendFont = false
 	Gadget.hide(self)
 end
 
@@ -271,6 +230,7 @@ end
 
 function Group:addMember(child, pos)
 	if self:checkMember(child) then
+		child:decodeProperties(self.Application.InternalProperties)
 		child:setup(self.Application, self.Window)
 		if child:show(self.Display, self.Drawable) then
 			if Family.addMember(self, child, pos) then
@@ -318,11 +278,9 @@ function Group:draw()
 	local d = self.Drawable
 	local f = self.FreeRegion
 	local p = d.Pens[self.Background]
-	for _, r in f:getRects() do
-		local r1, r2, r3, r4 = f:getRect(r)
+	for _, r1, r2, r3, r4 in f:getRects() do
 		d:fillRect(r1, r2, r3, r4, p)
 	end
-	self:drawBorder(2)
 end
 
 -------------------------------------------------------------------------------
@@ -360,16 +318,6 @@ function Group:askMinMax(m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
---	punch: overrides
--------------------------------------------------------------------------------
-
-function Group:punch(region)
-	local b = self.MarginAndBorder
-	local r = self.Rect
-	region:subRect(r[1] - b[1], r[2] - b[2], r[3] + b[3], r[4] + b[4])
-end
-
--------------------------------------------------------------------------------
 --	layout: overrides; note that layouting takes place unconditionally here
 -------------------------------------------------------------------------------
 
@@ -379,20 +327,18 @@ function Group:layout(r1, r2, r3, r4, markdamage)
 	local f = Region.new(r1, r2, r3, r4)
 	self.FreeRegion = f
 	self.Layout:layout(self, r1, r2, r3, r4, markdamage)
-	local b = self.BorderRegion
-	if b then
-		for _, r in b:getRects() do
-			f:subRect(b:getRect(r))
- 		end
- 	end
-	b = self.IBorderClass:getRegion(self, self.IBorder, unpack(self.Rect),
-		true)
-	if b then
-		for _, r in b:getRects() do
-			f:subRect(b:getRect(r))
- 		end
- 	end
+	f:subRegion(self.BorderRegion)
 	return res
+end
+
+-------------------------------------------------------------------------------
+--	punch: overrides
+-------------------------------------------------------------------------------
+
+function Group:punch(region)
+	local b1, b2, b3, b4 = unpack(self.MarginAndBorder)
+	local r = self.Rect
+	region:subRect(r[1] - b1, r[2] - b2, r[3] + b3, r[4] + b4)	
 end
 
 -------------------------------------------------------------------------------
@@ -427,15 +373,6 @@ function Group:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	setState: overrides
--------------------------------------------------------------------------------
-
-function Group:setState(bg)
-	bg = bg or self.BGPen or ui.PEN_GROUPBACK
-	Gadget.setState(self, bg)
-end
-
--------------------------------------------------------------------------------
 --	getElement: overrides
 -------------------------------------------------------------------------------
 
@@ -447,6 +384,8 @@ function Group:getElement(mode)
 		return c[#c]
 	elseif mode == "children" then
 		return c
+	elseif mode == "group" then
+		return self
 	end
 	return Gadget.getElement(self, mode)
 end

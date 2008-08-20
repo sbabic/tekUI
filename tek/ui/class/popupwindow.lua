@@ -33,7 +33,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 1.4"
+_VERSION = "PopupWindow 1.5"
 
 local PopupWindow = _M
 
@@ -41,7 +41,6 @@ local PopupWindow = _M
 --	Constants and class data:
 -------------------------------------------------------------------------------
 
-local DEF_SHORTCUT_XOFFS = 20
 local MSG_MOUSEOVER = ui.MSG_MOUSEOVER
 local MSG_INTERVAL = ui.MSG_INTERVAL
 
@@ -51,16 +50,12 @@ local MSG_INTERVAL = ui.MSG_INTERVAL
 
 function PopupWindow.init(self)
 	self.PopupBase = self.PopupBase or false
-	self.BGPen = self.BGPen or ui.PEN_MENUBACK
 	self.BeginPopupTicks = 0
-	self.Border = self.Border or false
-	self.BorderStyle = self.BorderStyle or "socket"
 	self.DelayedBeginPopup = false
 	self.DelayedEndPopup = false
 	self.Margin = self.Margin or ui.NULLOFFS
 	self.MaxWidth = self.MaxWidth or 0
 	self.MaxHeight = self.MaxHeight or 0
-	self.Padding = self.Padding or false
 	return Window.init(self)
 end
 
@@ -70,7 +65,7 @@ end
 
 function PopupWindow:show(display)
 	if Window.show(self, display) then
-		local miclass = ui.MenuItem
+		local miclass = ui.PopItem
 		if miclass then
 			-- determine width of menuitems in group:
 			local maxw = 0
@@ -82,7 +77,7 @@ function PopupWindow:show(display)
 			for _, e in ipairs(self.Children) do
 				-- align shortcut text (if present):
 				if e:checkDescend(miclass) and e.TextRecords[2] then
-					e.TextRecords[2][5] = maxw + DEF_SHORTCUT_XOFFS
+					e.TextRecords[2][5] = maxw
 				end
 			end
 		end

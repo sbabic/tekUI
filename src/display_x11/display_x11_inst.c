@@ -491,6 +491,7 @@ x11_processevent(TMOD_X11 *mod)
 			{
 				TExecReplyMsg(mod->x11_ExecBase, mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
+				TDBPRINTF(TDB_TRACE,("Released request (ShmEvent)\n"));
 			}
 			else
 				TDBPRINTF(TDB_ERROR,("shm event while no request pending\n"));
@@ -750,6 +751,13 @@ x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
 			break;
 
 		case ConfigureNotify:
+			if (mod->x11_RequestInProgress && v->waitforresize)
+			{
+				TExecReplyMsg(mod->x11_ExecBase, mod->x11_RequestInProgress);
+				mod->x11_RequestInProgress = TNULL;
+				v->waitforresize = TFALSE;
+				TDBPRINTF(TDB_WARN,("Released request (ConfigureNotify)\n"));
+			}
 			v->winleft = ev->xconfigure.x;
 			v->wintop = ev->xconfigure.y;
 			if ((v->winwidth != ev->xconfigure.width ||
@@ -786,6 +794,7 @@ x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
 				TExecReplyMsg(mod->x11_ExecBase, mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
 				v->waitforexpose = TFALSE;
+				TDBPRINTF(TDB_WARN,("Released request (MapNotify)\n"));
 			}
 			break;
 
@@ -830,9 +839,10 @@ x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
 				TExecReplyMsg(mod->x11_ExecBase, mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
 				mod->x11_CopyExposeHook = TNULL;
+				TDBPRINTF(TDB_TRACE,("Released request (NoExpose)\n"));
 			}
 			else
-				TDBPRINTF(TDB_TRACE,("Map: TITYPE_REFRESH NOT SET\n"));
+				TDBPRINTF(TDB_WARN,("NoExpose: TITYPE_REFRESH not set\n"));
 			break;
 
 		case FocusIn:

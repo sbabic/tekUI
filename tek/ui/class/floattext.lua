@@ -17,8 +17,6 @@
 --		normally the direct child of a [[#tek.ui.class.canvas : Canvas]]
 --
 --	ATTRIBUTES::
---		- {{BGPen [IG]}}
---			Pen for filling the background
 --		- {{FGPen [IG]}}
 --			Pen for rendering the text
 --		- {{FontSpec [IG]}}
@@ -30,6 +28,10 @@
 --	IMPLEMENTS::
 --		- FloatText:onSetText() - Handler called when {{Text}} is changed
 --
+--	STYLE PROPERTIES::
+--		- {{color}}
+--		- {{font}}
+--
 --	OVERRIDES::
 --		- Area:askMinMax()
 --		- Element:cleanup()
@@ -38,6 +40,9 @@
 --		- Class.new()
 --		- Area:setState()
 --		- Element:setup()
+--
+--	TODO::
+--		Should inherit from Gadget to support borders
 --
 -------------------------------------------------------------------------------
 
@@ -55,7 +60,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 3.3"
+_VERSION = "FloatText 4.2"
 
 local FloatText = _M
 
@@ -70,21 +75,32 @@ local NOTIFY_TEXT = { ui.NOTIFY_SELF, "onSetText" }
 -------------------------------------------------------------------------------
 
 function FloatText.init(self)
-	self.BGPen = self.BGPen or ui.PEN_LISTVIEWBACK
 	self.Canvas = false
 	self.CanvasHeight = false
-	self.FGPen = self.FGPen or ui.PEN_BUTTONTEXT
+	self.FGPen = self.FGPen or false
+	self.Foreground = false
 	self.FHeight = false
 	self.Font = false
 	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
 	self.Lines = false
-	self.Margin = ui.NULLOFFS
+	self.Margin = ui.NULLOFFS -- fixed
 	self.TrackDamage = self.TrackDamage or true
 	self.UnusedRegion = false
 	self.WordLengths = false
 	self.WordSpacing = false
 	return Area.init(self)
+end
+
+-------------------------------------------------------------------------------
+--	getProperties: overrides
+-------------------------------------------------------------------------------
+
+function FloatText:getProperties(p, pclass)
+	self.FGPen = self.FGPen or self:getProperty(p, pclass, "color")
+		or ui.PEN_LISTDETAIL
+	self.FontSpec = self.FontSpec or self:getProperty(p, pclass, "font")
+	Area.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -148,10 +164,9 @@ function FloatText:draw()
 		local x0 = ca and ca.CanvasLeft or 0
 		local x1 = ca and x0 + ca.CanvasWidth - 1 or self.Rect[3]
 
-		local fp = p[self.FGPen]
+		local fp = p[self.Foreground]
 		d:setFont(self.Font)
-		for _, r in dr:getRects() do
-			local r1, r2, r3, r4 = dr:getRect(r)
+		for _, r1, r2, r3, r4 in dr:getRects() do
 			d:pushClipRect(r1, r2, r3, r4)
 			for lnr, t in ipairs(self.Lines) do
 				-- overlap between damage and line:
@@ -172,8 +187,7 @@ function FloatText:draw()
 
 	local ur = self.UnusedRegion
 	if ur then
-		for _, r in ur:getRects() do
-			local r1, r2, r3, r4 = ur:getRect(r)
+		for _, r1, r2, r3, r4 in ur:getRects() do
 			d:fillRect(r1, r2, r3, r4, bp)
 		end
 	end
@@ -282,7 +296,7 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 	local x0 = r1 + m[1]
 	local y0 = r2 + m[2]
 	local x1 = r3 - m[3]
-	if not ch or (r[1] and r[3] - r[1] + 1 ~= width) then
+	if not ch or (not r[1] or r[3] - r[1] + 1 ~= width) then
 		self.Lines, ch = self:layoutText(r1, r2, width)
 		self.CanvasHeight = ch
 		redraw = true
@@ -308,8 +322,13 @@ end
 --	setState: overrides
 -------------------------------------------------------------------------------
 
-function FloatText:setState(bg)
-	Area.setState(self, bg or self.BGPen)
+function FloatText:setState(bg, fg)
+	fg = fg or self.FGPen
+	if fg ~= self.Foreground then
+		self.Foreground = fg
+		self.Redraw = true
+	end
+	Area.setState(self, bg)
 end
 
 -------------------------------------------------------------------------------

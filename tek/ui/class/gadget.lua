@@ -43,6 +43,8 @@
 --			Signifies a change of the Gadget's ability to interact with the
 --			user. Invokes the Gadget:onDisable() method. When an element is
 --			getting disabled, it loses its focus, too.
+--		- {{FGPen [IG]}} (userdata)
+--			A colored pen for rendering the foreground of the element
 --		- {{Hilite [SG]}} (boolean)
 --			Signifies a change of the Gadget's highligting state. Invokes
 --			Gadget:onHilite().
@@ -74,15 +76,21 @@
 --		- {{Selected [ISG]}} (boolean)
 --			Signifies a change of the gadget's selection state. Invokes
 --			Gadget:onSelect().
---		- {{Style [IG]}} (string)
---			Visual style of the element; can be
---			- "normal": The element is a normal gadget
---			- "knob": The element is being used as a knob for a
---			[[#tek.ui.class.slider : Slider]]
+--
+--	STYLE PROPERTIES::
+--		- {{color}} - color of text and details
+--		- {{effect}} - name of an overlay effect
+--
+--	STYLE PSEUDO CLASSES::
+--		- {{active}} - for elements in active state
+--		- {{disabled}} - for elements in disabled state
+--		- {{focus}} - for elements that have the focus
+--		- {{hover}} - for elements that are being hovered by the mouse
 --
 --	IMPLEMENTS::
 --		- Gadget:onActivate() - Handler for {{Active}}
 --		- Gadget:onDisable() - Handler for {{Disabled}}
+--		- Gadget:onFocus() - Handler for {{Focus}}
 --		- Gadget:onHilite() - Handler for {{Hilite}}
 --		- Gadget:onHold() - Handler for {{Hold}}
 --		- Gadget:onHover() - Handler for {{Hover}}
@@ -101,21 +109,17 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 9.4"
+_VERSION = "Gadget 10.0"
 
 local Gadget = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
-
-local DEF_IBORDERSTYLE = "none"
-local DEF_KNOBPADDING = { 4, 4, 4, 4 }
 
 local NOTIFY_HOVER = { ui.NOTIFY_SELF, "onHover", ui.NOTIFY_VALUE }
 local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate", ui.NOTIFY_VALUE }
@@ -124,29 +128,59 @@ local NOTIFY_DISABLED = { ui.NOTIFY_SELF, "onDisable", ui.NOTIFY_VALUE }
 local NOTIFY_SELECTED = { ui.NOTIFY_SELF, "onSelect", ui.NOTIFY_VALUE }
 local NOTIFY_PRESSED = { ui.NOTIFY_SELF, "onPress", ui.NOTIFY_VALUE }
 local NOTIFY_HOLD = { ui.NOTIFY_SELF, "onHold", ui.NOTIFY_VALUE }
+local NOTIFY_FOCUS = { ui.NOTIFY_SELF, "onFocus", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
 
 function Gadget.init(self)
-	-- Element has been activated:
+	self.BGPenDisabled = self.BGPenDisabled or false
+	self.BGPenSelected = self.BGPenSelected or false
+	self.BGPenHilite = self.BGPenHilite or false
+	self.BGPenFocus = self.BGPenFocus or false
+	self.FGPenDisabled = self.FGPenDisabled or false
+	self.FGPenSelected = self.FGPenSelected or false
+	self.FGPenHilite = self.FGPenHilite or false
+	self.FGPenFocus = self.FGPenFocus or false
 	self.Active = false
-	-- Element has been doubleclicked (or double-activated):
 	self.DblClick = false
-	-- Element is being held:
+	self.FGPen = self.FGPen or false
+	self.Foreground = false
 	self.Hold = false
-	-- The pointer is hovering over the element:
 	self.Hover = false
-	-- keycode shortcut:
 	self.KeyCode = self.KeyCode or false
-	-- Mode of behavior ("inert", "toggle", "touch", "button"):
 	self.Mode = self.Mode or "inert"
-	-- Element is being "pressed":
+	self.EffectName = self.EffectName or false
+	self.EffectHook = false
 	self.Pressed = false
-	-- Style of the Gadget ("normal", "knob"):
-	self.Style = self.Style or "normal"
 	return Frame.init(self)
+end
+
+-------------------------------------------------------------------------------
+--	getProperties: overrides
+-------------------------------------------------------------------------------
+
+function Gadget:getProperties(p, pclass)
+	self.EffectName = self.EffectName or self:getProperty(p, pclass, "effect")
+	self.FGPen = self.FGPen or self:getProperty(p, pclass, "color")
+	self.BGPenDisabled = self.BGPenDisabled or
+		self:getProperty(p, pclass or "disabled", "background-color")
+	self.BGPenSelected = self.BGPenSelected or
+		self:getProperty(p, pclass or "active", "background-color")
+	self.BGPenHilite = self.BGPenHilite or
+		self:getProperty(p, pclass or "hover", "background-color")
+	self.BGPenFocus = self.BGPenFocus or
+		self:getProperty(p, pclass or "focus", "background-color")
+	self.FGPenDisabled = self.FGPenDisabled or
+		self:getProperty(p, pclass or "disabled", "color")
+	self.FGPenSelected = self.FGPenSelected or
+		self:getProperty(p, pclass or "active", "color")
+	self.FGPenHilite = self.FGPenHilite or
+		self:getProperty(p, pclass or "hover", "color")
+	self.FGPenFocus = self.FGPenFocus or
+		self:getProperty(p, pclass or "focus", "color")
+	Frame.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -155,6 +189,7 @@ end
 
 function Gadget:setup(app, window)
 	Frame.setup(self, app, window)
+	-- add notifications:
 	self:addNotify("Disabled", ui.NOTIFY_CHANGE, NOTIFY_DISABLED)
 	self:addNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_HILITE)
 	self:addNotify("Selected", ui.NOTIFY_CHANGE, NOTIFY_SELECTED)
@@ -162,6 +197,10 @@ function Gadget:setup(app, window)
 	self:addNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
 	self:addNotify("Pressed", ui.NOTIFY_CHANGE, NOTIFY_PRESSED)
 	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
+	self:addNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
+	-- create effect hook:
+	self.EffectHook = ui.createHook("hook", self.EffectName, self,
+		{ Style = self.Style })
 end
 
 -------------------------------------------------------------------------------
@@ -169,6 +208,8 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:cleanup()
+	self.EffectHook = false
+	self:remNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
 	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:remNotify("Pressed", ui.NOTIFY_CHANGE, NOTIFY_PRESSED)
 	self:remNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
@@ -187,29 +228,12 @@ function Gadget:show(display, drawable)
 	if self.KeyCode and self.Mode ~= "inert" then
 		self.Window:addKeyShortcut(self.KeyCode, self)
 	end
-	local theme = display.Theme
-
-	if self.Style == "knob" then
-		self.Margin = self.Margin or ui.NULLOFFS
-		self.Padding = self.Padding or DEF_KNOBPADDING
-		self.BorderStyle = self.BorderStyle or "socket"
-		self.IBorderStyle = self.IBorderStyle or "button"
-	else
-		-- outer spacing:
-		self.Margin = self.Margin or theme.GadgetMargin or false
-		-- outer border:
-		self.Border = self.Border or theme.GadgetBorder or false
-		-- inner border:
-		self.IBorder = self.IBorder or theme.GadgetIBorder or false
-		-- inner spacing:
-		self.Padding = self.Padding or theme.GadgetPadding or false
-		-- outer borderstyle:
-		self.BorderStyle = self.BorderStyle or theme.GadgetBorderStyle or false
-		-- inner borderstyle:
-		self.IBorderStyle = self.IBorderStyle or theme.GadgetIBorderStyle or
-			DEF_IBORDERSTYLE
+	if Frame.show(self, display, drawable) then
+		if self.EffectHook then
+			self.EffectHook:show()
+		end
+		return true
 	end
-	return Frame.show(self, display, drawable)
 end
 
 -------------------------------------------------------------------------------
@@ -217,10 +241,39 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:hide()
+	if self.EffectHook then
+		self.EffectHook:hide()
+	end
 	Frame.hide(self)
 	if self.KeyCode then
 		self.Window:remKeyShortcut(self.KeyCode, self)
 	end
+end
+
+-------------------------------------------------------------------------------
+--	layout: overrides
+-------------------------------------------------------------------------------
+
+function Gadget:layout(x0, y0, x1, y1, markdamage)
+	if Frame.layout(self, x0, y0, x1, y1, markdamage) then
+		if self.EffectHook then
+			local r = self.Rect
+			self.EffectHook:layout(r[1], r[2], r[3], r[4])
+		end
+		return true
+	end
+end
+
+-------------------------------------------------------------------------------
+--	draw: overrides
+-------------------------------------------------------------------------------
+
+function Gadget:refresh()
+	local redraw = self.EffectHook and self.Redraw
+	Frame.refresh(self)
+	if redraw then
+		self.EffectHook:draw(self.Drawable)
+	end	
 end
 
 -------------------------------------------------------------------------------
@@ -283,6 +336,7 @@ function Gadget:onDisable(disabled)
 	if disabled and self.Focus and win then
 		win:setFocusElement()
 	end
+	self.Redraw = true
 	self:setState()
 end
 
@@ -292,6 +346,7 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:onSelect(selected)
+	self.RedrawBorder = true
 	self:setState()
 end
 
@@ -327,15 +382,33 @@ end
 --	setState: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:setState(bg)
+function Gadget:setState(bg, fg)
 	if not bg then
 		if self.Disabled then
-			bg = ui.PEN_BUTTONDISABLED
+			bg = self.BGPenDisabled
 		elseif self.Selected then
-			bg = ui.PEN_BUTTONACTIVE
+			bg = self.BGPenSelected
 		elseif self.Hilite then
-			bg = ui.PEN_BUTTONOVER
+			bg = self.BGPenHilite
+		elseif self.Focus then
+			bg = self.BGPenFocus
 		end
+	end
+	if not fg then
+		if self.Disabled then
+			fg = self.FGPenDisabled
+		elseif self.Selected then
+			fg = self.FGPenSelected
+		elseif self.Hilite then
+			fg = self.FGPenHilite
+		elseif self.Focus then
+			fg = self.FGPenFocus
+		end
+	end
+	fg = fg or self.FGPen or ui.PEN_DETAIL
+	if fg ~= self.Foreground then
+		self.Foreground = fg
+		self.Redraw = true
 	end
 	Frame.setState(self, bg)
 end
@@ -379,5 +452,18 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:checkFocus()
-	return not self.Disabled and self.Mode ~= "inert"
+	local m = self.Mode
+	return not self.Disabled and (m == "toggle" or m == "button" or
+		(m == "touch" and not self.Selected))
+end
+
+-------------------------------------------------------------------------------
+--	Gadget:onFocus(focused): This method is invoked when the element's
+--	{{Focus}} attribute has changed (see also [[#tek.ui.class.area : Area]]).
+-------------------------------------------------------------------------------
+
+function Gadget:onFocus(focused)
+	self.Window:setFocusElement(focused and self)
+	self.RedrawBorder = true
+	self:setState()
 end

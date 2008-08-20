@@ -23,7 +23,7 @@
 --		Description:
 --			- {{entry[1]}} is a table containing the text of each column;
 --			- {{entry[2]}} is a userdata field which can be used at will;
---			- {{entry[3]}} is a boolean indicating whether the line is selected.
+--			- {{entry[3]}} is a boolean indicating that the line is selected.
 --
 --		The following fields are reserved for internal use by the ListGadget;
 --		you should never rely on them or modify them.
@@ -38,6 +38,8 @@
 --			By default, the ListGadget's parent {{Canvas}} is used, but by
 --			use of this attribute it is possible to align the ListGadget to
 --			something else.
+--		- {{BgPenAlt [IG]}} (userdata)
+--			A colored pen for painting the background of alternating lines
 --		- {{ColumnPadding [IG]}} (number)
 --			The padding between columns, in pixels. By default, the
 --			ListGadget's {{Font}} is used to determine a reasonable offset.
@@ -46,7 +48,7 @@
 --			be {{0}}, in which case the cursor is invisible. Changing
 --			this value will invoke the ListGadget:onSetCursor() method.
 --		- {{FontSpec [IG]}} (string)
---			Font specifier for determining the font used by list entries.
+--			Font specifier for determining the font used for list entries.
 --			See [[#tek.ui.class.text : Text]] for details on its format.
 --		- {{HeaderGroup [IG]}} ([[#tek.ui.class.group : Group]])
 --			A group of elements used for the table header. The ListGadget
@@ -60,6 +62,8 @@
 --		- {{SelectedLines [G]}} (table)
 --			This attribute is a (sparse) table containing the numbers of
 --			selected lines in the list. Use {{pairs()}} to iterate it.
+--			See also ListGadget:getSelectedLines() for retrieving a
+--			numerically indexed list.
 --		- {{SelectedLine [ISG]}} (number)
 --			The ListGadget's current selected line; this value reflects only
 --			the line that was most recently selected or unselected - for
@@ -77,11 +81,15 @@
 --		- ListGadget:damageLine(): Marks line for repainting
 --		- ListGadget:getItem(): Returns the item at the specified line
 --		- ListGadget:getN(): Returns the number of entries in the list
+--		- ListGadget:getSelectedLines(): Returns a table of selected entries
 --		- ListGadget:onSelectLine(): Handler invoked for {{SelectedLine}}
 --		- ListGadget:onSetCursor(): Handler invoked for {{CursorLine}}
 --		- ListGadget:repaint(): Relayouts and repaints the list
 --		- ListGadget:remItem(): Removes an item from the list
 --		- ListGadget:setList(): Sets a new list object
+--
+--	STYLE PROPERTIES::
+--		- {{background-color2}}
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
@@ -101,7 +109,6 @@
 
 local ui = require "tek.ui"
 
-local Border = ui.Border
 local Display = ui.Display
 local Gadget = ui.Gadget
 local List = require "tek.class.list"
@@ -125,7 +132,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 10.1"
+_VERSION = "ListGadget 11.1"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -137,6 +144,8 @@ local NOTIFY_CURSOR = { ui.NOTIFY_SELF, "onSetCursor", ui.NOTIFY_VALUE,
 local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
 
+local DEF_CURSORBORDER = { 1, 1, 1, 1 }
+
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
@@ -145,32 +154,29 @@ function ListGadget.init(self)
 	self.AlignColumn = self.AlignColumn or false
 	-- the element that determines the size for AlignColumn:
 	self.AlignElement = self.AlignElement or false
-	self.BGPen = self.BGPen or false
 	self.BackPens = { }
+	-- alternative list background pen:
+	self.BGPenAlt = self.BGPenAlt or false
 	self.Border = ui.NULLOFFS
-	self.BorderStyle = false
-	self.Canvas = false
+	self.BorderStyle = "" -- fixed
+	self.Canvas = false -- fixed
 	self.CanvasHeight = false -- !!
 	self.ColumnPadding = self.ColumnPadding or false
 	self.ColumnPositions = { 0 }
 	self.ColumnWidths = { 0 }
-	self.CursorBorder = false
-	self.CursorBorderClass = false
-	self.CursorBorderStyle = false
+	self.CursorHook = false
 	self.CursorLine = self.CursorLine or 0
 	self.FHeight = false
 	self.Font = false
 	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
 	self.HeaderGroup = self.HeaderGroup or false
-	self.Margin = ui.NULLOFFS
+	self.Margin = ui.NULLOFFS -- fixed
 	self.Mode = "button"
-	self.IBorder = ui.NULLOFFS
-	self.IBorderStyle = false
 	self.ListObject = self.ListObject or List:new()
 	self.NumColumns = 1
 	self.NumSelectedLines = 0
-	self.Padding = ui.NULLOFFS
+	self.Padding = ui.NULLOFFS -- fixed
 	self.SelectedLines = false
 	self.SelectedLine = self.SelectedLine or 0
 	-- selection modes ("none", "single", "multi"):
@@ -179,11 +185,94 @@ function ListGadget.init(self)
 	return Gadget.init(self)
 end
 
+-------------------------------------------------------------------------------
+--	connect: overrides
+-------------------------------------------------------------------------------
+
 function ListGadget:connect(parent)
 	if parent:checkDescend(ScrollGroup) then
 		return Gadget.connect(self, parent)
 	end
 end
+
+-------------------------------------------------------------------------------
+--	getProperties:
+-------------------------------------------------------------------------------
+
+function ListGadget:getProperties(p, pclass)
+	self.BGPenAlt = self.BGPenAlt or 
+		self:getProperty(p, pclass, "background-color2")
+	Gadget.getProperties(self, p, pclass)
+end
+
+-------------------------------------------------------------------------------
+--	setup: overrides
+-------------------------------------------------------------------------------
+
+function ListGadget:setup(app, window)
+	self.Canvas = self.Parent -- TODO
+	Gadget.setup(self, app, window)
+	self:initSelectedLines()
+	self:addNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
+	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
+	self.CursorHook = ui.createHook("border", "cursor", self,
+		{ Border = DEF_CURSORBORDER })
+end
+
+-------------------------------------------------------------------------------
+--	cleanup: overrides
+-------------------------------------------------------------------------------
+
+function ListGadget:cleanup()
+	self.CursorHook = false
+	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
+	self:remNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
+	self.SelectedLines = false
+	Gadget.cleanup(self)
+	self.Canvas = false
+end
+
+-------------------------------------------------------------------------------
+--	show: overrides
+-------------------------------------------------------------------------------
+
+function ListGadget:show(display, drawable)
+	if Gadget.show(self, display, drawable) then
+		self.CursorHook:show(display, drawable)
+		self.Font = display:openFont(self.FontSpec)
+		self.FWidth, self.FHeight = Display:getTextSize(self.Font, "x")
+		self.ColumnPadding = self.ColumnPadding or self.FWidth
+		self:prepare(false)
+		return true
+	end
+end
+
+-------------------------------------------------------------------------------
+--	hide: overrides
+-------------------------------------------------------------------------------
+
+function ListGadget:hide()
+	self.CursorHook:hide()
+	self.Display:closeFont(self.Font)
+	self.Font = false
+	Gadget.hide(self)
+end
+
+-------------------------------------------------------------------------------
+--	askMinMax: overrides
+-------------------------------------------------------------------------------
+
+function ListGadget:askMinMax(m1, m2, m3, m4)
+	m1 = m1 + self.MinWidth
+	m2 = m2 + self.FHeight
+	m3 = ui.HUGE
+	m4 = ui.HUGE
+	return Gadget.askMinMax(self, m1, m2, m3, m4)
+end
+
+-------------------------------------------------------------------------------
+--	initSelectedLines:
+-------------------------------------------------------------------------------
 
 function ListGadget:initSelectedLines()
 	local s = { }
@@ -200,48 +289,6 @@ function ListGadget:initSelectedLines()
 	end
 	self.SelectedLines, self.NumSelectedLines = s, n
 	return s, n
-end
-
-function ListGadget:setup(app, window)
-	self.Canvas = self.Parent
-	Gadget.setup(self, app, window)
-	self:initSelectedLines()
-	self:addNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
-	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
-end
-
-function ListGadget:cleanup()
-	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
-	self:remNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
-	self.SelectedLines = false
-	Gadget.cleanup(self)
-	self.Canvas = false
-end
-
-function ListGadget:show(display, drawable)
-	self.CursorBorderStyle = self.CursorBorderStyle or "cursor"
-	self.CursorBorderClass = Border.loadClass(self.CursorBorderStyle)
-	if Gadget.show(self, display, drawable) then
-		self.Font = display:openFont(self.FontSpec)
-		self.FWidth, self.FHeight = Display:getTextSize(self.Font, "x")
-		self.ColumnPadding = self.ColumnPadding or self.FWidth
-		self:prepare(false)
-		return true
-	end
-end
-
-function ListGadget:hide()
-	self.Display:closeFont(self.Font)
-	self.Font = false
-	Gadget.hide(self)
-end
-
-function ListGadget:askMinMax(m1, m2, m3, m4)
-	m1 = m1 + self.MinWidth
-	m2 = m2 + self.FHeight
-	m3 = ui.HUGE
-	m4 = ui.HUGE
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
@@ -271,6 +318,11 @@ function ListGadget:damageLine(lnr)
 		self:markDamage(r1, r2, r3, r4)
 	end
 end
+
+-------------------------------------------------------------------------------
+--	shiftSelection: shift selection by given number of steps, starting at the
+--	specified line number.
+-------------------------------------------------------------------------------
 
 function ListGadget:shiftSelection(lnr, delta)
 	if lnr then
@@ -394,8 +446,8 @@ end
 function ListGadget:prepare(damage)
 	local lo = self.ListObject
 	if lo and self.Display then
-		local b1, b2, b3, b4 =
-			self.CursorBorderClass:getBorder(self, self.CursorBorder)
+
+		local b1, b2, b3, b4 = self.CursorHook:getBorder()
 		local f = self.Font
 		local cw = { }
 		self.ColumnWidths = cw
@@ -425,8 +477,9 @@ function ListGadget:prepare(damage)
 			y = y + h
 		end
 
-
-		if self.AlignColumn then
+		-- TODO: it's nonsense to depend on 'damage' here,
+		-- the real question is if we have been layouted yet...
+		if damage and self.AlignColumn then
 			local ae = self.AlignElement or self.Canvas
 			local pw = ae.Rect[3] - ae.Rect[1] + 1 - b1 - b3
 			local cx = 0
@@ -463,7 +516,7 @@ function ListGadget:prepare(damage)
 			if hg then
 				local e = hg.Children[i]
 				if e then
-					local p = e.PaddingAndBorder
+					local p = e.Padding
 					e.MinWidth = w	-- - p[1] - p[3]
 					if i == nc then
 						e.Width = "fill"
@@ -473,7 +526,6 @@ function ListGadget:prepare(damage)
 				end
 			end
 		end
-
 
 		self.MinWidth = cx
 		self.NumColumns = nc
@@ -512,25 +564,24 @@ function ListGadget:draw()
 		d:setFont(self.Font)
 
 		local pens = d.Pens
-		local fpen = pens[ui.PEN_LISTVIEWTEXT]
-		local cpen = pens[ui.PEN_LISTVIEWACTIVE]
-		local cfpen = pens[ui.PEN_LISTVIEWACTIVETEXT]
-		local spen = pens[ui.PEN_SHINE]
-		local bpens = self.BackPens
-		bpens[0] = pens[ui.PEN_LISTVIEWBACK]
-		bpens[1] = pens[ui.PEN_ALTLISTVIEWBACK]
+		local fpen = pens[self.FGPen]
 
-		local cbc = self.CursorBorderClass
-		local cb = self.CursorBorder
-		local b1, b2, b3, b4 = cbc:getBorder(self, cb)
+		local cpen = pens[self.BGPenSelected or ui.PEN_LISTACTIVE]
+		local cfpen = pens[self.FGPenSelected or ui.PEN_LISTACTIVEDETAIL]
+
+		local bpens = self.BackPens
+		bpens[0] = pens[self.BGPen]
+		bpens[1] = pens[self.BGPenAlt or self.BGPen]
+
+		local cbc = self.CursorHook
+		local b1, b2, b3, b4 = cbc:getBorder()
 
 		local x1 = self.Canvas.CanvasWidth - 1
 		local cl = self.CursorLine
 		local cp = self.ColumnPositions
 		local nc = #cp
 
-		for _, r in dr:getRects() do
-			local r1, r2, r3, r4 = dr:getRect(r)
+		for _, r1, r2, r3, r4 in dr:getRects() do
 			d:pushClipRect(r1, r2, r3, r4)
 			for lnr = 1, lo:getN() do
 				local bpen = bpens[(lnr - 1) % 2]
@@ -553,7 +604,8 @@ function ListGadget:draw()
 								d:popClipRect()
 							end
 						end
-						cbc:draw(self, cb, b1, l[4] + b2, x1 - b3, l[5] - b4)
+						cbc:layout(b1, l[4] + b2, x1 - b3, l[5] - b4)
+						cbc:draw(d)
 						d:pushClipRect(r1, r2, r3, r4)
 					else
 						-- without cursor:
@@ -615,7 +667,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:setState(bg, fg)
-	bg = bg or ui.PEN_LISTVIEWBACK
+	bg = bg or self.BGPen
 	Gadget.setState(self, bg, fg)
 end
 

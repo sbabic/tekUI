@@ -4,9 +4,9 @@ include $(BASEDIR)/config
 
 EXTRADEFS += $(LUA_DEFS)
 
-LUACLASSES = \
+CLASSES = \
 	class/application.lua class/area.lua class/border.lua class/canvas.lua \
-	class/checkmark.lua class/dirlist.lua class/display.lua \
+	class/drawhook.lua class/checkmark.lua class/dirlist.lua class/display.lua \
 	class/drawable.lua class/element.lua class/family.lua class/floattext.lua \
 	class/frame.lua class/gadget.lua class/gauge.lua class/group.lua \
 	class/handle.lua class/image.lua class/listgadget.lua class/listview.lua \
@@ -15,10 +15,11 @@ LUACLASSES = \
 	class/scrollgroup.lua class/slider.lua class/spacer.lua \
 	class/pagegroup.lua class/text.lua class/textinput.lua class/theme.lua \
 	class/vectorimage.lua class/window.lua
-LUABORDERS = \
-	border/blank.lua border/button.lua border/group.lua \
-	border/recess.lua border/socket.lua border/tab.lua \
-	border/cursor.lua
+BORDERS = border/default.lua border/cursor.lua
+HOOKS = hook/ripple.lua
+STYLES = style/default.css
+FONTS = font/Vera.ttf font/VeraMono.ttf
+CURSORS = cursor/cursor-green.png
 
 ###############################################################################
 
@@ -32,25 +33,24 @@ $(OBJDIR)/default.lo: layout/default.c
 
 ###############################################################################
 
-FONTS = font/Vera.ttf font/VeraMono.ttf
-CURSORS = cursor/cursor-green.png
-
-###############################################################################
-
 modules: $(OBJDIR) $(MODS)
 
 install:
 	$(INSTALL) -d $(LUA_LIB)/tek/ui/layout
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/layout
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/border
+	$(INSTALL) -d $(LUA_SHARE)/tek/ui/hook
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/class
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/font
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/cursor
+	$(INSTALL) -d $(LUA_SHARE)/tek/ui/style
 	$(INSTALL) -s layout/default.so $(LUA_LIB)/tek/ui/layout
-	$(INSTALL) $(LUACLASSES) $(LUA_SHARE)/tek/ui/class
-	$(INSTALL) $(LUABORDERS) $(LUA_SHARE)/tek/ui/border
+	$(INSTALL) $(CLASSES) $(LUA_SHARE)/tek/ui/class
+	$(INSTALL) $(BORDERS) $(LUA_SHARE)/tek/ui/border
+	$(INSTALL) $(HOOKS) $(LUA_SHARE)/tek/ui/hook
 	$(INSTALL) $(FONTS) $(LUA_SHARE)/tek/ui/font
 	$(INSTALL) $(CURSORS) $(LUA_SHARE)/tek/ui/cursor
+	$(INSTALL) $(STYLES) $(LUA_SHARE)/tek/ui/style
 
 clean: FORCE
 	-$(RM) $(MODS) $(LIBS)

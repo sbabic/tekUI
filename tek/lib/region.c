@@ -25,15 +25,13 @@ struct Region
 {
 	TAPTR rg_ExecBase;
 	struct TList rg_List;
-}; /* 16 bytes on 32bit arch */
+};
 
 struct RectNode
 {
 	struct TNode rn_Node;
 	TINT rn_Rect[4];
-	TUINT rn_Flags;
-	TUINT rn_Reserved;
-}; /* 32 bytes on 32bit arch */
+};
 
 /*****************************************************************************/
 
@@ -91,7 +89,6 @@ static struct RectNode *allocrectnode(TAPTR exec,
 		rn->rn_Rect[1] = y0;
 		rn->rn_Rect[2] = x1;
 		rn->rn_Rect[3] = y1;
-		rn->rn_Flags = 0;
 	}
 	return rn;
 }
@@ -312,14 +309,14 @@ static int region_collect(lua_State *L)
 		freelist(region->rg_ExecBase, &region->rg_List);
 		region->rg_ExecBase = TNULL;
 
-	#if 0
+		#if 0
 		/* release reference to ExecBase in metatable: */
 		lua_getfield(L, LUA_REGISTRYINDEX, TEK_CLASS_UI_REGION_NAME);
 		/* s: metatable */
 		luaL_unref(L, -1, 1);
 		lua_pop(L, 1);
 		/* s: */
-	#endif
+		#endif
 	}
 
 	return 0;
@@ -332,10 +329,14 @@ static int region_iterate(lua_State *L)
 
 	if (next)
 	{
+		struct RectNode *rn = (struct RectNode *) node;
 		TDBPRINTF(TDB_TRACE,("in iterate: %08x\n", node));
 		lua_pushlightuserdata(L, next);
-		lua_pushlightuserdata(L, node);
-		return 2;
+		lua_pushinteger(L, rn->rn_Rect[0]);
+		lua_pushinteger(L, rn->rn_Rect[1]);
+		lua_pushinteger(L, rn->rn_Rect[2]);
+		lua_pushinteger(L, rn->rn_Rect[3]);
+		return 5;
 	}
 
 	return 0;
@@ -353,39 +354,6 @@ static int region_getrects(lua_State *L)
 	/* s: func, udata, headnode */
 
 	return 3;
-}
-
-static int region_getrect(lua_State *L)
-{
-	struct RectNode *rn = lua_touserdata(L, 2);
-	if (rn)
-	{
-		lua_pushinteger(L, rn->rn_Rect[0]);
-		lua_pushinteger(L, rn->rn_Rect[1]);
-		lua_pushinteger(L, rn->rn_Rect[2]);
-		lua_pushinteger(L, rn->rn_Rect[3]);
-		return 4;
-	}
-	return 0;
-}
-
-static int region_getflags(lua_State *L)
-{
-	struct RectNode *rn = lua_touserdata(L, 2);
-	if (rn)
-	{
-		lua_pushinteger(L, rn->rn_Flags);
-		return 1;
-	}
-	return 0;
-}
-
-static int region_setflags(lua_State *L)
-{
-	struct RectNode *rn = lua_touserdata(L, 2);
-	if (rn)
-		rn->rn_Flags = luaL_checkinteger(L, 3);
-	return 0;
 }
 
 static int region_orrect(lua_State *L)
@@ -481,23 +449,13 @@ static int region_xorrect(lua_State *L)
 	return 0;
 }
 
-static int region_subrect(lua_State *L)
+static TBOOL subrect(lua_State *L, TAPTR exec, struct Region *region, TINT s[])
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
-	TAPTR exec = region->rg_ExecBase;
-	struct TNode *next, *node;
-	TBOOL success;
 	struct TList r1;
-	TINT s[4];
-
-	s[0] = luaL_checkinteger(L, 2);
-	s[1] = luaL_checkinteger(L, 3);
-	s[2] = luaL_checkinteger(L, 4);
-	s[3] = luaL_checkinteger(L, 5);
-
+	struct TNode *next, *node;
+	TBOOL success = TTRUE;
+	
 	TINITLIST(&r1);
-
-	success = TTRUE;
 	node = region->rg_List.tlh_Head;
 	for (; success && (next = node->tln_Succ); node = next)
 	{
@@ -529,7 +487,19 @@ static int region_subrect(lua_State *L)
 		freelist(exec, &r1);
 		luaL_error(L, "out of memory");
 	}
+	
+	return success;
+}
 
+static int region_subrect(lua_State *L)
+{
+	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	TINT s[4];
+	s[0] = luaL_checkinteger(L, 2);
+	s[1] = luaL_checkinteger(L, 3);
+	s[2] = luaL_checkinteger(L, 4);
+	s[3] = luaL_checkinteger(L, 5);
+	subrect(L, region->rg_ExecBase, region, s);
 	return 0;
 }
 
@@ -583,6 +553,44 @@ static int region_checkoverlap(lua_State *L)
 	return 1;
 }
 
+static void *optudata(lua_State *L, int ud, const char *tname)
+{
+	void *p = lua_touserdata(L, ud);
+	if (p != NULL) 
+	{
+		if (lua_getmetatable(L, ud)) 
+		{
+			lua_getfield(L, LUA_REGISTRYINDEX, tname);
+			if (lua_rawequal(L, -1, -2)) 
+			{
+				lua_pop(L, 2);
+				return p;
+			}
+			luaL_typerror(L, ud, tname);
+		}
+	}
+	return NULL;
+}
+
+static int region_subregion(lua_State *L)
+{
+	struct Region *self = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = optudata(L, 2, TEK_CLASS_UI_REGION_NAME);
+	if (region)
+	{
+		TAPTR exec = self->rg_ExecBase;
+		struct TNode *rnext, *rnode;
+		
+		rnode = region->rg_List.tlh_Head;
+		for (; (rnext = rnode->tln_Succ); rnode = rnext)
+		{
+			struct RectNode *rn = (struct RectNode *) rnode;
+			subrect(L, exec, self, rn->rn_Rect);
+		}
+	}	
+	return 0;
+}
+
 /*****************************************************************************/
 
 static const luaL_Reg libfuncs[] =
@@ -597,14 +605,12 @@ static const luaL_Reg regionmethods[] =
 	{ "__gc", region_collect },
 	{ "setRect", region_set },
 	{ "getRects", region_getrects },
-	{ "getRect", region_getrect },
 	{ "orRect", region_orrect },
 	{ "xorRect", region_xorrect },
 	{ "subRect", region_subrect },
-	{ "setFlags", region_setflags },
-	{ "getFlags", region_getflags },
 	{ "overlapRect", region_overlaprect },
 	{ "checkOverlap", region_checkoverlap },
+	{ "subRegion", region_subregion },
 	{ NULL, NULL }
 };
 

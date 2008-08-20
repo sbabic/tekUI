@@ -13,50 +13,54 @@
 --		Frame
 --
 --	OVERVIEW::
---		Implements inner and outer borders and the element's
---		inner padding.
+--		This class implements an element's borders. There are up to three
+--		borders implemented per element:
+--		Besides the main border, there is a 'focus' border that (in addition
+--		to the element's focus highlighting style) can be used to visualize
+--		that the element is currently receiving the input. Between main
+--		border and 'focus' border, there is an additional 'rim' border that
+--		can help to separate these two visually.
+--		Note that borders (which are organized as plug-ins) don't have to
+--		implement all sub borders; in fact, these properties are all
+--		internally handled by the default border hook, and more and other
+--		sub borders and properties may be defined and implemented in the
+--		future (or in other hooks). As the Frame class has no knowledge of
+--		sub borders, their respective widths are subtracted from the
+--		Element's total border width, leaving only the remaining width
+--		for the main border.
 --
 --	ATTRIBUTES::
 --		- {{Border [IG]}} (table)
---			An array of four thicknesses (in pixels) for the element's outer
---			border, in the order left, right, top, bottom. If unspecified
---			during initialization, the class' default outer border thicknesses
---			are used.
+--			An array of four widths (in pixels) for the element's
+--			border, in the order left, right, top, bottom.
 --		- {{BorderRegion [G]}} ([[#tek.lib.region : Region]])
---			Region object holding the outline of the element's outer border
---		- {{BorderClass [G]}} (Class)
---			Border class used for the element's outer border, loaded from
---			the directory {{tek/ui/border}}.
---		- {{BorderStyle [IG]}} (string)
---			Name of a style used for an element's outer border, which
---			corresponds to the name of a border class (e.g. "recess"),
---			used to create the element's border during initialization.
---			If unspecified, the class' default outer border style is used.
---		- {{IBorder [IG]}} (table)
---			An array of four thicknesses in pixels for the element's inner
---			border, in the order left, right, top, bottom. If unspecified
---			during initialization, the class' default inner border thicknesses
---			are used.
---		- {{IBorderClass [G]}} (Class)
---			Class used for the element's inner border, loaded from
---			the directory {{tek/ui/border}}.
---		- {{IBorderStyle [IG]}} (string)
---			Name of a style used for an element's inner border, which
---			corresponds to the name of a border class (e.g. "button"),
---			used to create the element's border during initialization.
---			If unspecified, the class' default inner border style is used.
---		- {{Padding [IG]}} (table)
---			An array of four offsets for the element's inner padding in the
---			order left, right, top, bottom [pixels]. If unspecified during
---			initialization, the class' default paddings are used.
+--			Region object holding the outline of the element's border
+--		- {{Legend [IG]}} (string)
+--			Border legend text [Default: '''false''']
+--
+--	STYLE PROPERTIES::
+--		- {{border-bottom-color}}
+--		- {{border-bottom-width}}
+--		- {{border-color}}
+--		- {{border-focus-color}}
+--		- {{border-focus-width}}
+--		- {{border-left-color}}
+--		- {{border-left-width}}
+--		- {{border-legend-font}}
+--		- {{border-right-color}}
+--		- {{border-right-width}}
+--		- {{border-rim-color}}
+--		- {{border-rim-width}}
+--		- {{border-style}}
+--		- {{border-top-color}}
+--		- {{border-top-width}}
+--		- {{border-width}}
 --
 --	IMPLEMENTS::
 --		- Frame:drawBorder() - Draws one of the element's borders
 --		- Frame:getBorder() - Returns one of the element's borders
---		- Frame:onFocus() - Handler for {{Focus}}
 --
 --	OVERRIDES::
---		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Area:draw()
 --		- Area:hide()
@@ -71,56 +75,49 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Area = ui.Area
-local Border = ui.Border
+local Region = require "tek.lib.region"
+local floor = math.floor
 local min = math.min
 local max = math.max
+local newRegion = Region.new
+local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 3.1"
+_VERSION = "Frame 4.1"
 
 local Frame = _M
-
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
-
-local DEF_PADDING = { 1, 1, 1, 1 }
-local NOTIFY_FOCUS = { ui.NOTIFY_SELF, "onFocus", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-function Frame.new(class, self)
-	self = self or { }
-	-- Combined padding and inner border offsets of the element:
-	self.PaddingAndBorder = { 0, 0, 0, 0 }
-	return Area.new(class, self)
-end
-
 function Frame.init(self)
-	-- Outer border offsets of the element:
-	self.Border = self.Border or false
-	-- Region describing the outer border:
+	self.Legend = self.Legend or false
+	if self.Legend then
+		self.Class = self.Class and self.Class .. " legend" or "legend"
+	end
+	self.BorderHook = false
+	self.Border = self.Border or { }
 	self.BorderRegion = false
-	-- Loaded class of the outer border:
-	self.BorderClass = false
-	-- Style name of the outer border:
-	self.BorderStyle = self.BorderStyle or false
-	-- Inner border offsets of the element:
-	self.IBorder = self.IBorder or false
-	-- Loaded class of the inner border:
-	self.IBorderClass = false
-	-- Style name of the inner border:
-	self.IBorderStyle = self.IBorderStyle or false
-	-- Padding (inner spacing) of the element:
-	self.Padding = self.Padding or false
-	-- Boolean to indicate whether the border needs to be redrawn:
 	self.RedrawBorder = false
 	return Area.init(self)
+end
+
+-------------------------------------------------------------------------------
+--	getProperties: overrides
+-------------------------------------------------------------------------------
+
+function Frame:getProperties(p, pclass)
+	local b = self.Border
+	b[1] = b[1] or tonumber(self:getProperty(p, pclass, "border-left-width"))
+	b[2] = b[2] or tonumber(self:getProperty(p, pclass, "border-top-width"))
+	b[3] = b[3] or tonumber(self:getProperty(p, pclass, "border-right-width"))
+	b[4] = b[4] or tonumber(self:getProperty(p, pclass, "border-bottom-width"))
+	Area.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -129,16 +126,12 @@ end
 
 function Frame:setup(app, window)
 	Area.setup(self, app, window)
-	self:addNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
-end
-
--------------------------------------------------------------------------------
---	cleanup: overrides
--------------------------------------------------------------------------------
-
-function Frame:cleanup()
-	self:remNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
-	Area.cleanup(self)
+	local b = self.Border
+	if (b[1] and b[1] > 0) or (b[2] and b[2] > 0) or
+		(b[3] and b[3] > 0) or (b[4] and b[4] > 0) then
+		self.BorderHook = ui.createHook("border", "default", self,
+			{ Border = b, Legend = self.Legend, Style = self.Style })
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -146,24 +139,11 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:show(display, drawable)
-	local theme = display.Theme
-	-- outer spacing:
-	self.Margin = self.Margin or theme.FrameMargin or false
-	-- outer border:
-	self.Border = self.Border or theme.FrameBorder or false
-	-- inner border:
-	self.IBorder = self.IBorder or theme.FrameIBorder or false
-	-- inner spacing:
-	self.Padding = self.Padding or theme.FramePadding or DEF_PADDING
-	-- outer borderstyle:
-	self.BorderStyle = self.BorderStyle or theme.FrameBorderStyle or "socket"
-	-- inner borderstyle:
-	self.IBorderStyle = self.IBorderStyle or theme.FrameIBorderStyle or false
-	-- border classes:
-	self.BorderClass = Border.loadClass(self.BorderStyle)
-	self.IBorderClass = Border.loadClass(self.IBorderStyle)
 	if self.Focus then
 		self:onFocus(self.Focus)
+	end
+	if self.BorderHook then
+		self.BorderHook:show(display, drawable)
 	end
 	return Area.show(self, display, drawable)
 end
@@ -173,25 +153,11 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:hide()
-	Area.hide(self)
-	self.BorderClass = false
+	if self.BorderHook then
+		self.BorderHook:hide()
+	end
 	self.BorderRegion = false
-	self.IBorderClass = false
-end
-
--------------------------------------------------------------------------------
---	askMinMax: overrides
--------------------------------------------------------------------------------
-
-function Frame:askMinMax(m1, m2, m3, m4)
-	local p = self.PaddingAndBorder
-	m1 = m1 + p[1] + p[3]
-	m2 = m2 + p[2] + p[4]
-	m3 = m3 + p[1] + p[3]
-	m4 = m4 + p[2] + p[4]
-	m1 = max(self.MinWidth, m1)
-	m2 = max(self.MinHeight, m2)
-	return Area.askMinMax(self, m1, m2, m3, m4)
+	Area.hide(self)
 end
 
 -------------------------------------------------------------------------------
@@ -199,30 +165,22 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:calcOffsets()
-	-- calculate margin + outer border:
-	local b1, b2, b3, b4 = self.BorderClass:getBorder(self, self.Border)
+	local b1, b2, b3, b4 = self:getBorder()
 	local m = self.Margin
 	local d = self.MarginAndBorder
 	d[1], d[2], d[3], d[4] = b1 + m[1], b2 + m[2], b3 + m[3], b4 + m[4]
-	-- calculate padding + inner border:
-	b1, b2, b3, b4 = self.IBorderClass:getBorder(self, self.IBorder)
-	local p = self.Padding
-	d = self.PaddingAndBorder
-	d[1], d[2], d[3], d[4] = b1 + p[1], b2 + p[2], b3 + p[3], b4 + p[4]
 end
 
 -------------------------------------------------------------------------------
---	border = Frame:getBorder([nr]): Returns an element's table of border
---	thicknesses in the order left, top, right, bottom. The optional argument
---	{{nr}} determines what border to return; {{1}} (default) is the outer
---	border, {{2}} is the element's inner border.
+--	border = Frame:getBorder(): Returns an element's border widths in the
+--	order left, top, right, bottom.
 -------------------------------------------------------------------------------
 
-function Frame:getBorder(nr)
-	if nr == 2 then
-		return self.IBorderClass:getBorder(self, self.IBorder)
+function Frame:getBorder()
+	if self.BorderHook then
+		return self.BorderHook:getBorder()
 	end
-	return self.BorderClass:getBorder(self, self.Border)
+	return 0, 0, 0, 0
 end
 
 -------------------------------------------------------------------------------
@@ -243,13 +201,10 @@ end
 
 function Frame:layout(r1, r2, r3, r4, markdamage)
 	local res = Area.layout(self, r1, r2, r3, r4, markdamage)
-	if res or not self.BorderRegion then
-		self.BorderRegion = self.BorderClass:getRegion(self,
-			self.Border, unpack(self.Rect))
-		if self.BorderRegion then
-			self.RedrawBorder = markdamage ~= false
-			res = true
-		end
+	if res and self.BorderHook then
+		-- getBorderRegion() implies layout():
+		self.BorderRegion = self.BorderHook:getBorderRegion()
+		self.RedrawBorder = markdamage ~= false
 	end
 	return res
 end
@@ -259,36 +214,8 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:punch(region)
-	local b1, b2, b3, b4 = self:getBorder()
-	local r = self.Rect
-	region:subRect(r[1] - b1, r[2] - b2, r[3] + b3, r[4] + b4)
-end
-
--------------------------------------------------------------------------------
---	Frame:drawBorder([nr]): This function draws one of an element's
---	borders. The optional argument {{nr}} determines which border is to be
---	drawn; {{1}} (default) indicates the outer border, {{2}} is the
---	element's inner border.
--------------------------------------------------------------------------------
-
-function Frame:drawBorder(nr)
-	local r = self.Rect
-	if nr == 2 then
-		local b1, b2, b3, b4 = self:getBorder(2)
-		self.IBorderClass:draw(self, self.IBorder,
-			r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4, 2)
-	else
-		self.BorderClass:draw(self, self.Border, r[1], r[2], r[3], r[4], 1)
-	end
-end
-
--------------------------------------------------------------------------------
---	draw: overrides
--------------------------------------------------------------------------------
-
-function Frame:draw()
-	Area.draw(self)
-	self:drawBorder(2)
+	Area.punch(self, region)
+	region:subRegion(self.BorderRegion)
 end
 
 -------------------------------------------------------------------------------
@@ -297,20 +224,22 @@ end
 
 function Frame:refresh()
 	Area.refresh(self)
-	if self.RedrawBorder then
-		self:drawBorder()
-		self.RedrawBorder = false
+	if self.RedrawBorder and self.BorderHook then
+		self.BorderHook:draw(self.Drawable)
 	end
+	self.RedrawBorder = false
 end
 
 -------------------------------------------------------------------------------
---	Frame:onFocus(focused): This method is invoked when the element's
---	{{Focus}} attribute has changed (see also [[#tek.ui.class.area : Area]]).
+--	getElementByXY: overrides
 -------------------------------------------------------------------------------
 
-function Frame:onFocus(focused)
-	self.Window:setFocusElement(focused and self)
-	self.RedrawBorder = true
-	self.Redraw = true -- TODO: ugly; needed to redraw the border
-	self:setState()
+function Frame:getElementByXY(x, y)
+	local r = self.Rect
+	if r[1] then
+		local b1, b2, b3, b4 = self:getBorder()
+		return x >= r[1] - b1 and x <= r[3] + b3 and y >= r[2] - b2 and 
+			y <= r[4] + b4 and self
+	end
+	db.warn("%s : layout not available", self:getClassName())
 end

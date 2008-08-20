@@ -48,41 +48,48 @@ local Text = ui.Text
 local ipairs = ipairs
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 4.3"
+_VERSION = "ListView 4.4"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
 -------------------------------------------------------------------------------
 
-local DEF_HEADITEM_IBORDER = { 1, 1, 1, 1 }
-
-local HeadItem = Text:newClass { _NAME = "_listviewhead" }
+local HeadItem = Text:newClass { _NAME = "_listviewheaditem" }
 
 function HeadItem.init(self)
 	self = self or { }
-	self.TextHAlign = "left"
-	self.Margin = ui.NULLOFFS
-	self.BorderStyle = "none"
-	self.IBorderStyle = "button"
-	self.Mode = "inert"
-	self.IBorder = DEF_HEADITEM_IBORDER
 	self.Border = ui.NULLOFFS
+	self.Margin = ui.NULLOFFS
+	self.Mode = "inert"
+	self.TextHAlign = "left"
 	self.Width = "auto"
-	self.Padding = ui.NULLOFFS
 	return Text.init(self)
-end
-
-function HeadItem:setState(bg)
-	Text.setState(self, bg or ui.PEN_GROUPBACK)
 end
 
 function HeadItem:askMinMax(m1, m2, m3, m4)
 	local w, h = self:getTextSize()
-	m1 = m1 + w
-	m2 = m2 + h
-	m3 = m3 + w
-	m4 = m4 + h
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
+	return Gadget.askMinMax(self, m1 + w, m2 + h, m3 + w, m4 + h)
+end
+
+-------------------------------------------------------------------------------
+
+local LVScrollGroup = ScrollGroup:newClass { _NAME = "_lvscrollgroup" }
+
+function LVScrollGroup:onSetCanvasHeight(h)
+	ScrollGroup.onSetCanvasHeight(self, h)
+	local c = self.Child
+	local r = c.Rect
+	local sh = r[4] - r[2] + 1
+	local en = self.VSliderGroupMode == "on" or
+		self.VSliderGroupMode == "auto" and (sh < h)
+	if en ~= self.VSliderGroupEnabled then
+		if en then
+			self.ExternalGroup:addMember(self.VSliderGroup, 2)
+		else
+			self.ExternalGroup:remMember(self.VSliderGroup, 2)
+		end
+		self.VSliderGroupEnabled = en
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -116,10 +123,11 @@ function ListView.new(class, self)
 		{
 			ScrollGroup:new
 			{
+				Margin = ui.NULLOFFS,
 				VSliderMode = "off",
 				HSliderMode = self.HSliderMode,
 				KeepMinHeight = true,
-				Canvas = Canvas:new
+				Child = Canvas:new
 				{
 					passMsg = function(self, msg)
 						-- pass input unmodified:
@@ -133,12 +141,21 @@ function ListView.new(class, self)
 						Children =
 						{
 							self.HeaderGroup,
-							ScrollGroup:new
+							LVScrollGroup:new
 							{
+								Margin = ui.NULLOFFS,
+
+								-- our own sliders are always off:
 								VSliderMode = "off",
 								HSliderMode = "off",
+
+								-- data to service the external slider:
+								VSliderGroupMode = self.VSliderMode,
 								VSliderGroup = self.VSliderGroup,
-								Canvas = Canvas:new
+								VSliderGroupEnabled = true,
+								ExternalGroup = self,
+
+								Child = Canvas:new
 								{
 									Child = self.Child
 								}
@@ -150,7 +167,7 @@ function ListView.new(class, self)
 			self.VSliderGroup
 		}
 		-- point element that determines listgadget alignment to outer canvas:
-		self.Child.AlignElement = self.Children[1].Canvas
+		self.Child.AlignElement = self.Children[1].Child
 	else
 		self.Children =
 		{
@@ -158,7 +175,7 @@ function ListView.new(class, self)
 			{
 				VSliderMode = self.VSliderMode,
 				HSliderMode = self.HSliderMode,
-				Canvas = Canvas:new
+				Child = Canvas:new
 				{
 					Child = self.Child
 				}

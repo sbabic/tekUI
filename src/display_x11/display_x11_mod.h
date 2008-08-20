@@ -291,6 +291,7 @@ typedef struct
 
 	/* HACK to consume an Expose event after ConfigureNotify: */
 	TBOOL waitforexpose;
+	TBOOL waitforresize;
 
 	TINT shm, shmevent;
 	XShmSegmentInfo shminfo;

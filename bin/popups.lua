@@ -14,7 +14,7 @@ ui.Application:new
 			{
 				ui.Group:new
 				{
-					Style = "menubar",
+					Class = "menubar",
 					Children =
 					{
 						ui.MenuItem:new
@@ -41,7 +41,38 @@ ui.Application:new
 									{
 										ui.MenuItem:new { Text = "Bla" },
 										ui.MenuItem:new { Text = "Bl_ub" },
-										ui.MenuItem:new { Text = "Fomp" },
+										ui.MenuItem:new 
+										{
+											Text = "Any",
+											Children =
+											{
+												ui.MenuItem:new 
+												{ 
+													Text = "Recursion", 
+													Children =
+													{
+														ui.MenuItem:new 
+														{ 
+															Text = "Depth" ,
+															Children =
+															{
+																ui.MenuItem:new 
+																{ 
+																	Text = "Will" ,
+																	Children =
+																	{
+																		ui.MenuItem:new 
+																		{ 
+																			Text = "Do." 
+																		},
+																	}										
+																},
+															}										
+														},
+													}										
+												},
+											}										
+										},
 									},
 								},
 								ui.Spacer:new { },
@@ -98,40 +129,47 @@ ui.Application:new
 				{
 					Children =
 					{
+						ui.Text:new
+						{
+							Class = "button",
+							Mode = "button",
+							Text = "Normal Button",
+							Style = "width: auto",
+						},
 						ui.PopItem:new
 						{
 							Text = "_PopItem",
 							-- these children are not connected:
 							Children =
 							{
-								ui.popitem:new
+								ui.PopItem:new
 								{
 									Text = "_Langer text",
 									Children =
 									{
-										ui.popitem:new { Text = "Eins" },
-										ui.popitem:new { Text = "Zwei" },
-										ui.popitem:new { Text = "Drei" },
+										ui.PopItem:new { Text = "Eins" },
+										ui.PopItem:new { Text = "Zwei" },
+										ui.PopItem:new { Text = "Drei" },
 									},
 								},
-								ui.popitem:new
+								ui.PopItem:new
 								{
 									Text = "_Bar",
 									Children =
 									{
-										ui.popitem:new { Text = "Hallo" },
-										ui.popitem:new
+										ui.PopItem:new { Text = "Hallo" },
+										ui.PopItem:new
 										{
 											Text = "_Außerordentlich langer Text",
 											Children =
 											{
-												ui.popitem:new { Text = "Eins" },
-												ui.spacer:new { },
-												ui.popitem:new { Text = "_Zwei" },
-												ui.popitem:new { Text = "Drei" },
+												ui.PopItem:new { Text = "Eins" },
+												ui.Spacer:new { },
+												ui.PopItem:new { Text = "_Zwei" },
+												ui.PopItem:new { Text = "Drei" },
 											}
 										},
-										ui.popitem:new
+										ui.PopItem:new
 										{
 											Text = "EXIT",
 											Notifications =
@@ -185,10 +223,26 @@ ui.Application:new
 									}
 								}
 							}
+						},
+						ui.PopList:new
+						{
+							Text = "?",
+							ListObject = List:new
+							{
+								Items =
+								{
+									{ { "1" } },
+									{ { "2" } },
+									{ { "3" } },
+									{ { "4" } },
+									{ { "5" } },
+								},
+							},
 						}
 					}
 				},
-				ui.Text:new { Id = "display", Text = "Popup Tests", Height = "free", FontSpec = "__huge" },
+				ui.Text:new { Id = "display", Text = "Popup Tests", 
+					Style = "height: free; font: default-huge-font" },
 			},
 		},
 	},

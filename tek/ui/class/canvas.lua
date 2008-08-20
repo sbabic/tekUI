@@ -28,10 +28,10 @@
 --			The height of the canvas (in pixels)
 --		- {{CanvasLeft [ISG]}} (number)
 --			Left visible offset of the canvas (in pixels)
---		- {{CanvasWidth [ISG]}} (number)
---			The width of the canvas (in pixels)
 --		- {{CanvasTop [ISG]}} (number)
 --			Top visible offset of the canvas (in pixels)
+--		- {{CanvasWidth [ISG]}} (number)
+--			The width of the canvas (in pixels)
 --		- {{Child [ISG]}} (object)
 --			The element being contained by the Canvas for scrolling
 --		- {{KeepMinHeight [IG]}} (boolean)
@@ -69,6 +69,7 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Application = ui.Application
 local Area = ui.Area
@@ -81,7 +82,7 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.area)
-_VERSION = "Canvas 10.3"
+_VERSION = "Canvas 10.6"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -102,16 +103,16 @@ function Canvas.init(self)
 	self.CanvasLeft = self.CanvasLeft or 0
 	self.CanvasTop = self.CanvasTop or 0
 	self.CanvasWidth = self.CanvasWidth or 0
+	self.Child = self.Child or self.ChildArea
+	self.ChildArea = self.ChildArea or Area:new { Margin = ui.NULLOFFS }
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
-	self.Margin = self.Margin or ui.NULLOFFS
-	self.ChildArea = self.ChildArea or Area:new { Margin = DEF_MARGIN }
-	self.Child = self.Child or self.ChildArea
-	self.VScrollStep = self.VScrollStep or 10
+	self.Margin = ui.NULLOFFS -- fixed
 	self.TempMsg = { }
 	-- track intra-area damages, so that they can be applied to child object:
 	self.TrackDamage = true
 	self.UnusedRegion = false
+	self.VScrollStep = self.VScrollStep or 10
 	return Area.init(self)
 end
 
@@ -152,6 +153,15 @@ function Canvas:cleanup()
 	self:remNotify("Child", ui.NOTIFY_CHANGE, NOTIFY_CHILD)
 	self.Child:cleanup()
 	Area.cleanup(self)
+end
+
+-------------------------------------------------------------------------------
+--	decodeProperties: overrides
+-------------------------------------------------------------------------------
+
+function Canvas:decodeProperties(p)
+	self.Child:decodeProperties(p)
+	Area.decodeProperties(self, p)
 end
 
 -------------------------------------------------------------------------------
@@ -253,8 +263,7 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 	if dr and markdamage ~= false then
 		local sx = self.CanvasLeft - r[1]
 		local sy = self.CanvasTop - r[2]
-		for _, r in dr:getRects() do
-			local r1, r2, r3, r4 = dr:getRect(r)
+		for _, r1, r2, r3, r4 in dr:getRects() do
 			-- mark as damage shifted into canvas space:
 			self.Child:markDamage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
 		end
@@ -318,8 +327,7 @@ function Canvas:draw()
 	local d = self.Drawable
 	local f = self.UnusedRegion
 	local p = d.Pens[self.Child.Background]
-	for _, r in f:getRects() do
-		local r1, r2, r3, r4 = f:getRect(r)
+	for _, r1, r2, r3, r4 in f:getRects() do
 		d:fillRect(r1, r2, r3, r4, p)
 	end
 end
@@ -365,8 +373,12 @@ end
 
 function Canvas:checkArea(x, y)
 	local r = self.Rect
-	if x >= r[1] and x <= r[3] and y >= r[2] and y <= r[4] then
-		return r[1] - self.CanvasLeft, r[2] - self.CanvasTop
+	if r[1] then
+		if x >= r[1] and x <= r[3] and y >= r[2] and y <= r[4] then
+			return r[1] - self.CanvasLeft, r[2] - self.CanvasTop
+		end
+	else
+		db.warn("%s : layout not available", self:getClassName())
 	end
 end
 

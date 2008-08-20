@@ -31,8 +31,8 @@
 --		- {{Range [ISG]}} (number)
 --			The range of the slider, i.e. the size it represents. Setting
 --			this value invokes the Slider:onSetRange() method.
---		- {{Style [IG]}} (string)
---			Style of the slider:
+--		- {{Kind [IG]}} (string)
+--			Kind of the slider:
 --				- "scrollbar" - for scrollbars
 --				- "number" - for adjusting numbers
 --				- "normal" - unspecified
@@ -61,68 +61,16 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Region = require "tek.lib.region"
-
 local Gadget = ui.Gadget
+local Region = require "tek.lib.region"
 local Numeric = ui.Numeric
 
 local floor = math.floor
 local max = math.max
 local min = math.min
-local unpack = unpack
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.9"
-
--------------------------------------------------------------------------------
---	SliderKnob:
--------------------------------------------------------------------------------
-
-local SliderKnob = Gadget:newClass { _NAME = "_sliderknob" }
-
-local RATIO = 0x23 -- of 0x100
-local OFFS = 4
-
-function SliderKnob:draw()
-	Gadget.draw(self)
-	if self.SliderStyle == "scrollbar" then
-		local d = self.Drawable
-		local r = self.Rect
-		local p1 = d.Pens[ui.PEN_HALFSHADOW]
-		local p2 = d.Pens[ui.PEN_HALFSHINE]
-		if self.Parent.Orientation == "horizontal" then
-			local w = r[3] - r[1] + 1
-			local n = floor(w * RATIO / (OFFS * 0x100))
-			n = min(6, max(n, 2))
-			local x = r[1] + floor((w - (n - 1) * OFFS) / 2)
-			local y = r[2] + floor((r[4] - r[2] + 1) / 2)
-			for i = 1, n do
-				d:drawLine(x - 1, y - 3, x, y - 3, p1)
-				d:drawPlot(x - 1, y - 2, p1)
-				d:drawPlot(x, y - 2, p2)
-				d:drawLine(x - 1, y + 1, x, y + 1, p1)
-				d:drawPlot(x - 1, y + 2, p1)
-				d:drawPlot(x, y + 2, p2)
-				x = x + OFFS
-			end
-		else
-			local h = r[4] - r[2] + 1
-			local n = floor(h * RATIO / (OFFS * 0x100))
-			n = min(6, max(n, 2))
-			local x = r[1] + floor((r[3] - r[1] + 1) / 2)
-			local y = r[2] + floor((h - (n - 1) * OFFS) / 2)
-			for i = 1, n do
-				d:drawLine(x - 3, y, x - 2, y, p1)
-				d:drawPlot(x - 3, y + 1, p1)
-				d:drawPlot(x - 2, y + 1, p2)
-				d:drawLine(x + 1, y, x + 2, y, p1)
-				d:drawPlot(x + 1, y + 1, p1)
-				d:drawPlot(x + 2, y + 1, p2)
-				y = y + OFFS
-			end
-		end
-	end
-end
+_VERSION = "Slider 6.11"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -138,19 +86,15 @@ local Slider = _M
 
 function Slider.init(self)
 	self.ForceInteger = self.ForceInteger or false
-	self.Height = self.Height or "fill"
 	self.HoldXY = { }
 	self.Mode = "button"
 	self.Move0 = false
 	self.Orientation = self.Orientation or "horizontal"
 	self.Pos0 = 0
 	self.Range = self.Range or false
-	self.Style = self.Style or "normal"
-	self.Width = self.Width or "fill"
-	self.Child = self.Child or SliderKnob:new
-	{
-		Style = "knob",
-		SliderStyle = self.Style
+	self.Kind = self.Kind or false
+	self.Child = self.Child or Gadget:new {
+		Class = "knob knob-" .. (self.Kind or "normal")
 	}
 	self = Numeric.init(self)
 	self.Range = max(self.Max, self.Range or self.Max)
@@ -158,12 +102,29 @@ function Slider.init(self)
 end
 
 -------------------------------------------------------------------------------
+--	connect: overrides
+-------------------------------------------------------------------------------
+
+function Slider:connect(parent)
+	-- our parent is also our knob's parent:
+	self.Child:connect(parent)
+	return Numeric.connect(self, parent)
+end
+
+-------------------------------------------------------------------------------
+--	decodeProperties: overrides
+-------------------------------------------------------------------------------
+
+function Slider:decodeProperties(p)
+	Numeric.decodeProperties(self, p)
+	self.Child:decodeProperties(p)
+end
+
+-------------------------------------------------------------------------------
 --	setup: overrides
 -------------------------------------------------------------------------------
 
 function Slider:setup(app, window)
-	-- connect knob to our common parent:
-	self.Child.Parent = self.Parent
 	Numeric.setup(self, app, window)
 	self:addNotify("Range", ui.NOTIFY_CHANGE, NOTIFY_RANGE, 1)
 	self.Child:setup(app, window)
@@ -184,21 +145,6 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:show(display, drawable)
-	local theme = display.Theme
-	self.Margin = self.Margin or theme.SliderMargin or false
-	self.Border = self.Border or theme.SliderBorder or false
-	self.IBorder = self.IBorder or theme.SliderIBorder or false
-	self.Padding = self.Padding or theme.SliderPadding or ui.NULLOFFS
-	self.BorderStyle = self.BorderStyle or theme.SliderBorderStyle or "blank"
-	self.IBorderStyle = self.IBorderStyle or theme.SliderIBorderStyle or
-		"recess"
-	self.Child.Margin = self.Child.Margin or theme.SliderKnobMargin or false
-	self.Child.Border = self.Child.Border or theme.SliderKnobBorder or false
-	self.Child.IBorder = self.Child.IBorder or theme.SliderKnobIBorder or false
-	self.Child.BorderStyle = self.Child.BorderStyle or
-		theme.SliderKnobBorderStyle or false
-	self.Child.IBorderStyle = self.Child.IBorderStyle or
-		theme.SliderKnobIBorderStyle or false
 	Numeric.show(self, display, drawable)
 	self.Child:show(display, drawable)
 	return true
@@ -225,11 +171,7 @@ function Slider:askMinMax(m1, m2, m3, m4)
 	else
 		h = h + h
 	end
-	m1 = m1 + w
-	m2 = m2 + h
-	m3 = m3 + w
-	m4 = m4 + h
-	return Numeric.askMinMax(self, m1, m2, m3, m4)
+	return Numeric.askMinMax(self, m1 + w, m2 + h, m3 + w, m4 + h)
 end
 
 -------------------------------------------------------------------------------
@@ -238,8 +180,8 @@ end
 
 function Slider:getKnobRect()
 	local r = self.Rect
-	if r[1] >= 0 then
-		local p = self.PaddingAndBorder
+	if r[1] and r[1] >= 0 then
+		local p = self.Padding
 		local m = self.Child.MarginAndBorder
 		local km = self.Child.MinMax
 		local x0 = r[1] + p[1] + m[1]
@@ -261,17 +203,21 @@ function Slider:getKnobRect()
 				km[2] - 1)
 		end
 		return x0 - m[1], y0 - m[2], x1 + m[3], y1 + m[4]
+	else
+		db.warn("%s : layout not available", self:getClassName())
 	end
 end
 
 -------------------------------------------------------------------------------
---	layout:
+--	layout: overrides
 -------------------------------------------------------------------------------
 
 function Slider:layout(r1, r2, r3, r4, markdamage)
-	local res = Numeric.layout(self, r1, r2, r3, r4, markdamage)
-	local x0, y0, x1, y1 = self:getKnobRect()
-	return self.Child:layout(x0, y0, x1, y1, markdamage) or res
+	if Numeric.layout(self, r1, r2, r3, r4, markdamage) then
+		local x0, y0, x1, y1 = self:getKnobRect()
+		self.Child:layout(x0, y0, x1, y1, markdamage)
+		return true
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -287,27 +233,32 @@ function Slider:relayout(e, r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
+--	markDamage: overrides
+-------------------------------------------------------------------------------
+
+function Slider:markDamage(r1, r2, r3, r4)
+	Numeric.markDamage(self, r1, r2, r3, r4)
+	self.Child:markDamage(r1, r2, r3, r4)
+end
+
+-------------------------------------------------------------------------------
 --	draw: overrides
 -------------------------------------------------------------------------------
 
 function Slider:draw()
 	local d = self.Drawable
 	local r = self.Rect
-	self:drawBorder(2)
-	local b1, b2, b3, b4 = self:getBorder(2)
-	local bg = Region.new(r[1] + b1, r[2] + b2, r[3] - b3, r[4] - b4)
+	local bg = Region.new(r[1], r[2], r[3], r[4])
 	local c = self.Child
 	r = c.Rect
 	local c1, c2, c3, c4 = c:getBorder()
 	c1, c2, c3, c4  = r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4
 	bg:subRect(c1, c2, c3, c4)
 	local bgpen = d.Pens[self.Background]
-	for _, r in bg:getRects() do
-		local r1, r2, r3, r4 = bg:getRect(r)
+	for _, r1, r2, r3, r4 in bg:getRects() do
 		d:fillRect(r1, r2, r3, r4, bgpen)
 	end
-	self.Child:drawBorder()
-	self.Child:draw()
+	self.Child:refresh()
 end
 
 function Slider:clickContainer(xy)
@@ -384,6 +335,7 @@ local function updateslider(self)
 		if x0 then
 			local _, changed = win:relayout(self.Child, x0, y0, x1, y1)
 			if changed then
+				self.Child.Redraw = true
 				self.Redraw = true
 			end
 		end
@@ -415,25 +367,6 @@ end
 
 function Slider:onSetRange(r)
 	updateslider(self)
-end
-
--------------------------------------------------------------------------------
---	setState: overrides
--------------------------------------------------------------------------------
-
-function Slider:setState(bg)
-	if not bg then
-		if self.Disabled then
-			bg = ui.PEN_BUTTONDISABLED
-		elseif self.Selected then
-			bg = ui.PEN_SLIDERACTIVE
-		elseif self.Hilite then
-			bg = ui.PEN_SLIDEROVER
-		else
-			bg = ui.PEN_SLIDERBACK
-		end
-	end
-	return Numeric.setState(self, bg)
 end
 
 -------------------------------------------------------------------------------

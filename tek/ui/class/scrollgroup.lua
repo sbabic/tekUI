@@ -21,7 +21,7 @@
 --		[[#tek.ui.class.scrollbar : ScrollBars]].
 --
 --	ATTRIBUTES::
---		- {{Canvas [IG]}} ([[#tek.ui.class.canvas : Canvas]])
+--		- {{Child [IG]}} ([[#tek.ui.class.canvas : Canvas]])
 --			Specifies the Canvas which encapsulates the scrollable
 --			area and children.
 --		- {{HSliderMode [IG]}} (string)
@@ -68,7 +68,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 8.4"
+_VERSION = "ScrollGroup 9.1"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -95,7 +95,7 @@ function ScrollGroup.new(class, self)
 	self.VSliderGroup = self.VSliderGroup or false
 	self.VSliderNotify = { self, "onSetSliderTop", ui.NOTIFY_VALUE }
 
-	self.Canvas.Child.Parent = self.Canvas -- TODO (connect)
+	self.Child.Child.Parent = self.Child -- TODO (connect)
 
 	local hslider, vslider
 
@@ -127,7 +127,7 @@ function ScrollGroup.new(class, self)
 		{
 			Children =
 			{
-				self.Canvas,
+				self.Child,
 				vslider,
 			},
 		},
@@ -137,13 +137,24 @@ function ScrollGroup.new(class, self)
 	return Group.new(class, self)
 end
 
+function ScrollGroup:askMinMax(m1, m2, m3, m4)
+	m1, m2, m3, m4 = Group.askMinMax(self, m1, m2, m3, m4)
+	if self.HSliderMode == "auto" and self.Child.MinWidth == 0 then
+		self.Child.MinWidth = m1
+	end
+	if self.VSliderMode == "auto" and self.Child.MinHeight == 0 then
+		self.Child.MinHeight = m2
+	end
+	return m1, m2, m3, m4
+end
+
 -------------------------------------------------------------------------------
 --	setup: overrides
 -------------------------------------------------------------------------------
 
 function ScrollGroup:setup(app, window)
 	Group.setup(self, app, window)
-	local c = self.Canvas
+	local c = self.Child
 	c:addNotify("CanvasLeft", ui.NOTIFY_CHANGE, self.NotifyLeft, 1)
 	c:addNotify("CanvasTop", ui.NOTIFY_CHANGE, self.NotifyTop, 1)
 	if self.HSliderGroup then
@@ -169,7 +180,7 @@ function ScrollGroup:cleanup()
 		self.HSliderGroup.Slider:remNotify("Value", ui.NOTIFY_CHANGE,
 			self.HSliderNotify)
 	end
-	local c = self.Canvas
+	local c = self.Child
 	c:remNotify("CanvasTop", ui.NOTIFY_CHANGE, self.NotifyTop)
 	c:remNotify("CanvasLeft", ui.NOTIFY_CHANGE, self.NotifyLeft)
 	Group.cleanup(self)
@@ -214,7 +225,7 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollGroup:onSetCanvasWidth(w)
-	local c = self.Canvas
+	local c = self.Child
 	local r = c.Rect
 	local sw = r[3] - r[1] + 1
 	local g = self.HSliderGroup
@@ -222,7 +233,7 @@ function ScrollGroup:onSetCanvasWidth(w)
 		g.Slider:setValue("Range", w)
 		g.Slider:setValue("Max", w - sw)
 	end
-	self.Canvas:setValue("CanvasWidth", w)
+	self.Child:setValue("CanvasWidth", w)
 
 	self:enableHSlider(self.HSliderMode == "on"
 		or self.HSliderMode == "auto" and (sw < w))
@@ -233,7 +244,7 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollGroup:onSetCanvasHeight(h)
-	local c = self.Canvas
+	local c = self.Child
 	local r = c.Rect
 	local sh = r[4] - r[2] + 1
 	local g = self.VSliderGroup
@@ -241,7 +252,7 @@ function ScrollGroup:onSetCanvasHeight(h)
 		g.Slider:setValue("Range", h)
 		g.Slider:setValue("Max", h - sh)
 	end
-	self.Canvas:setValue("CanvasHeight", h)
+	self.Child:setValue("CanvasHeight", h)
 	self:enableVSlider(self.VSliderMode == "on"
 		or self.VSliderMode == "auto" and (sh < h))
 end
@@ -251,7 +262,7 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollGroup:onSetCanvasLeft(x, ox)
-	local c = self.Canvas
+	local c = self.Child
 	ox = ox or c.CanvasLeft
 	local r = c.Rect
 	x = max(0, min(c.CanvasWidth - (r[3] - r[1] + 1), floor(x)))
@@ -260,7 +271,7 @@ function ScrollGroup:onSetCanvasLeft(x, ox)
 	if self.HSliderGroup then
 		self.HSliderGroup.Slider:setValue("Value", x)
 	end
-	self.Canvas:setValue("CanvasLeft", x)
+	self.Child:setValue("CanvasLeft", x)
 	if dx ~= 0 then
 		insert(self.CopyAreaList, { dx, 0 })
 	end
@@ -271,7 +282,7 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollGroup:onSetCanvasTop(y, oy)
-	local c = self.Canvas
+	local c = self.Child
 	oy = oy or c.CanvasTop
 	local r = c.Rect
 	y = max(0, min(c.CanvasHeight - (r[4] - r[2] + 1), floor(y)))
@@ -280,7 +291,7 @@ function ScrollGroup:onSetCanvasTop(y, oy)
 	if self.VSliderGroup then
 		self.VSliderGroup.Slider:setValue("Value", y)
 	end
-	self.Canvas:setValue("CanvasTop", y)
+	self.Child:setValue("CanvasTop", y)
 	if dy ~= 0 then
 		insert(self.CopyAreaList, { 0, dy })
 	end
@@ -291,7 +302,7 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollGroup:exposeArea(r1, r2, r3, r4)
-	self.Canvas:markDamage(r1, r2, r3, r4)
+	self.Child:markDamage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
@@ -308,7 +319,7 @@ end
 
 function ScrollGroup:layout(r1, r2, r3, r4, markdamage)
 	local res = Group.layout(self, r1, r2, r3, r4, markdamage)
-	local c = self.Canvas
+	local c = self.Child
 	self:onSetCanvasWidth(c.CanvasWidth)
 	self:onSetCanvasHeight(c.CanvasHeight)
 	self:onSetCanvasTop(c.CanvasTop)
@@ -321,7 +332,7 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollGroup:relayout(e, r1, r2, r3, r4)
-	local res, changed = self.Canvas:relayout(e, r1, r2, r3, r4)
+	local res, changed = self.Child:relayout(e, r1, r2, r3, r4)
 	if res then
 		return res, changed
 	end
@@ -336,7 +347,7 @@ function ScrollGroup:refresh()
 
 	-- handle scrolling:
 	local cs = self.Window.CanvasStack
-	insert(cs, self.Canvas)
+	insert(cs, self.Child)
 
 	-- determine cumulative copyarea shift:
 	local dx, dy = 0, 0
@@ -349,7 +360,7 @@ function ScrollGroup:refresh()
 	if dx ~=0 or dy ~= 0 then
 
 		-- determine own and parent canvas:
-		local canvas = self.Canvas
+		local canvas = self.Child
 		local parent = cs[#cs - 1] or cs[1]
 
 		-- calc total canvas shift for self and parent:
@@ -406,8 +417,8 @@ function ScrollGroup:refresh()
 					end
 
 					-- exposures resulting from areas shifting into canvas:
-					for _, r in dr:getRects() do
-						self:exposeArea(dr:getRect(r))
+					for _, r1, r2, r3, r4 in dr:getRects() do
+						self:exposeArea(r1, r2, r3, r4)
 					end
 
 					d:popClipRect()
