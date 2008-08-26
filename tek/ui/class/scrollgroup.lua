@@ -68,7 +68,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.1"
+_VERSION = "ScrollGroup 9.2"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -94,8 +94,6 @@ function ScrollGroup.new(class, self)
 	self.VSliderEnabled = false
 	self.VSliderGroup = self.VSliderGroup or false
 	self.VSliderNotify = { self, "onSetSliderTop", ui.NOTIFY_VALUE }
-
-	self.Child.Child.Parent = self.Child -- TODO (connect)
 
 	local hslider, vslider
 

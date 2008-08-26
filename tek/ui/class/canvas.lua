@@ -82,7 +82,7 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.area)
-_VERSION = "Canvas 10.6"
+_VERSION = "Canvas 10.7"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -123,6 +123,7 @@ end
 function Canvas:connect(parent)
 	-- this connects recursively:
 	Application.connect(self.Child, self)
+	self.Child:connect(self)
 	return Area.connect(self, parent)
 end
 

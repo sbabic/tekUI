@@ -203,7 +203,7 @@
 			</blockquote>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v4.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v5.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -219,21 +219,40 @@
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This class implements an element's borders. There are up to three
-						borders implemented per element:
-						Besides the main border, there is a 'focus' border that (in addition
-						to the element's focus highlighting style) can be used to visualize
-						that the element is currently receiving the input. Between main
-						border and 'focus' border, there is an additional 'rim' border that
-						can help to separate these two visually.
-						Note that borders (which are organized as plug-ins) don't have to
-						implement all sub borders; in fact, these properties are all
-						internally handled by the default border hook, and more and other
+						This class implements an element's borders. The &quot;default&quot; border
+						class (which is selected by default) handles up to three sub borders:
+					</p>
+					<blockquote>
+						<ul>
+							<li>
+								The 'main' border is the innermost of the sub borders. It is
+								used to render the border style, which can currently be &quot;inset&quot;,
+								&quot;outset&quot;, &quot;ridge&quot;, &quot;groove&quot;, or &quot;solid&quot;.
+							</li>
+							<li>
+								The 'rim' border seperates the two other borders and
+								may give the border composition a more contrastful look.
+							</li>
+							<li>
+								The 'focus' border, in addition to the element's focus
+								highlighting style, can be used to visualize that the element
+								is currently receiving the input. This border is designed as
+								the outermost of the three sub borders. When the element is
+								in unfocused state, this border should appear in the same color
+								as the surrounding group, making it indistinguishable from the
+								background.
+							</li>
+						</ul>
+					</blockquote>
+					<p>
+						Border classes (which are organized as plug-ins) do not need to
+						implement all sub borders; in fact, their properties are all
+						internally handled by the &quot;default&quot; border class, and more (and other)
 						sub borders and properties may be defined and implemented in the
-						future (or in other hooks). As the Frame class has no knowledge of
-						sub borders, their respective widths are subtracted from the
-						Element's total border width, leaving only the remaining width
-						for the main border.
+						future (or in other border classes). As the Frame class has no
+						notion of sub borders, their respective widths are subtracted
+						from the Element's total border width, leaving only the remaining
+						width for the 'main' border.
 					</p>
 				</blockquote>
 			</div>
@@ -246,6 +265,15 @@
 								<p>
 									An array of four widths (in pixels) for the element's
 									border, in the order left, right, top, bottom.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>BorderClass &#091;IG&#093;</code> (table)
+							<blockquote>
+								<p>
+									Name of the border class used to implement this element's
+									border. Default: &quot;default&quot;
 								</p>
 							</blockquote>
 						</li>
@@ -276,6 +304,9 @@
 						</li>
 						<li style="list-style-type: none">
 							<code>border-bottom-width</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>border-class</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>border-color</code> 
@@ -1269,7 +1300,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v6.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v6.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3305,7 +3336,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3546,7 +3577,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v10.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v10.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4167,6 +4198,15 @@
 								<p>
 									The padding between columns, in pixels. By default, the
 									ListGadget's <code>Font</code> is used to determine a reasonable offset.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>CursorBorderClass &#091;IG&#093;</code> (string)
+							<blockquote>
+								<p>
+									Name of the border class used to implement this element's
+									cursor border. Default: &quot;default&quot;
 								</p>
 							</blockquote>
 						</li>
@@ -6820,7 +6860,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Wed Aug 20 16:26:46 2008
+			Document generated on Wed Aug 27 00:28:26 2008
 		</p>
 	</div>
 	</body>

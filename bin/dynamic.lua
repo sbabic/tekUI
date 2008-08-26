@@ -141,6 +141,7 @@ ui.application:new
 				ui.Slider:new
 				{
 					Border = { 2, 2, 2, 2 },
+					Style = "border-rim-width: 1; border-focus-width: 1;",
 					Width = "free",
 					Value = 2,
 					Min = 0,

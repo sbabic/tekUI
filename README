@@ -474,16 +474,14 @@ be useful:
 
  * Application classes are created in the same way, but they are
  located in the application's local program directory (also under
- {{tek/ui/class}}). They would also allow an application to be
- shipped with modified versions of the standard classes, as the
- application's local directory will be searched for classes first.
+ {{tek/ui/class}}).
 
  * Another scope is inside the source code of an existing application
  or module. We might call this the 'ad-hoc' style, as new classes are
  often created out of a spontaneous need.
 
-For the ad-hoc style, it is not necessary to create a new source.
-For example, to derive a button class from the Text class:
+For the ad-hoc style, it is not necessary to create a new source
+file. For example, to derive a button class from the Text class:
 
   local Button = ui.Text:newClass { _NAME = "_button" }
 
@@ -491,7 +489,7 @@ By convention, ad-hoc classes can be named arbitrarily, but their
 names should be prefixed with an underscore to distinguish them
 from global classes.
 
-From this point, the new class can be overridden, e.g. for
+From this point, the new class can be extended, e.g. for
 initializations which turn a Text into a Button:
 
   function Button.init(self)
@@ -501,7 +499,7 @@ initializations which turn a Text into a Button:
   end
 
 As shown in the example, we also passed the call on to our
-superclass, which we expect to perform the missing initializations.
+super class, which we expect to perform the missing initializations.
 
 Finally, a new object from our new class can be created:
 
@@ -530,7 +528,7 @@ See also the module's documentation for redirecting the output.
 ==( proxied : 5.2. Proxied object model )==
 
 If you plan on extending existing classes or develop your own, you
-should set the following configurable parameters in
+are advised to set the following configurable parameters in
 [[tek.class][manual.html#tek.class]], the base class of all tekUI
 classes:
 
@@ -624,7 +622,7 @@ The template for a definition is this:
 
   DEFINITION::
 
-The function template:
+And the function template:
 
   ret1, ret2, ... = function(arg1, arg2, ...): ...
 

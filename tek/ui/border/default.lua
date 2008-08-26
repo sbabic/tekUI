@@ -9,7 +9,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 1.1"
+_VERSION = "DefaultBorder 1.2"
 
 local PEN_SHINE = ui.PEN_BORDERSHINE
 local PEN_SHADOW = ui.PEN_BORDERSHADOW
@@ -181,30 +181,23 @@ function DefaultBorder:draw()
 
 	local bs = e.Selected and self.BorderStyleActive or self.BorderStyle
 
+	local d1, d2, d3, d4 = b1 - t, b2 - t, b3 - t, b4 - t
+
 	if bs == "ridge" or bs == "groove" then
-		local d1 = b1 >= t and (b1 - t) or b1
-		local d2 = b2 >= t and (b2 - t) or b2
-		local d3 = b3 >= t and (b3 - t) or b3
-		local d4 = b4 >= t and (b4 - t) or b4
-		d1 = floor(d1 / 2)
-		d2 = floor(d2 / 2)
-		d3 = floor(d3 / 2)
-		d4 = floor(d4 / 2)
+		local e1, e2, e3, e4 =
+			floor(d1 / 2), floor(d2 / 2), floor(d3 / 2), floor(d4 / 2)
 		r1, r2, r3, r4, b1, b2, b3, b4 = drawBorderRect(d, r1, r2, r3, r4,
 			b1, b2, b3, b4,
-			d1, d2, d3, d4,
+			e1, e2, e3, e4,
 			pens[p[i]], pens[p[i+1]], pens[p[i+2]], pens[p[i+3]])
 		r1, r2, r3, r4, b1, b2, b3, b4 = drawBorderRect(d, r1, r2, r3, r4,
 			b1, b2, b3, b4,
-			d1, d2, d3, d4,
+			d1 - e1, d2 - e2, d3 - e3, d4 - e4,
 			pens[p[i+2]], pens[p[i+3]], pens[p[i]], pens[p[i+1]])
 	else
 		r1, r2, r3, r4, b1, b2, b3, b4 = 
 			drawBorderRect(d, r1, r2, r3, r4, b1, b2, b3, b4,
-			b1 >= t and (b1 - t) or b1,
-			b2 >= t and (b2 - t) or b2,
-			b3 >= t and (b3 - t) or b3,
-			b4 >= t and (b4 - t) or b4,
+			d1, d2, d3, d4, 
 			pens[p[i]], pens[p[i+1]], pens[p[i+2]], pens[p[i+3]])
 	end
 

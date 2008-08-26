@@ -56,7 +56,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 6.1"
+_VERSION = "PageGroup 6.2"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -75,13 +75,13 @@ local PageButtonGroup = Group:newClass { _NAME = "_pagebuttongroup" }
 
 function PageButtonGroup:draw()
 	Group.draw(self)
-	local d = self.Drawable
-	local r = self.Rect
-	local c = self.Children
-	if #c > 0 then
-		local pens = d.Pens
-		local e = c[#c]
-		local b = e.BorderHook
+-- 	local d = self.Drawable
+-- 	local r = self.Rect
+-- 	local c = self.Children
+-- 	if #c > 0 then
+-- 		local pens = d.Pens
+-- 		local e = c[#c]
+-- 		local b = e.BorderObject
 -- 		if b then
 -- 			local x0 = r[1]
 -- 			local _, _, b3, b4 = e:getBorder()
@@ -101,7 +101,7 @@ function PageButtonGroup:draw()
 -- 				0, 0, 0, b4,
 -- 				p1, p2, p3, p4)
 -- 		end
-	end
+-- 	end
 end
 
 -------------------------------------------------------------------------------

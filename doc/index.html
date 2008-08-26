@@ -733,9 +733,7 @@ app:run()
 					<li>
 						Application classes are created in the same way, but they are
 						located in the application's local program directory (also under
-						<code>tek/ui/class</code>). They would also allow an application to be
-						shipped with modified versions of the standard classes, as the
-						application's local directory will be searched for classes first.
+						<code>tek/ui/class</code>).
 					</li>
 					<li>
 						Another scope is inside the source code of an existing application
@@ -745,8 +743,8 @@ app:run()
 				</ul>
 			</blockquote>
 			<p>
-				For the ad-hoc style, it is not necessary to create a new source.
-				For example, to derive a button class from the Text class:
+				For the ad-hoc style, it is not necessary to create a new source
+				file. For example, to derive a button class from the Text class:
 			</p>
 <pre>
 local Button = ui.Text:newClass { _NAME = &quot;_button&quot; }
@@ -757,7 +755,7 @@ local Button = ui.Text:newClass { _NAME = &quot;_button&quot; }
 				from global classes.
 			</p>
 			<p>
-				From this point, the new class can be overridden, e.g. for
+				From this point, the new class can be extended, e.g. for
 				initializations which turn a Text into a Button:
 			</p>
 <pre>
@@ -769,7 +767,7 @@ end
 </pre>
 			<p>
 				As shown in the example, we also passed the call on to our
-				superclass, which we expect to perform the missing initializations.
+				super class, which we expect to perform the missing initializations.
 			</p>
 			<p>
 				Finally, a new object from our new class can be created:
@@ -804,7 +802,7 @@ db.level = db.INFO
 		<div class="node"><h2><a name="proxied" id="proxied">5.2. Proxied object model</a></h2>
 			<p>
 				If you plan on extending existing classes or develop your own, you
-				should set the following configurable parameters in
+				are advised to set the following configurable parameters in
 				<a href="manual.html#tek.class">tek.class</a>, the base class of all tekUI
 				classes:
 			</p>
@@ -917,7 +915,7 @@ end
 DEFINITION::
 </pre>
 			<p>
-				The function template:
+				And the function template:
 			</p>
 <pre>
 ret1, ret2, ... = function(arg1, arg2, ...): ...

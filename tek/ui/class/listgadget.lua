@@ -43,6 +43,9 @@
 --		- {{ColumnPadding [IG]}} (number)
 --			The padding between columns, in pixels. By default, the
 --			ListGadget's {{Font}} is used to determine a reasonable offset.
+--		- {{CursorBorderClass [IG]}} (string)
+--			Name of the border class used to implement this element's
+--			cursor border. Default: "default"
 --		- {{CursorLine [ISG]}} (number)
 --			The line number of the ListGadget's cursor; this value may
 --			be {{0}}, in which case the cursor is invisible. Changing
@@ -108,7 +111,6 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-
 local Display = ui.Display
 local Gadget = ui.Gadget
 local List = require "tek.class.list"
@@ -127,12 +129,13 @@ local overlap = Region.overlapCoords
 local pairs = pairs
 local remove = table.remove
 local sort = table.sort
+local tonumber = tonumber
 local tostring = tostring
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 11.1"
+_VERSION = "ListGadget 12.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -143,8 +146,6 @@ local NOTIFY_CURSOR = { ui.NOTIFY_SELF, "onSetCursor", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
 local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
-
-local DEF_CURSORBORDER = { 1, 1, 1, 1 }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -164,7 +165,9 @@ function ListGadget.init(self)
 	self.ColumnPadding = self.ColumnPadding or false
 	self.ColumnPositions = { 0 }
 	self.ColumnWidths = { 0 }
-	self.CursorHook = false
+	self.CursorBorderClass = self.CursorBorderClass or false
+	self.CursorBorder = { }
+	self.CursorObject = false
 	self.CursorLine = self.CursorLine or 0
 	self.FHeight = false
 	self.Font = false
@@ -190,9 +193,8 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:connect(parent)
-	if parent:checkDescend(ScrollGroup) then
-		return Gadget.connect(self, parent)
-	end
+	self.Canvas = parent
+	return Gadget.connect(self, parent)
 end
 
 -------------------------------------------------------------------------------
@@ -202,6 +204,13 @@ end
 function ListGadget:getProperties(p, pclass)
 	self.BGPenAlt = self.BGPenAlt or 
 		self:getProperty(p, pclass, "background-color2")
+	self.CursorBorderClass = self.CursorBorderClass or 
+		self:getProperty(p, pclass, "border-class")
+	local b = self.CursorBorder
+	b[1] = b[1] or tonumber(self:getProperty(p, pclass, "border-left-width"))
+	b[2] = b[2] or tonumber(self:getProperty(p, pclass, "border-top-width"))
+	b[3] = b[3] or tonumber(self:getProperty(p, pclass, "border-right-width"))
+	b[4] = b[4] or tonumber(self:getProperty(p, pclass, "border-bottom-width"))
 	Gadget.getProperties(self, p, pclass)
 end
 
@@ -210,13 +219,13 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:setup(app, window)
-	self.Canvas = self.Parent -- TODO
 	Gadget.setup(self, app, window)
 	self:initSelectedLines()
 	self:addNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
 	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
-	self.CursorHook = ui.createHook("border", "cursor", self,
-		{ Border = DEF_CURSORBORDER })
+	self.CursorObject = ui.createHook("border", 
+		self.CursorBorderClass or "default", self,
+			{ Border = self.CursorBorder })
 end
 
 -------------------------------------------------------------------------------
@@ -224,7 +233,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:cleanup()
-	self.CursorHook = false
+	self.CursorObject = false
 	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
 	self:remNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
 	self.SelectedLines = false
@@ -238,7 +247,7 @@ end
 
 function ListGadget:show(display, drawable)
 	if Gadget.show(self, display, drawable) then
-		self.CursorHook:show(display, drawable)
+		self.CursorObject:show(display, drawable)
 		self.Font = display:openFont(self.FontSpec)
 		self.FWidth, self.FHeight = Display:getTextSize(self.Font, "x")
 		self.ColumnPadding = self.ColumnPadding or self.FWidth
@@ -252,7 +261,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:hide()
-	self.CursorHook:hide()
+	self.CursorObject:hide()
 	self.Display:closeFont(self.Font)
 	self.Font = false
 	Gadget.hide(self)
@@ -447,7 +456,7 @@ function ListGadget:prepare(damage)
 	local lo = self.ListObject
 	if lo and self.Display then
 
-		local b1, b2, b3, b4 = self.CursorHook:getBorder()
+		local b1, b2, b3, b4 = self.CursorObject:getBorder()
 		local f = self.Font
 		local cw = { }
 		self.ColumnWidths = cw
@@ -573,7 +582,7 @@ function ListGadget:draw()
 		bpens[0] = pens[self.BGPen]
 		bpens[1] = pens[self.BGPenAlt or self.BGPen]
 
-		local cbc = self.CursorHook
+		local cbc = self.CursorObject
 		local b1, b2, b3, b4 = cbc:getBorder()
 
 		local x1 = self.Canvas.CanvasWidth - 1
@@ -590,7 +599,6 @@ function ListGadget:draw()
 				if overlap(r1, r2, r3, r4, 0, l[4], x1, l[5]) then
 					if lnr == cl then
 						-- with cursor:
-						d:popClipRect()
 						d:fillRect(b1, l[4] + b2, x1 - b3, l[5] - b4,
 							l[3] and cpen or bpen)
 						for ci = 1, nc do
@@ -606,7 +614,6 @@ function ListGadget:draw()
 						end
 						cbc:layout(b1, l[4] + b2, x1 - b3, l[5] - b4)
 						cbc:draw(d)
-						d:pushClipRect(r1, r2, r3, r4)
 					else
 						-- without cursor:
 						d:fillRect(0, l[4], x1, l[5], l[3] and cpen or bpen)
@@ -615,7 +622,8 @@ function ListGadget:draw()
 							if text then
 								local cx = cp[ci]
 								if overlap(r1, r2, r3, r4, cx, l[4],
-									cx + self.ColumnWidths[ci] - 1, l[5]) then
+									b1 + cx + self.ColumnWidths[ci] - 1, 
+									l[5]) then
 									d:pushClipRect(b1 + cx, l[4] + b2,
 										b1 + cx + self.ColumnWidths[ci],
 										l[5] - b4)
