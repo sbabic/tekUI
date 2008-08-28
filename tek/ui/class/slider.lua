@@ -71,7 +71,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.12"
+_VERSION = "Slider 6.13"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -262,13 +262,11 @@ function Slider:draw()
 	local c = self.Child
 	r = c.Rect
 	local c1, c2, c3, c4 = c:getBorder()
-	c1, c2, c3, c4  = r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4
-	bg:subRect(c1, c2, c3, c4)
+	bg:subRect(r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4)
 	local bgpen = d.Pens[self.Background]
 	for _, r1, r2, r3, r4 in bg:getRects() do
 		d:fillRect(r1, r2, r3, r4, bgpen)
 	end
-	self.Child:draw()
 end
 
 -------------------------------------------------------------------------------

@@ -1,10 +1,10 @@
 
 /*
-**	tek/ui/style/default.css - Default stylesheet for the tekUI toolkit
+**	tek/ui/style/default.css - tekUI default stylesheet
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Version: 1.0
+**	Version: 1.1
 */
 
 /* element classes: */
@@ -256,6 +256,10 @@ tek.ui.class.window {
 }
 
 .page-button:focus {
+	background-color: hover;
+}
+
+.page-button:hover {
 	background-color: hover;
 }
 
