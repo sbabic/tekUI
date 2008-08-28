@@ -68,8 +68,8 @@
 --		- {{border-width}}
 --
 --	IMPLEMENTS::
---		- Frame:drawBorder() - Draws one of the element's borders
---		- Frame:getBorder() - Returns one of the element's borders
+--		- Frame:drawBorder() - Draws the element's border
+--		- Frame:getBorder() - Queries the element's border
 --
 --	OVERRIDES::
 --		- Element:cleanup()
@@ -98,7 +98,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 5.0"
+_VERSION = "Frame 6.0"
 
 local Frame = _M
 
@@ -234,13 +234,23 @@ function Frame:punch(region)
 end
 
 -------------------------------------------------------------------------------
+--	drawBorder(): Draws an element's border.
+-------------------------------------------------------------------------------
+
+function Frame:drawBorder()
+	if self.BorderObject then
+		self.BorderObject:draw(self.Drawable)
+	end
+end
+
+-------------------------------------------------------------------------------
 --	refresh: overrides
 -------------------------------------------------------------------------------
 
 function Frame:refresh()
 	Area.refresh(self)
-	if self.RedrawBorder and self.BorderObject then
-		self.BorderObject:draw(self.Drawable)
+	if self.RedrawBorder then
+		self:drawBorder()
 	end
 	self.RedrawBorder = false
 end

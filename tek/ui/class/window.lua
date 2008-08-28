@@ -49,15 +49,15 @@
 --			The window's top offset on the display
 --
 --	IMPLEMENTS::
---		- Window:clickElement() - Emulate a click on an element
+--		- Window:addInputHandler() - Adds an input handler to the window
+--		- Window:clickElement() - Simulates a click on an element
 --		- Window:onChangeStatus() - Handler for {{Status}}
---		- Window:addInputHandler() - Adds an input handler
---		- Window:remInputHandler() - Removes an input handler
---		- Window:setActiveElement() - Sets window's active element
---		- Window:setDblClickElement() - Sets window's doubleclick element
---		- Window:setFocusElement() - Sets window's focused element
---		- Window:setHiliteElement() - Sets window's hovered element
---		- Window:setMovingElement() - Sets window's moving element
+--		- Window:remInputHandler() - Removes an input handler from the window
+--		- Window:setActiveElement() - Sets the window's active element
+--		- Window:setDblClickElement() - Sets the window's doubleclick element
+--		- Window:setFocusElement() - Sets the window's focused element
+--		- Window:setHiliteElement() - Sets the window's hover element
+--		- Window:setMovingElement() - Sets the window's moving element
 --
 --	OVERRIDES::
 --		- Area:getElement()

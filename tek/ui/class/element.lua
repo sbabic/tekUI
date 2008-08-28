@@ -37,10 +37,10 @@
 --
 --	IMPLEMENTS::
 --		- Element:cleanup() - Unlinks the element from its environment
---		- Element:connect() - Connects the element to a parent object
+--		- Element:connect() - Connects the element to a parent element
 --		- Element:decodeProperties() - Decodes the element's style attributes
 --		- Element:disconnect() - Disconnects the element from its parent
---		- Element:getProperties() - Retrieves style properties
+--		- Element:getProperties() - Retrieves an element's style properties
 --		- Element:getProperty() - Retrieves a single style property
 --		- Element:setup() - Links the element to its environment
 --
@@ -125,7 +125,7 @@ function Element:disconnect()
 end
 
 -------------------------------------------------------------------------------
---	Element:decodeProperties(props): Invokes the element's
+--	Element:decodeProperties(props): [Internal] Invokes the element's
 --	Element:getProperties() function, possibly multiple times, passing it
 --	(in turn) the decoded properties from the element's {{Style}} attribute,
 --	and global properties from one or more style sheets.

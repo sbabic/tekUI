@@ -27,6 +27,7 @@
 --		- Object.init()
 --		- Area:layout()
 --		- Numeric:onSetValue()
+--		- Area:refresh()
 --		- Area:relayout()
 --		- Area:setState()
 --		- Element:setup()
@@ -44,7 +45,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 4.1"
+_VERSION = "Gauge 4.2"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -177,6 +178,15 @@ function Gauge:relayout(e, r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
+--	refresh: overrides
+-------------------------------------------------------------------------------
+
+function Gauge:refresh()
+	Numeric.refresh(self)	
+	self.Child:refresh()
+end
+
+-------------------------------------------------------------------------------
 --	markDamage: overrides
 -------------------------------------------------------------------------------
 
@@ -205,7 +215,7 @@ function Gauge:draw()
 
 	if self.Value ~= self.Min then
 		bg:subRect(x0, y0, x1, y1)
-		self.Child:refresh()
+		self.Child:draw()
 	end
 
 	local bgpen = d.Pens[self.Background]

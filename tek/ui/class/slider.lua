@@ -50,6 +50,7 @@
 --		- Area:passMsg()
 --		- Gadget:onFocus()
 --		- Gadget:onHold()
+--		- Area:refresh()
 --		- Area:relayout()
 --		- Area:setState()
 --		- Element:setup()
@@ -70,7 +71,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.11"
+_VERSION = "Slider 6.12"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -233,6 +234,15 @@ function Slider:relayout(e, r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
+--	refresh: overrides
+-------------------------------------------------------------------------------
+
+function Slider:refresh()
+	Numeric.refresh(self)	
+	self.Child:refresh()
+end
+
+-------------------------------------------------------------------------------
 --	markDamage: overrides
 -------------------------------------------------------------------------------
 
@@ -258,8 +268,12 @@ function Slider:draw()
 	for _, r1, r2, r3, r4 in bg:getRects() do
 		d:fillRect(r1, r2, r3, r4, bgpen)
 	end
-	self.Child:refresh()
+	self.Child:draw()
 end
+
+-------------------------------------------------------------------------------
+--	clickContainer:
+-------------------------------------------------------------------------------
 
 function Slider:clickContainer(xy)
 	local b1, b2, b3, b4 = self.Child:getBorder()

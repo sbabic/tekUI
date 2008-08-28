@@ -81,7 +81,7 @@ local ipairs = ipairs
 local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 14.1"
+_VERSION = "Group 14.2"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -336,9 +336,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:punch(region)
-	local b1, b2, b3, b4 = unpack(self.MarginAndBorder)
+	local m = self.MarginAndBorder
 	local r = self.Rect
-	region:subRect(r[1] - b1, r[2] - b2, r[3] + b3, r[4] + b4)	
+	region:subRect(r[1] - m[1], r[2] - m[2], r[3] + m[3], r[4] + m[4])	
 end
 
 -------------------------------------------------------------------------------

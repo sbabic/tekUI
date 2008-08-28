@@ -103,21 +103,22 @@
 --		- {{width}}
 --
 --	IMPLEMENTS::
---		- Area:askMinMax() - Query minimum and maximum dimensions
---		- Area:checkFocus() - Check if the element can receive the focus
---		- Area:draw() - Draws the element
+--		- Area:askMinMax() - Queries element's minimum and maximum dimensions
+--		- Area:checkFocus() - Checks if the element can receive the focus
+--		- Area:draw() - Paints the element
 --		- Area:getElement() - Returns an element's neighbours
---		- Area:getElementByXY() - Check if the element covers a coordinate
---		- Area:hide() - Removes an Area from its Display and Drawable
---		- Area:layout() - Layout the element into a rectangle
---		- Area:markDamage() - Pass a damage rectangle to an element
---		- Area:passMsg() - Filters an input message
---		- Area:punch() - Subtract Element from a [[#tek.lib.region : Region]]
---		- Area:refresh() - Redraws an element
---		- Area:relayout() - Search and relayouts an element
---		- Area:rethinkLayout() - Causes relayout of the Area and its group
---		- Area:setState() - Sets the Background attribute of an element.
---		- Area:show() - Passes an Area a Display and Drawable
+--		- Area:getElementByXY() - Checks if the element covers a coordinate
+--		- Area:hide() - Disconnects the element from a Display and Drawable
+--		- Area:layout() - Layouts the element into a rectangle
+--		- Area:markDamage() - Notifies the element of a damage
+--		- Area:passMsg() - Passes an input message to the element
+--		- Area:punch() - Subtracts the outline of the element from a
+--		[[#tek.lib.region : Region]]
+--		- Area:refresh() - [internal] Repaints the element if necessary
+--		- Area:relayout() - [internal] Relayouts the element if necessary
+--		- Area:rethinkLayout() - Causes a relayout of the element and its group
+--		- Area:setState() - Sets the background attribute of an element
+--		- Area:show() - Connects the element to a Display and Drawable
 --
 --	OVERRIDES::
 --		- Element:cleanup()

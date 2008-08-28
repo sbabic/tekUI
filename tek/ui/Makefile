@@ -15,7 +15,7 @@ CLASSES = \
 	class/scrollgroup.lua class/slider.lua class/spacer.lua \
 	class/pagegroup.lua class/text.lua class/textinput.lua class/theme.lua \
 	class/vectorimage.lua class/window.lua
-BORDERS = border/default.lua border/cursor.lua
+BORDERS = border/default.lua
 HOOKS = hook/ripple.lua
 STYLES = style/default.css
 FONTS = font/Vera.ttf font/VeraMono.ttf
