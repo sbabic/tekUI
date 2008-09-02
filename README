@@ -132,7 +132,7 @@ changes.
  * Works with stock (double precision), single precision and
  integer versions of the Lua VM
 
-=== Supported interface elements ===
+==( uielements : 2.2. Supported interface elements )==
 
  * Canvas (smoothly scrolling)
  * Checkmark
@@ -152,7 +152,7 @@ changes.
  * Text gadget (and label), also multi-line
  * Text input (single line)
 
-==( plans : 2.2. Plans for development and deployment )==
+==( plans : 2.3. Plans for development and deployment )==
 
 The only language currently supported for writing applications in is
 Lua, and application programmers will have to use existing Lua
@@ -179,7 +179,7 @@ Lua would continue to act as the toolkit's internal scripting
 language, which can be used for complex interconnections
 between GUI elements as well as simple application tasks.
 
-==( themes : 2.3. Themes )==
+==( themes : 2.4. Themes )==
 
 The only admission to a more common appearance is that tekUI tries to
 import the color scheme found in a GTK+ configuration file. It can be
@@ -191,7 +191,7 @@ The current default theme tries to be as conservative and minimal as
 possible. Custom themes can be created by modifying (or deriving
 from) the Theme class.
 
-==( clibrary : 2.4. C library )==
+==( clibrary : 2.5. C library )==
 
 The C library is based on the [[TEKlib][http://www.teklib.org/]]
 middleware project. All required modules are contained in tekUI's
@@ -210,7 +210,7 @@ Depending on your application and its kind of deployment, it can be
 extended with more input drivers, a virtual filesystem, file format
 codecs, etc.
 
-==( objectjmodel : 2.5. Lua, C and object model )==
+==( objectjmodel : 2.6. Lua, C and object model )==
 
 Regardless whether classes are written in Lua or C, they share a
 common, single-inheritance object model, which is determined by the
@@ -221,7 +221,7 @@ Most user interface elements are currently implemented in Lua, which
 is beneficial for fast prototyping of custom classes and styles, and
 generally in early stages of development.
 
-==( documentation : 2.6. Documentation system )==
+==( documentation : 2.7. Documentation system )==
 
 TekUI comes with a documentation generator supporting its own object
 model. It is capable of generating a function reference and

@@ -98,7 +98,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 12.0"
+_VERSION = "Text 12.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -137,9 +137,9 @@ function Text:getProperties(p, pclass)
 	end
 	self.FontSpec = self.FontSpec or self:getProperty(p, pclass, "font")
 	self.TextHAlign = self.TextHAlign or
-		self:getProperty(p, pclass, "text-align") or "center"
+		self:getProperty(p, pclass, "text-align")
 	self.TextVAlign = self.TextVAlign or
-		self:getProperty(p, pclass, "vertical-align") or "center"
+		self:getProperty(p, pclass, "vertical-align")
 	Gadget.getProperties(self, p, pclass)
 end
 
@@ -148,6 +148,8 @@ end
 -------------------------------------------------------------------------------
 
 function Text:setup(app, window)
+	self.TextHAlign = self.TextHAlign or "center"
+	self.TextVAlign = self.TextVAlign or "center"
 	local sc = self.ShortcutMark
 	if sc and not self.KeyCode then
 		local keycode = self.Text:match("^[^" .. sc .. "]*" .. sc .. "(.)")
@@ -267,7 +269,7 @@ function Text:draw()
 		x = aligntext(tr[3], "right", x, w, tw)
 		y = aligntext(tr[4], "bottom", y, h, th)
 		d:setFont(tr[2])
-		
+
 		if self.Disabled then
 			local fp2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
 			d:drawText(x + 2, y + 2, tr[1], fp2)

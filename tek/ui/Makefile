@@ -17,7 +17,7 @@ CLASSES = \
 	class/vectorimage.lua class/window.lua
 BORDERS = border/default.lua
 HOOKS = hook/ripple.lua
-STYLES = style/default.css
+STYLES = style/internal.css style/monochrome.css
 FONTS = font/Vera.ttf font/VeraMono.ttf
 CURSORS = cursor/cursor-green.png
 

@@ -1,6 +1,9 @@
 
 /*
-**	tek/ui/style/default.css - tekUI default stylesheet
+**	tek/ui/style/internal.css - tekUI internal stylesheet
+**	This document is not actually loaded and decoded, it is for
+**	illustration purposes only.
+**
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
@@ -106,13 +109,14 @@ tek.ui.class.listgadget {
 	border-color: shine;
 	color: list-detail;
 }
+
 tek.ui.class.listgadget:active {
 	background-color: list-active;
 	color: list-active-detail;
 }
 
 tek.ui.class.menuitem {
-	font: default-menu-font;
+	font: ui-menu;
 	border-width: 0;
 	margin: 0;
 	width: fill;
@@ -181,7 +185,7 @@ tek.ui.class.text {
 }
 
 tek.ui.class.textinput {
-	font: default-fixed-font;
+	font: ui-fixed;
 	border-style: inset;
 }
 
@@ -205,8 +209,10 @@ tek.ui.class.window {
 .caption {
 	border-width: 0;
 	background-color: parent-group;
-	horizontal-align: center;
+	text-align: center;
 	vertical-align: center;
+	horizontal-grid-align: center;
+	vertical-grid-align: center;
 }
 
 .gauge-fill {
@@ -226,7 +232,7 @@ tek.ui.class.window {
 }
 
 .legend {
-	border-legend-font: default-small-font;
+	border-legend-font: ui-small;
 	border-style: groove;
 	border-width: 2;
 	margin: 2;
@@ -263,7 +269,7 @@ tek.ui.class.window {
 	background-color: hover;
 }
 
-/* internal classes: */	
+/* internal classes: */
 
 _listviewheaditem {
 	background-color: active;

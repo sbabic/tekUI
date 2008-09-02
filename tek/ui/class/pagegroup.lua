@@ -51,12 +51,14 @@ local Text = ui.Text
 
 local assert = assert
 local ipairs = ipairs
+local max = math.max
+local min = math.min
 local tostring = tostring
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 6.2"
+_VERSION = "PageGroup 6.3"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -66,15 +68,15 @@ local PageGroup = _M
 local PageContainerGroup = Group:newClass { _NAME = "_pagecontainer" }
 
 function PageContainerGroup.init(self)
-	self.PageElement = false
+	self.PageElement = self.PageElement or false
 	self.PageNumber = self.PageNumber or 1
 	return Group.init(self)
 end
 
 local PageButtonGroup = Group:newClass { _NAME = "_pagebuttongroup" }
 
-function PageButtonGroup:draw()
-	Group.draw(self)
+-- function PageButtonGroup:draw()
+-- 	Group.draw(self)
 -- 	local d = self.Drawable
 -- 	local r = self.Rect
 -- 	local c = self.Children
@@ -85,7 +87,7 @@ function PageButtonGroup:draw()
 -- 		if b then
 -- 			local x0 = r[1]
 -- 			local _, _, b3, b4 = e:getBorder()
--- 			local p = b.Colors
+-- 			local p = b.Params
 -- 			local p1, p2, p3, p4 = pens[p[1]], pens[p[2]], pens[p[3]],
 -- 				pens[p[4]]
 -- 			b.drawBorderRect(d, e.Rect[3] + b3 + 1,
@@ -102,7 +104,7 @@ function PageButtonGroup:draw()
 -- 				p1, p2, p3, p4)
 -- 		end
 -- 	end
-end
+-- end
 
 -------------------------------------------------------------------------------
 --	new:
@@ -119,8 +121,8 @@ local function changeTab(group, tabbuttons, newtabn)
 	ui.Application.connect(group.PageElement, group)
 	group.PageElement:connect(group)
 
-	group.PageElement:getProperties(group.Application.InternalProperties)
-	
+	group.Application:decodeProperties(group.PageElement)
+
 	group.PageElement:setup(group.Application, group.Window)
 	group.PageElement:show(group.Display, group.Drawable)
 	group:askMinMax(0, 0, group.MaxWidth, group.MaxHeight)
@@ -134,45 +136,55 @@ function PageGroup.new(class, self)
 
 	self = self or { }
 
-	local pagegroup = PageContainerGroup:new {
-		PageNumber = self.PageNumber,
+	local children = self.Children or { }
+
+	local pagenumber = type(self.PageNumber) == "number" and self.PageNumber or 1
+	pagenumber = max(1, min(pagenumber, #children))
+
+	local pageelement = children[pagenumber] or ui.Area:new { }
+
+	local pagegroup = PageContainerGroup:new
+	{
+		Children = children,
+		PageNumber = pagenumber,
+		PageElement = pageelement
 	}
 
 	self.PageCaptions = self.PageCaptions or { }
 
-	pagegroup.PageElement = type(self.PageNumber) == "number" and
-		(self.PageNumber >= 1 and self.PageNumber <= #self.Children) and
-		self.Children[self.PageNumber]
-	if not pagegroup.PageElement and #self.Children > 0 then
-		pagegroup.PageNumber = 1
-		pagegroup.PageElement = self.Children[1]
-	end
-
 	local tabbuttons = { }
-	for i, c in ipairs(self.Children) do
-		local text = self.PageCaptions[i] or tostring(i)
-		tabbuttons[i] = ui.Text:new
+	if #children == 0 then
+		tabbuttons[1] = ui.Text:new
 		{
 			Class = "page-button",
-			Mode = "touch",
+			Mode = "inert",
 			Width = "auto",
-			Text = text,
-			Notifications = {
-				["Pressed"] = {
-					[true] = {
-						{ pagegroup, ui.NOTIFY_FUNCTION, changeTab,
-							tabbuttons, i }
+		}
+	else
+		for i, c in ipairs(children) do
+			local text = self.PageCaptions[i] or tostring(i)
+			tabbuttons[i] = ui.Text:new
+			{
+				Class = "page-button",
+				Mode = "touch",
+				Width = "auto",
+				Text = text,
+				Notifications = {
+					["Pressed"] = {
+						[true] = {
+							{ pagegroup, ui.NOTIFY_FUNCTION, changeTab,
+								tabbuttons, i }
+						}
 					}
 				}
 			}
-		}
+		end
 	end
 
-	if pagegroup.PageNumber then
-		tabbuttons[pagegroup.PageNumber]:setValue("Selected", true)
+	if tabbuttons[pagenumber] then
+		tabbuttons[pagenumber]:setValue("Selected", true)
 	end
 
-	pagegroup.Children = self.Children
 	self.Orientation = "vertical"
 
 	self.Children =
@@ -187,7 +199,6 @@ function PageGroup.new(class, self)
 	}
 
 	return Group.new(class, self)
-
 end
 
 -------------------------------------------------------------------------------

@@ -139,7 +139,7 @@ app = ui.Application:new
 			},
 			Children =
 			{
-				ui.Text:new { Text = "About tekUI", Style = "font: default-large-font" },
+				ui.Text:new { Text = "About tekUI", Style = "font: ui-large" },
 				ui.PageGroup:new
 				{
 					PageCaptions = { "_Application", "_License", "_System" },
@@ -290,10 +290,10 @@ app = ui.Application:new
 											GridWidth = 2,
 											Children =
 											{
-												ui.Text:new 
-												{ 
-													Text = "Memory usage:", 
-													Class = "caption", 
+												ui.Text:new
+												{
+													Text = "Memory usage:",
+													Class = "caption",
 													Style = "text-align: right; width: fill"
 												},
 												ui.Group:new
@@ -306,10 +306,10 @@ app = ui.Application:new
 															Children =
 															{
 																ui.Text:new { Id = "about-mem-used" },
-																ui.Text:new 
-																{ 
-																	Text = "_Reset", 
-																	Class = "button", 
+																ui.Text:new
+																{
+																	Text = "_Reset",
+																	Class = "button",
 																	Mode = "button",
 																	Style = "width: auto",
 																	Notifications =
@@ -340,8 +340,8 @@ app = ui.Application:new
 											GridWidth = 2,
 											Children =
 											{
-												ui.Text:new 
-												{ 
+												ui.Text:new
+												{
 													Text = "Debug Level:",
 													Class = "caption",
 													Style = "width: fill; text-align: right",
@@ -358,7 +358,7 @@ app = ui.Application:new
 														Id = "about-system-debuglevel",
 														Class = "knob button",
 														Text = tostring(db.level),
-														Style = "font: default-small-font;",
+														Style = "font: ui-small;",
 													},
 													Notifications =
 													{
@@ -374,9 +374,9 @@ app = ui.Application:new
 														}
 													}
 												},
-												ui.Text:new 
+												ui.Text:new
 												{
-													Text = "Debug Options:", 
+													Text = "Debug Options:",
 													Class = "caption",
 													Style = "width: fill; text-align: right",
 												},
@@ -488,10 +488,10 @@ app = ui.Application:new
 						},
 					},
 				},
-				ui.Text:new 
-				{ 
+				ui.Text:new
+				{
 					Text = "tekUI demo",
-					Style = "font: default-large-font"
+					Style = "font: ui-large"
 				},
 				ui.Group:new
 				{

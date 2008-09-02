@@ -5,49 +5,54 @@
 --	See copyright notice in COPYRIGHT
 --
 --	OVERVIEW::
---	This library implements an argument parser.
+--		This library implements an argument parser.
 --
 --	FORMAT DESCRIPTION::
---	A string is parsed into an array of arguments, according to a format
---	template. Arguments in the template are separated by commas. Each
---	argument in the template consists of a keyword, optionally followed by
---	one or more aliases delimited by equal signs, and an optional set of
---	modifiers delimited by slashes. Modifiers denote a) the expected datatype,
---	b) if the argument is mandatory and c) whether a keyword must precede its
---	value to form a valid argument. Example argument template:
+--		A string is parsed into an array of arguments, according to a format
+--		template. Arguments in the template are separated by commas. Each
+--		argument in the template consists of a keyword, optionally followed by
+--		one or more aliases delimited by equal signs, and an optional set of
+--		modifiers delimited by slashes. Modifiers denote a) the expected
+--		datatype, b) if the argument is mandatory and c) whether a keyword
+--		must precede its value to form a valid argument. Example argument
+--		template:
 --
---			SOURCE=-s/A/M,DEST=-d/A/K
+--				SOURCE=-s/A/M,DEST=-d/A/K
 --
---	This template would require one or more arguments to satisfy {{SOURCE}},
---	and exactly one argument to satisfy {{DEST}}. Neither can be omitted.
---	Either {{-d}} or {{DEST}} must precede a value to be accepted as the
---	second argument. Examples:
+--		This template would require one or more arguments to satisfy
+--		{{SOURCE}}, and exactly one argument to satisfy {{DEST}}. Neither
+--		can be omitted. Either {{-d}} or {{DEST}} must precede a value to be
+--		accepted as the second argument. Examples:
 --
---	{{SOURCE one two three DEST foo}} || valid
---	{{DEST foo -s one}}               || valid
---	{{DEST foo}}                      || rejected; source argument missing
---	{{one two three foo}}             || rejected; keyword missing
---	{{one two dest foo}}              || valid; keywords are case insensitive
---	{{one two three -d="foo" four}}   || valid; "four" added to {{SOURCE}}
+--		{{SOURCE one two three DEST foo}} || valid
+--		{{DEST foo -s one}}               || valid
+--		{{DEST foo}}                      || rejected; source argument missing
+--		{{one two three foo}}             || rejected; keyword missing
+--		{{one two dest foo}}              || valid, keys are case insensitive
+--		{{one two three -d="foo" four}}   || valid, "four" added to {{SOURCE}}
 --
---	An option without modifiers represents an optional string argument.
---	Available modifiers are:
+--		An option without modifiers represents an optional string argument.
+--		Available modifiers are:
 --
---		* {{/S}} - ''Switch''; considered a boolean value. When the keyword is
---		present, '''true''' will be written into the respective slot in the
---		results array.
---		* {{/N}} - ''Number''; the value will be converted to a number.
---		* {{/K}} - ''Keyword''; the keyword (or an alias) must precede its value.
---		* {{/A}} - ''Required''; This argument cannot be omitted.
---		* {{/M}} - ''Multiple''; Any number of strings will be accepted, and all
---		values that cannot be assigned to other arguments will show up in this
---		argument. No more than one {{/M}} modifier may appear in a template.
---		* {{/F}} - ''Fill''; literal rest of line. If present, this must be the
---		last argument.
+--			* {{/S}} - ''Switch''; considered a boolean value. When the
+--			keyword is present, '''true''' will be written into the
+--			respective slot in the results array.
+--			* {{/N}} - ''Number''; the value will be converted to a number.
+--			* {{/K}} - ''Keyword''; the keyword (or an alias) must precede its
+--			value.
+--			* {{/A}} - ''Required''; This argument cannot be omitted.
+--			* {{/M}} - ''Multiple''; Any number of strings will be accepted,
+--			and all values that cannot be assigned to other arguments will
+--			show up in this argument. No more than one {{/M}} modifier may
+--			appear in a template.
+--			* {{/F}} - ''Fill''; literal rest of line. If present, this must
+--			be the last argument.
 --
---	Quoting and escaping: Double quotes can be used to enclose arguments
---	containing equal signs and spaces. [TODO: Backslashes can be used for
---	escaping quotes, spaces and themselves (besides everything else)].
+--		Quoting and escaping: Double quotes can be used to enclose arguments
+--		containing equal signs and spaces.
+--
+--	TODO::
+--		Backslashes for escaping quotes, spaces and themselves
 --
 -------------------------------------------------------------------------------
 
@@ -59,7 +64,7 @@ local print = print
 local tonumber = tonumber
 
 module "tek.lib.args"
-_VERSION = "Args 1.4"
+_VERSION = "Args 1.5"
 
 local function checkfl(self, fl)
 	for s in fl:gmatch(".") do
@@ -202,7 +207,7 @@ function read(tmpl, args)
 					end
 				end
 			elseif waitkey then
-				return nil, "key expected"
+				return nil, "key expected : " .. tmpl[n].keys[1]
 			end
 
 			if tt:check("m") then
@@ -217,6 +222,9 @@ function read(tmpl, args)
 				done = true
 				break
 			elseif tt:check("n") then
+				if not item:match("^%-?%d*%.?%d*$") then
+					return nil, "number expected"
+				end
 				tt.arg = tonumber(item)
 			elseif tt:check("s") then
 				tt.arg = true
@@ -237,7 +245,7 @@ function read(tmpl, args)
 				tt.arg = remove(multi)
 			end
 			if not tt.arg then
-				return nil, "Required argument missing (1)"
+				return nil, "Required argument missing : " .. tt.keys[1]
 			end
 		end
 	end
@@ -253,7 +261,7 @@ function read(tmpl, args)
 				end
 			end
 			if tt:check("a") and #tt.arg == 0 then
-				return nil, "Required argument missing (2)"
+				return nil, "Required argument missing : " .. tt.keys[1]
 			end
 		end
 	end

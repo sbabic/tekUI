@@ -22,14 +22,15 @@ local insert = table.insert
 local ipairs = ipairs
 local min = math.min
 local open = io.open
+local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.0"
+_VERSION = "Theme 6.1"
 local Theme = _M
 
-local DEF_STYLESHEET =
-{ 
+local DEF_STYLESHEET = ui.prepareProperties
+{
 	-- element classes:
 
 	["tek.ui.class.area"] = {
@@ -37,7 +38,7 @@ local DEF_STYLESHEET =
 	},
 
 	["tek.ui.class.checkmark"] = {
-		["padding"] = 0,
+		["padding"] = 1,
 		["margin"] = 0,
 		["border-width"] = 1,
 		["border-focus-width"] = 1,
@@ -45,62 +46,62 @@ local DEF_STYLESHEET =
 		["vertical-align"] = "center",
 		["background-color"] = "parent-group",
 	},
-	
+
 	["tek.ui.class.floattext"] = {
 		["background-color"] = "list",
 	},
-	
+
 	["tek.ui.class.frame"] = {
 		["border-width"] = 2,
 		["border-style"] = "inset",
 	},
-	
+
 	["tek.ui.class.gadget"] = {
 		["border-width"] = 3,
 		["border-style"] = "outset",
 		["border-focus-width"] = 1,
 	},
-	
+
 	["tek.ui.class.gadget:active"] = {
 		["border-style"] = "inset",
 		["background-color"] = "active",
 		["color"] = "active-detail",
 	},
-	
+
 	["tek.ui.class.gadget:disabled"] = {
 		["background-color"] = "disabled",
 		["color"] = "disabled-detail",
 	},
-	
+
 	["tek.ui.class.gadget:focus"] = {
 		["background-color"] = "focus",
 		["color"] = "focus-detail",
 	},
-	
+
 	["tek.ui.class.gadget:hover"] = {
 		["background-color"] = "hover",
 		["color"] = "hover-detail",
 	},
-	
+
 	["tek.ui.class.gadget.knob-scrollbar"] = {
 		["effect"] = "ripple",
 		["effect-orientation"] = "inline",
 		["effect-kind"] = "dot",
 	},
-	
+
 	["tek.ui.class.gauge"] = {
 		["padding"] = 0,
 		["border-style"] = "inset",
 		["height"] = "auto",
 	},
-	
+
 	["tek.ui.class.group"] = {
 		["margin"] = 0,
 		["background-color"] = "group",
 		["border-width"] = 0,
 		["border-focus-width"] = 0,
 	},
-	
+
 	["tek.ui.class.handle"] = {
 		["effect"] = "ripple",
 		["effect-orientation"] = "across",
@@ -109,53 +110,58 @@ local DEF_STYLESHEET =
 		["background-color"] = "parent-group",
 		["padding"] = 5,
 	},
-	
+
 	["tek.ui.class.handle:active"] = {
 		["border-style"] = "outset",
 		["background-color"] = "hover",
 	},
-	
+
 	["tek.ui.class.handle:hover"] = {
 		["background-color"] = "hover",
 	},
-	
+
 	["tek.ui.class.listgadget"] = {
 		["background-color"] = "list",
 		["background-color2"] = "list2",
+		["border-width"] = 1,
+		["border-focus-width"] = 0,
+		["border-rim-width"] = 0,
+		["border-style"] = "solid",
+		["border-color"] = "shine",
 		["color"] = "list-detail",
 	},
 	["tek.ui.class.listgadget:active"] = {
 		["background-color"] = "list-active",
 		["color"] = "list-active-detail",
 	},
-	
+
 	["tek.ui.class.menuitem"] = {
-		["font"] = "default-menu-font",
+		["font"] = "ui-menu",
 		["border-width"] = 0,
 		["margin"] = 0,
 		["width"] = "fill",
 	},
-	
+
 	["tek.ui.class.menuitem:active"] = {
 		["background-color"] = "menu-active",
 		["color"] = "menu-active-detail",
 	},
-	
+
 	["tek.ui.class.menuitem:hover"] = {
 		["background-color"] = "menu-active",
 		["color"] = "menu-active-detail",
 	},
-	
+
 	["tek.ui.class.menuitem:focus"] = {
 		["background-color"] = "menu-active",
 		["color"] = "menu-active-detail",
 	},
-	
+
 	["tek.ui.class.menuitem:popup-root"] = {
 		["margin"] = 2,
 		["width"] = "auto",
 	},
-	
+
 	["tek.ui.class.popitem"] = {
 		["border-width"] = 4,
 		["border-style"] = "outset",
@@ -163,11 +169,11 @@ local DEF_STYLESHEET =
 		["border-rim-width"] = 1,
 		["width"] = "fill",
 	},
-	
+
 	["tek.ui.class.popitem:active"] = {
 		["background-color"] = "hover",
 	},
-	
+
 	["tek.ui.class.popupwindow"] = {
 		["background-color"] = "background",
 		["border-width"] = 1,
@@ -175,58 +181,60 @@ local DEF_STYLESHEET =
 		["border-color"] = "dark",
 		["padding"] = 0,
 	},
-	
+
 	["tek.ui.class.slider"] = {
 		["padding"] = 0,
 		["border-style"] = "inset",
 		["width"] = "fill",
 		["height"] = "fill",
 	},
-	
+
 	["tek.ui.class.slider:active"] = {
 		["border-style"] = "inset",
 	},
-	
+
 	["tek.ui.class.spacer"] = {
 		["border-style"] = "inset",
 		["border-width"] = 1,
 	},
-	
+
 	["tek.ui.class.text"] = {
 		["border-style"] = "inset",
 		["padding"] = "2 5 2 5",
 		["height"] = "auto",
 	},
-	
+
 	["tek.ui.class.textinput"] = {
-		["font"] = "default-fixed-font",
+		["font"] = "ui-fixed",
 		["border-style"] = "inset",
 	},
-	
+
 	["tek.ui.class.window"] = {
 		["padding"] = 0,
 		["margin"] = 0,
 	},
-	
+
 	-- pre-defined classes:
-	
+
 	[".button"] = {
 		["border-style"] = "outset",
 		["border-width"] = 4,
 		["border-rim-width"] = 1,
 	},
-	
+
 	[".button:active"] = {
 		["border-style"] = "inset",
 	},
-	
+
 	[".caption"] = {
 		["border-width"] = 0,
 		["background-color"] = "parent-group",
-		["horizontal-align"] = "center",
+		["text-align"] = "center",
 		["vertical-align"] = "center",
+		["horizontal-grid-align"] = "center",
+		["vertical-grid-align"] = "center",
 	},
-	
+
 	[".gauge-fill"] = {
 		["border-style"] = "solid",
 		["border-color"] = "dark",
@@ -234,7 +242,7 @@ local DEF_STYLESHEET =
 		["background-color"] = "fill",
 		["padding"] = 4,
 	},
-	
+
 	[".knob"] = {
 		["border-width"] = 3,
 		["border-focus-width"] = 0,
@@ -242,15 +250,15 @@ local DEF_STYLESHEET =
 		["margin"] = 0,
 		["padding"] = 4,
 	},
-	
+
 	[".legend"] = {
-		["border-legend-font"] = "default-small-font",
+		["border-legend-font"] = "ui-small",
 		["border-style"] = "groove",
 		["border-width"] = 2,
 		["margin"] = 2,
 		["padding"] = 1,
 	},
-	
+
 	[".menubar"] = {
 		["margin"] = 0,
 		["border-style"] = "solid",
@@ -260,41 +268,45 @@ local DEF_STYLESHEET =
 		["width"] = "fill",
 		["height"] = "auto",
 	},
-	
+
 	[".page-button"] = {
 		["border-style"] = "inset",
 		["border-width"] = 2,
 		["border-focus-width"] = 0,
 		["margin"] = 0,
 	},
-	
+
 	[".page-button:active"] = {
 		["border-style"] = "outset",
 		["border-bottom-color"] = "group",
 	},
-	
+
 	[".page-button:focus"] = {
 		["background-color"] = "hover",
 	},
-	
+
+	[".page-button:hover"] = {
+		["background-color"] = "hover",
+	},
+
 	-- internal classes:
-	
+
 	["_listviewheaditem"] = {
 		["background-color"] = "active",
 		["padding"] = 0,
 	},
-	
+
 	["_pagebuttongroup"] = {
 		["margin"] = "4 2 0 2",
 		["padding-left"] = 2,
 	},
-	
+
 	["_pagecontainer"] = {
 		["border-width"] = "0 2 2 2",
 		["margin"] = "0 2 2 2",
 		["padding"] = 2,
 	},
-	
+
 	["_scrollbar-arrow"] = {
 		["margin"] = 0,
 		["border-width"] = 4,
@@ -319,7 +331,7 @@ local function fmtrgb(r, g, b, l)
 	b = min(b * l * 255, 255)
 	return ("#%02x%02x%02x"):format(r, g, b)
 end
- 
+
 local function getclass(s, class)
 	local c = s[class]
 	if not c then
@@ -328,12 +340,12 @@ local function getclass(s, class)
 	end
 	return c
 end
- 
+
 local function setclass(s, class, key, val)
 	local c = getclass(s, class)
 	c[key] = val
 end
- 
+
 local function importGTKConfig(def_s)
 	if 3 / 2 == 1 then
 		db.error("Need floating point support for GTK+ settings import")
@@ -341,7 +353,7 @@ local function importGTKConfig(def_s)
 	end
 	local p = getenv("GTK2_RC_FILES")
 	if p then
-		local s = def_s
+		local s = def_s or { }
 		local paths = { }
 		p:gsub("([^:]+):?", function(p)
 			insert(paths, p)
@@ -385,13 +397,13 @@ local function importGTKConfig(def_s)
 								d["rgb-fill"] = c
 								d["rgb-border-focus"] = c
 								d["rgb-cursor"] = c
-								
+
 							elseif color == "fg[NORMAL]" then
 								d["rgb-detail"] = c
 								d["rgb-border-legend"] = c
 							elseif color == "fg[INSENSITIVE]" then
 								d["rgb-disabled-detail"] = c
-								d["rgb-disabled-detail2"] = 
+								d["rgb-disabled-detail2"] =
 									fmtrgb(r, g, b, 2)
 							elseif color == "fg[ACTIVE]" then
 								d["rgb-active-detail"] = c
@@ -400,13 +412,13 @@ local function importGTKConfig(def_s)
 								d["rgb-focus-detail"] = c
 							elseif color == "fg[SELECTED]" then
 								d["rgb-cursor-detail"] = c
-								
+
 							elseif color == "base[NORMAL]" then
 								d["rgb-list"] = fmtrgb(r, g, b, 1.05)
 								d["rgb-list2"] = fmtrgb(r, g, b, 0.95)
 							elseif color == "base[SELECTED]" then
 								d["rgb-list-active"] = c
-								
+
 							elseif color == "text[NORMAL]" then
 								d["rgb-list-detail"] = c
 							elseif color == "text[ACTIVE]" then
@@ -434,6 +446,8 @@ local function importGTKConfig(def_s)
 						"#000")
 					setclass(s, "tek.ui.class.display", "rgb-border-light",
 						"#fff")
+					setclass(s, ".page-button:hover", "background-color",
+						"hover")
 					return s
 				end
 			end
@@ -441,28 +455,56 @@ local function importGTKConfig(def_s)
 	end
 	return def_s
 end
- 
+
 -------------------------------------------------------------------------------
---	stylesheet = Theme.getStyleSheet([themename]): Get a stylesheet of a named
---	theme. Theme names currently defined are:
---		- "default" - the default external stylesheet (or hardcoded defaults),
---		including an imported color scheme (if available)
+--	stylesheet = Theme.getStyleSheet([themename]): Returns a stylesheet for a
+--	named theme. Theme names currently defined are:
 --		- "internal" - the hardcoded internal stylesheet
+--		- "desktop" - The "desktop" external stylesheet (or hardcoded
+--		internal stylesheet if unavailable), overlaying the user's
+--		desktop colors (if available)
+--	Any other theme name will cause this function to try to load an
+--	equally named stylesheet, falling back to the hardcoded internal
+--	stylesheet if unavailable. The default for {{themename}} is "default".
 -------------------------------------------------------------------------------
 
-function Theme.getStyleSheet(themename)
-	themename = themename or "default"
-	local s, msg
-	if themename == "internal" then
-		s = DEF_STYLESHEET
-	else
-		local fname = ("tek/ui/style/%s.css"):format(themename)
-		s, msg = ui.loadStyleSheet(fname)
-		if not s then
-			db.error("failed to load style sheet '%s' : %s", fname, msg)
-			s = DEF_STYLESHEET
+local function copyprops(dest, source)
+	for classkey, sprops in pairs(source) do
+		local dclass = dest[classkey]
+		if not dclass then
+			dclass = { }
+			dest[classkey] = dclass
 		end
-		s = importGTKConfig(s)
+		for key, val in pairs(sprops) do
+			dclass[key] = val
+		end
 	end
-	return s
+	return dest
+end
+
+function Theme.getStyleSheet(themename)
+
+	themename = themename or "default"
+	if themename == "internal" then
+		return DEF_STYLESHEET
+	end
+
+	local props
+	if themename == "desktop" then
+		props = importGTKConfig()
+	end
+
+	local fname = ("tek/ui/style/%s.css"):format(themename)
+	local s, msg = ui.loadStyleSheet(fname)
+	if s then
+		if props then
+			copyprops(props, s)
+		else
+			props = s
+		end
+	else
+		db.warn("failed to load style sheet '%s' : %s", fname, msg)
+	end
+
+	return props
 end

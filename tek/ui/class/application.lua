@@ -24,6 +24,14 @@
 --			Status of the application, can be: "connected", "connecting",
 --			"disconnected", "disconnecting", "initializing", "error",
 --			"running"
+--		- {{ThemeName [IG]}}
+--			Name of a theme, which usually maps to an equally named
+--			stylesheet file (with the extension ".css". Themes with reserved
+--			meaning are:
+--				- "internal": Uses the hardcoded internal style properties
+--				and does not try to load a stylesheet file.
+--				- "desktop": Tries to import the desktop's color scheme
+--				(besides trying to load a stylesheet named "desktop.css").
 --		- {{Title [IG]}}
 --			Title of the application, which will be inherited by windows;
 --			if unspecified, {{ProgramName}} will be used
@@ -69,7 +77,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 4.0"
+_VERSION = "Application 5.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -79,19 +87,12 @@ local Application = _M
 
 function Application.new(class, self)
 	self = Family.new(class, self)
-	
-	-- load/get properties:
-	self.InternalProperties = self.InternalProperties or
-		ui.Theme.getStyleSheet(self.ThemeName)
-		
-	-- prepare properties:
-	ui.prepareProperties(self.InternalProperties)
-	
+
 	-- Check linkage of members and connect them recursively:
 	if self:connect() then
 		self.Status = "disconnected"
 		self.Display = self.Display or Display:new { }
-		self:decodeProperties(self.InternalProperties)
+		self:decodeProperties()
 		self:setup()
 		self:show(self.Display)
 	else
@@ -102,6 +103,7 @@ function Application.new(class, self)
 end
 
 function Application.init(self)
+	self.Application = self
 	self.Author = self.Author or false
 	self.Copyright = self.Copyright or false
 	self.Coroutines = { }
@@ -112,11 +114,17 @@ function Application.init(self)
 	self.OpenWindows = { }
 	self.ProgramName = self.ProgramName or self.Title or false
 	self.Status = "initializing"
-	self.InternalProperties = self.InternalProperties or false
 	self.Title = self.Title or self.ProgramName or false
-	self.ThemeName = self.ThemeName or false
+	self.ThemeName = self.ThemeName or "desktop"
 	self.WaitVisuals = { }
 	self.WaitWindows = { }
+	self.Properties = { ui.Theme.getStyleSheet("internal") }
+	if self.ThemeName and self.ThemeName ~= "internal" then
+		local s = ui.prepareProperties(ui.Theme.getStyleSheet(self.ThemeName))
+		if s then
+			insert(self.Properties, 1, s)
+		end
+	end
 	return Family.init(self)
 end
 
@@ -172,7 +180,7 @@ end
 
 function Application:addMember(child, pos)
 	if self:checkMember(child) then
-		child:decodeProperties(self.InternalProperties)
+		self:decodeProperties(child)
 		child:setup(self, child)
 		if child:show(self.Display) then
 			-- this will also invoke checkMember():
@@ -228,10 +236,17 @@ end
 --	decodeProperties:
 -------------------------------------------------------------------------------
 
-function Application:decodeProperties(p)
-	self.Display:decodeProperties(p)
-	for _, child in ipairs(self.Children) do
-		child:decodeProperties(p)
+function Application:decodeProperties(child)
+	local app = self.Application
+	for _, p in ipairs(self.Properties) do
+		self.Display:decodeProperties(p)
+		if child then
+			child:decodeProperties(p)
+		else
+			for _, child in ipairs(self.Children) do
+				child:decodeProperties(p)
+			end
+		end
 	end
 end
 

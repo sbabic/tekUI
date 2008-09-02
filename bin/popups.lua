@@ -41,37 +41,37 @@ ui.Application:new
 									{
 										ui.MenuItem:new { Text = "Bla" },
 										ui.MenuItem:new { Text = "Bl_ub" },
-										ui.MenuItem:new 
+										ui.MenuItem:new
 										{
 											Text = "Any",
 											Children =
 											{
-												ui.MenuItem:new 
-												{ 
-													Text = "Recursion", 
+												ui.MenuItem:new
+												{
+													Text = "Recursion",
 													Children =
 													{
-														ui.MenuItem:new 
-														{ 
+														ui.MenuItem:new
+														{
 															Text = "Depth" ,
 															Children =
 															{
-																ui.MenuItem:new 
-																{ 
+																ui.MenuItem:new
+																{
 																	Text = "Will" ,
 																	Children =
 																	{
-																		ui.MenuItem:new 
-																		{ 
-																			Text = "Do." 
+																		ui.MenuItem:new
+																		{
+																			Text = "Do."
 																		},
-																	}										
+																	}
 																},
-															}										
+															}
 														},
-													}										
+													}
 												},
-											}										
+											}
 										},
 									},
 								},
@@ -241,8 +241,8 @@ ui.Application:new
 						}
 					}
 				},
-				ui.Text:new { Id = "display", Text = "Popup Tests", 
-					Style = "height: free; font: default-huge-font" },
+				ui.Text:new { Id = "display", Text = "Popup Tests",
+					Style = "height: free; font: ui-huge" },
 			},
 		},
 	},

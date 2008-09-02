@@ -15,7 +15,7 @@ ui.Application:new
 				ui.Text:new
 				{
 					Text = "Poems",
-					Style = "font: default-huge-font",
+					Style = "font: ui-huge",
 				},
 				ui.Group:new
 				{
@@ -27,7 +27,7 @@ ui.Application:new
 							CanvasHeight = 500,
 							Child = ui.FloatText:new
 							{
-								Style = "font: default-large-font; background-color: dark; color: light;",
+								Style = "font: ui-large; background-color: dark; color: light;",
 								Text = [[
 
 									Ecce homo

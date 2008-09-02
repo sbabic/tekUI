@@ -113,7 +113,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 10.0"
+_VERSION = "Gadget 10.1"
 
 local Gadget = _M
 
@@ -195,7 +195,7 @@ function Gadget:setup(app, window)
 	self:addNotify("Selected", ui.NOTIFY_CHANGE, NOTIFY_SELECTED)
 	self:addNotify("Hover", ui.NOTIFY_CHANGE, NOTIFY_HOVER)
 	self:addNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
-	self:addNotify("Pressed", ui.NOTIFY_CHANGE, NOTIFY_PRESSED)
+	self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
 	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:addNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
 	-- create effect hook:
@@ -273,7 +273,7 @@ function Gadget:refresh()
 	Frame.refresh(self)
 	if redraw then
 		self.EffectHook:draw(self.Drawable)
-	end	
+	end
 end
 
 -------------------------------------------------------------------------------

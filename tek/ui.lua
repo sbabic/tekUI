@@ -16,9 +16,10 @@
 --				ui.Application:new { ...
 --
 --	FUNCTIONS::
---		- ui.createHook() - Create a hook object 
+--		- ui.createHook() - Create a hook object
 --		- ui.loadClass() - Load a named class
---		- ui.loadStyleSheet() - Load and parse and style sheet file
+--		- ui.loadStyleSheet() - Load and parse a style sheet file
+--		- ui.resolveKeyCode() - Convert keycode into keys and qualifiers
 --
 --	CONSTANTS::
 --		- {{NOTIFY_ALWAYS}} - see [[Object][#tek.class.object]]
@@ -85,17 +86,15 @@ LocalPath = ProgDir and ProgDir .. "?.lua;" .. OldPath or OldPath
 LocalCPath = ProgDir and ProgDir .. "?.so;" .. OldCPath or OldCPath
 
 -------------------------------------------------------------------------------
---	class = loadClass(domain, classname[, pattern[, loader]]):
---	Loads a class module with the given {{classname}} from a path which
---	depends on the specified {{domain}}. If a {{pattern}} is given, then the
---	supplied {{classname}} will be matched against it before an attempt is
---	made to use it for loading. Returns the loaded class or '''false''' if
---	the class or domain name is unknown or if the module is erroneous.
---	Possible values for {{domain}}, as currently defined, are:
---		- "class" - tries to load a regular user interface element class
---		- "border" - tries to load a border class
---		- "layout" - tries to load a layouter
---		- "hook" - tries to load a drawing hook
+--	class = loadClass(domain, classname):
+--	Loads a class of the specified {{domain}} and the given {{classname}}.
+--	Returns the loaded class or '''false''' if the class or domain name is
+--	unknown or if an error was detected in the module. Possible values for
+--	{{domain}}, as currently defined, are:
+--		- "class" - user interface element classes
+--		- "border" - border classes
+--		- "layout" - classes used for layouting a group
+--		- "hook" - drawing hooks
 -------------------------------------------------------------------------------
 
 local function loadProtected(name)
@@ -136,27 +135,28 @@ end
 
 -------------------------------------------------------------------------------
 --	hookobject = createHook(domain, classname, parent[, object]): Loads a
---	class of the given {{domain}} and {{classname}}, instantiates it 
---	(optionally passing {{object}} to {{Class.new()}} for initialization),
---	connects it to the specified {{parent}} element, and initializes it using
---	its {{setup()}} method. Refer also to loadClass() for further details.
+--	class of the given {{domain}} and {{classname}}, instantiates it
+--	(optionally passing it {{object}} for initialization), connects it to
+--	the specified {{parent}} element, and initializes it using its
+--	{{setup()}} method. Refer also to loadClass() for further details.
 -------------------------------------------------------------------------------
 
 function createHook(domain, name, parent, object)
-	local c = loadClass(domain, name)
-	if c then
-		c = c:new(object or { })
-		c:connect(parent)
-		c:decodeProperties(parent.Application.InternalProperties) -- TODO
-		c:setup(parent.Application, parent.Window)
-		return c
+	local child = loadClass(domain, name)
+	if child then
+		local app = parent.Application
+		child = child:new(object or { })
+		child:connect(parent)
+		app:decodeProperties(child)
+		child:setup(app, parent.Window)
+		return child
 	end
 	return false
 end
 
 -------------------------------------------------------------------------------
 --	properties, msg = loadStyleSheet(name): This function loads a style sheet
---	file and parses it into a table of class tables with properties. If
+--	file and parses it into a table of style classes with properties. If
 --	parsing failed, the return value is '''false''' and {{msg}} contains
 --	an error message.
 -------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ function loadStyleSheet(fname)
 			break
 		end
 	end
-	
+
 	if not f then
 		return false, msg
 	end
@@ -225,7 +225,7 @@ function loadStyleSheet(fname)
 					buf = a
 					mode[1] = "waitclass"
 				else
-					local k, v, r = 
+					local k, v, r =
 						buf:match("^([%a%d%-]+)%s*%:%s*([^;]+)%s*;(.*)")
 					if k then
 						s[class] = s[class] or { }
@@ -233,7 +233,7 @@ function loadStyleSheet(fname)
 						buf = r
 					else
 						res = false
-					end			
+					end
 				end
 			end
 		end
@@ -256,7 +256,7 @@ function loadStyleSheet(fname)
 end
 
 -------------------------------------------------------------------------------
---	prepareProperties: 'unpack' various properties in stylesheets;
+--	prepareProperties: 'unpacks' various properties in stylesheets;
 -------------------------------------------------------------------------------
 
 local function adddirkeys(p, k, fmt, a, b, c, d)
@@ -304,20 +304,20 @@ end
 
 local matchkeys =
 {
-	["background-color"] = 
+	["background-color"] =
 	{
 		{ "^parent%-group$", function(p, k) p[k] = 0 end }
 	},
-	["border-width"] = 
-	{ 
+	["border-width"] =
+	{
 		{ "^%s*(%d+)%s*$", adddirkeys1, "border-%s-width" },
 		{ "^%s*(%d+)%s+(%d+)%s*$", adddirkeys2, "border-%s-width" },
 		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys3, "border-%s-width" },
-		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys4, 
+		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys4,
 			"border-%s-width" }
 	},
-	["border-color"] = 
-	{ 
+	["border-color"] =
+	{
 		{ "^%s*(%S+)%s*$", adddirkeys1, "border-%s-color" },
 		{ "^%s*(%S+)%s+(%S+)%s*$", adddirkeys2, "border-%s-color" },
 		{ "^%s*(%S+)%s+(%S+)%s+(%S+)%s*$", adddirkeys3, "border-%s-color" },
@@ -325,31 +325,31 @@ local matchkeys =
 			"border-%s-color" }
 	},
 	["border"] = { { "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3 } },
-	["border-top"] = 
-	{ 
-		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "top" } 
+	["border-top"] =
+	{
+		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "top" }
 	},
-	["border-right"] = 
-	{ 
-		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "right" } 
+	["border-right"] =
+	{
+		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "right" }
 	},
-	["border-bottom"] = 
-	{ 
-		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "bottom" } 
+	["border-bottom"] =
+	{
+		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "bottom" }
 	},
-	["border-left"] = 
-	{ 
-		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "left" } 
+	["border-left"] =
+	{
+		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "left" }
 	},
-	["margin"] = 
-	{ 
+	["margin"] =
+	{
 		{ "^%s*(%d+)%s*$", adddirkeys1, "margin-%s" },
 		{ "^%s*(%d+)%s+(%d+)%s*$", adddirkeys2, "margin-%s" },
 		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys3, "margin-%s" },
 		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys4, "margin-%s" }
 	},
-	["padding"] = 
-	{ 
+	["padding"] =
+	{
 		{ "^(%d+)%s*$", adddirkeys1, "padding-%s" },
 		{ "^(%d+)%s+(%d+)%s*$", adddirkeys2, "padding-%s" },
 		{ "^(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys3, "padding-%s" },
@@ -371,12 +371,12 @@ function prepareProperties(props)
 						for _, pattern in ipairs(replkey) do
 							local a, b, c, d = val:match(pattern[1])
 							if a then
-								if pattern[2](props, key, pattern[3], 
+								if pattern[2](props, key, pattern[3],
 									a, b, c, d) then
 									done = false
 									break
 								end
-							end			
+							end
 						end
 					end
 					if not done then
@@ -386,6 +386,7 @@ function prepareProperties(props)
 			until done
 		end
 	end
+	return props
 end
 
 -------------------------------------------------------------------------------
@@ -526,7 +527,7 @@ NOTIFY_COROUTINE = Element.NOTIFY_COROUTINE
 
 PEN_PARENTGROUP = 0 -- pseudo color: use the group's background color
 PEN_BACKGROUND = 1
-PEN_DARK = 2 
+PEN_DARK = 2
 PEN_LIGHT = 3
 PEN_FILL = 4
 PEN_ACTIVE = 5

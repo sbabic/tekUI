@@ -81,7 +81,7 @@ local ipairs = ipairs
 local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 14.2"
+_VERSION = "Group 14.3"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -230,7 +230,7 @@ end
 
 function Group:addMember(child, pos)
 	if self:checkMember(child) then
-		child:decodeProperties(self.Application.InternalProperties)
+		self.Application:decodeProperties(child)
 		child:setup(self.Application, self.Window)
 		if child:show(self.Display, self.Drawable) then
 			if Family.addMember(self, child, pos) then
@@ -338,7 +338,7 @@ end
 function Group:punch(region)
 	local m = self.MarginAndBorder
 	local r = self.Rect
-	region:subRect(r[1] - m[1], r[2] - m[2], r[3] + m[3], r[4] + m[4])	
+	region:subRect(r[1] - m[1], r[2] - m[2], r[3] + m[3], r[4] + m[4])
 end
 
 -------------------------------------------------------------------------------
