@@ -1,0 +1,141 @@
+
+--
+--	tekUI demo - English locale
+--	Note: Use UTF-8 encoding for international characters
+--
+
+ABOUT_APPLICATION = "_Application";
+ABOUT_APPLICATION_INFORMATION = "Application Information";
+ABOUT_LICENSE = "_License";
+ABOUT_SYSTEM = "_System";
+ABOUT_TEKUI = "About tekUI";
+ALIGNMENT_DEMO = "Alignment Demo";
+ALIGN_HORIZONTAL = "Align Horizontal";
+ALIGN_VERTICAL = "Align Vertical";
+ANIMATIONS_DESCRIPTION = [[
+This demo shows three different animated classes.
+
+The animation classes are not part of tekUI's system-wide installation; instead, they are loaded from the directory in which the application resides.
+]];
+ANIMATIONS_FOCUS = "Focus";
+ANIMATIONS_PARAMETERS = "Parameters";
+ANIMATIONS_SEGMENTS = "Segments";
+ANIMATIONS_SPEED = "Speed";
+ANIMATIONS_START = "_Start";
+ANIMATIONS_STOP = "Sto_p";
+ANIMATIONS_TITLE = "Animations";
+ARE_YOU_IMPRESSED = "Are you impressed?";
+AVAILABLE_DEMOS = "Available Demos";
+BEGIN = "Begin";
+BORDER_LEGEND = "Border Legend";
+BUTTONS_BUTTON = "Button";
+BUTTONS_BUTTON_STYLE = "Button Style";
+BUTTONS_CAPTION_STYLE = "Caption Style";
+BUTTONS_CENTER = "Center";
+BUTTONS_COLORS = "Colors";
+BUTTONS_DESCRIPTION = [[
+This demonstration shows different button styles, borders and colors.
+]];
+BUTTONS_NORMAL_STYLE = "Normal Style";
+BUTTONS_RIGHT_BOTTOM = "Right\nBottom";
+BUTTONS_TEXT_ALIGNMENTS = "Text Alignments";
+BUTTONS_TITLE = "Buttons";
+BUTTONS_TOP_LEFT = "Top\nLeft";
+CENTER = "Center";
+CHOICES = "Choices";
+CHOICE_ASK_AGAIN_LATER = "Ask again _later";
+CHOICE_BEER = "_Beer";
+CHOICE_COFFEE = "_Coffee";
+CHOICE_JUICE = "_Juice";
+CHOICE_MAYBE = "_Maybe";
+CHOICE_MILK = "Mil_k";
+CHOICE_NO = "_No";
+CHOICE_PERHAPS = "Perhaps";
+CHOICE_POSSIBLY = "_Possibly";
+CHOICE_TEA = "_Tea";
+CHOICE_WATER = "W_ater";
+CHOICE_WHAT_ME = "What, me_?";
+CHOICE_WINE = "_Wine";
+CHOICE_YES = "_Yes";
+CLOSE_ALL = "_Close all";
+COMMENT = "Comment";
+DEBUGGING = "Debugging";
+DEBUG_LEVEL = "Debug Level";
+DEBUG_OPTIONS = "Debug Options";
+DEMO_TEXT = [[
+Welcome to the tekUI Demo.
+
+In the list to the left you find some examples to demonstrate the abilities of the tekUI toolkit.
+
+Please note that the whole demo is written as a single constructor; thanks to the inbuilt notification system, no functions are needed to perform simple interconnections between elements.
+]];
+DISCLAIMER = "Disclaimer";
+DISCLAIMER_TEXT = [[
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+]];
+END = "End";
+GROUP = "Group";
+HELLO = "Hello";
+HELLO_WORLD = "Hello, World!";
+INTERPRETER_VERSION = "Interpreter Version: %s";
+LAYOUT_BALANCING_GROUP = "Balancing Group";
+LAYOUT_DESCRIPTION = [[
+	This demonstrates the various layouting options.
+]];
+LAYOUT_DIFFERENT_WEIGHTS = "Different Weights";
+LAYOUT_FIXED_VS_FREE = "Fixed vs. Free";
+LAYOUT_FIX = "fix";
+LAYOUT_GRID = "Grid";
+LAYOUT_RELATIVE_SIZES = "Relative Sizes";
+LAYOUT_SAME_SIZES = "Same Sizes";
+LAYOUT_TITLE = "Layout";
+LUA_COPYRIGHT_TEXT = [[
+
+Copyright © 1994-2007 Lua.org, PUC-Rio.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+]];
+LUA_LICENSE = "Lua License";
+LUA_VIRTUAL_MACHINE = "Lua Virtual Machine";
+MEMORY_USAGE = "Memory Usage";
+MENU_ABOUT = "_About...";
+MENU_FILE = "_File";
+MENU_QUIT = "_Quit";
+NOTIFICATIONS_CONNECTIONS = "Connections";
+NOTIFICATIONS_DESCRIPTION = [[
+	Elements can be interconnected with each other using notifications.
+]];
+NOTIFICATIONS_TITLE = "Notifications";
+OKAY = "_Okay";
+OPEN_ALL = "_Open all";
+ORDER_BEVERAGES = "Order Beverages";
+PROPERTY = "Property";
+RESET = "Reset";
+SLIDER_CONTINUOUS = "Continuous";
+SLIDER_DESCRIPTION = "Slider";
+SLIDER_INTEGER_STEP = "Integer Step";
+SLIDER_GAUGES = "Gauges";
+SLIDER_RANGE = "Range";
+SLIDER_SLIDERS = "Sliders";
+SLIDER_TITLE = "Slider";
+SLOW_RENDERING = "Slow Rendering";
+SYSTEM_INFORMATION = "System Information";
+TEKUI_COPYRIGHT_TEXT = [[
+Copyright © 2008 by the authors:
+
+Timm S. Müller <tmueller@schulze-mueller.de>
+Franciska Schulze <fschulze@schulze-mueller.de>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+]];
+TEKUI_DEMO = "tekUI Demo";
+TEKUI_LICENSE = "tekUI License";
+VALUE = "Value";

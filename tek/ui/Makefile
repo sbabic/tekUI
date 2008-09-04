@@ -20,6 +20,8 @@ HOOKS = hook/ripple.lua
 STYLES = style/internal.css style/monochrome.css
 FONTS = font/Vera.ttf font/VeraMono.ttf
 CURSORS = cursor/cursor-green.png
+CATALOGS = locale/schulze-mueller.de/tekui-demo/en \
+	locale/schulze-mueller.de/tekui-demo/de
 
 ###############################################################################
 
@@ -44,6 +46,7 @@ install:
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/font
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/cursor
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/style
+	$(INSTALL) -d $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
 	$(INSTALL) -s layout/default.so $(LUA_LIB)/tek/ui/layout
 	$(INSTALL) $(CLASSES) $(LUA_SHARE)/tek/ui/class
 	$(INSTALL) $(BORDERS) $(LUA_SHARE)/tek/ui/border
@@ -51,6 +54,7 @@ install:
 	$(INSTALL) $(FONTS) $(LUA_SHARE)/tek/ui/font
 	$(INSTALL) $(CURSORS) $(LUA_SHARE)/tek/ui/cursor
 	$(INSTALL) $(STYLES) $(LUA_SHARE)/tek/ui/style
+	$(INSTALL) $(CATALOGS) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
 
 clean: FORCE
 	-$(RM) $(MODS) $(LIBS)

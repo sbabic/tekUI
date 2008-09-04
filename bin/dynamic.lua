@@ -1,24 +1,27 @@
 #!/usr/bin/env lua
 
-require "tek.lib.debug".level = 4
 local ui = require "tek.ui"
--- ui.DEBUG = true
 
-ui.application:new
+local APP_ID = "tekui-demo"
+local VENDOR = "schulze-mueller.de"
+
+ui.Application:new
 {
+	ApplicationId = APP_ID,
+	VendorDomain = VENDOR,
 	Children =
 	{
-		ui.window:new
+		ui.Window:new
 		{
 			Title = "Dynamic Weight 1",
 			Children =
 			{
-				ui.group:new
+				ui.Group:new
 				{
 					Legend = "Dynamic Weight",
 					Children =
 					{
-						ui.group:new
+						ui.Group:new
 						{
 							Title = "Hallo",
 							Width = "free",
@@ -51,14 +54,14 @@ ui.application:new
 				},
 			},
 		},
-		ui.window:new
+		ui.Window:new
 		{
 			Title = "Dynamic Weight 2",
 			Legend = "Dynamic Weight",
 			Orientation = "vertical",
 			Children =
 			{
-				ui.group:new
+				ui.Group:new
 				{
 					Children =
 					{
@@ -92,7 +95,7 @@ ui.application:new
 								},
 							},
 						},
-						ui.text:new
+						ui.Text:new
 						{
 							Mode = "button",
 							Class = "button",
@@ -113,23 +116,23 @@ ui.application:new
 						},
 					},
 				},
-				ui.group:new
+				ui.Group:new
 				{
 					Children =
 					{
-						ui.text:new { Id="slider-weight-1", Text = " $08000 ", FontSpec="utopia:60", KeepMinWidth = true },
-						ui.frame:new { Height = "fill" },
+						ui.Text:new { Id="slider-weight-1", Text = " $08000 ", FontSpec="utopia:60", KeepMinWidth = true },
+						ui.Frame:new { Height = "fill" },
 					},
 				},
 			},
 		},
-		ui.window:new
+		ui.Window:new
 		{
 			Title = "Dynamic Border Thickness",
 			Legend = "Dynamic Border Thickness",
 			Children =
 			{
-				ui.text:new
+				ui.Text:new
 				{
 					Border = { 2, 2, 2, 2 },
 					Mode = "button",

@@ -5,6 +5,10 @@ local List = require "tek.class.list"
 local ui = require "tek.ui"
 local db = require "tek.lib.debug"
 
+local APP_ID = "tekui-demo"
+local VENDOR = "schulze-mueller.de"
+local L = ui.getLocale(APP_ID, VENDOR)
+
 function lfs.readdir(path)
 	local dir = lfs.dir(path)
 	return function()
@@ -69,7 +73,9 @@ app = ui.Application:new
 {
 	ProgramName = "tekUI Demo",
 	Author = "Timm S. Müller",
-	CopyRight = "Copyright © 2008, Schulze-Müller GbR",
+	Copyright = "Copyright © 2008, Schulze-Müller GbR",
+	ApplicationId = APP_ID,
+	VendorDomain = VENDOR,
 
 	Children =
 	{
@@ -108,7 +114,7 @@ app = ui.Application:new
 			Orientation = "vertical",
 			Id = "about-window",
 			Status = "hide",
-			Title = "About tekUI",
+			Title = L.ABOUT_TEKUI,
 			Notifications =
 			{
 				["Status"] =
@@ -139,10 +145,10 @@ app = ui.Application:new
 			},
 			Children =
 			{
-				ui.Text:new { Text = "About tekUI", Style = "font: ui-large" },
+				ui.Text:new { Text = L.ABOUT_TEKUI, Style = "font: ui-large" },
 				ui.PageGroup:new
 				{
-					PageCaptions = { "_Application", "_License", "_System" },
+					PageCaptions = { L.ABOUT_APPLICATION, L.ABOUT_LICENSE, L.ABOUT_SYSTEM },
 					PageNumber = 3,
 					Children =
 					{
@@ -153,14 +159,14 @@ app = ui.Application:new
 							{
 								ui.Group:new
 								{
-									Legend = "Application Information",
+									Legend = L.ABOUT_APPLICATION_INFORMATION,
 									Children =
 									{
 										ui.ListView:new
 										{
 											HSliderMode = "auto",
 											VSliderMode = "auto",
-											Headers = { "Property", "Value" },
+											Headers = { L.PROPERTY, L.VALUE },
 											Child = ui.ListGadget:new
 											{
 												SelectMode = "none",
@@ -187,12 +193,12 @@ app = ui.Application:new
 							{
 								ui.PageGroup:new
 								{
-									PageCaptions = { "tekUI", "Lua", "Disclaimer" },
+									PageCaptions = { "tekUI", "Lua", L.DISCLAIMER },
 									Children =
 									{
 										ui.ScrollGroup:new
 										{
-											Legend = "tekUI License",
+											Legend = L.TEKUI_LICENSE,
 											VSliderMode = "auto",
 											Child = ui.Canvas:new
 											{
@@ -200,24 +206,13 @@ app = ui.Application:new
 												AutoWidth = true,
 												Child = ui.FloatText:new
 												{
-													Text = [[
-
-														Copyright © 2008 by the authors:
-
-														Timm S. Müller <tmueller@schulze-mueller.de>
-														Franciska Schulze <fschulze@schulze-mueller.de>
-
-														Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-														The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-													]]
+													Text = L.TEKUI_COPYRIGHT_TEXT
 												}
 											}
 										},
 										ui.ScrollGroup:new
 										{
-											Legend = "Lua license",
+											Legend = L.LUA_LICENSE,
 											VSliderMode = "auto",
 											Child = ui.Canvas:new
 											{
@@ -225,21 +220,13 @@ app = ui.Application:new
 												AutoWidth = true,
 												Child = ui.FloatText:new
 												{
-													Text = [[
-
-														Copyright © 1994-2007 Lua.org, PUC-Rio.
-
-														Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-														The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-													]]
+													Text = L.LUA_COPYRIGHT_TEXT
 												}
 											}
 										},
 										ui.ScrollGroup:new
 										{
-											Legend = "Disclaimer",
+											Legend = L.DISCLAIMER,
 											VSliderMode = "auto",
 											Child = ui.Canvas:new
 											{
@@ -247,11 +234,7 @@ app = ui.Application:new
 												AutoWidth = true,
 												Child = ui.FloatText:new
 												{
-													Text = [[
-
-														THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-													]]
+													Text = L.DISCLAIMER_TEXT
 												}
 											}
 										}
@@ -266,7 +249,7 @@ app = ui.Application:new
 							{
 								ui.Group:new
 								{
-									Legend = "System Information",
+									Legend = L.SYSTEM_INFORMATION,
 									Orientation = "vertical",
 									Children =
 									{
@@ -278,21 +261,19 @@ app = ui.Application:new
 												AutoWidth = true,
 												Child = ui.FloatText:new
 												{
-													Text = [[
-														Interpreter Version: ]] .. _VERSION .. [[
-													]]
+													Text = L.INTERPRETER_VERSION:format(_VERSION)
 												}
 											}
 										},
 										ui.Group:new
 										{
-											Legend = "Lua VM",
+											Legend = L.LUA_VIRTUAL_MACHINE,
 											GridWidth = 2,
 											Children =
 											{
 												ui.Text:new
 												{
-													Text = "Memory usage:",
+													Text = L.MEMORY_USAGE,
 													Class = "caption",
 													Style = "text-align: right; width: fill"
 												},
@@ -308,7 +289,7 @@ app = ui.Application:new
 																ui.Text:new { Id = "about-mem-used" },
 																ui.Text:new
 																{
-																	Text = "_Reset",
+																	Text = L.RESET,
 																	Class = "button",
 																	Mode = "button",
 																	Style = "width: auto",
@@ -336,13 +317,13 @@ app = ui.Application:new
 
 										ui.Group:new
 										{
-											Legend = "Debugging",
+											Legend = L.DEBUGGING,
 											GridWidth = 2,
 											Children =
 											{
 												ui.Text:new
 												{
-													Text = "Debug Level:",
+													Text = L.DEBUG_LEVEL,
 													Class = "caption",
 													Style = "width: fill; text-align: right",
 												},
@@ -376,14 +357,14 @@ app = ui.Application:new
 												},
 												ui.Text:new
 												{
-													Text = "Debug Options:",
+													Text = L.DEBUG_OPTIONS,
 													Class = "caption",
 													Style = "width: fill; text-align: right",
 												},
 												ui.CheckMark:new
 												{
 													Selected = ui.DEBUG,
-													Text = "Slow Rendering",
+													Text = L.SLOW_RENDERING,
 													Notifications =
 													{
 														["Selected"] =
@@ -411,7 +392,7 @@ app = ui.Application:new
 					Focus = true,
 					Mode = "button",
 					Class = "button",
-					Text = "_Okay",
+					Text = L.OKAY,
 					Style = "width: fill",
 					Notifications =
 					{
@@ -448,12 +429,12 @@ app = ui.Application:new
 					{
 						ui.MenuItem:new
 						{
-							Text = "_File",
+							Text = L.MENU_FILE,
 							Children =
 							{
 								ui.MenuItem:new
 								{
-									Text = "_About...",
+									Text = L.MENU_ABOUT,
 									Shortcut = "Ctrl+?",
 									Notifications =
 									{
@@ -469,7 +450,7 @@ app = ui.Application:new
 								ui.Spacer:new { },
 								ui.MenuItem:new
 								{
-									Text = "_Quit",
+									Text = L.MENU_QUIT,
 									Shortcut = "Ctrl+Q",
 									Notifications =
 									{
@@ -490,7 +471,7 @@ app = ui.Application:new
 				},
 				ui.Text:new
 				{
-					Text = "tekUI demo",
+					Text = L.TEKUI_DEMO,
 					Style = "font: ui-large"
 				},
 				ui.Group:new
@@ -505,7 +486,7 @@ app = ui.Application:new
 							{
 								ui.ScrollGroup:new
 								{
-									Legend = "Available Demos",
+									Legend = L.AVAILABLE_DEMOS,
 									Style = "max-width: free",
 									VSliderMode = "auto",
 									Child = ui.Canvas:new
@@ -527,7 +508,7 @@ app = ui.Application:new
 									{
 										ui.Text:new
 										{
-											Text = "_Open all",
+											Text = L.OPEN_ALL,
 											Mode = "button",
 											Class = "button",
 											Notifications =
@@ -547,7 +528,7 @@ app = ui.Application:new
 										},
 										ui.Text:new
 										{
-											Text = "_Close all",
+											Text = L.CLOSE_ALL,
 											Mode = "button",
 											Class = "button",
 											Notifications =
@@ -573,7 +554,7 @@ app = ui.Application:new
 						ui.ScrollGroup:new
 						{
 							Weight = 0x10000,
-							Legend = "Comment",
+							Legend = L.COMMENT,
 							VSliderMode = "auto",
 							Child = ui.Canvas:new
 							{
@@ -581,12 +562,7 @@ app = ui.Application:new
 								Child = ui.FloatText:new
 								{
 									Id = "info-text",
-									Text = [[
-										Welcome to the tekUI Demo.
-
-										In the list to the left you find some examples to demonstrate the abilities of the tekUI toolkit.
-
-										Please note that the whole demo is written as a single constructor; thanks to the inbuilt notification system, no functions are needed to perform simple interconnections. ]]
+									Text = L.DEMO_TEXT,
 								}
 							}
 						},

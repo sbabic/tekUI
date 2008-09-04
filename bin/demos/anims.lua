@@ -2,12 +2,14 @@
 
 local ui = require "tek.ui"
 
+local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
+
 local window = ui.Window:new
 {
 	Orientation = "vertical",
 	Style = "width: 400; height: 400",
 	Id = "anims-window",
-	Title = "Animations",
+	Title = L.ANIMATIONS_TITLE,
 	Status = "hide",
 	Notifications =
 	{
@@ -35,25 +37,25 @@ local window = ui.Window:new
 					Orientation = "vertical",
 					Children =
 					{
-						ui.Tunnel:new 
-						{ 
-							Id = "the-tunnel", 
+						ui.Tunnel:new
+						{
+							Id = "the-tunnel",
 							Style = "horizontal-align: center",
 						},
 						ui.Group:new
 						{
 							Style = "width: fill; height: auto;",
-							Legend = "Parameters",
+							Legend = L.ANIMATIONS_PARAMETERS,
 							GridWidth = 2,
 							Children =
 							{
-								ui.text:new 
+								ui.text:new
 								{
-									Text = "Speed", 
-									Class = "caption", 
+									Text = L.ANIMATIONS_SPEED,
+									Class = "caption",
 									Style = "width: fill",
 								},
-								ui.Slider:new 
+								ui.Slider:new
 								{
 									Style = "width: free",
 									Min = 1,
@@ -69,13 +71,13 @@ local window = ui.Window:new
 										}
 									},
 								},
-								ui.text:new 
-								{ 
-									Text = "Focus", 
-									Class = "caption", 
+								ui.text:new
+								{
+									Text = L.ANIMATIONS_FOCUS,
+									Class = "caption",
 									Style = "width: fill",
 								},
-								ui.Slider:new 
+								ui.Slider:new
 								{
 									Style = "width: free",
 									Min = 0x10,
@@ -91,10 +93,10 @@ local window = ui.Window:new
 										}
 									},
 								},
-								ui.text:new 
-								{ 
-									Text = "Segments", 
-									Class = "caption", 
+								ui.text:new
+								{
+									Text = L.ANIMATIONS_SEGMENTS,
+									Class = "caption",
 									Style = "width: fill",
 								},
 								ui.Slider:new {
@@ -131,7 +133,7 @@ local window = ui.Window:new
 								{
 									Mode = "button",
 									Class = "button",
-									Text = "_Start",
+									Text = L.ANIMATIONS_START,
 									Notifications =
 									{
 										["Pressed"] =
@@ -149,7 +151,7 @@ local window = ui.Window:new
 								{
 									Mode = "button",
 									Class = "button",
-									Text = "Sto_p",
+									Text = L.ANIMATIONS_STOP,
 									Notifications =
 									{
 										["Pressed"] =
@@ -184,13 +186,6 @@ else
 	{
 		Window = window,
 		Name = "Animations",
-		Description = [[
-			This demo shows three different animated classes.
-
-			The 'Boing' class registers its interval handler as soon as the window is opened, so when you switch away and back to its page, you will notice that the spot's position was udpated even while its page was invisible.
-
-			The animation classes are not part of tekUI's system-wide installation; instead, they are loaded from the directory in which the application resides.
-
-		]]
+		Description = L.ANIMATIONS_DESCRIPTION
 	}
 end

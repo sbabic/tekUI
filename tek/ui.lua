@@ -7,16 +7,16 @@
 --	OVERVIEW::
 --		This is the base library of the user interface toolkit. It implements
 --		a class loader and provides a central place for various toolkit
---		constants, which would otherwise be scattered over the class
---		hierarchy. To invoke the class loader, simply aquire a class from
+--		constants. To invoke the class loader, simply aquire a class from
 --		the {{tek.ui}} table, e.g. this will load the
---		[[#tek.ui.class.application]] class as well as all subsequently needed
---		classes:
+--		[[#tek.ui.class.application]] class (as well as all subsequently
+--		needed classes):
 --				ui = require "tek.ui"
 --				ui.Application:new { ...
 --
 --	FUNCTIONS::
 --		- ui.createHook() - Create a hook object
+--		- ui.getLocale() - Get a locale catalog
 --		- ui.loadClass() - Load a named class
 --		- ui.loadStyleSheet() - Load and parse a style sheet file
 --		- ui.resolveKeyCode() - Convert keycode into keys and qualifiers
@@ -58,8 +58,11 @@ local Object = require "tek.class.object"
 local arg = arg
 local assert = assert
 local error = error
+local getenv = os.getenv
+local getmetatable = getmetatable
 local insert = table.insert
 local ipairs = ipairs
+local loadstring = loadstring
 local open = io.open
 local package = package
 local pairs = pairs
@@ -68,9 +71,10 @@ local remove = table.remove
 local require = require
 local setmetatable = setmetatable
 local tostring = tostring
+local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 12.0"
+_VERSION = "tekUI 13.0"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -155,23 +159,187 @@ function createHook(domain, name, parent, object)
 end
 
 -------------------------------------------------------------------------------
+--	encodeURL:
+-------------------------------------------------------------------------------
+
+local function f_encodeurl(c)
+	return ("%%%02x"):format(c:byte())
+end
+
+function encodeURL(s)
+	s = s:gsub(
+	'[%z\001-\032\127-\255%$%&%+%,%/%:%;%=%?%@%"%<%>%#%%%{%}%|%\%^%~%[%]%`%]]',
+		f_encodeurl)
+	return s
+end
+
+-------------------------------------------------------------------------------
+--	table, msg = sourceTable(file[, environment]): Interprete a file as a Lua
+--	source, containing the keys and values forming a table. If {{file}} is a
+--	string, it will be used for opening and reading the named file, otherwise
+--	it will be assumed to be an open file handle. Either way, the file will
+--	be read using the {{file:read("*a")}} method and closed afterwards.
+--	By default, the source will be executed in an empty environment, unless
+--	an environment is specified. The resulting table is returned to the
+--	caller, or '''nil''' followed by an error message.
+-------------------------------------------------------------------------------
+
+function sourceTable(file, env)
+	local msg
+	if type(file) == "string" then
+		file = open(file)
+	end
+	if file then
+		local chunk = file:read("*a")
+		file:close()
+		if chunk then
+			chunk, msg = loadstring(("do return { %s } end"):format(chunk))
+			if chunk then
+				if env then
+					setfenv(chunk, env)
+				end
+				return chunk()
+			end
+		end
+	end
+	return nil, msg
+end
+
+-------------------------------------------------------------------------------
+--	openUIPath: internal
+-------------------------------------------------------------------------------
+
+local function openUIPath(fname)
+	local fullname, f, msg
+	for p in LocalPath:gmatch("([^;]-)%?%.lua;?") do
+		fullname = p .. fname
+		db.info("Trying to open '%s'", fullname)
+		f, msg = open(fullname)
+		if f then
+			return f
+		end
+	end
+	return nil, msg
+end
+
+-------------------------------------------------------------------------------
+--	table, msg = loadTable(fname): This function tries to load a file from
+--	the various possible locations as defined by {{ui.LocalPath}}, to
+--	interprete is as Lua source, and to return its contents as keys and
+--	values of a table. If unsuccessful, returns '''nil''' followed by an
+--	erro message.
+-------------------------------------------------------------------------------
+
+function loadTable(fname)
+	local f, msg = openUIPath(fname)
+	if f then
+		db.info("Trying to load table '%s'", fname)
+		local tab
+		tab, msg = sourceTable(f)
+		if tab then
+			return tab
+		end
+	end
+	return nil, msg
+end
+
+-------------------------------------------------------------------------------
+--	lang = getLanguage()
+-------------------------------------------------------------------------------
+
+function getLanguage()
+	local lang
+	lang = getenv("LC_MESSAGES")
+	lang = lang or getenv("LC_ALL")
+	lang = lang or getenv("LANG")
+	if lang then
+		lang = lang:match("^(%l%l)")
+	end
+	lang = lang or "en"
+	db.info("Language suggested by the system seems to be '%s'", lang)
+	return lang
+end
+
+-------------------------------------------------------------------------------
+--	success, msg = loadLocale(locale, lang)
+-------------------------------------------------------------------------------
+
+local LocaleCache = { }
+
+function loadLocale(l, lang)
+	local msg
+	local m1 = getmetatable(l)
+	local keys = m1.__index
+	local m2 = getmetatable(keys)
+	if m2.lang ~= lang then
+		local app = m2.app
+		local vendor = m2.vendor
+		local key = ("tek/ui/locale/%s/%s/%s"):format(vendor, app, lang)
+		keys = LocaleCache[key]
+		if keys then
+			db.info("Found cache copy for locale '%s'", key)
+		else
+			keys, msg = loadTable(key)
+		end
+		if keys then
+			setmetatable(keys, m2)
+			m1.__index = keys
+			m2.lang = lang
+			LocaleCache[key] = keys
+			return true
+		end
+		db.error("Failed to load locale '%s' : %s", key, msg)
+	end
+	return nil, msg
+end
+
+-------------------------------------------------------------------------------
+--	catalog = getLocale(appid[, vendordomain[, deflang[, language]]]): Returns
+--	a table of locale strings for the given application Id and vendor domain.
+--	{{deflang}} (default: "en") is used as the default language code if a
+--	catalog for the requested language is unavailable. If no {{language}}
+--	code is specified, then the preferred language will be obtained from the
+--	operating system or desktop environment. If no catalog file was found
+--	or otherwise non-existent keys are used to access the resulting catalog,
+--	the key will be mirrored with underscores turned into spaces; for
+--	example, if {{catalog}} contained no string for the given key, accessing
+--	{{catalog.HELLO_WORLD}} would return the string "HELLO WORLD".
+-------------------------------------------------------------------------------
+
+function getLocale(appname, vendorname, deflang, lang)
+	local l = { }
+	local m1 = { }
+	local keys = { }
+	m1.__index = keys
+	setmetatable(l, m1)
+	local m2 = { }
+	m2.vendor = encodeURL(vendorname or "unknown")
+	m2.app = encodeURL(appname or "unnown")
+	m2.__index = function(tab, key)
+		db.warn("Locale key not found: %s", key)
+		return key:gsub("_", " ")
+	end
+	setmetatable(keys, m2)
+	lang = lang or getLanguage()
+	if not loadLocale(l, lang) then
+		db.warn("Preferred locale not found: '%s'", lang)
+		deflang = deflang or "en"
+		if lang ~= deflang then
+			loadLocale(l, deflang)
+		end
+	end
+	return l
+end
+
+-------------------------------------------------------------------------------
 --	properties, msg = loadStyleSheet(name): This function loads a style sheet
---	file and parses it into a table of style classes with properties. If
+--	and parses it into a table of style classes with properties. If
 --	parsing failed, the return value is '''false''' and {{msg}} contains
 --	an error message.
 -------------------------------------------------------------------------------
 
 function loadStyleSheet(fname)
-	local fullname, f, msg
-	for p in LocalPath:gmatch("(.-)%?%.lua;?") do
-		fullname = p .. fname
-		db.info("Trying to load stylesheet '%s'", fullname)
-		f, msg = open(fullname)
-		if f then
-			break
-		end
-	end
-
+	local f, msg = openUIPath(fname)
 	if not f then
 		return false, msg
 	end
@@ -256,7 +424,7 @@ function loadStyleSheet(fname)
 end
 
 -------------------------------------------------------------------------------
---	prepareProperties: 'unpacks' various properties in stylesheets;
+--	prepareProperties: 'unpacks' various properties in style sheets;
 -------------------------------------------------------------------------------
 
 local function adddirkeys(p, k, fmt, a, b, c, d)

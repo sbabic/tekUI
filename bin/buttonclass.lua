@@ -2,6 +2,9 @@
 
 ui = require "tek.ui"
 
+-------------------------------------------------------------------------------
+--	Create Button class:
+-------------------------------------------------------------------------------
 
 Button = ui.Text:newClass { _NAME = "_button" }
 
@@ -11,23 +14,51 @@ function Button.init(self)
 	return ui.Text.init(self)
 end
 
+-------------------------------------------------------------------------------
+--	Create application:
+-------------------------------------------------------------------------------
 
-app = ui.Application:new()
+app = ui.Application:new
+{
+	ApplicationId = "tekui-demo",
+	VendorDomain = "schulze-mueller.de",
+}
 
-win = ui.Window:new { Title = "Hello" }
+-------------------------------------------------------------------------------
+--	Get the catalog of locale strings:
+-------------------------------------------------------------------------------
 
-button = Button:new { Text = "_Hello, World!" }
+L = app:getLocale()
+
+-------------------------------------------------------------------------------
+--	Create window:
+-------------------------------------------------------------------------------
+
+win = ui.Window:new { Title = L.HELLO }
+
+-------------------------------------------------------------------------------
+--	Create button:
+-------------------------------------------------------------------------------
+
+button = Button:new { Text = L.HELLO_WORLD }
 
 button:addNotify("Pressed", false, {
 	ui.NOTIFY_SELF,
 	ui.NOTIFY_FUNCTION,
 	function(self)
-		print "Hello, World!"
+		print(L.HELLO_WORLD)
 	end
 })
 
-app:addMember(win)
+-------------------------------------------------------------------------------
+--	Link window to application and button to window:
+-------------------------------------------------------------------------------
 
+app:addMember(win)
 win:addMember(button)
+
+-------------------------------------------------------------------------------
+--	Run the application:
+-------------------------------------------------------------------------------
 
 app:run()

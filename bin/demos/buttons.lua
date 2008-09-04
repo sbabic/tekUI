@@ -2,6 +2,8 @@
 
 local ui = require "tek.ui"
 
+local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
+
 local window = ui.Window:new
 {
 	Status = "hide",
@@ -21,14 +23,14 @@ local window = ui.Window:new
 		},
 	},
 	Style = "Width: auto; Height: auto",
-	Title = "Buttons",
+	Title = L.BUTTONS_TITLE,
 	SameSize = true,
 	Children =
 	{
 		ui.Group:new
 		{
 			Orientation = "vertical",
-			Legend = "Caption Style",
+			Legend = L.BUTTONS_CAPTION_STYLE,
 			Style = "height: fill",
 			Children =
 			{
@@ -47,7 +49,7 @@ local window = ui.Window:new
 		ui.Group:new
 		{
 			Orientation = "vertical",
-			Legend = "Normal Style",
+			Legend = L.BUTTONS_NORMAL_STYLE,
 			Style = "height: fill",
 			Children =
 			{
@@ -66,7 +68,7 @@ local window = ui.Window:new
 		ui.Group:new
 		{
 			Orientation = "vertical",
-			Legend = "Button Style",
+			Legend = L.BUTTONS_BUTTON_STYLE,
 			Style = "height: fill",
 			Children =
 			{
@@ -85,37 +87,37 @@ local window = ui.Window:new
 		ui.Group:new
 		{
 			Orientation = "vertical",
-			Legend = "Colors",
+			Legend = L.BUTTONS_COLORS,
 			Style = "height: fill",
 			Children =
 			{
-				ui.Text:new { Mode = "button", Class = "button", Text = "Button",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
 					Style = "background-color: dark; color: shine" },
-				ui.Text:new { Mode = "button", Class = "button", Text = "Button",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
 					Style = "background-color: shadow; color: shine" },
-				ui.Text:new { Mode = "button", Class = "button", Text = "Button",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
 					Style = "background-color: half-shadow; color: shine" },
-				ui.Text:new { Mode = "button", Class = "button", Text = "Button",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
 					Style = "background-color: background; color: detail" },
-				ui.Text:new { Mode = "button", Class = "button", Text = "Button",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
 					Style = "background-color: half-shine; color: dark" },
-				ui.Text:new { Mode = "button", Class = "button", Text = "Button",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
 					Style = "background-color: shine; color: dark" },
 			},
 		},
 		ui.Group:new
 		{
 			Orientation = "vertical",
-			Legend = "Text Alignments",
+			Legend = L.BUTTONS_TEXT_ALIGNMENTS,
 			Style = "height: fill",
 			SameHeight = true,
 			Children =
 			{
-				ui.Text:new { Mode = "button", Class = "button", Text = "Top\nLeft",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_TOP_LEFT,
 					Style = "text-align: left; vertical-align: top; height: free" },
-				ui.Text:new { Mode = "button", Class = "button", Text = "Center",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_CENTER,
 					Style = "text-align: center; vertical-align: center; height: free" },
-				ui.Text:new { Mode = "button", Class = "button", Text = "Right\nBottom",
+				ui.Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_RIGHT_BOTTOM,
 					Style = "text-align: right; vertical-align: bottom; height: free" },
 			},
 		},
@@ -133,8 +135,6 @@ else
 	{
 		Window = window,
 		Name = "Buttons",
-		Description = [[
-			Buttons
-		]]
+		Description = L.BUTTONS_DESCRIPTION,
 	}
 end

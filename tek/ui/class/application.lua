@@ -19,7 +19,7 @@
 --			in combination with the {{VendorDomain}} attribute. Default is
 --			"unknown".
 --		- {{Author [IG]}}
---			Name of the application's author
+--			Name of the application's author(s)
 --		- {{Copyright [IG]}}
 --			Copyright notice applying to the application
 --		- {{ProgramName [IG]}}
@@ -31,30 +31,31 @@
 --			"running".
 --		- {{ThemeName [IG]}}
 --			Name of a theme, which usually maps to an equally named
---			stylesheet file (with the extension ".css") in the file system.
+--			style sheet file (with the extension ".css") in the file system.
 --			Themes with reserved meaning are:
 --				- "internal": Uses the hardcoded internal style properties
---				and does not try to load a stylesheet file.
+--				and does not try to load a style sheet file.
 --				- "desktop": Tries to import the desktop's color scheme
---				(besides trying to load a stylesheet named "desktop.css").
+--				(besides trying to load a style sheet named "desktop.css").
 --		- {{Title [IG]}}
 --			Title of the application, which will also be inherited by Window
 --			objects; if unspecified, {{ProgramName}} will be used.
 --		- {{VendorDomain [IG]}}
---			An uniquely identifying domain name of the vendor, origanization
---			or provider manufacturing or distributing the application,
---			preferrably without domain parts like "www.", if they are
---			nonsignificant for identification. Default is "unknown".
+--			An uniquely identifying domain name of the vendor, organization
+--			or author manufacturing the application, preferrably without
+--			domain parts like "www.", if they are nonsignificant for
+--			identification. Default is "unknown".
 --		- {{VendorName [IG]}}
---			Name of the vendor, organization or distributor responsible for
---			the application, as displayed to the user, UTF-8 encoded.
+--			Name of the vendor or organization responsible for producing
+--			the application, as displayed to the user.
 --
 --	NOTES::
 --		The {{VendorDomain}} and {{ApplicationId}} attributes are
---		UTF-8 encoded strings, and any international character is valid,
---		although it is recommended to avoid too adventurous symbolism,
---		as its end up in a hardly decipherable, UTF8- plus URL-
---		encoded form in the file system.
+--		UTF-8 encoded strings, so any international character sequence is
+--		valid for them. Anyhow, it is recommended to avoid too adventurous
+--		symbolism, as its end up in a hardly decipherable, UTF8- plus
+--		URL-encoded form in the file system, e.g. for loading catalog files
+--		under {{tek/ui/locale/<vendordomain>/<applicationid>}}.
 --
 --	IMPLEMENTS::
 --		- Application:addCoroutine() - adds a coroutine to the application
@@ -97,7 +98,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 6.0"
+_VERSION = "Application 6.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -137,8 +138,8 @@ function Application.init(self)
 	self.Status = "initializing"
 	self.Title = self.Title or self.ProgramName or false
 	self.ThemeName = self.ThemeName or "desktop"
-	self.VendorName = VendorName or "unknown"
-	self.VendorDomain = VendorDomain or "unknown"
+	self.VendorName = self.VendorName or "unknown"
+	self.VendorDomain = self.VendorDomain or "unknown"
 	self.WaitVisuals = { }
 	self.WaitWindows = { }
 	self.Properties = { ui.Theme.getStyleSheet("internal") }
@@ -654,4 +655,14 @@ function Application:getElement(mode)
 	if mode == "children" then
 		return self.Children
 	end
+end
+
+-------------------------------------------------------------------------------
+--	getLocale([deflang[, language]]): Returns a table of locale strings for
+--	{{ApplicationId}} and {{VendorDomain}}. See ui.getLocale() for more
+--	information.
+-------------------------------------------------------------------------------
+
+function Application:getLocale(deflang, lang)
+	return ui.getLocale(self.ApplicationId, self.VendorDomain, deflang, lang)
 end

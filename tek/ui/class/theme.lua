@@ -10,7 +10,7 @@
 --		Theme
 --
 --	IMPLEMENTS::
---		- Theme.getStyleSheet() - get a stylesheet for a named theme
+--		- Theme.getStyleSheet() - get a style sheet for a named theme
 --
 -------------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.2"
+_VERSION = "Theme 6.3"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -448,6 +448,8 @@ local function importGTKConfig(def_s)
 						"#fff")
 					setclass(s, ".page-button:hover", "background-color",
 						"hover")
+					setclass(s, ".page-button:focus", "background-color",
+						"hover")
 					return s
 				end
 			end
@@ -457,16 +459,16 @@ local function importGTKConfig(def_s)
 end
 
 -------------------------------------------------------------------------------
---	stylesheet = Theme.getStyleSheet([themename]): Returns a stylesheet for a
+--	stylesheet = Theme.getStyleSheet([themename]): Returns a style sheet for a
 --	named theme. Theme names currently defined are:
---		- "empty" - returns an empty stylesheet
---		- "internal" - the hardcoded internal stylesheet
---		- "desktop" - The "desktop" external stylesheet (or hardcoded
---		internal stylesheet if unavailable), overlaying the user's
+--		- "empty" - returns an empty style sheet
+--		- "internal" - the hardcoded internal style sheet
+--		- "desktop" - The "desktop" external style sheet (or hardcoded
+--		internal style sheet if unavailable), overlaying the user's
 --		desktop colors (if available)
 --	Any other theme name will cause this function to try to load an
---	equally named stylesheet, falling back to the hardcoded internal
---	stylesheet if unavailable. The default for {{themename}} is "default".
+--	equally named style sheet, falling back to the hardcoded internal
+--	style sheet if unavailable. The default for {{themename}} is "default".
 -------------------------------------------------------------------------------
 
 local function copyprops(dest, source)

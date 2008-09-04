@@ -2,11 +2,13 @@
 
 local ui = require "tek.ui"
 
+local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
+
 local window = ui.Window:new
 {
 	Orientation = "vertical",
 	Id = "notifications-window",
-	Title = "Notifications",
+	Title = L.NOTIFICATIONS_TITLE,
 	Status = "hide",
 	Notifications =
 	{
@@ -27,12 +29,12 @@ local window = ui.Window:new
 		ui.Group:new
 		{
 			Style = "width: free; height: free",
-			Legend = "Connections",
+			Legend = L.NOTIFICATIONS_CONNECTIONS,
 			Children =
 			{
-				ui.Slider:new 
-				{ 
-					Id = "slider-1", 
+				ui.Slider:new
+				{
+					Id = "slider-1",
 					Orientation = "vertical",
 					Notifications =
 					{
@@ -45,9 +47,9 @@ local window = ui.Window:new
 						}
 					}
 				},
-				ui.Slider:new 
-				{ 
-					Id = "slider-2", 
+				ui.Slider:new
+				{
+					Id = "slider-2",
 					Orientation = "vertical",
 					Notifications =
 					{
@@ -66,8 +68,8 @@ local window = ui.Window:new
 					Style = "height: auto; vertical-grid-align: center",
 					Children =
 					{
-						ui.Slider:new 
-						{ 
+						ui.Slider:new
+						{
 							Id = "slider-7",
 							Notifications =
 							{
@@ -86,23 +88,23 @@ local window = ui.Window:new
 							Style = "Width: free",
 							Children =
 							{
-								ui.Gauge:new 
-								{ 
-									Id = "slider-3", 
+								ui.Gauge:new
+								{
+									Id = "slider-3",
 									Style = "Width: free",
 								},
-								ui.Gauge:new 
+								ui.Gauge:new
 								{
-									Id = "slider-4", 
+									Id = "slider-4",
 									Style = "width: free",
 								},
 							},
 						},
 					},
 				},
-				ui.Slider:new 
-				{ 
-					Id = "slider-5", 
+				ui.Slider:new
+				{
+					Id = "slider-5",
 					Orientation = "vertical",
 					Notifications =
 					{
@@ -115,9 +117,9 @@ local window = ui.Window:new
 						}
 					}
 				},
-				ui.Slider:new 
-				{ 
-					Id = "slider-6", 
+				ui.Slider:new
+				{
+					Id = "slider-6",
 					Orientation = "vertical",
 					Notifications =
 					{
@@ -146,8 +148,6 @@ else
 	{
 		Window = window,
 		Name = "Notifications",
-		Description = [[
-			Elements can be interconnected with each other using notifications.
-		]]
+		Description = L.NOTIFICATIONS_DESCRIPTION,
 	}
 end

@@ -1,11 +1,13 @@
 #!/usr/bin/env lua
 
 local ui = require "tek.ui"
-local db = require "tek.lib.debug"
+
+local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
+
 local window = ui.Window:new
 {
 	Id = "slider-window",
-	Title = "Slider",
+	Title = L.SLIDER_TITLE,
 	Status = "hide",
 	Orientation = "vertical",
 	Notifications =
@@ -26,13 +28,13 @@ local window = ui.Window:new
 	{
 		ui.Group:new
 		{
-			Legend = "Sliders",
+			Legend = L.SLIDER_SLIDERS,
 			GridWidth = 3,
 			Children =
 			{
 				ui.Text:new
 				{
-					Text = "Continuous",
+					Text = L.SLIDER_CONTINUOUS,
 					Style = "width: fill",
 				},
 				ui.ScrollBar:new
@@ -65,7 +67,7 @@ local window = ui.Window:new
 
 				ui.Text:new
 				{
-					Text = "Integer Step",
+					Text = L.SLIDER_INTEGER_STEP,
 					Style = "width: fill",
 				},
 				ui.ScrollBar:new
@@ -99,7 +101,7 @@ local window = ui.Window:new
 
 				ui.Text:new
 				{
-					Text = "Range",
+					Text = L.SLIDER_RANGE,
 					Style = "width: fill",
 				},
 				ui.ScrollBar:new
@@ -135,7 +137,7 @@ local window = ui.Window:new
 		},
 		ui.Group:new
 		{
-			Legend = "Gauges",
+			Legend = L.SLIDER_GAUGES,
 			Children =
 			{
 				ui.Gauge:new
@@ -160,6 +162,6 @@ else
 	{
 		Window = window,
 		Name = "Slider",
-		Description = "Slider",
+		Description = L.SLIDER_DESCRIPTION,
 	}
 end

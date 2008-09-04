@@ -581,7 +581,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v6.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v6.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -616,7 +616,7 @@
 							<code>Author &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
-									Name of the application's author
+									Name of the application's author(s)
 								</p>
 							</blockquote>
 						</li>
@@ -652,18 +652,18 @@
 							<blockquote>
 								<p>
 									Name of a theme, which usually maps to an equally named
-									stylesheet file (with the extension &quot;.css&quot;) in the file system.
+									style sheet file (with the extension &quot;.css&quot;) in the file system.
 									Themes with reserved meaning are:
 								</p>
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
 											&quot;internal&quot;: Uses the hardcoded internal style properties
-											and does not try to load a stylesheet file.
+											and does not try to load a style sheet file.
 										</li>
 										<li style="list-style-type: none">
 											&quot;desktop&quot;: Tries to import the desktop's color scheme
-											(besides trying to load a stylesheet named &quot;desktop.css&quot;).
+											(besides trying to load a style sheet named &quot;desktop.css&quot;).
 										</li>
 									</ul>
 								</blockquote>
@@ -682,10 +682,10 @@
 							<code>VendorDomain &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
-									An uniquely identifying domain name of the vendor, origanization
-									or provider manufacturing or distributing the application,
-									preferrably without domain parts like &quot;www.&quot;, if they are
-									nonsignificant for identification. Default is &quot;unknown&quot;.
+									An uniquely identifying domain name of the vendor, organization
+									or author manufacturing the application, preferrably without
+									domain parts like &quot;www.&quot;, if they are nonsignificant for
+									identification. Default is &quot;unknown&quot;.
 								</p>
 							</blockquote>
 						</li>
@@ -693,8 +693,8 @@
 							<code>VendorName &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
-									Name of the vendor, organization or distributor responsible for
-									the application, as displayed to the user, UTF-8 encoded.
+									Name of the vendor or organization responsible for producing
+									the application, as displayed to the user.
 								</p>
 							</blockquote>
 						</li>
@@ -705,10 +705,11 @@
 				<blockquote>
 					<p>
 						The <code>VendorDomain</code> and <code>ApplicationId</code> attributes are
-						UTF-8 encoded strings, and any international character is valid,
-						although it is recommended to avoid too adventurous symbolism,
-						as its end up in a hardly decipherable, UTF8- plus URL-
-						encoded form in the file system.
+						UTF-8 encoded strings, so any international character sequence is
+						valid for them. Anyhow, it is recommended to avoid too adventurous
+						symbolism, as its end up in a hardly decipherable, UTF8- plus
+						URL-encoded form in the file system, e.g. for loading catalog files
+						under <code>tek/ui/locale/&lt;vendordomain&gt;/&lt;applicationid&gt;</code>.
 					</p>
 				</blockquote>
 			</div>
@@ -831,6 +832,14 @@
 		<div class="node"><h3><a name="Application:getElement" id="Application:getElement"><code>getElement(mode) - equivalent to Area</code></a></h3>
 			<p>
 				<a href="#getElement"><code>getElement()</code></a>, see there
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:getLocale" id="Application:getLocale"><code>getLocale([deflang[, language]])</code></a></h3>
+			<p>
+				Returns a table of locale strings for
+				<code>ApplicationId</code> and <code>VendorDomain</code>. See <a href="#ui:getLocale"><code>ui.getLocale()</code></a> for more
+				information.
 			</p>
 			<hr />
 		</div>
@@ -2477,7 +2486,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2491,7 +2500,7 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Theme:getStyleSheet"><code>Theme.getStyleSheet()</code></a> - get a stylesheet for a named theme
+							<a href="#Theme:getStyleSheet"><code>Theme.getStyleSheet()</code></a> - get a style sheet for a named theme
 						</li>
 					</ul>
 				</blockquote>
@@ -2500,28 +2509,28 @@
 		</div>
 		<div class="node"><h3><a name="Theme:getStyleSheet" id="Theme:getStyleSheet"><code>stylesheet = Theme.getStyleSheet([themename])</code></a></h3>
 			<p>
-				Returns a stylesheet for a
+				Returns a style sheet for a
 				named theme. Theme names currently defined are:
 			</p>
 			<blockquote>
 				<ul>
 					<li style="list-style-type: none">
-						&quot;empty&quot; - returns an empty stylesheet
+						&quot;empty&quot; - returns an empty style sheet
 					</li>
 					<li style="list-style-type: none">
-						&quot;internal&quot; - the hardcoded internal stylesheet
+						&quot;internal&quot; - the hardcoded internal style sheet
 					</li>
 					<li style="list-style-type: none">
-						&quot;desktop&quot; - The &quot;desktop&quot; external stylesheet (or hardcoded
-						internal stylesheet if unavailable), overlaying the user's
+						&quot;desktop&quot; - The &quot;desktop&quot; external style sheet (or hardcoded
+						internal style sheet if unavailable), overlaying the user's
 						desktop colors (if available)
 					</li>
 				</ul>
 			</blockquote>
 			<p>
 				Any other theme name will cause this function to try to load an
-				equally named stylesheet, falling back to the hardcoded internal
-				stylesheet if unavailable. The default for <code>themename</code> is &quot;default&quot;.
+				equally named style sheet, falling back to the hardcoded internal
+				style sheet if unavailable. The default for <code>themename</code> is &quot;default&quot;.
 			</p>
 			<hr />
 		</div>
@@ -6711,17 +6720,16 @@ method(object, arg1, ...)
 		</p>
 		<hr />
 	</div>
-	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v12.0)</a></h2>
+	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v13.0)</a></h2>
 		<div class="definition"><dfn>OVERVIEW</dfn>
 			<blockquote>
 				<p>
 					This is the base library of the user interface toolkit. It implements
 					a class loader and provides a central place for various toolkit
-					constants, which would otherwise be scattered over the class
-					hierarchy. To invoke the class loader, simply aquire a class from
+					constants. To invoke the class loader, simply aquire a class from
 					the <code>tek.ui</code> table, e.g. this will load the
-					<a href="#tek.ui.class.application">tek.ui.class.application</a> class as well as all subsequently needed
-					classes:
+					<a href="#tek.ui.class.application">tek.ui.class.application</a> class (as well as all subsequently
+					needed classes):
 				</p>
 <pre>
 ui = require &quot;tek.ui&quot;
@@ -6734,6 +6742,9 @@ ui.Application:new { ...
 				<ul>
 					<li style="list-style-type: none">
 						<a href="#ui:createHook"><code>ui.createHook()</code></a> - Create a hook object
+					</li>
+					<li style="list-style-type: none">
+						<a href="#ui:getLocale"><code>ui.getLocale()</code></a> - Get a locale catalog
 					</li>
 					<li style="list-style-type: none">
 						<a href="#ui:loadClass"><code>ui.loadClass()</code></a> - Load a named class
@@ -6866,10 +6877,48 @@ ui.Application:new { ...
 		</p>
 		<hr />
 	</div>
+	<div class="node"><h3><a name="ui:sourceTable" id="ui:sourceTable"><code>table, msg = sourceTable(file[, environment])</code></a></h3>
+		<p>
+			Interprete a file as a Lua
+			source, containing the keys and values forming a table. If <code>file</code> is a
+			string, it will be used for opening and reading the named file, otherwise
+			it will be assumed to be an open file handle. Either way, the file will
+			be read using the <code>file:read(&quot;*a&quot;)</code> method and closed afterwards.
+			By default, the source will be executed in an empty environment, unless
+			an environment is specified. The resulting table is returned to the
+			caller, or <strong>nil</strong> followed by an error message.
+		</p>
+		<hr />
+	</div>
+	<div class="node"><h3><a name="ui:loadTable" id="ui:loadTable"><code>table, msg = loadTable(fname)</code></a></h3>
+		<p>
+			This function tries to load a file from
+			the various possible locations as defined by <code>ui.LocalPath</code>, to
+			interprete is as Lua source, and to return its contents as keys and
+			values of a table. If unsuccessful, returns <strong>nil</strong> followed by an
+			erro message.
+		</p>
+		<hr />
+	</div>
+	<div class="node"><h3><a name="ui:getLocale" id="ui:getLocale"><code>catalog = getLocale(appid[, vendordomain[, deflang[, language]]])</code></a></h3>
+		<p>
+			Returns
+			a table of locale strings for the given application Id and vendor domain.
+			<code>deflang</code> (default: &quot;en&quot;) is used as the default language code if a
+			catalog for the requested language is unavailable. If no <code>language</code> 
+			code is specified, then the preferred language will be obtained from the
+			operating system or desktop environment. If no catalog file was found
+			or otherwise non-existent keys are used to access the resulting catalog,
+			the key will be mirrored with underscores turned into spaces; for
+			example, if <code>catalog</code> contained no string for the given key, accessing
+			<code>catalog.HELLO_WORLD</code> would return the string &quot;HELLO WORLD&quot;.
+		</p>
+		<hr />
+	</div>
 	<div class="node"><h3><a name="ui:loadStyleSheet" id="ui:loadStyleSheet"><code>properties, msg = loadStyleSheet(name)</code></a></h3>
 		<p>
 			This function loads a style sheet
-			file and parses it into a table of style classes with properties. If
+			and parses it into a table of style classes with properties. If
 			parsing failed, the return value is <strong>false</strong> and <code>msg</code> contains
 			an error message.
 		</p>
@@ -6993,7 +7042,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Thu Sep  4 02:39:04 2008
+			Document generated on Thu Sep  4 18:32:57 2008
 		</p>
 	</div>
 	</body>

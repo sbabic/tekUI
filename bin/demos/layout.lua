@@ -3,11 +3,13 @@
 local ui = require "tek.ui"
 local db = require "tek.lib.debug"
 
+local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
+
 local window = ui.Window:new
 {
 	Orientation = "vertical",
 	Id = "layout-window",
-	Title = "Layout",
+	Title = L.LAYOUT_TITLE,
 	Status = "hide",
 	MaxWidth = ui.HUGE,
 	MaxHeight = ui.HUGE,
@@ -29,7 +31,7 @@ local window = ui.Window:new
 	{
 		ui.Group:new
 		{
-			Legend = "Relative Sizes",
+			Legend = L.LAYOUT_RELATIVE_SIZES,
 			Children =
 			{
 				ui.Text:new { Text = "1", Style = "max-width: free" },
@@ -46,7 +48,7 @@ local window = ui.Window:new
 		ui.Group:new
 		{
 			SameSize = true,
-			Legend = "Same Sizes",
+			Legend = L.LAYOUT_SAME_SIZES,
 			Children =
 			{
 				ui.Text:new { Text = "1", Style = "max-width: free" },
@@ -62,7 +64,7 @@ local window = ui.Window:new
 		},
 		ui.Group:new
 		{
-			Legend = "Balancing Group",
+			Legend = L.LAYOUT_BALANCING_GROUP,
 			Children =
 			{
 				ui.Text:new { Text = "free", Style = "height: fill" },
@@ -76,7 +78,7 @@ local window = ui.Window:new
 		ui.Group:new
 		{
 			Style = "height: free",
-			Legend = "Grid",
+			Legend = L.LAYOUT_GRID,
 			GridWidth = 3,
 			SameSize = true,
 			Children =
@@ -91,20 +93,20 @@ local window = ui.Window:new
 		},
 		ui.Group:new
 		{
-			Legend = "Fixed vs. Free",
+			Legend = L.LAYOUT_FIXED_VS_FREE,
 			Children =
 			{
-				ui.Text:new { Text = "fix" },
+				ui.Text:new { Text = L.LAYOUT_FIX },
 				ui.Text:new { Text = "25%", Style = "max-width: free", Weight = 0x4000 },
-				ui.Text:new { Text = "fix" },
+				ui.Text:new { Text = L.LAYOUT_FIX },
 				ui.Text:new { Text = "75%", Style = "max-width: free", Weight = 0xc000 },
-				ui.Text:new { Text = "fix" },
+				ui.Text:new { Text = L.LAYOUT_FIX },
 			},
 		},
 		ui.Group:new
 		{
 			Style = "max-height: free",
-			Legend = "Different Weights",
+			Legend = L.LAYOUT_DIFFERENT_WEIGHTS,
 			Children =
 			{
 				ui.Text:new { Text = "25%", Weight = 0x4000,
@@ -131,6 +133,6 @@ else
 	{
 		Window = window,
 		Name = "Layout",
-		Description = "This demonstrates the various layouting options.",
+		Description = L.LAYOUT_DESCRIPTION,
 	}
 end
