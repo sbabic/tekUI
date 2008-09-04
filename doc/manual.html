@@ -581,7 +581,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v5.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v6.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -603,6 +603,16 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<code>ApplicationId &#091;IG&#093;</code> 
+							<blockquote>
+								<p>
+									Name of the application, normally used as an unique identifier
+									in combination with the <code>VendorDomain</code> attribute. Default is
+									&quot;unknown&quot;.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>Author &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
@@ -622,7 +632,8 @@
 							<code>ProgramName &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
-									Name of the application
+									Name of the application, as displayed to the user. This is
+									also the fallback for the <code>Title</code> attribute.
 								</p>
 							</blockquote>
 						</li>
@@ -630,9 +641,9 @@
 							<code>Status &#091;G&#093;</code> 
 							<blockquote>
 								<p>
-									Status of the application, can be: &quot;connected&quot;, &quot;connecting&quot;,
+									Status of the application, can be &quot;connected&quot;, &quot;connecting&quot;,
 									&quot;disconnected&quot;, &quot;disconnecting&quot;, &quot;initializing&quot;, &quot;error&quot;,
-									&quot;running&quot;
+									&quot;running&quot;.
 								</p>
 							</blockquote>
 						</li>
@@ -641,8 +652,8 @@
 							<blockquote>
 								<p>
 									Name of a theme, which usually maps to an equally named
-									stylesheet file (with the extension &quot;.css&quot;. Themes with reserved
-									meaning are:
+									stylesheet file (with the extension &quot;.css&quot;) in the file system.
+									Themes with reserved meaning are:
 								</p>
 								<blockquote>
 									<ul>
@@ -662,12 +673,43 @@
 							<code>Title &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
-									Title of the application, which will be inherited by windows;
-									if unspecified, <code>ProgramName</code> will be used
+									Title of the application, which will also be inherited by Window
+									objects; if unspecified, <code>ProgramName</code> will be used.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>VendorDomain &#091;IG&#093;</code> 
+							<blockquote>
+								<p>
+									An uniquely identifying domain name of the vendor, origanization
+									or provider manufacturing or distributing the application,
+									preferrably without domain parts like &quot;www.&quot;, if they are
+									nonsignificant for identification. Default is &quot;unknown&quot;.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>VendorName &#091;IG&#093;</code> 
+							<blockquote>
+								<p>
+									Name of the vendor, organization or distributor responsible for
+									the application, as displayed to the user, UTF-8 encoded.
 								</p>
 							</blockquote>
 						</li>
 					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>NOTES</dfn>
+				<blockquote>
+					<p>
+						The <code>VendorDomain</code> and <code>ApplicationId</code> attributes are
+						UTF-8 encoded strings, and any international character is valid,
+						although it is recommended to avoid too adventurous symbolism,
+						as its end up in a hardly decipherable, UTF8- plus URL-
+						encoded form in the file system.
+					</p>
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
@@ -1133,7 +1175,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v8.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2435,7 +2477,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2463,6 +2505,9 @@
 			</p>
 			<blockquote>
 				<ul>
+					<li style="list-style-type: none">
+						&quot;empty&quot; - returns an empty stylesheet
+					</li>
 					<li style="list-style-type: none">
 						&quot;internal&quot; - the hardcoded internal stylesheet
 					</li>
@@ -6948,7 +6993,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Tue Sep  2 18:42:51 2008
+			Document generated on Thu Sep  4 02:39:04 2008
 		</p>
 	</div>
 	</body>

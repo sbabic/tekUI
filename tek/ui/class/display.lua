@@ -82,7 +82,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 8.0"
+_VERSION = "Display 8.1"
 
 -------------------------------------------------------------------------------
 --	Class data and constants:
@@ -164,13 +164,15 @@ local ColorDefaults =
 local FontDefaults =
 {
 	-- cache name : propname : default
-	[""] = { "font", DEF_MAINFONT },
+	["ui-main"] = { "font", DEF_MAINFONT },
 	["ui-small"] = { "font-small", DEF_SMALLFONT },
 	["ui-menu"] = { "font-menu", DEF_MENUFONT },
 	["ui-fixed"] = { "font-fixed", DEF_FIXEDFONT },
 	["ui-large"] = { "font-large", DEF_LARGEFONT },
 	["ui-huge"] = { "font-huge", DEF_HUGEFONT },
 }
+FontDefaults[""] = FontDefaults["ui-main"]
+
 
 -------------------------------------------------------------------------------
 --	Class implementation:

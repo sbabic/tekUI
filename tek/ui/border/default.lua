@@ -9,12 +9,13 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 1.2"
+_VERSION = "DefaultBorder 1.3"
 
 local PEN_SHINE = ui.PEN_BORDERSHINE
 local PEN_SHADOW = ui.PEN_BORDERSHADOW
 local PEN_RIM = ui.PEN_BORDERRIM
 local PEN_FOCUS = ui.PEN_BORDERFOCUS
+local PEN_BORDERLEGEND = ui.PEN_BORDERLEGEND
 
 local DefaultBorder = _M
 
@@ -34,39 +35,40 @@ end
 function DefaultBorder:getProperties(props, pclass)
 	local e = self.Parent
 	local p = self.Params
-	self.BorderStyle = self.BorderStyle or 
+	self.BorderStyle = self.BorderStyle or
 		e:getProperty(props, pclass, "border-style")
 	self.LegendFontName = e:getProperty(props, pclass, "border-legend-font")
 	p[1] = p[1] or e:getProperty(props, pclass, "border-left-color")
 	p[2] = p[2] or e:getProperty(props, pclass, "border-top-color")
 	p[3] = p[3] or e:getProperty(props, pclass, "border-right-color")
 	p[4] = p[4] or e:getProperty(props, pclass, "border-bottom-color")
-	self.BorderStyleActive = self.BorderStyleActive or 
+	self.BorderStyleActive = self.BorderStyleActive or
 		e:getProperty(props, pclass or "active", "border-style")
-	p[5] = p[5] or 
+	p[5] = p[5] or
 		e:getProperty(props, pclass or "active", "border-left-color")
-	p[6] = p[6] or 
+	p[6] = p[6] or
 		e:getProperty(props, pclass or "active", "border-top-color")
-	p[7] = p[7] or 
+	p[7] = p[7] or
 		e:getProperty(props, pclass or "active", "border-right-color")
-	p[8] = p[8] or 
+	p[8] = p[8] or
 		e:getProperty(props, pclass or "active", "border-bottom-color")
 	p[9] = p[9] or e:getProperty(props, pclass, "border-rim-color")
 	p[10] = p[10] or e:getProperty(props, pclass, "border-focus-color")
 	p[11] = p[11] or e:getProperty(props, pclass, "border-rim-width")
 	p[12] = p[12] or e:getProperty(props, pclass, "border-focus-width")
+	p[13] = p[13] or e:getProperty(props, pclass, "border-legend-color")
 	return Border.getProperties(self, p, class)
 end
 
 function DefaultBorder:show(display, drawable)
-	
+
 	local e = self.Parent
 	local p = self.Params
-	
+
 	-- consolidation of properties:
-	
+
 	local p1, p2, p3, p4
-	
+
 	local bs = self.BorderStyle
 	if bs == "outset" or bs == "groove" then
 		p1, p3 = PEN_SHINE, PEN_SHADOW
@@ -78,7 +80,7 @@ function DefaultBorder:show(display, drawable)
 		p1 = PEN_SHADOW
 		p2, p3, p4 = p1, p1, p1
 	end
-	
+
 	p[1] = p[1] or p1
 	p[2] = p[2] or p2
 	p[3] = p[3] or p3
@@ -99,18 +101,19 @@ function DefaultBorder:show(display, drawable)
 	p[6] = p[6] or p2
 	p[7] = p[7] or p3
 	p[8] = p[8] or p4
-	
+
 	p[9] = p[9] or PEN_RIM
 	p[10] = p[10] or PEN_FOCUS
 	p[11] = p[11] or 0
 	p[12] = p[12] or 0
+	p[13] = p[13] or PEN_BORDERLEGEND
 
 	if self.Legend then
 		self.LegendFont = display:openFont(self.LegendFontName)
 		self.LegendWidth, self.LegendHeight =
 			ui.Display:getTextSize(self.LegendFont, self.Legend)
 	end
-	
+
 	Border.show(self, display, drawable)
 end
 
@@ -170,10 +173,10 @@ function DefaultBorder:draw()
 		local y0 = r2 - th - b2
 		d:setFont(self.LegendFont)
 		d:pushClipRect(r1 - b1, y0, r3 + b3, r2 - b2 - 1)
-		d:drawText(tx, y0, self.Legend, pens[ui.PEN_BORDERLEGEND], gb)
+		d:drawText(tx, y0, self.Legend, pens[p[13]], gb)
 		d:popClipRect()
 	end
-	
+
 	local i = e.Selected and 5 or 1
 
 	-- thickness of outer borders:
@@ -195,14 +198,14 @@ function DefaultBorder:draw()
 			d1 - e1, d2 - e2, d3 - e3, d4 - e4,
 			pens[p[i+2]], pens[p[i+3]], pens[p[i]], pens[p[i+1]])
 	else
-		r1, r2, r3, r4, b1, b2, b3, b4 = 
+		r1, r2, r3, r4, b1, b2, b3, b4 =
 			drawBorderRect(d, r1, r2, r3, r4, b1, b2, b3, b4,
-			d1, d2, d3, d4, 
+			d1, d2, d3, d4,
 			pens[p[i]], pens[p[i+1]], pens[p[i+2]], pens[p[i+3]])
 	end
 
 	local pen = pens[p[9]]
-	r1, r2, r3, r4, b1, b2, b3, b4 = drawBorderRect(d, 
+	r1, r2, r3, r4, b1, b2, b3, b4 = drawBorderRect(d,
 		r1, r2, r3, r4, b1, b2, b3, b4,
 		min(b1, p[11]),
 		min(b2, p[11]),

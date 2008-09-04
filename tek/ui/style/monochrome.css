@@ -4,7 +4,7 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Version: 1.0
+**	Version: 1.1
 */
 
 tek.ui.class.display {
@@ -24,6 +24,7 @@ tek.ui.class.display {
   rgb-border-shadow: #fff;
   rgb-border-rim: #000;
   rgb-border-focus: #fff;
+  rgb-border-legend: #fff;
   rgb-cursor: #fff;
   rgb-cursor-detail: #000;
   rgb-dark: #000;
@@ -42,8 +43,12 @@ tek.ui.class.display {
   rgb-list-detail: #fff;
   rgb-list-active: #fff;
   rgb-list-active-detail: #000;
-  font: :32;
-  font-fixed: monospace:32;
+  font: sans-serif,helvetica,Vera:18;
+  font-fixed: monospace,fixed,VeraMono:18;
+  font-menu: sans-serif,helvetica,Vera:18;
+  font-small: sans-serif,helvetica,Vera:14;
+  font-large: sans-serif,helvetica,Vera:24;
+  font-huge: sans-serif,helvetica,Vera:32;
 }
 
 tek.ui.class.checkmark:hover {
@@ -56,4 +61,9 @@ tek.ui.class.checkmark:active {
 
 tek.ui.class.checkmark:focus {
 	color: detail;
+}
+
+tek.ui.class.popupwindow {
+	border-color: shine;
+	border-width: 2;
 }

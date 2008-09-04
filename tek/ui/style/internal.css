@@ -1,16 +1,19 @@
 
 /*
 **	tek/ui/style/internal.css - tekUI internal stylesheet
-**	This document is not actually loaded and decoded, it is for
-**	illustration purposes only.
-**
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
+**
+**	Note: This style sheet represents the hardcoded internal defaults.
+**	It is not actually loaded and decoded. It has been included for
+**	illustration purposes only.
 **
 **	Version: 1.1
 */
 
-/* element classes: */
+/*
+**	element classes:
+*/
 
 tek.ui.class.area {
 	margin: 1;
@@ -194,7 +197,9 @@ tek.ui.class.window {
 	margin: 0;
 }
 
-/* pre-defined classes: */
+/*
+**	pre-defined classes:
+*/
 
 .button {
 	border-style: outset;
@@ -269,7 +274,9 @@ tek.ui.class.window {
 	background-color: hover;
 }
 
-/* internal classes: */
+/*
+**	internal classes:
+*/
 
 _listviewheaditem {
 	background-color: active;

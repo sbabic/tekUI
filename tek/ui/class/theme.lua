@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.1"
+_VERSION = "Theme 6.2"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -459,6 +459,7 @@ end
 -------------------------------------------------------------------------------
 --	stylesheet = Theme.getStyleSheet([themename]): Returns a stylesheet for a
 --	named theme. Theme names currently defined are:
+--		- "empty" - returns an empty stylesheet
 --		- "internal" - the hardcoded internal stylesheet
 --		- "desktop" - The "desktop" external stylesheet (or hardcoded
 --		internal stylesheet if unavailable), overlaying the user's
@@ -483,17 +484,15 @@ local function copyprops(dest, source)
 end
 
 function Theme.getStyleSheet(themename)
-
-	themename = themename or "default"
-	if themename == "internal" then
-		return DEF_STYLESHEET
-	end
-
 	local props
-	if themename == "desktop" then
+	themename = themename or "default"
+	if themename == "empty" then
+		return { }
+	elseif themename == "internal" then
+		return DEF_STYLESHEET
+	elseif themename == "desktop" then
 		props = importGTKConfig()
 	end
-
 	local fname = ("tek/ui/style/%s.css"):format(themename)
 	local s, msg = ui.loadStyleSheet(fname)
 	if s then
@@ -505,6 +504,5 @@ function Theme.getStyleSheet(themename)
 	else
 		db.warn("failed to load style sheet '%s' : %s", fname, msg)
 	end
-
 	return props
 end

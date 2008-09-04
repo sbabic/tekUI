@@ -14,27 +14,47 @@
 --		This class implements the framework's entrypoint and main loop.
 --
 --	MEMBERS::
+--		- {{ApplicationId [IG]}}
+--			Name of the application, normally used as an unique identifier
+--			in combination with the {{VendorDomain}} attribute. Default is
+--			"unknown".
 --		- {{Author [IG]}}
 --			Name of the application's author
 --		- {{Copyright [IG]}}
 --			Copyright notice applying to the application
 --		- {{ProgramName [IG]}}
---			Name of the application
+--			Name of the application, as displayed to the user. This is
+--			also the fallback for the {{Title}} attribute.
 --		- {{Status [G]}}
---			Status of the application, can be: "connected", "connecting",
+--			Status of the application, can be "connected", "connecting",
 --			"disconnected", "disconnecting", "initializing", "error",
---			"running"
+--			"running".
 --		- {{ThemeName [IG]}}
 --			Name of a theme, which usually maps to an equally named
---			stylesheet file (with the extension ".css". Themes with reserved
---			meaning are:
+--			stylesheet file (with the extension ".css") in the file system.
+--			Themes with reserved meaning are:
 --				- "internal": Uses the hardcoded internal style properties
 --				and does not try to load a stylesheet file.
 --				- "desktop": Tries to import the desktop's color scheme
 --				(besides trying to load a stylesheet named "desktop.css").
 --		- {{Title [IG]}}
---			Title of the application, which will be inherited by windows;
---			if unspecified, {{ProgramName}} will be used
+--			Title of the application, which will also be inherited by Window
+--			objects; if unspecified, {{ProgramName}} will be used.
+--		- {{VendorDomain [IG]}}
+--			An uniquely identifying domain name of the vendor, origanization
+--			or provider manufacturing or distributing the application,
+--			preferrably without domain parts like "www.", if they are
+--			nonsignificant for identification. Default is "unknown".
+--		- {{VendorName [IG]}}
+--			Name of the vendor, organization or distributor responsible for
+--			the application, as displayed to the user, UTF-8 encoded.
+--
+--	NOTES::
+--		The {{VendorDomain}} and {{ApplicationId}} attributes are
+--		UTF-8 encoded strings, and any international character is valid,
+--		although it is recommended to avoid too adventurous symbolism,
+--		as its end up in a hardly decipherable, UTF8- plus URL-
+--		encoded form in the file system.
 --
 --	IMPLEMENTS::
 --		- Application:addCoroutine() - adds a coroutine to the application
@@ -77,7 +97,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 5.0"
+_VERSION = "Application 6.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -104,6 +124,7 @@ end
 
 function Application.init(self)
 	self.Application = self
+	self.ApplicationId = self.ApplicationId or "unknown"
 	self.Author = self.Author or false
 	self.Copyright = self.Copyright or false
 	self.Coroutines = { }
@@ -116,6 +137,8 @@ function Application.init(self)
 	self.Status = "initializing"
 	self.Title = self.Title or self.ProgramName or false
 	self.ThemeName = self.ThemeName or "desktop"
+	self.VendorName = VendorName or "unknown"
+	self.VendorDomain = VendorDomain or "unknown"
 	self.WaitVisuals = { }
 	self.WaitWindows = { }
 	self.Properties = { ui.Theme.getStyleSheet("internal") }
@@ -431,7 +454,7 @@ end
 
 local msgdispatch =
 {
-	[ui.MSG_CLOSE] = passmsg_always,
+	[ui.MSG_CLOSE] = passmsg_checkmodal,
 	[ui.MSG_FOCUS] = passmsg_always,
 	[ui.MSG_NEWSIZE] = function(state, msg)
 		-- bundle newsizes:
