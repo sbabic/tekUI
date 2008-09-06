@@ -51,7 +51,7 @@ dfb_openvisual(TMOD_DFB *mod, struct TVRequest *req)
 		v->winleft = (mod->dfb_ScrWidth - v->winwidth) / 2;
 		v->wintop = (mod->dfb_ScrHeight - v->winheight) / 2;
 	}
-	else if (TGetTag(tags, TVisual_Fullscreen, TFALSE))
+	else if (TGetTag(tags, TVisual_FullScreen, TFALSE))
 	{
 		v->winwidth = mod->dfb_ScrWidth;
 		v->winheight = mod->dfb_ScrHeight;

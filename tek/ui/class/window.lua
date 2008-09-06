@@ -21,8 +21,8 @@
 --	ATTRIBUTES::
 --		- {{Center [IG]}} (boolean)
 --			Instructs the Window to open centered on the Display.
---		- {{Fullscreen [IG]}} (boolean)
---			Instructs the Window to open borderless and in fullscreen mode;
+--		- {{FullScreen [IG]}} (boolean)
+--			Instructs the Window to open borderless and in full screen mode;
 --			this however may be in conflict with the {{MaxWidth}},
 --			{{MinWidth}} attributes, which have precedence in this case.
 --		- {{Left [IG]}} (number)
@@ -89,7 +89,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 7.2"
+_VERSION = "Window 7.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -122,7 +122,7 @@ function Window.init(self)
 	self.DblClickCheckMouseX = false
 	self.DblClickCheckMouseY = false
 	self.FocusElement = false
-	self.Fullscreen = self.Fullscreen or false
+	self.FullScreen = self.FullScreen or false
 	self.HiliteElement = false
 	-- Active hold tick counter - number of ticks left to next hold event:
 	self.HoldTickActive = 0
@@ -285,7 +285,7 @@ function Window:openWindow()
 	if self.Status ~= "show" then
 		local m1, m2, m3, m4, x, y, w, h = self:getWindowDimensions()
 		if self.Drawable:open(self.Title or self.Application.Title,
-			w, h, m1, m2, m3, m4, x, y, self.Center, self.Fullscreen) then
+			w, h, m1, m2, m3, m4, x, y, self.Center, self.FullScreen) then
 			local wm = self.WindowMinMax
 			wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
 			self.Status = "show"

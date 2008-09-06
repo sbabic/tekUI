@@ -50,7 +50,7 @@ local overlap = Region.overlapCoords
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 9.1"
+_VERSION = "Drawable 9.2"
 
 DELAY = 0.003
 
@@ -103,7 +103,7 @@ function Drawable:open(title, w, h, minw, minh, maxw, maxh, x, y, center,
 			MaxHeight = maxh,
 			Borderless = (x or y) and true,
 			Center = center,
-			Fullscreen = fulls,
+			FullScreen = fulls,
 		}
 
 		self.DebugPen1 = self.Visual:allocpen(255, 255, 0)

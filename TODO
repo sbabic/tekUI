@@ -10,9 +10,7 @@ be worked on:
 
 === General ===
 
- * Full internationalisation and localisation
  * Bitmap graphics
- * Individual style attributes
  * Clipboard support
  * Context menus
  * Bubble help
@@ -24,7 +22,6 @@ be worked on:
 === Known bugs ===
 
  * potential memory leak in visual.drawimage
- * rare visual artifacts in lists
  * Antialiased fonts unsupported under X11 with Composite Extension
  * Doubleclick timeout is incorrectly handled when using an
  integer version of Lua

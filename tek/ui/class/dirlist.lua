@@ -70,7 +70,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 5.0"
+_VERSION = "DirList 5.1"
 
 local DirList = _M
 
@@ -130,6 +130,7 @@ function DirList.new(class, self)
 
 	self.ScanMode = false
 	self.DirList = false
+	self.SelectMode = self.SelectMode or false
 
 	self.PathField = TextInput:new
 	{

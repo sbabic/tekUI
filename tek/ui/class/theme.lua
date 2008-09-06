@@ -26,12 +26,14 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.3"
+_VERSION = "Theme 6.4"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
 {
-	-- element classes:
+	--
+	--	element classes:
+	--
 
 	["tek.ui.class.area"] = {
 		["margin"] = 1,
@@ -130,6 +132,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["border-color"] = "shine",
 		["color"] = "list-detail",
 	},
+
 	["tek.ui.class.listgadget:active"] = {
 		["background-color"] = "list-active",
 		["color"] = "list-active-detail",
@@ -214,7 +217,9 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["margin"] = 0,
 	},
 
-	-- pre-defined classes:
+	--
+	--	pre-defined classes:
+	--
 
 	[".button"] = {
 		["border-style"] = "outset",
@@ -289,16 +294,26 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["background-color"] = "hover",
 	},
 
-	-- internal classes:
+	[".page-button-fill"] = {
+		["border-style"] = "inset",
+		["border-width"] = "0 0 2 0",
+		["border-focus-width"] = 0,
+		["background-color"] = "parent-group",
+		["margin"] = 0,
+	},
+
+	[".page-button-group"] = {
+		["margin"] = "4 2 0 2",
+		["padding-left"] = 2,
+	},
+
+	--
+	--	internal classes:
+	--
 
 	["_listviewheaditem"] = {
 		["background-color"] = "active",
 		["padding"] = 0,
-	},
-
-	["_pagebuttongroup"] = {
-		["margin"] = "4 2 0 2",
-		["padding-left"] = 2,
 	},
 
 	["_pagecontainer"] = {

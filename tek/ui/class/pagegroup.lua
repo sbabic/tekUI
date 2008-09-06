@@ -58,7 +58,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 6.3"
+_VERSION = "PageGroup 6.4"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -72,39 +72,6 @@ function PageContainerGroup.init(self)
 	self.PageNumber = self.PageNumber or 1
 	return Group.init(self)
 end
-
-local PageButtonGroup = Group:newClass { _NAME = "_pagebuttongroup" }
-
--- function PageButtonGroup:draw()
--- 	Group.draw(self)
--- 	local d = self.Drawable
--- 	local r = self.Rect
--- 	local c = self.Children
--- 	if #c > 0 then
--- 		local pens = d.Pens
--- 		local e = c[#c]
--- 		local b = e.BorderObject
--- 		if b then
--- 			local x0 = r[1]
--- 			local _, _, b3, b4 = e:getBorder()
--- 			local p = b.Params
--- 			local p1, p2, p3, p4 = pens[p[1]], pens[p[2]], pens[p[3]],
--- 				pens[p[4]]
--- 			b.drawBorderRect(d, e.Rect[3] + b3 + 1,
--- 				r[2], r[3], r[4] - b4,
--- 				0, 0, 0, b4,
--- 				0, 0, 0, b4,
--- 				p1, p2, p3, p4)
--- 			e = c[1]
--- 			local b1 = e:getBorder()
--- 			b.drawBorderRect(d, r[1],
--- 				r[2], e.Rect[1] - b1 - 1, r[4] - b4,
--- 				0, 0, 0, b4,
--- 				0, 0, 0, b4,
--- 				p1, p2, p3, p4)
--- 		end
--- 	end
--- end
 
 -------------------------------------------------------------------------------
 --	new:
@@ -181,6 +148,12 @@ function PageGroup.new(class, self)
 		end
 	end
 
+	tabbuttons[#tabbuttons + 1] = ui.Text:new
+	{
+		Class = "page-button-fill",
+		Height = "fill",
+	}
+
 	if tabbuttons[pagenumber] then
 		tabbuttons[pagenumber]:setValue("Selected", true)
 	end
@@ -189,8 +162,9 @@ function PageGroup.new(class, self)
 
 	self.Children =
 	{
-		PageButtonGroup:new
+		Group:new
 		{
+			Class = "page-button-group",
 			Width = "fill",
 			MaxHeight = 0,
 			Children = tabbuttons,

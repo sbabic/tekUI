@@ -159,8 +159,8 @@ tek_lib_visual_open(lua_State *L)
 		tp++->tti_Value = (TTAG) lua_toboolean(L, -1);
 	lua_pop(L, 1);
 
-	tp->tti_Tag = TVisual_Fullscreen;
-	lua_getfield(L, 1, "Fullscreen");
+	tp->tti_Tag = TVisual_FullScreen;
+	lua_getfield(L, 1, "FullScreen");
 	if (lua_isboolean(L, -1))
 		tp++->tti_Value = (TTAG) lua_toboolean(L, -1);
 	lua_pop(L, 1);

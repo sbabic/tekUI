@@ -11,7 +11,7 @@ ABOUT_SYSTEM = "_System";
 ABOUT_TEKUI = "Über tekUI";
 ALIGNMENT_DEMO = "Ausrichtungsdemo";
 ALIGN_HORIZONTAL = "Ausrichtung Horizontal";
-ALIGN_VERTICAL = "Ausrichtung Vertical";
+ALIGN_VERTICAL = "Ausrichtung Vertikal";
 ANIMATIONS_DESCRIPTION = [[
 Diese Demonstration zeigt drei verschiedene animierte Klassen.
 

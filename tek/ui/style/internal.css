@@ -8,7 +8,7 @@
 **	It is not actually loaded and decoded. It has been included for
 **	illustration purposes only.
 **
-**	Version: 1.1
+**	Version: 1.2
 */
 
 /*
@@ -274,6 +274,19 @@ tek.ui.class.window {
 	background-color: hover;
 }
 
+.page-button-fill {
+	border-style: inset;
+	border-width: 0 0 2 0;
+	border-focus-width: 0;
+	background-color: parent-group;
+	margin: 0;
+}
+
+.page-button-group = {
+	margin: 4 2 0 2;
+	padding-left: 2;
+}
+
 /*
 **	internal classes:
 */
@@ -281,11 +294,6 @@ tek.ui.class.window {
 _listviewheaditem {
 	background-color: active;
 	padding: 0;
-}
-
-_pagebuttongroup {
-	margin: 4 2 0 2;
-	padding-left: 2;
 }
 
 _pagecontainer {

@@ -30,6 +30,7 @@ x11_openvisual(TMOD_X11 *mod, struct TVRequest *req)
 		TUINT gcv_mask;
 		struct FontNode *fn;
 		XWindowAttributes rootwa;
+		TBOOL grabkeyboard = TFALSE;
 
 		/* gain access to root window properties: */
 		XGetWindowAttributes(mod->x11_Display,
@@ -68,7 +69,7 @@ x11_openvisual(TMOD_X11 *mod, struct TVRequest *req)
 			v->winleft = (WidthOfScreen(rootwa.screen) - v->winwidth) / 2;
 			v->wintop = (HeightOfScreen(rootwa.screen) - v->winheight) / 2;
 		}
-		else if (TGetTag(tags, TVisual_Fullscreen, TFALSE))
+		else if (TGetTag(tags, TVisual_FullScreen, TFALSE))
 		{
 			v->winwidth = WidthOfScreen(rootwa.screen);
 			v->winheight = HeightOfScreen(rootwa.screen);
@@ -76,6 +77,7 @@ x11_openvisual(TMOD_X11 *mod, struct TVRequest *req)
 			v->wintop = 0;
 			swa_mask |= CWOverrideRedirect;
 			swa.override_redirect = True;
+			grabkeyboard = TTRUE;
 		}
 		else
 		{
@@ -167,6 +169,12 @@ x11_openvisual(TMOD_X11 *mod, struct TVRequest *req)
 			GCForeground | GCBackground, v->gc);
 
 		XMapWindow(mod->x11_Display, v->window);
+
+		if (grabkeyboard)
+		{
+			XGrabKeyboard(mod->x11_Display,
+				v->window, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+		}
 
 		if (mod->x11_use_xft == TTRUE)
 		{

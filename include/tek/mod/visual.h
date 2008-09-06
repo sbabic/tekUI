@@ -39,7 +39,7 @@ typedef TTAG TVPEN;
 #define TVisual_Attach				(TVISTAGS_ + 0x00d)
 #define TVisual_Center				(TVISTAGS_ + 0x00e)
 #define TVisual_Borderless			(TVISTAGS_ + 0x00f)
-#define TVisual_Fullscreen			(TVISTAGS_ + 0x010)
+#define TVisual_FullScreen			(TVISTAGS_ + 0x010)
 #define TVisual_EventMask			(TVISTAGS_ + 0x011)
 
 #define	TVisual_FontName			(TVISTAGS_ + 0x100)
