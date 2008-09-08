@@ -57,6 +57,7 @@ CHOICE_WATER = "W_ater";
 CHOICE_WHAT_ME = "What, me_?";
 CHOICE_WINE = "_Wine";
 CHOICE_YES = "_Yes";
+CHOOSE_FILE = "_Choose File";
 CLOSE_ALL = "_Close all";
 COMMENT = "Comment";
 DEBUGGING = "Debugging";
@@ -76,6 +77,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ]];
 END = "End";
+FILE_REQUEST = "File Request";
 GROUP = "Group";
 HELLO = "Hello";
 HELLO_WORLD = "Hello, World!";
@@ -106,6 +108,7 @@ MEMORY_USAGE = "Memory Usage";
 MENU_ABOUT = "_About...";
 MENU_FILE = "_File";
 MENU_QUIT = "_Quit";
+MULTISELECT = "_Multiselect";
 NOTIFICATIONS_CONNECTIONS = "Connections";
 NOTIFICATIONS_DESCRIPTION = [[
 	Elements can be interconnected with each other using notifications.
@@ -114,8 +117,10 @@ NOTIFICATIONS_TITLE = "Notifications";
 OKAY = "_Okay";
 OPEN_ALL = "_Open all";
 ORDER_BEVERAGES = "Order Beverages";
+PATH = "_Path";
 PROPERTY = "Property";
 RESET = "Reset";
+SELECTED = "Selected";
 SLIDER_CONTINUOUS = "Continuous";
 SLIDER_DESCRIPTION = "Slider";
 SLIDER_INTEGER_STEP = "Integer Step";
@@ -124,6 +129,7 @@ SLIDER_RANGE = "Range";
 SLIDER_SLIDERS = "Sliders";
 SLIDER_TITLE = "Slider";
 SLOW_RENDERING = "Slow Rendering";
+STATUS = "Status";
 SYSTEM_INFORMATION = "System Information";
 TEKUI_COPYRIGHT_TEXT = [[
 Copyright © 2008 by the authors:

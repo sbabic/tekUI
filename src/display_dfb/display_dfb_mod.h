@@ -2,9 +2,9 @@
 #define _TEK_VISUAL_DISPLAY_DFB_MOD_H
 
 /*
-**	tekui/src/display_dfb/display_dfb_mod.h - DirectFB Display Driver
+**	teklib/src/display_dfb/display_dfb_mod.h - DirectFB Display Driver
 **	Written by Franciska Schulze <fschulze at schulze-mueller.de>
-**	See copyright notice in tekui/COPYRIGHT
+**	See copyright notice in teklib/COPYRIGHT
 */
 
 #include <string.h>

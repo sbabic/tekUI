@@ -33,16 +33,16 @@
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
+--		- Area:cleanup()
 --		- Area:draw()
 --		- Object.init()
 --		- Area:layout()
 --		- Class.new()
---		- Area:show()
+--		- Area:setup()
 --
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-
 local Canvas = ui.Canvas
 local Gadget = ui.Gadget
 local List = require "tek.class.list"
@@ -56,7 +56,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 4.0"
+_VERSION = "PopList 4.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -164,6 +164,11 @@ function PopList:cleanup()
 	PopItem.cleanup(self)
 end
 
+function PopList:show(display, drawable)
+	self:setValue("SelectedEntry", self.SelectedEntry, true)
+	return PopItem.show(self, display, drawable)
+end
+
 function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
 	if lo then
@@ -195,4 +200,8 @@ end
 -------------------------------------------------------------------------------
 
 function PopList:onSelectEntry(lnr)
+	local entry = self.ListGadget:getItem(lnr)
+	if entry then
+		self:setValue("Text", entry[1][1])
+	end
 end

@@ -16,6 +16,7 @@
 --
 --	FUNCTIONS::
 --		- ui.createHook() - Create a hook object
+--		- ui.extractKeyCode() - Extract keycode from a string
 --		- ui.getLocale() - Get a locale catalog
 --		- ui.loadClass() - Load a named class
 --		- ui.loadStyleSheet() - Load and parse a style sheet file
@@ -74,7 +75,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 13.0"
+_VERSION = "tekUI 14.0"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -665,6 +666,17 @@ function resolveKeyCode(code)
 		addqual(lkey, quals, "Shift")
 	end
 	return lkey, quals
+end
+
+-------------------------------------------------------------------------------
+--	extractKeyCode(string[, shortcutmark]): Extract a shortcut character
+--	from a string. The default shortcut marker is an underscore.
+-------------------------------------------------------------------------------
+
+function extractKeyCode(s, m)
+	m = m or "_"
+	s = s:match("^[^" .. m .. "]*" .. m .. "(.)")
+	return s and s:lower() or false
 end
 
 -------------------------------------------------------------------------------

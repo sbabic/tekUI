@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.4"
+_VERSION = "Theme 6.5"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -37,6 +37,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 
 	["tek.ui.class.area"] = {
 		["margin"] = 1,
+		["vertical-grid-align"] = "center",
 	},
 
 	["tek.ui.class.checkmark"] = {
@@ -237,7 +238,6 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["text-align"] = "center",
 		["vertical-align"] = "center",
 		["horizontal-grid-align"] = "center",
-		["vertical-grid-align"] = "center",
 	},
 
 	[".gauge-fill"] = {

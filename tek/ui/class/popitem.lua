@@ -67,7 +67,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 5.0"
+_VERSION = "PopItem 5.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -380,15 +380,13 @@ function PopItem:connectPopItems(app, window)
 			self:addNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_SUBMENU)
 			self:addNotify("Selected", true, NOTIFY_ONSELECT)
 			self:addNotify("Selected", false, NOTIFY_ONUNSELECT)
-			for _, child in ipairs(self.Children) do
+			for _, child in ipairs(c) do
 				connectPopItems(child, app, window)
 			end
 		else
 			if self.Shortcut then
 				window:addKeyShortcut("IgnoreCase+" .. self.Shortcut, self)
 			end
-			self.Application = app
-			self.Window = window
 			self:addNotify("Active", false, NOTIFY_ONRELEASEITEM)
 			self:addNotify("Pressed", false, NOTIFY_ONRELEASE)
 		end
@@ -402,8 +400,9 @@ end
 function PopItem:disconnectPopItems(window)
 	if self:checkDescend(PopItem) then
 		db.info("removing popitem %s", self:getClassName())
-		if self.Children then
-			for _, child in ipairs(self.Children) do
+		local c = self:getElement("children")
+		if c then
+			for _, child in ipairs(c) do
 				disconnectPopItems(child, window)
 			end
 			self:remNotify("Selected", false, NOTIFY_ONUNSELECT)

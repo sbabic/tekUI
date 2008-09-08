@@ -16,7 +16,7 @@
 --
 --	ATTRIBUTES:
 --		- {{Application [G]}} ([[#tek.ui.class.application : Application]])
---			The application the element is registered with, or '''false'''; 
+--			The application the element is registered with, or '''false''';
 --			this attribute is set in the Element:setup() method.
 --		- {{Class [IG]}} (string)
 --			The name of the element's style class, which can be referenced
@@ -57,7 +57,7 @@ local insert = table.insert
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 10.0"
+_VERSION = "Element 10.1"
 local Element = _M
 
 -------------------------------------------------------------------------------
@@ -153,8 +153,9 @@ end
 -------------------------------------------------------------------------------
 
 function Element:setup(app, window)
-	assert(not (self.Application or self.Window),
-		"Element already initialized")
+	if self.Application then
+		db.warn("Element already initialized: %s", self:getClassName())
+	end
 	self.Application = app
 	self.Window = window
 	if self.Id then
@@ -197,12 +198,12 @@ local function getprop(props, attr, key)
 end
 
 function Element:getProperty(props, pclass, attr)
-	
+
 	if pclass == true then
 		-- direct formatting:
 		return props[attr] or false
 	end
-	
+
 	local id = self.Id
 	local classname = self._NAME
 	local styleclass = self.Class
@@ -261,7 +262,7 @@ end
 --	after connecting the element, for retrieving style properties from a
 --	style sheet or from decoding the element's {{Style}} attribute
 --	("direct formatting"). It can be invoked multiple times with different
---	pseudo classes and {{properties}}. 
+--	pseudo classes and {{properties}}.
 --	When you override this function, among the reasonable things to do is to
 --	query properties using the Element:getProperty() function, passing it the
 --	{{properties}} and {{pseudoclass}} arguments. First recurse into your

@@ -1,7 +1,7 @@
 /*
-**	tekui/src/display_dfb/display_dfb_mod.c - DirectFB Display driver
+**	teklib/src/display_dfb/display_dfb_mod.c - DirectFB Display driver
 **	Written by Franciska Schulze <fschulze at schulze-mueller.de>
-**	See copyright notice in tekui/COPYRIGHT
+**	See copyright notice in teklib/COPYRIGHT
 */
 
 #include <unistd.h>

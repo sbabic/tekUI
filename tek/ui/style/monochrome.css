@@ -4,7 +4,7 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Version: 1.1
+**	Version: 1.2
 */
 
 tek.ui.class.display {
@@ -66,4 +66,9 @@ tek.ui.class.checkmark:focus {
 tek.ui.class.popupwindow {
 	border-color: shine;
 	border-width: 2;
+}
+
+tek.ui.class.poplist:active {
+	color: shadow;
+	background-color: shine;
 }

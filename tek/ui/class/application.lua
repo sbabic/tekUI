@@ -98,7 +98,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 6.1"
+_VERSION = "Application 6.2"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -613,7 +613,7 @@ function Application:requestFile(args)
 
 	local window = Window:new
 	{
-		Title = args.Title or "Select file or directory...",
+		Title = args.Title or dirlist.Locale.SELECT_FILE_OR_DIRECTORY,
 		Modal = true,
 		Width = 400,
 		Height = 500,

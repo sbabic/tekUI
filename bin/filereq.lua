@@ -2,13 +2,20 @@
 
 local ui = require "tek.ui"
 
+local APP_ID = "tekui-demo"
+local VENDOR = "schulze-mueller.de"
+
+local L = ui.getLocale(APP_ID, VENDOR)
+
 app = ui.Application:new
 {
+	ApplicationId = APP_ID,
+	VendorDomain = VENDOR,
 	Children =
 	{
 		ui.Window:new
 		{
-			Title = "File Request",
+			Title = L.FILE_REQUEST,
 			Orientation = "vertical",
 			Children =
 			{
@@ -20,7 +27,7 @@ app = ui.Application:new
 					{
 						ui.Text:new
 						{
-							Text = "_Path:",
+							Text = L.PATH,
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
@@ -29,11 +36,11 @@ app = ui.Application:new
 						{
 							Id = "pathfield",
 							Text = "/home",
-							KeyCode = "p",
+							KeyCode = ui.extractKeyCode(L.PATH),
 						},
 						ui.Text:new
 						{
-							Text = "Selected:",
+							Text = L.SELECTED,
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
@@ -44,7 +51,7 @@ app = ui.Application:new
 						},
 						ui.Text:new
 						{
-							Text = "Status:",
+							Text = L.STATUS,
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
@@ -56,7 +63,7 @@ app = ui.Application:new
 						},
 						ui.Text:new
 						{
-							Text = "_Multiselect:",
+							Text = L.MULTISELECT,
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
@@ -64,14 +71,14 @@ app = ui.Application:new
 						ui.CheckMark:new
 						{
 							Id = "multiselect",
-							KeyCode = "m",
+							KeyCode = ui.extractKeyCode(L.MULTISELECT),
 							VAlign = "center",
 						},
 					}
 				},
 				ui.Text:new
 				{
-					Text = "_Choose File...",
+					Text = L.CHOOSE_FILE,
 					Class = "button",
 					Mode = "button",
 					Width = "auto",
@@ -89,12 +96,14 @@ app = ui.Application:new
 									local status, path, select = self:requestFile
 									{
 										Path = pathfield.Text,
-										SelectMode = self:getElementById("multiselect").Selected and "multi" or "single"
+										SelectMode = self:getElementById("multiselect").Selected and
+											"multi" or "single"
 									}
 									statusfield:setValue("Text", status)
 									if status == "selected" then
 										pathfield:setValue("Text", path)
-										self:getElementById("filefield"):setValue("Text", table.concat(select, ", "))
+										self:getElementById("filefield"):setValue("Text",
+											table.concat(select, ", "))
 									end
 								end }
 							}

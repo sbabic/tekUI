@@ -123,6 +123,9 @@ else
 
 -------------------------------------------------------------------------------
 --	object:getSuper(): Gets the super class of an object (or class).
+--	For example, this is how a call to method can be forwarded to its
+--	super class:
+--			self:getSuper().method(self, ...)
 -------------------------------------------------------------------------------
 
 	function Class:getSuper()

@@ -194,6 +194,7 @@ ui.Application:new
 						ui.PopList:new
 						{
 							Text = "Combo Box",
+							SelectedEntry = 3,
 							ListObject = List:new
 							{
 								Items =

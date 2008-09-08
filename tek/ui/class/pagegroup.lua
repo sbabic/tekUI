@@ -23,25 +23,23 @@
 --		- {{PageCaptions [IG]}} (table)
 --			An array of strings containing captions for each page in
 --			the group.
---		- {{PageNumber [IG]}} (number)
+--		- {{PageNumber [ISG]}} (number)
 --			Number of the page that is initally selected. [Default: 1]
+--			Setting this attribute invokes the PageGroup:onSetPageNumber()
+--			method.
+--
+--	IMPLEMENTS::
+--		- PageGroup:onSetPageNumber() - handler for {{PageNumber}}
 --
 --	OVERRIDES::
---		- Area:askMinMax()
---		- Area:getElement()
---		- Area:getElementByXY()
---		- Area:hide()
---		- Area:layout()
---		- Area:markDamage()
+--		- Element:cleanup()
+--		- Object.init()
 --		- Class.new()
---		- Area:passMsg()
---		- Area:punch()
---		- Area:refresh()
---		- Area:relayout()
---		- Area:show()
+--		- Element:setup()
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Frame = ui.Frame
 local Gadget = ui.Gadget
@@ -53,16 +51,24 @@ local assert = assert
 local ipairs = ipairs
 local max = math.max
 local min = math.min
+local tonumber = tonumber
 local tostring = tostring
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 6.4"
+_VERSION = "PageGroup 7.0"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
---	class implementation:
+--	Constants & Class data:
+-------------------------------------------------------------------------------
+
+local NOTIFY_PAGENUMBER = { ui.NOTIFY_SELF, "onSetPageNumber",
+	ui.NOTIFY_VALUE }
+
+-------------------------------------------------------------------------------
+--	PageContainerGroup:
 -------------------------------------------------------------------------------
 
 local PageContainerGroup = Group:newClass { _NAME = "_pagecontainer" }
@@ -74,108 +80,6 @@ function PageContainerGroup.init(self)
 end
 
 -------------------------------------------------------------------------------
---	new:
--------------------------------------------------------------------------------
-
-local function changeTab(group, tabbuttons, newtabn)
-	tabbuttons[group.PageNumber]:setValue("Selected", false)
-	group.PageNumber = newtabn
-	group.PageElement:hide()
-	group.PageElement:cleanup()
-
-	group.PageElement = group.Children[newtabn]
-
-	ui.Application.connect(group.PageElement, group)
-	group.PageElement:connect(group)
-
-	group.Application:decodeProperties(group.PageElement)
-
-	group.PageElement:setup(group.Application, group.Window)
-	group.PageElement:show(group.Display, group.Drawable)
-	group:askMinMax(0, 0, group.MaxWidth, group.MaxHeight)
-	local r = group.Rect
-	local m = group.MarginAndBorder
-	group:relayout(group, r[1] - m[1], r[2] - m[2], r[3] + m[3], r[4] + m[4])
-	group.PageElement:rethinkLayout(2)
-end
-
-function PageGroup.new(class, self)
-
-	self = self or { }
-
-	local children = self.Children or { }
-
-	local pagenumber = type(self.PageNumber) == "number" and self.PageNumber or 1
-	pagenumber = max(1, min(pagenumber, #children))
-
-	local pageelement = children[pagenumber] or ui.Area:new { }
-
-	local pagegroup = PageContainerGroup:new
-	{
-		Children = children,
-		PageNumber = pagenumber,
-		PageElement = pageelement
-	}
-
-	self.PageCaptions = self.PageCaptions or { }
-
-	local tabbuttons = { }
-	if #children == 0 then
-		tabbuttons[1] = ui.Text:new
-		{
-			Class = "page-button",
-			Mode = "inert",
-			Width = "auto",
-		}
-	else
-		for i, c in ipairs(children) do
-			local text = self.PageCaptions[i] or tostring(i)
-			tabbuttons[i] = ui.Text:new
-			{
-				Class = "page-button",
-				Mode = "touch",
-				Width = "auto",
-				Text = text,
-				Notifications = {
-					["Pressed"] = {
-						[true] = {
-							{ pagegroup, ui.NOTIFY_FUNCTION, changeTab,
-								tabbuttons, i }
-						}
-					}
-				}
-			}
-		end
-	end
-
-	tabbuttons[#tabbuttons + 1] = ui.Text:new
-	{
-		Class = "page-button-fill",
-		Height = "fill",
-	}
-
-	if tabbuttons[pagenumber] then
-		tabbuttons[pagenumber]:setValue("Selected", true)
-	end
-
-	self.Orientation = "vertical"
-
-	self.Children =
-	{
-		Group:new
-		{
-			Class = "page-button-group",
-			Width = "fill",
-			MaxHeight = 0,
-			Children = tabbuttons,
-		},
-		pagegroup
-	}
-
-	return Group.new(class, self)
-end
-
--------------------------------------------------------------------------------
 --	setup: overrides
 -------------------------------------------------------------------------------
 
@@ -183,6 +87,10 @@ function PageContainerGroup:setup(app, window)
 	Gadget.setup(self, app, window)
 	self.PageElement:setup(app, window)
 end
+
+-------------------------------------------------------------------------------
+--	cleanup: overrides
+-------------------------------------------------------------------------------
 
 function PageContainerGroup:cleanup()
 	self.PageElement:cleanup()
@@ -221,7 +129,7 @@ function PageContainerGroup:hide()
 end
 
 -------------------------------------------------------------------------------
---	markDamage: mark damage in self and Children
+--	markDamage: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:markDamage(r1, r2, r3, r4)
@@ -231,7 +139,7 @@ function PageContainerGroup:markDamage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
---	refresh: traverse tree, redraw if damaged
+--	refresh: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:refresh()
@@ -240,7 +148,7 @@ function PageContainerGroup:refresh()
 end
 
 -------------------------------------------------------------------------------
---	getElementByXY: probe element for all Children
+--	getElementByXY: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:getElementByXY(x, y)
@@ -248,7 +156,7 @@ function PageContainerGroup:getElementByXY(x, y)
 end
 
 -------------------------------------------------------------------------------
---	askMinMax: returns minx, miny[, maxx[, maxy]]
+--	askMinMax: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:askMinMax(m1, m2, m3, m4)
@@ -257,7 +165,7 @@ function PageContainerGroup:askMinMax(m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
---	punch: Punch a a hole into the background for the element
+--	punch: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:punch(region)
@@ -265,7 +173,7 @@ function PageContainerGroup:punch(region)
 end
 
 -------------------------------------------------------------------------------
---	layout: note that layouting takes place unconditionally here
+--	layout: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:layout(r1, r2, r3, r4, markdamage)
@@ -288,7 +196,7 @@ function PageContainerGroup:layout(r1, r2, r3, r4, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	relayout:
+--	relayout: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:relayout(e, r1, r2, r3, r4)
@@ -300,7 +208,7 @@ function PageContainerGroup:relayout(e, r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
---	onSetDisable:
+--	onSetDisable: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:onDisable(onoff)
@@ -308,7 +216,7 @@ function PageContainerGroup:onDisable(onoff)
 end
 
 -------------------------------------------------------------------------------
---	passMsg(msg)
+--	passMsg: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:passMsg(msg)
@@ -316,7 +224,7 @@ function PageContainerGroup:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	getElement(mode)
+--	getElement: overrides
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:getElement(mode)
@@ -332,4 +240,147 @@ function PageContainerGroup:getElement(mode)
 		return self.PageElement
 	end
 	return self.PageElement:getElement(mode)
+end
+
+-------------------------------------------------------------------------------
+--	changeTab:
+-------------------------------------------------------------------------------
+
+function PageContainerGroup:changeTab(pagebuttons, newtabn)
+	pagebuttons[self.PageNumber]:setValue("Selected", false)
+	self.PageNumber = newtabn
+	self.PageElement:hide()
+	self.PageElement:cleanup()
+	self.PageElement = self.Children[newtabn]
+	ui.Application.connect(self.PageElement, self)
+	self.PageElement:connect(self)
+	self.Application:decodeProperties(self.PageElement)
+	self.PageElement:setup(self.Application, self.Window)
+	self.PageElement:show(self.Display, self.Drawable)
+	self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
+	local r = self.Rect
+	local m = self.MarginAndBorder
+	self:relayout(self, r[1] - m[1], r[2] - m[2], r[3] + m[3], r[4] + m[4])
+	self.PageElement:rethinkLayout(2)
+end
+
+-------------------------------------------------------------------------------
+--	PageGroup:
+-------------------------------------------------------------------------------
+
+function PageGroup.new(class, self)
+
+	self = self or { }
+
+	self.PageNumber = self.PageNumber or 1
+
+	local children = self.Children or { }
+
+	local pagenumber = type(self.PageNumber) == "number" and
+		self.PageNumber or 1
+	pagenumber = max(1, min(pagenumber, #children))
+
+	local pageelement = children[pagenumber] or ui.Area:new { }
+
+	local pagegroup = PageContainerGroup:new
+	{
+		Children = children,
+		PageNumber = pagenumber,
+		PageElement = pageelement
+	}
+
+	self.PageCaptions = self.PageCaptions or { }
+
+	local pagebuttons = { }
+	if #children == 0 then
+		pagebuttons[1] = ui.Text:new
+		{
+			Class = "page-button",
+			Mode = "inert",
+			Width = "auto",
+		}
+	else
+		for i, c in ipairs(children) do
+			local text = self.PageCaptions[i] or tostring(i)
+			pagebuttons[i] = ui.Text:new
+			{
+				Class = "page-button",
+				Mode = "touch",
+				Width = "auto",
+				Text = text,
+				Notifications =
+				{
+					["Pressed"] =
+					{
+						[true] =
+						{
+							{ pagegroup, "changeTab", pagebuttons, i }
+						}
+					}
+				}
+			}
+		end
+	end
+
+	pagebuttons[#pagebuttons + 1] = ui.Text:new
+	{
+		Class = "page-button-fill",
+		Height = "fill",
+	}
+
+	if pagebuttons[pagenumber] then
+		pagebuttons[pagenumber]:setValue("Selected", true)
+	end
+
+	self.TabButtons = pagebuttons
+
+	self.Orientation = "vertical"
+
+	self.Children =
+	{
+		Group:new
+		{
+			Class = "page-button-group",
+			Width = "fill",
+			MaxHeight = 0,
+			Children = pagebuttons,
+		},
+		pagegroup
+	}
+
+	return Group.new(class, self)
+end
+
+-------------------------------------------------------------------------------
+--	setup: overrides
+-------------------------------------------------------------------------------
+
+function PageGroup:setup(app, window)
+	Group.setup(self, app, window)
+	self:addNotify("PageNumber", ui.NOTIFY_CHANGE, NOTIFY_PAGENUMBER)
+end
+
+-------------------------------------------------------------------------------
+--	cleanup: overrides
+-------------------------------------------------------------------------------
+
+function PageGroup:cleanup()
+	self:remNotify("PageNumber", ui.NOTIFY_CHANGE, NOTIFY_PAGENUMBER)
+	Group.cleanup(self)
+end
+
+-------------------------------------------------------------------------------
+--	onsetPageNumber(number): This method is invoked when the element's
+--	{{PageNumber}} attribute has changed.
+-------------------------------------------------------------------------------
+
+function PageGroup:onSetPageNumber(val)
+	local n = tonumber(val)
+	local b = self.TabButtons
+	if n >= 1 and n < #b then
+		self.TabButtons[n]:setValue("Selected", true)
+		self.Children[2]:changeTab(self.TabButtons, n)
+	else
+		db.warn("invalid page number: %s", val)
+	end
 end

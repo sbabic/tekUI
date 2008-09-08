@@ -25,6 +25,7 @@
 --				- "requester" - for being used as a standalone file requester
 --				- "lister" - for being used as a lister component
 --				- "simple" - without accompanying user interface elements
+--			The default kind is "lister".
 --		- {{Location [IG]}} (string)
 --			The entry currently selected, may be a file or directory
 --		- {{Path [IG]}} (string)
@@ -42,7 +43,7 @@
 --				- "cancelled" - the lister has been cancelled by the user
 --
 --	IMPLEMENTS::
---		- DirList:ShowDirectory() - Reads and shows a directory
+--		- DirList:showDirectory() - Reads and shows a directory
 --		- DirList:goParent() - Goes to the parent of the current directory
 --		- DirList:abortScan() - Abort scanning
 --
@@ -70,12 +71,14 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 5.1"
+_VERSION = "DirList 5.2"
 
 local DirList = _M
 
 -------------------------------------------------------------------------------
---	getDirectoryIterator: returns an iterator over entries in a directory
+--	iterator = getDirectoryIterator(path): Returns an iterator function for
+--	traversal of the entries in the given directory. You can override this
+--	function to get an iterator over arbitrary kinds of listings.
 -------------------------------------------------------------------------------
 
 function DirList:getDirectoryIterator(path)
@@ -92,15 +95,24 @@ function DirList:getDirectoryIterator(path)
 end
 
 -------------------------------------------------------------------------------
---	getFileStat:
+--	attr = getFileStat(path, name, attr[, idx]): Returns an attribute for the
+--	entry of the given path and name; for the attribute names and their
+--	meanings, see the documentation of the LuaFileSystem module.
+--	Currently, only the "mode" and "size" attributes are actually requested,
+--	but if you override this function, it would be smart to implement as many
+--	attributes as possible. {{idx}} is optional and determines the entry
+--	number inside the list, which is an information that may or may not be
+--	supplied by the calling function.
 -------------------------------------------------------------------------------
 
-function DirList:getFileStat(path, name, attr, n)
+function DirList:getFileStat(path, name, attr, idx)
 	return stat(path .. "/" .. name, attr)
 end
 
 -------------------------------------------------------------------------------
---	splitPath: splits a path, returning a path and a path/file part
+--	path, part = splitPath(path): Splits a path, returning a path and the
+--	rearmost path or file part. You can override this function to implement
+--	your own file system naming conventions.
 -------------------------------------------------------------------------------
 
 local function splitPath(path)
@@ -120,6 +132,9 @@ function DirList.new(class, self)
 
 	self.Path = self.Path or ""
 	self.Location = self.Location or ""
+
+	local L = ui.getLocale("dirlist-class", "schulze-mueller.de")
+	self.Locale = L
 
 	-- Kind: "requester", "lister", "simple"
 	self.Kind = self.Kind or "lister"
@@ -143,7 +158,7 @@ function DirList.new(class, self)
 
 	self.ParentButton = Text:new
 	{
-		Text = "_Parent",
+		Text = L.PARENT,
 		Mode = "button",
 		Class = "button",
 		Width = "auto",
@@ -163,7 +178,7 @@ function DirList.new(class, self)
 
 	self.ReloadButton = Text:new
 	{
-		Text = "_Reload",
+		Text = L.RELOAD,
 		Mode = "button",
 		Class = "button",
 		Width = "auto",
@@ -200,7 +215,7 @@ function DirList.new(class, self)
 
 	self.OpenGadget = Text:new
 	{
-		Text = "_Open",
+		Text = L.OPEN,
 		Mode = "button",
 		Class = "button",
 		Width = "fill",
@@ -219,7 +234,7 @@ function DirList.new(class, self)
 
 	self.CancelGadget = Text:new
 	{
-		Text = "_Cancel",
+		Text = L.CANCEL,
 		Mode = "button",
 		Class = "button",
 		Width = "fill",
@@ -244,7 +259,7 @@ function DirList.new(class, self)
 				{
 					Text:new
 					{
-						Text = "_Directory:",
+						Text = L.DIRECTORY,
 						Width = "auto",
 						Class = "caption",
 					},
@@ -266,7 +281,7 @@ function DirList.new(class, self)
 						{
 							Text:new
 							{
-								Text = "_Location:",
+								Text = L.LOCATION,
 								Width = "auto",
 								Class = "caption",
 							},
@@ -299,7 +314,7 @@ function DirList.new(class, self)
 				{
 					Text:new
 					{
-						Text = "_Dir:",
+						Text = L.DIRECTORY,
 						Width = "auto",
 						Class = "caption",
 					},
@@ -332,7 +347,7 @@ function DirList:showStats(selected, total)
 	selected = selected or list.NumSelectedLines
 	total = total or list:getN()
 	self.StatusText:setValue("Text",
-		("%d/%d selected"):format(selected, total))
+		self.Locale.SELECTED:format(selected, total))
 end
 
 -------------------------------------------------------------------------------

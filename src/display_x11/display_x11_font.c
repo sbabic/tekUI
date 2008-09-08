@@ -1,9 +1,9 @@
 /*
 **	$Id: display_x11_font.c,v 2006/09/10 14:38:04 fschulze Exp $
-**	tekui/src/display_x11/display_x11_font.c - x11 font management
+**	teklib/src/display_x11/display_x11_font.c - x11 font management
 **
 **  Written by Franciska Schulze <fschulze@schulze-mueller.de>
-**	See copyright notice in tekui/COPYRIGHT
+**	See copyright notice in teklib/COPYRIGHT
 */
 
 #include <math.h>

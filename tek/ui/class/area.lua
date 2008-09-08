@@ -202,24 +202,24 @@ function Area:getProperties(p, pclass)
 	self.BGPen = self.BGPen or self:getProperty(p, pclass, "background-color")
 	self.HAlign = self.HAlign or
 		self:getProperty(p, pclass, "horizontal-grid-align")
-	self.VAlign = self.VAlign or 
+	self.VAlign = self.VAlign or
 		self:getProperty(p, pclass, "vertical-grid-align")
 	self.Width = self.Width or self:getProperty(p, pclass, "width")
 	self.Height = self.Height or self:getProperty(p, pclass, "height")
-	
+
 	local m = self.Margin
 	m[1] = m[1] or tonumber(self:getProperty(p, pclass, "margin-left"))
 	m[2] = m[2] or tonumber(self:getProperty(p, pclass, "margin-top"))
 	m[3] = m[3] or tonumber(self:getProperty(p, pclass, "margin-right"))
 	m[4] = m[4] or tonumber(self:getProperty(p, pclass, "margin-bottom"))
-	
+
 	self.MaxHeight = self.MaxHeight or
 		self:getProperty(p, pclass, "max-height")
 	self.MaxWidth = self.MaxWidth or self:getProperty(p, pclass, "max-width")
 	self.MinHeight = self.MinHeight or
 		self:getProperty(p, pclass, "min-height")
 	self.MinWidth = self.MinWidth or self:getProperty(p, pclass, "min-width")
-	
+
 	local q = self.Padding
 	q[1] = q[1] or tonumber(self:getProperty(p, pclass, "padding-left"))
 	q[2] = q[2] or tonumber(self:getProperty(p, pclass, "padding-top"))
@@ -235,26 +235,26 @@ end
 
 function Area:setup(app, win)
 	Element.setup(self, app, win)
-	
+
 	-- consolidation of properties:
-	
+
 	self.Width = tonumber(self.Width) or self.Width
 	self.Height = tonumber(self.Height) or self.Height
-	
+
 	local m = self.Margin
-	m[1], m[2], m[3], m[4] = tonumber(m[1]) or 0, tonumber(m[2]) or 0, 
+	m[1], m[2], m[3], m[4] = tonumber(m[1]) or 0, tonumber(m[2]) or 0,
 		tonumber(m[3]) or 0, tonumber(m[4]) or 0
 	local p = self.Padding
 	p[1], p[2], p[3], p[4] = tonumber(p[1]) or 0, tonumber(p[2]) or 0,
 		tonumber(p[3]) or 0, tonumber(p[4]) or 0
-		
+
 	if not self.MaxHeight or self.MaxHeight == "free" then
 		self.MaxHeight = ui.HUGE
 	end
 	if not self.MaxWidth or self.MaxWidth == "free" then
 		self.MaxWidth = ui.HUGE
 	end
-	
+
 	self.MinHeight = self.MinHeight or 0
 	self.MinWidth = self.MinWidth or 0
 end

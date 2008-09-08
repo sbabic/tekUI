@@ -57,6 +57,7 @@ CHOICE_WATER = "W_asser";
 CHOICE_WHAT_ME = "Was, ich_?";
 CHOICE_WINE = "_Wein";
 CHOICE_YES = "_Ja";
+CHOOSE_FILE = "Datei _wählen";
 CLOSE_ALL = "Alle _Schließen";
 COMMENT = "Kommentar";
 DEBUGGING = "Debugging";
@@ -76,6 +77,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ]];
 END = "Ende";
+FILE_REQUEST = "Dateiauswahl";
 GROUP = "Gruppe";
 HELLO = "Hallo";
 HELLO_WORLD = "Hallo, Welt!";
@@ -106,6 +108,7 @@ MEMORY_USAGE = "Speicherverbrauch";
 MENU_ABOUT = "Über...";
 MENU_FILE = "_Datei";
 MENU_QUIT = "Be_enden";
+MULTISELECT = "_Mehrfachauswahl";
 NOTIFICATIONS_CONNECTIONS = "Verbindungen";
 NOTIFICATIONS_DESCRIPTION = [[
 	Elemente können über einen Nachrichtenmechanismus miteinander verbunden werden.
@@ -114,8 +117,10 @@ NOTIFICATIONS_TITLE = "Benachrichtigungen";
 OKAY = "_Okay";
 OPEN_ALL = "Alle öffnen";
 ORDER_BEVERAGES = "Getränke bestellen";
+PATH = "_Pfad";
 PROPERTY = "Eigenschaft";
 RESET = "Zurücksetzen";
+SELECTED = "Gewählt";
 SLIDER_CONTINUOUS = "Fließend";
 SLIDER_DESCRIPTION = "Schieberegler";
 SLIDER_INTEGER_STEP = "Integer-Schrittweite";
@@ -124,6 +129,7 @@ SLIDER_RANGE = "Bereich";
 SLIDER_SLIDERS = "Schieberegler";
 SLIDER_TITLE = "Schieberegler";
 SLOW_RENDERING = "Langsames Zeichnen";
+STATUS = "Status";
 SYSTEM_INFORMATION = "Systeminformation";
 TEKUI_COPYRIGHT_TEXT = [[
 Copyright © 2008 by the authors:
