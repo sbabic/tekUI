@@ -1,0 +1,14 @@
+
+--
+--	Directory Lister - German locale
+--	Note: Use UTF-8 encoding for international characters
+--
+
+CANCEL = "_Abbruch";
+DIRECTORY = "Verzeichnis";
+LOCATION = "Ort";
+OPEN = "_Öffnen";
+PARENT = "_Mutterverz.";
+RELOAD = "_Neu";
+SELECTED = "%d/%d gewählt";
+SELECT_FILE_OR_DIRECTORY = "Datei oder Verzeichnis wählen...";

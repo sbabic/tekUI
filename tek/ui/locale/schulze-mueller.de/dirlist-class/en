@@ -1,0 +1,14 @@
+
+--
+--	Directory Lister - English locale
+--	Note: Use UTF-8 encoding for international characters
+--
+
+CANCEL = "_Cancel";
+DIRECTORY = "Directory";
+LOCATION = "Location";
+OPEN = "_Open";
+PARENT = "_Parent";
+RELOAD = "_Reload";
+SELECTED = "%d/%d selected";
+SELECT_FILE_OR_DIRECTORY = "Select file or directory...";
