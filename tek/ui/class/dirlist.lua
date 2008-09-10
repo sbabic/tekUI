@@ -71,7 +71,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 5.2"
+_VERSION = "DirList 5.3"
 
 local DirList = _M
 
@@ -404,8 +404,8 @@ function DirList:scanDir(path)
 				{
 					{
 						name,
-						isdir and "[Directory]" or
-							self:getFileStat(path, name, "size", n)
+						isdir and self.Locale.DIR or
+							self:getFileStat(path, name, "size", n),
 					},
 					isdir
 				})

@@ -36,7 +36,6 @@
 --		- Area:cleanup()
 --		- Area:draw()
 --		- Object.init()
---		- Area:layout()
 --		- Class.new()
 --		- Area:setup()
 --
@@ -56,7 +55,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 4.1"
+_VERSION = "PopList 4.2"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -171,7 +170,7 @@ end
 
 function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
-	if lo then
+	if lo and not self.KeepMinWidth then
 		local tr = { }
 		local font = self.Display:openFont(self.FontSpec)
 		for lnr = 1, lo:getN() do

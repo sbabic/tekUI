@@ -875,7 +875,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v4.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v4.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -947,9 +947,6 @@
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> 
@@ -1913,7 +1910,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v12.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v12.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2515,7 +2512,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2563,7 +2560,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v13.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2607,6 +2604,17 @@
 								<p>
 									If <strong>true</strong>, the element is in disabled state. This attribute is
 									handled by the <a href="#tek.ui.class.gadget">Gadget</a> class.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>EraseBackground &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									If <strong>false</strong>, the element's background is painted by the Area
+									class using the <a href="#Area:erase"><code>Area:erase()</code></a> method. Child classes can set this
+									attribute to <strong>true</strong>, indicating that they wish to paint the
+									background themselves.
 								</p>
 							</blockquote>
 						</li>
@@ -2995,11 +3003,12 @@
 		</div>
 		<div class="node"><h3><a name="Area:relayout" id="Area:relayout"><code>found[, changed] = Area:relayout(element, x0, y0, x1, y1) [internal]</code></a></h3>
 			<p>
-				Searches for the specified element, and if this class (or the class of
-				one of its children) is responsible for it, layouts it to the specified
-				rectangle. Returns <strong>true</strong> if the element was found and its layout
-				updated. A secondary return value of <strong>true</strong> indicates whether
-				relayouting actually caused a change, i.e. a damage to the object.
+				Traverses the element tree searching for the specified element, and if
+				this class (or the class of one of its children) is responsible for it,
+				layouts it to the specified rectangle. Returns <strong>true</strong> if the element
+				was found and its layout updated. A secondary return value of <strong>true</strong> 
+				indicates whether relayouting actually caused a change, i.e. a damage to
+				the object.
 			</p>
 			<hr />
 		</div>
@@ -3611,7 +3620,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v5.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v5.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6749,7 +6758,7 @@ method(object, arg1, ...)
 		</p>
 		<hr />
 	</div>
-	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v14.0)</a></h2>
+	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v14.1)</a></h2>
 		<div class="definition"><dfn>OVERVIEW</dfn>
 			<blockquote>
 				<p>
@@ -7086,7 +7095,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Tue Sep  9 00:55:18 2008
+			Document generated on Wed Sep 10 14:30:33 2008
 		</p>
 	</div>
 	</body>

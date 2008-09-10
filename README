@@ -335,7 +335,7 @@ The GUI version of the "Hello, World!" program:
           ui.Text:new
           {
             Text = "_Hello, World!",
-            Style = "button",
+            Class = "button",
             Mode = "button",
           },
         },
@@ -388,12 +388,13 @@ and to '''false''' when it is getting released:
           ui.Text:new
           {
             Text = "_Hello, World!",
-            Style = "button",
+            Class = "button",
             Mode = "button",
             onPress = function(self, pressed)
               if pressed == false then
                 print "Hello, World!"
               end
+              ui.Text.onPress(self, pressed)
             end,
           },
         },
@@ -401,14 +402,19 @@ and to '''false''' when it is getting released:
     },
   }:run()
 
+When overwriting a method like {{onPress}} in an instance of its
+class, also forward the call to the original implementation of the
+same method; in the example above, this is accomplished by the last
+line in the {{onPress}} function.
+
 Another, more elobarate way is to equip the element with a
-notification handler yourself, which may look like this:
+notification handler, which would look like this:
 
   ...
   ui.Text:new
   {
     Text = "_Hello, World!",
-    Style = "button",
+    Class = "button",
     Mode = "button",
     Notifications =
     {
@@ -431,7 +437,7 @@ notification handler yourself, which may look like this:
 
 Even though notification handlers can be written in the same
 expression as the rest of the application, we are now switching
-to a different setup style, because the deep levels of
+to a more dynamic kind of setup, because the deep levels of
 recursion are starting to interfere with clarity:
 
   #/usr/bin/env lua
@@ -440,7 +446,7 @@ recursion are starting to interfere with clarity:
   win = ui.Window:new { Title = "Hello" }
   text = ui.Text:new {
     Text = "_Hello, World!",
-    Style = "button",
+    Class = "button",
     Mode = "button"
   }
   text:addNotify("Pressed", false, {
@@ -485,7 +491,7 @@ file. For example, to derive a button class from the Text class:
 
   local Button = ui.Text:newClass { _NAME = "_button" }
 
-By convention, ad-hoc classes can be named arbitrarily, but their
+By convention, ad-hoc classes may be named arbitrarily, but their
 names should be prefixed with an underscore to distinguish them
 from global classes.
 
@@ -493,7 +499,7 @@ From this point, the new class can be extended, e.g. for
 initializations which turn a Text into a Button:
 
   function Button.init(self)
-    self.Style = "button"
+    self.Class = "button"
     self.Mode = self.Mode or "button"
     return ui.Text.init(self)
   end

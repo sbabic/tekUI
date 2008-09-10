@@ -67,7 +67,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 5.1"
+_VERSION = "PopItem 5.2"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -90,6 +90,7 @@ local PopItem = _M
 
 function PopItem.init(self)
 	self.Children = self.Children or false
+	self.EraseBackground = true
 	self.Image = self.Image or false
 	self.ImageRect = self.ImageRect or false
 	self.PopupBase = false
@@ -148,6 +149,15 @@ function PopItem:cleanup()
 end
 
 -------------------------------------------------------------------------------
+--	hide: overrides
+-------------------------------------------------------------------------------
+
+function PopItem:hide()
+	self:unselectPopup()
+	Text.hide(self)
+end
+
+-------------------------------------------------------------------------------
 --	askMinMax:
 -------------------------------------------------------------------------------
 
@@ -192,11 +202,19 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:draw()
-	Text.draw(self)
+	self:erase()
 	local i = self.Image
 	if i then
+		local d = self.Drawable
+		local r = self.Rect
+		local ir = self.ImageRect
+		d:pushClipRect(r[1], r[2], ir[1], r[4])
+		Text.draw(self)
+		d:popClipRect()
 		i.ImageData.Primitives[1].Pen = self.Foreground
-		i:draw(self.Drawable, self.ImageRect)
+		i:draw(d, self.ImageRect)
+	else
+		Text.draw(self)
 	end
 end
 
@@ -387,6 +405,8 @@ function PopItem:connectPopItems(app, window)
 			if self.Shortcut then
 				window:addKeyShortcut("IgnoreCase+" .. self.Shortcut, self)
 			end
+			self.Application = app
+			self.Window = window
 			self:addNotify("Active", false, NOTIFY_ONRELEASEITEM)
 			self:addNotify("Pressed", false, NOTIFY_ONRELEASE)
 		end

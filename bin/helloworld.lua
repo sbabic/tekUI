@@ -16,20 +16,31 @@ ui.Application:new
 					Text = "_Hello, World!",
 					Class = "button",
 					Mode = "button",
-					Notifications =
-					{
-						["Pressed"] =
-						{
-							[false] =
-							{
-								{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION,
-									function(self)
-										print "Hello, World!"
-									end
-								},
-							},
-						},
-					},
+
+					onPress = function(self, pressed)
+						if pressed == false then
+							print "Hello, World!"
+						end
+						ui.Text.onPress(self, pressed)
+					end,
+
+					-- alternative implementation using Notification:
+
+					-- Notifications =
+					-- {
+					-- 	["Pressed"] =
+					-- 	{
+					-- 		[false] =
+					-- 		{
+					-- 			{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION,
+					-- 				function(self)
+					-- 					print "Hello, World!"
+					-- 				end
+					-- 			},
+					-- 		},
+					-- 	},
+					-- },
+
 				},
 			},
 		},

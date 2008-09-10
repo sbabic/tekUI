@@ -75,7 +75,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 14.0"
+_VERSION = "tekUI 14.1"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -278,7 +278,7 @@ function loadLocale(l, lang)
 		local key = ("tek/ui/locale/%s/%s/%s"):format(vendor, app, lang)
 		keys = LocaleCache[key]
 		if keys then
-			db.info("Found cache copy for locale '%s'", key)
+			db.trace("Found cache copy for locale '%s'", key)
 		else
 			keys, msg = loadTable(key)
 		end
@@ -429,10 +429,14 @@ end
 -------------------------------------------------------------------------------
 
 local function adddirkeys(p, k, fmt, a, b, c, d)
-	p[fmt:format("top")] = a
-	p[fmt:format("right")] = b
-	p[fmt:format("bottom")] = c
-	p[fmt:format("left")] = d
+	local key = fmt:format("top")
+	p[key] = p[key] or a
+	key = fmt:format("right")
+	p[key] = p[key] or b
+	key = fmt:format("bottom")
+	p[key] = p[key] or c
+	key = fmt:format("left")
+	p[key] = p[key] or d
 	p[k] = nil
 	return true
 end
@@ -454,21 +458,24 @@ local function adddirkeys4(p, k, fmt, a, b, c, d)
 end
 
 local function addborder3(p, k, fmt, a, b, c)
-	p["border-top-width"] = a
-	p["border-right-width"] = a
-	p["border-bottom-width"] = a
-	p["border-left-width"] = a
-	p["border-style"] = b
-	p["border-top-color"] = c
-	p["border-right-color"] = c
-	p["border-bottom-color"] = c
-	p["border-left-color"] = c
+	p["border-top-width"] = p["border-top-width"] or a
+	p["border-right-width"] = p["border-right-width"] or a
+	p["border-bottom-width"] = p["border-bottom-width"] or a
+	p["border-left-width"] = p["border-left-width"] or a
+	p["border-style"] = p["border-style"] or b
+	p["border-top-color"] = p["border-top-color"] or c
+	p["border-right-color"] = p["border-right-color"] or c
+	p["border-bottom-color"] = p["border-bottom-color"] or c
+	p["border-left-color"] = p["border-left-color"] or c
 end
 
 local function addborder3dir(p, k, fmt, a, b, c)
-	p[("border-%s-width"):format(fmt)] = a
-	p[("border-style"):format(fmt)] = b
-	p[("border-%s-color"):format(fmt)] = c
+	local key = ("border-%s-width"):format(fmt)
+	p[key] = p[key] or a
+	key = ("border-style"):format(fmt)
+	p[key] = p[key] or b
+	key = ("border-%s-color"):format(fmt)
+	p[key] = p[key] or c
 end
 
 local matchkeys =

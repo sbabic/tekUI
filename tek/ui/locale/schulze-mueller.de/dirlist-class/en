@@ -5,6 +5,7 @@
 --
 
 CANCEL = "_Cancel";
+DIR = "[Dir]";
 DIRECTORY = "Directory";
 LOCATION = "Location";
 OPEN = "_Open";

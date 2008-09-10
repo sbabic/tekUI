@@ -22,6 +22,11 @@
 --		- {{Disabled [ISG]}} (boolean)
 --			If '''true''', the element is in disabled state. This attribute is
 --			handled by the [[#tek.ui.class.gadget : Gadget]] class.
+--		- {{EraseBackground [IG]}} (boolean)
+--			If '''false''', the element's background is painted by the Area
+--			class using the Area:erase() method. Child classes can set this
+--			attribute to '''true''', indicating that they wish to paint the
+--			background themselves.
 --		- {{Focus [ISG]}} (boolean)
 --			If '''true''', the element has the input focus. This attribute
 --			is handled by the [[#tek.ui.class.gadget : Gadget]] class.
@@ -145,7 +150,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 12.0"
+_VERSION = "Area 13.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -174,6 +179,7 @@ function Area.init(self)
 	self.Disabled = self.Disabled or false
 	self.Display = false
 	self.Drawable = false
+	self.EraseBackground = self.EraseBackground or false
 	self.Focus = self.Focus or false
 	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
@@ -427,11 +433,12 @@ end
 
 -------------------------------------------------------------------------------
 --	found[, changed] = Area:relayout(element, x0, y0, x1, y1) [internal]:
---	Searches for the specified element, and if this class (or the class of
---	one of its children) is responsible for it, layouts it to the specified
---	rectangle. Returns '''true''' if the element was found and its layout
---	updated. A secondary return value of '''true''' indicates whether
---	relayouting actually caused a change, i.e. a damage to the object.
+--	Traverses the element tree searching for the specified element, and if
+--	this class (or the class of one of its children) is responsible for it,
+--	layouts it to the specified rectangle. Returns '''true''' if the element
+--	was found and its layout updated. A secondary return value of '''true'''
+--	indicates whether relayouting actually caused a change, i.e. a damage to
+--	the object.
 -------------------------------------------------------------------------------
 
 function Area:relayout(e, r1, r2, r3, r4)
@@ -480,7 +487,9 @@ end
 -------------------------------------------------------------------------------
 
 function Area:draw()
-	self:erase()
+	if not self.EraseBackground then
+		self:erase()
+	end
 end
 
 -------------------------------------------------------------------------------

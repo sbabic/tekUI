@@ -98,7 +98,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 12.1"
+_VERSION = "Text 12.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -218,16 +218,21 @@ end
 function Text:askMinMax(m1, m2, m3, m4)
 	local p = self.Padding
 	local w, h = self:getTextSize()
-	-- w = w + 1 -- for disabled state
-	-- h = h + 1 -- for disabled state
-	if self.KeepMinWidth and self.MinWidth == 0 then
-		self.MinWidth = w + p[1] + p[3]
+	local minw, minh = w, h
+	if self.KeepMinWidth then
+		if self.MinWidth == 0 then
+			self.MinWidth = w + p[1] + p[3]
+		end
+		minw = self.MinWidth
 	end
-	if self.KeepMinHeight and self.MinHeight == 0 then
-		self.MinHeight = h + p[2] + p[4]
+	if self.KeepMinHeight then
+		if self.MinHeight == 0 then
+			self.MinHeight = h + p[2] + p[4]
+		end
+		minh = self.MinHeight
 	end
-	m1 = m1 + w
-	m2 = m2 + h
+	m1 = m1 + minw
+	m2 = m2 + minh
 	m3 = m3 + w
 	m4 = m4 + h
 	return Gadget.askMinMax(self, m1, m2, m3, m4)
@@ -269,7 +274,6 @@ function Text:draw()
 		x = aligntext(tr[3], "right", x, w, tw)
 		y = aligntext(tr[4], "bottom", y, h, th)
 		d:setFont(tr[2])
-
 		if self.Disabled then
 			local fp2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
 			d:drawText(x + 2, y + 2, tr[1], fp2)

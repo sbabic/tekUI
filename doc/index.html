@@ -578,7 +578,7 @@ ui.Application:new
         ui.Text:new
         {
           Text = &quot;_Hello, World!&quot;,
-          Style = &quot;button&quot;,
+          Class = &quot;button&quot;,
           Mode = &quot;button&quot;,
         },
       },
@@ -636,12 +636,13 @@ ui.Application:new
         ui.Text:new
         {
           Text = &quot;_Hello, World!&quot;,
-          Style = &quot;button&quot;,
+          Class = &quot;button&quot;,
           Mode = &quot;button&quot;,
           onPress = function(self, pressed)
             if pressed == false then
               print &quot;Hello, World!&quot;
             end
+            ui.Text.onPress(self, pressed)
           end,
         },
       },
@@ -650,15 +651,21 @@ ui.Application:new
 }:run()
 </pre>
 			<p>
+				When overwriting a method like <code>onPress</code> in an instance of its
+				class, also forward the call to the original implementation of the
+				same method; in the example above, this is accomplished by the last
+				line in the <code>onPress</code> function.
+			</p>
+			<p>
 				Another, more elobarate way is to equip the element with a
-				notification handler yourself, which may look like this:
+				notification handler, which would look like this:
 			</p>
 <pre>
 ...
 ui.Text:new
 {
   Text = &quot;_Hello, World!&quot;,
-  Style = &quot;button&quot;,
+  Class = &quot;button&quot;,
   Mode = &quot;button&quot;,
   Notifications =
   {
@@ -682,7 +689,7 @@ ui.Text:new
 			<p>
 				Even though notification handlers can be written in the same
 				expression as the rest of the application, we are now switching
-				to a different setup style, because the deep levels of
+				to a more dynamic kind of setup, because the deep levels of
 				recursion are starting to interfere with clarity:
 			</p>
 <pre>
@@ -692,7 +699,7 @@ app = ui.Application:new()
 win = ui.Window:new { Title = &quot;Hello&quot; }
 text = ui.Text:new {
   Text = &quot;_Hello, World!&quot;,
-  Style = &quot;button&quot;,
+  Class = &quot;button&quot;,
   Mode = &quot;button&quot;
 }
 text:addNotify(&quot;Pressed&quot;, false, {
@@ -749,7 +756,7 @@ app:run()
 local Button = ui.Text:newClass { _NAME = &quot;_button&quot; }
 </pre>
 			<p>
-				By convention, ad-hoc classes can be named arbitrarily, but their
+				By convention, ad-hoc classes may be named arbitrarily, but their
 				names should be prefixed with an underscore to distinguish them
 				from global classes.
 			</p>
@@ -759,7 +766,7 @@ local Button = ui.Text:newClass { _NAME = &quot;_button&quot; }
 			</p>
 <pre>
 function Button.init(self)
-  self.Style = &quot;button&quot;
+  self.Class = &quot;button&quot;
   self.Mode = self.Mode or &quot;button&quot;
   return ui.Text.init(self)
 end

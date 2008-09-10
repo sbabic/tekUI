@@ -5,6 +5,7 @@
 --
 
 CANCEL = "_Abbruch";
+DIR = "[Verz]";
 DIRECTORY = "Verzeichnis";
 LOCATION = "Ort";
 OPEN = "_Öffnen";

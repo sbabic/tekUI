@@ -8,7 +8,7 @@
 **	It is not actually loaded and decoded. It has been included for
 **	illustration purposes only.
 **
-**	Version: 1.3
+**	Version: 1.4
 */
 
 /*
@@ -17,7 +17,6 @@
 
 tek.ui.class.area {
 	margin: 1;
-	vertical-grid-align: center;
 }
 
 tek.ui.class.checkmark {
@@ -166,6 +165,10 @@ tek.ui.class.popupwindow {
 	padding: 0;
 }
 
+tek.ui.class.scrollbar {
+	vertical-grid-align: center;
+}
+
 tek.ui.class.slider {
 	padding: 0;
 	border-style: inset;
@@ -218,6 +221,7 @@ tek.ui.class.window {
 	text-align: center;
 	vertical-align: center;
 	horizontal-grid-align: center;
+	vertical-grid-align: center;
 }
 
 .gauge-fill {
