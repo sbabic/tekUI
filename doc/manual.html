@@ -419,7 +419,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v5.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v6.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -596,6 +596,17 @@
 				This function aborts the coroutine which is
 				currently scanning the directory. The caller of this function must
 				be running in its own coroutine.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="DirList:scanEntry" id="DirList:scanEntry"><code>table, type = DirList:scanEntry(path, name, idx)</code></a></h3>
+			<p>
+				Scans a single entry
+				<code>name</code> in a directory named <code>path</code>. <code>idx</code> is the entry number
+				with which this scanned entry will appear in the directory listing.
+				<code>table</code> is an array of strings, containing entries like name, size,
+				date, permissions, modification date etc. The <code>type</code> return value
+				corresponds to the return values of <a href="#DirList:getFileStat"><code>DirList:getFileStat()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -7095,7 +7106,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Wed Sep 10 14:30:33 2008
+			Document generated on Wed Sep 10 17:20:47 2008
 		</p>
 	</div>
 	</body>

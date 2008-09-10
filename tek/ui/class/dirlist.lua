@@ -71,7 +71,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 5.3"
+_VERSION = "DirList 6.0"
 
 local DirList = _M
 
@@ -364,6 +364,30 @@ function DirList:abortScan()
 	end
 end
 
+-------------------------------------------------------------------------------
+--	table, type = DirList:scanEntry(path, name, idx): Scans a single entry
+--	{{name}} in a directory named {{path}}. {{idx}} is the entry number
+--	with which this scanned entry will appear in the directory listing.
+--	{{table}} is an array of strings, containing entries like name, size,
+--	date, permissions, modification date etc. The {{type}} return value
+--	corresponds to the return values of DirList:getFileStat().
+-------------------------------------------------------------------------------
+
+function DirList:scanEntry(path, name, idx)
+	local mode = self:getFileStat(path, name, "mode", idx)
+	return
+	{
+		name,
+		mode == "directory" and self.Locale.DIR or
+			self:getFileStat(path, name, "size", idx)
+	},
+	mode
+end
+
+-------------------------------------------------------------------------------
+--	DirList:scanDir(path)
+-------------------------------------------------------------------------------
+
 function DirList:scanDir(path)
 	local app = self.Application
 
@@ -396,26 +420,14 @@ function DirList:scanDir(path)
 					end
 				end
 				n = n + 1
-
-				local fullname = path .. "/" .. name
-				local isdir =
-					self:getFileStat(path, name, "mode", n) == "directory"
-				insert(list,
-				{
-					{
-						name,
-						isdir and self.Locale.DIR or
-							self:getFileStat(path, name, "size", n),
-					},
-					isdir
-				})
+				insert(list, { self:scanEntry(path, name, n) })
 			end
 
 			sort(list, function(a, b)
 				if a[2] == b[2] then
 					return a[1][1]:lower() < b[1][1]:lower()
 				end
-				return a[2]
+				return a[2] == "directory"
 			end)
 
 			self:showStats(0, n)
