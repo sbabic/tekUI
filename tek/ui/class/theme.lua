@@ -46,6 +46,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["border-focus-width"] = 1,
 		["text-align"] = "left",
 		["vertical-align"] = "center",
+		["vertical-grid-align"] = "center",
 		["background-color"] = "parent-group",
 	},
 

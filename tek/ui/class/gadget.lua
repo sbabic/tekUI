@@ -113,7 +113,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 10.1"
+_VERSION = "Gadget 10.2"
 
 local Gadget = _M
 
@@ -189,15 +189,17 @@ end
 
 function Gadget:setup(app, window)
 	Frame.setup(self, app, window)
-	-- add notifications:
-	self:addNotify("Disabled", ui.NOTIFY_CHANGE, NOTIFY_DISABLED)
-	self:addNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_HILITE)
-	self:addNotify("Selected", ui.NOTIFY_CHANGE, NOTIFY_SELECTED)
-	self:addNotify("Hover", ui.NOTIFY_CHANGE, NOTIFY_HOVER)
-	self:addNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
-	self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
-	self:addNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
+	if self.Mode ~= "inert" then
+		-- add notifications:
+		self:addNotify("Disabled", ui.NOTIFY_CHANGE, NOTIFY_DISABLED)
+		self:addNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_HILITE)
+		self:addNotify("Selected", ui.NOTIFY_CHANGE, NOTIFY_SELECTED)
+		self:addNotify("Hover", ui.NOTIFY_CHANGE, NOTIFY_HOVER)
+		self:addNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
+		self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
+		self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
+		self:addNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
+	end
 	-- create effect hook:
 	self.EffectHook = ui.createHook("hook", self.EffectName, self,
 		{ Style = self.Style })
@@ -209,14 +211,16 @@ end
 
 function Gadget:cleanup()
 	self.EffectHook = false
-	self:remNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
-	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
-	self:remNotify("Pressed", ui.NOTIFY_CHANGE, NOTIFY_PRESSED)
-	self:remNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
-	self:remNotify("Hover", ui.NOTIFY_CHANGE, NOTIFY_HOVER)
-	self:remNotify("Selected", ui.NOTIFY_CHANGE, NOTIFY_SELECTED)
-	self:remNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_HILITE)
-	self:remNotify("Disabled", ui.NOTIFY_CHANGE, NOTIFY_DISABLED)
+	if self.Mode ~= "inert" then
+		self:remNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
+		self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
+		self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
+		self:remNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
+		self:remNotify("Hover", ui.NOTIFY_CHANGE, NOTIFY_HOVER)
+		self:remNotify("Selected", ui.NOTIFY_CHANGE, NOTIFY_SELECTED)
+		self:remNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_HILITE)
+		self:remNotify("Disabled", ui.NOTIFY_CHANGE, NOTIFY_DISABLED)
+	end
 	Frame.cleanup(self)
 end
 

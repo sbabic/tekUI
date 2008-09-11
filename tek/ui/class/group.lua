@@ -81,7 +81,7 @@ local ipairs = ipairs
 local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 14.3"
+_VERSION = "Group 15.0"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -216,31 +216,20 @@ function Group:calcWeights()
 end
 
 -------------------------------------------------------------------------------
---	checkMember: check if an element fits into this group as a child member
--------------------------------------------------------------------------------
-
-function Group:checkMember(child)
-	-- only elements descending from Area can be children of a group:
-	return child:checkDescend(Area)
-end
-
--------------------------------------------------------------------------------
 --	addMember: add a child member (see Family:addMember())
 -------------------------------------------------------------------------------
 
 function Group:addMember(child, pos)
-	if self:checkMember(child) then
-		self.Application:decodeProperties(child)
-		child:setup(self.Application, self.Window)
-		if child:show(self.Display, self.Drawable) then
-			if Family.addMember(self, child, pos) then
-				self:rethinkLayout(1)
-				return child
-			end
-			child:hide()
+	self.Application:decodeProperties(child)
+	child:setup(self.Application, self.Window)
+	if child:show(self.Display, self.Drawable) then
+		if Family.addMember(self, child, pos) then
+			self:rethinkLayout(1)
+			return child
 		end
-		child:cleanup()
+		child:hide()
 	end
+	child:cleanup()
 end
 
 -------------------------------------------------------------------------------

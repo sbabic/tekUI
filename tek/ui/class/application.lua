@@ -98,7 +98,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 6.2"
+_VERSION = "Application 7.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -162,11 +162,6 @@ function Application:connect(parent)
 	local c = self:getElement("children")
 	if c then
 		for _, child in ipairs(c) do
-			if not self:checkMember(child) then
-				db.error("Connection failed: %s <- %s", self:getClassName(),
-					child:getClassName())
-				return false
-			end
 			if child:checkDescend(Group) then
 				-- descend into group:
 				if not connect(child, self) then
@@ -190,31 +185,19 @@ function Application:connect(parent)
 end
 
 -------------------------------------------------------------------------------
---	checkMember: check if an element fits into this group as a child member
--------------------------------------------------------------------------------
-
-function Application:checkMember(child)
-	-- only elements descending from Window can be children of an application:
-	return child:checkDescend(Window)
-end
-
--------------------------------------------------------------------------------
 --	addMember: overrides
 -------------------------------------------------------------------------------
 
 function Application:addMember(child, pos)
-	if self:checkMember(child) then
-		self:decodeProperties(child)
-		child:setup(self, child)
-		if child:show(self.Display) then
-			-- this will also invoke checkMember():
-			if Family.addMember(self, child, pos) then
-				return child
-			end
-			child:hide()
+	self:decodeProperties(child)
+	child:setup(self, child)
+	if child:show(self.Display) then
+		if Family.addMember(self, child, pos) then
+			return child
 		end
-		child:cleanup()
+		child:hide()
 	end
+	child:cleanup()
 end
 
 -------------------------------------------------------------------------------

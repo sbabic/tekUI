@@ -16,6 +16,7 @@
 --		- List:addItem() - Adds an item to the list
 --		- List:changeItem() - Replaces an item in the list
 --		- List:checkPosition() - Verify position in the list
+--		- List:clear() - Removes all items from the list
 --		- List:getN() - Returns the number of items in the list
 --		- List:getItem() - Returns the item at the specified position
 --		- List:remItem() - Removes an item from the list
@@ -32,7 +33,7 @@ local min = math.min
 local remove = table.remove
 
 module("tek.class.list", tek.class)
-_VERSION = "List 1.3"
+_VERSION = "List 2.0"
 local List = _M
 
 -------------------------------------------------------------------------------
@@ -125,4 +126,12 @@ function List:checkPosition(lnr, null_valid)
 		return false, numl
 	end
 	return true, lnr
+end
+
+-------------------------------------------------------------------------------
+--	List:clear(): Remove all items from the list.
+-------------------------------------------------------------------------------
+
+function List:clear()
+	self.Items = { }
 end

@@ -89,7 +89,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 7.3"
+_VERSION = "Window 7.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -235,7 +235,6 @@ end
 -------------------------------------------------------------------------------
 
 function Window:hideWindow()
-	self:setValue("Status", "closing")
 	self.Application:closeWindow(self)
 	self:setValue("Status", "hide")
 	self.FreeRegion = false
@@ -302,6 +301,7 @@ function Window:closeWindow()
 	local d = self.Drawable
 	assert(d)
 	if self.Status ~= "hide" then
+		self:setValue("Status", "closing")
 		if d:close() then
 			self.Width, self.Height = d.Width, d.Height
 			self:setValue("Status", "hide")

@@ -21,34 +21,36 @@
 --	The default debug output stream is {{stderr}}.
 --	To override it globally, e.g.:
 --			db = require "tek.lib.debug"
---			f = io.open("logfile", "w")
---			db.out = function(...) f:write(...) end
+--			db.out = io.open("logfile", "w")
 --
 --	FUNCTIONS::
---		- debug.print() - Print a text in the specified debug level
---		- debug.execute() - Execute a function in the specified debug level
---		- debug.trace() - Print a text in the {{TRACE}} debug level
---		- debug.info() - Print a text in the {{INFO}} debug level
---		- debug.warn() - Print a text in the {{WARN}} debug level
+--		- debug.console() - Enter debug console
+--		- debug.dump() - Dump a table recursively
 --		- debug.error() - Print a text in the {{ERROR}} debug level
+--		- debug.execute() - Execute a function in the specified debug level
 --		- debug.fail() - Print a text in the {{FAIL}} debug level
+--		- debug.info() - Print a text in the {{INFO}} debug level
+--		- debug.print() - Print a text in the specified debug level
 --		- debug.stacktrace() - Print a stacktrace in the specified debug level
+--		- debug.trace() - Print a text in the {{TRACE}} debug level
+--		- debug.warn() - Print a text in the {{WARN}} debug level
 --
 -------------------------------------------------------------------------------
 
 local debug = require "debug"
 local getinfo = debug.getinfo
-local traceback = debug.traceback
-local stderr = require "io".stderr
-local tostring = tostring
-local tonumber = tonumber
-local type = type
-local unpack = unpack
+local stderr = io.stderr
+local pairs = pairs
 local select = select
 local time = os.time
+local tonumber = tonumber
+local tostring = tostring
+local traceback = debug.traceback
+local type = type
+local unpack = unpack
 
 module "tek.lib.debug"
-_VERSION = "Debug 3.0"
+_VERSION = "Debug 4.0"
 
 -- symbolic:
 
@@ -61,7 +63,8 @@ FAIL = 20
 -- global defaults:
 
 level = ERROR
-out = function(...) stderr:write(...) end
+out = stderr
+wrout = function(...) out:write(...) end
 
 -------------------------------------------------------------------------------
 --	print(lvl, msg, ...): Prints formatted text if the global debug level
@@ -76,7 +79,7 @@ function print(lvl, msg, ...)
 			local v = select(i, ...)
 			arg[i] = v and type(v) ~= "number" and tostring(v) or v or 0
 		end
-		out(("(%02d %d %s:%d) " .. msg):format(lvl,
+		wrout(("(%02d %d %s:%d) " .. msg):format(lvl,
 			time(), t.short_src, t.currentline, unpack(arg)) .. "\n")
 	end
 end
@@ -126,4 +129,51 @@ function fail(msg, ...) print(20, msg, ...) end
 
 function stacktrace(lvl, level)
 	print(lvl, traceback("", level or 1 + 1))
+end
+
+-------------------------------------------------------------------------------
+--	console(): Enter the debug console.
+-------------------------------------------------------------------------------
+
+function console()
+	stderr:write('Entering the debug console.\n')
+	stderr:write('To redirect the output, e.g.:\n')
+	stderr:write('  tek.lib.debug.out = io.open("logfile", "w")\n')
+	stderr:write('To dump a table, e.g.:\n')
+	stderr:write('  tek.lib.debug.dump("app", app)\n')
+	stderr:write('Use "cont" to continue.\n')
+	debug.debug()
+end
+
+-------------------------------------------------------------------------------
+--	dump(name, table): Dump a table
+-------------------------------------------------------------------------------
+
+local function basicSerialize(o)
+	if type(o) == "string" then
+		return ("%q"):format(o)
+	elseif type(o) == "userdata" then
+		return "<userdata>"
+	end
+	return tostring(o)
+end
+
+function dump(name, value, saved)
+	saved = saved or {}       -- initial value
+	wrout(name, " = ")
+	local t = type(value)
+	if t == "table" then
+		if saved[value] then    -- value already saved?
+			wrout(saved[value], "\n")
+		else
+			saved[value] = name   -- save name for next time
+			wrout("{}\n")
+			for k,v in pairs(value) do      -- save its fields
+				local fieldname = ("%s[%s]"):format(name, basicSerialize(k))
+				dump(fieldname, v, saved)
+			end
+		end
+	else
+		wrout(basicSerialize(value), "\n")
+	end
 end

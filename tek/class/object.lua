@@ -63,7 +63,7 @@ local type = type
 local unpack = unpack
 
 module("tek.class.object", tek.class)
-_VERSION = "Object 8.0"
+_VERSION = "Object 8.1"
 local Object = _M
 
 -------------------------------------------------------------------------------
@@ -290,6 +290,6 @@ function Object:remNotify(attr, val, dest)
 			end
 		end
 	end
-	-- error("notification not found")
+	db.error("Notification not found : %s[%s]", attr, val)
 	return false
 end

@@ -361,20 +361,44 @@ app = ui.Application:new
 													Class = "caption",
 													Style = "width: fill; text-align: right",
 												},
-												ui.CheckMark:new
+												ui.Group:new
 												{
-													Selected = ui.DEBUG,
-													Text = L.SLOW_RENDERING,
-													Notifications =
+													Children =
 													{
-														["Selected"] =
+														ui.CheckMark:new
 														{
-															[ui.NOTIFY_CHANGE] =
+															Selected = ui.DEBUG,
+															Text = L.SLOW_RENDERING,
+															Notifications =
 															{
-																{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self, value)
-																	ui.DEBUG = value
-																	ui.Drawable.enableDebug(value)
-																end, ui.NOTIFY_VALUE }
+																["Selected"] =
+																{
+																	[ui.NOTIFY_CHANGE] =
+																	{
+																		{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self, value)
+																			ui.DEBUG = value
+																			ui.Drawable.enableDebug(value)
+																		end, ui.NOTIFY_VALUE }
+																	}
+																}
+															}
+														},
+														ui.Text:new
+														{
+															Mode = "button",
+															Class = "button",
+															Text = "Debug Console",
+															Notifications =
+															{
+																["Pressed"] =
+																{
+																	[false] =
+																	{
+																		{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self)
+																			db.console()
+																		end }
+																	}
+																}
 															}
 														}
 													}

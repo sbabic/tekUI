@@ -8,7 +8,7 @@
 **	It is not actually loaded and decoded. It has been included for
 **	illustration purposes only.
 **
-**	Version: 1.4
+**	Version: 1.5
 */
 
 /*
@@ -26,6 +26,7 @@ tek.ui.class.checkmark {
 	border-focus-width: 1;
 	text-align: left;
 	vertical-align: center;
+	vertical-grid-align: center;
 	background-color: parent-group;
 }
 

@@ -78,18 +78,19 @@
 --			or "multi".
 --
 --	IMPLEMENTS::
---		- ListGadget:addItem(): Adds an item to the list
---		- ListGadget:changeItem(): Overwrite item in the list
---		- ListGadget:changeSelection(): Changes selection of the list
---		- ListGadget:damageLine(): Marks line for repainting
---		- ListGadget:getItem(): Returns the item at the specified line
---		- ListGadget:getN(): Returns the number of entries in the list
---		- ListGadget:getSelectedLines(): Returns a table of selected entries
---		- ListGadget:onSelectLine(): Handler invoked for {{SelectedLine}}
---		- ListGadget:onSetCursor(): Handler invoked for {{CursorLine}}
---		- ListGadget:repaint(): Relayouts and repaints the list
---		- ListGadget:remItem(): Removes an item from the list
---		- ListGadget:setList(): Sets a new list object
+--		- ListGadget:addItem() - Adds an item to the list
+--		- ListGadget:changeItem() - Overwrite item in the list
+--		- ListGadget:changeSelection() - Changes selection of the list
+--		- ListGadget:clear() -  Removes all items from the list
+--		- ListGadget:damageLine() - Marks line for repainting
+--		- ListGadget:getItem() - Returns the item at the specified line
+--		- ListGadget:getN() - Returns the number of entries in the list
+--		- ListGadget:getSelectedLines() - Returns a table of selected entries
+--		- ListGadget:onSelectLine() - Handler invoked for {{SelectedLine}}
+--		- ListGadget:onSetCursor() - Handler invoked for {{CursorLine}}
+--		- ListGadget:repaint() - Relayouts and repaints the list
+--		- ListGadget:remItem() - Removes an item from the list
+--		- ListGadget:setList() - Sets a new list object
 --
 --	STYLE PROPERTIES::
 --		- {{background-color2}}
@@ -135,7 +136,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 12.0"
+_VERSION = "ListGadget 13.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -202,9 +203,9 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:getProperties(p, pclass)
-	self.BGPenAlt = self.BGPenAlt or 
+	self.BGPenAlt = self.BGPenAlt or
 		self:getProperty(p, pclass, "background-color2")
-	self.CursorBorderClass = self.CursorBorderClass or 
+	self.CursorBorderClass = self.CursorBorderClass or
 		self:getProperty(p, pclass, "border-class")
 	local b = self.CursorBorder
 	b[1] = b[1] or tonumber(self:getProperty(p, pclass, "border-left-width"))
@@ -223,7 +224,7 @@ function ListGadget:setup(app, window)
 	self:initSelectedLines()
 	self:addNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
 	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
-	self.CursorObject = ui.createHook("border", 
+	self.CursorObject = ui.createHook("border",
 		self.CursorBorderClass or "default", self,
 			{ Border = self.CursorBorder })
 end
@@ -622,7 +623,7 @@ function ListGadget:draw()
 							if text then
 								local cx = cp[ci]
 								if overlap(r1, r2, r3, r4, cx, l[4],
-									b1 + cx + self.ColumnWidths[ci] - 1, 
+									b1 + cx + self.ColumnWidths[ci] - 1,
 									l[5]) then
 									d:pushClipRect(b1 + cx, l[4] + b2,
 										b1 + cx + self.ColumnWidths[ci],
@@ -952,4 +953,15 @@ function ListGadget:getSelectedLines(mode)
 		sort(t)
 	end
 	return t
+end
+
+-------------------------------------------------------------------------------
+--	ListGadget:clear(): Remove all items from the list.
+-------------------------------------------------------------------------------
+
+function ListGadget:clear()
+	local lo = self.ListObject
+	if lo then
+		lo:clear()
+	end
 end
