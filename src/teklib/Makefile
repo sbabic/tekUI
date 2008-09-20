@@ -6,6 +6,7 @@ include $(BASEDIR)/config
 
 LIBS = \
 	$(LIBDIR)/libtekdebug.a \
+	$(LIBDIR)/libtekcmain.a \
 	$(LIBDIR)/libtekc.a \
 	$(LIBDIR)/libtek.a
 
@@ -20,19 +21,26 @@ $(OBJDIR)/main.lo: $(PLATFORM)/main.c $(INCDIR)/tek/lib/init.h
 $(OBJDIR)/host.lo: $(PLATFORM)/host.c $(INCDIR)/tek/lib/init.h
 	$(CC) $(LIBCFLAGS) -o $@ -c $(PLATFORM)/host.c
 
+$(LIBDIR)/libtekdebug.a: \
+	$(OBJDIR)/debug.lo
+	$(AR) $@ $?
+$(LIBDIR)/libtekcmain.a: \
+	$(OBJDIR)/init.lo $(OBJDIR)/teklib.lo $(OBJDIR)/host.lo $(OBJDIR)/main.lo
+	$(AR) $@ $?
 $(LIBDIR)/libtekc.a: \
 	$(OBJDIR)/init.lo $(OBJDIR)/teklib.lo $(OBJDIR)/host.lo
 	$(AR) $@ $?
 $(LIBDIR)/libtek.a: \
 	$(OBJDIR)/teklib.lo
 	$(AR) $@ $?
-$(LIBDIR)/libtekdebug.a: \
-	$(OBJDIR)/debug.lo
-	$(AR) $@ $?
 
 ###############################################################################
 
 libs: $(LIBDIR) $(OBJDIR) $(LIBS)
+
+tools:
+
+modules:
 
 clean: FORCE
 	-$(RM) $(MODS) $(TOOLS) $(LIBS)

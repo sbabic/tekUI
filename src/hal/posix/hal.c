@@ -464,7 +464,18 @@ hal_getsystime(TMOD_HAL *hal, TTIME *time)
 static time_t
 hal_timefromdate(TMOD_HAL *hal, TDATE *dt)
 {
-	return (time_t) ((dt->tdt_Day.tdtt_Double - 2440587.5) * 86400);
+	/*
+	**	1.1.1601 ... 1.1.1970:
+	**		134774 d
+	**		11644473600 s
+	**		11644473600000 ms
+	**		11644473600000000 us
+	*/
+
+	TUINT64 t = dt->tdt_Day.tdtt_Int64;
+	t -= 11644473600000000ULL;
+	t /= 1000000;
+	return (time_t) t;
 }
 
 static TINT
@@ -497,15 +508,13 @@ static TINT
 hal_getsysdate(TMOD_HAL *hal, TDATE *datep, TINT *tzsecp)
 {
 	struct timeval tv;
-	TDOUBLE syst;
 	TINT tzsec;
+	TUINT64 syst;
 
 	gettimeofday(&tv, NULL);
 	tzsec = hal_tzbias(hal) + hal_dsbias(hal, tv.tv_sec);
 
-	syst = tv.tv_usec;
-	syst /= 1000000;
-	syst += tv.tv_sec;
+	syst = tv.tv_sec;
 
 	if (tzsecp)
 		*tzsecp = tzsec;
@@ -514,9 +523,10 @@ hal_getsysdate(TMOD_HAL *hal, TDATE *datep, TINT *tzsecp)
 
 	if (datep)
 	{
-		syst /= 86400; /* secs -> days */
-		syst += 2440587.5; /* 1.1.1970 in Julian days */
-		datep->tdt_Day.tdtt_Double = syst;
+		syst *= 1000000;
+		syst += tv.tv_usec;
+		syst += 11644473600000000ULL;
+		datep->tdt_Day.tdtt_Int64 = syst;
 	}
 
 	return 0;
@@ -882,22 +892,20 @@ hal_beginio(TMOD_HAL *hal, struct TTimeRequest *req)
 	struct HALSpecific *hps = hal->hmb_Specific;
 	TAPTR exec = hps->hsp_ExecBase;
 	TTIME nowtime;
-	TDOUBLE x = 0;
+	TUINT64 x = 0;
 
 	switch (req->ttr_Req.io_Command)
 	{
 		/* execute asynchronously */
 		case TTREQ_ADDLOCALDATE:
-			x = (TDOUBLE)
-				hal_datebias(hal, &req->ttr_Data.ttr_Date.ttr_Date) / 86400;
-		case TTREQ_ADDUNIDATE:
-			x += req->ttr_Data.ttr_Date.ttr_Date.tdt_Day.tdtt_Double;
-			x -= 2440587.5;							/* days since 1.1.1970 */
-			x *= 86400;								/* secs since 1.1.1970 */
-			req->ttr_Data.ttr_Time.ttm_Sec = x;
-			x -= req->ttr_Data.ttr_Time.ttm_Sec;	/* fraction of sec */
+			x = hal_datebias(hal, &req->ttr_Data.ttr_Date.ttr_Date);
 			x *= 1000000;
-			req->ttr_Data.ttr_Time.ttm_USec = x;	/* microseconds */
+		case TTREQ_ADDUNIDATE:
+			x += req->ttr_Data.ttr_Date.ttr_Date.tdt_Day.tdtt_Int64;
+			x -= 11644473600000000ULL;
+			req->ttr_Data.ttr_Time.ttm_Sec = x / 1000000;
+			x -= req->ttr_Data.ttr_Time.ttm_Sec * 1000000;
+			req->ttr_Data.ttr_Time.ttm_USec = x;
 			hal_getsystime(hal, &nowtime);
 			hal_subtime(&req->ttr_Data.ttr_Time, &nowtime);
 			/* relative time */
@@ -972,18 +980,4 @@ hal_abortio(TMOD_HAL *hal, struct TTimeRequest *req)
 	}
 
 	return 0;
-}
-
-/*****************************************************************************/
-
-EXPORT TDOUBLE
-hal_datetojulian(TMOD_HAL *hal, TDATE *date)
-{
-	return date->tdt_Day.tdtt_Double;
-}
-
-EXPORT void
-hal_juliantodate(TMOD_HAL *hal, TDOUBLE jd, TDATE *date)
-{
-	date->tdt_Day.tdtt_Double = jd;
 }

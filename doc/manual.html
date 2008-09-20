@@ -624,7 +624,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v6.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v7.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2365,7 +2365,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v1.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v1.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3148,7 +3148,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v10.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3956,7 +3956,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v14.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v15.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4291,7 +4291,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4472,40 +4472,43 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:addItem"><code>ListGadget:addItem()</code></a>: Adds an item to the list
+							<a href="#ListGadget:addItem"><code>ListGadget:addItem()</code></a> - Adds an item to the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:changeItem"><code>ListGadget:changeItem()</code></a>: Overwrite item in the list
+							<a href="#ListGadget:changeItem"><code>ListGadget:changeItem()</code></a> - Overwrite item in the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:changeSelection"><code>ListGadget:changeSelection()</code></a>: Changes selection of the list
+							<a href="#ListGadget:changeSelection"><code>ListGadget:changeSelection()</code></a> - Changes selection of the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:damageLine"><code>ListGadget:damageLine()</code></a>: Marks line for repainting
+							<a href="#ListGadget:clear"><code>ListGadget:clear()</code></a> -  Removes all items from the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:getItem"><code>ListGadget:getItem()</code></a>: Returns the item at the specified line
+							<a href="#ListGadget:damageLine"><code>ListGadget:damageLine()</code></a> - Marks line for repainting
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:getN"><code>ListGadget:getN()</code></a>: Returns the number of entries in the list
+							<a href="#ListGadget:getItem"><code>ListGadget:getItem()</code></a> - Returns the item at the specified line
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:getSelectedLines"><code>ListGadget:getSelectedLines()</code></a>: Returns a table of selected entries
+							<a href="#ListGadget:getN"><code>ListGadget:getN()</code></a> - Returns the number of entries in the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:onSelectLine"><code>ListGadget:onSelectLine()</code></a>: Handler invoked for <code>SelectedLine</code> 
+							<a href="#ListGadget:getSelectedLines"><code>ListGadget:getSelectedLines()</code></a> - Returns a table of selected entries
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:onSetCursor"><code>ListGadget:onSetCursor()</code></a>: Handler invoked for <code>CursorLine</code> 
+							<a href="#ListGadget:onSelectLine"><code>ListGadget:onSelectLine()</code></a> - Handler invoked for <code>SelectedLine</code> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:repaint"><code>ListGadget:repaint()</code></a>: Relayouts and repaints the list
+							<a href="#ListGadget:onSetCursor"><code>ListGadget:onSetCursor()</code></a> - Handler invoked for <code>CursorLine</code> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:remItem"><code>ListGadget:remItem()</code></a>: Removes an item from the list
+							<a href="#ListGadget:repaint"><code>ListGadget:repaint()</code></a> - Relayouts and repaints the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:setList"><code>ListGadget:setList()</code></a>: Sets a new list object
+							<a href="#ListGadget:remItem"><code>ListGadget:remItem()</code></a> - Removes an item from the list
+						</li>
+						<li style="list-style-type: none">
+							<a href="#ListGadget:setList"><code>ListGadget:setList()</code></a> - Sets a new list object
 						</li>
 					</ul>
 				</blockquote>
@@ -4657,6 +4660,12 @@
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="ListGadget:clear" id="ListGadget:clear"><code>ListGadget:clear()</code></a></h3>
+			<p>
+				Remove all items from the list.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v5.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
@@ -4764,7 +4773,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v7.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v7.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5309,7 +5318,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v3.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v4.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<p>
 					Debug library - implements debug output and debug levels:
@@ -5385,36 +5394,41 @@ db.level = db.INFO
 				</p>
 <pre>
 db = require &quot;tek.lib.debug&quot;
-f = io.open(&quot;logfile&quot;, &quot;w&quot;)
-db.out = function(...) f:write(...) end
+db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 </pre>
 			</div>
 			<div class="definition"><dfn>FUNCTIONS</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#debug:print"><code>debug.print()</code></a> - Print a text in the specified debug level
+							<a href="#debug:console"><code>debug.console()</code></a> - Enter debug console
 						</li>
 						<li style="list-style-type: none">
-							<a href="#debug:execute"><code>debug.execute()</code></a> - Execute a function in the specified debug level
-						</li>
-						<li style="list-style-type: none">
-							<a href="#debug:trace"><code>debug.trace()</code></a> - Print a text in the <code>TRACE</code> debug level
-						</li>
-						<li style="list-style-type: none">
-							<a href="#debug:info"><code>debug.info()</code></a> - Print a text in the <code>INFO</code> debug level
-						</li>
-						<li style="list-style-type: none">
-							<a href="#debug:warn"><code>debug.warn()</code></a> - Print a text in the <code>WARN</code> debug level
+							<a href="#debug:dump"><code>debug.dump()</code></a> - Dump a table recursively
 						</li>
 						<li style="list-style-type: none">
 							<a href="#debug:error"><code>debug.error()</code></a> - Print a text in the <code>ERROR</code> debug level
 						</li>
 						<li style="list-style-type: none">
+							<a href="#debug:execute"><code>debug.execute()</code></a> - Execute a function in the specified debug level
+						</li>
+						<li style="list-style-type: none">
 							<a href="#debug:fail"><code>debug.fail()</code></a> - Print a text in the <code>FAIL</code> debug level
 						</li>
 						<li style="list-style-type: none">
+							<a href="#debug:info"><code>debug.info()</code></a> - Print a text in the <code>INFO</code> debug level
+						</li>
+						<li style="list-style-type: none">
+							<a href="#debug:print"><code>debug.print()</code></a> - Print a text in the specified debug level
+						</li>
+						<li style="list-style-type: none">
 							<a href="#debug:stacktrace"><code>debug.stacktrace()</code></a> - Print a stacktrace in the specified debug level
+						</li>
+						<li style="list-style-type: none">
+							<a href="#debug:trace"><code>debug.trace()</code></a> - Print a text in the <code>TRACE</code> debug level
+						</li>
+						<li style="list-style-type: none">
+							<a href="#debug:warn"><code>debug.warn()</code></a> - Print a text in the <code>WARN</code> debug level
 						</li>
 					</ul>
 				</blockquote>
@@ -5471,6 +5485,19 @@ db.out = function(...) f:write(...) end
 				the function of the given <code>level</code> on the stack (excluding the
 				<code>stracktrace</code> function itself) if the global debug level is less
 				or equal the specified <code>debuglevel</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="debug:console" id="debug:console"><code>console()</code></a></h3>
+			<p>
+				Enter the debug console.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="debug:dump" id="debug:dump"><code>dump(table)</code></a></h3>
+			<p>
+				Dump a table as Lua source using <code>out</code> as the output
+				stream. Cyclic references are silently dropped.
 			</p>
 			<hr />
 		</div>
@@ -5865,7 +5892,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.class.list" id="tek.class.list">List (v1.3)</a></h2>
+		<div class="node"><h2><a name="tek.class.list" id="tek.class.list">List (v2.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5893,6 +5920,9 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#List:checkPosition"><code>List:checkPosition()</code></a> - Verify position in the list
+						</li>
+						<li style="list-style-type: none">
+							<a href="#List:clear"><code>List:clear()</code></a> - Removes all items from the list
 						</li>
 						<li style="list-style-type: none">
 							<a href="#List:getN"><code>List:getN()</code></a> - Returns the number of items in the list
@@ -5949,6 +5979,12 @@ end
 				Changes the item at the specified
 				position in the list. Returns a boolean indicating whether there was an
 				item changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="List:clear" id="List:clear"><code>List:clear()</code></a></h3>
+			<p>
+				Remove all items from the list.
 			</p>
 			<hr />
 		</div>
@@ -6525,7 +6561,7 @@ end
 		</p>
 		<hr />
 	</div>
-	<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v8.0)</a></h2>
+	<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v8.1)</a></h2>
 		<div class="definition"><dfn>LINEAGE</dfn>
 			<blockquote>
 				<p>
@@ -7106,7 +7142,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Wed Sep 10 17:20:47 2008
+			Document generated on Sat Sep 20 00:08:59 2008
 		</p>
 	</div>
 	</body>

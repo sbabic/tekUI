@@ -32,6 +32,10 @@ $(LIBDIR)/libdisplay_dfb.a: \
 
 libs: $(LIBDIR) $(OBJDIR) $(LIBS)
 
+modules:
+
+tools:
+
 clean: FORCE
 	-$(RM) $(MODS) $(TOOLS) $(LIBS)
 	-$(RMDIR) $(OBJDIR)

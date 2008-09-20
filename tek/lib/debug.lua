@@ -50,7 +50,7 @@ local type = type
 local unpack = unpack
 
 module "tek.lib.debug"
-_VERSION = "Debug 4.0"
+_VERSION = "Debug 4.1"
 
 -- symbolic:
 
@@ -140,40 +140,58 @@ function console()
 	stderr:write('To redirect the output, e.g.:\n')
 	stderr:write('  tek.lib.debug.out = io.open("logfile", "w")\n')
 	stderr:write('To dump a table, e.g.:\n')
-	stderr:write('  tek.lib.debug.dump("app", app)\n')
+	stderr:write('  tek.lib.debug.dump(app)\n')
 	stderr:write('Use "cont" to continue.\n')
 	debug.debug()
 end
 
 -------------------------------------------------------------------------------
---	dump(name, table): Dump a table
+--	dump(table): Dump a table as Lua source using {{out}} as the output
+--	stream. Cyclic references are silently dropped.
 -------------------------------------------------------------------------------
 
-local function basicSerialize(o)
-	if type(o) == "string" then
-		return ("%q"):format(o)
-	elseif type(o) == "userdata" then
-		return "<userdata>"
-	end
-	return tostring(o)
+local function encodenonascii(c)
+	return ("\\%03d"):format(c:byte())
 end
 
-function dump(name, value, saved)
-	saved = saved or {}       -- initial value
-	wrout(name, " = ")
-	local t = type(value)
-	if t == "table" then
-		if saved[value] then    -- value already saved?
-			wrout(saved[value], "\n")
-		else
-			saved[value] = name   -- save name for next time
-			wrout("{}\n")
-			for k,v in pairs(value) do      -- save its fields
-				local fieldname = ("%s[%s]"):format(name, basicSerialize(k))
-				dump(fieldname, v, saved)
+local function encode(s)
+	return s:gsub('([%z\001-\031\092"])', encodenonascii)
+end
+
+local function dumpr(tab, indent, outfunc, saved)
+	saved[tab] = tab
+	local is = ("\t"):rep(indent)
+	for key, val in pairs(tab) do
+		if not saved[val] then
+			outfunc(is)
+			local t = type(key)
+			if t == "number" or t == "boolean" then
+				outfunc('[' .. tostring(key) .. '] = ')
+			elseif t == "string" then
+				if key:match("[^%a_]") then
+					outfunc('["' .. encode(key) .. '"] = ')
+				else
+					outfunc(key .. ' = ')
+				end
+			else
+				outfunc('["' .. tostring(key) .. '"] = ')
+			end
+			t = type(val)
+			if t == "table" then
+				outfunc('{\n')
+				dumpr(val, indent + 1, outfunc, saved)
+				outfunc(is .. '},\n')
+			elseif t == "string" then
+				outfunc('"' .. encode(val) .. '",\n')
+			elseif t == "number" or t == "boolean" then
+				outfunc(tostring(val) .. ',\n')
+			else
+				outfunc('"' .. tostring(val) .. '",\n')
 			end
 		end
-	else
-		wrout(basicSerialize(value), "\n")
 	end
+end
+
+function dump(tab, outf)
+	dumpr(tab, 0, outf or wrout, { })
 end

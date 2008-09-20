@@ -3,14 +3,18 @@ include config
 
 .PHONY: all libs modules install clean help distclean docs release
 
-all: libs modules
+all: libs modules tools
 
 libs:
 	cd src && $(MAKE) $@
 
 modules: libs
+	#cd src && $(MAKE) $@
 	cd tek/lib && $(MAKE) $@
 	cd tek/ui && $(MAKE) $@
+
+tools: modules
+	cd src && $(MAKE) $@
 
 install:
 	cd tek && $(MAKE) $@

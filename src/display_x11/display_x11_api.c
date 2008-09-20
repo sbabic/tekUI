@@ -176,7 +176,7 @@ x11_openvisual(TMOD_X11 *mod, struct TVRequest *req)
 				v->window, True, GrabModeAsync, GrabModeAsync, CurrentTime);
 		}
 
-		if (mod->x11_use_xft == TTRUE)
+		if (mod->x11_use_xft)
 		{
 			v->draw = (*mod->x11_xftiface.XftDrawCreate)(mod->x11_Display,
 				v->window, mod->x11_Visual, v->colormap);
@@ -213,7 +213,7 @@ x11_closevisual(TMOD_X11 *mod, struct TVRequest *req)
 
 	TExecFree(TGetExecBase(mod), v->tempbuf);
 
-	if (mod->x11_use_xft == TTRUE && v->draw)
+	if (mod->x11_use_xft && v->draw)
 		(*mod->x11_xftiface.XftDrawDestroy)(v->draw);
 
 	if (v->window)
@@ -284,7 +284,7 @@ x11_allocpen(TMOD_X11 *mod, struct TVRequest *req)
 		if (XAllocColor(mod->x11_Display, v->colormap, &pen->color))
 		{
 			TBOOL success = TTRUE;
-			if (mod->x11_use_xft == TTRUE)
+			if (mod->x11_use_xft)
 			{
 				XRenderColor xrcolor = { red:	((rgb >> 16) & 0xff) << 8,
 										green:	((rgb >> 8) & 0xff) << 8,
@@ -314,7 +314,7 @@ freepen(TMOD_X11 *mod, VISUAL *v, struct X11Pen *pen)
 {
 	TRemove(&pen->node);
 	XFreeColors(mod->x11_Display, v->colormap, &pen->color.pixel, 1, 0);
-	if (mod->x11_use_xft == TTRUE)
+	if (mod->x11_use_xft)
 		(*mod->x11_xftiface.XftColorFree)(mod->x11_Display, mod->x11_Visual,
 			v->colormap, &pen->xftcolor);
 	TExecFree(mod->x11_ExecBase, pen);
@@ -592,7 +592,7 @@ x11_setcliprect(TMOD_X11 *mod, struct TVRequest *req)
 	/* set clip region */
 	XSetRegion(mod->x11_Display, v->gc, region);
 
-	if (mod->x11_use_xft == TTRUE)
+	if (mod->x11_use_xft)
 		(*mod->x11_xftiface.XftDrawSetClip)(v->draw, region);
 
 	XDestroyRegion(region);
@@ -820,7 +820,7 @@ x11_drawtext(TMOD_X11 *mod, struct TVRequest *req)
 
 	if ((TVPEN) bgpen == TVPEN_UNDEFINED)
 	{
-		if (mod->x11_use_xft == TTRUE)
+		if (mod->x11_use_xft)
 		{
 			XftFont *f = ((struct FontNode *) v->curfont)->xftfont;
 			(*mod->x11_xftiface.XftDrawStringUtf8)(v->draw, &fgpen->xftcolor,
@@ -840,7 +840,7 @@ x11_drawtext(TMOD_X11 *mod, struct TVRequest *req)
 	}
 	else
 	{
-		if (mod->x11_use_xft == TTRUE)
+		if (mod->x11_use_xft)
 		{
 			XftFont *f = ((struct FontNode *) v->curfont)->xftfont;
 			TINT w = x11_hosttextsize(mod, v->curfont, text);

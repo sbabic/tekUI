@@ -9,7 +9,6 @@
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/inline/exec.h>
-#include <tek/inline/time.h>
 #include <tek/proto/visual.h>
 
 extern TMODENTRY TUINT
@@ -45,8 +44,6 @@ typedef struct TEKVisual
 	TAPTR vis_Base;
 	/* Execbase: */
 	TAPTR vis_ExecBase;
-	/* Timebase: */
-	TAPTR vis_TimeBase;
 	/* Time request */
 	TAPTR vis_TimeRequest;
 	/* Reference to base (stored in metatable): */
@@ -104,7 +101,6 @@ typedef struct
 /*****************************************************************************/
 
 #define TExecBase vis->vis_ExecBase
-#define TTimeBase vis->vis_TimeBase
 
 #define TEK_LIB_VISUAL_BASECLASSNAME "tek.lib.visual.base*"
 #define TEK_LIB_VISUAL_CLASSNAME "tek.lib.visual*"

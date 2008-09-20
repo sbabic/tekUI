@@ -16,7 +16,6 @@
 #include <tek/teklib.h>
 
 #include <tek/proto/exec.h>
-#include <tek/proto/time.h>
 #include <tek/mod/visual.h>
 
 /*****************************************************************************/
@@ -188,8 +187,6 @@ typedef struct DFBDisplay
 	struct TList dfb_imsgpool;
 	/* list of all visuals: */
 	struct TList dfb_vlist;
-	/* Time module base ptr: */
-	TAPTR dfb_TimeBase;
 	/* Timerequest: */
 	TAPTR dfb_TimeReq;
 	/* Module global memory manager (thread safe): */

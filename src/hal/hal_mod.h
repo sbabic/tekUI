@@ -92,7 +92,4 @@ EXPORT void hal_signal(TMOD_HAL *hal, THALO *thread, TUINT signals);
 EXPORT TUINT hal_setsignal(TMOD_HAL *hal, TUINT newsig, TUINT sigmask);
 EXPORT void hal_getsystime(TMOD_HAL *hal, TTIME *time);
 
-EXPORT TDOUBLE hal_datetojulian(TMOD_HAL *hal, TDATE *date);
-EXPORT void hal_juliantodate(TMOD_HAL *hal, TDOUBLE jd, TDATE *date);
-
 #endif

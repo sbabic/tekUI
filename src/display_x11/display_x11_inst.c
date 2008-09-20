@@ -27,12 +27,8 @@ x11_init(TMOD_X11 *mod, TTAGITEM *tags)
 	{
 		TTAGITEM tags[2];
 
-		mod->x11_TimeBase =
-			TExecOpenModule(mod->x11_ExecBase, "time", 0, TNULL);
-		if (mod->x11_TimeBase == TNULL) break;
-
 		mod->x11_TimeReq =
-			TTimeAllocTimeRequest(mod->x11_TimeBase, TNULL);
+			TExecAllocTimeRequest(mod->x11_ExecBase, TNULL);
 
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
@@ -63,11 +59,7 @@ x11_exit(TMOD_X11 *mod)
 		TDestroy(mod->x11_Task);
 	}
 
-	if (mod->x11_TimeBase)
-	{
-		TTimeFreeTimeRequest(mod->x11_TimeBase, mod->x11_TimeReq);
-		TExecCloseModule(mod->x11_ExecBase, mod->x11_TimeBase);
-	}
+	TExecFreeTimeRequest(mod->x11_ExecBase, mod->x11_TimeReq);
 }
 
 /*****************************************************************************/
@@ -394,8 +386,8 @@ x11_taskfunc(TAPTR task)
 	TTIME nextt;
 	TTIME waitt, nowt;
 
-	TTimeQueryTime(inst->x11_TimeBase, inst->x11_TimeReq, &nextt);
-	TTimeAddTime(inst->x11_TimeBase, &nextt, &intt);
+	TExecQueryTime(inst->x11_ExecBase, inst->x11_TimeReq, &nextt);
+	TExecAddTime(inst->x11_ExecBase, &nextt, &intt);
 
 	TDBPRINTF(TDB_INFO,("Device instance running\n"));
 
@@ -419,9 +411,9 @@ x11_taskfunc(TAPTR task)
 		FD_SET(inst->x11_fd_sigpipe_read, &rset);
 
 		/* calculate new delta to wait: */
-		TTimeQueryTime(inst->x11_TimeBase, inst->x11_TimeReq, &nowt);
+		TExecQueryTime(inst->x11_ExecBase, inst->x11_TimeReq, &nowt);
 		waitt = nextt;
-		TTimeSubTime(inst->x11_TimeBase, &waitt, &nowt);
+		TExecSubTime(inst->x11_ExecBase, &waitt, &nowt);
 
 		tv.tv_sec = waitt.ttm_Sec;
 		tv.tv_usec = waitt.ttm_USec;
@@ -432,17 +424,17 @@ x11_taskfunc(TAPTR task)
 				read(inst->x11_fd_sigpipe_read, buf, 1);
 
 		/* check if time interval has expired: */
-		TTimeQueryTime(inst->x11_TimeBase, inst->x11_TimeReq, &nowt);
-		if (TTimeCmpTime(inst->x11_TimeBase, &nowt, &nextt) > 0)
+		TExecQueryTime(inst->x11_ExecBase, inst->x11_TimeReq, &nowt);
+		if (TExecCmpTime(inst->x11_ExecBase, &nowt, &nextt) > 0)
 		{
 			/* expired; send interval: */
 			do_interval = TTRUE;
-			TTimeAddTime(inst->x11_TimeBase, &nextt, &intt);
-			if (TTimeCmpTime(inst->x11_TimeBase, &nowt, &nextt) >= 0)
+			TExecAddTime(inst->x11_ExecBase, &nextt, &intt);
+			if (TExecCmpTime(inst->x11_ExecBase, &nowt, &nextt) >= 0)
 			{
 				/* nexttime expired already; create new time from now: */
 				nextt = nowt;
-				TTimeAddTime(inst->x11_TimeBase, &nextt, &intt);
+				TExecAddTime(inst->x11_ExecBase, &nextt, &intt);
 			}
 		}
 
@@ -533,7 +525,7 @@ static TBOOL getimsg(TMOD_X11 *mod, VISUAL *v, TIMSG **msgptr, TUINT type)
 		msg->timsg_Qualifier = mod->x11_KeyQual;
 		msg->timsg_MouseX = mod->x11_MouseX;
 		msg->timsg_MouseY = mod->x11_MouseY;
-		TTimeQueryTime(mod->x11_TimeBase, mod->x11_TimeReq,
+		TExecQueryTime(mod->x11_ExecBase, mod->x11_TimeReq,
 			&msg->timsg_TimeStamp);
 		*msgptr = msg;
 		return TTRUE;

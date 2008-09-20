@@ -79,7 +79,7 @@ tek_lib_visual_wait(lua_State *L)
 LOCAL LUACFUNC TINT
 tek_lib_visual_sleep(lua_State *L)
 {
-	TDOUBLE sec = luaL_checknumber(L, 1);
+	lua_Number sec = luaL_checknumber(L, 1);
 	TEKVisual *vis;
 	TTIME dt;
 

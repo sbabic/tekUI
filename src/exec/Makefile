@@ -4,30 +4,33 @@ include $(BASEDIR)/config
 
 ###############################################################################
 
-LIBS = \
-	$(LIBDIR)/libexec.a
+LIBS = $(LIBDIR)/libexec.a
+MODS = $(MODDIR)/exec.so
+#TOOLS = $(BINDIR)/scanmodules $(BINDIR)/interval
 
 $(OBJDIR)/exec_mod.lo: \
-	exec_mod.c exec_mod.h $(INCDIR)/tek/mod/exec.h
-	$(CC) $(LIBCFLAGS) -o $@ -c exec_mod.c
-$(OBJDIR)/exec_api.lo: \
-	exec_api.c exec_mod.h $(INCDIR)/tek/mod/exec.h
-	$(CC) $(LIBCFLAGS) -o $@ -c exec_api.c
-$(OBJDIR)/exec_doexec.lo: \
-	exec_doexec.c exec_mod.h $(INCDIR)/tek/mod/exec.h
-	$(CC) $(LIBCFLAGS) -o $@ -c exec_doexec.c
-$(OBJDIR)/exec_memory.lo: \
-	exec_memory.c exec_mod.h $(INCDIR)/tek/mod/exec.h
-	$(CC) $(LIBCFLAGS) -o $@ -c exec_memory.c
+	exec_all.c exec_mod.h $(INCDIR)/tek/mod/exec.h
+	$(CC) $(LIBCFLAGS) -o $@ -c exec_all.c
 
 $(LIBDIR)/libexec.a: \
-	$(OBJDIR)/exec_mod.lo $(OBJDIR)/exec_api.lo $(OBJDIR)/exec_doexec.lo \
-	$(OBJDIR)/exec_memory.lo
+	$(OBJDIR)/exec_mod.lo
 	$(AR) $@ $?
+
+$(MODDIR)/exec.so: $(OBJDIR)/exec_mod.lo
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_mod.lo -L$(LIBDIR) -ltekc -ltekdebug $(PLATFORM_LIBS)
+
+$(BINDIR)/scanmodules: scanmodules.c
+	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ scanmodules.c -L$(LIBDIR) -ltekcmain -ltekdebug $(PLATFORM_LIBS)
+$(BINDIR)/interval: interval.c
+	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ interval.c -L$(LIBDIR) -ltekcmain -ltekdebug $(PLATFORM_LIBS)
 
 ###############################################################################
 
 libs: $(LIBDIR) $(OBJDIR) $(LIBS)
+
+modules: $(OBJDIR) $(MODDIR) $(MODS)
+
+tools: $(BINDIR) $(TOOLS)
 
 clean: FORCE
 	-$(RM) $(MODS) $(TOOLS) $(LIBS)

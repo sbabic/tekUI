@@ -187,12 +187,8 @@ dfb_init(TMOD_DFB *mod, TTAGITEM *tags)
 	{
 		TTAGITEM tags[2];
 
-		mod->dfb_TimeBase =
-			TExecOpenModule(mod->dfb_ExecBase, "time", 0, TNULL);
-		if (mod->dfb_TimeBase == TNULL) break;
-
 		mod->dfb_TimeReq =
-			TTimeAllocTimeRequest(mod->dfb_TimeBase, TNULL);
+			TExecAllocTimeRequest(mod->dfb_ExecBase, TNULL);
 
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
@@ -223,11 +219,7 @@ dfb_exit(TMOD_DFB *mod)
 		TDestroy(mod->dfb_Task);
 	}
 
-	if (mod->dfb_TimeBase)
-	{
-		TTimeFreeTimeRequest(mod->dfb_TimeBase, mod->dfb_TimeReq);
-		TExecCloseModule(mod->dfb_ExecBase, mod->dfb_TimeBase);
-	}
+	TExecFreeTimeRequest(mod->dfb_ExecBase, mod->dfb_TimeReq);
 }
 
 /*****************************************************************************/
@@ -540,8 +532,8 @@ dfb_taskfunc(TAPTR task)
 	TTIME nextt;
 	TTIME waitt, nowt;
 
-	TTimeQueryTime(inst->dfb_TimeBase, inst->dfb_TimeReq, &nextt);
-	TTimeAddTime(inst->dfb_TimeBase, &nextt, &intt);
+	TExecQueryTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nextt);
+	TExecAddTime(inst->dfb_ExecBase, &nextt, &intt);
 
 	TDBPRINTF(TDB_ERROR,("Device instance running\n"));
 
@@ -567,9 +559,9 @@ dfb_taskfunc(TAPTR task)
 		FD_SET(inst->dfb_FDSigPipeRead, &rset);
 
 		/* calculate new delta to wait: */
-		TTimeQueryTime(inst->dfb_TimeBase, inst->dfb_TimeReq, &nowt);
+		TExecQueryTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nowt);
 		waitt = nextt;
-		TTimeSubTime(inst->dfb_TimeBase, &waitt, &nowt);
+		TExecSubTime(inst->dfb_ExecBase, &waitt, &nowt);
 
 		tv.tv_sec = waitt.ttm_Sec;
 		tv.tv_usec = waitt.ttm_USec;
@@ -592,17 +584,17 @@ dfb_taskfunc(TAPTR task)
 		}
 
 		/* check if time interval has expired: */
-		TTimeQueryTime(inst->dfb_TimeBase, inst->dfb_TimeReq, &nowt);
-		if (TTimeCmpTime(inst->dfb_TimeBase, &nowt, &nextt) > 0)
+		TExecQueryTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nowt);
+		if (TExecCmpTime(inst->dfb_ExecBase, &nowt, &nextt) > 0)
 		{
 			/* expired; send interval: */
 			do_interval = TTRUE;
-			TTimeAddTime(inst->dfb_TimeBase, &nextt, &intt);
-			if (TTimeCmpTime(inst->dfb_TimeBase, &nowt, &nextt) >= 0)
+			TExecAddTime(inst->dfb_ExecBase, &nextt, &intt);
+			if (TExecCmpTime(inst->dfb_ExecBase, &nowt, &nextt) >= 0)
 			{
 				/* nexttime expired already; create new time from now: */
 				nextt = nowt;
-				TTimeAddTime(inst->dfb_TimeBase, &nextt, &intt);
+				TExecAddTime(inst->dfb_ExecBase, &nextt, &intt);
 			}
 		}
 
@@ -997,7 +989,7 @@ TBOOL getimsg(TMOD_DFB *mod, VISUAL *v, TIMSG **msgptr, TUINT type)
 		msg->timsg_Qualifier = mod->dfb_KeyQual;
 		msg->timsg_MouseX = mod->dfb_MouseX;
 		msg->timsg_MouseY = mod->dfb_MouseY;
-		TTimeQueryTime(mod->dfb_TimeBase, mod->dfb_TimeReq, &msg->timsg_TimeStamp);
+		TExecQueryTime(mod->dfb_ExecBase, mod->dfb_TimeReq, &msg->timsg_TimeStamp);
 		*msgptr = msg;
 		return TTRUE;
 	}

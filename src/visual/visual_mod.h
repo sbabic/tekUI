@@ -13,7 +13,6 @@
 #include <tek/teklib.h>
 
 #include <tek/proto/exec.h>
-#include <tek/proto/time.h>
 #include <tek/mod/visual.h>
 
 #include <tek/proto/display.h>

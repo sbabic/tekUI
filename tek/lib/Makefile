@@ -9,7 +9,7 @@ EXTRADEFS += $(LUA_DEFS) -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
 MODS = region.so exec.so visual.so
 DISPLAYMODS = display/x11.so # display/dfb.so
 
-EXECLIBS = $(LIBDIR)/libhal.a $(LIBDIR)/libexec.a $(LIBDIR)/libtime.a $(LIBDIR)/libtekc.a $(LIBDIR)/libtekdebug.a
+EXECLIBS = $(LIBDIR)/libhal.a $(LIBDIR)/libexec.a $(LIBDIR)/libtekc.a $(LIBDIR)/libtekdebug.a
 VISUALLIBS = $(LIBDIR)/libvisual.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
 DISPLAYX11LIBS = $(LIBDIR)/libdisplay_x11.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
 DISPLAYDFBLIBS = $(LIBDIR)/libdisplay_dfb.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
@@ -18,7 +18,7 @@ region.so: $(OBJDIR)/region.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/region.lo $(PLATFORM_LIBS)
 
 exec.so: $(OBJDIR)/exec_lua.lo $(EXECLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_lua.lo -L$(LIBDIR) -lhal -lexec -ltime -ltekc -ltekdebug $(PLATFORM_LIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_lua.lo -L$(LIBDIR) -lhal -lexec -ltekc -ltekdebug $(PLATFORM_LIBS)
 
 visual.so: $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(VISUALLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo -L$(LIBDIR) -lvisual -ltek -ltekdebug

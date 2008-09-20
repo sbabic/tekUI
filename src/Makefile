@@ -2,12 +2,12 @@
 BASEDIR ?= ..
 include $(BASEDIR)/config
 
-all: libs
-clean libs:
+all: libs tools modules
+clean libs tools modules:
 	cd teklib && $(MAKE) $@
 	cd hal && $(MAKE) $@
 	cd exec && $(MAKE) $@
-	cd time && $(MAKE) $@
 	cd visual && $(MAKE) $@
+#	cd datatype && $(MAKE) $@
 	cd display_x11 && $(MAKE) $@
-#	cd display_dfb && $(MAKE) $@
+	cd display_dfb && $(MAKE) $@

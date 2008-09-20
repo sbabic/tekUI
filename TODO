@@ -16,7 +16,6 @@ be worked on:
  * Bubble help
  * FloatText styling options
  * Confinement of popup elements to the visible screen
- * Eliminate occurrences of float and double from the C library
  * The TextInput gadget is quite unsatisfactory
 
 === Known bugs ===

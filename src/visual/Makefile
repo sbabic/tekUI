@@ -25,6 +25,10 @@ $(LIBDIR)/libvisual.a: \
 
 libs: $(LIBDIR) $(OBJDIR) $(LIBS)
 
+tools:
+
+modules:
+
 clean: FORCE
 	-$(RM) $(MODS) $(TOOLS) $(LIBS)
 	-$(RMDIR) $(OBJDIR)

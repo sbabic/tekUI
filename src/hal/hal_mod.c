@@ -12,9 +12,9 @@
 #include <tek/mod/exec.h>
 #include <tek/debug.h>
 
-#define HAL_VERSION		2
+#define HAL_VERSION		3
 #define HAL_REVISION	0
-#define HAL_NUMVECTORS	31
+#define HAL_NUMVECTORS	29
 
 static THOOKENTRY TTAG hal_dispatch(struct THook *hook, TAPTR obj, TTAG msg);
 static const TMFPTR hal_vectors[HAL_NUMVECTORS];
@@ -126,9 +126,6 @@ hal_vectors[HAL_NUMVECTORS] =
 	(TMFPTR) hal_unloadmodule,
 
 	(TMFPTR) hal_scanmodules,
-
-	(TMFPTR) hal_datetojulian,
-	(TMFPTR) hal_juliantodate,
 };
 
 /*****************************************************************************/

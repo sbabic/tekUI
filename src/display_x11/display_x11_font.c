@@ -19,8 +19,6 @@
 
 #include "display_x11_mod.h"
 
-#define DISABLE_XFT	TFALSE
-
 /*****************************************************************************/
 static TBOOL hostopenfont(TMOD_X11 *mod, struct FontNode *fn,
 	struct fnt_attr *fattr);
@@ -71,7 +69,7 @@ TSTRPTR libfcsyms[LIBFC_NUMSYMS] =
 /*****************************************************************************/
 /* try to open libfontconfig and libxft and bind all symbols
 ** if initlibxft() succeeds g->use_xft is set to TTRUE
-** DISABLE_XFT can be used to enforce xlib based font rendering
+** undefining ENABLE_XFT can be used to enforce xlib based font rendering
 */
 TBOOL
 initlibxft(TMOD_X11 *mod)
@@ -93,13 +91,15 @@ initlibxft(TMOD_X11 *mod)
 		mod->x11_libxfthandle = initlib(mod, "libXft.so", libxftsyms,
 							(void *)&mod->x11_xftiface, LIBXFT_NUMSYMS);
 
-		if (mod->x11_libxfthandle && !DISABLE_XFT)
+		#if defined(ENABLE_XFT)
+		if (mod->x11_libxfthandle)
 		{
 			if((*mod->x11_fciface.FcInit)())
 				mod->x11_use_xft = TTRUE;
 			else
 				TDBPRINTF(10, ("fontconfig init failed\n"));
 		}
+		#endif
 	}
 
 	if (!mod->x11_use_xft)
@@ -650,7 +650,7 @@ fnt_matchfont_xft(TMOD_X11 *mod, FcPattern *pattern, TSTRPTR fname,
 	{
 		double fcsize;
 		(*mod->x11_fciface.FcPatternGetDouble)(pattern, FC_PIXEL_SIZE, 0, &fcsize);
-		if ((TFLOAT)fattr->fpxsize == (TFLOAT)fcsize)
+		if (fattr->fpxsize == (TINT) fcsize)
 			match |= FNT_MATCH_SIZE;
 	}
 
@@ -843,14 +843,14 @@ hostopenfont(TMOD_X11 *mod, struct FontNode *fn, struct fnt_attr *fattr)
 	TBOOL succ = TFALSE;
 	TAPTR exec = TGetExecBase(mod);
 
-	if (mod->x11_use_xft == TTRUE)
+	if (mod->x11_use_xft)
 	{
 		/* load xft font */
 		fn->xftfont = (*mod->x11_xftiface.XftFontOpen)(
 			mod->x11_Display,
 			mod->x11_Screen,
 			XFT_FAMILY, XftTypeString, fattr->fname,
-			XFT_PIXEL_SIZE, XftTypeDouble, (TFLOAT)fattr->fpxsize,
+			XFT_PIXEL_SIZE, XftTypeDouble, (double) fattr->fpxsize,
 			XFT_SLANT, XftTypeInteger,
 				(fattr->fitalic ? XFT_SLANT_ITALIC : XFT_SLANT_ROMAN),
 			XFT_WEIGHT, XftTypeInteger,
@@ -980,7 +980,7 @@ x11_hostqueryfonts(TMOD_X11 *mod, TTAGITEM *tags)
 		/* init list iterator */
 		fqh->nptr = &fqh->reslist.tlh_Head;
 
-		if (mod->x11_use_xft == TTRUE)
+		if (mod->x11_use_xft)
 			hostqueryfonts_xft(mod, fqh, &fattr);
 		else
 			hostqueryfonts_xlib(mod, fqh, &fattr);
@@ -1042,7 +1042,7 @@ hostqueryfonts_xft(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr *
 		if (fattr->fpxsize != FNTQUERY_UNDEFINED && fattr->fscale != TTRUE)
 		{
 			(*mod->x11_fciface.FcPatternAddDouble)
-				(pattern, FC_PIXEL_SIZE, (TFLOAT)fattr->fpxsize);
+				(pattern, FC_PIXEL_SIZE, (double) fattr->fpxsize);
 			matchflg |= FNT_MATCH_SIZE;
 		}
 
@@ -1389,7 +1389,7 @@ x11_hosttextsize(TMOD_X11 *mod, TAPTR font, TSTRPTR text)
 	struct FontNode *fn = (struct FontNode *) font;
 	TAPTR exec = TGetExecBase(mod);
 
-	if (mod->x11_use_xft == TTRUE)
+	if (mod->x11_use_xft)
 	{
 		XGlyphInfo extents;
 		(*mod->x11_xftiface.XftTextExtentsUtf8)(mod->x11_Display, fn->xftfont,

@@ -35,6 +35,10 @@ $(LIBDIR)/libdisplay_x11.a: \
 
 libs: $(LIBDIR) $(OBJDIR) $(LIBS)
 
+tools:
+
+modules:
+
 clean: FORCE
 	-$(RM) $(MODS) $(TOOLS) $(LIBS)
 	-$(RMDIR) $(OBJDIR)

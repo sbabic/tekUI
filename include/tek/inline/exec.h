@@ -203,4 +203,43 @@
 #define TRemModules(im,flags) \
 	(*(((TMODCALL TBOOL(**)(TAPTR,struct TModInitNode *,TUINT))(TExecBase))[-74]))(TExecBase,im,flags)
 
+#define TSubTime(a,b) \
+	(*(((TMODCALL void(**)(TAPTR,TTIME *,TTIME *))(TExecBase))[-75]))(TExecBase,a,b)
+
+#define TAddTime(a,b) \
+	(*(((TMODCALL void(**)(TAPTR,TTIME *,TTIME *))(TExecBase))[-76]))(TExecBase,a,b)
+
+#define TCmpTime(a,b) \
+	(*(((TMODCALL TINT(**)(TAPTR,TTIME *,TTIME *))(TExecBase))[-77]))(TExecBase,a,b)
+
+#define TAllocTimeRequest(tags) \
+	(*(((TMODCALL TAPTR(**)(TAPTR,TTAGITEM *))(TExecBase))[-78]))(TExecBase,tags)
+
+#define TFreeTimeRequest(req) \
+	(*(((TMODCALL void(**)(TAPTR,TAPTR))(TExecBase))[-79]))(TExecBase,req)
+
+#define TQueryTime(req,t) \
+	(*(((TMODCALL void(**)(TAPTR,TAPTR,TTIME *))(TExecBase))[-80]))(TExecBase,req,t)
+
+#define TGetDate(req,dt,tz) \
+	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TDATE *,TINT *))(TExecBase))[-81]))(TExecBase,req,dt,tz)
+
+#define TAddDate(dt,nd,t) \
+	(*(((TMODCALL void(**)(TAPTR,TDATE *,TINT,TTIME *))(TExecBase))[-82]))(TExecBase,dt,nd,t)
+
+#define TSubDate(dt,nd,t) \
+	(*(((TMODCALL void(**)(TAPTR,TDATE *,TINT,TTIME *))(TExecBase))[-83]))(TExecBase,dt,nd,t)
+
+#define TDiffDate(dt1,dt2,t) \
+	(*(((TMODCALL TINT(**)(TAPTR,TDATE *,TDATE *,TTIME *))(TExecBase))[-84]))(TExecBase,dt1,dt2,t)
+
+#define TWaitTime(req,t,sig) \
+	(*(((TMODCALL TUINT(**)(TAPTR,TAPTR,TTIME *,TUINT))(TExecBase))[-85]))(TExecBase,req,t,sig)
+
+#define TWaitDate(req,dt,sig) \
+	(*(((TMODCALL TUINT(**)(TAPTR,TAPTR,TDATE *,TUINT))(TExecBase))[-86]))(TExecBase,req,dt,sig)
+
+#define TDelay(req,t) \
+	(*(((TMODCALL void(**)(TAPTR,TAPTR,TTIME *))(TExecBase))[-87]))(TExecBase,req,t)
+
 #endif /* _TEK_INLINE_EXEC_H */

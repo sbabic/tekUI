@@ -16,9 +16,9 @@
 
 /*****************************************************************************/
 
-#define EXEC_VERSION	5
+#define EXEC_VERSION	6
 #define EXEC_REVISION	0
-#define EXEC_NUMVECTORS	74
+#define EXEC_NUMVECTORS	87
 
 /*****************************************************************************/
 
@@ -144,6 +144,23 @@ EXPORT TBOOL exec_AddModules(TEXECBASE *exec, struct TModInitNode *tmin,
 EXPORT TBOOL exec_RemModules(TEXECBASE *exec, struct TModInitNode *tmin,
 	TUINT flags);
 
+EXPORT void exec_SubTime(TEXECBASE *tmod, TTIME *a, TTIME *b);
+EXPORT void exec_AddTime(TEXECBASE *tmod, TTIME *a, TTIME *b);
+EXPORT TINT exec_CmpTime(TEXECBASE *tmod, TTIME *a, TTIME *b);
+EXPORT struct TTimeRequest *exec_AllocTimeRequest(TEXECBASE *tmod,
+	TTAGITEM *tags);
+EXPORT void exec_FreeTimeRequest(TEXECBASE *tmod, struct TTimeRequest *req);
+EXPORT void exec_QueryTime(TEXECBASE *tmod, struct TTimeRequest *req,
+	TTIME *timep);
+EXPORT TINT exec_GetDate(TEXECBASE *tmod, struct TTimeRequest *tr, TDATE *dtp,
+	TINT *tzp);
+EXPORT TUINT exec_WaitTime(TEXECBASE *tmod, struct TTimeRequest *tr, TTIME *timep,
+	TUINT sig);
+EXPORT TUINT exec_WaitDate(TEXECBASE *tmod, struct TTimeRequest *tr,
+	TDATE *date, TUINT sig);
+EXPORT void exec_Delay(TEXECBASE *tmod, struct TTimeRequest *tr,
+	TTIME *timep);
+
 /*****************************************************************************/
 /*
 **	External, private functions
@@ -157,5 +174,28 @@ EXPORT struct TMsgPort *exec_SetMsgReplyPort(TEXECBASE *exec, TAPTR mem,
 	struct TMsgPort *rport);
 EXPORT struct THook *exec_SetPortHook(TEXECBASE *exec, struct TMsgPort *port,
 	struct THook *hook);
+
+/*****************************************************************************/
+/*
+**	Time functions
+*/
+
+EXPORT void exec_SubTime(TEXECBASE *tmod, TTIME *a, TTIME *b);
+EXPORT void exec_AddTime(TEXECBASE *tmod, TTIME *a, TTIME *b);
+EXPORT TINT exec_CmpTime(TEXECBASE *tmod, TTIME *a, TTIME *b);
+EXPORT struct TTimeRequest *exec_AllocTimeRequest(TEXECBASE *tmod,
+	TTAGITEM *tags);
+EXPORT void exec_FreeTimeRequest(TEXECBASE *tmod, struct TTimeRequest *req);
+EXPORT void exec_QueryTime(TEXECBASE *tmod, struct TTimeRequest *tr, TTIME *timep);
+EXPORT TINT exec_GetDate(TEXECBASE *tmod, struct TTimeRequest *tr, TDATE *dtp, TINT *tzp);
+EXPORT void exec_AddDate(TEXECBASE *tmod, TDATE *d, TINT ndays, TTIME *tm);
+EXPORT void exec_SubDate(TEXECBASE *tmod, TDATE *d, TINT ndays, TTIME *tm);
+EXPORT TINT exec_DiffDate(TEXECBASE *tmod, TDATE *d1, TDATE *d2, TTIME *tm);
+EXPORT TUINT exec_WaitTime(TEXECBASE *tmod, struct TTimeRequest *tr,
+	TTIME *timeout, TUINT sigmask);
+EXPORT TUINT exec_WaitDate(TEXECBASE *tmod, struct TTimeRequest *tr,
+	TDATE *date, TUINT sigmask);
+EXPORT void exec_Delay(TEXECBASE *tmod, struct TTimeRequest *tr,
+	TTIME *timeout);
 
 #endif

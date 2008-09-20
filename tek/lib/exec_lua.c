@@ -13,13 +13,11 @@
 #include <tek/teklib.h>
 #include <tek/proto/hal.h>
 #include <tek/proto/exec.h>
-#include <tek/proto/time.h>
 
 static const struct TInitModule initmodules[] =
 {
 	{"hal", tek_init_hal, TNULL, 0},
 	{"exec", tek_init_exec, TNULL, 0},
-	{"time", tek_init_time, TNULL, 0},
 	{TNULL}
 };
 

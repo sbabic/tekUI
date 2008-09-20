@@ -152,6 +152,20 @@ exec_vectors[EXEC_NUMVECTORS] =
 
 	(TMFPTR) exec_AddModules,
 	(TMFPTR) exec_RemModules,
+
+	(TMFPTR) exec_SubTime,
+	(TMFPTR) exec_AddTime,
+	(TMFPTR) exec_CmpTime,
+	(TMFPTR) exec_AllocTimeRequest,
+	(TMFPTR) exec_FreeTimeRequest,
+	(TMFPTR) exec_QueryTime,
+	(TMFPTR) exec_GetDate,
+	(TMFPTR) exec_AddDate,
+	(TMFPTR) exec_SubDate,
+	(TMFPTR) exec_DiffDate,
+	(TMFPTR) exec_WaitTime,
+	(TMFPTR) exec_WaitDate,
+	(TMFPTR) exec_Delay,
 };
 
 /*****************************************************************************/

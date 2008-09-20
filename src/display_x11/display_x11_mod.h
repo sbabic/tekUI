@@ -22,7 +22,6 @@
 #include <X11/XKBlib.h>
 
 #include <tek/proto/exec.h>
-#include <tek/proto/time.h>
 #include <tek/mod/visual.h>
 
 /*****************************************************************************/
@@ -189,8 +188,6 @@ typedef struct X11Display
 	struct TModule x11_Module;
 	/* Exec module base ptr: */
 	TAPTR x11_ExecBase;
-	/* Time module base ptr: */
-	TAPTR x11_TimeBase;
 	/* Timerequest: */
 	TAPTR x11_TimeReq;
 	/* Module global memory manager (thread safe): */

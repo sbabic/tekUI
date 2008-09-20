@@ -11,7 +11,7 @@
 */
 
 /*****************************************************************************/
-/* 
+/*
 **	Elementary types
 */
 
@@ -38,7 +38,7 @@ typedef uintptr_t			TUINTPTR;
 #define TSYS_HAVE_INT64
 
 /*****************************************************************************/
-/* 
+/*
 **	Alignment of allocations
 */
 
@@ -47,7 +47,7 @@ struct TMMUInfoAlign { TUINT8 tmua_Chunk[8]; };
 struct TMemHeadAlign { TUINT8 tmha_Chunk[48]; };
 
 /*****************************************************************************/
-/* 
+/*
 **	HAL Object container
 */
 
@@ -60,12 +60,12 @@ typedef struct THALObject THALO;
 */
 
 typedef union {
-	TDOUBLE tdtt_Double;
+	TUINT64 tdtt_Int64;
 	struct { TUINT32 hi, lo; } tdtt_HiLo;
 } TDATE_T;
 
 /*****************************************************************************/
-/* 
+/*
 **	Debug support
 */
 
@@ -73,7 +73,7 @@ typedef union {
 #define TDEBUG_PLATFORM_FATAL() (abort(), 0)
 
 /*****************************************************************************/
-/* 
+/*
 **	Default locations
 */
 
@@ -90,7 +90,7 @@ typedef union {
 #endif /* !defined(TEKHOST_PROGDIR) */
 
 /*****************************************************************************/
-/* 
+/*
 **	Module name extension
 */
 
@@ -98,14 +98,14 @@ typedef union {
 #define TEKHOST_EXTLEN		3
 
 /*****************************************************************************/
-/* 
+/*
 **	Inline
 */
 
 #define TINLINE __inline
 
 /*****************************************************************************/
-/* 
+/*
 **	Calling conventions and visibility
 */
 

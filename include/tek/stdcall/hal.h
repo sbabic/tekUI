@@ -71,10 +71,4 @@
 #define THALScanModules(hal,prefix,hook) \
 	(*(((TMODCALL TBOOL(**)(TAPTR,TSTRPTR,struct THook *))(hal))[-29]))(hal,prefix,hook)
 
-#define THALDateToJulian(hal,date) \
-	(*(((TMODCALL TDOUBLE(**)(TAPTR,TDATE *))(hal))[-30]))(hal,date)
-
-#define THALJulianToDate(hal,jd,date) \
-	(*(((TMODCALL void(**)(TAPTR,TDOUBLE,TDATE *))(hal))[-31]))(hal,jd,date)
-
 #endif /* _TEK_STDCALL_HAL_H */
