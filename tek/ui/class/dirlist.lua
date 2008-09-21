@@ -71,7 +71,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 6.0"
+_VERSION = "DirList 7.0"
 
 local DirList = _M
 
@@ -115,7 +115,7 @@ end
 --	your own file system naming conventions.
 -------------------------------------------------------------------------------
 
-local function splitPath(path)
+function DirList:splitPath(path)
 	local part
 	path, part = (path .. "/"):match("^(/?.-)/*([^/]*)/+$")
 	path = path:gsub("//*", "/")
@@ -470,7 +470,7 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:goParent()
-	self:showDirectory(splitPath(self.PathField.Text))
+	self:showDirectory(self:splitPath(self.PathField.Text))
 end
 
 function DirList:setFileEntry(entry)

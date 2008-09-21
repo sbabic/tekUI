@@ -5,7 +5,7 @@ include $(BASEDIR)/config
 ###############################################################################
 
 LIBS = $(LIBDIR)/libhal.a
-MODS = $(MODDIR)/hal.so
+# MODS = $(MODDIR)/hal.so
 
 $(OBJDIR)/hal_mod.lo: hal_mod.c hal_mod.h $(INCDIR)/tek/mod/hal.h
 	$(CC) $(LIBCFLAGS) -o $@ -c hal_mod.c

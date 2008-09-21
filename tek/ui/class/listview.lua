@@ -48,7 +48,7 @@ local Text = ui.Text
 local ipairs = ipairs
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 4.4"
+_VERSION = "ListView 4.5"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -177,6 +177,7 @@ function ListView.new(class, self)
 				HSliderMode = self.HSliderMode,
 				Child = Canvas:new
 				{
+					AutoWidth = true,
 					Child = self.Child
 				}
 			}

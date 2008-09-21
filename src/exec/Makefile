@@ -5,8 +5,8 @@ include $(BASEDIR)/config
 ###############################################################################
 
 LIBS = $(LIBDIR)/libexec.a
-MODS = $(MODDIR)/exec.so
-#TOOLS = $(BINDIR)/scanmodules $(BINDIR)/interval
+# MODS = $(MODDIR)/exec.so
+# TOOLS = $(BINDIR)/scanmodules $(BINDIR)/interval
 
 $(OBJDIR)/exec_mod.lo: \
 	exec_all.c exec_mod.h $(INCDIR)/tek/mod/exec.h
@@ -19,10 +19,10 @@ $(LIBDIR)/libexec.a: \
 $(MODDIR)/exec.so: $(OBJDIR)/exec_mod.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_mod.lo -L$(LIBDIR) -ltekc -ltekdebug $(PLATFORM_LIBS)
 
-$(BINDIR)/scanmodules: scanmodules.c
-	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ scanmodules.c -L$(LIBDIR) -ltekcmain -ltekdebug $(PLATFORM_LIBS)
-$(BINDIR)/interval: interval.c
-	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ interval.c -L$(LIBDIR) -ltekcmain -ltekdebug $(PLATFORM_LIBS)
+$(BINDIR)/scanmodules: tests/scanmodules.c
+	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ $? -L$(LIBDIR) -ltekcmain -ltekdebug $(PLATFORM_LIBS)
+$(BINDIR)/interval: tests/interval.c
+	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ $? -L$(LIBDIR) -ltekcmain -ltekdebug $(PLATFORM_LIBS)
 
 ###############################################################################
 

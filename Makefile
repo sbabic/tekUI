@@ -3,13 +3,13 @@ include config
 
 .PHONY: all libs modules install clean help distclean docs release
 
-all: libs modules tools
+all: libs modules # tools
 
 libs:
 	cd src && $(MAKE) $@
 
 modules: libs
-	#cd src && $(MAKE) $@
+	cd src && $(MAKE) $@
 	cd tek/lib && $(MAKE) $@
 	cd tek/ui && $(MAKE) $@
 
@@ -34,7 +34,7 @@ help: default-help
 	@echo "==============================================================================="
 
 distclean: clean
-	-$(RMDIR) lib
+	-$(RMDIR) lib bin/mod
 	-find src tek -type d -name build | xargs $(RMDIR)
 
 docs:
