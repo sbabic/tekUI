@@ -136,7 +136,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 13.0"
+_VERSION = "ListGadget 13.1"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -896,6 +896,9 @@ function ListGadget:handleInput(msg)
 					end
 				elseif key == 13 then -- return
 					win:clickElement(self)
+					if self.SelectMode == "single" then
+						self:setValue("SelectedLine", self.CursorLine)
+					end
 				elseif key == 32 then -- space
 					self:setValue("SelectedLine", self.CursorLine)
 				end

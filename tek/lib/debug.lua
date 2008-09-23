@@ -62,7 +62,7 @@ FAIL = 20
 
 -- global defaults:
 
-level = ERROR
+level = WARN
 out = stderr
 wrout = function(...) out:write(...) end
 

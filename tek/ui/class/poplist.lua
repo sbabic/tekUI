@@ -30,6 +30,7 @@
 --	IMPLEMENTS::
 --		- PopList:onSelectEntry() - Handler for the {{SelectedEntry}}
 --		attribute
+--		- PopList:setList() - Sets a new list object
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
@@ -51,11 +52,12 @@ local ScrollGroup = ui.ScrollGroup
 local Text = ui.Text
 local VectorImage = ui.VectorImage
 
+local assert = assert
 local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 4.2"
+_VERSION = "PopList 5.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -203,4 +205,16 @@ function PopList:onSelectEntry(lnr)
 	if entry then
 		self:setValue("Text", entry[1][1])
 	end
+end
+
+-------------------------------------------------------------------------------
+--	PopListt:setList(listobject): Sets a new [[#tek.class.list : List]]
+--	object.
+-------------------------------------------------------------------------------
+
+function PopList:setList(listobject)
+	assert(not listobject or listobject:checkDescend(List))
+	self.ListObject = listobject
+	self.ListGadget:setList(listobject)
+	self:setValue("SelectedEntry", 1)
 end

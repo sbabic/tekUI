@@ -64,7 +64,7 @@ local print = print
 local tonumber = tonumber
 
 module "tek.lib.args"
-_VERSION = "Args 1.5"
+_VERSION = "Args 2.0"
 
 local function checkfl(self, fl)
 	for s in fl:gmatch(".") do
@@ -142,8 +142,10 @@ end
 --	arguments can be successfully matched against the template (see
 --	[[#tek.lib.args]] for details), the result will be a table of parsed
 --	arguments, indexed by both keywords and numerical order in which they
---	appear in {{template}}). If the arguments cannot be matched against the
---	template, the result will be '''nil''' followed by an error message.
+--	appear in {{template}}), and the second argument will be set to the
+--	number of arguments in the template. If the arguments cannot be matched
+--	against the template, the result will be '''nil''' followed by an error
+--	message.
 -------------------------------------------------------------------------------
 
 function read(tmpl, args)
@@ -279,7 +281,7 @@ function read(tmpl, args)
 		end
 	end
 
-	return res
+	return res, #tmpl
 end
 
 -------------------------------------------------------------------------------
@@ -348,19 +350,21 @@ end
 -- test("SOURCE=-s/A/M,DEST=-d/A/K", 'one two three -d="foo" four',
 -- 	{source={"one","two","three","four"},dest="foo"})
 -- test("a/s,b/s", "a b", {a=true, b=true})
--- test("file/k,bla/k", "file foo bla fasel", {file=foo, bla=fasel})
--- test("file/k,bla/k,a/s", "file foo bla fasel", {file=foo, bla=fasel})
--- test("file=-f/k,bla/k,a/s", "-f foo bla fasel a", {file=foo, bla=fasel, a=true})
--- test("file=-f/k,bla/k,a/s", "-f foo a", {file=foo, a=true})
--- test("file=-f/k,bla/k,a/s", "bla fasel a", {bla=fasel, a=true})
--- test("file=-f/k,silent=-s/s,targets/m", "-f file -s", {file=file, silent=true, targets={}})
--- test("file=-f/k,silent=-s/s,targets/m", "-f file -s eins", {file=file, silent=true, targets={"eins"}})
--- test("file=-f/k,silent=-s/s,targets/m", "-f file eins", {file=file, targets={"eins"}})
+-- test("file/k,bla/k", "file foo bla fasel", {file="foo", bla="fasel"})
+-- test("file/k,bla/k,a/s", "file foo bla fasel", {file="foo", bla="fasel"})
+-- test("file=-f/k,bla/k,a/s", "-f foo bla fasel a", {file="foo", bla="fasel", a=true})
+-- test("file=-f/k,bla/k,a/s", "-f foo a", {file="foo", a=true})
+-- test("file=-f/k,bla/k,a/s", "bla fasel a", {bla="fasel", a=true})
+-- test("file=-f/k,silent=-s/s,targets/m", "-f file -s", {file="file", silent=true, targets={}})
+-- test("file=-f/k,silent=-s/s,targets/m", "-f file -s eins", {file="file", silent=true, targets={"eins"}})
+-- test("file=-f/k,silent=-s/s,targets/m", "-f file eins", {file="file", targets={"eins"}})
 -- test("file=-f,silent=-s/s,targets/m", "eins", {file="eins"})
 -- test("file=-f/k,silent=-s/s,targets/m", "targets eins", {targets={"eins"}})
 -- test("file=-f/k,silent=-s/s,targets/m", "eins", {targets={"eins"}})
 -- test("file=-f/k,silent=-s/s,targets/m", "eins", {targets={"eins"}})
--- test("file=-f/k,silent=-s/s,targets/m", "eins -f file", {file=file, targets={"eins"}})
+-- test("file=-f/k,silent=-s/s,targets/m", "eins -f file", {file="file", targets={"eins"}})
+-- test("PATHNAME,MD5SUM/K", "hallo", {pathname="hallo"})
+-- test("PATHNAME,MD5SUM/K", "md5sum hallo", {md5sum="hallo"})
 
 -------------------------------------------------------------------------------
 --	Test tool:

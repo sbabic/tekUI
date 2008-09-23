@@ -419,7 +419,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v8.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -886,7 +886,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v4.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v5.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -941,6 +941,9 @@
 							<a href="#PopList:onSelectEntry"><code>PopList:onSelectEntry()</code></a> - Handler for the <code>SelectedEntry</code> 
 							attribute
 						</li>
+						<li style="list-style-type: none">
+							<a href="#PopList:setList"><code>PopList:setList()</code></a> - Sets a new list object
+						</li>
 					</ul>
 				</blockquote>
 			</div>
@@ -974,6 +977,13 @@
 			<p>
 				This method is invoked when the
 				<code>SelectedEntry</code> attribute is set.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="PopList:setList" id="PopList:setList"><code>PopListt:setList(listobject)</code></a></h3>
+			<p>
+				Sets a new <a href="#tek.class.list">List</a> 
+				object.
 			</p>
 			<hr />
 		</div>
@@ -1458,7 +1468,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v7.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1543,7 +1553,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v4.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v4.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4291,7 +4301,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5501,7 +5511,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v1.5)</a></h2>
+		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5635,8 +5645,10 @@ SOURCE=-s/A/M,DEST=-d/A/K
 				arguments can be successfully matched against the template (see
 				<a href="#tek.lib.args">tek.lib.args</a> for details), the result will be a table of parsed
 				arguments, indexed by both keywords and numerical order in which they
-				appear in <code>template</code>). If the arguments cannot be matched against the
-				template, the result will be <strong>nil</strong> followed by an error message.
+				appear in <code>template</code>), and the second argument will be set to the
+				number of arguments in the template. If the arguments cannot be matched
+				against the template, the result will be <strong>nil</strong> followed by an error
+				message.
 			</p>
 			<hr />
 		</div>
@@ -7142,7 +7154,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Mon Sep 22 01:46:30 2008
+			Document generated on Tue Sep 23 20:37:13 2008
 		</p>
 	</div>
 	</body>

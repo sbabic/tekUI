@@ -71,7 +71,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 7.0"
+_VERSION = "DirList 8.0"
 
 local DirList = _M
 
@@ -193,7 +193,7 @@ function DirList.new(class, self)
 		Width = "fill",
 	}
 
-	self.ListGadget = ListGadget:new
+	self.ListGadget = self.ListGadget or ListGadget:new
 	{
 		AlignColumn = 1,
 		SelectMode = self.SelectMode or "single",
@@ -385,6 +385,21 @@ function DirList:scanEntry(path, name, idx)
 end
 
 -------------------------------------------------------------------------------
+--	DirList:sort()
+-------------------------------------------------------------------------------
+
+local function compareEntries(a, b)
+	if a[2] == b[2] then
+		return a[1][1]:lower() < b[1][1]:lower()
+	end
+	return a[2] == "directory"
+end
+
+function DirList:sort(list)
+	sort(list, compareEntries)
+end
+
+-------------------------------------------------------------------------------
 --	DirList:scanDir(path)
 -------------------------------------------------------------------------------
 
@@ -423,12 +438,7 @@ function DirList:scanDir(path)
 				insert(list, { self:scanEntry(path, name, n) })
 			end
 
-			sort(list, function(a, b)
-				if a[2] == b[2] then
-					return a[1][1]:lower() < b[1][1]:lower()
-				end
-				return a[2] == "directory"
-			end)
+			self:sort(list)
 
 			self:showStats(0, n)
 			app:suspend()

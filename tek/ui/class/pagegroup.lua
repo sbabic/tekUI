@@ -57,7 +57,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 7.0"
+_VERSION = "PageGroup 7.1"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -314,7 +314,7 @@ function PageGroup.new(class, self)
 					{
 						[true] =
 						{
-							{ pagegroup, "changeTab", pagebuttons, i }
+							{ self, "setValue", "PageNumber", i },
 						}
 					}
 				}
