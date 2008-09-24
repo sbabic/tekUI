@@ -282,11 +282,13 @@ app = ui.Application:new
 													Orientation = "vertical",
 													Children =
 													{
+														ui.Text:new { Id = "about-mem-used" },
+
 														ui.Group:new
 														{
 															Children =
 															{
-																ui.Text:new { Id = "about-mem-used" },
+																ui.Gauge:new { Id = "about-mem-gauge" },
 																ui.Text:new
 																{
 																	Text = L.RESET,
@@ -309,7 +311,6 @@ app = ui.Application:new
 																},
 															}
 														},
-														ui.Gauge:new { Id = "about-mem-gauge" },
 													}
 												}
 											}
@@ -387,7 +388,7 @@ app = ui.Application:new
 														{
 															Mode = "button",
 															Class = "button",
-															Text = "Debug Console",
+															Text = L.DEBUG_CONSOLE,
 															Notifications =
 															{
 																["Pressed"] =

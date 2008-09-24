@@ -67,7 +67,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 5.2"
+_VERSION = "PopItem 6.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -97,6 +97,8 @@ function PopItem.init(self)
 	self.PopupWindow = false
 	self.DelayedBeginPopup = false
 	self.DelayedEndPopup = false
+	self.ShiftX = false
+	self.ShiftY = false
 	if self.Children then
 		self.Mode = "toggle"
 		self.FocusNotification = { self, "unselectPopup" }
@@ -158,7 +160,7 @@ function PopItem:hide()
 end
 
 -------------------------------------------------------------------------------
---	askMinMax:
+--	askMinMax: overrides
 -------------------------------------------------------------------------------
 
 function PopItem:askMinMax(m1, m2, m3, m4)
@@ -176,7 +178,7 @@ function PopItem:askMinMax(m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
---	layout:
+--	layout: overrides
 -------------------------------------------------------------------------------
 
 function PopItem:layout(x0, y0, x1, y1, markdamage)
@@ -198,7 +200,18 @@ function PopItem:layout(x0, y0, x1, y1, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	draw:
+--	refresh: overrides
+-------------------------------------------------------------------------------
+
+function PopItem:refresh()
+	--	Store the item's absolute coordinates (needed if the popitem
+	--	rests in a canvas):
+	self.ShiftX, self.ShiftY = self.Drawable:getShift()
+	return Text.refresh(self)
+end
+
+-------------------------------------------------------------------------------
+--	draw: overrides
 -------------------------------------------------------------------------------
 
 function PopItem:draw()
@@ -226,12 +239,13 @@ function PopItem:calcPopup()
 	local _, _, x, y = self.Drawable:getAttrs()
 	local w
 	local r = self.Rect
+	local sx, sy = self.ShiftX, self.ShiftY
 	if self.PopupBase then
-		x =	x + r[3]
-		y = y + r[2]
+		x =	x + r[3] + sx
+		y = y + r[2] + sy
 	else
-		x =	x + r[1]
-		y = y + r[4]
+		x =	x + r[1] + sx
+		y = y + r[4] + sy
 		w = r[3] - r[1] + 1
 	end
 	return x, y, w

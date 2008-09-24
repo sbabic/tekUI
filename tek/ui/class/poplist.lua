@@ -57,7 +57,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 5.0"
+_VERSION = "PopList 5.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -127,9 +127,9 @@ local PopList = _M
 
 function PopList.init(self)
 	self.ImageRect = { 0, 0, 0, 0 }
-	self.Image = ArrowImage
-	self.TextHAlign = "left"
-	self.Width = "fill"
+	self.Image = self.Image or ArrowImage
+	self.TextHAlign = self.TextHAlign or "left"
+	self.Width = self.Width or "fill"
 	self.SelectedEntry = self.SelectedEntry or 0
 	return PopItem.init(self)
 end

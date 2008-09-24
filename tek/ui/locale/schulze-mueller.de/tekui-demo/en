@@ -61,6 +61,7 @@ CHOOSE_FILE = "_Choose File";
 CLOSE_ALL = "_Close all";
 COMMENT = "Comment";
 DEBUGGING = "Debugging";
+DEBUG_CONSOLE = "Debug Console";
 DEBUG_LEVEL = "Debug Level";
 DEBUG_OPTIONS = "Debug Options";
 DEMO_TEXT = [[

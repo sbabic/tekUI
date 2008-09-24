@@ -119,7 +119,7 @@ ui.Application:new
 											local input = self.Application:getElementById("the-input")
 											list:addItem("")
 											list:setValue("CursorLine", list:getN())
-											input:setValue("Focus", true)
+											self.Window:clickElement(input)
 										end }
 									}
 								}
@@ -139,7 +139,7 @@ ui.Application:new
 												local input = self.Application:getElementById("the-input")
 												list:addItem("", list.CursorLine)
 												input:setValue("Text", "")
-												input:setValue("Focus", true)
+												self.Window:clickElement(input)
 											end
 										end }
 									}

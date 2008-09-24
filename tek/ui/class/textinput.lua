@@ -60,7 +60,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 5.0"
+_VERSION = "TextInput 5.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -231,15 +231,15 @@ function TextInput:draw()
 	local x, y = tr[1], tr[2]
 
 	local tpen = pens[self.Foreground]
-	
+
 	self:erase()
-	
+
 	if self.Disabled then
 		local tpen2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
 		d:drawText(x + 1, y + 1, text, tpen2)
 	end
 	d:drawText(x, y, text, tpen)
-	if not self.Disabled and self.Window.FocusElement == self then
+	if not self.Disabled and self.Editing then
 		local s = self.TextBuffer:sub(tc + to + 1, tc + to + 1)
 		s = s == "" and " " or s
 		if self.BlinkState == 1 then
@@ -276,10 +276,10 @@ function TextInput:clickMouse(x, y)
 end
 
 -------------------------------------------------------------------------------
---	select: internal
+--	setEditing: internal
 -------------------------------------------------------------------------------
 
-function TextInput:select(onoff)
+function TextInput:setEditing(onoff)
 	if onoff and not self.Editing then
 		self.Editing = true
 		self.Window:addInputHandler(self, TextInput.handleInput)
@@ -287,6 +287,7 @@ function TextInput:select(onoff)
 			self.IntervalNotify)
 		self:clickMouse()
 	elseif not onoff and self.Editing then
+		self:setValue("Selected", false)
 		self.Window:remNotify("Interval", ui.NOTIFY_ALWAYS,
 			self.IntervalNotify)
 		self.Window:remInputHandler(self, TextInput.handleInput)
@@ -299,7 +300,7 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:onSelect(selected)
-	self:select(selected)
+	self:setEditing(selected)
 	Text.onSelect(self, selected)
 end
 
@@ -308,10 +309,10 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:onFocus(focused)
-	self.Window:setFocusElement(self)
-	-- autoselect on focus:
-	self:setValue("Selected", focused)
-	self:select(focused)
+	if not focused then
+		-- auto unselect with lost focus:
+		self:setEditing(focused)
+	end
 	Text.onFocus(self, focused)
 end
 
@@ -369,57 +370,59 @@ function TextInput:passMsg(msg)
 end
 
 function TextInput.handleInput(self, msg)
-	if msg[2] == ui.MSG_KEYDOWN and
-		self == self.Window.FocusElement then
-		local code = msg[3]
-
-		local utf8code = msg[7]
-		local t = self.TextBuffer
-		local to = self.TextOffset
-		local tc = self.TextCursor
-		while true do
-			if code == 61456 then
-				crsrleft(self)
-			elseif code == 61457 then
-				crsrright(self)
-			elseif code == 8 then -- backspace:
-				if crsrleft(self) then
-					t:erase(to + tc, to + tc)
-				end
-			elseif code == 127 then -- del:
-				if t:len() > 0 then
-					t:erase(to + tc + 1, to + tc + 1)
-				end
-			elseif code == 27 or code == 13 then -- escape, return:
-				self.Window:setFocusElement()
-				self:setValue("Selected", false)
-				if code == 13 then -- return:
+	if self.Editing then
+		if msg[2] == ui.MSG_KEYDOWN then
+			local code = msg[3]
+			local utf8code = msg[7]
+			local t = self.TextBuffer
+			local to = self.TextOffset
+			local tc = self.TextCursor
+			while true do
+				if code == 0xf010 then
+					crsrleft(self)
+				elseif code == 0xf011 then
+					crsrright(self)
+				elseif code == 0xf012 then
+					-- up
+				elseif code == 0xf013 then
+					-- down
+				elseif code == 8 then -- backspace:
+					if crsrleft(self) then
+						t:erase(to + tc, to + tc)
+					end
+				elseif code == 127 then -- del:
+					if t:len() > 0 then
+						t:erase(to + tc + 1, to + tc + 1)
+					end
+				elseif code == 13 then
+					self:setEditing(false)
 					self:setValue("Text", t:get())
 					self:setValue("Enter", t:get())
 					return false
+				elseif code == 27 then
+					self:setEditing(false)
+					return false
+				elseif code == 0xf025 then -- pos1
+					self.TextCursor = 0
+					self.TextOffset = 0
+				elseif code == 0xf026 then -- posend
+					self.TextCursor = self.TextBuffer:len() + 1
+				elseif code > 31 and code < 256 then
+					t:insert(utf8code, to + tc + 1)
+					crsrright(self)
+				else
+					break
 				end
-			elseif code == 0xf025 then -- pos1
-				self.TextCursor = 0
-				self.TextOffset = 0
-			elseif code == 0xf026 then -- posend
-				self.TextCursor = self.TextBuffer:len() + 1
-			elseif code > 31 and code < 256 then
-				t:insert(utf8code, to + tc + 1)
-				crsrright(self)
-			else
-				break
+				-- something changed:
+				self.BlinkTick = 0
+				self.BlinkState = 0
+				-- TODO: self:setValue("Text", t:get())
+				return false
 			end
-			-- something changed:
-			self.BlinkTick = 0
-			self.BlinkState = 0
-
-			-- TODO: self:setValue("Text", t:get())
-
+		elseif msg[2] == ui.MSG_KEYUP then
+			-- swallow this key event:
 			return false
 		end
-	elseif msg[2] == ui.MSG_KEYUP and self.Editing then
-		-- swallow this key event:
-		return false
 	end
 	-- pass to next handler:
 	return msg

@@ -4,11 +4,11 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Note: This style sheet represents the hardcoded internal defaults.
-**	It is not actually loaded and decoded. It has been included for
-**	illustration purposes only.
+**	Note: This style sheet represents the hardcoded internal defaults
+**	in tek.ui.class.theme. It is not actually loaded and decoded. It
+**	has been included for illustration purposes only.
 **
-**	Version: 1.5
+**	Version: 1.6
 */
 
 /*
@@ -76,6 +76,7 @@ tek.ui.class.gauge {
 	padding: 0;
 	border-style: inset;
 	height: auto;
+	vertical-grid-align: center;
 }
 
 tek.ui.class.group {

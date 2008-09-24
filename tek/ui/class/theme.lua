@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.6"
+_VERSION = "Theme 6.7"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -96,6 +96,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["padding"] = 0,
 		["border-style"] = "inset",
 		["height"] = "auto",
+		["vertical-grid-align"] = "center",
 	},
 
 	["tek.ui.class.group"] = {

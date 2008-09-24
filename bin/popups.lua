@@ -36,44 +36,35 @@ ui.Application:new
 								},
 								ui.MenuItem:new
 								{
-									Text = "_Bla",
+									Text = "Any",
 									Children =
 									{
-										ui.MenuItem:new { Text = "Bla" },
-										ui.MenuItem:new { Text = "Bl_ub" },
 										ui.MenuItem:new
 										{
-											Text = "Any",
+											Text = "Recursion",
 											Children =
 											{
 												ui.MenuItem:new
 												{
-													Text = "Recursion",
+													Text = "Depth" ,
 													Children =
 													{
 														ui.MenuItem:new
 														{
-															Text = "Depth" ,
+															Text = "Will" ,
 															Children =
 															{
 																ui.MenuItem:new
 																{
-																	Text = "Will" ,
-																	Children =
-																	{
-																		ui.MenuItem:new
-																		{
-																			Text = "Do."
-																		},
-																	}
-																},
+																	Text = "Do."
+																}
 															}
-														},
+														}
 													}
-												},
+												}
 											}
-										},
-									},
+										}
+									}
 								},
 								ui.Spacer:new { },
 								ui.MenuItem:new { Text = "Save..." },
@@ -194,7 +185,7 @@ ui.Application:new
 						ui.PopList:new
 						{
 							Text = "Combo Box",
-							SelectedEntry = 3,
+							SelectedEntry = 1,
 							ListObject = List:new
 							{
 								Items =
@@ -242,8 +233,47 @@ ui.Application:new
 						}
 					}
 				},
-				ui.Text:new { Id = "display", Text = "Popup Tests",
-					Style = "height: free; font: ui-huge" },
+				ui.ScrollGroup:new
+				{
+					VSliderMode = "on",
+					HSliderMode = "on",
+					Child = ui.Canvas:new
+					{
+						CanvasHeight = 400,
+						AutoWidth = true,
+						Child = ui.Group:new
+						{
+							Orientation = "vertical",
+							Children =
+							{
+								ui.Text:new
+								{
+									Id = "display", Text = "Popup Tests",
+									Style = "height: free; font: ui-huge"
+								},
+								ui.Group:new
+								{
+									Children =
+									{
+										ui.PopList:new
+										{
+											SelectedEntry = 1,
+											ListObject = List:new
+											{
+												Items =
+												{
+													{ { "a Popup in" } },
+													{ { "a shifted" } },
+													{ { "Scrollgroup" } },
+												},
+											},
+										},
+									}
+								}
+							}
+						}
+					}
+				},
 			},
 		},
 	},

@@ -75,7 +75,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 14.1"
+_VERSION = "tekUI 14.2"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -254,6 +254,7 @@ function getLanguage()
 	lang = lang or getenv("LC_ALL")
 	lang = lang or getenv("LANG")
 	if lang then
+		lang = lang:lower()
 		lang = lang:match("^(%l%l)")
 	end
 	lang = lang or "en"

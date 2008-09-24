@@ -514,9 +514,7 @@ end
 
 -------------------------------------------------------------------------------
 --	Area:refresh() [internal]: Redraws the element (and all possible children)
---	if they are marked as damaged. Note: This function is called inside the
---	[[#tek.ui.class.window : Window]] class; applications and classes are
---	not allowed to call it themselves.
+--	if they are marked as damaged.
 -------------------------------------------------------------------------------
 
 function Area:refresh()
