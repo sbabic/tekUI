@@ -29,6 +29,7 @@
 --			method.
 --
 --	IMPLEMENTS::
+--		- PageGroup:disablePage() - disable/enable a Page
 --		- PageGroup:onSetPageNumber() - handler for {{PageNumber}}
 --
 --	OVERRIDES::
@@ -57,7 +58,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 7.1"
+_VERSION = "PageGroup 8.0"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -382,5 +383,17 @@ function PageGroup:onSetPageNumber(val)
 		self.Children[2]:changeTab(self.TabButtons, n)
 	else
 		db.warn("invalid page number: %s", val)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	disablePage(pagenum, onoff): This function allows to disable or re-enable
+--	a page button identified by {{pagenum}}.
+-------------------------------------------------------------------------------
+
+function PageGroup:disablePage(num, onoff)
+	local numc = #self.Children[2].Children
+	if num >= 1 and num <= numc then
+		self.TabButtons[num]:setValue("Disabled", onoff or false)
 	end
 end

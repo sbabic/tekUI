@@ -60,7 +60,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 5.1"
+_VERSION = "TextInput 5.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -286,6 +286,7 @@ function TextInput:setEditing(onoff)
 		self.Window:addNotify("Interval", ui.NOTIFY_ALWAYS,
 			self.IntervalNotify)
 		self:clickMouse()
+		self:setValue("Focus", true)
 	elseif not onoff and self.Editing then
 		self:setValue("Selected", false)
 		self.Window:remNotify("Interval", ui.NOTIFY_ALWAYS,
@@ -359,10 +360,13 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:passMsg(msg)
-	if msg[2] == ui.MSG_MOUSEBUTTON then
-		if msg[3] == 1 then -- leftdown:
-			if self.Window.HoverElement == self and not self.Disabled then
-				self:clickMouse(msg[4], msg[5])
+	local win = self.Window
+	if win then
+		if msg[2] == ui.MSG_MOUSEBUTTON then
+			if msg[3] == 1 then -- leftdown:
+				if win.HoverElement == self and not self.Disabled then
+					self:clickMouse(msg[4], msg[5])
+				end
 			end
 		end
 	end

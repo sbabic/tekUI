@@ -22,6 +22,9 @@
 --		- {{FontSpec [IG]}}
 --			Font specifier; see [[#tek.ui.class.text : Text]] for a
 --			format description
+--		- {{Preformatted [IG]}}
+--			Boolean, indicating that the text is layouted already and should
+--			not be layouted to fit the element's width.
 --		- {{Text [ISG]]}}
 --			The text to be displayed
 --
@@ -60,7 +63,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 4.3"
+_VERSION = "FloatText 5.0"
 
 local FloatText = _M
 
@@ -85,10 +88,11 @@ function FloatText.init(self)
 	self.FWidth = false
 	self.Lines = false
 	self.Margin = ui.NULLOFFS -- fixed
+	self.Preformatted = self.Preformatted or false
 	self.Text = self.Text or ""
 	self.TrackDamage = self.TrackDamage or true
 	self.UnusedRegion = false
-	self.WordLengths = false
+	self.WidthsCache = false
 	self.WordSpacing = false
 	return Area.init(self)
 end
@@ -200,18 +204,29 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:prepareText()
-	local lw = 0 -- longest word in text
+	local lw = 0 -- widest width in text
 	local w, h
-	local wl = { }
-	self.WordLengths = wl
 	local i = 0
-	for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
-		w, h = Display:getTextSize(self.Font, word)
-		lw = max(lw, w)
-		i = i + 1
-		wl[i] = w
+	local wl = { }
+	self.WidthsCache = wl -- cache for word lengths / line lengths
+	if self.Preformatted then
+		-- determine widths line by line
+		for line in self.Text:gmatch("([^\n]*)\n?") do
+			w, h = Display:getTextSize(self.Font, line)
+			lw = max(lw, w)
+			i = i + 1
+			wl[i] = w
+		end
+	else
+		-- determine widths word by word
+		for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
+			w, h = Display:getTextSize(self.Font, word)
+			lw = max(lw, w)
+			i = i + 1
+			wl[i] = w
+		end
+		self.WordSpacing = Display:getTextSize(self.Font, " ")
 	end
-	self.WordSpacing = Display:getTextSize(self.Font, " ")
 	self.MinWidth, self.MinHeight = lw, h
 	return lw, h
 end
@@ -239,48 +254,55 @@ end
 
 function FloatText:layoutText(x, y, width, text)
 	text = text or { }
-
 	local line = false
 	local fh = self.FHeight
 	local tw = 0
 	local i = 0
-	local wl = self.WordLengths
-	local ws = self.WordSpacing
+	local wl = self.WidthsCache
 	local so = 0
-
-	for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
-		for s in spc:gmatch("%s") do
-			if s == "\n" then
-				insline(text, line, x, y, tw, so, fh)
-				y = y + fh
-				line = false
-				so = 0
-				tw = 0
-			end
+	if self.Preformatted then
+		local n = 0
+		for line in self.Text:gmatch("([^\n]*)\n?") do
+			n = n + 1
+			local tw = wl[n]
+			insline(text, { line }, x, y, tw, 0, fh)
+			y = y + fh
 		end
-		if word then
-			line = line or { }
-			insert(line, word)
-			i = i + 1
-			tw = tw + wl[i]
-			if tw + so > width then
-				if #line > 0 then
-					remove(line)
+	else
+		local ws = self.WordSpacing
+		for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
+			for s in spc:gmatch("%s") do
+				if s == "\n" then
 					insline(text, line, x, y, tw, so, fh)
 					y = y + fh
+					line = false
+					so = 0
+					tw = 0
 				end
-				line = { word }
-				so = 0
-				tw = wl[i]
 			end
-			so = so + ws
+			if word then
+				line = line or { }
+				insert(line, word)
+				i = i + 1
+				tw = tw + wl[i]
+				if tw + so > width then
+					if #line > 0 then
+						remove(line)
+						insline(text, line, x, y, tw, so, fh)
+						y = y + fh
+					end
+					line = { word }
+					so = 0
+					tw = wl[i]
+				end
+				so = so + ws
+			end
+		end
+		if line and #line > 0 then
+			insline(text, line, x, y, tw, so, fh)
+			y = y + fh
 		end
 	end
-	if line and #line > 0 then
-		insline(text, line, x, y, tw, so, fh)
-		y = y + fh
-	end
-
 	return text, y
 end
 

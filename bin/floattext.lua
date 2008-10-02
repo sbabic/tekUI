@@ -28,18 +28,21 @@ ui.Application:new
 							Child = ui.FloatText:new
 							{
 								Style = "font: ui-large; background-color: dark; color: light;",
+								Preformatted = true,
+								FontSpec = "ui-fixed",
 								Text = [[
 
-									Ecce homo
-									Friedrich Nietzsche (1844-1900)
+                        Ecce homo
+              Friedrich Nietzsche
+                      (1844-1900)
 
-									Ja! Ich weiß, woher ich stamme!
-									Ungesättigt gleich der Flamme
-									Glühe und verzehr' ich mich.
-									Licht wird alles, was ich fasse,
-									Kohle alles, was ich lasse:
-									Flamme bin ich sicherlich
-								]]
+  Ja! Ich weiß, woher ich stamme!
+    Ungesättigt gleich der Flamme
+     Glühe und verzehr' ich mich.
+ Licht wird alles, was ich fasse,
+      Kohle alles, was ich lasse:
+        Flamme bin ich sicherlich
+]]
 							}
 						},
 						ui.Handle:new { },

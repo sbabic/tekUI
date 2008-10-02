@@ -71,7 +71,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.13"
+_VERSION = "Slider 6.14"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -180,15 +180,15 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:getKnobRect()
-	local r = self.Rect
-	if r[1] and r[1] >= 0 then
+	local r1, r2, r3, r4 = self:getRectangle()
+	if r1 then
 		local p = self.Padding
 		local m = self.Child.MarginAndBorder
 		local km = self.Child.MinMax
-		local x0 = r[1] + p[1] + m[1]
-		local y0 = r[2] + p[2] + m[2]
-		local x1 = r[3] - p[3] - m[3]
-		local y1 = r[4] - p[4] - m[4]
+		local x0 = r1 + p[1] + m[1]
+		local y0 = r2 + p[2] + m[2]
+		local x1 = r3 - p[3] - m[3]
+		local y1 = r4 - p[4] - m[4]
 		local r = self.Range - self.Min
 		local v = self.Value
 		v = self.ForceInteger and floor(v) or v
@@ -204,8 +204,6 @@ function Slider:getKnobRect()
 				km[2] - 1)
 		end
 		return x0 - m[1], y0 - m[2], x1 + m[3], y1 + m[4]
-	else
-		db.warn("%s : layout not available", self:getClassName())
 	end
 end
 
@@ -238,7 +236,7 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:refresh()
-	Numeric.refresh(self)	
+	Numeric.refresh(self)
 	self.Child:refresh()
 end
 
@@ -394,6 +392,12 @@ function Slider:passMsg(msg)
 			elseif msg[3] == 128 then -- wheeldown
 				self:increase()
 				return false -- absorb
+			end
+		elseif msg[2] == ui.MSG_KEYDOWN then
+			if msg[3] == 0xf023 then -- PgUp
+				self:decrease(self.Range - (self.Max - self.Min + 1))
+			elseif msg[3] == 0xf024 then -- PgDown
+				self:increase(self.Range - (self.Max - self.Min + 1))
 			end
 		end
 	end

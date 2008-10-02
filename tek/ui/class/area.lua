@@ -113,6 +113,7 @@
 --		- Area:draw() - Paints the element
 --		- Area:getElement() - Returns an element's neighbours
 --		- Area:getElementByXY() - Checks if the element covers a coordinate
+--		- Area:getRectangle() - Returns the element's layouted coordinates
 --		- Area:hide() - Disconnects the element from a Display and Drawable
 --		- Area:layout() - Layouts the element into a rectangle
 --		- Area:markDamage() - Notifies the element of a damage
@@ -150,7 +151,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 13.0"
+_VERSION = "Area 14.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -463,9 +464,9 @@ end
 
 function Area:markDamage(r1, r2, r3, r4)
 	if self.TrackDamage or not self.Redraw then
-		local r = self.Rect
-		if r[1] then
-			r1, r2, r3, r4 = overlap(r1, r2, r3, r4, r[1], r[2], r[3], r[4])
+		local s1, s2, s3, s4 = self:getRectangle()
+		if s1 then
+			r1, r2, r3, r4 = overlap(r1, r2, r3, r4, s1, s2, s3, s4)
 			if r1 then
 				self.Redraw = true
 				if self.DamageRegion then
@@ -474,8 +475,6 @@ function Area:markDamage(r1, r2, r3, r4)
 					self.DamageRegion = Region.new(r1, r2, r3, r4)
 				end
 			end
-		else
-			db.warn("%s : layout not available", self:getClassName())
 		end
 	end
 end
@@ -530,11 +529,8 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getElementByXY(x, y)
-	local r = self.Rect
-	if r[1] then
-		return x >= r[1] and x <= r[3] and y >= r[2] and y <= r[4] and self
-	end
-	db.warn("%s : layout not available", self:getClassName())
+	local r1, r2, r3, r4 = self:getRectangle()
+	return r1 and x >= r1 and x <= r3 and y >= r2 and y <= r4 and self
 end
 
 -------------------------------------------------------------------------------
@@ -645,4 +641,19 @@ function Area:getElement(mode)
 			end
 		end
 	end
+end
+
+-------------------------------------------------------------------------------
+--	x0, y0, x1, y1 = Area:getRectangle(): This function returns the
+--	rectangle which the element has been layouted to, or '''false'''
+--	if the element has not been layouted yet.
+-------------------------------------------------------------------------------
+
+function Area:getRectangle()
+	local r = self.Rect
+	if r[1] then
+		return unpack(r)
+	end
+	db.warn("Layout not available")
+	return false
 end

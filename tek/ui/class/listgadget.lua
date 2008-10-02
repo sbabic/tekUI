@@ -136,7 +136,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 13.1"
+_VERSION = "ListGadget 13.2"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -309,12 +309,14 @@ function ListGadget:getLineOnScreen(lnr)
 	local l = self.ListObject and self.ListObject:getItem(lnr)
 	if l then
 		local c = self.Canvas
-		local r = c.Rect
-		local v1 = c.CanvasLeft
-		local v2 = c.CanvasTop
-		local v3 = v1 + r[3] - r[1]
-		local v4 = v2 + r[4] - r[2]
-		return overlap(v1, v2, v3, v4, 0, l[4], c.CanvasWidth - 1, l[5])
+		local r1, r2, r3, r4 = c:getRectangle()
+		if r1 then
+			local v1 = c.CanvasLeft
+			local v2 = c.CanvasTop
+			local v3 = v1 + r3 - r1
+			local v4 = v2 + r4 - r2
+			return overlap(v1, v2, v3, v4, 0, l[4], c.CanvasWidth - 1, l[5])
+		end
 	end
 end
 
@@ -756,19 +758,23 @@ function ListGadget:moveLine(lnr, follow)
 	local l = lnr and lo:getItem(lnr)
 	if l then
 		local y0, y1 = l[4], l[5]
-		self:markDamage(0, y0, x1, y1)
-		if y1 < ca.CanvasTop then
-			y = y0
-			if follow then
-				ca:setValue("CanvasTop", y)
-			end
-		else
-			local r = ca.Rect
-			local vh = r[4] - r[2] + 1 - (y1 - y0 + 1)
-			if y0 > ca.CanvasTop + vh then
-				y = y0 - vh
+		if y0 and y1 then
+			self:markDamage(0, y0, x1, y1)
+			if y1 < ca.CanvasTop then
+				y = y0
 				if follow then
 					ca:setValue("CanvasTop", y)
+				end
+			else
+				local _, r2, _, r4 = ca:getRectangle()
+				if r2 then
+					local vh = r4 - r2 + 1 - (y1 - y0 + 1)
+					if y0 > ca.CanvasTop + vh then
+						y = y0 - vh
+						if follow then
+							ca:setValue("CanvasTop", y)
+						end
+					end
 				end
 			end
 		end
@@ -947,13 +953,15 @@ end
 
 function ListGadget:getSelectedLines(mode)
 	local t = { }
-	for i in pairs(self.SelectedLines) do
-		insert(t, i)
-	end
-	if mode == "descending" then
-		sort(t, function(a, b) return a > b end)
-	else
-		sort(t)
+	if self.SelectedLines then
+		for i in pairs(self.SelectedLines) do
+			insert(t, i)
+		end
+		if mode == "descending" then
+			sort(t, function(a, b) return a > b end)
+		else
+			sort(t)
+		end
 	end
 	return t
 end

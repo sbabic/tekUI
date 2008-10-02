@@ -40,7 +40,7 @@ local tostring = tostring
 local type = type
 
 module("tek.class.utf8string", tek.class)
-_VERSION = "UTF8String 1.1"
+_VERSION = "UTF8String 1.2"
 
 local UTF8String = _M
 
@@ -171,9 +171,8 @@ end
 
 function UTF8String.new(class, s)
 	local buf = { }
-	local self = { s, buf }
+	local self = { s or false, buf, s or false, 0 }
 	if s then
-		self[3], self[4] = s, 0
 		for i, c in utf8values(readstring, self) do
 			buf[i] = c
 		end

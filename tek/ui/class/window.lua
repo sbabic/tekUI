@@ -618,12 +618,12 @@ function Window:update()
 					local group = record[1]
 					local markdamage = record[2]
 					group:calcWeights()
-					local r = group.Rect
 					local m = group.MarginAndBorder
+					local r1, r2, r3, r4 = group:getRectangle()
 
-					if r[1] then
-						self:relayout(group, r[1] - m[1], r[2] - m[2],
-							r[3] + m[3], r[4] + m[4])
+					if r1 then
+						self:relayout(group, r1 - m[1], r2 - m[2],
+							r3 + m[3], r4 + m[4])
 					else
 						db.warn("%s : layout not available",
 							group:getClassName())
@@ -632,7 +632,7 @@ function Window:update()
 					if markdamage == 1 then
 						group.Redraw = true
 					elseif markdamage == 2 then
-						group:markDamage(r[1], r[2], r[3], r[4])
+						group:markDamage(r1, r2, r3, r4)
 					end
 
 					lg[group] = nil

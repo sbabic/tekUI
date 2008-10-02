@@ -56,7 +56,6 @@ local Region = require "tek.lib.region"
 local Group = ui.Group
 local Image = ui.Image
 local ScrollBar = ui.ScrollBar
-
 local floor = math.floor
 local insert = table.insert
 local ipairs = ipairs
@@ -68,7 +67,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.2"
+_VERSION = "ScrollGroup 9.3"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -261,17 +260,19 @@ end
 
 function ScrollGroup:onSetCanvasLeft(x, ox)
 	local c = self.Child
-	ox = ox or c.CanvasLeft
-	local r = c.Rect
-	x = max(0, min(c.CanvasWidth - (r[3] - r[1] + 1), floor(x)))
-	local dx = ox - x
-	c.CanvasLeft = x
-	if self.HSliderGroup then
-		self.HSliderGroup.Slider:setValue("Value", x)
-	end
-	self.Child:setValue("CanvasLeft", x)
-	if dx ~= 0 then
-		insert(self.CopyAreaList, { dx, 0 })
+	local r1, _, r3 = c:getRectangle()
+	if r1 then
+		ox = ox or c.CanvasLeft
+		x = max(0, min(c.CanvasWidth - (r3 - r1 + 1), floor(x)))
+		local dx = ox - x
+		c.CanvasLeft = x
+		if self.HSliderGroup then
+			self.HSliderGroup.Slider:setValue("Value", x)
+		end
+		self.Child:setValue("CanvasLeft", x)
+		if dx ~= 0 then
+			insert(self.CopyAreaList, { dx, 0 })
+		end
 	end
 end
 
@@ -281,17 +282,19 @@ end
 
 function ScrollGroup:onSetCanvasTop(y, oy)
 	local c = self.Child
-	oy = oy or c.CanvasTop
-	local r = c.Rect
-	y = max(0, min(c.CanvasHeight - (r[4] - r[2] + 1), floor(y)))
-	local dy = oy - y
-	c.CanvasTop = y
-	if self.VSliderGroup then
-		self.VSliderGroup.Slider:setValue("Value", y)
-	end
-	self.Child:setValue("CanvasTop", y)
-	if dy ~= 0 then
-		insert(self.CopyAreaList, { 0, dy })
+	local _, r2, _, r4 = c:getRectangle()
+	if r2 then
+		oy = oy or c.CanvasTop
+		y = max(0, min(c.CanvasHeight - (r4 - r2 + 1), floor(y)))
+		local dy = oy - y
+		c.CanvasTop = y
+		if self.VSliderGroup then
+			self.VSliderGroup.Slider:setValue("Value", y)
+		end
+		self.Child:setValue("CanvasTop", y)
+		if dy ~= 0 then
+			insert(self.CopyAreaList, { 0, dy })
+		end
 	end
 end
 

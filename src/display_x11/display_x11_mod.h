@@ -217,7 +217,6 @@ typedef struct X11Display
 	int x11_fd_display;
 	int x11_fd_sigpipe_read;
 	int x11_fd_sigpipe_write;
-	int x11_fd_max;
 
 	TBOOL x11_use_xft;
 	TAPTR x11_libxfthandle;

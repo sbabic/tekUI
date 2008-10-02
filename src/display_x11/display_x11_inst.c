@@ -187,8 +187,6 @@ x11_initinstance(TAPTR task)
 			break;
 		inst->x11_fd_sigpipe_read = pipefd[0];
 		inst->x11_fd_sigpipe_write = pipefd[1];
-		inst->x11_fd_max =
-			TMAX(inst->x11_fd_sigpipe_read, inst->x11_fd_display) + 1;
 
 		initlibxft(inst);
 
@@ -394,6 +392,7 @@ x11_taskfunc(TAPTR task)
 	do
 	{
 		TBOOL do_interval = TFALSE;
+		int fd_max = TMAX(inst->x11_fd_sigpipe_read, inst->x11_fd_display);
 
 		while (inst->x11_RequestInProgress == TNULL &&
 			(req = TExecGetMsg(inst->x11_ExecBase, inst->x11_CmdPort)))
@@ -418,7 +417,7 @@ x11_taskfunc(TAPTR task)
 		tv.tv_sec = waitt.ttm_Sec;
 		tv.tv_usec = waitt.ttm_USec;
 		/* wait for display, signal fd and timeout: */
-		if (select(inst->x11_fd_max, &rset, NULL, NULL, &tv) > 0)
+		if (select(fd_max + 1, &rset, NULL, NULL, &tv) > 0)
 			if (FD_ISSET(inst->x11_fd_sigpipe_read, &rset))
 				/* consume one signal: */
 				read(inst->x11_fd_sigpipe_read, buf, 1);

@@ -203,7 +203,7 @@
 			</blockquote>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v6.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v6.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -624,7 +624,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v7.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -852,13 +852,25 @@
 			<blockquote>
 				<ul>
 					<li style="list-style-type: none">
+						<code>Center</code> - Boolean, whether requester should be opened centered
+					</li>
+					<li style="list-style-type: none">
+						<code>Height</code> - Height of the requester window
+					</li>
+					<li style="list-style-type: none">
+						<code>Lister</code> - External lister to operate on
+					</li>
+					<li style="list-style-type: none">
 						<code>Path</code> - The initial path
+					</li>
+					<li style="list-style-type: none">
+						<code>SelectMode</code> - &quot;multi&quot; or &quot;single&quot; &#091;default &quot;single&quot;&#093;
 					</li>
 					<li style="list-style-type: none">
 						<code>Title</code> - Window title &#091;default &quot;Select file or directory...&quot;&#093;
 					</li>
 					<li style="list-style-type: none">
-						<code>SelectMode</code> - &quot;multi&quot; or &quot;single&quot; &#091;default &quot;single&quot;&#093;
+						<code>Width</code> - Width of the requester window
 					</li>
 				</ul>
 			</blockquote>
@@ -886,7 +898,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v5.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v5.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1175,7 +1187,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v4.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v4.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1468,7 +1480,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v7.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v8.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1521,6 +1533,9 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#PageGroup:disablePage"><code>PageGroup:disablePage()</code></a> - disable/enable a Page
+						</li>
+						<li style="list-style-type: none">
 							<a href="#PageGroup:onSetPageNumber"><code>PageGroup:onSetPageNumber()</code></a> - handler for <code>PageNumber</code> 
 						</li>
 					</ul>
@@ -1553,7 +1568,14 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v4.3)</a></h2>
+		<div class="node"><h3><a name="PageGroup:disablePage" id="PageGroup:disablePage"><code>disablePage(pagenum, onoff)</code></a></h3>
+			<p>
+				This function allows to disable or re-enable
+				a page button identified by <code>pagenum</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v5.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1591,6 +1613,15 @@
 								<p>
 									Font specifier; see <a href="#tek.ui.class.text">Text</a> for a
 									format description
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Preformatted &#091;IG&#093;</code> 
+							<blockquote>
+								<p>
+									Boolean, indicating that the text is layouted already and should
+									not be layouted to fit the element's width.
 								</p>
 							</blockquote>
 						</li>
@@ -2216,7 +2247,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.13)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.14)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2581,7 +2612,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v13.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v14.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2900,6 +2931,9 @@
 							<a href="#Area:getElementByXY"><code>Area:getElementByXY()</code></a> - Checks if the element covers a coordinate
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:getRectangle"><code>Area:getRectangle()</code></a> - Returns the element's layouted coordinates
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> - Disconnects the element from a Display and Drawable
 						</li>
 						<li style="list-style-type: none">
@@ -3153,6 +3187,14 @@
 			</blockquote>
 			<p>
 				Note: Tables returned by this function must be treated read-only.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getRectangle" id="Area:getRectangle"><code>x0, y0, x1, y1 = Area:getRectangle()</code></a></h3>
+			<p>
+				This function returns the
+				rectangle which the element has been layouted to, or <strong>false</strong> 
+				if the element has not been layouted yet.
 			</p>
 			<hr />
 		</div>
@@ -3521,7 +3563,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3762,7 +3804,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v10.7)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v10.8)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4299,7 +4341,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4674,7 +4716,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v5.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v5.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7152,7 +7194,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Wed Sep 24 02:46:09 2008
+			Document generated on Fri Oct  3 00:01:31 2008
 		</p>
 	</div>
 	</body>

@@ -57,7 +57,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 5.1"
+_VERSION = "PopList 5.2"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -166,7 +166,7 @@ function PopList:cleanup()
 end
 
 function PopList:show(display, drawable)
-	self:setValue("SelectedEntry", self.SelectedEntry, true)
+	PopList.onSelectEntry(self, self.SelectedEntry)
 	return PopItem.show(self, display, drawable)
 end
 
@@ -216,5 +216,4 @@ function PopList:setList(listobject)
 	assert(not listobject or listobject:checkDescend(List))
 	self.ListObject = listobject
 	self.ListGadget:setList(listobject)
-	self:setValue("SelectedEntry", 1)
 end

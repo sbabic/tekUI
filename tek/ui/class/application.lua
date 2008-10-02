@@ -98,7 +98,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 7.0"
+_VERSION = "Application 7.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -570,9 +570,13 @@ end
 --	status[, path, selection] = Application:requestFile(args):
 --	Requests a single or multiple files or directories. Possible keys in
 --	the {{args}} table are:
+--		- {{Center}} - Boolean, whether requester should be opened centered
+--		- {{Height}} - Height of the requester window
+--		- {{Lister}} - External lister to operate on
 --		- {{Path}} - The initial path
---		- {{Title}} - Window title [default "Select file or directory..."]
 --		- {{SelectMode}} - "multi" or "single" [default "single"]
+--		- {{Title}} - Window title [default "Select file or directory..."]
+--		- {{Width}} - Width of the requester window
 --	The first return value is a string reading either "selected" or
 --	"cancelled". If the status is "selected", the second return value is
 --	the path where the requester was left, and the third value is a table
@@ -587,7 +591,7 @@ function Application:requestFile(args)
 
 	args = args or { }
 
-	local dirlist = ui.DirList:new
+	local dirlist = args.Lister or ui.DirList:new
 	{
 		Path = args.Path or "/",
 		Kind = "requester",
@@ -598,9 +602,9 @@ function Application:requestFile(args)
 	{
 		Title = args.Title or dirlist.Locale.SELECT_FILE_OR_DIRECTORY,
 		Modal = true,
-		Width = 400,
-		Height = 500,
-		Center = true,
+		Width = args.Width or 400,
+		Height = args.Height or 500,
+		Center = args.Center or true,
 		Children = { dirlist }
 	}
 

@@ -82,7 +82,7 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.area)
-_VERSION = "Canvas 10.7"
+_VERSION = "Canvas 10.8"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -373,13 +373,9 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:checkArea(x, y)
-	local r = self.Rect
-	if r[1] then
-		if x >= r[1] and x <= r[3] and y >= r[2] and y <= r[4] then
-			return r[1] - self.CanvasLeft, r[2] - self.CanvasTop
-		end
-	else
-		db.warn("%s : layout not available", self:getClassName())
+	local r1, r2, r3, r4 = self:getRectangle()
+	if r1 and x >= r1 and x <= r3 and y >= r2 and y <= r4 then
+		return r1 - self.CanvasLeft, r2 - self.CanvasTop
 	end
 end
 
@@ -410,6 +406,14 @@ function Canvas:passMsg(msg)
 				self:setValue("CanvasTop",
 					max(0, min(h, self.CanvasTop + self.VScrollStep)))
 				return false -- absorb
+			end
+		elseif msg[2] == ui.MSG_KEYDOWN then
+			if msg[3] == 0xf023 then -- PgUp
+				local h = self.Rect[4] - self.Rect[2] + 1
+				self:setValue("CanvasTop", self.CanvasTop - h)
+			elseif msg[3] == 0xf024 then -- PgDown
+				local h = self.Rect[4] - self.Rect[2] + 1
+				self:setValue("CanvasTop", self.CanvasTop + h)
 			end
 		end
 	end

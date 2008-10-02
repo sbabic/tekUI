@@ -98,7 +98,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 6.0"
+_VERSION = "Frame 6.1"
 
 local Frame = _M
 
@@ -143,8 +143,8 @@ function Frame:setup(app, window)
 	local b = self.Border
 	if (b[1] and b[1] > 0) or (b[2] and b[2] > 0) or
 		(b[3] and b[3] > 0) or (b[4] and b[4] > 0) then
-		self.BorderObject = ui.createHook("border", self.BorderClass or 
-			"default", self, 
+		self.BorderObject = ui.createHook("border", self.BorderClass or
+			"default", self,
 			{ Border = b, Legend = self.Legend, Style = self.Style })
 	end
 end
@@ -260,11 +260,10 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:getElementByXY(x, y)
-	local r = self.Rect
-	if r[1] then
+	local r1, r2, r3, r4 = self:getRectangle()
+	if r1 then
 		local b1, b2, b3, b4 = self:getBorder()
-		return x >= r[1] - b1 and x <= r[3] + b3 and y >= r[2] - b2 and 
-			y <= r[4] + b4 and self
+		return x >= r1 - b1 and x <= r3 + b3 and y >= r2 - b2 and
+			y <= r4 + b4 and self
 	end
-	db.warn("%s : layout not available", self:getClassName())
 end
