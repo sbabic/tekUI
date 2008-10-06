@@ -136,7 +136,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 13.2"
+_VERSION = "ListGadget 13.4"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -309,13 +309,15 @@ function ListGadget:getLineOnScreen(lnr)
 	local l = self.ListObject and self.ListObject:getItem(lnr)
 	if l then
 		local c = self.Canvas
-		local r1, r2, r3, r4 = c:getRectangle()
-		if r1 then
-			local v1 = c.CanvasLeft
-			local v2 = c.CanvasTop
-			local v3 = v1 + r3 - r1
-			local v4 = v2 + r4 - r2
-			return overlap(v1, v2, v3, v4, 0, l[4], c.CanvasWidth - 1, l[5])
+		if c then
+			local r1, r2, r3, r4 = c:getRectangle()
+			if r1 then
+				local v1 = c.CanvasLeft
+				local v2 = c.CanvasTop
+				local v3 = v1 + r3 - r1
+				local v4 = v2 + r4 - r2
+				return overlap(v1, v2, v3, v4, 0, l[4], c.CanvasWidth - 1, l[5])
+			end
 		end
 	end
 end
@@ -339,16 +341,18 @@ end
 function ListGadget:shiftSelection(lnr, delta)
 	if lnr then
 		local s = self.SelectedLines
-		local t = { }
-		for line in pairs(s) do
-			if line >= lnr then
-				t[line + delta] = line + delta
-				s[line] = nil
-			else
-				t[line] = line
+		if s then
+			local t = { }
+			for line in pairs(s) do
+				if line >= lnr then
+					t[line + delta] = line + delta
+					s[line] = nil
+				else
+					t[line] = line
+				end
 			end
+			self.SelectedLines = t
 		end
-		self.SelectedLines = t
 	end
 end
 
@@ -377,7 +381,9 @@ function ListGadget:addItem(entry, lnr, quick)
 			for i = lnr, lo:getN() do
 				self:damageLine(i)
 			end
-			self.Canvas:updateUnusedRegion()
+			if self.Canvas then
+				self.Canvas:updateUnusedRegion()
+			end
 		end
 	end
 end
@@ -493,20 +499,23 @@ function ListGadget:prepare(damage)
 		-- the real question is if we have been layouted yet...
 		if damage and self.AlignColumn then
 			local ae = self.AlignElement or self.Canvas
-			local pw = ae.Rect[3] - ae.Rect[1] + 1 - b1 - b3
-			local cx = 0
-			for i = 1, #cw do
-				local w = cw[i]
-				if i < nc then
-					w = w + self.ColumnPadding
-				end
-				if self.AlignColumn == i and #cw > i then
-					local ncx = pw - self.ColumnPadding - cw[i + 1]
-					w = ncx - cx
-					cw[i] = w
-					cx = ncx
-				else
-					cx = cx + w
+			local r1, _, r3 = ae:getRectangle()
+			if r1 then
+				local pw = r3 - r1 + 1 - b1 - b3
+				local cx = 0
+				for i = 1, #cw do
+					local w = cw[i]
+					if i < nc then
+						w = w + self.ColumnPadding
+					end
+					if self.AlignColumn == i and #cw > i then
+						local ncx = pw - self.ColumnPadding - cw[i + 1]
+						w = ncx - cx
+						cw[i] = w
+						cx = ncx
+					else
+						cx = cx + w
+					end
 				end
 			end
 		end
@@ -746,39 +755,41 @@ function ListGadget:moveLine(lnr, follow)
 	end
 
 	local ca = self.Canvas
-	local x1 = ca.CanvasWidth - 1
-	local cl = self.CursorLine
-	if cl >= 0 then
-		local ol = lo:getItem(cl)
-		if ol then
-			self:markDamage(0, ol[4], x1, ol[5])
+	if ca then
+		local x1 = ca.CanvasWidth - 1
+		local cl = self.CursorLine
+		if cl >= 0 then
+			local ol = lo:getItem(cl)
+			if ol then
+				self:markDamage(0, ol[4], x1, ol[5])
+			end
 		end
-	end
-
-	local l = lnr and lo:getItem(lnr)
-	if l then
-		local y0, y1 = l[4], l[5]
-		if y0 and y1 then
-			self:markDamage(0, y0, x1, y1)
-			if y1 < ca.CanvasTop then
-				y = y0
-				if follow then
-					ca:setValue("CanvasTop", y)
-				end
-			else
-				local _, r2, _, r4 = ca:getRectangle()
-				if r2 then
-					local vh = r4 - r2 + 1 - (y1 - y0 + 1)
-					if y0 > ca.CanvasTop + vh then
-						y = y0 - vh
-						if follow then
-							ca:setValue("CanvasTop", y)
+		local l = lnr and lo:getItem(lnr)
+		if l then
+			local y0, y1 = l[4], l[5]
+			if y0 and y1 then
+				self:markDamage(0, y0, x1, y1)
+				if y1 < ca.CanvasTop then
+					y = y0
+					if follow then
+						ca:setValue("CanvasTop", y)
+					end
+				else
+					local _, r2, _, r4 = ca:getRectangle()
+					if r2 then
+						local vh = r4 - r2 + 1 - (y1 - y0 + 1)
+						if y0 > ca.CanvasTop + vh then
+							y = y0 - vh
+							if follow then
+								ca:setValue("CanvasTop", y)
+							end
 						end
 					end
 				end
 			end
 		end
 	end
+
 	if lnr then
 		self:setValue("CursorLine", lnr)
 	end
@@ -829,8 +840,13 @@ function ListGadget:passMsg(msg)
 				if lnr then
 					if self.SelectMode == "multi" then
 						if qual == 0 or qual >= 16 then -- not shift or ctrl:
+							local was_active = self.SelectedLines[lnr]
 							if self.SelectedLine > 0 then
 								self:changeSelection("none")
+							end
+							if was_active then
+								-- reactivate
+								self:setValue("SelectedLine", lnr)
 							end
 						end
 						if qual == 1 or qual == 2 then -- shift:
@@ -901,10 +917,8 @@ function ListGadget:handleInput(msg)
 						self:moveLine(l1, true)
 					end
 				elseif key == 13 then -- return
-					win:clickElement(self)
-					if self.SelectMode == "single" then
-						self:setValue("SelectedLine", self.CursorLine)
-					end
+-- 					win:clickElement(self)
+					self:setValue("SelectedLine", self.CursorLine)
 				elseif key == 32 then -- space
 					self:setValue("SelectedLine", self.CursorLine)
 				end

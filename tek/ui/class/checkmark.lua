@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 2.18"
+_VERSION = "CheckMark 2.19"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -130,17 +130,19 @@ end
 -------------------------------------------------------------------------------
 
 function CheckMark:askMinMax(m1, m2, m3, m4)
-	local tr = self.TextRecords[1]
-	local w, h = tr[9], tr[10]
-	self.ImageHeight = max(h, self.ImageMinHeight or h)
-	self.ImageWidth = self.ImageHeight * self.Drawable.AspectX /
-		self.Drawable.AspectY
-	h = max(0, self.ImageHeight - h)
-	local h2 = floor(h / 2)
-	tr[5] = self.ImageWidth
-	tr[6] = h2
-	tr[7] = 0
-	tr[8] = h - h2
+	local tr = self.TextRecords and self.TextRecords[1]
+	if tr then
+		local w, h = tr[9], tr[10]
+		self.ImageHeight = max(h, self.ImageMinHeight or h)
+		self.ImageWidth = self.ImageHeight * self.Drawable.AspectX /
+			self.Drawable.AspectY
+		h = max(0, self.ImageHeight - h)
+		local h2 = floor(h / 2)
+		tr[5] = self.ImageWidth
+		tr[6] = h2
+		tr[7] = 0
+		tr[8] = h - h2
+	end
 	return Text.askMinMax(self, m1, m2, m3, m4)
 end
 

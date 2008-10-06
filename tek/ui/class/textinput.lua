@@ -60,7 +60,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 5.2"
+_VERSION = "TextInput 5.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -420,7 +420,7 @@ function TextInput.handleInput(self, msg)
 				-- something changed:
 				self.BlinkTick = 0
 				self.BlinkState = 0
-				-- TODO: self:setValue("Text", t:get())
+				self.Text = t:get() -- make the updated text available
 				return false
 			end
 		elseif msg[2] == ui.MSG_KEYUP then

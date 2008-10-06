@@ -82,7 +82,7 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.area)
-_VERSION = "Canvas 10.8"
+_VERSION = "Canvas 10.9"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -288,15 +288,17 @@ end
 
 function Canvas:updateUnusedRegion()
 	-- determine unused region:
-	local m = self.MarginAndBorder
-	local r = self.Rect
-	self.UnusedRegion = Region.new(r[1] + m[1], r[2] + m[2], r[3] - m[3],
-		r[4] - m[4])
-	local o = self.Child.Rect
-	m = self.Child.MarginAndBorder
-	self.UnusedRegion:subRect(o[1] + r[1] - m[1], o[2] + r[2] - m[2],
-		o[3] + r[1] + m[3], o[4] + r[2] + m[4])
-	self.Redraw = true
+	local r1, r2, r3, r4 = self:getRectangle()
+	if r1 then
+		local m = self.MarginAndBorder
+		self.UnusedRegion = Region.new(r1 + m[1], r2 + m[2], r3 - m[3],
+			r4 - m[4])
+		local o = self.Child.Rect
+		m = self.Child.MarginAndBorder
+		self.UnusedRegion:subRect(o[1] + r1 - m[1], o[2] + r2 - m[2],
+			o[3] + r1 + m[3], o[4] + r2 + m[4])
+		self.Redraw = true
+	end
 end
 
 -------------------------------------------------------------------------------

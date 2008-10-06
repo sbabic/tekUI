@@ -151,7 +151,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 14.0"
+_VERSION = "Area 14.1"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -319,7 +319,8 @@ end
 -------------------------------------------------------------------------------
 
 function Area:rethinkLayout(damage)
-	if self.Display then
+	-- must be on a display and layouted previously:
+	if self.Display and self.Rect[1] then
 		self:calcOffsets()
 		local parent = self:getElement("parent")
 		self.Window:addLayoutGroup(parent, damage or 1)

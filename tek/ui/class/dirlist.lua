@@ -59,7 +59,6 @@ local List = require "tek.class.list"
 
 local Group = ui.Group
 local ListGadget = ui.ListGadget
-local ListView = ui.ListView
 local Text = ui.Text
 local TextInput = ui.TextInput
 
@@ -71,7 +70,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 8.0"
+_VERSION = "DirList 8.1"
 
 local DirList = _M
 
@@ -133,8 +132,9 @@ function DirList.new(class, self)
 	self.Path = self.Path or ""
 	self.Location = self.Location or ""
 
-	local L = ui.getLocale("dirlist-class", "schulze-mueller.de")
-	self.Locale = L
+	self.Locale = self.Locale or
+		ui.getLocale("dirlist-class", "schulze-mueller.de")
+	local L = self.Locale
 
 	-- Kind: "requester", "lister", "simple"
 	self.Kind = self.Kind or "lister"
@@ -207,10 +207,15 @@ function DirList.new(class, self)
 	self.ListGadget:addNotify("SelectedLine", ui.NOTIFY_ALWAYS,
 		{ self, "showStats" })
 
-	self.ListView = ListView:new
+	self.ListView = ui.ScrollGroup:new
 	{
 		HSliderMode = self.HSliderMode or "off",
-		Child = self.ListGadget
+		VSliderMode = "on",
+		Child = ui.Canvas:new
+		{
+			AutoWidth = true,
+			Child = self.ListGadget
+		},
 	}
 
 	self.OpenGadget = Text:new
