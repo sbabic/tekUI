@@ -70,7 +70,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 8.1"
+_VERSION = "DirList 8.2"
 
 local DirList = _M
 
@@ -514,10 +514,6 @@ function DirList:dblClickList()
 	local entry = list:getItem(list.CursorLine)
 	if entry then
 		if not self:setFileEntry(entry[1][1]) then
-			-- file doubleclicked, reactivate selection:
-			if self.SelectMode == "single" then
-				list:setValue("SelectedLine", list.CursorLine)
-			end
 			-- click on "Open":
 			self.Window:clickElement(self.OpenGadget)
 		end

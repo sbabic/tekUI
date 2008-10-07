@@ -89,7 +89,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 7.4"
+_VERSION = "Window 7.5"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -743,7 +743,7 @@ function Window:setDblClickElement(e, notify)
 	if e and self.Display then
 		local de = self.DblClickCheckElement
 		local t = self.Display:getTime()
-		if de == e then
+		if de == e and self.DblClickCheckMouseX then
 			local d1 = self.MouseX - self.DblClickCheckMouseX
 			local d2 = self.MouseY - self.DblClickCheckMouseY
 			local d = d1 * d1 + d2 * d2

@@ -69,6 +69,16 @@ end
 --	Application:
 -- -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+local QuitNotification =
+{
+	ui.NOTIFY_APPLICATION, ui.NOTIFY_COROUTINE, function(self)
+		if self:easyRequest(false, L.CONFIRM_QUIT_APPLICATION,
+			L.QUIT, L.CANCEL) == 1 then
+			self:setValue("Status", "quit")
+		end
+	end
+}
+
 app = ui.Application:new
 {
 	ProgramName = "tekUI Demo",
@@ -483,9 +493,7 @@ app = ui.Application:new
 										{
 											[false] =
 											{
-												{
-													ui.NOTIFY_APPLICATION, "setValue", "Status", "quit"
-												}
+												QuitNotification
 											},
 										},
 									},

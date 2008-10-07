@@ -111,6 +111,7 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Display = ui.Display
 local Gadget = ui.Gadget
@@ -136,7 +137,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 13.4"
+_VERSION = "ListGadget 13.5"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -147,6 +148,7 @@ local NOTIFY_CURSOR = { ui.NOTIFY_SELF, "onSetCursor", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
 local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
+local NOTIFY_DBLCLICK = { ui.NOTIFY_SELF, "onDoubleClick", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -224,6 +226,7 @@ function ListGadget:setup(app, window)
 	self:initSelectedLines()
 	self:addNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
 	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
+	self:addNotify("DblClick", ui.NOTIFY_CHANGE, NOTIFY_DBLCLICK, 1)
 	self.CursorObject = ui.createHook("border",
 		self.CursorBorderClass or "default", self,
 			{ Border = self.CursorBorder })
@@ -235,6 +238,7 @@ end
 
 function ListGadget:cleanup()
 	self.CursorObject = false
+	self:remNotify("DblClick", ui.NOTIFY_CHANGE, NOTIFY_DBLCLICK)
 	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
 	self:remNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
 	self.SelectedLines = false
@@ -706,6 +710,18 @@ function ListGadget:onSetCursor(lnr, oldlnr)
 end
 
 -------------------------------------------------------------------------------
+--	ListGadget:onDoubleClick(clicked)
+-------------------------------------------------------------------------------
+
+function ListGadget:onDoubleClick(clicked)
+	if clicked == true then
+		if not self.SelectedLines[self.CursorLine] then
+			self:setValue("SelectedLine", self.CursorLine)
+		end
+	end
+end
+
+-------------------------------------------------------------------------------
 --	ListGadget:onSelectLine(line, oldline): This method is invoked when the
 --	{{SelectedLine}} attribute is set.
 -------------------------------------------------------------------------------
@@ -839,17 +855,14 @@ function ListGadget:passMsg(msg)
 				local lnr = self:findLine(msg[5])
 				if lnr then
 					if self.SelectMode == "multi" then
-						if qual == 0 or qual >= 16 then -- not shift or ctrl:
-							local was_active = self.SelectedLines[lnr]
-							if self.SelectedLine > 0 then
-								self:changeSelection("none")
-							end
-							if was_active then
-								-- reactivate
+						db.trace("qual: %s - line: %s", qual, lnr)
+						if qual == 0 or qual >= 16 then
+							local active = self.SelectedLines[lnr]
+							self:changeSelection("none")
+							if not active then
 								self:setValue("SelectedLine", lnr)
 							end
-						end
-						if qual == 1 or qual == 2 then -- shift:
+						elseif qual == 1 or qual == 2 then
 							local s, e = self.CursorLine, lnr
 							if e < s then
 								s, e = e, s
@@ -917,7 +930,7 @@ function ListGadget:handleInput(msg)
 						self:moveLine(l1, true)
 					end
 				elseif key == 13 then -- return
--- 					win:clickElement(self)
+					win:clickElement(self)
 					self:setValue("SelectedLine", self.CursorLine)
 				elseif key == 32 then -- space
 					self:setValue("SelectedLine", self.CursorLine)

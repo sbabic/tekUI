@@ -419,7 +419,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v8.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v8.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -624,7 +624,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v7.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v8.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -766,6 +766,9 @@
 							<a href="#Application:connect"><code>Application:connect()</code></a> - connects children recursively
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Application:easyRequest"><code>Application:easyRequest()</code></a> - opens a message box
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Application:getElementById"><code>Application:getElementById()</code></a> - returns an element by Id
 						</li>
 						<li style="list-style-type: none">
@@ -879,6 +882,19 @@
 				&quot;cancelled&quot;. If the status is &quot;selected&quot;, the second return value is
 				the path where the requester was left, and the third value is a table
 				of the items that were selected.
+				Note: The caller of this function must be running in a coroutine
+				(see <a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a>).
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:easyRequest" id="Application:easyRequest"><code>selected = Application:easyRequest(title, text, buttontext1[, ...])</code></a></h3>
+			<p>
+				Show requester. <code>title</code> will be displayed as the window title; if this
+				argument is <strong>false</strong>, the application's <code>ProgramName</code> will be used
+				for the title. <code>text</code> (which may contain line breaks) will be used as
+				the requester's body. Buttons are ordered from left to right. The first
+				button has the number 1. If the window is closed using the Escape key
+				or close button, the return value will be <code>false</code>.
 				Note: The caller of this function must be running in a coroutine
 				(see <a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a>).
 			</p>
@@ -4341,7 +4357,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4823,7 +4839,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v7.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v7.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7194,7 +7210,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Tue Oct  7 01:00:24 2008
+			Document generated on Wed Oct  8 00:49:40 2008
 		</p>
 	</div>
 	</body>

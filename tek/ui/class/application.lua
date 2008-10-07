@@ -60,6 +60,7 @@
 --	IMPLEMENTS::
 --		- Application:addCoroutine() - adds a coroutine to the application
 --		- Application:connect() - connects children recursively
+--		- Application:easyRequest() - opens a message box
 --		- Application:getElementById() - returns an element by Id
 --		- Application:run() - runs the application
 --		- Application:suspend() - suspends the caller's coroutine
@@ -94,11 +95,12 @@ local max = math.max
 local min = math.min
 local pairs = pairs
 local remove = table.remove
+local select = select
 local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 7.1"
+_VERSION = "Application 8.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -108,7 +110,6 @@ local Application = _M
 
 function Application.new(class, self)
 	self = Family.new(class, self)
-
 	-- Check linkage of members and connect them recursively:
 	if self:connect() then
 		self.Status = "disconnected"
@@ -131,7 +132,7 @@ function Application.init(self)
 	self.Coroutines = { }
 	self.Display = false
 	self.ElementById = { }
-	self.ModalWindow = false
+	self.ModalWindows = { } -- stack
 	self.MsgActive = { }
 	self.OpenWindows = { }
 	self.ProgramName = self.ProgramName or self.Title or false
@@ -317,8 +318,7 @@ function Application:openWindow(window)
 		status = window:openWindow()
 		if status == "show" then
 			if window.Modal then
-				assert(not self.ModalWindow, "More than one modal window")
-				self.ModalWindow = window
+				insert(self.ModalWindows, 1, window)
 			end
 			insert(self.OpenWindows, window)
 		end
@@ -334,8 +334,8 @@ function Application:closeWindow(window)
 	local status = window.Status
 	if status ~= "hide" then
 		status = window:closeWindow()
-		if window == self.ModalWindow then
-			self.ModalWindow = false
+		if window == self.ModalWindows[1] then
+			remove(self.ModalWindows, 1)
 		end
 		-- NOTE: windows are purged from OpenWindows list during wait()
 	end
@@ -430,7 +430,7 @@ local function passmsg_always(state, msg)
 end
 
 local function passmsg_checkmodal(state, msg)
-	local mw = state[1].ModalWindow
+	local mw = state[1].ModalWindows[1]
 	if not mw or mw == state[2] then
 		state[2]:passMsg(msg)
 	end
@@ -632,6 +632,73 @@ function Application:requestFile(args)
 
 	return dirlist.Status
 
+end
+
+-------------------------------------------------------------------------------
+--	selected = Application:easyRequest(title, text, buttontext1[, ...]):
+--	Show requester. {{title}} will be displayed as the window title; if this
+--	argument is '''false''', the application's {{ProgramName}} will be used
+--	for the title. {{text}} (which may contain line breaks) will be used as
+--	the requester's body. Buttons are ordered from left to right. The first
+--	button has the number 1. If the window is closed using the Escape key
+--	or close button, the return value will be {{false}}.
+--	Note: The caller of this function must be running in a coroutine
+--	(see Application:addCoroutine()).
+-------------------------------------------------------------------------------
+
+function Application:easyRequest(title, text, ...)
+
+	assert(corunning(), "Must be called in a coroutine")
+
+	local result = false
+	local buttons = { }
+	local window
+
+	local numb = select("#", ...)
+	for i = 1, numb do
+		local button = ui.Text:new
+		{
+			Class = "button",
+			Mode = "button",
+			Text = select(i, ...),
+			onPress = function(self, pressed)
+				if pressed == false then
+					result = i
+					window:setValue("Status", "hide")
+				end
+				ui.Text.onPress(self, pressed)
+			end
+		}
+		if i == numb then
+			button.Focus = true
+		end
+		insert(buttons, button)
+	end
+
+	window = Window:new
+	{
+		Title = title or self.ProgramName,
+		Modal = true,
+		Center = true,
+		Orientation = "vertical",
+		Children =
+		{
+			ui.Text:new { Width = "auto", Text = text },
+			ui.Group:new { Width = "fill", SameSize = true, Children = buttons }
+		}
+	}
+
+	Application.connect(window)
+	self:addMember(window)
+	window:setValue("Status", "show")
+
+	repeat
+		Application.suspend()
+	until window.Status ~= "show"
+
+	self:remMember(window)
+
+	return result
 end
 
 -------------------------------------------------------------------------------
