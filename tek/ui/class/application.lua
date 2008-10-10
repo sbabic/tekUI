@@ -100,7 +100,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 8.0"
+_VERSION = "Application 8.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -377,7 +377,7 @@ end
 -- 	wait:
 -------------------------------------------------------------------------------
 
-function Application:wait()
+function Application:waitWindows(suspend)
 
 	local ow = self.OpenWindows
 	local vt = self.WaitVisuals
@@ -400,8 +400,10 @@ function Application:wait()
 		end
 	end
 
-	-- wait for open windows:
-	self.Display:wait(vt, numv)
+	if suspend then
+		-- wait for open windows:
+		self.Display:wait(vt, numv)
+	end
 
 	-- service windows that have messages pending:
 	local ma = self.MsgActive
@@ -483,12 +485,19 @@ function Application:run()
 	local state = { self }
 	local ma = self.MsgActive
 
+	-- the main loop:
+
 	while self.Status == "running" and #self.OpenWindows > 0 do
-		self:serviceCoroutines()
+
+		-- if no coroutines are left, we may actually go to sleep:
+		local suspend = self:serviceCoroutines() == 0
+
 		if collectgarbage then
 			collectgarbage("step")
 		end
-		self:wait()
+
+		self:waitWindows(suspend)
+
 		while #ma > 0 do
 			state[2] = remove(ma, 1)
 			repeat
@@ -507,6 +516,7 @@ function Application:run()
 				state[5] = false
 			end
 		end
+
 	end
 
 	-- hide all windows:
@@ -533,7 +543,7 @@ function Application:addCoroutine(func, ...)
 end
 
 -------------------------------------------------------------------------------
---	serviceCoroutine: internal
+--	numcoroutines = serviceCoroutines() - internal
 -------------------------------------------------------------------------------
 
 function Application:serviceCoroutines()
@@ -552,6 +562,7 @@ function Application:serviceCoroutines()
 			end
 		end
 	end
+	return #crt
 end
 
 -------------------------------------------------------------------------------

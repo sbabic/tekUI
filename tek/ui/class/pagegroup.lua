@@ -58,7 +58,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 8.0"
+_VERSION = "PageGroup 8.1"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -257,12 +257,22 @@ function PageContainerGroup:changeTab(pagebuttons, newtabn)
 	self.PageElement:connect(self)
 	self.Application:decodeProperties(self.PageElement)
 	self.PageElement:setup(self.Application, self.Window)
-	self.PageElement:show(self.Display, self.Drawable)
-	self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
-	local r = self.Rect
-	local m = self.MarginAndBorder
-	self:relayout(self, r[1] - m[1], r[2] - m[2], r[3] + m[3], r[4] + m[4])
-	self.PageElement:rethinkLayout(2)
+	if self.Display then
+		if self.PageElement:show(self.Display, self.Drawable) then
+			local m = self.MarginAndBorder
+			self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
+			local r = self.Rect
+			local m = self.MarginAndBorder
+			self:relayout(self, r[1] - m[1], r[2] - m[2], r[3] + m[3],
+				r[4] + m[4])
+			self.PageElement:rethinkLayout(2)
+		else
+			db.error("failed to show element: %s",
+				self.PageElement:getClassName())
+		end
+	else
+		db.error("pagegroup not connected to display")
+	end
 end
 
 -------------------------------------------------------------------------------
