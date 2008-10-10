@@ -24,7 +24,8 @@ local WH = HEIGHT * PIXHEIGHT
 local v = visual.open { Title = "Plasma", Width = WW, Height = WH,
 	MinWidth = WW, MinHeight = WH, MaxWidth = WW, MaxHeight = WH }
 
-v:setinput("close", "keydown", "interval")
+-- react on close, keydown, interval; see also tek.ui
+v:setinput(0x0901)
 
 --
 --	init

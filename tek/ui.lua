@@ -75,7 +75,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 14.2"
+_VERSION = "tekUI 14.3"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -752,13 +752,14 @@ PEN_HALFSHINE = 35
 
 -- Message types:
 
-MSG_CLOSE = 1
-MSG_FOCUS = 2
-MSG_NEWSIZE = 4
-MSG_REFRESH = 8
-MSG_MOUSEOVER = 16
-MSG_KEYDOWN = 256
-MSG_MOUSEMOVE = 512
-MSG_MOUSEBUTTON = 1024
-MSG_INTERVAL = 2048
-MSG_KEYUP = 4096
+MSG_CLOSE       = 0x0001
+MSG_FOCUS       = 0x0002
+MSG_NEWSIZE     = 0x0004
+MSG_REFRESH     = 0x0008
+MSG_MOUSEOVER   = 0x0010
+MSG_KEYDOWN     = 0x0100
+MSG_MOUSEMOVE   = 0x0200
+MSG_MOUSEBUTTON = 0x0400
+MSG_INTERVAL    = 0x0800
+MSG_KEYUP       = 0x1000
+MSG_ALL         = 0x1f1f

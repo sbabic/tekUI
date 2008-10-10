@@ -60,7 +60,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 5.3"
+_VERSION = "TextInput 5.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -85,7 +85,6 @@ function TextInput.init(self)
 	self.FHeight = false
 	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
-	self.IntervalNotify = { self, "interval" }
 	self.Text = self.Text or ""
 	self.TextBuffer = UTF8String:new(self.Text)
 	self.Mode = "touch"
@@ -282,16 +281,16 @@ end
 function TextInput:setEditing(onoff)
 	if onoff and not self.Editing then
 		self.Editing = true
-		self.Window:addInputHandler(self, TextInput.handleInput)
-		self.Window:addNotify("Interval", ui.NOTIFY_ALWAYS,
-			self.IntervalNotify)
+		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+		self.Window:addInputHandler(ui.MSG_KEYUP + ui.MSG_KEYDOWN,
+			self, self.handleInput)
 		self:clickMouse()
 		self:setValue("Focus", true)
 	elseif not onoff and self.Editing then
 		self:setValue("Selected", false)
-		self.Window:remNotify("Interval", ui.NOTIFY_ALWAYS,
-			self.IntervalNotify)
-		self.Window:remInputHandler(self, TextInput.handleInput)
+		self.Window:remInputHandler(ui.MSG_KEYUP + ui.MSG_KEYDOWN,
+			self, self.handleInput)
+		self.Window:remInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 		self.Editing = false
 	end
 end
@@ -317,7 +316,7 @@ function TextInput:onFocus(focused)
 	Text.onFocus(self, focused)
 end
 
-function TextInput:interval()
+function TextInput:updateInterval(msg)
 	self.BlinkTick = self.BlinkTick - 1
 	if self.BlinkTick < 0 then
 		self.BlinkTick = self.BlinkTickInit
@@ -327,6 +326,7 @@ function TextInput:interval()
 			self.Redraw = true
 		end
 	end
+	return msg
 end
 
 local function crsrleft(self)
@@ -373,7 +373,11 @@ function TextInput:passMsg(msg)
 	return Text.passMsg(self, msg)
 end
 
-function TextInput.handleInput(self, msg)
+-------------------------------------------------------------------------------
+--	msg = handleInput(msg)
+-------------------------------------------------------------------------------
+
+function TextInput:handleInput(msg)
 	if self.Editing then
 		if msg[2] == ui.MSG_KEYDOWN then
 			local code = msg[3]
@@ -428,7 +432,6 @@ function TextInput.handleInput(self, msg)
 			return false
 		end
 	end
-	-- pass to next handler:
 	return msg
 end
 

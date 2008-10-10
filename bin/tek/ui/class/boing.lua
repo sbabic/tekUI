@@ -15,7 +15,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.boing", tek.ui.class.frame)
-_VERSION = "Boing 1.3"
+_VERSION = "Boing 1.4"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -28,19 +28,20 @@ function Boing.init(self)
 	self.Boing = { 0x8000, 0x8000 }
 	self.Boing[3] = 0x334
 	self.Boing[4] = 0x472
-	self.IntervalNotify = { self, "updateInterval" }
 	self.Running = self.Running or false
 	return Frame.init(self)
 end
 
-function Boing:setup(app, window)
-	Frame.setup(self, app, window)
-	self.Window:addNotify("Interval", ui.NOTIFY_ALWAYS, self.IntervalNotify)
+function Boing:show(display, drawable)
+	if Frame.show(self, display, drawable) then
+		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+		return true
+	end
 end
 
-function Boing:cleanup()
-	self.Window:remNotify("Interval", ui.NOTIFY_ALWAYS, self.IntervalNotify)
-	Frame.cleanup(self)
+function Boing:hide()
+	self.Window:remInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+	Frame.hide(self)
 end
 
 function Boing:draw()
@@ -58,7 +59,7 @@ function Boing:draw()
 		d.Pens[ui.PEN_DARK])
 end
 
-function Boing:updateInterval()
+function Boing:updateInterval(msg)
 	if self.Running then
 		local b = self.Boing
 		b[1] = b[1] + b[3]
@@ -72,6 +73,6 @@ function Boing:updateInterval()
 			b[2] = b[2] + b[4]
 		end
 		self.Redraw = true
-		return true -- i want to be redrawn
 	end
+	return msg
 end

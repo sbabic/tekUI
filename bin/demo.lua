@@ -92,33 +92,49 @@ app = ui.Application:new
 		ui.Window:new
 		{
 			Style = "width: 400; height: 500",
+
 			UserData =
 			{
 				MemRefreshTickCount = 0,
 				MemRefreshTickInit = 25,
 				MinMem = false,
 				MaxMem = false,
-				IntervalNotify = { ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self)
-					local data = self.UserData
-					data.MemRefreshTickCount = data.MemRefreshTickCount - 1
-					if data.MemRefreshTickCount <= 0 then
-						data.MemRefreshTickCount = data.MemRefreshTickInit
-						local m = collectgarbage("count")
-						data.MinMem = math.min(data.MinMem or m, m)
-						data.MaxMem = math.max(data.MaxMem or m, m)
-						local mem = self.Application:getElementById("about-mem-used")
-						if mem then
-							mem:setValue("Text", ("%dk - min: %dk - max: %dk"):format(m, data.MinMem, data.MaxMem))
-						end
-						local gauge = self.Application:getElementById("about-mem-gauge")
-						if gauge then
-							gauge:setValue("Min", data.MinMem)
-							gauge:setValue("Max", data.MaxMem)
-							gauge:setValue("Value", m)
-						end
-					end
-				end },
 			},
+
+			updateInterval = function(self, msg)
+				local data = self.UserData
+				data.MemRefreshTickCount = data.MemRefreshTickCount - 1
+				if data.MemRefreshTickCount <= 0 then
+					data.MemRefreshTickCount = data.MemRefreshTickInit
+					local m = collectgarbage("count")
+					data.MinMem = math.min(data.MinMem or m, m)
+					data.MaxMem = math.max(data.MaxMem or m, m)
+					local mem = self.Application:getElementById("about-mem-used")
+					if mem then
+						mem:setValue("Text", ("%dk - min: %dk - max: %dk"):format(m,
+							data.MinMem, data.MaxMem))
+					end
+					local gauge = self.Application:getElementById("about-mem-gauge")
+					if gauge then
+						gauge:setValue("Min", data.MinMem)
+						gauge:setValue("Max", data.MaxMem)
+						gauge:setValue("Value", m)
+					end
+				end
+				return msg
+			end,
+
+			show = function(self, display, drawable)
+				if ui.Window.show(self, display, drawable) then
+					self:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+					return true
+				end
+			end,
+
+			hide = function(self)
+				self:remInputHandler(ui.MSG_INTERVAL, self, self.handlerInterval)
+				ui.Window.hide(self)
+			end,
 
 			Center = true,
 			Orientation = "vertical",
@@ -131,18 +147,8 @@ app = ui.Application:new
 				{
 					["opening"] =
 					{
-						{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self)
-							self.Window:addNotify("Interval", ui.NOTIFY_ALWAYS, self.UserData.IntervalNotify)
-						end },
 						{ ui.NOTIFY_ID, "about-mem-refresh", "setValue", "Pressed", false },
 					},
-					["closing"] =
-					{
-						{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self)
-							self.Window:remNotify("Interval", ui.NOTIFY_ALWAYS, self.UserData.IntervalNotify)
-						end },
-					},
-
 					["show"] =
 					{
 						{ ui.NOTIFY_ID, "about-button", "setValue", "Selected", true },

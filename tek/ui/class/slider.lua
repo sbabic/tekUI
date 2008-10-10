@@ -71,7 +71,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.14"
+_VERSION = "Slider 6.15"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -465,9 +465,9 @@ end
 
 function Slider:onFocus(focused)
 	if focused then
-		self.Window:addInputHandler(self, Slider.handleInput)
+		self.Window:addInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
 	else
-		self.Window:remInputHandler(self, Slider.handleInput)
+		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
 	end
 	Numeric.onFocus(self, focused)
 end

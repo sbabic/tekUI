@@ -33,16 +33,9 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 1.5"
+_VERSION = "PopupWindow 1.6"
 
 local PopupWindow = _M
-
--------------------------------------------------------------------------------
---	Constants and class data:
--------------------------------------------------------------------------------
-
-local MSG_MOUSEOVER = ui.MSG_MOUSEOVER
-local MSG_INTERVAL = ui.MSG_INTERVAL
 
 -------------------------------------------------------------------------------
 --	PopupWindow class:
@@ -81,8 +74,18 @@ function PopupWindow:show(display)
 				end
 			end
 		end
+		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 		return true
 	end
+end
+
+-------------------------------------------------------------------------------
+--	hide: overrides
+-------------------------------------------------------------------------------
+
+function PopupWindow:hide()
+	self.Window:remInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+	Window.hide(self)
 end
 
 -------------------------------------------------------------------------------
@@ -90,22 +93,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopupWindow:passMsg(msg)
-	if msg[2] == MSG_INTERVAL then
-		self.BeginPopupTicks = self.BeginPopupTicks - 1
-		if self.BeginPopupTicks < 0 then
-			if self.DelayedBeginPopup then
-				if not self.DelayedBeginPopup.PopupWindow then
-					self.DelayedBeginPopup:beginPopup()
-				end
-				self.DelayedBeginPopup = false
-			elseif self.DelayedEndPopup then
-				if self.DelayedEndPopup.PopupWindow then
-					self.DelayedEndPopup:endPopup()
-				end
-				self.DelayedEndPopup = false
-			end
-		end
-	elseif msg[2] == MSG_MOUSEOVER then
+	if msg[2] == ui.MSG_MOUSEOVER then
 		if msg[3] == 0 then
 			if self.DelayedEndPopup then
 				self:setHiliteElement(self.DelayedEndPopup)
@@ -116,4 +104,26 @@ function PopupWindow:passMsg(msg)
 		return false
 	end
 	return Window.passMsg(self, msg)
+end
+
+-------------------------------------------------------------------------------
+--	updateInterval:
+-------------------------------------------------------------------------------
+
+function PopupWindow:updateInterval(msg)
+	self.BeginPopupTicks = self.BeginPopupTicks - 1
+	if self.BeginPopupTicks < 0 then
+		if self.DelayedBeginPopup then
+			if not self.DelayedBeginPopup.PopupWindow then
+				self.DelayedBeginPopup:beginPopup()
+			end
+			self.DelayedBeginPopup = false
+		elseif self.DelayedEndPopup then
+			if self.DelayedEndPopup.PopupWindow then
+				self.DelayedEndPopup:endPopup()
+			end
+			self.DelayedEndPopup = false
+		end
+	end
+	return msg
 end

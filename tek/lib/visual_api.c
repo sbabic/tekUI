@@ -26,7 +26,7 @@ static TAPTR checkinstptr(lua_State *L, int n, const char *classname)
 LOCAL LUACFUNC TINT
 tek_lib_visual_wait(lua_State *L)
 {
-	TEKVisual *vis;
+	TEKVisual *vis = TNULL;
 	TUINT sig = 0;
 	int i, n;
 
@@ -241,74 +241,12 @@ tek_lib_visual_getfontattrs(lua_State *L)
 
 /*****************************************************************************/
 
-static int c_upper(c)
-{
-	if (c >= 'a' && c <= 'z') c -= 'a' - 'A';
-	return c;
-}
-
-static int
-strcmp_nocase(TSTRPTR s1, TSTRPTR s2)
-{
-	TINT c1, c2;
-	do
-	{
-		c1 = c_upper(*s1++);
-		c2 = c_upper(*s2++);
-		if (!c1 || !c2) break;
-	} while (c1 == c2);
-	return c1 - c2;
-}
-
-static const
-struct tek_lib_visual_itypes { TUINT mask; TSTRPTR name; } itypes[] =
-{
-	{ TITYPE_CLOSE, "close" },
-	{ TITYPE_FOCUS, "focus" },
-	{ TITYPE_NEWSIZE, "newsize" },
-	{ TITYPE_REFRESH, "refresh" },
-	{ TITYPE_MOUSEOVER, "mouseover" },
-	{ TITYPE_KEYDOWN, "keydown" },
-	{ TITYPE_KEYUP, "keyup" },
-	{ TITYPE_MOUSEMOVE, "mousemove" },
-	{ TITYPE_MOUSEBUTTON, "mousebutton" },
-	{ TITYPE_INTERVAL, "interval" },
-	/* { TITYPE_ALL, "all" }, */
-	{ 0, TNULL }
-};
-
-/*****************************************************************************/
-
-static TUINT
-tek_lib_visual_getinputmask(lua_State *L, TEKVisual *vis)
-{
-	TUINT i, sig = 0, narg = lua_gettop(L) - 1;
-	for (i = 0; i < narg; ++i)
-	{
- 		const struct tek_lib_visual_itypes *fp = itypes;
-		TUINT newsig = 0;
-		while (fp->mask)
-		{
-			if (strcmp_nocase(fp->name,
- 				(TSTRPTR) luaL_checkstring(L, 2 + i)) == 0)
-			{
-				newsig = fp->mask;
-				break;
-			}
-			fp++;
-		}
-		if (newsig == 0)
-			luaL_argerror(L, i + 2, "Unknown keyword");
-		sig |= newsig;
-	}
-	return sig;
-}
-
 LOCAL LUACFUNC TINT
 tek_lib_visual_setinput(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TVisualSetInput(vis->vis_Visual, 0, tek_lib_visual_getinputmask(L, vis));
+	TUINT mask = (TUINT) lua_tointeger(L, 2);
+	TVisualSetInput(vis->vis_Visual, 0, mask);
 	return 0;
 }
 
@@ -316,7 +254,8 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_clearinput(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TVisualSetInput(vis->vis_Visual, tek_lib_visual_getinputmask(L, vis), 0);
+	TUINT mask = (TUINT) lua_tointeger(L, 2);
+	TVisualSetInput(vis->vis_Visual, mask, 0);
 	return 0;
 }
 
@@ -329,18 +268,6 @@ tek_lib_visual_getmsg(lua_State *L)
 	TIMSG *imsg = (TIMSG *) TGetMsg(TVisualGetPort(vis->vis_Visual));
 	if (imsg)
 	{
-		const struct tek_lib_visual_itypes *fp = itypes;
-
-		while (fp->mask)
-		{
-			if (fp->mask == imsg->timsg_Type)
-				break;
-			fp++;
-		}
-
-		if (fp->name == TNULL)
-			TDBPRINTF(TDB_ERROR,("Unknown message at port\n"));
-
 		if (lua_istable(L, 2))
 			lua_pushvalue(L, 2);
 		else

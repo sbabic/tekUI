@@ -78,6 +78,7 @@ local Gadget = ui.Gadget
 local Group = ui.Group
 
 local assert = assert
+local floor = math.floor
 local insert = table.insert
 local ipairs = ipairs
 local max = math.max
@@ -89,7 +90,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 7.5"
+_VERSION = "Window 7.6"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -102,6 +103,10 @@ local NOTIFY_STATUS = { ui.NOTIFY_SELF, "onChangeStatus", ui.NOTIFY_VALUE,
 
 local DEF_DBLCLICKTIMELIMIT = 0.32 -- in seconds
 local DEF_DBLCLICKDISTLIMIT = 25 -- pixel_distance^2 between clicks
+
+local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
+	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, ui.MSG_MOUSEMOVE, ui.MSG_MOUSEBUTTON,
+	ui.MSG_INTERVAL, ui.MSG_KEYUP }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -133,8 +138,19 @@ function Window.init(self)
 	-- Number of ticks for hold counter repeat initialization:
 	self.HoldTickInitRepeat = 7
 	self.HoverElement = false
-	self.InputHandlers = { }
-	self.Interval = false
+	self.InputHandlers =
+	{
+		[ui.MSG_CLOSE] = { },
+		[ui.MSG_FOCUS] = { },
+		[ui.MSG_NEWSIZE] = { },
+		[ui.MSG_REFRESH] = { },
+		[ui.MSG_MOUSEOVER] = { },
+		[ui.MSG_KEYDOWN] = { },
+		[ui.MSG_MOUSEMOVE] = { },
+		[ui.MSG_MOUSEBUTTON] = { },
+		[ui.MSG_INTERVAL] = { },
+		[ui.MSG_KEYUP] = { },
+	}
 	self.KeyShortcuts = { }
 	self.LayoutGroup = { }
 	self.Left = self.Left or false
@@ -169,8 +185,8 @@ function Window:show(display)
 	assert(not self.Drawable)
 	self.Drawable = Drawable:new { Display = display }
 	if Group.show(self, display, self.Drawable) then
-		-- window main input handler:
-		self:addInputHandler(self, Window.handleInput)
+		-- window input handlers:
+		self:addInputHandler(0x171f, self, self.handleInput)
 		-- notification handlers:
 		self:addNotify("Status", ui.NOTIFY_CHANGE, NOTIFY_STATUS)
 		return true
@@ -183,7 +199,8 @@ end
 
 function Window:hide()
 	self:remNotify("Status", ui.NOTIFY_CHANGE, NOTIFY_STATUS)
-	self:remInputHandler(self, Window.handleInput)
+	self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
+	self:remInputHandler(0x171f, self, self.handleInput)
 	local d = self.Drawable
 	assert(d)
 	self:hideWindow()
@@ -192,27 +209,56 @@ function Window:hide()
 end
 
 -------------------------------------------------------------------------------
---	Window:addInputHandler(object, func): Adds an {{object}} and {{function}}
---	to the window's input chain. The input handlers is invoked as follows:
+--	Window:addInputHandler(msgtype, object, func): Adds an {{object}} and
+--	{{function}} to the window's chain of handlers for input of the specified
+--	type. Multiple input types can be handled by one handler by logically
+--	or'ing message types. The input handlers are invoked as follows:
 --			message = function(object, message)
---	The handler is expected to return the message, which will pass it on to
---	the next handler in the window's chain.
+--	The handler is expected to return the message, which will in turn pass
+--	it on to the next handler in the window's chain.
 -------------------------------------------------------------------------------
 
-function Window:addInputHandler(object, handler)
-	insert(self.InputHandlers, 1, { object, handler })
+local function testflag(flags, mask)
+	return floor(flags % (mask + mask) / mask) ~= 0
+end
+
+function Window:addInputHandler(msgtype, object, func)
+	local hnd = { object, func }
+	for _, mask in ipairs(MSGTYPES) do
+		local ih = self.InputHandlers[mask]
+		if ih then
+			if testflag(msgtype, mask) then
+				insert(ih, 1, hnd)
+				if mask == ui.MSG_INTERVAL and #ih == 1 then
+					self.Drawable:setInterval(true)
+				end
+			end
+		end
+	end
 end
 
 -------------------------------------------------------------------------------
---	Window:remInputHandler(object, func): Removes an input handler that
---	was previously registered with the window using Window:addInputHandler().
+--	Window:remInputHandler(msgtype, object, func): Removes an input handler
+--	that was previously registered with the window using
+--	Window:addInputHandler().
 -------------------------------------------------------------------------------
 
-function Window:remInputHandler(object, handler)
-	for i, h in ipairs(self.InputHandlers) do
-		if h[1] == object and h[2] == handler then
-			remove(self.InputHandlers, i)
-			return
+function Window:remInputHandler(msgtype, object, func)
+	assert(msgtype)
+	for _, mask in ipairs(MSGTYPES) do
+		local ih = self.InputHandlers[mask]
+		if ih then
+			if testflag(msgtype, mask) then
+				for i, h in ipairs(ih) do
+					if h[1] == object and h[2] == func then
+						remove(ih, i)
+						if mask == ui.MSG_INTERVAL and #ih == 0 then
+							self.Drawable:setInterval(false)
+						end
+						break
+					end
+				end
+			end
 		end
 	end
 end
@@ -350,7 +396,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:passMsg(msg)
-	for _, hnd in ipairs { unpack(self.InputHandlers) } do
+	for _, hnd in ipairs { unpack(self.InputHandlers[msg[2]]) } do
 		msg = hnd[2](hnd[1], msg)
 		if not msg then
 			return false
@@ -396,20 +442,6 @@ local MsgHandlers =
 	end,
 	[ui.MSG_MOUSEOVER] = function(self, msg)
 		self:setHiliteElement()
-		return msg
-	end,
-	[ui.MSG_INTERVAL] = function(self, msg)
-		local ae = self.ActiveElement
-		if ae and ae.Active then
-			assert(self.HoldTickActive > 0)
-			self.HoldTickActive = self.HoldTickActive - 1
-			if self.HoldTickActive == 0 then
-				self.HoldTickActiveInit = self.HoldTickInitRepeat
-				self.HoldTickActive = self.HoldTickInitRepeat
-				ae:setValue("Hold", true)
-			end
-		end
-		self:setValue("Interval", true)
 		return msg
 	end,
 	[ui.MSG_MOUSEBUTTON] = function(self, msg)
@@ -528,10 +560,10 @@ local MsgHandlers =
 function Window:handleInput(msg)
 	self.MouseX, self.MouseY = msg[4], msg[5]
 	msg = MsgHandlers[msg[2]](self, msg)
-	if not msg then
-		return false
+	if msg then
+		return Group.passMsg(self, msg)
 	end
-	return Group.passMsg(self, msg)
+	return false
 end
 
 -------------------------------------------------------------------------------
@@ -714,6 +746,7 @@ function Window:setActiveElement(e, notify)
 	local se = self.ActiveElement
 	if e ~= se then
 		if se then
+			self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 			se:setValue("Active", false, notify)
 		end
 		self.ActiveElement = e or false
@@ -721,8 +754,28 @@ function Window:setActiveElement(e, notify)
 			self.HoldTickActive = self.HoldTickInitFirst
 			self.HoldTickActiveInit = self.HoldTickInitFirst
 			e:setValue("Active", true, notify)
+			self:addInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 		end
 	end
+end
+
+
+-------------------------------------------------------------------------------
+--	handleHold: use interval messages to decrease a counter for hold events:
+-------------------------------------------------------------------------------
+
+function Window:handleHold(msg)
+	local ae = self.ActiveElement
+	if ae and ae.Active then
+		assert(self.HoldTickActive > 0)
+		self.HoldTickActive = self.HoldTickActive - 1
+		if self.HoldTickActive == 0 then
+			self.HoldTickActiveInit = self.HoldTickInitRepeat
+			self.HoldTickActive = self.HoldTickInitRepeat
+			ae:setValue("Hold", true)
+		end
+	end
+	return msg
 end
 
 -------------------------------------------------------------------------------

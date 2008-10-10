@@ -16,28 +16,13 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 1.8"
+_VERSION = "Tunnel 1.9"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
 
 local Tunnel = _M
-
-function Tunnel:show(display, drawable)
-	if Frame.show(self, display, drawable) then
-		self.Window:addNotify("Interval", ui.NOTIFY_ALWAYS,
-			self.IntervalNotify)
-		return true
-	end
-end
-
-function Tunnel:hide()
-	Frame.hide(self)
-	self.Window:remNotify("Interval", ui.NOTIFY_ALWAYS, self.IntervalNotify)
-end
-
--------------------------------------------------------------------------------
 
 function Tunnel:setNumSeg(val)
 	self.numseg = val
@@ -49,16 +34,12 @@ function Tunnel:setViewZ(val)
 	self.viewz = val
 end
 
--------------------------------------------------------------------------------
-
 function Tunnel.init(self)
 
 	self.MinWidth = self.MinWidth or 128
 	self.MinHeight = self.MinHeight or 128
 	self.MaxWidth = self.MaxWidth or 640
 	self.MaxHeight = self.MaxHeight or 480
-
-	self.IntervalNotify = { self, "updateInterval" }
 
 	-- movement table:
 	self.dx = {  }
@@ -79,6 +60,18 @@ function Tunnel.init(self)
 	self.size = { 320, 256 }
 
 	return Frame.init(self)
+end
+
+function Tunnel:show(display, drawable)
+	if Frame.show(self, display, drawable) then
+		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+		return true
+	end
+end
+
+function Tunnel:hide()
+	self.Window:remInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+	Frame.hide(self)
 end
 
 function Tunnel:draw()
@@ -116,8 +109,7 @@ function Tunnel:draw()
 	end
 end
 
-function Tunnel:updateInterval()
--- 	db.warn("update")
+function Tunnel:updateInterval(msg)
 	self.z = self.z - self.speed
 	if self.z < 0 then
 		self.z = self.z + self.dist
@@ -125,4 +117,5 @@ function Tunnel:updateInterval()
 		self.cy = self.cy == self.ndx and 1 or self.cy + 1
 	end
 	self.Redraw = true
+	return msg
 end

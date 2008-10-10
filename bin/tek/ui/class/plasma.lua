@@ -18,7 +18,7 @@ local sin = math.sin
 local unpack = unpack
 
 module("tek.ui.class.plasma", tek.ui.class.area)
-_VERSION = "Plasma 1.1"
+_VERSION = "Plasma 1.2"
 
 local WIDTH = 80
 local HEIGHT = 60
@@ -68,21 +68,19 @@ function Plasma.init(self)
 	self.MinHeight = HEIGHT * PIXHEIGHT
 	self.MaxWidth = WIDTH * PIXWIDTH
 	self.MaxHeight = HEIGHT * PIXHEIGHT
-	self.IntervalNotify = { self, "update" }
 	return Area.init(self)
 end
 
 function Plasma:show(display, drawable)
 	if Area.show(self, display, drawable) then
-		self.Window:addNotify("Interval", ui.NOTIFY_ALWAYS,
-			self.IntervalNotify)
+		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 		return true
 	end
 end
 
 function Plasma:hide()
+	self.Window:remInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 	Area.hide(self)
-	self.Window:remNotify("Interval", ui.NOTIFY_ALWAYS, self.IntervalNotify)
 end
 
 function Plasma:draw()
@@ -116,7 +114,7 @@ function Plasma:draw()
 
 end
 
-function Plasma:update()
+function Plasma:updateInterval(msg)
 	local p = self.Params
 	local xp1, xp2, yp1, yp2, yp3 = unpack(p)
 	yp1 = (yp1 - 9) % 1024
@@ -126,4 +124,5 @@ function Plasma:update()
 	xp2 = (xp2 - 2) % 1024
 	p[1], p[2], p[3], p[4], p[5] = xp1, xp2, yp1, yp2, yp3
 	self.Redraw = true
+	return msg
 end

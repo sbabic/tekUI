@@ -1715,7 +1715,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v1.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v1.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1813,7 +1813,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v9.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1975,6 +1975,12 @@
 				coordinates <code>deltax</code> and <code>deltay</code>. The <code>exposures</code> argument is a
 				table used for collecting the raw coordinates of rectangles which got
 				exposed as a result of the copy operation.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Drawable:setInterval" id="Drawable:setInterval"><code>Drawable:setInterval(onoff)</code></a></h3>
+			<p>
+				Enable or disabled interval messages.
 			</p>
 			<hr />
 		</div>
@@ -2263,7 +2269,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.14)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.15)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4357,7 +4363,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4732,7 +4738,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v5.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v5.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4839,7 +4845,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v7.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v7.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5022,24 +5028,27 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Window:addInputHandler" id="Window:addInputHandler"><code>Window:addInputHandler(object, func)</code></a></h3>
+		<div class="node"><h3><a name="Window:addInputHandler" id="Window:addInputHandler"><code>Window:addInputHandler(msgtype, object, func)</code></a></h3>
 			<p>
-				Adds an <code>object</code> and <code>function</code> 
-				to the window's input chain. The input handlers is invoked as follows:
+				Adds an <code>object</code> and
+				<code>function</code> to the window's chain of handlers for input of the specified
+				type. Multiple input types can be handled by one handler by logically
+				or'ing message types. The input handlers are invoked as follows:
 			</p>
 <pre>
 message = function(object, message)
 </pre>
 			<p>
-				The handler is expected to return the message, which will pass it on to
-				the next handler in the window's chain.
+				The handler is expected to return the message, which will in turn pass
+				it on to the next handler in the window's chain.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:remInputHandler" id="Window:remInputHandler"><code>Window:remInputHandler(object, func)</code></a></h3>
+		<div class="node"><h3><a name="Window:remInputHandler" id="Window:remInputHandler"><code>Window:remInputHandler(msgtype, object, func)</code></a></h3>
 			<p>
-				Removes an input handler that
-				was previously registered with the window using <a href="#Window:addInputHandler"><code>Window:addInputHandler()</code></a>.
+				Removes an input handler
+				that was previously registered with the window using
+				<a href="#Window:addInputHandler"><code>Window:addInputHandler()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -6873,7 +6882,7 @@ method(object, arg1, ...)
 		</p>
 		<hr />
 	</div>
-	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v14.2)</a></h2>
+	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v14.3)</a></h2>
 		<div class="definition"><dfn>OVERVIEW</dfn>
 			<blockquote>
 				<p>
@@ -7210,7 +7219,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Wed Oct  8 00:49:40 2008
+			Document generated on Fri Oct 10 15:57:27 2008
 		</p>
 	</div>
 	</body>

@@ -137,7 +137,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 13.5"
+_VERSION = "ListGadget 13.6"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -937,8 +937,8 @@ function ListGadget:handleInput(msg)
 				end
 			end
 		end
-		return msg
 	end
+	return msg
 end
 
 -------------------------------------------------------------------------------
@@ -947,9 +947,9 @@ end
 
 function ListGadget:onFocus(focused)
 	if focused then
-		self.Window:addInputHandler(self, ListGadget.handleInput)
+		self.Window:addInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
 	else
-		self.Window:remInputHandler(self, ListGadget.handleInput)
+		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
 	end
 	Gadget.onFocus(self, focused)
 end

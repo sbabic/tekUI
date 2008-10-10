@@ -50,9 +50,9 @@ local overlap = Region.overlapCoords
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 9.2"
+_VERSION = "Drawable 10.0"
 
-DELAY = 0.003
+DEBUG_DELAY = 0.003
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -62,6 +62,7 @@ local Drawable = _M
 
 function Drawable.init(self)
 	assert(self.Display)
+	self.Interval = false
 	self.Visual = false
 	self.Pens = { }
 	self.Left = false
@@ -109,9 +110,8 @@ function Drawable:open(title, w, h, minw, minh, maxw, maxh, x, y, center,
 		self.DebugPen1 = self.Visual:allocpen(255, 255, 0)
 		self.DebugPen2 = self.Visual:allocpen(0, 0, 0)
 
-		self.Visual:setinput("close", "keydown", "keyup", "newsize",
-			"mousebutton", "refresh", "mousemove", "mouseover", "interval",
-			"focus")
+		self.Visual:setinput(self.Interval and ui.MSG_ALL or
+			ui.MSG_ALL - ui.MSG_INTERVAL)
 
 		self.Display:allocPens(self.Visual, self.Pens)
 
@@ -301,48 +301,69 @@ function Drawable:copyArea(x0, y0, x1, y1, dx, dy, t)
 	self.Visual:copyarea(x0, y0, x1 - x0 + 1, y1 - y0 + 1, dx, dy, t)
 end
 
+-------------------------------------------------------------------------------
+--	Drawable:setInterval(onoff): Enable or disabled interval messages.
+-------------------------------------------------------------------------------
+
+function Drawable:setInterval(onoff)
+	self.Interval = onoff
+	if self.Visual then
+		if onoff then
+			db.info("enable interval")
+			self.Visual:setinput(ui.MSG_INTERVAL)
+		else
+			db.info("clear interval")
+			self.Visual:clearinput(ui.MSG_INTERVAL)
+		end
+	end
+end
+
+-------------------------------------------------------------------------------
+--	debug versions:
+-------------------------------------------------------------------------------
+
 function Drawable:fillRect_debug(...)
 	local x0, y0, x1, y1, p = ...
 	self.Visual:frect(x0, y0, x1, y1, self.DebugPen1)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:frect(x0, y0, x1, y1, self.DebugPen2)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:frect(x0, y0, x1, y1, p)
 end
 
 function Drawable:drawRect_debug(...)
 	local x0, y0, x1, y1, p = ...
 	self.Visual:rect(x0, y0, x1, y1, self.DebugPen1)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:rect(x0, y0, x1, y1, self.DebugPen2)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:rect(x0, y0, x1, y1, p)
 end
 
 function Drawable:drawLine_debug(...)
 	local x0, y0, x1, y1, p = ...
 	self.Visual:line(x0, y0, x1, y1, self.DebugPen1)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:line(x0, y0, x1, y1, self.DebugPen2)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:line(x0, y0, x1, y1, p)
 end
 
 function Drawable:drawPlot_debug(...)
 	local x0, y0, p = ...
 	self.Visual:plot(x0, y0, self.DebugPen1)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:plot(x0, y0, self.DebugPen2)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:plot(x0, y0, p)
 end
 
 function Drawable:drawText_debug(...)
 	local x0, y0, text, p1, p2 = ...
 	self.Visual:text(x0, y0, text, self.DebugPen1, p2 and self.DebugPen2)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:text(x0, y0, text, self.DebugPen2, p2 and self.DebugPen1)
-	self.Display:sleep(DELAY)
+	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:text(x0, y0, text, p1, p2)
 end
 
