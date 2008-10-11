@@ -50,9 +50,11 @@
 --
 --	IMPLEMENTS::
 --		- Window:addInputHandler() - Adds an input handler to the window
+--		- Window:addInterval() - Adds an interval timer to the window
 --		- Window:clickElement() - Simulates a click on an element
 --		- Window:onChangeStatus() - Handler for {{Status}}
 --		- Window:remInputHandler() - Removes an input handler from the window
+--		- Window:remInterval() - Removes interval timer to the window
 --		- Window:setActiveElement() - Sets the window's active element
 --		- Window:setDblClickElement() - Sets the window's doubleclick element
 --		- Window:setFocusElement() - Sets the window's focused element
@@ -90,7 +92,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 7.6"
+_VERSION = "Window 8.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -151,6 +153,7 @@ function Window.init(self)
 		[ui.MSG_INTERVAL] = { },
 		[ui.MSG_KEYUP] = { },
 	}
+	self.IntervalNest = 0
 	self.KeyShortcuts = { }
 	self.LayoutGroup = { }
 	self.Left = self.Left or false
@@ -230,7 +233,7 @@ function Window:addInputHandler(msgtype, object, func)
 			if testflag(msgtype, mask) then
 				insert(ih, 1, hnd)
 				if mask == ui.MSG_INTERVAL and #ih == 1 then
-					self.Drawable:setInterval(true)
+					self:addInterval()
 				end
 			end
 		end
@@ -253,13 +256,44 @@ function Window:remInputHandler(msgtype, object, func)
 					if h[1] == object and h[2] == func then
 						remove(ih, i)
 						if mask == ui.MSG_INTERVAL and #ih == 0 then
-							self.Drawable:setInterval(false)
+							self:remInterval()
 						end
 						break
 					end
 				end
 			end
 		end
+	end
+end
+
+-------------------------------------------------------------------------------
+--	Window:addInterval(): Adds an interval timer to the window, which will
+--	furtheron generate MSG_INTERVAL messages 50 times per second. These
+--	messages cause a considerable load to the application, therefore each call
+--	to this function should be paired with an matching call to
+--	Window:remInterval(), which will cause the interval timer to stop when
+--	no clients are needing it anymore.
+-------------------------------------------------------------------------------
+
+function Window:addInterval()
+	self.IntervalNest = self.IntervalNest + 1
+	if self.IntervalNest == 1 then
+		db.info("add interval")
+		self.Drawable:setInterval(true)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	Window:remInterval(): Stops producing interval messages when called by
+--	the last client who requested a interval timer using Window:addInterval().
+-------------------------------------------------------------------------------
+
+function Window:remInterval()
+	self.IntervalNest = self.IntervalNest - 1
+	assert(self.IntervalNest >= 0)
+	if self.IntervalNest == 0 then
+		db.info("rem interval")
+		self.Drawable:setInterval(false)
 	end
 end
 

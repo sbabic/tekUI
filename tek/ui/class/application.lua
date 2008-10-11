@@ -100,7 +100,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 8.1"
+_VERSION = "Application 9.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -489,14 +489,14 @@ function Application:run()
 
 	while self.Status == "running" and #self.OpenWindows > 0 do
 
-		-- if no coroutines are left, we may actually go to sleep:
-		local suspend = self:serviceCoroutines() == 0
+		local idle = self:serviceCoroutines()
 
 		if collectgarbage then
 			collectgarbage("step")
 		end
 
-		self:waitWindows(suspend)
+		-- if no coroutines are running, we can go to sleep:
+		self:waitWindows(idle)
 
 		while #ma > 0 do
 			state[2] = remove(ma, 1)
@@ -537,44 +537,58 @@ end
 -------------------------------------------------------------------------------
 
 function Application:addCoroutine(func, ...)
-	insert(self.Coroutines, cocreate(function()
-		func(unpack(arg))
-	end))
+	insert(self.Coroutines, { cocreate(function() func(unpack(arg)) end) } )
 end
 
 -------------------------------------------------------------------------------
---	numcoroutines = serviceCoroutines() - internal
+--	idle = serviceCoroutines() - internal
 -------------------------------------------------------------------------------
 
 function Application:serviceCoroutines()
 	local crt = self.Coroutines
 	local c = remove(crt, 1)
 	if c then
-		local success, errmsg = coresume(c)
-		local s = costatus(c)
+		local success, res = coresume(c[1])
+		local s = costatus(c[1])
 		if s == "suspended" then
+			c[2] = res or false -- extra argument from yield
 			insert(crt, c)
 		else
 			if success then
 				db.info("Coroutine finished successfully")
 			else
-				db.error("Error in coroutine:\n%s\n%s", errmsg, traceback(c))
+				db.error("Error in coroutine:\n%s\n%s", res, traceback(c[1]))
 			end
 		end
 	end
-	return #crt
+	for _, c in ipairs(crt) do
+		if not c[2] then
+			return false -- a coroutine is running
+		end
+	end
+	return true -- all coroutines are idle
 end
 
 -------------------------------------------------------------------------------
---	Application:suspend(): Suspends the caller (which must be running in a
---	coroutine previously registered using Application:addCoroutine()) until
---	it is getting rescheduled by the application. This gives the application
---	an opportunity to service all pending messages and updates before the
---	coroutine is continued.
+--	Application:suspend([window]): Suspends the caller (which must be running
+--	in a coroutine) until it is getting rescheduled by the application.
+--	Coroutines can use this as a cooperation point, which gives the
+--	application an opportunity to service all pending messages and updates.
+--	If no argument is given, the application returns to the caller as quickly
+--	as possible. If an optional {{window}} is specified, the coroutine is put
+--	to sleep until something happens in the application, or an interval timer
+--	event is present at the window (i.e. the suspended coroutine is
+--	rescheduled after no longer than 1/50th of a second).
 -------------------------------------------------------------------------------
 
-function Application:suspend()
-	coyield()
+function Application:suspend(window)
+	if window then
+		window:addInterval()
+		coyield(window)
+		window:remInterval()
+	else
+		coyield()
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -626,7 +640,7 @@ function Application:requestFile(args)
 	dirlist:showDirectory()
 
 	repeat
-		Application.suspend()
+		self:suspend(window)
 		if window.Status ~= "show" then
 			-- window closed:
 			dirlist.Status = "cancelled"
@@ -704,7 +718,7 @@ function Application:easyRequest(title, text, ...)
 	window:setValue("Status", "show")
 
 	repeat
-		Application.suspend()
+		self:suspend(window)
 	until window.Status ~= "show"
 
 	self:remMember(window)

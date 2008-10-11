@@ -151,7 +151,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 14.1"
+_VERSION = "Area 14.2"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -651,9 +651,8 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getRectangle()
-	local r = self.Rect
-	if r[1] then
-		return unpack(r)
+	if self.Display then
+		return unpack(self.Rect)
 	end
 	db.warn("Layout not available")
 	return false

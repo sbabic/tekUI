@@ -45,7 +45,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 4.3"
+_VERSION = "Gauge 4.4"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -132,8 +132,8 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:getKnobRect()
-	local r = self.Rect
-	if r[1] >= 0 then
+	if self.Display then
+		local r = self.Rect
 		local p = self.Padding
 		local m = self.Child.MarginAndBorder
 		local km = self.Child.MinMax
@@ -182,7 +182,7 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:refresh()
-	Numeric.refresh(self)	
+	Numeric.refresh(self)
 	self.Child:refresh()
 end
 

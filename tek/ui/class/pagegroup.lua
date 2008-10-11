@@ -58,7 +58,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 8.1"
+_VERSION = "PageGroup 8.2"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -78,24 +78,6 @@ function PageContainerGroup.init(self)
 	self.PageElement = self.PageElement or false
 	self.PageNumber = self.PageNumber or 1
 	return Group.init(self)
-end
-
--------------------------------------------------------------------------------
---	setup: overrides
--------------------------------------------------------------------------------
-
-function PageContainerGroup:setup(app, window)
-	Gadget.setup(self, app, window)
-	self.PageElement:setup(app, window)
-end
-
--------------------------------------------------------------------------------
---	cleanup: overrides
--------------------------------------------------------------------------------
-
-function PageContainerGroup:cleanup()
-	self.PageElement:cleanup()
-	Gadget.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
@@ -236,7 +218,11 @@ function PageContainerGroup:getElement(mode)
 	elseif mode == "prevorparent" then
 		return self.Parent.Children[1]
 	elseif mode == "children" then
-		return { self.PageElement }
+		if self.Application then
+			return { self.PageElement }
+		else
+			return self.Children
+		end
 	elseif mode == "firstchild" or mode == "lastchild" then
 		return self.PageElement
 	end
@@ -251,12 +237,7 @@ function PageContainerGroup:changeTab(pagebuttons, newtabn)
 	pagebuttons[self.PageNumber]:setValue("Selected", false)
 	self.PageNumber = newtabn
 	self.PageElement:hide()
-	self.PageElement:cleanup()
 	self.PageElement = self.Children[newtabn]
-	ui.Application.connect(self.PageElement, self)
-	self.PageElement:connect(self)
-	self.Application:decodeProperties(self.PageElement)
-	self.PageElement:setup(self.Application, self.Window)
 	if self.Display then
 		if self.PageElement:show(self.Display, self.Drawable) then
 			local m = self.MarginAndBorder
