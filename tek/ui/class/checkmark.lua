@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 2.19"
+_VERSION = "CheckMark 2.20"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -121,7 +121,9 @@ end
 -------------------------------------------------------------------------------
 
 function CheckMark:hide()
-	self.TextRecords[1] = false
+	if self.TextRecords then
+		self.TextRecords[1] = false
+	end
 	Text.hide(self)
 end
 

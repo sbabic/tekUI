@@ -28,6 +28,7 @@
 --
 --	IMPLEMENTS::
 --		- TextInput:onEnter() - Handler invoked when {{Enter}} ist set
+--		- TextInput:setCursor() - Set cursor position
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
@@ -60,7 +61,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 5.4"
+_VERSION = "TextInput 6.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -374,6 +375,24 @@ function TextInput:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
+--	self:setCursor(pos): Set cursor position, absolute
+-------------------------------------------------------------------------------
+
+function TextInput:setCursor(tc)
+	local to = self.TextOffset
+	local tw = self.TextWidth
+	local len = self.TextBuffer:len()
+	if tc >= tw + to then
+		to = to + (tc - tw + 1)
+		to = min(to, len - 1)
+		tc = tw - 1
+	end
+	tc = min(tc, len - to)
+	self.TextOffset = to
+	self.TextCursor = tc
+end
+
+-------------------------------------------------------------------------------
 --	msg = handleInput(msg)
 -------------------------------------------------------------------------------
 
@@ -414,7 +433,7 @@ function TextInput:handleInput(msg)
 					self.TextCursor = 0
 					self.TextOffset = 0
 				elseif code == 0xf026 then -- posend
-					self.TextCursor = self.TextBuffer:len() + 1
+					self:setCursor(self.TextBuffer:len() + 1)
 				elseif code > 31 and code < 256 then
 					t:insert(utf8code, to + tc + 1)
 					crsrright(self)

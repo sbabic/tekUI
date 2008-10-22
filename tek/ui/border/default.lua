@@ -9,7 +9,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 1.3"
+_VERSION = "DefaultBorder 1.4"
 
 local PEN_SHINE = ui.PEN_BORDERSHINE
 local PEN_SHADOW = ui.PEN_BORDERSHADOW
@@ -118,7 +118,9 @@ function DefaultBorder:show(display, drawable)
 end
 
 function DefaultBorder:hide()
-	self.Parent.Display:closeFont(self.LegendFont)
+	if self.Parent.Display then
+		self.Parent.Display:closeFont(self.LegendFont)
+	end
 	self.LegendFont = false
 	Border.hide(self)
 end

@@ -58,7 +58,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 8.2"
+_VERSION = "PageGroup 8.3"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -117,7 +117,8 @@ end
 
 function PageContainerGroup:markDamage(r1, r2, r3, r4)
 	Gadget.markDamage(self, r1, r2, r3, r4)
-	self.Redraw = self.Redraw or self.FreeRegion:checkOverlap(r1, r2, r3, r4)
+	self.Redraw = self.Redraw or self.FreeRegion and
+		self.FreeRegion:checkOverlap(r1, r2, r3, r4)
 	self.PageElement:markDamage(r1, r2, r3, r4)
 end
 

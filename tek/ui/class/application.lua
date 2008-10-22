@@ -100,7 +100,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 9.0"
+_VERSION = "Application 9.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -708,7 +708,7 @@ function Application:easyRequest(title, text, ...)
 		Orientation = "vertical",
 		Children =
 		{
-			ui.Text:new { Width = "auto", Text = text },
+			ui.Text:new { Width = "fill", Text = text },
 			ui.Group:new { Width = "fill", SameSize = true, Children = buttons }
 		}
 	}

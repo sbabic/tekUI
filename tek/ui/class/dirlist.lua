@@ -70,7 +70,7 @@ local sort = table.sort
 local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 8.2"
+_VERSION = "DirList 9.0"
 
 local DirList = _M
 
@@ -352,7 +352,7 @@ function DirList:showStats(selected, total)
 	selected = selected or list.NumSelectedLines
 	total = total or list:getN()
 	self.StatusText:setValue("Text",
-		self.Locale.SELECTED:format(selected, total))
+		self.Locale.N_OF_M_SELECTED:format(selected, total))
 end
 
 -------------------------------------------------------------------------------
@@ -410,6 +410,7 @@ end
 
 function DirList:scanDir(path)
 	local app = self.Application
+	local diri = self:getDirectoryIterator(path)
 
 	app:addCoroutine(function()
 
@@ -423,7 +424,6 @@ function DirList:scanDir(path)
 		obj:setList(List:new())
 
 		self.Selection = { }
-		diri = self:getDirectoryIterator(path)
 		if diri then
 			local list = { }
 			local n = 0
@@ -456,12 +456,16 @@ function DirList:scanDir(path)
 			obj:setValue("CursorLine", 1)
 			obj:setValue("Focus", true)
 			self:showStats()
+			self:finishScanDir(path)
 		end
 
 		self.ScanMode = false
 
 	end)
 
+end
+
+function DirList:finishScanDir(path)
 end
 
 -------------------------------------------------------------------------------
@@ -514,8 +518,10 @@ function DirList:dblClickList()
 	local entry = list:getItem(list.CursorLine)
 	if entry then
 		if not self:setFileEntry(entry[1][1]) then
-			-- click on "Open":
-			self.Window:clickElement(self.OpenGadget)
+			if self.Window then
+				-- click on "Open":
+				self.Window:clickElement(self.OpenGadget)
+			end
 		end
 	end
 end

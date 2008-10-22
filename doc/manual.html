@@ -174,6 +174,9 @@
 								<li>
 									<a href="#tek.ui.class.theme">Theme</a> 
 								</li>
+								<li>
+									<a href="#tek.ui.layout.default">Layout</a> 
+								</li>
 							</ul>
 						</blockquote>
 					</li>
@@ -189,6 +192,9 @@
 					</li>
 					<li>
 						<a href="#tek.lib.debug">debug</a> 
+					</li>
+					<li>
+						<a href="#tek.lib.region">Region</a> 
 					</li>
 					<li>
 						<a href="#tek.ui">ui</a> 
@@ -413,7 +419,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v8.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v9.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -618,7 +624,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v9.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v9.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1013,7 +1019,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v2.19)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v2.20)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1494,7 +1500,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v8.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v8.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1589,7 +1595,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v5.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v5.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4361,7 +4367,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4736,7 +4742,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v5.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v6.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4787,6 +4793,9 @@
 						<li style="list-style-type: none">
 							<a href="#TextInput:onEnter"><code>TextInput:onEnter()</code></a> - Handler invoked when <code>Enter</code> ist set
 						</li>
+						<li style="list-style-type: none">
+							<a href="#TextInput:setCursor"><code>TextInput:setCursor()</code></a> - Set cursor position
+						</li>
 					</ul>
 				</blockquote>
 			</div>
@@ -4833,6 +4842,12 @@
 				</blockquote>
 				<hr />
 			</div>
+		</div>
+		<div class="node"><h3><a name="TextInput:setCursor" id="TextInput:setCursor"><code>self:setCursor(pos)</code></a></h3>
+			<p>
+				Set cursor position, absolute
+			</p>
+			<hr />
 		</div>
 		<div class="node"><h3><a name="TextInput:onEnter" id="TextInput:onEnter"><code>onEnter(text)</code></a></h3>
 			<p>
@@ -5355,6 +5370,66 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">Layout (v3.6)</a></h2>
+			<div class="definition"><dfn>LINEAGE</dfn>
+				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> :
+						<a href="#tek.class">Class</a> /
+						Layout
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						Default layouter
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>IMPLEMENTS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Layout:layout"><code>Layout:layout()</code></a> - Layout group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Layout:askMinMax"><code>Layout:askMinMax()</code></a> - Calculate group's minimum and maximum
+							dimensions
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>OVERRIDES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Class:new"><code>Class.new()</code></a> 
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="Layout:layout" id="Layout:layout"><code>Layout:layout(group, x0, y0, x1, y1[, markdamage])</code></a></h3>
+			<p>
+				Layouts the <a href="#tek.ui.class.group">Group</a> into the specified
+				rectangle and calculates the sizes and positions of all of its
+				children. The optional <code>markdamage</code> argument is passed to subsequent
+				invocations of <a href="#Area:layout">child:layout()</a>. This function will
+				also call the <a href="#Area:punch">punch()</a> method on each child for
+				subtracting its new outline from the group's <code>FreeRegion</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Layout:askMinMax" id="Layout:askMinMax"><code>minw, minh, maxw, maxh = Layout:askMinMax(group, minw, minh, maxw, maxh)</code></a></h3>
+			<p>
+				This method queries the specified <a href="#tek.ui.class.group">Group</a> for
+				its size requirements, which will subsequently invoke
+				<a href="#Area:askMinMax">child:askMinMax()</a> for all its children.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v4.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<p>
@@ -5676,6 +5751,145 @@ SOURCE=-s/A/M,DEST=-d/A/K
 				number of arguments in the template. If the arguments cannot be matched
 				against the template, the result will be <strong>nil</strong> followed by an error
 				message.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v3.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<p>
+					This library implements the management of regions, which are collections
+					of non-overlapping rectangles.
+				</p>
+			</div>
+			<div class="definition"><dfn>FUNCTIONS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Region:overlapCoords"><code>Region.overlapCoords()</code></a> - Return intersection of two rectangles
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:new"><code>Region.new()</code></a> - Create a new Region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:setRect"><code>Region:setRect()</code></a> - Reset a region to a single rectangle
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:orRect"><code>Region:orRect()</code></a> - <em>Or</em> a rectangle to a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:orRegion"><code>Region:orRegion()</code></a> - <em>Or</em> a region to a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:andRect"><code>Region:andRect()</code></a> - <em>And</em> a rectangle to a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:xorRect"><code>Region:xorRect()</code></a> - <em>Exclusive Or</em> a rectangle to a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:subRect"><code>Region:subRect()</code></a> - Subtract a rectangle from a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:subRegion"><code>Region:subRegion()</code></a> - Subtract a region from a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:getRects"><code>Region:getRects()</code></a> - Get an iterator on rectangles in a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:overlapRect"><code>Region:overlapRect()</code></a> - Get the intersection of a rectangle in a
+							region with a rectangle
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:checkOverlap"><code>Region:checkOverlap()</code></a> - Check if a rectangle intersects a region
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="Region:overlapCoords" id="Region:overlapCoords"><code>x0, y0, x1, y1 = Region.overlapCoords(d1, d2, d3, d4, s1, s2, s3, s4)</code></a></h3>
+			<p>
+				Returns the coordinates of a rectangle where a rectangle specified by
+				the coordinates s1, s2, s3, s4 overlaps with the rectangle specified
+				by the coordinates d1, d2, d3, d4. The return value is <strong>nil</strong> if
+				the rectangles do not overlap.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:new" id="Region:new"><code>region = Region.new(r1, r2, r3, r4)</code></a></h3>
+			<p>
+				Creates a new region from the given
+				coordinates.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:setRect" id="Region:setRect"><code>region:setRect(r1, r2, r3, r4)</code></a></h3>
+			<p>
+				Overwrites an existing region with the
+				specified coordinates.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:orRect" id="Region:orRect"><code>region:orRect(r1, r2, r3, r4)</code></a></h3>
+			<p>
+				Logical <em>or</em>s a rectangle to a region
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:orRegion" id="Region:orRegion"><code>region:orRegion(region)</code></a></h3>
+			<p>
+				Logical <em>or</em>s another region to a region
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:andRect" id="Region:andRect"><code>region:andRect(r1, r2, r3, r4)</code></a></h3>
+			<p>
+				Logical <em>and</em>s a rectange to a region
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:xorRect" id="Region:xorRect"><code>region:xorRect(r1, r2, r3, r4)</code></a></h3>
+			<p>
+				Logical <em>xor</em>s a rectange to a region
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:subRect" id="Region:subRect"><code>region:subRect(r1, r2, r3, r4)</code></a></h3>
+			<p>
+				Subtracts a rectangle from a region
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:getRects" id="Region:getRects"><code>region:getRects()</code></a></h3>
+			<p>
+				Gets an iterator on the rectangles in a region.
+				The only valid use is in <strong>for</strong> constructs like this:
+			</p>
+<pre>
+for _, x0, y0, x1, y1 in region:getRects() do
+end
+</pre>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:overlapRect" id="Region:overlapRect"><code>x0, y0, x1, y1 = region:overlapRect(id, x0, y0, x1, y1)</code></a></h3>
+			<p>
+				Returns the
+				coordinates of a rectangle where a rectangle identified by id overlaps
+				with the specified coordinates. The return value is <strong>nil</strong> if the
+				rectangles do not overlap.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:checkOverlap" id="Region:checkOverlap"><code>success = region:checkOverlap(x0, y0, x1, y1)</code></a></h3>
+			<p>
+				Returns a boolean
+				indicating whether a rectangle specified by its coordinates overlaps
+				with a region.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:subRegion" id="Region:subRegion"><code>region:subRegion(region2)</code></a></h3>
+			<p>
+				Subtracts <code>region2</code> from <code>region</code>.
 			</p>
 			<hr />
 		</div>
@@ -7042,7 +7256,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Sat Oct 11 20:53:53 2008
+			Document generated on Wed Oct 22 23:42:47 2008
 		</p>
 	</div>
 	</body>

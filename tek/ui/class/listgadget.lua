@@ -137,7 +137,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 13.6"
+_VERSION = "ListGadget 13.7"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -267,8 +267,10 @@ end
 
 function ListGadget:hide()
 	self.CursorObject:hide()
-	self.Display:closeFont(self.Font)
-	self.Font = false
+	if self.Display then
+		self.Display:closeFont(self.Font)
+		self.Font = false
+	end
 	Gadget.hide(self)
 end
 

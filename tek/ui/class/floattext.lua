@@ -63,7 +63,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 5.0"
+_VERSION = "FloatText 5.1"
 
 local FloatText = _M
 
@@ -146,8 +146,10 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:hide()
-	self.Display:closeFont(self.Font)
-	self.Font = false
+	if self.Display then
+		self.Display:closeFont(self.Font)
+		self.Font = false
+	end
 	Area.hide(self)
 end
 
@@ -204,31 +206,33 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:prepareText()
-	local lw = 0 -- widest width in text
-	local w, h
-	local i = 0
-	local wl = { }
-	self.WidthsCache = wl -- cache for word lengths / line lengths
-	if self.Preformatted then
-		-- determine widths line by line
-		for line in self.Text:gmatch("([^\n]*)\n?") do
-			w, h = Display:getTextSize(self.Font, line)
-			lw = max(lw, w)
-			i = i + 1
-			wl[i] = w
+	if self.Display then
+		local lw = 0 -- widest width in text
+		local w, h
+		local i = 0
+		local wl = { }
+		self.WidthsCache = wl -- cache for word lengths / line lengths
+		if self.Preformatted then
+			-- determine widths line by line
+			for line in self.Text:gmatch("([^\n]*)\n?") do
+				w, h = Display:getTextSize(self.Font, line)
+				lw = max(lw, w)
+				i = i + 1
+				wl[i] = w
+			end
+		else
+			-- determine widths word by word
+			for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
+				w, h = Display:getTextSize(self.Font, word)
+				lw = max(lw, w)
+				i = i + 1
+				wl[i] = w
+			end
+			self.WordSpacing = Display:getTextSize(self.Font, " ")
 		end
-	else
-		-- determine widths word by word
-		for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
-			w, h = Display:getTextSize(self.Font, word)
-			lw = max(lw, w)
-			i = i + 1
-			wl[i] = w
-		end
-		self.WordSpacing = Display:getTextSize(self.Font, " ")
+		self.MinWidth, self.MinHeight = lw, h
+		return lw, h
 	end
-	self.MinWidth, self.MinHeight = lw, h
-	return lw, h
 end
 
 -------------------------------------------------------------------------------
