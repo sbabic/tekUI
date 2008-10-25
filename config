@@ -23,7 +23,7 @@ LUA_SHARE = /usr/local/share/lua/5.1
 # Libraries:
 #------------------------------------------------------------------------------
 
-PLATFORM_LIBS = -pthread -ldl
+PLATFORM_LIBS = -pthread
 
 LUA_DEFS = -I/usr/local/include/lua51 -I/usr/include/lua5.1
 
@@ -51,7 +51,7 @@ MODDIR = $(BINDIR)/mod
 #------------------------------------------------------------------------------
 
 CC = gcc
-#DEBUG = -g -DTDEBUG=10
+DEBUG = -g -DTDEBUG=10
 WARN = -Wall -Wno-unused-parameter
 OPT = -O2
 INCL = -I. -Iinclude -I$(INCDIR)
