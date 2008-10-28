@@ -71,7 +71,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.15"
+_VERSION = "Slider 6.16"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -192,16 +192,18 @@ function Slider:getKnobRect()
 		local r = self.Range - self.Min
 		local v = self.Value
 		v = self.ForceInteger and floor(v) or v
-		if self.Orientation == "horizontal" then
-			local w = x1 - x0 - km[1] + 1
-			x0 = max(x0, x0 + floor((v - self.Min) * w / r))
-			x1 = min(x1, x0 + floor((self.Range - self.Max) * w / r) +
-				km[1] - 1)
-		else
-			local h = y1 - y0 - km[2] + 1
-			y0 = max(y0, y0 + floor((v - self.Min) * h / r))
-			y1 = min(y1, y0 + floor((self.Range - self.Max) * h / r) +
-				km[2] - 1)
+		if r > 0 then
+			if self.Orientation == "horizontal" then
+				local w = x1 - x0 - km[1] + 1
+				x0 = max(x0, x0 + floor((v - self.Min) * w / r))
+				x1 = min(x1, x0 + floor((self.Range - self.Max) * w / r) +
+					km[1] - 1)
+			else
+				local h = y1 - y0 - km[2] + 1
+				y0 = max(y0, y0 + floor((v - self.Min) * h / r))
+				y1 = min(y1, y0 + floor((self.Range - self.Max) * h / r) +
+					km[2] - 1)
+			end
 		end
 		return x0 - m[1], y0 - m[2], x1 + m[3], y1 + m[4]
 	end

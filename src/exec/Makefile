@@ -20,9 +20,9 @@ $(MODDIR)/exec.so: $(OBJDIR)/exec_mod.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_mod.lo -L$(LIBDIR) -ltekc -ltekdebug $(PLATFORM_LIBS)
 
 $(BINDIR)/scanmodules: tests/scanmodules.c
-	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ $? -L$(LIBDIR) -ltekcmain -ltekdebug $(PLATFORM_LIBS)
+	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ $? -L$(LIBDIR) -ltekcmain -ltekdebug -ldl $(PLATFORM_LIBS)
 $(BINDIR)/interval: tests/interval.c
-	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ $? -L$(LIBDIR) -ltekcmain -ltekdebug $(PLATFORM_LIBS)
+	$(CC) $(BINCFLAGS) $(BINLFLAGS) -o $@ $? -L$(LIBDIR) -ltekcmain -ltekdebug -ldl $(PLATFORM_LIBS)
 
 ###############################################################################
 

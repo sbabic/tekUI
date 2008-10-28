@@ -52,8 +52,8 @@
 --
 -------------------------------------------------------------------------------
 
-local lfs = require "lfs"
 local db = require "tek.lib.debug"
+local _, lfs = pcall(require, "lfs")
 local ui = require "tek.ui"
 local List = require "tek.class.list"
 
@@ -62,15 +62,13 @@ local ListGadget = ui.ListGadget
 local Text = ui.Text
 local TextInput = ui.TextInput
 
-local dir = lfs.dir
 local insert = table.insert
 local pairs = pairs
 local pcall = pcall
 local sort = table.sort
-local stat = lfs.attributes
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 9.0"
+_VERSION = "DirList 9.1"
 
 local DirList = _M
 
@@ -81,7 +79,7 @@ local DirList = _M
 -------------------------------------------------------------------------------
 
 function DirList:getDirectoryIterator(path)
-	local success, dir = pcall(dir, path)
+	local success, dir = pcall(lfs.dir, path)
 	if success then
 		return function()
 			local e
@@ -105,7 +103,7 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:getFileStat(path, name, attr, idx)
-	return stat(path .. "/" .. name, attr)
+	return lfs.attributes(path .. "/" .. name, attr)
 end
 
 -------------------------------------------------------------------------------
