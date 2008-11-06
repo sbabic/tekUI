@@ -75,7 +75,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 14.3"
+_VERSION = "tekUI 14.4"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -319,7 +319,7 @@ function getLocale(appname, vendorname, deflang, lang)
 	m2.app = encodeURL(appname or "unnown")
 	m2.__index = function(tab, key)
 		db.warn("Locale key not found: %s", key)
-		return key:gsub("_", " ")
+		return key and key:gsub("_", " ") or ""
 	end
 	setmetatable(keys, m2)
 	lang = lang or getLanguage()

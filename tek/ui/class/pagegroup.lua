@@ -24,7 +24,7 @@
 --			An array of strings containing captions for each page in
 --			the group.
 --		- {{PageNumber [ISG]}} (number)
---			Number of the page that is initally selected. [Default: 1]
+--			Number of the page that is initially selected. [Default: 1]
 --			Setting this attribute invokes the PageGroup:onSetPageNumber()
 --			method.
 --
@@ -58,7 +58,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 8.3"
+_VERSION = "PageGroup 9.0"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -294,24 +294,30 @@ function PageGroup.new(class, self)
 		}
 	else
 		for i, c in ipairs(children) do
-			local text = self.PageCaptions[i] or tostring(i)
-			pagebuttons[i] = ui.Text:new
-			{
-				Class = "page-button",
-				Mode = "touch",
-				Width = "auto",
-				Text = text,
-				Notifications =
+			local pc = self.PageCaptions[i]
+			if type(pc) == "table" then
+				-- element
+			else
+				local text = pc or tostring(i)
+				pc = ui.Text:new
 				{
-					["Pressed"] =
+					Class = "page-button",
+					Mode = "touch",
+					Width = "auto",
+					Text = text,
+					Notifications =
 					{
-						[true] =
+						["Pressed"] =
 						{
-							{ self, "setValue", "PageNumber", i },
+							[true] =
+							{
+								{ self, "setValue", "PageNumber", i },
+							}
 						}
 					}
 				}
-			}
+			end
+			pagebuttons[i] = pc
 		end
 	end
 

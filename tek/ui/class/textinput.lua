@@ -16,11 +16,16 @@
 --		TextInput
 --
 --	OVERVIEW::
---		This class implements a gadget for editing and entering text.
+--		This class implements a gadget for entering and editing text.
 --
 --	ATTRIBUTES::
---		- {{Enter [ISG]}} - Text that is being 'entered' (by pressing the
---		return key) into the TextInput field.
+--		- {{Enter [ISG]}} (string)
+--			Text that is being 'entered' (by pressing the Return key) into
+--			the TextInput field. Setting this value causes the invocation of
+--			the TextInput:onEnter() method.
+--		- {{TabEnter [IG]}} (boolean)
+--			Indicates that leaving the element by pressing the Tab key
+--			should set the {{Enter}} attribute and invoke its handler.
 --
 --	STYLE PROPERTIES::
 --		- {{cursor-background-color}}
@@ -61,7 +66,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 6.0"
+_VERSION = "TextInput 7.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -86,6 +91,7 @@ function TextInput.init(self)
 	self.FHeight = false
 	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
+	self.TabEnter = self.TabEnter or false
 	self.Text = self.Text or ""
 	self.TextBuffer = UTF8String:new(self.Text)
 	self.Mode = "touch"
@@ -272,6 +278,8 @@ function TextInput:clickMouse(x, y)
 			self.BlinkTick = 0
 			self.BlinkState = 0
 		end
+	else
+		self:setCursor(self.Text:len() + 1)
 	end
 end
 
@@ -285,8 +293,8 @@ function TextInput:setEditing(onoff)
 		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 		self.Window:addInputHandler(ui.MSG_KEYUP + ui.MSG_KEYDOWN,
 			self, self.handleInput)
-		self:clickMouse()
 		self:setValue("Focus", true)
+		self:setValue("Selected", true)
 	elseif not onoff and self.Editing then
 		self:setValue("Selected", false)
 		self.Window:remInputHandler(ui.MSG_KEYUP + ui.MSG_KEYDOWN,
@@ -310,10 +318,7 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:onFocus(focused)
-	if not focused then
-		-- auto unselect with lost focus:
-		self:setEditing(focused)
-	end
+	self:setEditing(focused)
 	Text.onFocus(self, focused)
 end
 
@@ -421,6 +426,11 @@ function TextInput:handleInput(msg)
 					if t:len() > 0 then
 						t:erase(to + tc + 1, to + tc + 1)
 					end
+				elseif code == 9 and self.Editing and self.TabEnter then
+					self:setEditing(false)
+					self:setValue("Text", t:get())
+					self:setValue("Enter", t:get())
+					return msg -- next handler
 				elseif code == 13 then
 					self:setEditing(false)
 					self:setValue("Text", t:get())

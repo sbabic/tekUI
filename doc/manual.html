@@ -1500,7 +1500,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v8.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1540,7 +1540,7 @@
 							<code>PageNumber &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Number of the page that is initally selected. &#091;Default: 1&#093;
+									Number of the page that is initially selected. &#091;Default: 1&#093;
 									Setting this attribute invokes the <a href="#PageGroup:onSetPageNumber"><code>PageGroup:onSetPageNumber()</code></a> 
 									method.
 								</p>
@@ -4742,7 +4742,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v6.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v7.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4761,7 +4761,7 @@
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This class implements a gadget for editing and entering text.
+						This class implements a gadget for entering and editing text.
 					</p>
 				</blockquote>
 			</div>
@@ -4769,8 +4769,23 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>Enter &#091;ISG&#093;</code> - Text that is being 'entered' (by pressing the
-							return key) into the TextInput field.
+							<code>Enter &#091;ISG&#093;</code> (string)
+							<blockquote>
+								<p>
+									Text that is being 'entered' (by pressing the Return key) into
+									the TextInput field. Setting this value causes the invocation of
+									the <a href="#TextInput:onEnter"><code>TextInput:onEnter()</code></a> method.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>TabEnter &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Indicates that leaving the element by pressing the Tab key
+									should set the <code>Enter</code> attribute and invoke its handler.
+								</p>
+							</blockquote>
 						</li>
 					</ul>
 				</blockquote>
@@ -6919,7 +6934,7 @@ method(object, arg1, ...)
 		</p>
 		<hr />
 	</div>
-	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v14.3)</a></h2>
+	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v14.4)</a></h2>
 		<div class="definition"><dfn>OVERVIEW</dfn>
 			<blockquote>
 				<p>
@@ -7256,7 +7271,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Tue Oct 28 23:19:33 2008
+			Document generated on Thu Nov  6 23:06:31 2008
 		</p>
 	</div>
 	</body>

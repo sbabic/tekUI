@@ -78,6 +78,8 @@ typedef TTAG TVPEN;
 #define TVisualHost_GrabButton		(TVISTAGS_ + 0x202)
 #endif
 
+#define TVisual_Extended			(TVISTAGS_ + 0x400)
+
 /*****************************************************************************/
 /*
 **	Visual request
