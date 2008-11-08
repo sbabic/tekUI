@@ -66,7 +66,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 7.0"
+_VERSION = "TextInput 7.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -263,24 +263,18 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:clickMouse(x, y)
-	if x and y then
-		local tr, tc = self.TextRect, self.TextCursor
-		local fw, fh = self.FWidth, self.FHeight
-		if x >= tr[1] and x <= tr[3] and y >= tr[2] and y <= tr[4] then
-			tc = floor((x - tr[1]) / fw)
-		elseif x < tr[1] then
-			tc = 0
-		elseif x > tr[3] then
-			tc = floor((tr[3] - tr[1]) / fw) + 1
-		end
-		if tc ~= self.TextCursor then
-			self.TextCursor = tc
-			self.BlinkTick = 0
-			self.BlinkState = 0
-		end
-	else
-		self:setCursor(self.Text:len() + 1)
+	local tr, tc = self.TextRect, self.TextCursor
+	local fw, fh = self.FWidth, self.FHeight
+	if x >= tr[1] and x <= tr[3] and y >= tr[2] and y <= tr[4] then
+		tc = floor((x - tr[1]) / fw)
+	elseif x < tr[1] then
+		tc = 0
+	elseif x > tr[3] then
+		tc = floor((tr[3] - tr[1]) / fw) + 1
 	end
+	self:setCursor(tc)
+	self.BlinkTick = 0
+	self.BlinkState = 0
 end
 
 -------------------------------------------------------------------------------
@@ -386,15 +380,17 @@ end
 function TextInput:setCursor(tc)
 	local to = self.TextOffset
 	local tw = self.TextWidth
-	local len = self.TextBuffer:len()
-	if tc >= tw + to then
-		to = to + (tc - tw + 1)
-		to = min(to, len - 1)
-		tc = tw - 1
+	if tw then
+		local len = self.TextBuffer:len()
+		if tc >= tw + to then
+			to = to + (tc - tw + 1)
+			to = min(to, len - 1)
+			tc = tw - 1
+		end
+		tc = min(tc, len - to)
+		self.TextOffset = to
+		self.TextCursor = tc
 	end
-	tc = min(tc, len - to)
-	self.TextOffset = to
-	self.TextCursor = tc
 end
 
 -------------------------------------------------------------------------------
@@ -443,7 +439,7 @@ function TextInput:handleInput(msg)
 					self.TextCursor = 0
 					self.TextOffset = 0
 				elseif code == 0xf026 then -- posend
-					self:setCursor(self.TextBuffer:len() + 1)
+					self:setCursor(self.TextBuffer:len())
 				elseif code > 31 and code < 256 then
 					t:insert(utf8code, to + tc + 1)
 					crsrright(self)

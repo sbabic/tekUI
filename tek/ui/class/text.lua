@@ -98,7 +98,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 12.2"
+_VERSION = "Text 12.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -221,13 +221,13 @@ function Text:askMinMax(m1, m2, m3, m4)
 	local minw, minh = w, h
 	if self.KeepMinWidth then
 		if self.MinWidth == 0 then
-			self.MinWidth = w + p[1] + p[3]
+			self.MinWidth = w
 		end
 		minw = self.MinWidth
 	end
 	if self.KeepMinHeight then
 		if self.MinHeight == 0 then
-			self.MinHeight = h + p[2] + p[4]
+			self.MinHeight = h
 		end
 		minh = self.MinHeight
 	end

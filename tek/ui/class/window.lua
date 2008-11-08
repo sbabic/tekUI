@@ -92,7 +92,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 8.0"
+_VERSION = "Window 8.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -548,7 +548,7 @@ local MsgHandlers =
 		local s = self:getShortcutElements(msg[7], msg[6])
 		if s then
 			for _, e in ipairs(s) do
-				if not e.Disabled then
+				if not e.Disabled and e.ShortcutMark then
 					self:setHiliteElement(e)
 					self:setFocusElement(e)
 					self:setActiveElement(e)
@@ -577,7 +577,7 @@ local MsgHandlers =
 		local s = self:getShortcutElements(msg[7], msg[6])
 		if s then
 			for _, e in ipairs(s) do
-				if not e.Disabled then
+				if not e.Disabled and e.ShortcutMark then
 					self:setActiveElement()
 				end
 			end
@@ -918,7 +918,6 @@ function Window:addKeyShortcut(keycode, element)
 		end
 		db.trace("%s : adding qualifier %d", key, qual)
 		insert(qualtab, element)
-		qualtab[element] = #qualtab
 	end
 end
 
@@ -934,11 +933,12 @@ function Window:remKeyShortcut(keycode, element)
 		for _, qual in ipairs(quals) do
 			local qualtab = keytab[qual]
 			if qualtab then
-				local idx = qualtab[element]
-				if idx then
-					remove(qualtab, idx)
-					qualtab[element] = nil
-					db.trace("%s : removing qualifier %d", key, qual)
+				for idx, e in ipairs(qualtab) do
+					if element == e then
+						db.trace("%s : removing qualifier %d", key, qual)
+						remove(qualtab, idx)
+						break
+					end
 				end
 			end
 		end

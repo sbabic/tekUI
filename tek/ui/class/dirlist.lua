@@ -68,7 +68,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 9.1"
+_VERSION = "DirList 9.2"
 
 local DirList = _M
 
@@ -249,6 +249,15 @@ function DirList.new(class, self)
 		end })
 
 
+	self.DirectoryCaption = Text:new
+	{
+		Text = L.DIRECTORY,
+		Width = "auto",
+		Class = "caption",
+		TextHAlign = "right",
+		KeepMinWidth = true,
+	}
+
 	self.Orientation = "vertical"
 
 	if self.Kind == "requester" then
@@ -260,12 +269,7 @@ function DirList.new(class, self)
 				Orientation = "horizontal",
 				Children =
 				{
-					Text:new
-					{
-						Text = L.DIRECTORY,
-						Width = "auto",
-						Class = "caption",
-					},
+					self.DirectoryCaption,
 					self.PathField,
 					self.ParentButton,
 				}
@@ -315,12 +319,7 @@ function DirList.new(class, self)
 				Orientation = "horizontal",
 				Children =
 				{
-					Text:new
-					{
-						Text = L.DIRECTORY,
-						Width = "auto",
-						Class = "caption",
-					},
+					self.DirectoryCaption,
 					self.PathField,
 					self.ParentButton,
 				}
