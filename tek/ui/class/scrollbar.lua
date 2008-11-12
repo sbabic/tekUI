@@ -59,7 +59,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 7.1"
+_VERSION = "ScrollBar 7.2"
 
 local ScrollBar = _M
 
@@ -78,13 +78,13 @@ local coordy = { 0,0, 10,10, -10,10 }
 local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_DETAIL } }
 
 local ArrowUpImage = VectorImage:new { ImageData = { Coords = coordy,
-	Primitives = prims, MinMax = { 12,12, -12,-2 } } }
+	Primitives = prims, MinMax = { 12,-2, -13,12 } } }
 local ArrowDownImage = VectorImage:new { ImageData = { Coords = coordy,
-	Primitives = prims, MinMax = { -12,-2, 12,12 } } }
+	Primitives = prims, MinMax = { -13,12, 12,-3 } } }
 local ArrowLeftImage = VectorImage:new { ImageData = { Coords = coordx,
 	Primitives = prims, MinMax = { -2,-12, 12,12 } } }
 local ArrowRightImage = VectorImage:new { ImageData = { Coords = coordx,
-	Primitives = prims, MinMax = { 12,12, -2,-12 } } }
+	Primitives = prims, MinMax = { 12,12, -3,-13 } } }
 
 local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
 local NOTIFY_MIN = { ui.NOTIFY_SELF, "onSetMin", ui.NOTIFY_VALUE }
@@ -268,7 +268,7 @@ end
 function ScrollBar:setup(app, window)
 
 	Group.setup(self, app, window)
-	
+
 	if self.Orientation == "vertical" then
 		self.Width = self.Width or "auto"
 		self.Height = self.Height or "fill"

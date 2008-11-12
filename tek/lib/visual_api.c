@@ -553,8 +553,9 @@ tek_lib_visual_drawimage(lua_State *L)
 
 	xoffs = minmax[0];
 	yoffs = minmax[1];
-	scalex = (rect[2] - rect[0]) * 65536 / (minmax[2] - xoffs);
-	scaley = (rect[3] - rect[1]) * 65536 / (minmax[3] - yoffs);
+	scalex = (rect[2] - rect[0] + 1) * 0x10000 / ((minmax[2] - xoffs + 1) / 0x100);
+	scaley = (rect[3] - rect[1] + 1) * 0x10000 / ((minmax[3] - yoffs + 1) / 0x100);
+	/* scale: 8bit ffp */
 
 	/* get coordinates */
 	lua_getfield(L, 2, "Coords");
@@ -618,10 +619,10 @@ tek_lib_visual_drawimage(lua_State *L)
 			/* get s:points[pidx*2] */
 			py = igetnumber(L, -4, pidx*2);
 
-			vis->vis_Drawdata.points[j*2] = rect[0] +
-				(px - xoffs) * scalex / 65536 + sx;
-			vis->vis_Drawdata.points[j*2+1] = rect[3] -
-				(py - yoffs) * scaley / 65536 + sy;
+			vis->vis_Drawdata.points[j*2] = rect[0] + sx +
+			 	((px - xoffs) / 0x100 * scalex + 0x7fff) / 0x10000;
+			vis->vis_Drawdata.points[j*2+1] = rect[1] + sy +
+			 	((py - yoffs) / 0x100 * scaley + 0x7fff) / 0x10000;
 		}
 		lua_pop(L, 1);
 		/* s: primitives[i+1], primitives, coords */

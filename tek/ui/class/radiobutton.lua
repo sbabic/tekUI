@@ -32,8 +32,14 @@ local CheckMark = ui.CheckMark
 local VectorImage = ui.VectorImage
 local ipairs = ipairs
 
+-- local floor = math.floor
+-- local sin = math.sin
+-- local cos = math.cos
+-- local insert = table.insert
+-- local pi = math.pi
+
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 2.0"
+_VERSION = "RadioButton 2.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -41,42 +47,63 @@ _VERSION = "RadioButton 2.0"
 
 local coords =
 {
-	40,30,
-	30,40,
-	10,50,
-	-10,50,
-	-30,40,
-	-40,30,
-	-50,10,
-	-50,-10,
-	-40,-30,
-	-30,-40,
-	-10,-50,
-	10,-50,
-	30,-40,
-	40,-30,
-	50,-10,
-	50,10,
-
-	26,23,
-	10,30,
-	-10,30,
-	-23,23,
-	-30,10,
-	-30,-10,
-	-23,-23,
-	-10,-30,
-	10,-30,
-	23,-23,
-	30,-10,
-	30,10,
-
-	0,0,
+	0, 0,
+	-2317048, -2317048,
+	-3165146, -848099,
+	-3165146, 848098,
+	-2317048, 2317047,
+	-848099, 3165145,
+	848098, 3165145,
+	2317047, 2317047,
+	3165145, 848098,
+	3165145, -848099,
+	2317047, -2317048,
+	848098, -3165146,
+	-848099, -3165146,
+	-1714616, -1714616,
+	-2342208, -627593,
+	-2342208, 627592,
+	-1714616, 1714615,
+	-627593, 2342207,
+	627592, 2342207,
+	1714615, 1714615,
+	2342207, 627592,
+	2342207, -627593,
+	1714615, -1714616,
+	627592, -2342208,
+	-627593, -2342208,
+	-1558211, -506294,
+	-1558211, 506293,
+	-963028, 1325493,
+	-1, 1638400,
+	963027, 1325493,
+	1558210, 506293,
+	1558210, -506294,
+	963027, -1325494,
+	0, -1638400,
+	-963028, -1325494,
 }
 
-local points1 = { 1,17,2,18,3,19,4,20,5,20,6,21,7,22,8,23,9,23,10 }
-local points2 = { 23,10,24,11,25,12,26,13,26,14,27,15,28,16,17,1 }
-local points3 = { 29,17,18,19,20,21,22,23,24,25,26,27,28,17 }
+-- local function calccircle(n, r, t, a)
+-- 	local nt = #t
+-- 	a = a or 0
+-- 	for i = 0, n - 1 do
+-- 		local x = floor(-cos(a) * r)
+-- 		local y = floor(sin(a) * r)
+-- 		db.warn("%s, %s,", x, y)
+-- 		t[1 + nt + i * 2] = x
+-- 		t[2 + nt + i * 2] = y
+--
+-- 		a = a + 2 * pi / n
+-- 	end
+-- end
+-- calccircle(12, 50*0x10000, coords, -45*pi/180)
+-- calccircle(12, 37*0x10000, coords, -45*pi/180)
+-- calccircle(10, 25*0x10000, coords, -18*pi/180)
+
+local points11 = { 2,14,3,15,4,16,5,17,6,18,7,19,8,20,9,21 }
+local points12 = { 9,21,10,22,11,23,12,24,13,25,2,14 }
+local points2 = { 1,26,27,28,29,30,31,32,33,34,35,26 }
 
 local RadioImage1 = VectorImage:new
 {
@@ -85,10 +112,10 @@ local RadioImage1 = VectorImage:new
 		Coords = coords,
 		Primitives =
 		{
-			{ 0x1000, 19, Points = points1, Pen = ui.PEN_BORDERSHINE },
-			{ 0x1000, 16, Points = points2, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
 		},
-		MinMax = { -60, -60, 60, 60 },
+		MinMax = { -60*0x10000, 60*0x10000, 60*0x10000, -60*0x10000 },
 	}
 }
 
@@ -98,11 +125,11 @@ local RadioImage2 = VectorImage:new
 	{
 		Coords = coords,
 		Primitives = {
-			{ 0x1000, 19, Points = points1, Pen = ui.PEN_BORDERSHADOW },
-			{ 0x1000, 16, Points = points2, Pen = ui.PEN_BORDERSHINE },
-			{ 0x2000, 14, Points = points3, Pen = ui.PEN_DETAIL },
+			{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
+			{ 0x2000, 12, Points = points2, Pen = ui.PEN_DETAIL },
 		},
-		MinMax = { -60, -60, 60, 60 },
+		MinMax = { -60*0x10000, 60*0x10000, 60*0x10000, -60*0x10000 },
 	}
 }
 
