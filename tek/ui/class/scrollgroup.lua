@@ -67,7 +67,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.3"
+_VERSION = "ScrollGroup 9.4"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -225,15 +225,14 @@ function ScrollGroup:onSetCanvasWidth(w)
 	local c = self.Child
 	local r = c.Rect
 	local sw = r[3] - r[1] + 1
+	self.Child:setValue("CanvasWidth", w)
+	self:enableHSlider(self.HSliderMode == "on"
+		or self.HSliderMode == "auto" and (sw < w))
 	local g = self.HSliderGroup
 	if g then
 		g.Slider:setValue("Range", w)
 		g.Slider:setValue("Max", w - sw)
 	end
-	self.Child:setValue("CanvasWidth", w)
-
-	self:enableHSlider(self.HSliderMode == "on"
-		or self.HSliderMode == "auto" and (sw < w))
 end
 
 -------------------------------------------------------------------------------
@@ -244,14 +243,14 @@ function ScrollGroup:onSetCanvasHeight(h)
 	local c = self.Child
 	local r = c.Rect
 	local sh = r[4] - r[2] + 1
+	self.Child:setValue("CanvasHeight", h)
+	self:enableVSlider(self.VSliderMode == "on"
+		or self.VSliderMode == "auto" and (sh < h))
 	local g = self.VSliderGroup
 	if g then
 		g.Slider:setValue("Range", h)
 		g.Slider:setValue("Max", h - sh)
 	end
-	self.Child:setValue("CanvasHeight", h)
-	self:enableVSlider(self.VSliderMode == "on"
-		or self.VSliderMode == "auto" and (sh < h))
 end
 
 -------------------------------------------------------------------------------
@@ -266,10 +265,10 @@ function ScrollGroup:onSetCanvasLeft(x, ox)
 		x = max(0, min(c.CanvasWidth - (r3 - r1 + 1), floor(x)))
 		local dx = ox - x
 		c.CanvasLeft = x
+		self.Child:setValue("CanvasLeft", x)
 		if self.HSliderGroup then
 			self.HSliderGroup.Slider:setValue("Value", x)
 		end
-		self.Child:setValue("CanvasLeft", x)
 		if dx ~= 0 then
 			insert(self.CopyAreaList, { dx, 0 })
 		end
@@ -288,10 +287,10 @@ function ScrollGroup:onSetCanvasTop(y, oy)
 		y = max(0, min(c.CanvasHeight - (r4 - r2 + 1), floor(y)))
 		local dy = oy - y
 		c.CanvasTop = y
+		self.Child:setValue("CanvasTop", y)
 		if self.VSliderGroup then
 			self.VSliderGroup.Slider:setValue("Value", y)
 		end
-		self.Child:setValue("CanvasTop", y)
 		if dy ~= 0 then
 			insert(self.CopyAreaList, { 0, dy })
 		end

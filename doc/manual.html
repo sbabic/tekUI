@@ -1019,7 +1019,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v2.20)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1595,7 +1595,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v5.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v6.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1611,8 +1611,9 @@
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						Implements a scrollable text display. This class is
-						normally the direct child of a <a href="#tek.ui.class.canvas">Canvas</a> 
+						Implements a scrollable text display. An object of this class is
+						normally the immediate <code>Child</code> of a
+						<a href="#tek.ui.class.canvas">Canvas</a>.
 					</p>
 				</blockquote>
 			</div>
@@ -1620,7 +1621,7 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>FGPen &#091;IG&#093;</code> 
+							<code>FGPen &#091;IG&#093;</code> (userdata)
 							<blockquote>
 								<p>
 									Pen for rendering the text
@@ -1628,7 +1629,7 @@
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>FontSpec &#091;IG&#093;</code> 
+							<code>FontSpec &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Font specifier; see <a href="#tek.ui.class.text">Text</a> for a
@@ -1637,7 +1638,7 @@
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Preformatted &#091;IG&#093;</code> 
+							<code>Preformatted &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									Boolean, indicating that the text is layouted already and should
@@ -1646,7 +1647,7 @@
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Text &#091;ISG&#093;&#093;</code> 
+							<code>Text &#091;ISG&#093;&#093;</code> (string)
 							<blockquote>
 								<p>
 									The text to be displayed
@@ -1659,6 +1660,9 @@
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<a href="#FloatText:appendLine"><code>FloatText:appendLine()</code></a> - Append a line of text
+						</li>
 						<li style="list-style-type: none">
 							<a href="#FloatText:onSetText"><code>FloatText:onSetText()</code></a> - Handler called when <code>Text</code> is changed
 						</li>
@@ -1696,6 +1700,9 @@
 							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -1716,6 +1723,14 @@
 		<div class="node"><h3><a name="FloatText:onSetText" id="FloatText:onSetText"><code>onSetText(text)</code></a></h3>
 			<p>
 				Handler called when a new <code>Text</code> is set.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="FloatText:appendLine" id="FloatText:appendLine"><code>appendLine(text[, movebottom])</code></a></h3>
+			<p>
+				Append a line of text; if the
+				optional boolean <code>movebottom</code> is <strong>true</strong>, the visible area of the
+				element is moved towards the end of the text.
 			</p>
 			<hr />
 		</div>
@@ -3549,7 +3564,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v1.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v2.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3589,7 +3604,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7271,7 +7286,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Sat Nov  8 01:10:41 2008
+			Document generated on Wed Nov 12 20:02:48 2008
 		</p>
 	</div>
 	</body>

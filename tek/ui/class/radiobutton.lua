@@ -30,11 +30,10 @@
 local ui = require "tek.ui"
 local CheckMark = ui.CheckMark
 local VectorImage = ui.VectorImage
-
 local ipairs = ipairs
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 1.6"
+_VERSION = "RadioButton 2.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -42,20 +41,42 @@ _VERSION = "RadioButton 1.6"
 
 local coords =
 {
-	-- dot:
-	0, 0, -1, 2, -2, 1, -2, -1, -1, -2, 1, -2, 2, -1, 2, 1, 1, 2,
-	-- shadow:
-	-3, 4, -4, 3, -3, -2, -4, -3, -2, -3, -3, -4, 4, -3, 3, -4,
-	-- shine:
-	-3, 3, 3, 4, 2, 3, 4, 3, 3, 2, 3, -3,
+	40,30,
+	30,40,
+	10,50,
+	-10,50,
+	-30,40,
+	-40,30,
+	-50,10,
+	-50,-10,
+	-40,-30,
+	-30,-40,
+	-10,-50,
+	10,-50,
+	30,-40,
+	40,-30,
+	50,-10,
+	50,10,
+
+	26,23,
+	10,30,
+	-10,30,
+	-23,23,
+	-30,10,
+	-30,-10,
+	-23,-23,
+	-10,-30,
+	10,-30,
+	23,-23,
+	30,-10,
+	30,10,
+
+	0,0,
 }
 
--- shadow:
-local points1 = { 10, 18, 19, 20, 21, 22, 16, 23 }
--- shine:
-local points2 = { 10, 11, 12, 13, 14, 15, 16, 17 }
--- dot:
-local points3 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 2 }
+local points1 = { 1,17,2,18,3,19,4,20,5,20,6,21,7,22,8,23,9,23,10 }
+local points2 = { 23,10,24,11,25,12,26,13,26,14,27,15,28,16,17,1 }
+local points3 = { 29,17,18,19,20,21,22,23,24,25,26,27,28,17 }
 
 local RadioImage1 = VectorImage:new
 {
@@ -64,10 +85,10 @@ local RadioImage1 = VectorImage:new
 		Coords = coords,
 		Primitives =
 		{
-			{ 0x1000, 8, Points = points1, Pen = ui.PEN_BORDERSHADOW },
-			{ 0x1000, 8, Points = points2, Pen = ui.PEN_BORDERSHINE },
+			{ 0x1000, 19, Points = points1, Pen = ui.PEN_BORDERSHINE },
+			{ 0x1000, 16, Points = points2, Pen = ui.PEN_BORDERSHADOW },
 		},
-		MinMax = { -4, 4, 4, -4 },
+		MinMax = { -60, -60, 60, 60 },
 	}
 }
 
@@ -77,11 +98,11 @@ local RadioImage2 = VectorImage:new
 	{
 		Coords = coords,
 		Primitives = {
-			{ 0x1000, 8, Points = points1, Pen = ui.PEN_BORDERSHINE },
-			{ 0x1000, 8, Points = points2, Pen = ui.PEN_BORDERSHADOW },
-			{ 0x2000, 10, Points = points3, Pen = ui.PEN_DETAIL },
+			{ 0x1000, 19, Points = points1, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x1000, 16, Points = points2, Pen = ui.PEN_BORDERSHINE },
+			{ 0x2000, 14, Points = points3, Pen = ui.PEN_DETAIL },
 		},
-		MinMax = { -4, 4, 4, -4 },
+		MinMax = { -60, -60, 60, 60 },
 	}
 }
 

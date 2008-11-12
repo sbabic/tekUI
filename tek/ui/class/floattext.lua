@@ -13,22 +13,24 @@
 --		FloatText
 --
 --	OVERVIEW::
---		Implements a scrollable text display. This class is
---		normally the direct child of a [[#tek.ui.class.canvas : Canvas]]
+--		Implements a scrollable text display. An object of this class is
+--		normally the immediate {{Child}} of a
+--		[[#tek.ui.class.canvas : Canvas]].
 --
 --	ATTRIBUTES::
---		- {{FGPen [IG]}}
+--		- {{FGPen [IG]}} (userdata)
 --			Pen for rendering the text
---		- {{FontSpec [IG]}}
+--		- {{FontSpec [IG]}} (string)
 --			Font specifier; see [[#tek.ui.class.text : Text]] for a
 --			format description
---		- {{Preformatted [IG]}}
+--		- {{Preformatted [IG]}} (boolean)
 --			Boolean, indicating that the text is layouted already and should
 --			not be layouted to fit the element's width.
---		- {{Text [ISG]]}}
+--		- {{Text [ISG]]}} (string)
 --			The text to be displayed
 --
 --	IMPLEMENTS::
+--		- FloatText:appendLine() - Append a line of text
 --		- FloatText:onSetText() - Handler called when {{Text}} is changed
 --
 --	STYLE PROPERTIES::
@@ -41,6 +43,7 @@
 --		- Object.init()
 --		- Area:layout()
 --		- Class.new()
+--		- Area:refresh()
 --		- Area:setState()
 --		- Element:setup()
 --
@@ -63,7 +66,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 5.1"
+_VERSION = "FloatText 6.0"
 
 local FloatText = _M
 
@@ -89,6 +92,7 @@ function FloatText.init(self)
 	self.Lines = false
 	self.Margin = ui.NULLOFFS -- fixed
 	self.Preformatted = self.Preformatted or false
+	self.Reposition = false
 	self.Text = self.Text or ""
 	self.TrackDamage = self.TrackDamage or true
 	self.UnusedRegion = false
@@ -151,6 +155,15 @@ function FloatText:hide()
 		self.Font = false
 	end
 	Area.hide(self)
+end
+
+-------------------------------------------------------------------------------
+--	refresh: overrides
+-------------------------------------------------------------------------------
+
+function FloatText:refresh()
+	Area.refresh(self)
+	self.Reposition = false
 end
 
 -------------------------------------------------------------------------------
@@ -333,6 +346,9 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 		r[1] ~= x0 or r[2] ~= y0 or r[3] ~= x1 or r[4] ~= y1 then
 		if self.Canvas then
 			self.Canvas:setValue("CanvasHeight", self.CanvasHeight)
+			if self.Reposition == "bottom" then
+				self.Canvas:setValue("CanvasTop", self.CanvasHeight)
+			end
 		end
 		self.DamageRegion = Region.new(x0, y0, x1, y1)
 		if not markdamage and not redraw and r[1] == x0 and r[2] == y0 then
@@ -380,4 +396,19 @@ function FloatText:updateUnusedRegion()
 		r[4] - m[4])
 	self.UnusedRegion:subRect(r[1] + m[1], r[2] + m[2], r[3] - m[3],
 		r[2] + m[2] + self.CanvasHeight - 1)
+end
+
+-------------------------------------------------------------------------------
+--	appendLine(text[, movebottom]): Append a line of text; if the
+--	optional boolean {{movebottom}} is '''true''', the visible area of the
+--	element is moved towards the end of the text.
+-------------------------------------------------------------------------------
+
+function FloatText:appendLine(text, movebottom)
+	self.Reposition = movebottom and "bottom" or false
+	if self.Text == "" then
+		self:setValue("Text", text)
+	else
+		self:setValue("Text", self.Text .. "\n" .. text)
+	end
 end

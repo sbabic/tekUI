@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 2.20"
+_VERSION = "CheckMark 3.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -48,20 +48,26 @@ _VERSION = "CheckMark 2.20"
 
 local coords =
 {
-	-- shadow:
-	-3,5, -5,3, -3,-2, -5,-3, -2,-3, -3,-5, 5,-3, 3,-5,
-	-- shine:
-	-3,3, 3,5, 2,3, 5,3, 3,2, 3,-3,
-	-- check:
-	0,0, -2,3, -3,2, -1,0, -3,-2, -2,-3, 0,-1, 2,-3, 3,-2, 1,0, 3,2, 2,3, 0,1
+	0,0,
+	-2,2,
+	-3,1,
+	0,-2,
+	6,4,
+	5,5,
+
+	-5,5,
+	-3,3,
+	5,5,
+	3,3,
+	5,-5,
+	3,-3,
+	-5,-5,
+	-3,-3,
 }
 
--- shadow:
-local points1 = { 1, 9, 10, 11, 12, 13, 7, 14 }
--- shine:
-local points2 = { 1, 2, 3, 4, 5, 6, 7, 8 }
--- check:
-local points3 = { 15,16,17,18,19,20,21,22,23,24,25,26,27,16 }
+local points1 = { 1,2,3,4,5,6 }
+local points21 = { 13,14,7,8,9,10 }
+local points22 = { 9,10,11,12,13,14 }
 
 local CheckImage1 = VectorImage:new
 {
@@ -70,10 +76,10 @@ local CheckImage1 = VectorImage:new
 		Coords = coords,
 		Primitives =
 		{
-			{ 0x1000, 8, Points = points1, Pen = ui.PEN_BORDERSHINE },
-			{ 0x1000, 8, Points = points2, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
 		},
-		MinMax = { -5, 5, 5, -5 },
+		MinMax = { -6, -6, 7, 7 },
 	}
 }
 
@@ -82,12 +88,13 @@ local CheckImage2 = VectorImage:new
 	ImageData =
 	{
 		Coords = coords,
-		Primitives = {
-			{ 0x1000, 8, Points = points1, Pen = ui.PEN_BORDERSHINE },
-			{ 0x1000, 8, Points = points2, Pen = ui.PEN_BORDERSHADOW },
-			{ 0x2000, 14, Points = points3, Pen = ui.PEN_DETAIL },
+		Primitives =
+		{
+			{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
+			{ 0x2000, 6, Points = points1, Pen = ui.PEN_DETAIL },
 		},
-		MinMax = { -5, 5, 5, -5 },
+		MinMax = { -6, -6, 7, 7 },
 	}
 }
 
