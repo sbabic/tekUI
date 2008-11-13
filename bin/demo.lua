@@ -86,6 +86,7 @@ app = ui.Application:new
 	Copyright = "Copyright © 2008, Schulze-Müller GbR",
 	ApplicationId = APP_ID,
 	VendorDomain = VENDOR,
+-- 	ThemeName = "internal",
 
 	Children =
 	{

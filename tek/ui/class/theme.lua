@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.7"
+_VERSION = "Theme 6.8"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -282,7 +282,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 
 	[".page-button"] = {
 		["border-style"] = "inset",
-		["border-width"] = 2,
+		["border-width"] = "2 0 2 2",
 		["border-focus-width"] = 0,
 		["margin"] = 0,
 	},
@@ -302,7 +302,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 
 	[".page-button-fill"] = {
 		["border-style"] = "inset",
-		["border-width"] = "0 0 2 0",
+		["border-width"] = "0 0 2 2",
 		["border-focus-width"] = 0,
 		["background-color"] = "parent-group",
 		["margin"] = 0,

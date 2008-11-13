@@ -4,11 +4,10 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Note: This style sheet represents the hardcoded internal defaults
-**	in tek.ui.class.theme. It is not actually loaded and decoded. It
-**	has been included for illustration purposes only.
+**	Note: This style sheet represents the hardcoded internal defaults in
+**	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.6
+**	Version: 1.7
 */
 
 /*
@@ -262,7 +261,7 @@ tek.ui.class.window {
 
 .page-button {
 	border-style: inset;
-	border-width: 2;
+	border-width: 2 0 2 2;
 	border-focus-width: 0;
 	margin: 0;
 }
@@ -282,7 +281,7 @@ tek.ui.class.window {
 
 .page-button-fill {
 	border-style: inset;
-	border-width: 0 0 2 0;
+	border-width: 0 0 2 2;
 	border-focus-width: 0;
 	background-color: parent-group;
 	margin: 0;

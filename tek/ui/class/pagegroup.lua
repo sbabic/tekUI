@@ -59,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.1"
+_VERSION = "PageGroup 9.2"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -290,6 +290,7 @@ function PageGroup.new(class, self)
 		ui.Frame:new
 		{
 			Class = "page-button-fill",
+			Style = "border-left-width: 0",
 			MinWidth = 3,
 			MaxWidth = 3,
 			Width = 3,
