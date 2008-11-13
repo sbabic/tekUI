@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.1"
+_VERSION = "CheckMark 3.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -52,8 +52,8 @@ local coords =
 	-20,20,
 	-30,10,
 	0,-20,
-	60,40,
-	50,50,
+	50,30,
+	40,40,
 
 	-50,50,
 	-40,40,

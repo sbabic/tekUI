@@ -49,6 +49,7 @@ local Region = require "tek.lib.region"
 local Text = ui.Text
 
 local assert = assert
+local insert = table.insert
 local ipairs = ipairs
 local max = math.max
 local min = math.min
@@ -58,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.0"
+_VERSION = "PageGroup 9.1"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -235,7 +236,7 @@ end
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:changeTab(pagebuttons, newtabn)
-	pagebuttons[self.PageNumber]:setValue("Selected", false)
+	pagebuttons[self.PageNumber + 1]:setValue("Selected", false)
 	self.PageNumber = newtabn
 	self.PageElement:hide()
 	self.PageElement = self.Children[newtabn]
@@ -284,14 +285,25 @@ function PageGroup.new(class, self)
 
 	self.PageCaptions = self.PageCaptions or { }
 
-	local pagebuttons = { }
+	local pagebuttons =
+	{
+		ui.Frame:new
+		{
+			Class = "page-button-fill",
+			MinWidth = 3,
+			MaxWidth = 3,
+			Width = 3,
+			Height = "fill",
+		}
+	}
+
 	if #children == 0 then
-		pagebuttons[1] = ui.Text:new
+		insert(pagebuttons, ui.Text:new
 		{
 			Class = "page-button",
 			Mode = "inert",
 			Width = "auto",
-		}
+		})
 	else
 		for i, c in ipairs(children) do
 			local pc = self.PageCaptions[i]
@@ -317,18 +329,18 @@ function PageGroup.new(class, self)
 					}
 				}
 			end
-			pagebuttons[i] = pc
+			insert(pagebuttons, pc)
 		end
 	end
 
-	pagebuttons[#pagebuttons + 1] = ui.Text:new
+	insert(pagebuttons, ui.Frame:new
 	{
 		Class = "page-button-fill",
 		Height = "fill",
-	}
+	})
 
-	if pagebuttons[pagenumber] then
-		pagebuttons[pagenumber]:setValue("Selected", true)
+	if pagebuttons[pagenumber + 1] then
+		pagebuttons[pagenumber + 1]:setValue("Selected", true)
 	end
 
 	self.TabButtons = pagebuttons
@@ -376,8 +388,8 @@ end
 function PageGroup:onSetPageNumber(val)
 	local n = tonumber(val)
 	local b = self.TabButtons
-	if n >= 1 and n < #b then
-		self.TabButtons[n]:setValue("Selected", true)
+	if n >= 1 and n <= #b - 2 then
+		self.TabButtons[n + 1]:setValue("Selected", true)
 		self.Children[2]:changeTab(self.TabButtons, n)
 	else
 		db.warn("invalid page number: %s", val)
@@ -392,6 +404,6 @@ end
 function PageGroup:disablePage(num, onoff)
 	local numc = #self.Children[2].Children
 	if num >= 1 and num <= numc then
-		self.TabButtons[num]:setValue("Disabled", onoff or false)
+		self.TabButtons[num + 1]:setValue("Disabled", onoff or false)
 	end
 end

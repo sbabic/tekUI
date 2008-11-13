@@ -309,7 +309,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 	},
 
 	[".page-button-group"] = {
-		["margin"] = "4 2 0 2",
+		["margin"] = "4 2 0 0",
 		["padding-left"] = 2,
 	},
 

@@ -66,7 +66,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 7.1"
+_VERSION = "TextInput 7.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -410,10 +410,6 @@ function TextInput:handleInput(msg)
 					crsrleft(self)
 				elseif code == 0xf011 then
 					crsrright(self)
-				elseif code == 0xf012 then
-					-- up
-				elseif code == 0xf013 then
-					-- down
 				elseif code == 8 then -- backspace:
 					if crsrleft(self) then
 						t:erase(to + tc, to + tc)
@@ -422,11 +418,16 @@ function TextInput:handleInput(msg)
 					if t:len() > 0 then
 						t:erase(to + tc + 1, to + tc + 1)
 					end
-				elseif code == 9 and self.Editing and self.TabEnter then
+				elseif self.Editing and self.TabEnter and
+					(code == 9 or code == 0xf013) then
 					self:setEditing(false)
 					self:setValue("Text", t:get())
 					self:setValue("Enter", t:get())
 					return msg -- next handler
+				elseif code == 0xf012 then -- up
+					return msg
+				elseif code == 0xf013 then -- down
+					return msg
 				elseif code == 13 then
 					self:setEditing(false)
 					self:setValue("Text", t:get())
