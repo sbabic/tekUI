@@ -92,7 +92,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 8.1"
+_VERSION = "Window 9.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -103,8 +103,8 @@ local HUGE = ui.HUGE
 local NOTIFY_STATUS = { ui.NOTIFY_SELF, "onChangeStatus", ui.NOTIFY_VALUE,
 	ui.NOTIFY_OLDVALUE }
 
-local DEF_DBLCLICKTIMELIMIT = 0.32 -- in seconds
-local DEF_DBLCLICKDISTLIMIT = 25 -- pixel_distance^2 between clicks
+local DEF_DBLCLICKTIMELIMIT = 320000 -- in micro seconds
+local DEF_DBLCLICKDISTLIMIT = 25 -- max square pixel distance between clicks
 
 local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, ui.MSG_MOUSEMOVE, ui.MSG_MOUSEBUTTON,
@@ -123,11 +123,8 @@ function Window.init(self)
 	self.CanvasStack = { }
 	self.Center = self.Center or false
 	self.CopyArea = { }
-	self.DblClickCheckElement = false
 	self.DblClickElement = false
-	self.DblClickCheckTime = false
-	self.DblClickCheckMouseX = false
-	self.DblClickCheckMouseY = false
+	self.DblClickCheckInfo = { } -- check_element, sec, usec, mousex, mousey
 	self.FocusElement = false
 	self.FullScreen = self.FullScreen or false
 	self.HiliteElement = false
@@ -813,6 +810,25 @@ function Window:handleHold(msg)
 end
 
 -------------------------------------------------------------------------------
+--	dblclick = Window:checkDblClickTime(as, au, bs, bu): Check if the two
+--	given times (first a, second b) are within the doubleclick interval.
+--	Each time is specified in seconds (s) and microseconds (u). Returns
+--	'''true''' if the two times are indicative of a double click.
+-------------------------------------------------------------------------------
+
+local function subtime(as, au, bs, bu)
+	if au < bu then
+		return as - bs - 1, 1000000 - bu + au
+	end
+	return as - bs, au - bu
+end
+
+function Window:checkDblClickTime(as, au, bs, bu)
+	bs, bu = subtime(bs, bu, as, au)
+	return subtime(bs, bu, 0, DEF_DBLCLICKTIMELIMIT) < 0
+end
+
+-------------------------------------------------------------------------------
 --	Window:setDblClickElement(element[, notify]): Sets/unsets the element
 --	which is candidate for doubleclick detection. If the element is set twice
 --	in a sufficiently short period of time, and the pointing device did not
@@ -822,28 +838,29 @@ end
 -------------------------------------------------------------------------------
 
 function Window:setDblClickElement(e, notify)
+	local di = self.DblClickCheckInfo
 	local de = self.DblClickElement
 	if de then
 		de:setValue("DblClick", false, notify)
 		self.DblClickElement = false
 	end
 	if e and self.Display then
-		local de = self.DblClickCheckElement
-		local t = self.Display:getTime()
-		if de == e and self.DblClickCheckMouseX then
-			local d1 = self.MouseX - self.DblClickCheckMouseX
-			local d2 = self.MouseY - self.DblClickCheckMouseY
-			local d = d1 * d1 + d2 * d2
-			if t - self.DblClickCheckTime < DEF_DBLCLICKTIMELIMIT and
-				d < DEF_DBLCLICKDISTLIMIT then
+		de = di[1] -- check element
+		local ts, tu = self.Display:getTime()
+		if de == e and di[4] then
+			local d1 = self.MouseX - di[4]
+			local d2 = self.MouseY - di[5]
+			if self:checkDblClickTime(di[2], di[3], ts, tu) and
+				d1 * d1 + d2 * d2 < DEF_DBLCLICKDISTLIMIT then
 				self.DblClickElement = e
 				de:setValue("DblClick", true, notify)
 			end
 		end
-		self.DblClickCheckTime = t
-		self.DblClickCheckMouseX = self.MouseX
-		self.DblClickCheckMouseY = self.MouseY
-		self.DblClickCheckElement = e or false
+		di[1] = e or false
+		di[2] = ts
+		di[3] = tu
+		di[4] = self.MouseX
+		di[5] = self.MouseY
 	end
 end
 

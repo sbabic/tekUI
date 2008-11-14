@@ -68,7 +68,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 9.2"
+_VERSION = "DirList 9.3"
 
 local DirList = _M
 
@@ -211,7 +211,7 @@ function DirList.new(class, self)
 		VSliderMode = "on",
 		Child = ui.Canvas:new
 		{
-			AutoWidth = true,
+			AutoWidth = false,
 			Child = self.ListGadget
 		},
 	}

@@ -100,7 +100,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 9.1"
+_VERSION = "Application 9.2"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -448,7 +448,9 @@ local msgdispatch =
 			state[4] = msg
 			state[3] = nil
 		else
-			state[4][1] = msg[1] -- update timestamp
+			-- update timestamp:
+			state[4][0] = msg[0]
+			state[4][1] = msg[1]
 		end
 	end,
 	[ui.MSG_REFRESH] = function(state, msg)
@@ -458,7 +460,8 @@ local msgdispatch =
 			state[5] = msg
 			state[3] = nil
 		else
-			refresh[1] = msg[1] -- update timestamp
+			refresh[0] = msg[0] -- update timestamp
+			refresh[1] = msg[1]
 			refresh[7] = min(refresh[7], msg[7])
 			refresh[8] = min(refresh[8], msg[8])
 			refresh[9] = max(refresh[9], msg[9])

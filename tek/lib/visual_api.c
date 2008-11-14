@@ -32,7 +32,7 @@ tek_lib_visual_wait(lua_State *L)
 
 	if (lua_istable(L, 1))
 	{
-		n = lua_isnone(L, 2) ? 32 : luaL_checknumber(L, 2);
+		n = lua_isnone(L, 2) ? 32 : luaL_checkinteger(L, 2);
 		for (i = 1; i <= n; ++i)
 		{
 			lua_rawgeti(L, 1, i);
@@ -101,21 +101,15 @@ tek_lib_visual_gettime(lua_State *L)
 {
 	TEKVisual *vis;
 	TTIME dt;
-	lua_Number t;
 
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
 	lua_pop(L, 1);
 
 	TQueryTime(vis->vis_TimeRequest, &dt);
-
-	t = dt.ttm_USec;
-	t *= 0.000001;
-	t += dt.ttm_Sec;
-
-	lua_pushnumber(L, t);
-
-	return 1;
+	lua_pushinteger(L, dt.ttm_Sec);
+	lua_pushinteger(L, dt.ttm_USec);
+	return 2;
 }
 
 /*****************************************************************************/
@@ -130,7 +124,7 @@ tek_lib_visual_openfont(lua_State *L)
 	TEKVisual *vis;
 	TEKFont *font;
 	TSTRPTR name = (TSTRPTR) luaL_optstring(L, 1, "");
-	TINT size = luaL_optnumber(L, 2, -1);
+	TINT size = luaL_optinteger(L, 2, -1);
 
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
@@ -271,34 +265,42 @@ tek_lib_visual_getmsg(lua_State *L)
 		if (lua_istable(L, 2))
 			lua_pushvalue(L, 2);
 		else
-			lua_newtable(L);
+		{
+			TINT size = 7;
+			if (imsg->timsg_Type == TITYPE_REFRESH)
+				size += 4;
+			else if (imsg->timsg_Type == TITYPE_KEYUP ||
+				imsg->timsg_Type == TITYPE_KEYDOWN)
+				size += 1;
+			lua_createtable(L, size, 0);
+		}
 
-		lua_pushnumber(L, (lua_Number) imsg->timsg_TimeStamp.ttm_Sec * 1000 +
-			imsg->timsg_TimeStamp.ttm_USec / 1000);
+		lua_pushinteger(L, imsg->timsg_TimeStamp.ttm_USec);
+		lua_rawseti(L, -2, 0);
+		lua_pushinteger(L, imsg->timsg_TimeStamp.ttm_Sec);
 		lua_rawseti(L, -2, 1);
-		lua_pushnumber(L, imsg->timsg_Type);
+		lua_pushinteger(L, imsg->timsg_Type);
 		lua_rawseti(L, -2, 2);
-
-		lua_pushnumber(L, imsg->timsg_Code);
+		lua_pushinteger(L, imsg->timsg_Code);
 		lua_rawseti(L, -2, 3);
-		lua_pushnumber(L, imsg->timsg_MouseX);
+		lua_pushinteger(L, imsg->timsg_MouseX);
 		lua_rawseti(L, -2, 4);
-		lua_pushnumber(L, imsg->timsg_MouseY);
+		lua_pushinteger(L, imsg->timsg_MouseY);
 		lua_rawseti(L, -2, 5);
-		lua_pushnumber(L, imsg->timsg_Qualifier);
+		lua_pushinteger(L, imsg->timsg_Qualifier);
 		lua_rawseti(L, -2, 6);
 
 		/* extra information depending on event type: */
 		switch (imsg->timsg_Type)
 		{
 			case TITYPE_REFRESH:
-				lua_pushnumber(L, imsg->timsg_X);
+				lua_pushinteger(L, imsg->timsg_X);
 				lua_rawseti(L, -2, 7);
-				lua_pushnumber(L, imsg->timsg_Y);
+				lua_pushinteger(L, imsg->timsg_Y);
 				lua_rawseti(L, -2, 8);
-				lua_pushnumber(L, imsg->timsg_X + imsg->timsg_Width - 1);
+				lua_pushinteger(L, imsg->timsg_X + imsg->timsg_Width - 1);
 				lua_rawseti(L, -2, 9);
-				lua_pushnumber(L, imsg->timsg_Y + imsg->timsg_Height - 1);
+				lua_pushinteger(L, imsg->timsg_Y + imsg->timsg_Height - 1);
 				lua_rawseti(L, -2, 10);
 				break;
 			case TITYPE_KEYUP:
@@ -321,9 +323,9 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_allocpen(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TINT r = luaL_checknumber(L, 2);
-	TINT g = luaL_checknumber(L, 3);
-	TINT b = luaL_checknumber(L, 4);
+	TINT r = luaL_checkinteger(L, 2);
+	TINT g = luaL_checkinteger(L, 3);
+	TINT b = luaL_checkinteger(L, 4);
 	TEKPen *pen = lua_newuserdata(L, sizeof(TEKPen));
 	/* s: pendata */
 	pen->pen_Pen = TVPEN_UNDEFINED;
@@ -731,10 +733,10 @@ tek_lib_visual_getattrs(lua_State *L)
 
 	TVisualGetAttrs(vis->vis_Visual, tags);
 
-	lua_pushnumber(L, pw);
-	lua_pushnumber(L, ph);
-	lua_pushnumber(L, x);
-	lua_pushnumber(L, y);
+	lua_pushinteger(L, pw);
+	lua_pushinteger(L, ph);
+	lua_pushinteger(L, x);
+	lua_pushinteger(L, y);
 
 	return 4;
 }
