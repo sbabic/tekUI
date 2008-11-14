@@ -59,7 +59,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 7.2"
+_VERSION = "ScrollBar 7.3"
 
 local ScrollBar = _M
 
@@ -77,14 +77,18 @@ local coordx = { 0,0, 10,10, 10,-10 }
 local coordy = { 0,0, 10,10, -10,10 }
 local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_DETAIL } }
 
-local ArrowUpImage = VectorImage:new { ImageData = { Coords = coordy,
-	Primitives = prims, MinMax = { 12,-2, -13,12 } } }
-local ArrowDownImage = VectorImage:new { ImageData = { Coords = coordy,
-	Primitives = prims, MinMax = { -13,12, 12,-3 } } }
-local ArrowLeftImage = VectorImage:new { ImageData = { Coords = coordx,
-	Primitives = prims, MinMax = { -2,-12, 12,12 } } }
-local ArrowRightImage = VectorImage:new { ImageData = { Coords = coordx,
-	Primitives = prims, MinMax = { 12,12, -3,-13 } } }
+local ArrowUpImage = VectorImage:new { ImageData = {
+	Coords = { 0x1000,0x4000, 0xf000,0x4000, 0x8000,0xc000 },
+	Primitives = prims } }
+local ArrowDownImage = VectorImage:new { ImageData = {
+	Coords = { 0x1000,0xc000, 0xf000,0xc000, 0x8000,0x4000 },
+	Primitives = prims } }
+local ArrowLeftImage = VectorImage:new { ImageData = {
+	Coords = { 0xc000,0x1000, 0xc000,0xf000, 0x4000,0x8000 },
+	Primitives = prims } }
+local ArrowRightImage = VectorImage:new { ImageData = {
+	Coords = { 0x4000,0x1000, 0x4000,0xf000, 0xc000,0x8000 },
+	Primitives = prims } }
 
 local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
 local NOTIFY_MIN = { ui.NOTIFY_SELF, "onSetMin", ui.NOTIFY_VALUE }

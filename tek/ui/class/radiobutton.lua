@@ -39,7 +39,7 @@ local ipairs = ipairs
 -- local pi = math.pi
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 2.1"
+_VERSION = "RadioButton 2.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -47,59 +47,61 @@ _VERSION = "RadioButton 2.1"
 
 local coords =
 {
-	0, 0,
-	-2317048, -2317048,
-	-3165146, -848099,
-	-3165146, 848098,
-	-2317048, 2317047,
-	-848099, 3165145,
-	848098, 3165145,
-	2317047, 2317047,
-	3165145, 848098,
-	3165145, -848099,
-	2317047, -2317048,
-	848098, -3165146,
-	-848099, -3165146,
-	-1714616, -1714616,
-	-2342208, -627593,
-	-2342208, 627592,
-	-1714616, 1714615,
-	-627593, 2342207,
-	627592, 2342207,
-	1714615, 1714615,
-	2342207, 627592,
-	2342207, -627593,
-	1714615, -1714616,
-	627592, -2342208,
-	-627593, -2342208,
-	-1558211, -506294,
-	-1558211, 506293,
-	-963028, 1325493,
-	-1, 1638400,
-	963027, 1325493,
-	1558210, 506293,
-	1558210, -506294,
-	963027, -1325494,
-	0, -1638400,
-	-963028, -1325494,
+	0x8000, 0x8000,
+
+	0x2d08, 0x2d08,
+	0x0eaa, 0x61a1,
+	0x0eaa, 0x9e5e,
+	0x2d08, 0xd2f7,
+	0x61a1, 0xf155,
+	0x9e5e, 0xf155,
+	0xd2f7, 0xd2f7,
+	0xf155, 0x9e5e,
+	0xf155, 0x61a1,
+	0xd2f7, 0x2d08,
+	0x9e5e, 0x0eaa,
+	0x61a1, 0x0eaa,
+	0x482f, 0x482f,
+	0x33c1, 0x6b92,
+	0x33c1, 0x946d,
+	0x482f, 0xb7d0,
+	0x6b92, 0xcc3e,
+	0x946d, 0xcc3e,
+	0xb7d0, 0xb7d0,
+	0xcc3e, 0x946d,
+	0xcc3e, 0x6b92,
+	0xb7d0, 0x482f,
+	0x946d, 0x33c1,
+	0x6b92, 0x33c1,
+	0x4d46, 0x6f84,
+	0x4d46, 0x907b,
+	0x60a6, 0xab25,
+	0x7fff, 0xb555,
+	0x9f59, 0xab25,
+	0xb2b9, 0x907b,
+	0xb2b9, 0x6f84,
+	0x9f59, 0x54da,
+	0x8000, 0x4aaa,
+	0x60a6, 0x54da,
 }
 
 -- local function calccircle(n, r, t, a)
 -- 	local nt = #t
 -- 	a = a or 0
 -- 	for i = 0, n - 1 do
--- 		local x = floor(-cos(a) * r)
--- 		local y = floor(sin(a) * r)
--- 		db.warn("%s, %s,", x, y)
+-- 		local x = floor(-cos(a) * r * 0.5) + 0x8000
+-- 		local y = floor(sin(a) * r * 0.5) + 0x8000
+-- 		db.warn("0x%04x, 0x%04x,", x, y)
 -- 		t[1 + nt + i * 2] = x
 -- 		t[2 + nt + i * 2] = y
 --
 -- 		a = a + 2 * pi / n
 -- 	end
 -- end
--- calccircle(12, 50*0x10000, coords, -45*pi/180)
--- calccircle(12, 37*0x10000, coords, -45*pi/180)
--- calccircle(10, 25*0x10000, coords, -18*pi/180)
+--
+-- calccircle(12, 0.55/0.6*0x10000, coords, -45*pi/180)
+-- calccircle(12, 0.37/0.6*0x10000, coords, -45*pi/180)
+-- calccircle(10, 0.25/0.6*0x10000, coords, -18*pi/180)
 
 local points11 = { 2,14,3,15,4,16,5,17,6,18,7,19,8,20,9,21 }
 local points12 = { 9,21,10,22,11,23,12,24,13,25,2,14 }
@@ -114,8 +116,7 @@ local RadioImage1 = VectorImage:new
 		{
 			{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
 			{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
-		},
-		MinMax = { -60*0x10000, 60*0x10000, 60*0x10000, -60*0x10000 },
+		}
 	}
 }
 
@@ -128,8 +129,7 @@ local RadioImage2 = VectorImage:new
 			{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
 			{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
 			{ 0x2000, 12, Points = points2, Pen = ui.PEN_DETAIL },
-		},
-		MinMax = { -60*0x10000, 60*0x10000, 60*0x10000, -60*0x10000 },
+		}
 	}
 }
 

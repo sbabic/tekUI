@@ -41,7 +41,7 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 4.0"
+_VERSION = "MenuItem 4.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -53,9 +53,8 @@ local ArrowImage = VectorImage:new
 {
 	ImageData =
 	{
-		Coords = { -1,2, -1,-2, 1,0 },
+		Coords = { 0x7000,0x4000, 0x7000,0xc000, 0xc000,0x8000 },
 		Primitives = prims,
-		MinMax = { -4, -4, 4, 4 },
 	}
 }
 

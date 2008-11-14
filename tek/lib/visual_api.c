@@ -518,8 +518,7 @@ tek_lib_visual_drawimage(lua_State *L)
 	TINT i, j;
 	TINT fmtcode;
 	TINT primcount, nump;
-	lua_Number rect[4], minmax[4];
-	lua_Number xoffs, yoffs;
+	lua_Number rect[4];
 	lua_Number scalex, scaley;
 	TEKVisual *vis = checkvisptr(L, 1);
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
@@ -540,24 +539,8 @@ tek_lib_visual_drawimage(lua_State *L)
 	lua_pop(L, 1);
 	/* s: */
 
-	/* get minmax */
-	lua_getfield(L, 2, "MinMax");
-	luaL_checktype(L, -1, LUA_TTABLE);
-
-	/* s: minmax */
-	for (i = 0; i < 4; i++)
-	{
-		/* get s:minmax[i+1] */
-		minmax[i] = igetnumber(L, -1, i+1);
-	}
-	lua_pop(L, 1);
-	/* s: */
-
-	xoffs = minmax[0];
-	yoffs = minmax[1];
-	scalex = (rect[2] - rect[0] + 1) * 0x10000 / ((minmax[2] - xoffs + 1) / 0x100);
-	scaley = (rect[3] - rect[1] + 1) * 0x10000 / ((minmax[3] - yoffs + 1) / 0x100);
-	/* scale: 8bit ffp */
+	scalex = rect[2] - rect[0];
+	scaley = rect[1] - rect[3];
 
 	/* get coordinates */
 	lua_getfield(L, 2, "Coords");
@@ -622,9 +605,9 @@ tek_lib_visual_drawimage(lua_State *L)
 			py = igetnumber(L, -4, pidx*2);
 
 			vis->vis_Drawdata.points[j*2] = rect[0] + sx +
-			 	((px - xoffs) / 0x100 * scalex + 0x7fff) / 0x10000;
-			vis->vis_Drawdata.points[j*2+1] = rect[1] + sy +
-			 	((py - yoffs) / 0x100 * scaley + 0x7fff) / 0x10000;
+			 	(px * scalex + 0x7fff) / 0x10000;
+			vis->vis_Drawdata.points[j*2+1] = rect[3] + sy +
+			 	(py * scaley + 0x7fff) / 0x10000;
 		}
 		lua_pop(L, 1);
 		/* s: primitives[i+1], primitives, coords */

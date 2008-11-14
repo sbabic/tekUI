@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.2"
+_VERSION = "CheckMark 3.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -48,21 +48,20 @@ _VERSION = "CheckMark 3.2"
 
 local coords =
 {
-	0,0,
-	-20,20,
-	-30,10,
-	0,-20,
-	50,30,
-	40,40,
-
-	-50,50,
-	-40,40,
-	50,50,
-	40,40,
-	50,-50,
-	40,-40,
-	-50,-50,
-	-40,-40,
+	0x8000, 0x8000,
+	0x5555, 0xaaaa,
+	0x4000, 0x9555,
+	0x8000, 0x5555,
+	0xeaaa, 0xc000,
+	0xd555, 0xd555,
+	0x1555, 0xeaaa,
+	0x2aaa, 0xd555,
+	0xeaaa, 0xeaaa,
+	0xd555, 0xd555,
+	0xeaaa, 0x1555,
+	0xd555, 0x2aaa,
+	0x1555, 0x1555,
+	0x2aaa, 0x2aaa,
 }
 
 local points1 = { 1,2,3,4,5,6 }
@@ -78,8 +77,7 @@ local CheckImage1 = VectorImage:new
 		{
 			{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
 			{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
-		},
-		MinMax = { -60, 59, 59, -60 },
+		}
 	}
 }
 
@@ -93,8 +91,7 @@ local CheckImage2 = VectorImage:new
 			{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
 			{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
 			{ 0x2000, 6, Points = points1, Pen = ui.PEN_DETAIL },
-		},
-		MinMax = { -60, 59, 59, -60 },
+		}
 	}
 }
 
