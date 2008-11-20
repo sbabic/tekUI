@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.7
+**	Version: 1.8
 */
 
 /*
@@ -110,7 +110,7 @@ tek.ui.class.listgadget {
 	border-focus-width: 0;
 	border-rim-width: 0;
 	border-style: solid;
-	border-color: shine;
+	border-color: detail;
 	color: list-detail;
 }
 

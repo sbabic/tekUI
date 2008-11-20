@@ -11,6 +11,7 @@ app = ui.Application:new
 {
 	ApplicationId = APP_ID,
 	VendorDomain = VENDOR,
+-- 	ThemeName = "internal",
 	Children =
 	{
 		ui.Window:new

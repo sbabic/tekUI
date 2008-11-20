@@ -39,7 +39,7 @@ local ipairs = ipairs
 -- local pi = math.pi
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 2.4"
+_VERSION = "RadioButton 2.5"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -106,6 +106,7 @@ local coords =
 local points11 = { 2,14,3,15,4,16,5,17,6,18,7,19,8,20,9,21 }
 local points12 = { 9,21,10,22,11,23,12,24,13,25,2,14 }
 local points2 = { 1,26,27,28,29,30,31,32,33,34,35,26 }
+local points3 = { 1,14,15,16,17,18,19,20,21,22,23,24,25,14 }
 
 local RadioImage1 = VectorImage:new
 {
@@ -115,6 +116,7 @@ local RadioImage1 = VectorImage:new
 		Primitives =
 		{
 			{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
+			{ 0x2000, 14, Points = points3, Pen = ui.PEN_BACKGROUND },
 			{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
 		}
 	}
@@ -128,6 +130,7 @@ local RadioImage2 = VectorImage:new
 		Primitives = {
 			{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
 			{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
+			{ 0x2000, 14, Points = points3, Pen = ui.PEN_BACKGROUND },
 			{ 0x2000, 12, Points = points2, Pen = ui.PEN_DETAIL },
 		}
 	}

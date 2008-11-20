@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.8"
+_VERSION = "Theme 6.9"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -131,7 +131,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["border-focus-width"] = 0,
 		["border-rim-width"] = 0,
 		["border-style"] = "solid",
-		["border-color"] = "shine",
+		["border-color"] = "detail",
 		["color"] = "list-detail",
 	},
 
@@ -401,11 +401,11 @@ local function importGTKConfig(def_s)
 							found = true
 							if color == "bg[NORMAL]" then
 								d["rgb-background"] = fmtrgb(r, g, b, 0.95)
-								d["rgb-group"] = fmtrgb(r, g, b, 1.05)
+								d["rgb-group"] = fmtrgb(r, g, b, 0.98)
 								d["rgb-shadow"] = fmtrgb(r, g, b, 0.45)
-								d["rgb-border-shine"] = fmtrgb(r, g, b, 1.3)
+								d["rgb-border-shine"] = fmtrgb(r, g, b, 1.25)
 								d["rgb-border-shadow"] = fmtrgb(r, g, b, 0.65)
-								d["rgb-half-shine"] = fmtrgb(r, g, b, 1.3)
+								d["rgb-half-shine"] = fmtrgb(r, g, b, 1.25)
 								d["rgb-half-shadow"] = fmtrgb(r, g, b, 0.65)
 							elseif color == "bg[INSENSITIVE]" then
 								d["rgb-disabled"] = c
@@ -436,7 +436,7 @@ local function importGTKConfig(def_s)
 
 							elseif color == "base[NORMAL]" then
 								d["rgb-list"] = fmtrgb(r, g, b, 1.05)
-								d["rgb-list2"] = fmtrgb(r, g, b, 0.95)
+								d["rgb-list2"] = fmtrgb(r, g, b, 0.92)
 							elseif color == "base[SELECTED]" then
 								d["rgb-list-active"] = c
 

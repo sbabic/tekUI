@@ -68,7 +68,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 9.3"
+_VERSION = "DirList 9.4"
 
 local DirList = _M
 
@@ -381,7 +381,8 @@ function DirList:scanEntry(path, name, idx)
 	{
 		name,
 		mode == "directory" and self.Locale.DIR or
-			self:getFileStat(path, name, "size", idx)
+			self:getFileStat(path, name, "size", idx) or
+			"[?]"
 	},
 	mode
 end

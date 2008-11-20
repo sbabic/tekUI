@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.3"
+_VERSION = "CheckMark 3.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -67,6 +67,7 @@ local coords =
 local points1 = { 1,2,3,4,5,6 }
 local points21 = { 13,14,7,8,9,10 }
 local points22 = { 9,10,11,12,13,14 }
+local points3 = { 8,10,14,12 }
 
 local CheckImage1 = VectorImage:new
 {
@@ -77,6 +78,7 @@ local CheckImage1 = VectorImage:new
 		{
 			{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
 			{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
+			{ 0x1000, 4, Points = points3, Pen = ui.PEN_BACKGROUND },
 		}
 	}
 }
@@ -90,6 +92,7 @@ local CheckImage2 = VectorImage:new
 		{
 			{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
 			{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
+			{ 0x1000, 4, Points = points3, Pen = ui.PEN_BACKGROUND },
 			{ 0x2000, 6, Points = points1, Pen = ui.PEN_DETAIL },
 		}
 	}
