@@ -3,6 +3,7 @@
 
 static void freepen(TMOD_X11 *mod, VISUAL *v, struct X11Pen *pen);
 static int x11_seteventmask(TMOD_X11 *mod, VISUAL *v, TUINT eventmask);
+static void x11_freeimage(TMOD_X11 *mod, VISUAL *v);
 
 #define DEF_WINWIDTH 600
 #define DEF_WINHEIGHT 400
@@ -211,6 +212,7 @@ x11_closevisual(TMOD_X11 *mod, struct TVRequest *req)
 
 	TRemove(&v->node);
 
+	x11_freeimage(mod, v);
 	TExecFree(TGetExecBase(mod), v->tempbuf);
 
 	if (mod->x11_use_xft && v->draw)
@@ -1019,8 +1021,13 @@ x11_drawtags(TMOD_X11 *mod, struct TVRequest *req)
 }
 
 /*****************************************************************************/
+/*
+**	This is extremely awkward, since we are in a shared library and must
+**	check for availability of the extension in an error handler using
+**	a global variable. TODO: To fully work around this mess, we would
+**	additionally have to enclose XShmAttach() in a mutex.
+*/
 
-/* HACK: */
 static TBOOL shm_available = TTRUE;
 
 static int
@@ -1029,6 +1036,26 @@ shm_errhandler(Display *d, XErrorEvent *evt)
 	TDBPRINTF(TDB_ERROR,("Remote display - fallback to normal XPutImage\n"));
 	shm_available = TFALSE;
 	return 0;
+}
+
+/*****************************************************************************/
+
+static void
+x11_freeimage(TMOD_X11 *mod, VISUAL *v)
+{
+	if (v->image)
+	{
+		if (v->image_shm)
+		{
+			XShmDetach(mod->x11_Display, &v->shminfo);
+			shmdt(v->shminfo.shmaddr);
+			shmctl(v->shminfo.shmid, IPC_RMID, 0);
+			v->image_shm = TFALSE;
+		}
+		v->image->data = NULL;
+		XDestroyImage(v->image);
+		v->image = TNULL;
+	}
 }
 
 LOCAL void
@@ -1048,17 +1075,10 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 
 	if (w != v->imw || h != v->imh)
 	{
-		if (shm_available && mod->x11_Shm)
-		{
-			if (v->image)
-			{
-				XShmDetach(mod->x11_Display, &v->shminfo);
-				XDestroyImage(v->image);
-				shmdt(v->shminfo.shmaddr);
-				shmctl(v->shminfo.shmid, IPC_RMID, 0);
-				v->image = TNULL;
-			}
+		x11_freeimage(mod, v);
 
+		if (mod->x11_ShmAvail)
+		{
 			v->image = XShmCreateImage(mod->x11_Display, mod->x11_Visual,
 				mod->x11_Depth, ZPixmap, TNULL, &v->shminfo, w, h);
 			if (v->image)
@@ -1076,6 +1096,7 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 						v->shminfo.readOnly = False;
 						XSync(mod->x11_Display, 0);
 						oldhnd = XSetErrorHandler(shm_errhandler);
+						shm_available = TTRUE;
 						XShmAttach(mod->x11_Display, &v->shminfo);
 						XSync(mod->x11_Display, 0);
 						XSetErrorHandler(oldhnd);
@@ -1083,21 +1104,25 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 						{
 							v->imw = w;
 							v->imh = h;
+							v->image_shm = TTRUE;
+						}
+						else
+						{
+							shmdt(v->shminfo.shmaddr);
+							shmctl(v->shminfo.shmid, IPC_RMID, 0);
+							XDestroyImage(v->image);
+							v->image = TNULL;
+							/* ah, just forget it altogether: */
+							mod->x11_ShmAvail = TFALSE;
 						}
 					}
 				}
 			}
 		}
-		else
+
+		if (!v->image)
 		{
 			TBOOL okay = TTRUE;
-
-			if (v->image)
-			{
-				v->image->data = NULL;
-				XDestroyImage(v->image);
-				v->image = NULL;
-			}
 
 			if (v->tempbuf)
 			{
@@ -1117,9 +1142,9 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 
 			if (okay)
 			{
+				void *bufp = v->tempbuf ? v->tempbuf : (char *) buf;
 				v->image = XCreateImage(mod->x11_Display, mod->x11_Visual,
-					mod->x11_Depth, ZPixmap, 0, v->tempbuf ? v->tempbuf : (char *) buf,
-					w, h, mod->x11_BPP * 8, 0);
+					mod->x11_Depth, ZPixmap, 0, bufp, w, h, mod->x11_BPP * 8, 0);
 				if (v->image)
 				{
 					v->imw = w;
@@ -1145,7 +1170,7 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 
 			case (32 << 9) + (PIXFMT_RGB << 1) + 0:
 			case (24 << 9) + (PIXFMT_RGB << 1) + 0:
-				if (mod->x11_Shm)
+				if (v->image_shm)
 					TExecCopyMem(exec, buf, v->image->data, w*h*4);
 				else
 					v->image->data = (char *) buf;
@@ -1269,16 +1294,14 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 			}
 		}
 
-		if (shm_available && mod->x11_Shm)
+		if (v->image_shm)
 		{
 			XShmPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
 				x0, y0, w, h, 1);
 			mod->x11_RequestInProgress = req;
 		}
 		else
-		{
 			XPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
 				x0, y0, w, h);
-		}
 	}
 }

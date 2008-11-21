@@ -235,7 +235,8 @@ typedef struct X11Display
 	struct THook *x11_CopyExposeHook;
 
 	Region x11_HugeRegion;
-	TINT x11_Shm, x11_ShmEvent;
+	TBOOL x11_ShmAvail;
+	TINT x11_ShmEvent;
 
 	TINT x11_KeyQual;
 	TINT x11_MouseX, x11_MouseY;
@@ -274,6 +275,7 @@ typedef struct
 	TVPEN bgpen, fgpen;
 
 	XImage *image;
+	TBOOL image_shm;
 	char *tempbuf;
 	int imw, imh;
 
@@ -289,7 +291,6 @@ typedef struct
 	TBOOL waitforexpose;
 	TBOOL waitforresize;
 
-	TINT shm, shmevent;
 	XShmSegmentInfo shminfo;
 
 } VISUAL;

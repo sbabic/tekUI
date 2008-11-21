@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.9"
+_VERSION = "Theme 6.10"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -400,7 +400,7 @@ local function importGTKConfig(def_s)
 						if style == "default" then
 							found = true
 							if color == "bg[NORMAL]" then
-								d["rgb-background"] = fmtrgb(r, g, b, 0.95)
+								d["rgb-background"] = fmtrgb(r, g, b, 0.92)
 								d["rgb-group"] = fmtrgb(r, g, b, 0.98)
 								d["rgb-shadow"] = fmtrgb(r, g, b, 0.45)
 								d["rgb-border-shine"] = fmtrgb(r, g, b, 1.25)

@@ -595,8 +595,8 @@ EXPORT TAPTR vis_opendisplay(TMOD_VIS *mod, TTAGITEM *tags)
 		else
 		{
 			/* try to open named display: */
-			TDBPRINTF(TDB_WARN,("loading module %s\n", name));
-			display = TExecOpenModule(mod->vis_ExecBase, name, 0, TNULL);
+			TDBPRINTF(TDB_INFO,("loading module %s\n", name));
+			display = TExecOpenModule(mod->vis_ExecBase, name, 0, tags);
 			if (display)
 			{
 				/* store display in hash: */

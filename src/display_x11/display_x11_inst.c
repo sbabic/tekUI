@@ -70,7 +70,7 @@ static TBOOL
 getprops(TMOD_X11 *inst)
 {
 	XVisualInfo xvi;
-	int major, minor;
+	int major, minor, pixmap;
 
 	inst->x11_Flags = (ImageByteOrder(inst->x11_Display) !=
 		(*(TUINT *) endiancheck == 0x11223344 ? MSBFirst : LSBFirst)) ?
@@ -137,8 +137,9 @@ getprops(TMOD_X11 *inst)
 			break;
 	}
 
-	XShmQueryVersion(inst->x11_Display, &major, &minor, &inst->x11_Shm);
-	if (inst->x11_Shm)
+	inst->x11_ShmAvail = (XShmQueryVersion(inst->x11_Display,
+		&major, &minor, &pixmap) == True && pixmap);
+	if (inst->x11_ShmAvail)
 		inst->x11_ShmEvent = XShmGetEventBase(inst->x11_Display) +
 			ShmCompletion;
 
