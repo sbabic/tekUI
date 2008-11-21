@@ -66,7 +66,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 7.2"
+_VERSION = "TextInput 7.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -264,13 +264,15 @@ end
 
 function TextInput:clickMouse(x, y)
 	local tr, tc = self.TextRect, self.TextCursor
-	local fw, fh = self.FWidth, self.FHeight
-	if x >= tr[1] and x <= tr[3] and y >= tr[2] and y <= tr[4] then
-		tc = floor((x - tr[1]) / fw)
-	elseif x < tr[1] then
-		tc = 0
-	elseif x > tr[3] then
-		tc = floor((tr[3] - tr[1]) / fw) + 1
+	if tr then
+		local fw = self.FWidth
+		if x >= tr[1] and x <= tr[3] and y >= tr[2] and y <= tr[4] then
+			tc = floor((x - tr[1]) / fw)
+		elseif x < tr[1] then
+			tc = 0
+		elseif x > tr[3] then
+			tc = floor((tr[3] - tr[1]) / fw) + 1
+		end
 	end
 	self:setCursor(tc)
 	self.BlinkTick = 0
