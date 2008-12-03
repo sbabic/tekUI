@@ -100,7 +100,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 9.2"
+_VERSION = "Application 9.3"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -540,6 +540,7 @@ end
 -------------------------------------------------------------------------------
 
 function Application:addCoroutine(func, ...)
+	local arg = { ... }
 	insert(self.Coroutines, { cocreate(function() func(unpack(arg)) end) } )
 end
 
@@ -712,7 +713,8 @@ function Application:easyRequest(title, text, ...)
 		Children =
 		{
 			ui.Text:new { Width = "fill", Text = text },
-			ui.Group:new { Width = "fill", SameSize = true, Children = buttons }
+			ui.Group:new { Width = "fill", SameSize = true,
+				Children = buttons }
 		}
 	}
 

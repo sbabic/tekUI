@@ -1069,6 +1069,8 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
 	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
 	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
+	TUINT dfmt = (mod->x11_Depth << 9) + (mod->x11_PixFmt << 1) +
+		(mod->x11_Flags & TVISF_SWAPBYTEORDER);
 
 	if (mod->x11_Depth <= 0)
 		return; /* unsupported */
@@ -1122,30 +1124,22 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 
 		if (!v->image)
 		{
-			TBOOL okay = TTRUE;
-
-			if (v->tempbuf)
+			TBOOL success = TFALSE;
+			v->image = XCreateImage(mod->x11_Display, mod->x11_Visual,
+				mod->x11_Depth, ZPixmap, 0, NULL, w, h, mod->x11_BPP * 8, 0);
+			if (v->image)
 			{
-				TExecFree(exec, v->tempbuf);
-				v->tempbuf = NULL;
-			}
-
-			if (!(((mod->x11_Depth << 9) + (mod->x11_PixFmt << 1) +
-				(mod->x11_Flags & TVISF_SWAPBYTEORDER)) == (24 << 9) +
-					(PIXFMT_RGB << 1) + 0))
-			{
-				/* formats differ, need tempbuf */
-				TINT sz = w * h * mod->x11_BPP * 8;
-				v->tempbuf = TExecAlloc(exec, TNULL, sz);
-				if (v->tempbuf == TNULL) okay = TFALSE;
-			}
-
-			if (okay)
-			{
-				void *bufp = v->tempbuf ? v->tempbuf : (char *) buf;
-				v->image = XCreateImage(mod->x11_Display, mod->x11_Visual,
-					mod->x11_Depth, ZPixmap, 0, bufp, w, h, mod->x11_BPP * 8, 0);
-				if (v->image)
+				success = TTRUE;
+				if (dfmt != (24 << 9) + (PIXFMT_RGB << 1) + 0 ||
+					v->image->bytes_per_line != totw * 4)
+				{
+					v->tempbuf = TExecAlloc(exec, TNULL, w * h * mod->x11_BPP);
+					if (v->tempbuf)
+						v->image->data = v->tempbuf;
+					else
+						success = TFALSE;
+				}
+				if (success)
 				{
 					v->imw = w;
 					v->imh = h;
@@ -1154,144 +1148,132 @@ x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req)
 		}
 	}
 
-
 	if (v->image)
 	{
 		int xx, yy;
 		TUINT p;
 		TUINT *sp = buf;
+		TINT dtw;
+		TUINT8 *dp;
+		if (v->tempbuf)
+		{
+			dp = (TUINT8 *) v->tempbuf;
+			dtw = w * mod->x11_BPP;
+		}
+		else
+		{
+			dp = (TUINT8 *) v->image->data;
+			dtw = v->image->bytes_per_line;
+		}
 
-		switch ((mod->x11_Depth << 9) + (mod->x11_PixFmt << 1) +
-			(mod->x11_Flags & TVISF_SWAPBYTEORDER))
+		switch (dfmt)
 		{
 			default:
-				TDBPRINTF(TDB_ERROR,("Cannot convert rgb to screen mode\n"));
+				TDBPRINTF(TDB_ERROR,("Cannot render to screen mode\n"));
 				break;
 
 			case (32 << 9) + (PIXFMT_RGB << 1) + 0:
 			case (24 << 9) + (PIXFMT_RGB << 1) + 0:
-				if (v->image_shm)
-					TExecCopyMem(exec, buf, v->image->data, w*h*4);
-				else
+				if (dtw == totw * 4 && !v->image_shm)
+				{
 					v->image->data = (char *) buf;
+				}
+				else
+				{
+					for (yy = 0; yy < h; ++yy)
+					{
+						TExecCopyMem(exec, sp, dp, w * 4);
+						sp += totw;
+						dp += dtw;
+					}
+				}
 				break;
 
-
 			case (15 << 9) + (PIXFMT_RGB << 1) + 0:
-			{
-				TUINT16 *dp = (TUINT16 *)
-					(v->tempbuf ? v->tempbuf : v->image->data);
-
 				for (yy = 0; yy < h; ++yy)
 				{
 					for (xx = 0; xx < w; xx++)
 					{
 						p = sp[xx];
-						dp[xx] = ((p & 0xf80000) >> 9) |
+						((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 9) |
 							((p & 0x00f800) >> 6) |
 							((p & 0x0000f8) >> 3);
 
 					}
 					sp += totw;
-					dp += totw;
+					dp += dtw;
 				}
 				break;
-			}
 
 			case (15 << 9) + (PIXFMT_RGB << 1) + 1:
-			{
-				TUINT16 *dp = (TUINT16 *)
-					(v->tempbuf ? v->tempbuf : v->image->data);
-
 				for (yy = 0; yy < h; ++yy)
 				{
 					for (xx = 0; xx < w; xx++)
 					{
 						p = sp[xx];
-
 						/*		24->15 bit, host-swapped
 						**		........rrrrrrrrGGggggggbbbbbbbb
 						** ->	................gggbbbbb0rrrrrGG */
-
-						dp[xx] = ((p & 0xf80000) >> 17) |
+						((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 17) |
 							((p & 0x00c000) >> 14) |
 							((p & 0x003800) << 2) |
 							((p & 0x0000f8) << 5);
 					}
 					sp += totw;
-					dp += totw;
+					dp += dtw;
 				}
 				break;
-			}
 
 			case (16 << 9) + (PIXFMT_RGB << 1) + 0:
-			{
-				TUINT16 *dp = (TUINT16 *)
-					(v->tempbuf ? v->tempbuf : v->image->data);
 				for (yy = 0; yy < h; ++yy)
 				{
 					for (xx = 0; xx < w; xx++)
 					{
 						p = sp[xx];
-						dp[xx] = ((p & 0xf80000) >> 8) |
+						((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 8) |
 							((p & 0x00fc00) >> 5) |
 							((p & 0x0000f8) >> 3);
 
 					}
 					sp += totw;
-					dp = (TUINT16 *)
-						(((char*) dp) + v->image->bytes_per_line);
+					dp += dtw;
 				}
 				break;
-			}
 
 			case (16 << 9) + (PIXFMT_RGB << 1) + 1:
-			{
-				TUINT16 *dp = (TUINT16 *)
-					(v->tempbuf ? v->tempbuf : v->image->data);
 				for (yy = 0; yy < h; ++yy)
 				{
 					for (xx = 0; xx < w; xx++)
 					{
 						p = sp[xx];
-
 						/*		24->16 bit, host-swapped
 						**		........rrrrrrrrGGGgggggbbbbbbbb
 						** ->	................gggbbbbbrrrrrGGG */
-
-						dp[xx] = ((p & 0xf80000) >> 16) |
+						((TUINT16 *) dp)[xx] = ((p & 0xf80000) >> 16) |
 							((p & 0x0000f8) << 5) |
 							((p & 0x00e000) >> 13) |
 							((p & 0x001c00) << 3);
 					}
 					sp += totw;
-					dp = (TUINT16 *)
-						(((char*) dp) + v->image->bytes_per_line);
+					dp += dtw;
 				}
 				break;
-			}
 
 			case (24 << 9) + (PIXFMT_RGB << 1) + 1:
-			{
-				TUINT *dp = (TUINT *)
-					(v->tempbuf ? v->tempbuf : v->image->data);
-
 				for (yy = 0; yy < h; ++yy)
 				{
 					for (xx = 0; xx < w; xx++)
 					{
 						p = sp[xx];
-
 						/*	24->24 bit, host-swapped */
-						dp[xx] = ((p & 0x00ff0000) >> 8) |
+						((TUINT *) dp)[xx] = ((p & 0x00ff0000) >> 8) |
 							((p & 0x0000ff00) << 8) |
 							((p & 0x000000ff) << 24);
 					}
 					sp += totw;
-					dp += totw;
+					dp += dtw;
 				}
 				break;
-			}
 		}
 
 		if (v->image_shm)

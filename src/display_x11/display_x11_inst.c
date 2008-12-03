@@ -79,6 +79,9 @@ getprops(TMOD_X11 *inst)
 	if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 16,
 		DirectColor, &xvi))
 		inst->x11_Depth = 16;
+	else if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 15,
+		DirectColor, &xvi))
+		inst->x11_Depth = 15;
 	else if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 24,
 		DirectColor, &xvi))
 		inst->x11_Depth = 24;
