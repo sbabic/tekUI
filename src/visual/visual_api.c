@@ -142,8 +142,8 @@ EXPORT TAPTR vis_openvisual(TMOD_VIS *mod, TTAGITEM *tags)
 			{
 				inst->vis_InitRequest = req;
 				inst->vis_Display = req->tvr_Req.io_Device;
-
-				vis_setinput(inst, TITYPE_NONE, TITYPE_CLOSE);
+				inst->vis_InputMask = (TUINT) TGetTag(tags,
+					TVisual_EventMask, 0);
 				return inst;
 			}
 		}

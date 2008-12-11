@@ -213,6 +213,12 @@ tek_lib_visual_open(lua_State *L)
 		tp++->tti_Value = (TTAG) lua_tointeger(L, -1);
 	lua_pop(L, 1);
 
+	tp->tti_Tag = TVisual_EventMask;
+	lua_getfield(L, 1, "EventMask");
+	if (lua_isnumber(L, -1))
+		tp++->tti_Value = (TTAG) lua_tointeger(L, -1);
+	lua_pop(L, 1);
+
 	tp->tti_Tag = TVisual_Display;
 	tp++->tti_Value = (TTAG) vis->vis_Display;
 

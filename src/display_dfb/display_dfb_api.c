@@ -25,7 +25,7 @@ dfb_openvisual(TMOD_DFB *mod, struct TVRequest *req)
 	req->tvr_Op.OpenVisual.Instance = v;
 	if (v == TNULL) return;
 
-	v->eventmask = TITYPE_FOCUS;
+	v->eventmask = (TUINT) TGetTag(tags, TVisual_EventMask, 0);
 
 	TInitList(&v->penlist);
 	v->bgpen = TVPEN_UNDEFINED;

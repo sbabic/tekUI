@@ -137,7 +137,7 @@ x11_openvisual(TMOD_X11 *mod, struct TVRequest *req)
 
 		v->base_mask = StructureNotifyMask | ExposureMask | FocusChangeMask;
 		swa.event_mask = x11_seteventmask(mod, v,
-			(TUINT) TGetTag(tags, TVisual_EventMask, TITYPE_FOCUS));
+			(TUINT) TGetTag(tags, TVisual_EventMask, 0));
 
 		v->window = XCreateWindow(mod->x11_Display,
 			RootWindow(mod->x11_Display, mod->x11_Screen),
