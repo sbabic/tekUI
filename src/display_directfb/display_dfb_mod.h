@@ -1,5 +1,5 @@
-#ifndef _TEK_VISUAL_DISPLAY_DFB_MOD_H
-#define _TEK_VISUAL_DISPLAY_DFB_MOD_H
+#ifndef _TEK_DISPLAY_DIRECTFB_MOD_H
+#define _TEK_DISPLAY_DIRECTFB_MOD_H
 
 /*
 **	teklib/src/display_dfb/display_dfb_mod.h - DirectFB Display Driver
@@ -134,20 +134,20 @@ struct fnt_attr
 
 /*****************************************************************************/
 
-typedef struct DFBDisplay
+typedef struct
 {
 	/* Module header: */
 	struct TModule dfb_Module;
 	/* Exec module base ptr: */
-	TAPTR dfb_ExecBase;
+	struct TExecBase *dfb_ExecBase;
 	/* Locking for module base structure: */
-	TAPTR dfb_Lock;
+	struct TLock *dfb_Lock;
 	/* Number of module opens: */
-	TAPTR dfb_RefCount;
+	TUINT dfb_RefCount;
 	/* Task: */
-	TAPTR dfb_Task;
+	struct TTask *dfb_Task;
 	/* Command message port: */
-	TAPTR dfb_CmdPort;
+	struct TMsgPort *dfb_CmdPort;
 	/* Command message port signal: */
 	TUINT dfb_CmdPortSignal;
 
@@ -190,11 +190,11 @@ typedef struct DFBDisplay
 	/* Timerequest: */
 	TAPTR dfb_TimeReq;
 	/* Module global memory manager (thread safe): */
-	TAPTR dfb_MemMgr;
+	struct TMemManager *dfb_MemMgr;
 
 	struct FontMan dfb_fm;
 
-} TMOD_DFB;
+} DFBDISPLAY;
 
 typedef struct
 {
@@ -224,7 +224,7 @@ typedef struct
 
 	/* current active font */
 	TAPTR curfont;
-} VISUAL;
+} DFBWINDOW;
 
 struct DFBPen
 {
@@ -237,8 +237,8 @@ struct DFBPen
 
 struct attrdata
 {
-	TMOD_DFB *mod;
-	VISUAL *v;
+	DFBDISPLAY *mod;
+	DFBWINDOW *v;
 	TAPTR font;
 	TINT num;
 	TBOOL sizechanged;
@@ -246,45 +246,45 @@ struct attrdata
 
 /*****************************************************************************/
 
-LOCAL TBOOL dfb_init(TMOD_DFB *mod, TTAGITEM *tags);
-LOCAL void dfb_exit(TMOD_DFB *mod);
-LOCAL void dfb_wake(TMOD_DFB *inst);
-LOCAL void dfb_openvisual(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_closevisual(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_setinput(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_allocpen(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_freepen(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_frect(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_rect(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_line(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_plot(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_drawstrip(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_clear(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_getattrs(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_setattrs(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_drawtext(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_openfont(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_getfontattrs(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_textsize(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_setfont(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_closefont(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_queryfonts(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_getnextfont(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_drawtags(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_drawfan(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_drawarc(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_copyarea(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_setcliprect(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_drawfarc(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_unsetcliprect(TMOD_DFB *mod, struct TVRequest *req);
-LOCAL void dfb_drawbuffer(TMOD_DFB *mod, struct TVRequest *req);
+LOCAL TBOOL dfb_init(DFBDISPLAY *mod, TTAGITEM *tags);
+LOCAL void dfb_exit(DFBDISPLAY *mod);
+LOCAL void dfb_wake(DFBDISPLAY *inst);
+LOCAL void dfb_openvisual(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_closevisual(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_setinput(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_allocpen(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_freepen(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_frect(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_rect(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_line(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_plot(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_drawstrip(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_clear(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_getattrs(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_setattrs(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_drawtext(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_openfont(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_getfontattrs(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_textsize(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_setfont(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_closefont(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_queryfonts(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_getnextfont(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_drawtags(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_drawfan(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_drawarc(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_copyarea(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_setcliprect(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_drawfarc(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_unsetcliprect(DFBDISPLAY *mod, struct TVRequest *req);
+LOCAL void dfb_drawbuffer(DFBDISPLAY *mod, struct TVRequest *req);
 
-LOCAL TAPTR dfb_hostopenfont(TMOD_DFB *mod, TTAGITEM *tags);
-LOCAL void dfb_hostclosefont(TMOD_DFB *mod, TAPTR font);
-LOCAL void dfb_hostsetfont(TMOD_DFB *mod, VISUAL *v, TAPTR font);
-LOCAL TTAGITEM *dfb_hostgetnextfont(TMOD_DFB *mod, TAPTR fqhandle);
-LOCAL TINT dfb_hosttextsize(TMOD_DFB *mod, TAPTR font, TSTRPTR text);
+LOCAL TAPTR dfb_hostopenfont(DFBDISPLAY *mod, TTAGITEM *tags);
+LOCAL void dfb_hostclosefont(DFBDISPLAY *mod, TAPTR font);
+LOCAL void dfb_hostsetfont(DFBDISPLAY *mod, DFBWINDOW *v, TAPTR font);
+LOCAL TTAGITEM *dfb_hostgetnextfont(DFBDISPLAY *mod, TAPTR fqhandle);
+LOCAL TINT dfb_hosttextsize(DFBDISPLAY *mod, TAPTR font, TSTRPTR text);
 LOCAL THOOKENTRY TTAG dfb_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg);
-LOCAL TAPTR dfb_hostqueryfonts(TMOD_DFB *mod, TTAGITEM *tags);
+LOCAL TAPTR dfb_hostqueryfonts(DFBDISPLAY *mod, TTAGITEM *tags);
 
-#endif /* _TEK_VISUAL_DISPLAY_DFB_MOD_H */
+#endif /* _TEK_DISPLAY_DIRECTFB_MOD_H */

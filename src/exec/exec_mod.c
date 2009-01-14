@@ -23,7 +23,7 @@ static const TMFPTR exec_vectors[EXEC_NUMVECTORS];
 */
 
 TMODENTRY TUINT
-tek_init_exec(TAPTR selftask, struct TModule *mod, TUINT16 version,
+tek_init_exec(struct TTask *task, struct TModule *mod, TUINT16 version,
 	TTAGITEM *tags)
 {
 	TEXECBASE *exec = (TEXECBASE *) mod;
@@ -49,7 +49,7 @@ tek_init_exec(TAPTR selftask, struct TModule *mod, TUINT16 version,
 
 		/* overwrite TExecCopyMem vector with THALCopyMem vector,
 		for getting rid of one callframe */
-		((TMFPTR *) exec)[-16] = ((TMFPTR *) exec->texb_HALBase)[-14];
+		((TMFPTR *) exec)[-16] = ((TMFPTR *) exec->texb_HALBase)[-13];
 
 		return TTRUE;
 	}
@@ -153,19 +153,13 @@ exec_vectors[EXEC_NUMVECTORS] =
 	(TMFPTR) exec_AddModules,
 	(TMFPTR) exec_RemModules,
 
-	(TMFPTR) exec_SubTime,
-	(TMFPTR) exec_AddTime,
-	(TMFPTR) exec_CmpTime,
 	(TMFPTR) exec_AllocTimeRequest,
 	(TMFPTR) exec_FreeTimeRequest,
-	(TMFPTR) exec_QueryTime,
-	(TMFPTR) exec_GetDate,
-	(TMFPTR) exec_AddDate,
-	(TMFPTR) exec_SubDate,
-	(TMFPTR) exec_DiffDate,
+	(TMFPTR) exec_GetSystemTime,
+	(TMFPTR) exec_GetUniversalDate,
+	(TMFPTR) exec_GetLocalDate,
 	(TMFPTR) exec_WaitTime,
 	(TMFPTR) exec_WaitDate,
-	(TMFPTR) exec_Delay,
 };
 
 /*****************************************************************************/
@@ -507,4 +501,3 @@ exec_returnmsg(TEXECBASE *exec, TAPTR mem, TUINT status)
 		TDBPRINTF(TDB_TRACE,("message returned to memory manager\n"));
 	}
 }
-

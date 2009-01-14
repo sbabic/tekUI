@@ -17,7 +17,7 @@
 static TAPTR
 init_newatom(TAPTR exec, TSTRPTR name, TAPTR ptr)
 {
-	TAPTR atom = TExecLockAtom(exec, name, TATOMF_CREATE | TATOMF_NAME);
+	struct TAtom *atom = TExecLockAtom(exec, name, TATOMF_CREATE | TATOMF_NAME);
 	if (atom)
 	{
 		TExecSetAtomData(exec, atom, (TTAG) ptr);
@@ -150,7 +150,7 @@ init_openexecmodule(struct TEKlibInit *init, TTAGITEM *usertags)
 		{
 			TUINT psize, nsize;
 			TUINT16 version;
-			struct TModule *execbase;
+			struct TExecBase *execbase;
 
 			/* get version and size */
 			version = (TUINT16) TGetTag(init->tli_HALTags,
@@ -165,7 +165,7 @@ init_openexecmodule(struct TEKlibInit *init, TTAGITEM *usertags)
 			if (execbase)
 			{
 				/* initialize execbase */
-				execbase = (struct TModule *) (((TINT8 *) execbase) + nsize);
+				execbase = (struct TExecBase *) (((TINT8 *) execbase) + nsize);
 				if (TEKlib_CallModule(init->tli_BootHnd, init->tli_ExecMod,
 					init->tli_ExecEntry, TNULL, execbase, 0,
 					init->tli_HALTags))
@@ -200,7 +200,7 @@ init_closeexecmodule(struct TEKlibInit *init)
 */
 
 static TTASKENTRY void
-init_execfunc(TAPTR task)
+init_execfunc(struct TTask *task)
 {
 	TAPTR exec = TGetExecBase(task);
 	TExecDoExec(exec, TNULL);
@@ -299,8 +299,10 @@ TEKCreate(TTAGITEM *usertags)
 				if (init->tli_AppTask)
 				{
 					/* fill in missing fields in execbase */
-					init->tli_ExecBase->tmd_HALMod = init->tli_ExecMod;
-					init->tli_ExecBase->tmd_InitTask = init->tli_AppTask;
+					((struct TModule *) init->tli_ExecBase)->tmd_HALMod =
+						init->tli_ExecMod;
+					((struct TModule *) init->tli_ExecBase)->tmd_InitTask =
+						init->tli_AppTask;
 
 					/* create ramlib task */
 					init->tli_ExecTags[0].tti_Value = (TTAG) TTASKNAME_RAMLIB;
@@ -321,10 +323,11 @@ TEKCreate(TTAGITEM *usertags)
 
 							if (TExecDoExec(init->tli_ExecBase, TNULL))
 							{
+								struct THandle *ath =
+									(struct THandle *) init->tli_AppTask;
 								/* overwrite apptask destructor */
-								init->tli_OrgAppTaskHook =
-									init->tli_AppTask->thn_Hook;
-								TInitHook(&init->tli_AppTask->thn_Hook,
+								init->tli_OrgAppTaskHook = ath->thn_Hook;
+								TInitHook(&ath->thn_Hook,
 									init_destroyapptask, TNULL);
 								init_appatoms(init, usertags);
 								/* application is running */

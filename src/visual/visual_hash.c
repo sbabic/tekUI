@@ -29,7 +29,7 @@ static const unsigned int hash_primes[] =
 #define HASH_MAXSIZE	13845163
 
 static void
-hash_resize(TMOD_VIS *mod, struct vis_Hash *hash)
+hash_resize(struct TVisualBase *mod, struct vis_Hash *hash)
 {
 	TINT numbuckets = hash->numbuckets;
 	TSIZE load = hash->numnodes / numbuckets;
@@ -104,7 +104,7 @@ hash_lookupstring(struct vis_Hash *hash, const char *key, TUINT *hvalp)
 
 /*****************************************************************************/
 
-LOCAL int vis_puthash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key,
+LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key,
 	TTAG value)
 {
 	struct vis_HashNode **bucket, *newnode;
@@ -143,7 +143,7 @@ LOCAL int vis_puthash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key,
 	return 0;
 }
 
-LOCAL int vis_gethash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key,
+LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key,
 	TTAG *valp)
 {
 	TUINT hval;
@@ -157,7 +157,7 @@ LOCAL int vis_gethash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key,
 	return 0;
 }
 
-LOCAL int vis_remhash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key)
+LOCAL int vis_remhash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key)
 {
 	TUINT hval;
 	struct vis_HashNode **bucket = (*hash->lookupfunc)(hash, key, &hval);
@@ -174,7 +174,7 @@ LOCAL int vis_remhash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key)
 	return 0;
 }
 
-LOCAL struct vis_Hash *vis_createhash(TMOD_VIS *mod, void *udata)
+LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, void *udata)
 {
 	struct vis_Hash *hash = TExecAlloc(mod->vis_ExecBase,
 		mod->vis_MemMgr, sizeof(struct vis_Hash));
@@ -197,7 +197,7 @@ LOCAL struct vis_Hash *vis_createhash(TMOD_VIS *mod, void *udata)
 	return TNULL;
 }
 
-LOCAL void vis_destroyhash(TMOD_VIS *mod, struct vis_Hash *hash)
+LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash)
 {
 	if (hash)
 	{
@@ -224,7 +224,7 @@ LOCAL void vis_destroyhash(TMOD_VIS *mod, struct vis_Hash *hash)
 }
 
 LOCAL TUINT
-vis_hashtolist(TMOD_VIS *mod, struct vis_Hash *hash, struct TList *list)
+vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash, struct TList *list)
 {
 	if (list && hash->numnodes > 0)
 	{
@@ -245,7 +245,7 @@ vis_hashtolist(TMOD_VIS *mod, struct vis_Hash *hash, struct TList *list)
 }
 
 LOCAL void
-vis_hashunlist(TMOD_VIS *mod, struct vis_Hash *hash)
+vis_hashunlist(struct TVisualBase *mod, struct vis_Hash *hash)
 {
 	if (hash->list)
 	{

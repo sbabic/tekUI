@@ -1,6 +1,5 @@
-
-#ifndef _TEK_VISUAL_DISPLAY_X11_MOD_H
-#define _TEK_VISUAL_DISPLAY_X11_MOD_H
+#ifndef _TEK_DISPLAY_X11_MOD_H
+#define _TEK_DISPLAY_X11_MOD_H
 
 /*
 **	teklib/src/visual/display_x11_mod.h - X11 Display Driver
@@ -93,7 +92,9 @@ struct FontNode
 {
 	struct THandle handle;
 	XFontStruct *font;
+	#if defined(ENABLE_XFT)
 	XftFont *xftfont;
+	#endif
 	TUINT attr;
 	TUINT pxsize;
 };
@@ -182,7 +183,7 @@ struct FcInterface
 
 /*****************************************************************************/
 
-typedef struct X11Display
+typedef struct
 {
 	/* Module header: */
 	struct TModule x11_Module;
@@ -195,7 +196,7 @@ typedef struct X11Display
 	/* Locking for module base structure: */
 	TAPTR x11_Lock;
 	/* Number of module opens: */
-	TAPTR x11_RefCount;
+	TUINT x11_RefCount;
 	/* Task: */
 	TAPTR x11_Task;
 	/* Command message port: */
@@ -217,10 +218,14 @@ typedef struct X11Display
 	int x11_fd_display;
 	int x11_fd_sigpipe_read;
 	int x11_fd_sigpipe_write;
+	int x11_fd_max;
 
+	#if defined(ENABLE_XFT)
 	TBOOL x11_use_xft;
 	TAPTR x11_libxfthandle;
 	struct XftInterface x11_xftiface;
+	#endif
+
 	TAPTR x11_libfchandle;
 	struct FcInterface x11_fciface;
 
@@ -241,13 +246,15 @@ typedef struct X11Display
 	TINT x11_KeyQual;
 	TINT x11_MouseX, x11_MouseY;
 
-} TMOD_X11;
+} X11DISPLAY;
 
 struct X11Pen
 {
 	struct TNode node;
 	XColor color;
+	#if defined(ENABLE_XFT)
 	XftColor xftcolor;
+	#endif
 };
 
 typedef struct
@@ -293,12 +300,12 @@ typedef struct
 
 	XShmSegmentInfo shminfo;
 
-} VISUAL;
+} X11WINDOW;
 
 struct attrdata
 {
-	TMOD_X11 *mod;
-	VISUAL *v;
+	X11DISPLAY *mod;
+	X11WINDOW *v;
 	TAPTR font;
 	TINT num;
 	TBOOL sizechanged;
@@ -319,50 +326,48 @@ struct attrdata
 
 /*****************************************************************************/
 
-LOCAL TBOOL x11_init(TMOD_X11 *mod, TTAGITEM *tags);
-LOCAL void x11_exit(TMOD_X11 *mod);
-LOCAL void x11_openvisual(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_closevisual(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_setinput(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_allocpen(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_freepen(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_frect(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_rect(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_line(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_plot(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_drawstrip(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_clear(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_getattrs(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_setattrs(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_drawtext(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_openfont(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_getfontattrs(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_textsize(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_setfont(TMOD_X11 *mod, struct TVRequest *req);
+LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags);
+LOCAL void x11_exit(X11DISPLAY *mod);
+LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_setinput(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_freepen(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_frect(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_rect(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_line(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_plot(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_clear(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_getattrs(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_setattrs(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_openfont(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_getfontattrs(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_textsize(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_setfont(X11DISPLAY *mod, struct TVRequest *req);
 
-LOCAL void x11_closefont(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_queryfonts(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_getnextfont(TMOD_X11 *mod, struct TVRequest *req);
+LOCAL void x11_closefont(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_queryfonts(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_getnextfont(X11DISPLAY *mod, struct TVRequest *req);
 
-LOCAL void x11_drawtags(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_drawfan(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_drawarc(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_copyarea(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_setcliprect(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_unsetcliprect(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_drawfarc(TMOD_X11 *mod, struct TVRequest *req);
-LOCAL void x11_drawbuffer(TMOD_X11 *mod, struct TVRequest *req);
+LOCAL void x11_drawtags(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_drawfan(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_copyarea(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_setcliprect(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_unsetcliprect(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req);
 
-LOCAL void x11_wake(TMOD_X11 *inst);
+LOCAL void x11_wake(X11DISPLAY *inst);
 
-LOCAL void x11_hostsetfont(TMOD_X11 *mod, VISUAL *v, TAPTR font);
-LOCAL TAPTR x11_hostopenfont(TMOD_X11 *mod, TTAGITEM *tags);
-LOCAL TAPTR x11_hostqueryfonts(TMOD_X11 *mod, TTAGITEM *tags);
-LOCAL void x11_hostclosefont(TMOD_X11 *mod, TAPTR font);
-LOCAL TINT  x11_hosttextsize(TMOD_X11 *mod, TAPTR font, TSTRPTR text);
+LOCAL void x11_hostsetfont(X11DISPLAY *mod, X11WINDOW *v, TAPTR font);
+LOCAL TAPTR x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags);
+LOCAL TAPTR x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags);
+LOCAL void x11_hostclosefont(X11DISPLAY *mod, TAPTR font);
+LOCAL TINT  x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text);
 LOCAL THOOKENTRY TTAG x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg);
-LOCAL TTAGITEM *x11_hostgetnextfont(TMOD_X11 *mod, TAPTR fqhandle);
+LOCAL TTAGITEM *x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle);
 
-TSTRPTR utf8tolatin(TMOD_X11 *mod, TSTRPTR utf8string, TINT len);
+TSTRPTR utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len);
 
-#endif
+#endif /* _TEK_DISPLAY_X11_MOD_H */

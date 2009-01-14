@@ -12,9 +12,9 @@
 #include <tek/mod/exec.h>
 #include <tek/debug.h>
 
-#define HAL_VERSION		3
+#define HAL_VERSION		4
 #define HAL_REVISION	0
-#define HAL_NUMVECTORS	29
+#define HAL_NUMVECTORS	28
 
 static THOOKENTRY TTAG hal_dispatch(struct THook *hook, TAPTR obj, TTAG msg);
 static const TMFPTR hal_vectors[HAL_NUMVECTORS];
@@ -25,11 +25,11 @@ static const TMFPTR hal_vectors[HAL_NUMVECTORS];
 */
 
 TMODENTRY TUINT
-tek_init_hal(TAPTR selftask, struct TModule *mod, TUINT16 version,
+tek_init_hal(struct TTask *task, struct TModule *mod, TUINT16 version,
 	TTAGITEM *tags)
 {
-	TMOD_HAL *hal = (TMOD_HAL *) mod;
-	TMOD_HAL **halbaseptr;
+	struct THALBase *hal = (struct THALBase *) mod;
+	struct THALBase **halbaseptr;
 	TAPTR boot;
 
 	if (hal == TNULL)
@@ -38,23 +38,23 @@ tek_init_hal(TAPTR selftask, struct TModule *mod, TUINT16 version,
 			return sizeof(TAPTR) * HAL_NUMVECTORS; /* negative size */
 
 		if (version <= HAL_VERSION)
-			return sizeof(TMOD_HAL); /* positive size */
+			return sizeof(struct THALBase); /* positive size */
 
 		return 0;
 	}
 
 	boot = (TAPTR) TGetTag(tags, TExecBase_BootHnd, TNULL);
 
-	halbaseptr = (TMOD_HAL **) TGetTag(tags, TExecBase_HAL, TNULL);
+	halbaseptr = (struct THALBase **) TGetTag(tags, TExecBase_HAL, TNULL);
 	*halbaseptr = TNULL;
 
 	hal = hal_allocself(boot,
-		sizeof(TMOD_HAL) + sizeof(TAPTR) * HAL_NUMVECTORS);
+		sizeof(struct THALBase) + sizeof(TAPTR) * HAL_NUMVECTORS);
 
 	if (!hal) return 0;
-	hal = (TMOD_HAL *) (((TAPTR *) hal) + HAL_NUMVECTORS);
+	hal = (struct THALBase *) (((TAPTR *) hal) + HAL_NUMVECTORS);
 
-	hal_fillmem(hal, hal, sizeof(TMOD_HAL), 0);
+	hal_fillmem(hal, hal, sizeof(struct THALBase), 0);
 
 	hal->hmb_BootHnd = boot;
 
@@ -64,7 +64,7 @@ tek_init_hal(TAPTR selftask, struct TModule *mod, TUINT16 version,
 	hal->hmb_Module.tmd_Handle.thn_Name = TMODNAME_HAL;
 	hal->hmb_Module.tmd_ModSuper = (struct TModule *) hal;
 	hal->hmb_Module.tmd_NegSize = sizeof(TAPTR) * HAL_NUMVECTORS;
-	hal->hmb_Module.tmd_PosSize = sizeof(TMOD_HAL);
+	hal->hmb_Module.tmd_PosSize = sizeof(struct THALBase);
 	hal->hmb_Module.tmd_RefCount = 1;
 	hal->hmb_Module.tmd_Flags =
 		TMODF_INITIALIZED | TMODF_VECTORTABLE | TMODF_OPENCLOSE;
@@ -100,7 +100,6 @@ hal_vectors[HAL_NUMVECTORS] =
 	(TMFPTR) TNULL,
 
 	(TMFPTR) hal_getattr,
-	(TMFPTR) hal_getsystime,
 
 	(TMFPTR) hal_alloc,
 	(TMFPTR) hal_free,
@@ -133,7 +132,7 @@ hal_vectors[HAL_NUMVECTORS] =
 static THOOKENTRY TTAG
 hal_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 {
-	TMOD_HAL *mod = (TMOD_HAL *) hook->thk_Data;
+	struct THALBase *mod = (struct THALBase *) hook->thk_Data;
 	switch (msg)
 	{
 		case TMSG_DESTROY:
@@ -155,55 +154,7 @@ hal_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 */
 
 EXPORT TTAG
-hal_getattr(TMOD_HAL *hal, TUINT tag, TTAG defval)
+hal_getattr(struct THALBase *hal, TUINT tag, TTAG defval)
 {
 	return TGetTag((TTAGITEM *) hal->hmb_Specific, tag, defval);
-}
-
-/*****************************************************************************/
-/*
-**	TSubTime(a, b) - Subtract time: a - b -> a
-**	TAddTime(a, b) - Add time: a + b -> a
-**	TCmpTime(a, b) - a > b: 1, a < b: -1, a = b: 0
-*/
-
-LOCAL void
-hal_subtime(TTIME *a, TTIME *b)
-{
-	if (a->ttm_USec < b->ttm_USec)
-	{
-		a->ttm_Sec = a->ttm_Sec - b->ttm_Sec - 1;
-		a->ttm_USec = 1000000 - (b->ttm_USec - a->ttm_USec);
-	}
-	else
-	{
-		a->ttm_Sec = a->ttm_Sec - b->ttm_Sec;
-		a->ttm_USec = a->ttm_USec - b->ttm_USec;
-	}
-}
-
-LOCAL void
-hal_addtime(TTIME *a, TTIME *b)
-{
-	a->ttm_Sec += b->ttm_Sec;
-	a->ttm_USec += b->ttm_USec;
-	if (a->ttm_USec >= 1000000)
-	{
-		a->ttm_USec -= 1000000;
-		a->ttm_Sec++;
-	}
-}
-
-LOCAL TINT
-hal_cmptime(TTIME *a, TTIME *b)
-{
-	if (a->ttm_Sec < b->ttm_Sec)
-		return -1;
-	if (a->ttm_Sec > b->ttm_Sec)
-		return 1;
-	if (a->ttm_USec == b->ttm_USec)
-		return 0;
-	if (a->ttm_USec > b->ttm_USec)
-		return 1;
-	return -1;
 }

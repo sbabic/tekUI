@@ -1,11 +1,8 @@
-
-#ifndef _TEKLIB_H
-#define _TEKLIB_H
+#ifndef _TEK_TEKLIB_H
+#define _TEK_TEKLIB_H
 
 /*
-**	$Id: teklib.h,v 1.3 2006/09/10 00:59:26 tmueller Exp $
-**	teklib/tek/teklib.h - Link library functions for bootstrapping
-**	and for operating on elementary, public data structures
+**	teklib/tek/teklib.h - Link library functions
 **
 **	Written by Timm S. Mueller <tmueller at neoscientists.org>
 **	See copyright notice in teklib/COPYRIGHT
@@ -14,7 +11,6 @@
 /*****************************************************************************/
 
 #include <tek/exec.h>
-#include <tek/mod/time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +36,14 @@ TLIBAPI TBOOL TForEachTag(struct TTagItem *taglist, struct THook *hook);
 TLIBAPI struct THandle *TFindHandle(struct TList *list, TSTRPTR s2);
 TLIBAPI void TInitHook(struct THook *hook, THOOKFUNC func, TAPTR data);
 TLIBAPI TTAG TCallHookPkt(struct THook *hook, TAPTR obj, TTAG msg);
+TLIBAPI void TAddTime(TTIME *a, TTIME *b);
+TLIBAPI void TSubTime(TTIME *a, TTIME *b);
+TLIBAPI TINT TCmpTime(TTIME *a, TTIME *b);
+TLIBAPI void TAddDate(TDATE *d, TINT ndays, TTIME *tm);
+TLIBAPI void TSubDate(TDATE *d, TINT ndays, TTIME *tm);
+TLIBAPI TINT TDiffDate(TDATE *d1, TDATE *d2, TTIME *tm);
+TLIBAPI TBOOL TCreateTime(TTIME *t, TINT d, TINT s, TINT us);
+TLIBAPI TBOOL TExtractTime(TTIME *t, TINT *d, TINT *s, TINT *us);
 
 #ifdef __cplusplus
 }

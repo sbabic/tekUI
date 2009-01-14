@@ -5,15 +5,15 @@
 
 #include "display_x11_mod.h"
 
-TBOOL initlibxft(TMOD_X11 *mod);
+TBOOL initlibxft(X11DISPLAY *mod);
 
-static TTASKENTRY void x11_taskfunc(TAPTR task);
-static TTASKENTRY TBOOL x11_initinstance(TAPTR task);
-static void x11_exitinstance(TMOD_X11 *inst);
-static void x11_processevent(TMOD_X11 *mod);
-static TBOOL x11_processvisualevent(TMOD_X11 *mod, VISUAL *v,
+static TTASKENTRY void x11_taskfunc(struct TTask *task);
+static TTASKENTRY TBOOL x11_initinstance(struct TTask *task);
+static void x11_exitinstance(X11DISPLAY *inst);
+static void x11_processevent(X11DISPLAY *mod);
+static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 	TAPTR msgstate, XEvent *ev);
-static void x11_sendimessages(TMOD_X11 *mod, TBOOL do_interval);
+static void x11_sendimessages(X11DISPLAY *mod, TBOOL do_interval);
 
 /*****************************************************************************/
 /*
@@ -21,7 +21,7 @@ static void x11_sendimessages(TMOD_X11 *mod, TBOOL do_interval);
 */
 
 LOCAL TBOOL
-x11_init(TMOD_X11 *mod, TTAGITEM *tags)
+x11_init(X11DISPLAY *mod, TTAGITEM *tags)
 {
 	for (;;)
 	{
@@ -29,6 +29,7 @@ x11_init(TMOD_X11 *mod, TTAGITEM *tags)
 
 		mod->x11_TimeReq =
 			TExecAllocTimeRequest(mod->x11_ExecBase, TNULL);
+		if (mod->x11_TimeReq == TNULL) break;
 
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
@@ -50,7 +51,7 @@ x11_init(TMOD_X11 *mod, TTAGITEM *tags)
 }
 
 LOCAL void
-x11_exit(TMOD_X11 *mod)
+x11_exit(X11DISPLAY *mod)
 {
 	if (mod->x11_Task)
 	{
@@ -58,7 +59,6 @@ x11_exit(TMOD_X11 *mod)
 		x11_wake(mod);
 		TDestroy(mod->x11_Task);
 	}
-
 	TExecFreeTimeRequest(mod->x11_ExecBase, mod->x11_TimeReq);
 }
 
@@ -67,7 +67,7 @@ x11_exit(TMOD_X11 *mod)
 static const TUINT8 endiancheck[4] = { 0x11,0x22,0x33,0x44 };
 
 static TBOOL
-getprops(TMOD_X11 *inst)
+getprops(X11DISPLAY *inst)
 {
 	XVisualInfo xvi;
 	int major, minor, pixmap;
@@ -152,9 +152,9 @@ getprops(TMOD_X11 *inst)
 /*****************************************************************************/
 
 static TTASKENTRY TBOOL
-x11_initinstance(TAPTR task)
+x11_initinstance(struct TTask *task)
 {
-	TMOD_X11 *inst = TExecGetTaskData(TGetExecBase(task), task);
+	X11DISPLAY *inst = TExecGetTaskData(TGetExecBase(task), task);
 
 	for (;;)
 	{
@@ -191,6 +191,8 @@ x11_initinstance(TAPTR task)
 			break;
 		inst->x11_fd_sigpipe_read = pipefd[0];
 		inst->x11_fd_sigpipe_write = pipefd[1];
+		inst->x11_fd_max =
+			TMAX(inst->x11_fd_sigpipe_read, inst->x11_fd_display) + 1;
 
 		initlibxft(inst);
 
@@ -222,7 +224,7 @@ x11_initinstance(TAPTR task)
 }
 
 static void
-x11_exitinstance(TMOD_X11 *inst)
+x11_exitinstance(X11DISPLAY *inst)
 {
 	struct TNode *imsg, *node, *next;
 
@@ -234,7 +236,7 @@ x11_exitinstance(TMOD_X11 *inst)
 	node = inst->x11_vlist.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
-		VISUAL *v = (VISUAL *) node;
+		X11WINDOW *v = (X11WINDOW *) node;
 
 		/* unset active font in all open visuals */
 		v->curfont = TNULL;
@@ -265,8 +267,10 @@ x11_exitinstance(TMOD_X11 *inst)
 	if (inst->x11_libfchandle)
 		dlclose(inst->x11_libfchandle);
 
+	#if defined(ENABLE_XFT)
 	if (inst->x11_libxfthandle)
 		dlclose(inst->x11_libxfthandle);
+	#endif
 }
 
 /*****************************************************************************/
@@ -275,14 +279,14 @@ x11_exitinstance(TMOD_X11 *inst)
 */
 
 static void
-x11_docmd(TMOD_X11 *inst, struct TVRequest *req)
+x11_docmd(X11DISPLAY *inst, struct TVRequest *req)
 {
 	switch (req->tvr_Req.io_Command)
 	{
-		case TVCMD_OPENVISUAL:
+		case TVCMD_OPENWINDOW:
 			x11_openvisual(inst, req);
 			break;
-		case TVCMD_CLOSEVISUAL:
+		case TVCMD_CLOSEWINDOW:
 			x11_closevisual(inst, req);
 			break;
 		case TVCMD_OPENFONT:
@@ -348,12 +352,6 @@ x11_docmd(TMOD_X11 *inst, struct TVRequest *req)
 		case TVCMD_DRAWFAN:
 			x11_drawfan(inst, req);
 			break;
-		case TVCMD_DRAWARC:
-			x11_drawarc(inst, req);
-			break;
-		case TVCMD_DRAWFARC:
-			x11_drawfarc(inst, req);
-			break;
 		case TVCMD_COPYAREA:
 			x11_copyarea(inst, req);
 			break;
@@ -373,9 +371,9 @@ x11_docmd(TMOD_X11 *inst, struct TVRequest *req)
 }
 
 static TTASKENTRY void
-x11_taskfunc(TAPTR task)
+x11_taskfunc(struct TTask *task)
 {
-	TMOD_X11 *inst = TExecGetTaskData(TGetExecBase(task), task);
+	X11DISPLAY *inst = TExecGetTaskData(TGetExecBase(task), task);
 	TUINT sig;
 	fd_set rset;
 	struct TVRequest *req;
@@ -383,20 +381,20 @@ x11_taskfunc(TAPTR task)
 	struct timeval tv;
 
 	/* interval time: 1/50s: */
-	TTIME intt = { 0, 20000 };
+	TTIME intt = { 20000 };
+
 	/* next absolute time to send interval message: */
 	TTIME nextt;
 	TTIME waitt, nowt;
 
-	TExecQueryTime(inst->x11_ExecBase, inst->x11_TimeReq, &nextt);
-	TExecAddTime(inst->x11_ExecBase, &nextt, &intt);
+	TExecGetSystemTime(inst->x11_ExecBase, inst->x11_TimeReq, &nextt);
+	TAddTime(&nextt, &intt);
 
 	TDBPRINTF(TDB_INFO,("Device instance running\n"));
 
 	do
 	{
 		TBOOL do_interval = TFALSE;
-		int fd_max = TMAX(inst->x11_fd_sigpipe_read, inst->x11_fd_display);
 
 		while (inst->x11_RequestInProgress == TNULL &&
 			(req = TExecGetMsg(inst->x11_ExecBase, inst->x11_CmdPort)))
@@ -414,30 +412,31 @@ x11_taskfunc(TAPTR task)
 		FD_SET(inst->x11_fd_sigpipe_read, &rset);
 
 		/* calculate new delta to wait: */
-		TExecQueryTime(inst->x11_ExecBase, inst->x11_TimeReq, &nowt);
+		TExecGetSystemTime(inst->x11_ExecBase, inst->x11_TimeReq, &nowt);
 		waitt = nextt;
-		TExecSubTime(inst->x11_ExecBase, &waitt, &nowt);
+		TSubTime(&waitt, &nowt);
 
-		tv.tv_sec = waitt.ttm_Sec;
-		tv.tv_usec = waitt.ttm_USec;
+		tv.tv_sec = waitt.tdt_Int64 / 1000000;
+		tv.tv_usec = waitt.tdt_Int64 % 1000000;
+
 		/* wait for display, signal fd and timeout: */
-		if (select(fd_max + 1, &rset, NULL, NULL, &tv) > 0)
+		if (select(inst->x11_fd_max, &rset, NULL, NULL, &tv) > 0)
 			if (FD_ISSET(inst->x11_fd_sigpipe_read, &rset))
 				/* consume one signal: */
 				read(inst->x11_fd_sigpipe_read, buf, 1);
 
 		/* check if time interval has expired: */
-		TExecQueryTime(inst->x11_ExecBase, inst->x11_TimeReq, &nowt);
-		if (TExecCmpTime(inst->x11_ExecBase, &nowt, &nextt) > 0)
+		TExecGetSystemTime(inst->x11_ExecBase, inst->x11_TimeReq, &nowt);
+		if (TCmpTime(&nowt, &nextt) > 0)
 		{
 			/* expired; send interval: */
 			do_interval = TTRUE;
-			TExecAddTime(inst->x11_ExecBase, &nextt, &intt);
-			if (TExecCmpTime(inst->x11_ExecBase, &nowt, &nextt) >= 0)
+			TAddTime(&nextt, &intt);
+			if (TCmpTime(&nowt, &nextt) >= 0)
 			{
 				/* nexttime expired already; create new time from now: */
 				nextt = nowt;
-				TExecAddTime(inst->x11_ExecBase, &nextt, &intt);
+				TAddTime(&nextt, &intt);
 			}
 		}
 
@@ -458,7 +457,7 @@ x11_taskfunc(TAPTR task)
 	x11_exitinstance(inst);
 }
 
-LOCAL void x11_wake(TMOD_X11 *inst)
+LOCAL void x11_wake(X11DISPLAY *inst)
 {
 	char sig = 0;
 	write(inst->x11_fd_sigpipe_write, &sig, 1);
@@ -470,11 +469,11 @@ LOCAL void x11_wake(TMOD_X11 *inst)
 */
 
 static void
-x11_processevent(TMOD_X11 *mod)
+x11_processevent(X11DISPLAY *mod)
 {
 	struct TNode *next, *node;
 	XEvent ev;
-	VISUAL *v;
+	X11WINDOW *v;
 	Window w;
 
 	while ((XPending(mod->x11_Display)) > 0)
@@ -499,7 +498,7 @@ x11_processevent(TMOD_X11 *mod)
 		node = mod->x11_vlist.tlh_Head;
 		for (; (next = node->tln_Succ); node = next)
 		{
-			v = (VISUAL *) node;
+			v = (X11WINDOW *) node;
 			if (v->window == w)
 				break;
 			v = TNULL;
@@ -517,7 +516,7 @@ x11_processevent(TMOD_X11 *mod)
 	}
 }
 
-static TBOOL getimsg(TMOD_X11 *mod, VISUAL *v, TIMSG **msgptr, TUINT type)
+static TBOOL getimsg(X11DISPLAY *mod, X11WINDOW *v, TIMSG **msgptr, TUINT type)
 {
 	TIMSG *msg = (TIMSG *) TRemHead(&mod->x11_imsgpool);
 	if (msg == TNULL)
@@ -528,7 +527,7 @@ static TBOOL getimsg(TMOD_X11 *mod, VISUAL *v, TIMSG **msgptr, TUINT type)
 		msg->timsg_Qualifier = mod->x11_KeyQual;
 		msg->timsg_MouseX = mod->x11_MouseX;
 		msg->timsg_MouseY = mod->x11_MouseY;
-		TExecQueryTime(mod->x11_ExecBase, mod->x11_TimeReq,
+		TExecGetSystemTime(mod->x11_ExecBase, mod->x11_TimeReq,
 			&msg->timsg_TimeStamp);
 		*msgptr = msg;
 		return TTRUE;
@@ -537,7 +536,7 @@ static TBOOL getimsg(TMOD_X11 *mod, VISUAL *v, TIMSG **msgptr, TUINT type)
 	return TFALSE;
 }
 
-static TBOOL processkey(TMOD_X11 *mod, VISUAL *v, XKeyEvent *ev, TBOOL keydown)
+static TBOOL processkey(X11DISPLAY *mod, X11WINDOW *v, XKeyEvent *ev, TBOOL keydown)
 {
 	KeySym keysym;
 	XComposeStatus compose;
@@ -730,7 +729,7 @@ static TBOOL processkey(TMOD_X11 *mod, VISUAL *v, XKeyEvent *ev, TBOOL keydown)
 }
 
 static TBOOL
-x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
+x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v, TAPTR msgstate, XEvent *ev)
 {
 	TIMSG *imsg;
 
@@ -765,7 +764,7 @@ x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
 				{
 					if (getimsg(mod, v, &imsg, TITYPE_NEWSIZE))
 						TAddTail(&v->imsgqueue, &imsg->timsg_Node);
-					TDBPRINTF(TDB_TRACE, ("Configure: NEWSIZE: %d %d\n",
+					TDBPRINTF(TDB_TRACE,("Configure: NEWSIZE: %d %d\n",
 						v->winwidth, v->winheight));
 				}
 			}
@@ -789,7 +788,7 @@ x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
 				TExecReplyMsg(mod->x11_ExecBase, mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
 				v->waitforexpose = TFALSE;
-				TDBPRINTF(TDB_WARN,("Released request (MapNotify)\n"));
+				TDBPRINTF(TDB_TRACE,("Released request (MapNotify)\n"));
 			}
 			break;
 
@@ -804,7 +803,7 @@ x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
 				imsg->timsg_Width = ev->xexpose.width;
 				imsg->timsg_Height = ev->xexpose.height;
 				TAddTail(&v->imsgqueue, &imsg->timsg_Node);
-					TDBPRINTF(TDB_TRACE, ("Expose: REFRESH: %d %d %d %d\n",
+					TDBPRINTF(TDB_TRACE,("Expose: REFRESH: %d %d %d %d\n",
 						imsg->timsg_X, imsg->timsg_Y,
 						imsg->timsg_Width, imsg->timsg_Height));
 			}
@@ -819,7 +818,7 @@ x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
 				rect[2] = rect[0] + ev->xgraphicsexpose.width - 1;
 				rect[3] = rect[1] + ev->xgraphicsexpose.height - 1;
 				TCallHookPkt(mod->x11_CopyExposeHook,
-					mod->x11_RequestInProgress->tvr_Op.CopyArea.Instance,
+					mod->x11_RequestInProgress->tvr_Op.CopyArea.Window,
 					(TTAG) rect);
 			}
 
@@ -933,12 +932,12 @@ x11_processvisualevent(TMOD_X11 *mod, VISUAL *v, TAPTR msgstate, XEvent *ev)
 /*****************************************************************************/
 
 static void
-x11_sendimessages(TMOD_X11 *mod, TBOOL do_interval)
+x11_sendimessages(X11DISPLAY *mod, TBOOL do_interval)
 {
 	struct TNode *next, *node = mod->x11_vlist.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
-		VISUAL *v = (VISUAL *) node;
+		X11WINDOW *v = (X11WINDOW *) node;
 		TIMSG *imsg;
 
 		if (do_interval && (v->eventmask & TITYPE_INTERVAL) &&

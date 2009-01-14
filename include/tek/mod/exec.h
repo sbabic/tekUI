@@ -1,9 +1,7 @@
-
 #ifndef _TEK_MOD_EXEC_H
 #define _TEK_MOD_EXEC_H
 
 /*
-**	$Id: exec.h,v 1.5 2006/11/11 14:19:10 tmueller Exp $
 **	teklib/tek/mod/exec.h - Exec module private
 **	See copyright notice in teklib/COPYRIGHT
 **
@@ -13,7 +11,6 @@
 */
 
 #include <tek/exec.h>
-#include <tek/mod/time.h>
 
 /*****************************************************************************/
 /*
@@ -404,12 +401,12 @@ struct TTask
 **	Execbase structure
 */
 
-typedef struct
+typedef struct TExecBase
 {
 	/* Module header */
 	struct TModule texb_Module;
 	/* HAL module base */
-	struct TModule *texb_HALBase;
+	struct THALBase *texb_HALBase;
 	/* General purpose memory manager */
 	struct TMemManager texb_BaseMMU;
 	/* Message memory manager */

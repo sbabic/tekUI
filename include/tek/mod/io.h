@@ -1,4 +1,3 @@
-
 #ifndef _TEK_MOD_IO_H
 #define _TEK_MOD_IO_H
 
@@ -8,13 +7,23 @@
 */
 
 #include <tek/exec.h>
-#include <tek/mod/time.h>
+
+/*****************************************************************************/
+/*
+**	Forward declarations
+*/
+
+/* IO module base structure: */
+struct TIOBase;
 
 /*****************************************************************************/
 
+/* File structure: */
+typedef struct TIOPacket *TFILE;
+
 #define TEOF	(-1)
 
-/* 
+/*
 **	File attribute tags - these can be passed to
 **	io_examine() and io_exnext() for attribute queries.
 **
@@ -29,7 +38,7 @@
 #define TFATTR_DateBox	(TTAG_USER + 0x4004)	/* Datebox structure */
 #define TFATTR_SizeHigh	(TTAG_USER + 0x4005)	/* High-order 32 bit of size */
 
-/* 
+/*
 **	Object types
 */
 
@@ -63,7 +72,7 @@
 #define TFPOS_BEGIN			1		/* Seek from beginning */
 #define TFPOS_END			(-1)	/* Seek from end */
 
-/* 
+/*
 **	I/O Error codes -
 **	see exec.h for device-specific codes
 */
@@ -92,14 +101,14 @@
 #define TIOERR_DIRECTORY_NOT_EMPTY	82
 #define TIOERR_TOO_MANY_LEVELS		83
 
-/* 
+/*
 **	Name conversion modes
 */
 
 #define TPPF_TEK2HOST		0x0012	/* convert to HOST naming convention */
 #define TPPF_HOST2TEK		0x0021	/* convert to TEK naming convention */
 
-/* 
+/*
 **	Tags for opening and mounting
 */
 
@@ -115,12 +124,11 @@
 
 #define TIOLock_NamePart	(TTAG_USER + 0x4200)	/* Passed to handler */
 
-/* 
+/*
 **	Mount action codes
 */
 
 #define TIOMNT_REMOVE	0
 #define TIOMNT_ADD		1
-
 
 #endif

@@ -1,4 +1,3 @@
-
 #ifndef _TEK_PROTO_HAL_H
 #define _TEK_PROTO_HAL_H
 
@@ -13,6 +12,6 @@
 #include <tek/stdcall/hal.h>
 
 extern TMODENTRY TUINT
-tek_init_hal(TAPTR, struct TModule *, TUINT16, TTAGITEM *);
+tek_init_hal(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
 
 #endif /* _TEK_PROTO_HAL_H */

@@ -1832,7 +1832,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v10.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v10.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5793,7 +5793,7 @@ SOURCE=-s/A/M,DEST=-d/A/K
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v3.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v4.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<p>
 					This library implements the management of regions, which are collections
@@ -5820,6 +5820,9 @@ SOURCE=-s/A/M,DEST=-d/A/K
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:andRect"><code>Region:andRect()</code></a> - <em>And</em> a rectangle to a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:andRegion"><code>Region:andRegion()</code></a> - <em>And</em> a region to a region
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:xorRect"><code>Region:xorRect()</code></a> - <em>Exclusive Or</em> a rectangle to a region
@@ -5929,6 +5932,12 @@ end
 		<div class="node"><h3><a name="Region:subRegion" id="Region:subRegion"><code>region:subRegion(region2)</code></a></h3>
 			<p>
 				Subtracts <code>region2</code> from <code>region</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:andRegion" id="Region:andRegion"><code>region:andRegion(r)</code></a></h3>
+			<p>
+				Logically <em>and</em>s a region to a region
 			</p>
 			<hr />
 		</div>
@@ -7295,7 +7304,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Wed Dec  3 19:12:34 2008
+			Document generated on Fri Jan  2 20:45:50 2009
 		</p>
 	</div>
 	</body>

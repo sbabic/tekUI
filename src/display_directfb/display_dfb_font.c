@@ -1,3 +1,4 @@
+
 /*
 **	teklib/src/display_dfb/display_dfb_font.c - DirectFB Display driver
 **	Written by Franciska Schulze <fschulze at schulze-mueller.de>
@@ -18,9 +19,9 @@
 
 /*****************************************************************************/
 
-static TBOOL hostopenfont(TMOD_DFB *mod, struct FontNode *fn,
+static TBOOL hostopenfont(DFBDISPLAY *mod, struct FontNode *fn,
 	struct fnt_attr *fattr);
-static void hostqueryfonts(TMOD_DFB *mod, struct FontQueryHandle *fqh,
+static void hostqueryfonts(DFBDISPLAY *mod, struct FontQueryHandle *fqh,
 	struct fnt_attr *fattr);
 
 /*****************************************************************************/
@@ -35,7 +36,7 @@ fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 	if (msg == TMSG_DESTROY)
 	{
 		struct FontQueryHandle *fqh = obj;
-		TMOD_DFB *mod = fqh->handle.thn_Owner;
+		DFBDISPLAY *mod = fqh->handle.thn_Owner;
 		TAPTR exec = TGetExecBase(mod);
 		struct TNode *node, *next;
 
@@ -66,7 +67,7 @@ fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 /* allocate a fontquerynode and fill in properties
 */
 static struct FontQueryNode *
-fnt_getfqnode(TMOD_DFB *mod, TSTRPTR filename, TINT pxsize)
+fnt_getfqnode(DFBDISPLAY *mod, TSTRPTR filename, TINT pxsize)
 {
 	TAPTR exec = TGetExecBase(mod);
 	struct FontQueryNode *fqnode = TNULL;
@@ -82,7 +83,7 @@ fnt_getfqnode(TMOD_DFB *mod, TSTRPTR filename, TINT pxsize)
 		if (flen > 0)
 			myfname = TExecAlloc0(exec, mod->dfb_MemMgr, flen + 1);
 		else
-			TDBPRINTF(20, ("found invalid font: '%s'\n", filename));
+			TDBPRINTF(TDB_ERROR,("found invalid font: '%s'\n", filename));
 
 		if (myfname)
 		{
@@ -93,7 +94,7 @@ fnt_getfqnode(TMOD_DFB *mod, TSTRPTR filename, TINT pxsize)
 		else
 		{
 			if (flen > 0)
-				TDBPRINTF(20, ("out of memory :(\n"));
+				TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 		}
 
 		if (fqnode->tags[0].tti_Value)
@@ -117,7 +118,7 @@ fnt_getfqnode(TMOD_DFB *mod, TSTRPTR filename, TINT pxsize)
 
 	} /* endif fqnode */
 	else
-		TDBPRINTF(20, ("out of memory :(\n"));
+		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 
 	return fqnode;
 }
@@ -211,7 +212,7 @@ fnt_dumplist(struct TList *rlist)
 ** "helvetica, fixed" will result in "helvetica" and " fixed"
 */
 static void
-fnt_getfnnodes(TMOD_DFB *mod, struct TList *fnlist, TSTRPTR fname)
+fnt_getfnnodes(DFBDISPLAY *mod, struct TList *fnlist, TSTRPTR fname)
 {
 	TINT i, p = 0;
 	TBOOL lastrun = TFALSE;
@@ -242,13 +243,13 @@ fnt_getfnnodes(TMOD_DFB *mod, struct TList *fnlist, TSTRPTR fname)
 				}
 				else
 				{
-					TDBPRINTF(20, ("out of memory :(\n"));
+					TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 					break;
 				}
 			}
 			else
 			{
-				TDBPRINTF(20, ("out of memory :(\n"));
+				TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 				break;
 			}
 
@@ -263,7 +264,7 @@ fnt_getfnnodes(TMOD_DFB *mod, struct TList *fnlist, TSTRPTR fname)
 ** at the moment only FNT_MATCH_NAME is suppported
 */
 static TUINT
-fnt_matchfont(TMOD_DFB *mod, TSTRPTR filename, TSTRPTR fname,
+fnt_matchfont(DFBDISPLAY *mod, TSTRPTR filename, TSTRPTR fname,
 	struct fnt_attr *fattr, TUINT flag)
 {
 	TUINT match = 0;
@@ -291,7 +292,7 @@ fnt_matchfont(TMOD_DFB *mod, TSTRPTR filename, TSTRPTR fname,
 			tempname = TExecAlloc0(exec, mod->dfb_MemMgr, len+1);
 			if (!tempname)
 			{
-				TDBPRINTF(20, ("out of memory :(\n"));
+				TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 				return -1;
 			}
 
@@ -349,7 +350,7 @@ fnt_matchfont(TMOD_DFB *mod, TSTRPTR filename, TSTRPTR fname,
 */
 
 LOCAL TAPTR
-dfb_hostopenfont(TMOD_DFB *mod, TTAGITEM *tags)
+dfb_hostopenfont(DFBDISPLAY *mod, TTAGITEM *tags)
 {
 	struct fnt_attr fattr;
 	struct FontNode *fn;
@@ -389,28 +390,28 @@ dfb_hostopenfont(TMOD_DFB *mod, TTAGITEM *tags)
 				*/
 
 				/* append to the list of open fonts */
-				TDBPRINTF(TDB_WARN, ("O '%s' %dpx\n", fattr.fname, fattr.fpxsize));
+				TDBPRINTF(TDB_INFO, ("O '%s' %dpx\n", fattr.fname, fattr.fpxsize));
 				TAddTail(&mod->dfb_fm.openfonts, &fn->handle.thn_Node);
 				font = (TAPTR)fn;
 			}
 			else
 			{
 				/* load failed, free fontnode */
-				TDBPRINTF(10, ("X unable to load '%s'\n", fattr.fname));
+				TDBPRINTF(TDB_WARN,("X unable to load '%s'\n", fattr.fname));
 				TExecFree(exec, fn);
 			}
 		}
 		else
-			TDBPRINTF(20, ("out of memory :(\n"));
+			TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 	}
 	else
-		TDBPRINTF(20, ("X invalid fontname '%s' specified\n", fattr.fname));
+		TDBPRINTF(TDB_ERROR,("X invalid fontname '%s' specified\n", fattr.fname));
 
 	return font;
 }
 
 static TBOOL
-hostopenfont(TMOD_DFB *mod, struct FontNode *fn, struct fnt_attr *fattr)
+hostopenfont(DFBDISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 {
 	TBOOL succ = TFALSE;
 	TAPTR exec = TGetExecBase(mod);
@@ -424,7 +425,7 @@ hostopenfont(TMOD_DFB *mod, struct FontNode *fn, struct fnt_attr *fattr)
 		fdsc.height = fattr->fpxsize;
 
 		sprintf(fontfile, "%s%s.ttf", FNT_DEFDIR, fattr->fname);
-		TDBPRINTF(TDB_WARN, ("? %s\n", fontfile));
+		TDBPRINTF(TDB_INFO, ("? %s\n", fontfile));
 
 		if (mod->dfb_DFB->CreateFont(mod->dfb_DFB, fontfile,
 			&fdsc, &fn->font) == DFB_OK)
@@ -433,7 +434,7 @@ hostopenfont(TMOD_DFB *mod, struct FontNode *fn, struct fnt_attr *fattr)
 		TExecFree(exec, fontfile);
 	}
 	else
-		TDBPRINTF(20, ("out of memory :(\n"));
+		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 
 	return succ;
 }
@@ -477,15 +478,13 @@ hostopenfont(TMOD_DFB *mod, struct FontNode *fn, struct fnt_attr *fattr)
 */
 
 LOCAL TAPTR
-dfb_hostqueryfonts(TMOD_DFB *mod, TTAGITEM *tags)
+dfb_hostqueryfonts(DFBDISPLAY *mod, TTAGITEM *tags)
 {
 	TSTRPTR fname = TNULL;
 	struct fnt_attr fattr;
 	struct TNode *node, *next;
 	struct FontQueryHandle *fqh = TNULL;
 	TAPTR exec = TGetExecBase(mod);
-
-	TDBPRINTF(10, ("***********************************************\n"));
 
 	/* init fontname list */
 	TInitList(&fattr.fnlist);
@@ -514,11 +513,10 @@ dfb_hostqueryfonts(TMOD_DFB *mod, TTAGITEM *tags)
 		fqh->nptr = &fqh->reslist.tlh_Head;
 
 		hostqueryfonts(mod, fqh, &fattr);
-		TDB(10,(fnt_dumplist(&fqh->reslist)));
-		TDBPRINTF(10, ("***********************************************\n"));
+		TDB(TDB_INFO,(fnt_dumplist(&fqh->reslist)));
 	}
 	else
-		TDBPRINTF(20, ("out of memory :(\n"));
+		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 
 	/* free memory of fnt_nodes */
 	for (node = fattr.fnlist.tlh_Head; (next = node->tln_Succ); node = next)
@@ -533,7 +531,7 @@ dfb_hostqueryfonts(TMOD_DFB *mod, TTAGITEM *tags)
 }
 
 static void
-hostqueryfonts(TMOD_DFB *mod, struct FontQueryHandle *fqh, struct fnt_attr *fattr)
+hostqueryfonts(DFBDISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr *fattr)
 {
 	TINT i, nfont, fcount = 0;
 	struct TNode *node, *next;
@@ -599,7 +597,7 @@ hostqueryfonts(TMOD_DFB *mod, struct FontQueryHandle *fqh, struct fnt_attr *fatt
 					else
 					{
 						/* fqnode is not unique, destroy it */
-						TDBPRINTF(10,("X node is not unique\n"));
+						TDBPRINTF(TDB_ERROR,("X node is not unique\n"));
 						TExecFree(exec, (TSTRPTR)fqnode->tags[0].tti_Value);
 						TExecFree(exec, fqnode);
 					}
@@ -613,7 +611,7 @@ hostqueryfonts(TMOD_DFB *mod, struct FontQueryHandle *fqh, struct fnt_attr *fatt
 
 	} /* endif fonts found */
 	else
-		TDBPRINTF(10, ("X no fonts found in '%s'\n", FNT_DEFDIR));
+		TDBPRINTF(TDB_WARN,("X no fonts found in '%s'\n", FNT_DEFDIR));
 
 	while (nfont--)
 		free(dirlist[nfont]);
@@ -636,7 +634,7 @@ hostqueryfonts(TMOD_DFB *mod, struct FontQueryHandle *fqh, struct fnt_attr *fatt
 */
 
 LOCAL void
-dfb_hostsetfont(TMOD_DFB *mod, VISUAL *v, TAPTR font)
+dfb_hostsetfont(DFBDISPLAY *mod, DFBWINDOW *v, TAPTR font)
 {
 	if (font)
 	{
@@ -645,7 +643,7 @@ dfb_hostsetfont(TMOD_DFB *mod, VISUAL *v, TAPTR font)
 		v->curfont = font;
 	}
 	else
-		TDBPRINTF(20, ("invalid font specified\n"));
+		TDBPRINTF(TDB_ERROR,("invalid font specified\n"));
 }
 
 /*****************************************************************************/
@@ -670,7 +668,7 @@ dfb_hostsetfont(TMOD_DFB *mod, VISUAL *v, TAPTR font)
 */
 
 LOCAL TTAGITEM *
-dfb_hostgetnextfont(TMOD_DFB *mod, TAPTR fqhandle)
+dfb_hostgetnextfont(DFBDISPLAY *mod, TAPTR fqhandle)
 {
 	struct FontQueryHandle *fqh = fqhandle;
 	struct TNode *next = *fqh->nptr;
@@ -704,7 +702,7 @@ dfb_hostgetnextfont(TMOD_DFB *mod, TAPTR fqhandle)
 */
 
 LOCAL void
-dfb_hostclosefont(TMOD_DFB *mod, TAPTR font)
+dfb_hostclosefont(DFBDISPLAY *mod, TAPTR font)
 {
 	struct FontNode *fn = (struct FontNode *) font;
 	TAPTR exec = TGetExecBase(mod);
@@ -751,7 +749,7 @@ dfb_hostclosefont(TMOD_DFB *mod, TAPTR font)
 */
 
 LOCAL TINT
-dfb_hosttextsize(TMOD_DFB *mod, TAPTR font, TSTRPTR text)
+dfb_hosttextsize(DFBDISPLAY *mod, TAPTR font, TSTRPTR text)
 {
 	TINT width = 0;
 	struct FontNode *fn = (struct FontNode *) font;

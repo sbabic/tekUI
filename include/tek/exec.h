@@ -1,9 +1,7 @@
-
 #ifndef _TEK_EXEC_H
 #define	_TEK_EXEC_H
 
 /*
-**	$Id: exec.h,v 1.8 2006/11/11 14:19:10 tmueller Exp $
 **	teklib/tek/exec.h - Public Exec types, structures, macros, constants
 **
 **	Written by Timm S. Mueller <tmueller at neoscientists.org>
@@ -11,6 +9,26 @@
 */
 
 #include <tek/type.h>
+
+/*****************************************************************************/
+/*
+**	Forward declarations of internal Exec structures
+*/
+
+/* Exec module base structure: */
+struct TExecBase;
+/* Exec task structure: */
+struct TTask;
+/* Exec message port: */
+struct TMsgPort;
+/* Exec memory manager: */
+struct TMemManager;
+/* Exec memory pool: */
+struct TPool;
+/* Exec lock: */
+struct TLock;
+/* Exec atom: */
+struct TAtom;
 
 /*****************************************************************************/
 /*
@@ -64,22 +82,26 @@ struct THook
 	TAPTR thk_Data;
 };
 
-/* Destroy object */
+/* Pre-defined hook messages: */
+
+/* Destroy object: */
 #define TMSG_DESTROY		0
-/* Iterate taglist */
+/* Iterate taglist: */
 #define TMSG_FOREACHTAG		1
-/* Compare two TTAGs pointed to by object */
+/* Compare two TTAG values pointed to by object: */
 #define TMSG_COMPAREKEYS	2
-/* Calculate a 32bit hash */
+/* Calculate a 32bit hash: */
 #define TMSG_CALCHASH32		3
-/* Open module */
+/* Open module: */
 #define TMSG_OPENMODULE		4
-/* Close module */
+/* Close module: */
 #define	TMSG_CLOSEMODULE	5
-/* Query module interface */
+/* Query module interface: */
 #define TMSG_QUERYIFACE		6
-/* Drop module interface */
+/* Drop module interface: */
 #define TMSG_DROPIFACE		7
+/* Offset to user-defined hook messages: */
+#define TMSG_USER			0x1000
 
 /*****************************************************************************/
 /*
@@ -100,13 +122,15 @@ struct THandle
 	TAPTR thn_Owner;
 	/* Object name */
 	TSTRPTR thn_Name;
-	/* Userdata pointer */
-	TAPTR thn_UserData;
+	/* Object type: */
+	TUINT16 thn_Type;
+	/* Object flags: */
+	TUINT16 thn_Flags;
 };
 
 #define TGetOwner(obj)		(((struct THandle *) (obj))->thn_Owner)
-#define TGetModBase(obj)	TGetOwner(obj)
-#define TGetExecBase(obj)	TGetModBase(obj)
+#define TGetModuleBase(obj)	TGetOwner(obj)
+#define TGetExecBase(obj)	TGetModuleBase(obj)
 
 /*****************************************************************************/
 /*
@@ -120,7 +144,7 @@ struct TModule
 	/* Ptr to HAL module handle */
 	TAPTR tmd_HALMod;
 	/* Task that opened this instance */
-	TAPTR tmd_InitTask;
+	struct TTask *tmd_InitTask;
 	/* (Back-) ptr to module super instance */
 	struct TModule *tmd_ModSuper;
 	/* Modbase negative size [bytes] */
@@ -172,6 +196,14 @@ struct TIFaceQuery
 
 /*****************************************************************************/
 /*
+**	Time and Date
+*/
+
+typedef TDATE_T TTIME;
+typedef TDATE_T TDATE;
+
+/*****************************************************************************/
+/*
 **	Task signals
 **
 **	Currently there are 28 free user signals, but the number of signals with
@@ -196,9 +228,9 @@ struct TIFaceQuery
 */
 
 /* Main function */
-typedef TTASKENTRY void (*TTASKFUNC)(TAPTR task);
+typedef TTASKENTRY void (*TTASKFUNC)(struct TTask *task);
 /* Init function */
-typedef TTASKENTRY TBOOL (*TINITFUNC)(TAPTR task);
+typedef TTASKENTRY TBOOL (*TINITFUNC)(struct TTask *task);
 
 /*
 **	Task tags
@@ -291,8 +323,8 @@ typedef TTASKENTRY TBOOL (*TINITFUNC)(TAPTR task);
 **	is TNULL.
 */
 
-typedef TMODCALL TUINT (*TMODINITFUNC)
-	(TAPTR task, struct TModule *mod, TUINT16 version, struct TTagItem *tags);
+typedef TMODCALL TUINT (*TMODINITFUNC) (struct TTask *task,
+	struct TModule *mod, TUINT16 version, struct TTagItem *tags);
 
 struct TInitModule
 {

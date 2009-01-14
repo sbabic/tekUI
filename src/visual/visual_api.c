@@ -1,15 +1,18 @@
 
 #include "visual_mod.h"
 
-/* TODO */
+#if TSYS_WINNT
+#define DEF_DISPLAYNAME	"display_windows"
+#else
 #define DEF_DISPLAYNAME	"display_x11"
+#endif
 
 /*****************************************************************************/
 
 static struct TVRequest *
-visi_getreq(TMOD_VIS *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
+visi_getreq(struct TVisualBase *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
 {
-	TMOD_VIS *mod = (TMOD_VIS *) inst->vis_Module.tmd_ModSuper;
+	struct TVisualBase *mod = (struct TVisualBase *) inst->vis_Module.tmd_ModSuper;
 	struct TVRequest *req = TNULL;
 
 	if (display == TNULL)
@@ -80,7 +83,7 @@ visi_getreq(TMOD_VIS *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
 }
 
 static void
-visi_ungetreq(TMOD_VIS *inst, struct TVRequest *req)
+visi_ungetreq(struct TVisualBase *inst, struct TVRequest *req)
 {
 	if (inst->vis_Module.tmd_ModSuper == (struct TModule *) inst)
 	{
@@ -92,7 +95,8 @@ visi_ungetreq(TMOD_VIS *inst, struct TVRequest *req)
 			TExecUnlock(inst->vis_ExecBase, inst->vis_Lock);
 		}
 		else
-			TDisplayFreeReq(req->tvr_Req.io_Device, req);
+			TDisplayFreeReq((struct TDisplayBase *)
+				req->tvr_Req.io_Device, req);
 		TExecUnlock(inst->vis_ExecBase, inst->vis_Lock);
 	}
 	else
@@ -100,14 +104,14 @@ visi_ungetreq(TMOD_VIS *inst, struct TVRequest *req)
 }
 
 static void
-visi_dosync(TMOD_VIS *inst, struct TVRequest *req)
+visi_dosync(struct TVisualBase *inst, struct TVRequest *req)
 {
 	TExecDoIO(inst->vis_ExecBase, &req->tvr_Req);
 	visi_ungetreq(inst, req);
 }
 
 static void
-visi_doasync(TMOD_VIS *inst, struct TVRequest *req)
+visi_doasync(struct TVisualBase *inst, struct TVRequest *req)
 {
 	TExecPutIO(inst->vis_ExecBase, &req->tvr_Req);
 	TAddTail(&inst->vis_WaitList, &req->tvr_Req.io_Node);
@@ -115,9 +119,9 @@ visi_doasync(TMOD_VIS *inst, struct TVRequest *req)
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_openvisual(TMOD_VIS *mod, TTAGITEM *tags)
+EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
 {
-	TMOD_VIS *inst;
+	struct TVisualBase *inst;
 	TTAGITEM otags[2];
 
 	otags[0].tti_Tag = TVisual_NewInstance;
@@ -125,20 +129,21 @@ EXPORT TAPTR vis_openvisual(TMOD_VIS *mod, TTAGITEM *tags)
 	otags[1].tti_Tag = TTAG_MORE;
 	otags[1].tti_Value = (TTAG) tags;
 
-	inst = TExecOpenModule(mod->vis_ExecBase, "visual", 0, otags);
+	inst = (struct TVisualBase *)
+		TExecOpenModule(mod->vis_ExecBase, "visual", 0, otags);
 	if (inst)
 	{
 		struct TVRequest *req =
-			visi_getreq(inst, TVCMD_OPENVISUAL, TNULL, tags);
+			visi_getreq(inst, TVCMD_OPENWINDOW, TNULL, tags);
 		if (req)
 		{
-			req->tvr_Op.OpenVisual.Instance = TNULL;
-			req->tvr_Op.OpenVisual.IMsgPort = inst->vis_IMsgPort;
-			req->tvr_Op.OpenVisual.Tags = tags;
+			req->tvr_Op.OpenWindow.Window = TNULL;
+			req->tvr_Op.OpenWindow.IMsgPort = inst->vis_IMsgPort;
+			req->tvr_Op.OpenWindow.Tags = tags;
 			TExecDoIO(inst->vis_ExecBase, &req->tvr_Req);
 
-			inst->vis_Visual = req->tvr_Op.OpenVisual.Instance;
-			if (inst->vis_Visual)
+			inst->vis_Window = req->tvr_Op.OpenWindow.Window;
+			if (inst->vis_Window)
 			{
 				inst->vis_InitRequest = req;
 				inst->vis_Display = req->tvr_Req.io_Device;
@@ -147,7 +152,7 @@ EXPORT TAPTR vis_openvisual(TMOD_VIS *mod, TTAGITEM *tags)
 				return inst;
 			}
 		}
-		TExecCloseModule(mod->vis_ExecBase, inst);
+		TExecCloseModule(mod->vis_ExecBase, (struct TModule *) inst);
 	}
 	TDBPRINTF(TDB_ERROR,("open failed\n"));
 	return TNULL;
@@ -155,20 +160,20 @@ EXPORT TAPTR vis_openvisual(TMOD_VIS *mod, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT void vis_closevisual(TMOD_VIS *mod, TMOD_VIS *inst)
+EXPORT void vis_closevisual(struct TVisualBase *mod, struct TVisualBase *inst)
 {
-	struct TVRequest *req = visi_getreq(mod, TVCMD_CLOSEVISUAL,
+	struct TVRequest *req = visi_getreq(mod, TVCMD_CLOSEWINDOW,
 		inst->vis_Display, TNULL);
-	req->tvr_Req.io_Command = TVCMD_CLOSEVISUAL;
-	req->tvr_Op.CloseVisual.Instance = inst->vis_Visual;
+	req->tvr_Req.io_Command = TVCMD_CLOSEWINDOW;
+	req->tvr_Op.CloseWindow.Window = inst->vis_Window;
 	visi_dosync(inst, req);
 	TDisplayFreeReq(inst->vis_Display, inst->vis_InitRequest);
-	TExecCloseModule(mod->vis_ExecBase, inst);
+	TExecCloseModule(mod->vis_ExecBase, (struct TModule *) inst);
 }
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_attach(TMOD_VIS *mod, TTAGITEM *tags)
+EXPORT TAPTR vis_attach(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	TTAGITEM otags[2];
 	otags[0].tti_Tag = TVisual_Attach;
@@ -180,7 +185,7 @@ EXPORT TAPTR vis_attach(TMOD_VIS *mod, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_openfont(TMOD_VIS *mod, TTAGITEM *tags)
+EXPORT TAPTR vis_openfont(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	TAPTR font = TNULL;
 	struct TVRequest *req = visi_getreq(mod, TVCMD_OPENFONT, TNULL, tags);
@@ -196,7 +201,7 @@ EXPORT TAPTR vis_openfont(TMOD_VIS *mod, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT void vis_closefont(TMOD_VIS *mod, TAPTR font)
+EXPORT void vis_closefont(struct TVisualBase *mod, TAPTR font)
 {
 	if (font)
 	{
@@ -212,7 +217,7 @@ EXPORT void vis_closefont(TMOD_VIS *mod, TAPTR font)
 
 /*****************************************************************************/
 
-EXPORT TUINT vis_getfattrs(TMOD_VIS *mod, TAPTR font, TTAGITEM *tags)
+EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, TAPTR font, TTAGITEM *tags)
 {
 	TUINT n = 0;
 	struct TVRequest *req = visi_getreq(mod, TVCMD_GETFONTATTRS,
@@ -230,7 +235,7 @@ EXPORT TUINT vis_getfattrs(TMOD_VIS *mod, TAPTR font, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT TINT vis_textsize(TMOD_VIS *mod, TAPTR font, TSTRPTR t)
+EXPORT TINT vis_textsize(struct TVisualBase *mod, TAPTR font, TSTRPTR t)
 {
 	TINT size = -1;
 	struct TVRequest *req = visi_getreq(mod, TVCMD_TEXTSIZE,
@@ -248,7 +253,7 @@ EXPORT TINT vis_textsize(TMOD_VIS *mod, TAPTR font, TSTRPTR t)
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_queryfonts(TMOD_VIS *mod, TTAGITEM *tags)
+EXPORT TAPTR vis_queryfonts(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	TAPTR handle = TNULL;
 	struct TVRequest *req = visi_getreq(mod, TVCMD_QUERYFONTS, TNULL, tags);
@@ -264,7 +269,7 @@ EXPORT TAPTR vis_queryfonts(TMOD_VIS *mod, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT TTAGITEM *vis_getnextfont(TMOD_VIS *mod, TAPTR fqhandle)
+EXPORT TTAGITEM *vis_getnextfont(struct TVisualBase *mod, TAPTR fqhandle)
 {
 	TTAGITEM *attrs;
 	struct TVRequest *req = visi_getreq(mod, TVCMD_GETNEXTFONT,
@@ -278,14 +283,14 @@ EXPORT TTAGITEM *vis_getnextfont(TMOD_VIS *mod, TAPTR fqhandle)
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_getport(TMOD_VIS *inst)
+EXPORT TAPTR vis_getport(struct TVisualBase *inst)
 {
 	return inst->vis_IMsgPort;
 }
 
 /*****************************************************************************/
 
-EXPORT TUINT vis_setinput(TMOD_VIS *inst, TUINT cmask, TUINT smask)
+EXPORT TUINT vis_setinput(struct TVisualBase *inst, TUINT cmask, TUINT smask)
 {
 	TUINT oldmask = inst->vis_InputMask;
 	TUINT newmask = (oldmask & ~cmask) | smask;
@@ -293,7 +298,7 @@ EXPORT TUINT vis_setinput(TMOD_VIS *inst, TUINT cmask, TUINT smask)
 	{
 		struct TVRequest *req = visi_getreq(inst, TVCMD_SETINPUT,
 			inst->vis_Display, TNULL);
-		req->tvr_Op.SetInput.Instance = inst->vis_Visual;
+		req->tvr_Op.SetInput.Window = inst->vis_Window;
 		req->tvr_Op.SetInput.Mask = newmask;
 		visi_dosync(inst, req);
 		inst->vis_InputMask = newmask;
@@ -303,11 +308,11 @@ EXPORT TUINT vis_setinput(TMOD_VIS *inst, TUINT cmask, TUINT smask)
 
 /*****************************************************************************/
 
-EXPORT TUINT vis_getattrs(TMOD_VIS *inst, TTAGITEM *tags)
+EXPORT TUINT vis_getattrs(struct TVisualBase *inst, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_GETATTRS,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.GetAttrs.Instance = inst->vis_Visual;
+	req->tvr_Op.GetAttrs.Window = inst->vis_Window;
 	req->tvr_Op.GetAttrs.Tags = tags;
 	visi_dosync(inst, req);
 	return req->tvr_Op.GetAttrs.Num;
@@ -315,11 +320,11 @@ EXPORT TUINT vis_getattrs(TMOD_VIS *inst, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT TUINT vis_setattrs(TMOD_VIS *inst, TTAGITEM *tags)
+EXPORT TUINT vis_setattrs(struct TVisualBase *inst, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_SETATTRS,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.SetAttrs.Instance = inst->vis_Visual;
+	req->tvr_Op.SetAttrs.Window = inst->vis_Window;
 	req->tvr_Op.SetAttrs.Tags = tags;
 	visi_dosync(inst, req);
 	return req->tvr_Op.SetAttrs.Num;
@@ -327,11 +332,11 @@ EXPORT TUINT vis_setattrs(TMOD_VIS *inst, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT TVPEN vis_allocpen(TMOD_VIS *inst, TUINT rgb)
+EXPORT TVPEN vis_allocpen(struct TVisualBase *inst, TUINT rgb)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_ALLOCPEN,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.AllocPen.Instance = inst->vis_Visual;
+	req->tvr_Op.AllocPen.Window = inst->vis_Window;
 	req->tvr_Op.AllocPen.RGB = rgb;
 	visi_dosync(inst, req);
 	return req->tvr_Op.AllocPen.Pen;
@@ -339,11 +344,11 @@ EXPORT TVPEN vis_allocpen(TMOD_VIS *inst, TUINT rgb)
 
 /*****************************************************************************/
 
-EXPORT void vis_freepen(TMOD_VIS *inst, TVPEN pen)
+EXPORT void vis_freepen(struct TVisualBase *inst, TVPEN pen)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_FREEPEN,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.FreePen.Instance = inst->vis_Visual;
+	req->tvr_Op.FreePen.Window = inst->vis_Window;
 	req->tvr_Op.FreePen.Pen = pen;
 	visi_doasync(inst, req);
 }
@@ -351,34 +356,34 @@ EXPORT void vis_freepen(TMOD_VIS *inst, TVPEN pen)
 /*****************************************************************************/
 /* TODO: inst->display <-> font->display must match */
 
-EXPORT void vis_setfont(TMOD_VIS *inst, TAPTR font)
+EXPORT void vis_setfont(struct TVisualBase *inst, TAPTR font)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_SETFONT,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.SetFont.Instance = inst->vis_Visual;
+	req->tvr_Op.SetFont.Window = inst->vis_Window;
 	req->tvr_Op.SetFont.Font = font;
 	visi_dosync(inst, req);
 }
 
 /*****************************************************************************/
 
-EXPORT void vis_clear(TMOD_VIS *inst, TVPEN pen)
+EXPORT void vis_clear(struct TVisualBase *inst, TVPEN pen)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_CLEAR,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.Clear.Instance = inst->vis_Visual;
+	req->tvr_Op.Clear.Window = inst->vis_Window;
 	req->tvr_Op.Clear.Pen = pen;
 	visi_doasync(inst, req);
 }
 
 /*****************************************************************************/
 
-EXPORT void vis_rect(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
+EXPORT void vis_rect(struct TVisualBase *inst, TINT x, TINT y, TINT w, TINT h,
 	TVPEN pen)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_RECT,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.Rect.Instance = inst->vis_Visual;
+	req->tvr_Op.Rect.Window = inst->vis_Window;
 	req->tvr_Op.Rect.Rect[0] = x;
 	req->tvr_Op.Rect.Rect[1] = y;
 	req->tvr_Op.Rect.Rect[2] = w;
@@ -389,12 +394,12 @@ EXPORT void vis_rect(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
 
 /*****************************************************************************/
 
-EXPORT void vis_frect(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
+EXPORT void vis_frect(struct TVisualBase *inst, TINT x, TINT y, TINT w, TINT h,
 	TVPEN pen)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_FRECT,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.FRect.Instance = inst->vis_Visual;
+	req->tvr_Op.FRect.Window = inst->vis_Window;
 	req->tvr_Op.FRect.Rect[0] = x;
 	req->tvr_Op.FRect.Rect[1] = y;
 	req->tvr_Op.FRect.Rect[2] = w;
@@ -405,12 +410,12 @@ EXPORT void vis_frect(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
 
 /*****************************************************************************/
 
-EXPORT void vis_line(TMOD_VIS *inst, TINT x0, TINT y0, TINT x1, TINT y1,
+EXPORT void vis_line(struct TVisualBase *inst, TINT x0, TINT y0, TINT x1, TINT y1,
 	TVPEN pen)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_LINE,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.Line.Instance = inst->vis_Visual;
+	req->tvr_Op.Line.Window = inst->vis_Window;
 	req->tvr_Op.Line.Rect[0] = x0;
 	req->tvr_Op.Line.Rect[1] = y0;
 	req->tvr_Op.Line.Rect[2] = x1;
@@ -421,11 +426,11 @@ EXPORT void vis_line(TMOD_VIS *inst, TINT x0, TINT y0, TINT x1, TINT y1,
 
 /*****************************************************************************/
 
-EXPORT void vis_plot(TMOD_VIS *inst, TINT x, TINT y, TVPEN pen)
+EXPORT void vis_plot(struct TVisualBase *inst, TINT x, TINT y, TVPEN pen)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_PLOT,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.Plot.Instance = inst->vis_Visual;
+	req->tvr_Op.Plot.Window = inst->vis_Window;
 	req->tvr_Op.Plot.Rect[0] = x;
 	req->tvr_Op.Plot.Rect[1] = y;
 	req->tvr_Op.Plot.Pen = pen;
@@ -434,23 +439,23 @@ EXPORT void vis_plot(TMOD_VIS *inst, TINT x, TINT y, TVPEN pen)
 
 /*****************************************************************************/
 
-EXPORT void vis_drawtags(TMOD_VIS *inst, TTAGITEM *tags)
+EXPORT void vis_drawtags(struct TVisualBase *inst, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_DRAWTAGS,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.DrawTags.Instance = inst->vis_Visual;
+	req->tvr_Op.DrawTags.Window = inst->vis_Window;
 	req->tvr_Op.DrawTags.Tags = tags;
 	visi_dosync(inst, req);
 }
 
 /*****************************************************************************/
 
-EXPORT void vis_text(TMOD_VIS *inst, TINT x, TINT y, TSTRPTR t, TUINT l,
+EXPORT void vis_text(struct TVisualBase *inst, TINT x, TINT y, TSTRPTR t, TUINT l,
 	TVPEN fg, TVPEN bg)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_TEXT,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.Text.Instance = inst->vis_Visual;
+	req->tvr_Op.Text.Window = inst->vis_Window;
 	req->tvr_Op.Text.X = x;
 	req->tvr_Op.Text.Y = y;
 	req->tvr_Op.Text.FgPen = fg;
@@ -462,11 +467,11 @@ EXPORT void vis_text(TMOD_VIS *inst, TINT x, TINT y, TSTRPTR t, TUINT l,
 
 /*****************************************************************************/
 
-EXPORT void vis_drawstrip(TMOD_VIS *inst, TINT *array, TINT num, TTAGITEM *tags)
+EXPORT void vis_drawstrip(struct TVisualBase *inst, TINT *array, TINT num, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_DRAWSTRIP,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.Strip.Instance = inst->vis_Visual;
+	req->tvr_Op.Strip.Window = inst->vis_Window;
 	req->tvr_Op.Strip.Array = array;
 	req->tvr_Op.Strip.Num = num;
 	req->tvr_Op.Strip.Tags = tags;
@@ -475,11 +480,11 @@ EXPORT void vis_drawstrip(TMOD_VIS *inst, TINT *array, TINT num, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT void vis_drawfan(TMOD_VIS *inst, TINT *array, TINT num, TTAGITEM *tags)
+EXPORT void vis_drawfan(struct TVisualBase *inst, TINT *array, TINT num, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_DRAWFAN,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.Fan.Instance = inst->vis_Visual;
+	req->tvr_Op.Fan.Window = inst->vis_Window;
 	req->tvr_Op.Fan.Array = array;
 	req->tvr_Op.Fan.Num = num;
 	req->tvr_Op.Fan.Tags = tags;
@@ -488,48 +493,12 @@ EXPORT void vis_drawfan(TMOD_VIS *inst, TINT *array, TINT num, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT void vis_drawarc(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
-	TINT angle1, TINT angle2, TVPEN pen)
-{
-	struct TVRequest *req = visi_getreq(inst, TVCMD_DRAWARC,
-		inst->vis_Display, TNULL);
-	req->tvr_Op.Arc.Instance = inst->vis_Visual;
-	req->tvr_Op.Arc.Rect[0] = x;
-	req->tvr_Op.Arc.Rect[1] = y;
-	req->tvr_Op.Arc.Rect[2] = w;
-	req->tvr_Op.Arc.Rect[3] = h;
-	req->tvr_Op.Arc.Angle1 = angle1;
-	req->tvr_Op.Arc.Angle2 = angle2;
-	req->tvr_Op.Arc.Pen = pen;
-	visi_dosync(inst, req);
-}
-
-/*****************************************************************************/
-
-EXPORT void vis_drawfarc(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
-	TINT angle1, TINT angle2, TVPEN pen)
-{
-	struct TVRequest *req = visi_getreq(inst, TVCMD_DRAWFARC,
-		inst->vis_Display, TNULL);
-	req->tvr_Op.Arc.Instance = inst->vis_Visual;
-	req->tvr_Op.Arc.Rect[0] = x;
-	req->tvr_Op.Arc.Rect[1] = y;
-	req->tvr_Op.Arc.Rect[2] = w;
-	req->tvr_Op.Arc.Rect[3] = h;
-	req->tvr_Op.Arc.Angle1 = angle1;
-	req->tvr_Op.Arc.Angle2 = angle2;
-	req->tvr_Op.Arc.Pen = pen;
-	visi_dosync(inst, req);
-}
-
-/*****************************************************************************/
-
-EXPORT void vis_copyarea(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
+EXPORT void vis_copyarea(struct TVisualBase *inst, TINT x, TINT y, TINT w, TINT h,
 	TINT dx, TINT dy, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_COPYAREA,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.CopyArea.Instance = inst->vis_Visual;
+	req->tvr_Op.CopyArea.Window = inst->vis_Window;
 	req->tvr_Op.CopyArea.Rect[0] = x;
 	req->tvr_Op.CopyArea.Rect[1] = y;
 	req->tvr_Op.CopyArea.Rect[2] = w;
@@ -542,12 +511,12 @@ EXPORT void vis_copyarea(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
 
 /*****************************************************************************/
 
-EXPORT void vis_setcliprect(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
+EXPORT void vis_setcliprect(struct TVisualBase *inst, TINT x, TINT y, TINT w, TINT h,
 	TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_SETCLIPRECT,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.ClipRect.Instance = inst->vis_Visual;
+	req->tvr_Op.ClipRect.Window = inst->vis_Window;
 	req->tvr_Op.ClipRect.Rect[0] = x;
 	req->tvr_Op.ClipRect.Rect[1] = y;
 	req->tvr_Op.ClipRect.Rect[2] = w;
@@ -558,20 +527,21 @@ EXPORT void vis_setcliprect(TMOD_VIS *inst, TINT x, TINT y, TINT w, TINT h,
 
 /*****************************************************************************/
 
-EXPORT void vis_unsetcliprect(TMOD_VIS *inst)
+EXPORT void vis_unsetcliprect(struct TVisualBase *inst)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_UNSETCLIPRECT,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.ClipRect.Instance = inst->vis_Visual;
+	req->tvr_Op.ClipRect.Window = inst->vis_Window;
 	visi_dosync(inst, req);
 }
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_opendisplay(TMOD_VIS *mod, TTAGITEM *tags)
+EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	/* displaybase in taglist? */
-	TAPTR display = (struct TVRequest *) TGetTag(tags, TVisual_Display, TNULL);
+	TAPTR display =
+		(struct TVRequest *) TGetTag(tags, TVisual_Display, TNULL);
 	if (display == TNULL)
 	{
 		TSTRPTR name;
@@ -616,32 +586,32 @@ EXPORT TAPTR vis_opendisplay(TMOD_VIS *mod, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT void vis_closedisplay(TMOD_VIS *mod, TAPTR display)
+EXPORT void vis_closedisplay(struct TVisualBase *mod, TAPTR display)
 {
 }
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_querydisplays(TMOD_VIS *mod, TTAGITEM *tags)
-{
-	return TNULL;
-}
-
-/*****************************************************************************/
-
-EXPORT TTAGITEM *vis_getnextdisplay(TMOD_VIS *mod, TAPTR dqhandle)
+EXPORT TAPTR vis_querydisplays(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	return TNULL;
 }
 
 /*****************************************************************************/
 
-EXPORT void vis_drawbuffer(TMOD_VIS *inst,
+EXPORT TTAGITEM *vis_getnextdisplay(struct TVisualBase *mod, TAPTR dqhandle)
+{
+	return TNULL;
+}
+
+/*****************************************************************************/
+
+EXPORT void vis_drawbuffer(struct TVisualBase *inst,
 	TINT x, TINT y, TAPTR buf, TINT w, TINT h, TINT totw, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_DRAWBUFFER,
 		inst->vis_Display, TNULL);
-	req->tvr_Op.DrawBuffer.Instance = inst->vis_Visual;
+	req->tvr_Op.DrawBuffer.Window = inst->vis_Window;
 	req->tvr_Op.DrawBuffer.Buf = buf;
 	req->tvr_Op.DrawBuffer.RRect[0] = x;
 	req->tvr_Op.DrawBuffer.RRect[1] = y;

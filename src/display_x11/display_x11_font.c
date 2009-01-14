@@ -1,3 +1,4 @@
+
 /*
 **	$Id: display_x11_font.c,v 2006/09/10 14:38:04 fschulze Exp $
 **	teklib/src/display_x11/display_x11_font.c - x11 font management
@@ -20,14 +21,16 @@
 #include "display_x11_mod.h"
 
 /*****************************************************************************/
-static TBOOL hostopenfont(TMOD_X11 *mod, struct FontNode *fn,
+static TBOOL hostopenfont(X11DISPLAY *mod, struct FontNode *fn,
 	struct fnt_attr *fattr);
-static void hostqueryfonts_xft(TMOD_X11 *mod, struct FontQueryHandle *fqh,
+#if defined(ENABLE_XFT)
+static void hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh,
 	struct fnt_attr *fattr);
-static void hostqueryfonts_xlib(TMOD_X11 *mod, struct FontQueryHandle *fqh,
-	struct fnt_attr *fattr);
-static TAPTR initlib(TMOD_X11 *mod, TSTRPTR libname, const TSTRPTR *libsyms,
+static TAPTR initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms,
 	TAPTR iface, TINT numsyms);
+#endif
+static void hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh,
+	struct fnt_attr *fattr);
 
 /*****************************************************************************/
 static const
@@ -72,8 +75,10 @@ TSTRPTR libfcsyms[LIBFC_NUMSYMS] =
 ** undefining ENABLE_XFT can be used to enforce xlib based font rendering
 */
 TBOOL
-initlibxft(TMOD_X11 *mod)
+initlibxft(X11DISPLAY *mod)
 {
+	#if defined(ENABLE_XFT)
+
 	int major, minor, first;
 	if (XQueryExtension(mod->x11_Display, "Composite", &major, &minor, &first))
 		return TFALSE;
@@ -91,29 +96,34 @@ initlibxft(TMOD_X11 *mod)
 		mod->x11_libxfthandle = initlib(mod, "libXft.so", libxftsyms,
 							(void *)&mod->x11_xftiface, LIBXFT_NUMSYMS);
 
-		#if defined(ENABLE_XFT)
 		if (mod->x11_libxfthandle)
 		{
 			if((*mod->x11_fciface.FcInit)())
 				mod->x11_use_xft = TTRUE;
 			else
-				TDBPRINTF(10, ("fontconfig init failed\n"));
+				TDBPRINTF(TDB_ERROR,("fontconfig init failed\n"));
 		}
-		#endif
 	}
 
 	if (!mod->x11_use_xft)
-		TDBPRINTF(10, ("defaulting to xlib based font rendering\n"));
+		TDBPRINTF(TDB_WARN,("defaulting to xlib based font rendering\n"));
 
 	return mod->x11_use_xft;
+
+	#else
+
+	return TFALSE;
+
+	#endif
 }
 
 /*****************************************************************************/
 /* dlopen the library named libname, bind numsyms symbols from libsyms[]
 ** to iface and return the libhandle obtained by dlopen or TNULL
 */
+#if defined(ENABLE_XFT)
 static TAPTR
-initlib(TMOD_X11 *mod, TSTRPTR libname, const TSTRPTR *libsyms, TAPTR iface, TINT numsyms)
+initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms, TAPTR iface, TINT numsyms)
 {
 	TAPTR libhandle = TNULL;
 
@@ -134,12 +144,12 @@ initlib(TMOD_X11 *mod, TSTRPTR libname, const TSTRPTR *libsyms, TAPTR iface, TIN
 
 		if (i == numsyms)
 		{
-			TDBPRINTF(5, ("%s successfully initialised\n", libname));
+			TDBPRINTF(TDB_INFO,("%s successfully initialised\n", libname));
 		}
 		else
 		{
 			/* missing symbols */
-			TDBPRINTF(10, ("%s initialisation failed\n", libname));
+			TDBPRINTF(TDB_ERROR,("%s initialisation failed\n", libname));
 			dlclose(libhandle);
 			libhandle = TNULL;
 		}
@@ -147,11 +157,12 @@ initlib(TMOD_X11 *mod, TSTRPTR libname, const TSTRPTR *libsyms, TAPTR iface, TIN
 	else
 	{
 		/* lib not found */
-		TDBPRINTF(10, ("failed to open %s\n", libname));
+		TDBPRINTF(TDB_ERROR,("failed to open %s\n", libname));
 	}
 
 	return libhandle;
 }
+#endif
 
 /*****************************************************************************/
 /* FontQueryHandle destructor
@@ -165,7 +176,7 @@ fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 	if (msg == TMSG_DESTROY)
 	{
 		struct FontQueryHandle *fqh = obj;
-		TMOD_X11 *mod = fqh->handle.thn_Owner;
+		X11DISPLAY *mod = fqh->handle.thn_Owner;
 		TAPTR exec = TGetExecBase(mod);
 		struct TNode *node, *next;
 
@@ -198,7 +209,7 @@ fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 ** something like "-*-fname-medium-r-*-*-xxx-*-*-*-*-*-iso8859-1"
 */
 static TSTRPTR
-fnt_getsubstring(TMOD_X11 *mod, TSTRPTR fstring, TINT m)
+fnt_getsubstring(X11DISPLAY *mod, TSTRPTR fstring, TINT m)
 {
 	TINT i, p = 0;
 	TINT mcount = 0;
@@ -223,10 +234,10 @@ fnt_getsubstring(TMOD_X11 *mod, TSTRPTR fstring, TINT m)
 	if (substr)
 	{
 		TExecCopyMem(exec, fstring+p+1, substr, i-p-1);
-		TDBPRINTF(2, ("extracted = '%s'\n", substr));
+		TDBPRINTF(TDB_TRACE,("extracted = '%s'\n", substr));
 	}
 	else
-		TDBPRINTF(20, ("out of memory :(\n"));
+		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 
 	return substr;
 }
@@ -236,7 +247,7 @@ fnt_getsubstring(TMOD_X11 *mod, TSTRPTR fstring, TINT m)
 ** them to our own taglist based properties system
 */
 static void
-fnt_getattr(TMOD_X11 *mod, TTAGITEM *tag, TSTRPTR fstring)
+fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 {
 	TAPTR exec = TGetExecBase(mod);
 
@@ -295,8 +306,9 @@ fnt_getattr(TMOD_X11 *mod, TTAGITEM *tag, TSTRPTR fstring)
 /* allocate a fontquerynode and fill in properties derived from
 ** a FcPattern
 */
+#if defined(ENABLE_XFT)
 static struct FontQueryNode *
-fnt_getfqnode_xft(TMOD_X11 *mod, FcPattern *pattern, TINT pxsize)
+fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TINT pxsize)
 {
 	TAPTR exec = TGetExecBase(mod);
 	struct FontQueryNode *fqnode = TNULL;
@@ -322,7 +334,7 @@ fnt_getfqnode_xft(TMOD_X11 *mod, FcPattern *pattern, TINT pxsize)
 				fqnode->tags[0].tti_Value = (TTAG) myfname;
 			}
 			else
-				TDBPRINTF(20, ("out of memory :(\n"));
+				TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 		}
 
 		if (fqnode->tags[0].tti_Value)
@@ -383,17 +395,18 @@ fnt_getfqnode_xft(TMOD_X11 *mod, FcPattern *pattern, TINT pxsize)
 
 	} /* endif fqnode */
 	else
-		TDBPRINTF(20, ("out of memory :(\n"));
+		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 
 	return fqnode;
 }
+#endif
 
 /*****************************************************************************/
 /* allocate a fontquerynode and fill in properties derived from
 ** a x11 fontname
 */
 static struct FontQueryNode *
-fnt_getfqnode_xlib(TMOD_X11 *mod, TSTRPTR fontname)
+fnt_getfqnode_xlib(X11DISPLAY *mod, TSTRPTR fontname)
 {
 	TAPTR exec = TGetExecBase(mod);
 	struct FontQueryNode *fqnode = TNULL;
@@ -430,7 +443,7 @@ fnt_getfqnode_xlib(TMOD_X11 *mod, TSTRPTR fontname)
 		}
 	}
 	else
-		TDBPRINTF(20, ("out of memory :(\n"));
+		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 
 	return fqnode;
 }
@@ -519,7 +532,7 @@ fnt_dumplist(struct TList *rlist)
 ** "helvetica, fixed" will result in "helvetica" and " fixed"
 */
 static void
-fnt_getfnnodes(TMOD_X11 *mod, struct TList *fnlist, TSTRPTR fname)
+fnt_getfnnodes(X11DISPLAY *mod, struct TList *fnlist, TSTRPTR fname)
 {
 	TINT i, p = 0;
 	TBOOL lastrun = TFALSE;
@@ -550,13 +563,13 @@ fnt_getfnnodes(TMOD_X11 *mod, struct TList *fnlist, TSTRPTR fname)
 				}
 				else
 				{
-					TDBPRINTF(20, ("out of memory :(\n"));
+					TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 					break;
 				}
 			}
 			else
 			{
-				TDBPRINTF(20, ("out of memory :(\n"));
+				TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 				break;
 			}
 
@@ -608,8 +621,9 @@ fnt_getfitalic(TBOOL fitalic)
 ** fname and fattr, if properties match, the corresponing bit is set in
 ** the flagfield the function returns
 */
+#if defined(ENABLE_XFT)
 static TUINT
-fnt_matchfont_xft(TMOD_X11 *mod, FcPattern *pattern, TSTRPTR fname,
+fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 	struct fnt_attr *fattr, TUINT flag)
 {
 	TUINT match = 0;
@@ -632,7 +646,7 @@ fnt_matchfont_xft(TMOD_X11 *mod, FcPattern *pattern, TSTRPTR fname,
 		tempname = TExecAlloc0(exec, mod->x11_MemMgr, len+1);
 		if (!tempname)
 		{
-			TDBPRINTF(20, ("out of memory :(\n"));
+			TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 			return -1;
 		}
 
@@ -683,6 +697,7 @@ fnt_matchfont_xft(TMOD_X11 *mod, FcPattern *pattern, TSTRPTR fname,
 
 	return match;
 }
+#endif
 
 /*****************************************************************************/
 /* convert an utf8 encoded string to latin-1
@@ -706,12 +721,12 @@ static int readstring(struct utf8reader *rd)
 }
 
 TSTRPTR
-utf8tolatin(TMOD_X11 *mod, TSTRPTR utf8string, TINT len)
+utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len)
 {
 	TINT c;
 	struct utf8reader rd;
 	struct readstringdata rs;
-	TSTRPTR latin = TNULL;
+	TUINT8 *latin = TNULL;
 	TAPTR exec = TGetExecBase(mod);
 
 	latin = TExecAlloc0(exec, mod->x11_MemMgr, len+1);
@@ -736,9 +751,9 @@ utf8tolatin(TMOD_X11 *mod, TSTRPTR utf8string, TINT len)
 		}
 	}
 	else
-		TDBPRINTF(20, ("out of memory :(\n"));
+		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 
-	return latin;
+	return (TSTRPTR) latin;
 }
 
 /*****************************************************************************/
@@ -786,7 +801,7 @@ utf8tolatin(TMOD_X11 *mod, TSTRPTR utf8string, TINT len)
 */
 
 LOCAL TAPTR
-x11_hostopenfont(TMOD_X11 *mod, TTAGITEM *tags)
+x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags)
 {
 	struct fnt_attr fattr;
 	struct FontNode *fn;
@@ -817,32 +832,33 @@ x11_hostopenfont(TMOD_X11 *mod, TTAGITEM *tags)
 					fn->attr |= FNT_BOLD;
 
 				/* append to the list of open fonts */
-				TDBPRINTF(TDB_WARN, ("O '%s' %dpx\n", fattr.fname, fattr.fpxsize));
+				TDBPRINTF(TDB_INFO,("O '%s' %dpx\n", fattr.fname, fattr.fpxsize));
 				TAddTail(&mod->x11_fm.openfonts, &fn->handle.thn_Node);
 				font = (TAPTR)fn;
 			}
 			else
 			{
 				/* load failed, free fontnode */
-				TDBPRINTF(10, ("X unable to load '%s'\n", fattr.fname));
+				TDBPRINTF(TDB_ERROR,("X unable to load '%s'\n", fattr.fname));
 				TExecFree(exec, fn);
 			}
 		}
 		else
-			TDBPRINTF(20, ("out of memory :(\n"));
+			TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 	}
 	else
-		TDBPRINTF(20, ("X invalid fontname '%s' specified\n", fattr.fname));
+		TDBPRINTF(TDB_ERROR,("X invalid fontname '%s' specified\n", fattr.fname));
 
 	return font;
 }
 
 static TBOOL
-hostopenfont(TMOD_X11 *mod, struct FontNode *fn, struct fnt_attr *fattr)
+hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 {
 	TBOOL succ = TFALSE;
 	TAPTR exec = TGetExecBase(mod);
 
+	#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
 	{
 		/* load xft font */
@@ -863,6 +879,7 @@ hostopenfont(TMOD_X11 *mod, struct FontNode *fn, struct fnt_attr *fattr)
 			succ = TTRUE;
 	}
 	else
+	#endif
 	{
 		/* load xlib font */
 		TSTRPTR fquery = TExecAlloc0(exec, mod->x11_MemMgr,
@@ -878,7 +895,7 @@ hostopenfont(TMOD_X11 *mod, struct FontNode *fn, struct fnt_attr *fattr)
 				FNT_DEFREGENC
 			);
 
-			TDBPRINTF(TDB_WARN, ("? %s\n", fquery));
+			TDBPRINTF(TDB_WARN,("? %s\n", fquery));
 
 			fn->font = XLoadQueryFont(mod->x11_Display, fquery);
 
@@ -888,7 +905,7 @@ hostopenfont(TMOD_X11 *mod, struct FontNode *fn, struct fnt_attr *fattr)
 			TExecFree(exec, fquery);
 		}
 		else
-			TDBPRINTF(20, ("out of memory :(\n"));
+			TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 	}
 
 	return succ;
@@ -945,15 +962,13 @@ hostopenfont(TMOD_X11 *mod, struct FontNode *fn, struct fnt_attr *fattr)
 */
 
 LOCAL TAPTR
-x11_hostqueryfonts(TMOD_X11 *mod, TTAGITEM *tags)
+x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags)
 {
 	TSTRPTR fname = TNULL;
 	struct fnt_attr fattr;
 	struct TNode *node, *next;
 	struct FontQueryHandle *fqh = TNULL;
 	TAPTR exec = TGetExecBase(mod);
-
-	TDBPRINTF(10, ("***********************************************\n"));
 
 	/* init fontname list */
 	TInitList(&fattr.fnlist);
@@ -980,16 +995,17 @@ x11_hostqueryfonts(TMOD_X11 *mod, TTAGITEM *tags)
 		/* init list iterator */
 		fqh->nptr = &fqh->reslist.tlh_Head;
 
+		#if defined(ENABLE_XFT)
 		if (mod->x11_use_xft)
 			hostqueryfonts_xft(mod, fqh, &fattr);
 		else
+		#endif
 			hostqueryfonts_xlib(mod, fqh, &fattr);
 
-		TDB(10,(fnt_dumplist(&fqh->reslist)));
-		TDBPRINTF(10, ("***********************************************\n"));
+		TDB(TDB_INFO,(fnt_dumplist(&fqh->reslist)));
 	}
 	else
-		TDBPRINTF(20, ("out of memory :(\n"));
+		TDBPRINTF(TDB_FAIL, ("out of memory :(\n"));
 
 	/* free memory of fnt_nodes */
 	for (node = fattr.fnlist.tlh_Head; (next = node->tln_Succ); node = next)
@@ -1003,8 +1019,9 @@ x11_hostqueryfonts(TMOD_X11 *mod, TTAGITEM *tags)
 	return fqh;
 }
 
+#if defined(ENABLE_XFT)
 static void
-hostqueryfonts_xft(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr *fattr)
+hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr *fattr)
 {
 	FcPattern *pattern = TNULL;
 	struct TNode *node, *next;
@@ -1027,7 +1044,7 @@ hostqueryfonts_xft(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr *
 
 		if (!pattern)
 		{
-			TDBPRINTF(10, ("X unable to create pattern for '%s'\n", fnn->fname));
+			TDBPRINTF(TDB_ERROR,("X unable to create pattern for '%s'\n", fnn->fname));
 			continue;
 		}
 
@@ -1079,7 +1096,7 @@ hostqueryfonts_xft(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr *
 			TINT i;
 
 			if (fontset->nfont == 0)
-				TDBPRINTF(10, ("X query returned no results\n"));
+				TDBPRINTF(TDB_WARN,("X query returned no results\n"));
 
 			for (i = 0; i < fontset->nfont; i++)
 			{
@@ -1112,7 +1129,7 @@ hostqueryfonts_xft(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr *
 					else
 					{
 						/* fqnode is not unique, destroy it */
-						TDBPRINTF(10,("X node is not unique\n"));
+						TDBPRINTF(TDB_ERROR,("X node is not unique\n"));
 						TExecFree(exec, (TSTRPTR)fqnode->tags[0].tti_Value);
 						TExecFree(exec, fqnode);
 					}
@@ -1123,7 +1140,7 @@ hostqueryfonts_xft(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr *
 
 		} /* endif fontset */
 		else
-			TDBPRINTF(10, ("X query failed\n"));
+			TDBPRINTF(TDB_ERROR,("X query failed\n"));
 
 		(*mod->x11_fciface.FcPatternDestroy)(pattern);
 
@@ -1132,9 +1149,10 @@ hostqueryfonts_xft(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr *
 
 	} /* end of fnlist iteration */
 }
+#endif
 
 static void
-hostqueryfonts_xlib(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr *fattr)
+hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr *fattr)
 {
 	TSTRPTR fquery = TNULL;
 	TCHR **fontlist = TNULL;
@@ -1151,13 +1169,13 @@ hostqueryfonts_xlib(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr 
 			fquery = TExecAlloc0(exec, mod->x11_MemMgr, FNT_LENGTH + strlen(fnn->fname));
 			if (!fquery)
 			{
-				TDBPRINTF(20, ("out of memory :(\n"));
+				TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 				break;
 			}
 		}
 		else
 		{
-			TDBPRINTF(20, ("X invalid fontname '%s' specified\n", fnn->fname));
+			TDBPRINTF(TDB_ERROR, ("X invalid fontname '%s' specified\n", fnn->fname));
 			continue;
 		}
 
@@ -1184,17 +1202,17 @@ hostqueryfonts_xlib(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr 
 			);
 		}
 
-		TDBPRINTF(10, ("? %s\n", fquery));
+		TDBPRINTF(TDB_INFO,("? %s\n", fquery));
 
 		fontlist = XListFonts(mod->x11_Display, fquery, fattr->fnum, &numfonts);
 
 		if (numfonts  == 0)
-			TDBPRINTF(10, ("X query returned no results\n"));
+			TDBPRINTF(TDB_WARN,("X query returned no results\n"));
 
 		for (i = 0; i < numfonts; i++)
 		{
 			struct FontQueryNode *fqnode;
-			TDBPRINTF(10, ("! %s\n", fontlist[i]));
+			TDBPRINTF(TDB_INFO,("! %s\n", fontlist[i]));
 
 			/* create fqnode and fill in attributes */
 			fqnode = fnt_getfqnode_xlib(mod, fontlist[i]);
@@ -1209,7 +1227,7 @@ hostqueryfonts_xlib(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr 
 			else
 			{
 				/* fqnode is not unique, destroy it */
-				TDBPRINTF(10,("X node is not unique\n"));
+				TDBPRINTF(TDB_ERROR,("X node is not unique\n"));
 				TExecFree(exec, (TSTRPTR)fqnode->tags[0].tti_Value);
 				TExecFree(exec, fqnode);
 			}
@@ -1240,11 +1258,13 @@ hostqueryfonts_xlib(TMOD_X11 *mod, struct FontQueryHandle *fqh, struct fnt_attr 
 */
 
 LOCAL void
-x11_hostsetfont(TMOD_X11 *mod, VISUAL *v, TAPTR font)
+x11_hostsetfont(X11DISPLAY *mod, X11WINDOW *v, TAPTR font)
 {
 	if (font)
 	{
+		#if defined(ENABLE_XFT)
 		if (!mod->x11_use_xft)
+		#endif
 		{
 			XGCValues gcv;
 			struct FontNode *fn = (struct FontNode *) font;
@@ -1254,7 +1274,7 @@ x11_hostsetfont(TMOD_X11 *mod, VISUAL *v, TAPTR font)
 		v->curfont = font;
 	}
 	else
-		TDBPRINTF(20, ("invalid font specified\n"));
+		TDBPRINTF(TDB_ERROR,("invalid font specified\n"));
 }
 
 /*****************************************************************************/
@@ -1279,7 +1299,7 @@ x11_hostsetfont(TMOD_X11 *mod, VISUAL *v, TAPTR font)
 */
 
 LOCAL TTAGITEM *
-x11_hostgetnextfont(TMOD_X11 *mod, TAPTR fqhandle)
+x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle)
 {
 	struct FontQueryHandle *fqh = fqhandle;
 	struct TNode *next = *fqh->nptr;
@@ -1313,7 +1333,7 @@ x11_hostgetnextfont(TMOD_X11 *mod, TAPTR fqhandle)
 */
 
 LOCAL void
-x11_hostclosefont(TMOD_X11 *mod, TAPTR font)
+x11_hostclosefont(X11DISPLAY *mod, TAPTR font)
 {
 	struct FontNode *fn = (struct FontNode *) font;
 	TAPTR exec = TGetExecBase(mod);
@@ -1335,11 +1355,11 @@ x11_hostclosefont(TMOD_X11 *mod, TAPTR font)
 		for (; (next = node->tln_Succ); node = next)
 		{
 			/* check if the font is currently used by another visual */
-			VISUAL *v = (VISUAL *) node;
+			X11WINDOW *v = (X11WINDOW *) node;
 
 			if (font == v->curfont)
 			{
-				TDBPRINTF(20, ("attempt to close font which is currently in use\n"));
+				TDBPRINTF(TDB_ERROR,("attempt to close font which is currently in use\n"));
 				return; /* do nothing */
 			}
 		}
@@ -1353,11 +1373,13 @@ x11_hostclosefont(TMOD_X11 *mod, TAPTR font)
 	}
 
 	/* free xftfont */
+	#if defined(ENABLE_XFT)
 	if (fn->xftfont)
 	{
 		(*mod->x11_xftiface.XftFontClose)(mod->x11_Display, fn->xftfont);
 		fn->xftfont = TNULL;
 	}
+	#endif
 
 	/* remove font from openfonts list */
 	TRemove(&fn->handle.thn_Node);
@@ -1383,12 +1405,13 @@ x11_hostclosefont(TMOD_X11 *mod, TAPTR font)
 */
 
 LOCAL TINT
-x11_hosttextsize(TMOD_X11 *mod, TAPTR font, TSTRPTR text)
+x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text)
 {
 	TINT width = 0;
 	struct FontNode *fn = (struct FontNode *) font;
 	TAPTR exec = TGetExecBase(mod);
 
+	#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
 	{
 		XGlyphInfo extents;
@@ -1397,6 +1420,7 @@ x11_hosttextsize(TMOD_X11 *mod, TAPTR font, TSTRPTR text)
 		width = extents.xOff; /* why not extents.width?!? */
 	}
 	else
+	#endif
 	{
 		TSTRPTR latin = utf8tolatin(mod, text, strlen(text));
 		if (latin)
@@ -1445,7 +1469,7 @@ LOCAL THOOKENTRY TTAG
 x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct attrdata *data = hook->thk_Data;
-	TMOD_X11 *mod = data->mod;
+	X11DISPLAY *mod = data->mod;
 	TTAGITEM *item = obj;
 	struct FontNode *fn = (struct FontNode *) data->font;
 
@@ -1469,28 +1493,40 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 
 		case TVisual_FontAscent:
-			*((TTAG *) item->tti_Value) = mod->x11_use_xft ?
-				fn->xftfont->ascent : fn->font->ascent;
+			#if defined(ENABLE_XFT)
+			if (mod->x11_use_xft)
+				*((TTAG *) item->tti_Value) = fn->xftfont->ascent;
+			else
+			#endif
+				*((TTAG *) item->tti_Value) = fn->font->ascent;
 			break;
 
 		case TVisual_FontDescent:
-			*((TTAG *) item->tti_Value) = mod->x11_use_xft ?
-				fn->xftfont->descent : fn->xftfont->descent;
+			#if defined(ENABLE_XFT)
+			if (mod->x11_use_xft)
+				*((TTAG *) item->tti_Value) = fn->xftfont->descent;
+			else
+			#endif
+				*((TTAG *) item->tti_Value) = fn->font->descent;
 			break;
 
 		case TVisual_FontHeight:
-			*((TTAG *) item->tti_Value) = mod->x11_use_xft ?
-				fn->xftfont->ascent + fn->xftfont->descent :
-				fn->font->ascent + fn->font->descent;
+			#if defined(ENABLE_XFT)
+			if (mod->x11_use_xft)
+				*((TTAG *) item->tti_Value) = fn->xftfont->ascent + fn->xftfont->descent;
+			else
+			#endif
+				*((TTAG *) item->tti_Value) = fn->font->ascent + fn->font->descent;
 			break;
 
 		case TVisual_FontUlPosition:
 		{
 			unsigned long ulp;
+			#if defined(ENABLE_XFT)
 			if (mod->x11_use_xft)
 			{
-				ulp = fn->xftfont->descent / 2;
 				FT_Face face = (*mod->x11_xftiface.XftLockFace)(fn->xftfont);
+				ulp = fn->xftfont->descent / 2;
 				if (face)
 				{
 					if (face->units_per_EM != 0)
@@ -1502,6 +1538,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 				}
 			}
 			else
+			#endif
 			{
 				ulp = fn->font->descent / 2;
 				XGetFontProperty(fn->font, XA_UNDERLINE_POSITION, &ulp);
@@ -1512,6 +1549,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 		case TVisual_FontUlThickness:
 		{
 			unsigned long ult = 1;
+			#if defined(ENABLE_XFT)
 			if (mod->x11_use_xft)
 			{
 				FT_Face face = (*mod->x11_xftiface.XftLockFace)(fn->xftfont);
@@ -1526,6 +1564,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 				}
 			}
 			else
+			#endif
 			{
 				XGetFontProperty(fn->font, XA_UNDERLINE_THICKNESS, &ult);
 			}

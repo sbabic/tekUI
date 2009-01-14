@@ -6,7 +6,7 @@
 PLATFORM ?= posix
 
 #------------------------------------------------------------------------------
-# Default display driver [Choices: x11, dfb]
+# Default display driver [Choices: x11, directfb]
 # For the DirectFB driver, also adjust src/Makefile and tek/lib/Makefile
 #------------------------------------------------------------------------------
 

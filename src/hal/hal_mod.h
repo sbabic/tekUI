@@ -1,4 +1,3 @@
-
 #ifndef _TEK_HAL_HAL_MOD_H
 #define	_TEK_HAL_HAL_MOD_H
 
@@ -28,7 +27,7 @@
 **	HAL module structure
 */
 
-typedef struct
+struct THALBase
 {
 	/* Module header */
 	struct TModule hmb_Module;
@@ -36,60 +35,53 @@ typedef struct
 	TAPTR hmb_Specific;
 	/* Ptr to boot handle */
 	TAPTR hmb_BootHnd;
-} TMOD_HAL;
+};
 
 /*****************************************************************************/
 /*
 **	internal prototypes
 */
 
-LOCAL TBOOL hal_init(TMOD_HAL *hal, TTAGITEM *tags);
-LOCAL void hal_exit(TMOD_HAL *hal);
+LOCAL TBOOL hal_init(struct THALBase *hal, TTAGITEM *tags);
+LOCAL void hal_exit(struct THALBase *hal);
 
 LOCAL TAPTR hal_allocself(TAPTR boot, TUINT size);
 LOCAL void hal_freeself(TAPTR boot, TAPTR mem, TUINT size);
 
-LOCAL struct TTimeRequest *hal_open(TMOD_HAL *hal, TAPTR task, TTAGITEM *tags);
-LOCAL void hal_close(TMOD_HAL *hal, TAPTR task);
-
-LOCAL void hal_subtime(TTIME *a, TTIME *b);
-LOCAL void hal_addtime(TTIME *a, TTIME *b);
-LOCAL TINT hal_cmptime(TTIME *a, TTIME *b);
+LOCAL struct TTimeRequest *hal_open(struct THALBase *hal, struct TTask *task, TTAGITEM *tags);
+LOCAL void hal_close(struct THALBase *hal, struct TTask *task);
 
 /*****************************************************************************/
 /*
 **	API prototypes
 */
 
-EXPORT void hal_beginio(TMOD_HAL *hal, struct TTimeRequest *req);
-EXPORT TINT hal_abortio(TMOD_HAL *hal, struct TTimeRequest *req);
-
-EXPORT TAPTR hal_alloc(TMOD_HAL *hal, TUINT size);
-EXPORT void hal_free(TMOD_HAL *hal, TAPTR mem, TUINT size);
-EXPORT TAPTR hal_realloc(TMOD_HAL *hal, TAPTR mem, TUINT oldsize,
+EXPORT void hal_beginio(struct THALBase *hal, struct TTimeRequest *req);
+EXPORT TINT hal_abortio(struct THALBase *hal, struct TTimeRequest *req);
+EXPORT TAPTR hal_alloc(struct THALBase *hal, TUINT size);
+EXPORT void hal_free(struct THALBase *hal, TAPTR mem, TUINT size);
+EXPORT TAPTR hal_realloc(struct THALBase *hal, TAPTR mem, TUINT oldsize,
 	TUINT newsize);
-EXPORT void hal_copymem(TMOD_HAL *hal, TAPTR from, TAPTR to, TUINT numbytes);
-EXPORT void hal_fillmem(TMOD_HAL *hal, TAPTR dest, TUINT numbytes,
+EXPORT void hal_copymem(struct THALBase *hal, TAPTR from, TAPTR to, TUINT numbytes);
+EXPORT void hal_fillmem(struct THALBase *hal, TAPTR dest, TUINT numbytes,
 	TUINT8 fillval);
-EXPORT TBOOL hal_initlock(TMOD_HAL *hal, THALO *lock);
-EXPORT void hal_destroylock(TMOD_HAL *hal, THALO *lock);
-EXPORT void hal_lock(TMOD_HAL *hal, THALO *lock);
-EXPORT void hal_unlock(TMOD_HAL *hal, THALO *lock);
-EXPORT TBOOL hal_initthread(TMOD_HAL *hal, THALO *thread,
-	TTASKENTRY void (*function)(TAPTR task), TAPTR data);
-EXPORT void hal_destroythread(TMOD_HAL *hal, THALO *thread);
-EXPORT TAPTR hal_findself(TMOD_HAL *hal);
-EXPORT TAPTR hal_loadmodule(TMOD_HAL *hal, TSTRPTR name, TUINT16 version,
+EXPORT TBOOL hal_initlock(struct THALBase *hal, struct THALObject *lock);
+EXPORT void hal_destroylock(struct THALBase *hal, struct THALObject *lock);
+EXPORT void hal_lock(struct THALBase *hal, struct THALObject *lock);
+EXPORT void hal_unlock(struct THALBase *hal, struct THALObject *lock);
+EXPORT TBOOL hal_initthread(struct THALBase *hal, struct THALObject *thread,
+	TTASKENTRY void (*function)(struct TTask *task), TAPTR data);
+EXPORT void hal_destroythread(struct THALBase *hal, struct THALObject *thread);
+EXPORT TAPTR hal_findself(struct THALBase *hal);
+EXPORT TAPTR hal_loadmodule(struct THALBase *hal, TSTRPTR name, TUINT16 version,
 	TUINT *psize, TUINT *nsize);
-EXPORT TBOOL hal_callmodule(TMOD_HAL *hal, TAPTR halmod, TAPTR task,
+EXPORT TBOOL hal_callmodule(struct THALBase *hal, TAPTR halmod, struct TTask *task,
 	TAPTR mod);
-EXPORT void hal_unloadmodule(TMOD_HAL *hal, TAPTR halmod);
-
-EXPORT TBOOL hal_scanmodules(TMOD_HAL *hal, TSTRPTR path, struct THook *hook);
-EXPORT TTAG hal_getattr(TMOD_HAL *hal, TUINT tag, TTAG defval);
-EXPORT TUINT hal_wait(TMOD_HAL *hal, TUINT signals);
-EXPORT void hal_signal(TMOD_HAL *hal, THALO *thread, TUINT signals);
-EXPORT TUINT hal_setsignal(TMOD_HAL *hal, TUINT newsig, TUINT sigmask);
-EXPORT void hal_getsystime(TMOD_HAL *hal, TTIME *time);
+EXPORT void hal_unloadmodule(struct THALBase *hal, TAPTR halmod);
+EXPORT TBOOL hal_scanmodules(struct THALBase *hal, TSTRPTR path, struct THook *hook);
+EXPORT TTAG hal_getattr(struct THALBase *hal, TUINT tag, TTAG defval);
+EXPORT TUINT hal_wait(struct THALBase *hal, TUINT signals);
+EXPORT void hal_signal(struct THALBase *hal, struct THALObject *thread, TUINT signals);
+EXPORT TUINT hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask);
 
 #endif

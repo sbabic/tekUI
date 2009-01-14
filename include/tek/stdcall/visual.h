@@ -83,34 +83,28 @@
 #define TVisualDrawFan(visual,array,num,tags) \
 	(*(((TMODCALL void(**)(TAPTR,TINT *,TINT,TTAGITEM *))(visual))[-33]))(visual,array,num,tags)
 
-#define TVisualDrawArc(visual,x,y,w,h,angle1,angle2,pen) \
-	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TINT,TINT,TINT,TINT,TVPEN))(visual))[-34]))(visual,x,y,w,h,angle1,angle2,pen)
-
 #define TVisualCopyArea(visual,x,y,w,h,dx,dy,tags) \
-	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TINT,TINT,TINT,TINT,TTAGITEM *))(visual))[-35]))(visual,x,y,w,h,dx,dy,tags)
+	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TINT,TINT,TINT,TINT,TTAGITEM *))(visual))[-34]))(visual,x,y,w,h,dx,dy,tags)
+
+#define TVisualDrawBuffer(visual,x,y,buf,w,h,totw,tags) \
+	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TAPTR,TINT,TINT,TINT,TTAGITEM *))(visual))[-35]))(visual,x,y,buf,w,h,totw,tags)
 
 #define TVisualSetClipRect(visual,x,y,w,h,tags) \
 	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TINT,TINT,TTAGITEM *))(visual))[-36]))(visual,x,y,w,h,tags)
 
+#define TVisualUnsetClipRect(visual) \
+	(*(((TMODCALL void(**)(TAPTR))(visual))[-37]))(visual)
+
 #define TVisualOpenDisplay(visual,tags) \
-	(*(((TMODCALL TAPTR(**)(TAPTR,TTAGITEM *))(visual))[-37]))(visual,tags)
+	(*(((TMODCALL TAPTR(**)(TAPTR,TTAGITEM *))(visual))[-38]))(visual,tags)
 
 #define TVisualCloseDisplay(visual,display) \
-	(*(((TMODCALL void(**)(TAPTR,TAPTR))(visual))[-38]))(visual,display)
+	(*(((TMODCALL void(**)(TAPTR,TAPTR))(visual))[-39]))(visual,display)
 
 #define TVisualQueryDisplays(visual,tags) \
-	(*(((TMODCALL TAPTR(**)(TAPTR,TTAGITEM *))(visual))[-39]))(visual,tags)
+	(*(((TMODCALL TAPTR(**)(TAPTR,TTAGITEM *))(visual))[-40]))(visual,tags)
 
 #define TVisualGetNextDisplay(visual,handle) \
-	(*(((TMODCALL TTAGITEM *(**)(TAPTR,TAPTR))(visual))[-40]))(visual,handle)
-
-#define TVisualUnsetClipRect(visual) \
-	(*(((TMODCALL void(**)(TAPTR))(visual))[-41]))(visual)
-
-#define TVisualDrawFArc(visual,x,y,w,h,angle1,angle2,pen) \
-	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TINT,TINT,TINT,TINT,TVPEN))(visual))[-42]))(visual,x,y,w,h,angle1,angle2,pen)
-
-#define TVisualDrawBuffer(visual,x,y,buf,w,h,totw,tags) \
-	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TAPTR,TINT,TINT,TINT,TTAGITEM *))(visual))[-43]))(visual,x,y,buf,w,h,totw,tags)
+	(*(((TMODCALL TTAGITEM *(**)(TAPTR,TAPTR))(visual))[-41]))(visual,handle)
 
 #endif /* _TEK_STDCALL_VISUAL_H */

@@ -1,3 +1,4 @@
+
 /*
 **	teklib/src/display_dfb/display_dfb_mod.c - DirectFB Display driver
 **	Written by Franciska Schulze <fschulze at schulze-mueller.de>
@@ -9,22 +10,22 @@
 
 #include "display_dfb_mod.h"
 
-static TAPTR dfb_modopen(TMOD_DFB *mod, TTAGITEM *tags);
-static void dfb_modclose(TMOD_DFB *mod);
-static TMODAPI void dfb_beginio(TMOD_DFB *mod, struct TVRequest *req);
-static TMODAPI TINT dfb_abortio(TMOD_DFB *mod, struct TVRequest *req);
-static TMODAPI struct TVRequest *dfb_allocreq(TMOD_DFB *mod);
-static TMODAPI void dfb_freereq(TMOD_DFB *mod, struct TVRequest *req);
-static TTASKENTRY TBOOL dfb_initinstance(TAPTR task);
-static void dfb_exitinstance(TMOD_DFB *inst);
-static TTASKENTRY void dfb_taskfunc(TAPTR task);
-LOCAL void dfb_wake(TMOD_DFB *inst);
-static void dfb_processevent(TMOD_DFB *mod);
-static TVOID dfb_processvisualevent(TMOD_DFB *mod, VISUAL *v, DFBEvent *evt);
-static TBOOL processkey(TMOD_DFB *mod, VISUAL *v, DFBWindowEvent *ev, TBOOL keydown);
-TBOOL getimsg(TMOD_DFB *mod, VISUAL *v, TIMSG **msgptr, TUINT type);
-TVOID genimsg(TMOD_DFB *mod, VISUAL *vold, VISUAL *vnew, TUINT type);
-static void dfb_sendimessages(TMOD_DFB *mod, TBOOL do_interval);
+static TAPTR dfb_modopen(DFBDISPLAY *mod, TTAGITEM *tags);
+static void dfb_modclose(DFBDISPLAY *mod);
+static TMODAPI void dfb_beginio(DFBDISPLAY *mod, struct TVRequest *req);
+static TMODAPI TINT dfb_abortio(DFBDISPLAY *mod, struct TVRequest *req);
+static TMODAPI struct TVRequest *dfb_allocreq(DFBDISPLAY *mod);
+static TMODAPI void dfb_freereq(DFBDISPLAY *mod, struct TVRequest *req);
+static TTASKENTRY TBOOL dfb_initinstance(struct TTask *task);
+static void dfb_exitinstance(DFBDISPLAY *inst);
+static TTASKENTRY void dfb_taskfunc(struct TTask *task);
+LOCAL void dfb_wake(DFBDISPLAY *inst);
+static void dfb_processevent(DFBDISPLAY *mod);
+static TVOID dfb_processvisualevent(DFBDISPLAY *mod, DFBWINDOW *v, DFBEvent *evt);
+static TBOOL processkey(DFBDISPLAY *mod, DFBWINDOW *v, DFBWindowEvent *ev, TBOOL keydown);
+TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type);
+TVOID genimsg(DFBDISPLAY *mod, DFBWINDOW *vold, DFBWINDOW *vnew, TUINT type);
+static void dfb_sendimessages(DFBDISPLAY *mod, TBOOL do_interval);
 
 static const TMFPTR
 dfb_vectors[DFBDISPLAY_NUMVECTORS] =
@@ -43,7 +44,7 @@ dfb_vectors[DFBDISPLAY_NUMVECTORS] =
 };
 
 static void
-dfb_destroy(TMOD_DFB *mod)
+dfb_destroy(DFBDISPLAY *mod)
 {
 	TDBPRINTF(TDB_TRACE,("Module destroy...\n"));
 	TDestroy(mod->dfb_Lock);
@@ -52,7 +53,7 @@ dfb_destroy(TMOD_DFB *mod)
 static THOOKENTRY TTAG
 dfb_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 {
-	TMOD_DFB *mod = (TMOD_DFB *) hook->thk_Data;
+	DFBDISPLAY *mod = (DFBDISPLAY *) hook->thk_Data;
 	switch (msg)
 	{
 		case TMSG_DESTROY:
@@ -67,10 +68,10 @@ dfb_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 TMODENTRY TUINT
-tek_init_display_dfb(TAPTR task, struct TModule *vis, TUINT16 version,
+tek_init_display_directfb(struct TTask *task, struct TModule *vis, TUINT16 version,
 	TTAGITEM *tags)
 {
-	TMOD_DFB *mod = (TMOD_DFB *) vis;
+	DFBDISPLAY *mod = (DFBDISPLAY *) vis;
 
 	if (mod == TNULL)
 	{
@@ -78,7 +79,7 @@ tek_init_display_dfb(TAPTR task, struct TModule *vis, TUINT16 version,
 			return sizeof(TAPTR) * DFBDISPLAY_NUMVECTORS;
 
 		if (version <= DFBDISPLAY_VERSION)
-			return sizeof(TMOD_DFB);
+			return sizeof(DFBDISPLAY);
 
 		return 0;
 	}
@@ -111,7 +112,7 @@ tek_init_display_dfb(TAPTR task, struct TModule *vis, TUINT16 version,
 **	Module open/close
 */
 
-static TAPTR dfb_modopen(TMOD_DFB *mod, TTAGITEM *tags)
+static TAPTR dfb_modopen(DFBDISPLAY *mod, TTAGITEM *tags)
 {
 	TBOOL success = TFALSE;
 	TExecLock(mod->dfb_ExecBase, mod->dfb_Lock);
@@ -126,7 +127,7 @@ static TAPTR dfb_modopen(TMOD_DFB *mod, TTAGITEM *tags)
 }
 
 static void
-dfb_modclose(TMOD_DFB *mod)
+dfb_modclose(DFBDISPLAY *mod)
 {
 	TDBPRINTF(TDB_TRACE,("Device close\n"));
 	TExecLock(mod->dfb_ExecBase, mod->dfb_Lock);
@@ -141,7 +142,7 @@ dfb_modclose(TMOD_DFB *mod)
 */
 
 static TMODAPI void
-dfb_beginio(TMOD_DFB *mod, struct TVRequest *req)
+dfb_beginio(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	TExecPutMsg(mod->dfb_ExecBase, mod->dfb_CmdPort,
 		req->tvr_Req.io_ReplyPort, req);
@@ -149,7 +150,7 @@ dfb_beginio(TMOD_DFB *mod, struct TVRequest *req)
 }
 
 static TMODAPI TINT
-dfb_abortio(TMOD_DFB *mod, struct TVRequest *req)
+dfb_abortio(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	return -1;
 }
@@ -160,7 +161,7 @@ dfb_abortio(TMOD_DFB *mod, struct TVRequest *req)
 */
 
 static TMODAPI struct TVRequest *
-dfb_allocreq(TMOD_DFB *mod)
+dfb_allocreq(DFBDISPLAY *mod)
 {
 	struct TVRequest *req = TExecAllocMsg(mod->dfb_ExecBase,
 		sizeof(struct TVRequest));
@@ -170,7 +171,7 @@ dfb_allocreq(TMOD_DFB *mod)
 }
 
 static TMODAPI void
-dfb_freereq(TMOD_DFB *mod, struct TVRequest *req)
+dfb_freereq(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	TExecFree(mod->dfb_ExecBase, req);
 }
@@ -181,7 +182,7 @@ dfb_freereq(TMOD_DFB *mod, struct TVRequest *req)
 */
 
 LOCAL TBOOL
-dfb_init(TMOD_DFB *mod, TTAGITEM *tags)
+dfb_init(DFBDISPLAY *mod, TTAGITEM *tags)
 {
 	for (;;)
 	{
@@ -189,6 +190,7 @@ dfb_init(TMOD_DFB *mod, TTAGITEM *tags)
 
 		mod->dfb_TimeReq =
 			TExecAllocTimeRequest(mod->dfb_ExecBase, TNULL);
+		if (mod->dfb_TimeReq == TNULL) break;
 
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
@@ -210,7 +212,7 @@ dfb_init(TMOD_DFB *mod, TTAGITEM *tags)
 }
 
 LOCAL void
-dfb_exit(TMOD_DFB *mod)
+dfb_exit(DFBDISPLAY *mod)
 {
 	if (mod->dfb_Task)
 	{
@@ -248,9 +250,9 @@ loadimage (IDirectFB *dfb, const char *filename)
 /*****************************************************************************/
 
 static TTASKENTRY TBOOL
-dfb_initinstance(TAPTR task)
+dfb_initinstance(struct TTask *task)
 {
-	TMOD_DFB *inst = TExecGetTaskData(TGetExecBase(task), task);
+	DFBDISPLAY *inst = TExecGetTaskData(TGetExecBase(task), task);
 
 	for (;;)
 	{
@@ -296,7 +298,7 @@ dfb_initinstance(TAPTR task)
 
 		layer_surface->GetSize(layer_surface, &inst->dfb_ScrWidth, &inst->dfb_ScrHeight);
 		layer_surface->Release(layer_surface);
-		TDBPRINTF(20,("screen dimension: %d x %d\n", inst->dfb_ScrWidth,
+		TDBPRINTF(TDB_INFO,("screen dimension: %d x %d\n", inst->dfb_ScrWidth,
 			inst->dfb_ScrHeight));
 
 		inst->dfb_Layer->GetConfiguration(inst->dfb_Layer, &inst->dfb_LayerConfig);
@@ -354,7 +356,7 @@ dfb_initinstance(TAPTR task)
 		inst->dfb_fm.deffont = dfb_hostopenfont(inst, ftags);
 		if (inst->dfb_fm.deffont == TNULL) break;
 
-		TDBPRINTF(20,("instance init successful\n"));
+		TDBPRINTF(TDB_INFO,("instance init successful\n"));
 		return TTRUE;
 	}
 
@@ -364,7 +366,7 @@ dfb_initinstance(TAPTR task)
 }
 
 static void
-dfb_exitinstance(TMOD_DFB *inst)
+dfb_exitinstance(DFBDISPLAY *inst)
 {
 	struct TNode *imsg, *node, *next;
 
@@ -376,7 +378,7 @@ dfb_exitinstance(TMOD_DFB *inst)
 	node = inst->dfb_vlist.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
-		VISUAL *v = (VISUAL *) node;
+		DFBWINDOW *v = (DFBWINDOW *) node;
 
 		/* unset active font in all open visuals */
 		v->curfont = TNULL;
@@ -417,14 +419,14 @@ dfb_exitinstance(TMOD_DFB *inst)
 /*****************************************************************************/
 
 static void
-dfb_docmd(TMOD_DFB *inst, struct TVRequest *req)
+dfb_docmd(DFBDISPLAY *inst, struct TVRequest *req)
 {
 	switch (req->tvr_Req.io_Command)
 	{
-		case TVCMD_OPENVISUAL:
+		case TVCMD_OPENWINDOW:
 			dfb_openvisual(inst, req);
 			break;
-		case TVCMD_CLOSEVISUAL:
+		case TVCMD_CLOSEWINDOW:
 			dfb_closevisual(inst, req);
 			break;
 		case TVCMD_OPENFONT:
@@ -515,25 +517,25 @@ dfb_docmd(TMOD_DFB *inst, struct TVRequest *req)
 }
 
 static TTASKENTRY void
-dfb_taskfunc(TAPTR task)
+dfb_taskfunc(struct TTask *task)
 {
 	static char pipebuf[256];
-	TMOD_DFB *inst = TExecGetTaskData(TGetExecBase(task), task);
+	DFBDISPLAY *inst = TExecGetTaskData(TGetExecBase(task), task);
 	TUINT sig;
 	fd_set rset;
 	struct TVRequest *req;
 	struct timeval tv;
-	VISUAL *v;
+	DFBWINDOW *v;
 	struct TNode *node, *next;
 
 	/* interval time: 1/50s: */
-	TTIME intt = { 0, 20000 };
+	TTIME intt = { 20000 };
 	/* next absolute time to send interval message: */
 	TTIME nextt;
 	TTIME waitt, nowt;
 
-	TExecQueryTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nextt);
-	TExecAddTime(inst->dfb_ExecBase, &nextt, &intt);
+	TExecGetSystemTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nextt);
+	TAddTime(&nextt, &intt);
 
 	TDBPRINTF(TDB_ERROR,("Device instance running\n"));
 
@@ -550,7 +552,7 @@ dfb_taskfunc(TAPTR task)
 		node = inst->dfb_vlist.tlh_Head;
 		for (; (next = node->tln_Succ); node = next)
 		{
-			v = (VISUAL *) node;
+			v = (DFBWINDOW *) node;
 			v->winsurface->Flip(v->winsurface, NULL, 0);
 		}
 
@@ -559,12 +561,12 @@ dfb_taskfunc(TAPTR task)
 		FD_SET(inst->dfb_FDSigPipeRead, &rset);
 
 		/* calculate new delta to wait: */
-		TExecQueryTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nowt);
+		TExecGetSystemTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nowt);
 		waitt = nextt;
-		TExecSubTime(inst->dfb_ExecBase, &waitt, &nowt);
+		TSubTime(&waitt, &nowt);
 
-		tv.tv_sec = waitt.ttm_Sec;
-		tv.tv_usec = waitt.ttm_USec;
+		tv.tv_sec = waitt.tdt_Int64 / 1000000;
+		tv.tv_usec = waitt.tdt_Int64 % 1000000;
 
 		/* wait for display, signal fd and timeout: */
 		if (select(inst->dfb_FDMax, &rset, NULL, NULL, &tv) > 0)
@@ -584,17 +586,17 @@ dfb_taskfunc(TAPTR task)
 		}
 
 		/* check if time interval has expired: */
-		TExecQueryTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nowt);
-		if (TExecCmpTime(inst->dfb_ExecBase, &nowt, &nextt) > 0)
+		TExecGetSystemTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nowt);
+		if (TCmpTime(&nowt, &nextt) > 0)
 		{
 			/* expired; send interval: */
 			do_interval = TTRUE;
-			TExecAddTime(inst->dfb_ExecBase, &nextt, &intt);
-			if (TExecCmpTime(inst->dfb_ExecBase, &nowt, &nextt) >= 0)
+			TAddTime(&nextt, &intt);
+			if (TCmpTime(&nowt, &nextt) >= 0)
 			{
 				/* nexttime expired already; create new time from now: */
 				nextt = nowt;
-				TExecAddTime(inst->dfb_ExecBase, &nextt, &intt);
+				TAddTime(&nextt, &intt);
 			}
 		}
 
@@ -612,7 +614,7 @@ dfb_taskfunc(TAPTR task)
 	dfb_exitinstance(inst);
 }
 
-LOCAL void dfb_wake(TMOD_DFB *inst)
+LOCAL void dfb_wake(DFBDISPLAY *inst)
 {
 	char sig = 0;
 	write(inst->dfb_FDSigPipeWrite, &sig, 1);
@@ -624,12 +626,12 @@ LOCAL void dfb_wake(TMOD_DFB *inst)
 */
 
 static void
-dfb_processevent(TMOD_DFB *mod)
+dfb_processevent(DFBDISPLAY *mod)
 {
 	while (TTRUE)
 	{
 		DFBEvent evt;
-		VISUAL *v = mod->dfb_Focused;
+		DFBWINDOW *v = mod->dfb_Focused;
 		int res = read(mod->dfb_FDInput, &evt, sizeof(DFBEvent));
 
 		if (res == -1)
@@ -642,15 +644,15 @@ dfb_processevent(TMOD_DFB *mod)
 
 			for (; (next = node->tln_Succ); node = next)
 			{
-				VISUAL *vc = (VISUAL *)node;
+				DFBWINDOW *vc = (DFBWINDOW *)node;
 
 				if (ev->cx >= vc->winleft && ev->cx < vc->winleft+vc->winwidth
 					&& ev->cy >= vc->wintop && ev->cy < vc->wintop+vc->winheight)
 				{
-					if ((VISUAL *) mod->dfb_Active != vc)
+					if ((DFBWINDOW *) mod->dfb_Active != vc)
 					{
 						/* generate mouseover event */
-						genimsg(mod, (VISUAL *)mod->dfb_Active, vc, TITYPE_MOUSEOVER);
+						genimsg(mod, (DFBWINDOW *)mod->dfb_Active, vc, TITYPE_MOUSEOVER);
 						mod->dfb_Active = (TAPTR) vc;
 					}
 
@@ -668,7 +670,7 @@ dfb_processevent(TMOD_DFB *mod)
 }
 
 static TVOID
-dfb_processvisualevent(TMOD_DFB *mod, VISUAL *v, DFBEvent *evt)
+dfb_processvisualevent(DFBDISPLAY *mod, DFBWINDOW *v, DFBEvent *evt)
 {
 	TIMSG *imsg;
 	DFBWindowEvent *ev = (DFBWindowEvent *)evt;
@@ -759,7 +761,7 @@ dfb_processvisualevent(TMOD_DFB *mod, VISUAL *v, DFBEvent *evt)
 	}
 }
 
-static TBOOL processkey(TMOD_DFB *mod, VISUAL *v, DFBWindowEvent *ev, TBOOL keydown)
+static TBOOL processkey(DFBDISPLAY *mod, DFBWINDOW *v, DFBWindowEvent *ev, TBOOL keydown)
 {
 	TBOOL newkey = TFALSE;
 	TUINT evtype = 0;
@@ -953,7 +955,7 @@ static TBOOL processkey(TMOD_DFB *mod, VISUAL *v, DFBWindowEvent *ev, TBOOL keyd
 
 /*****************************************************************************/
 
-TVOID genimsg(TMOD_DFB *mod, VISUAL *vold, VISUAL *vnew, TUINT type)
+TVOID genimsg(DFBDISPLAY *mod, DFBWINDOW *vold, DFBWINDOW *vnew, TUINT type)
 {
 	TIMSG *imsg;
 
@@ -978,7 +980,7 @@ TVOID genimsg(TMOD_DFB *mod, VISUAL *vold, VISUAL *vnew, TUINT type)
 
 /*****************************************************************************/
 
-TBOOL getimsg(TMOD_DFB *mod, VISUAL *v, TIMSG **msgptr, TUINT type)
+TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type)
 {
 	TIMSG *msg = (TIMSG *) TRemHead(&mod->dfb_imsgpool);
 	if (msg == TNULL)
@@ -989,7 +991,7 @@ TBOOL getimsg(TMOD_DFB *mod, VISUAL *v, TIMSG **msgptr, TUINT type)
 		msg->timsg_Qualifier = mod->dfb_KeyQual;
 		msg->timsg_MouseX = mod->dfb_MouseX;
 		msg->timsg_MouseY = mod->dfb_MouseY;
-		TExecQueryTime(mod->dfb_ExecBase, mod->dfb_TimeReq, &msg->timsg_TimeStamp);
+		TExecGetSystemTime(mod->dfb_ExecBase, mod->dfb_TimeReq, &msg->timsg_TimeStamp);
 		*msgptr = msg;
 		return TTRUE;
 	}
@@ -998,12 +1000,12 @@ TBOOL getimsg(TMOD_DFB *mod, VISUAL *v, TIMSG **msgptr, TUINT type)
 }
 
 static void
-dfb_sendimessages(TMOD_DFB *mod, TBOOL do_interval)
+dfb_sendimessages(DFBDISPLAY *mod, TBOOL do_interval)
 {
 	struct TNode *next, *node = mod->dfb_vlist.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
-		VISUAL *v = (VISUAL *) node;
+		DFBWINDOW *v = (DFBWINDOW *) node;
 		TIMSG *imsg;
 
 		if (do_interval && (v->eventmask & TITYPE_INTERVAL) &&

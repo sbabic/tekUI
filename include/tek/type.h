@@ -1,9 +1,7 @@
-
 #ifndef _TEK_TYPE_H
 #define	_TEK_TYPE_H
 
 /*
-**	$Id: type.h,v 1.1.1.1 2006/08/20 22:15:23 tmueller Exp $
 **	teklib/tek/type.h - Basic types, constants, macros
 **
 **	Written by Timm S. Mueller <tmueller at neoscientists.org>

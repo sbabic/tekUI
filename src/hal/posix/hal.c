@@ -8,6 +8,7 @@
 */
 
 #include <tek/debug.h>
+#include <tek/teklib.h>
 #include <tek/proto/exec.h>
 #include <tek/mod/posix/hal.h>
 #include <tek/mod/hal.h>
@@ -29,7 +30,7 @@
 #define HAL_POSIX_SPINLOCK_MAXCOUNT	1000
 
 void tzset(void);
-static void TTASKENTRY hal_devfunc(TAPTR task);
+static void TTASKENTRY hal_devfunc(struct TTask *task);
 
 /*****************************************************************************/
 
@@ -47,7 +48,7 @@ static pthread_mutex_t alloclock;
 */
 
 LOCAL TBOOL
-hal_init(TMOD_HAL *hal, TTAGITEM *tags)
+hal_init(struct THALBase *hal, TTAGITEM *tags)
 {
 	struct HALSpecific *specific = malloc(sizeof(struct HALSpecific));
 	if (specific)
@@ -100,7 +101,7 @@ hal_init(TMOD_HAL *hal, TTAGITEM *tags)
 }
 
 LOCAL void
-hal_exit(TMOD_HAL *hal)
+hal_exit(struct THALBase *hal)
 {
 	struct HALSpecific *specific = hal->hmb_Specific;
 	pthread_key_delete(specific->hsp_TSDKey);
@@ -137,7 +138,7 @@ hal_freeself(TAPTR handle, TAPTR mem, TUINT size)
 */
 
 EXPORT TAPTR
-hal_alloc(TMOD_HAL *hal, TUINT size)
+hal_alloc(struct THALBase *hal, TUINT size)
 {
 	TAPTR mem = malloc(size);
 	#ifdef TRACKMEM
@@ -154,7 +155,7 @@ hal_alloc(TMOD_HAL *hal, TUINT size)
 }
 
 EXPORT TAPTR
-hal_realloc(TMOD_HAL *hal, TAPTR mem, TUINT oldsize, TUINT newsize)
+hal_realloc(struct THALBase *hal, TAPTR mem, TUINT oldsize, TUINT newsize)
 {
 	TAPTR newmem;
 
@@ -182,7 +183,7 @@ hal_realloc(TMOD_HAL *hal, TAPTR mem, TUINT oldsize, TUINT newsize)
 }
 
 EXPORT void
-hal_free(TMOD_HAL *hal, TAPTR mem, TUINT size)
+hal_free(struct THALBase *hal, TAPTR mem, TUINT size)
 {
 	#ifdef TRACKMEM
 	if (mem)
@@ -197,13 +198,13 @@ hal_free(TMOD_HAL *hal, TAPTR mem, TUINT size)
 }
 
 EXPORT void
-hal_copymem(TMOD_HAL *hal, TAPTR from, TAPTR to, TUINT numbytes)
+hal_copymem(struct THALBase *hal, TAPTR from, TAPTR to, TUINT numbytes)
 {
 	memcpy(to, from, numbytes);
 }
 
 EXPORT void
-hal_fillmem(TMOD_HAL *hal, TAPTR dest, TUINT numbytes, TUINT8 fillval)
+hal_fillmem(struct THALBase *hal, TAPTR dest, TUINT numbytes, TUINT8 fillval)
 {
 	memset(dest, (int) fillval, numbytes);
 }
@@ -214,7 +215,7 @@ hal_fillmem(TMOD_HAL *hal, TAPTR dest, TUINT numbytes, TUINT8 fillval)
 */
 
 EXPORT TBOOL
-hal_initlock(TMOD_HAL *hal, THALO *lock)
+hal_initlock(struct THALBase *hal, struct THALObject *lock)
 {
 	pthread_mutex_t *mut = THALNewObject(hal, lock, pthread_mutex_t);
 	if (mut)
@@ -228,7 +229,7 @@ hal_initlock(TMOD_HAL *hal, THALO *lock)
 }
 
 EXPORT void
-hal_destroylock(TMOD_HAL *hal, THALO *lock)
+hal_destroylock(struct THALBase *hal, struct THALObject *lock)
 {
 	pthread_mutex_t *mut = THALGetObject(lock, pthread_mutex_t);
 	if (pthread_mutex_destroy(mut)) TDBPRINTF(20,("mutex_destroy\n"));
@@ -236,7 +237,7 @@ hal_destroylock(TMOD_HAL *hal, THALO *lock)
 }
 
 EXPORT void
-hal_lock(TMOD_HAL *hal, THALO *lock)
+hal_lock(struct THALBase *hal, struct THALObject *lock)
 {
 	pthread_mutex_t *mut = THALGetObject(lock, pthread_mutex_t);
 	#if defined(HAL_POSIX_SPINLOCK_USE)
@@ -260,7 +261,7 @@ hal_lock(TMOD_HAL *hal, THALO *lock)
 }
 
 EXPORT void
-hal_unlock(TMOD_HAL *hal, THALO *lock)
+hal_unlock(struct THALBase *hal, struct THALObject *lock)
 {
 	pthread_mutex_t *mut = THALGetObject(lock, pthread_mutex_t);
 	pthread_mutex_unlock(mut);
@@ -274,7 +275,7 @@ hal_unlock(TMOD_HAL *hal, THALO *lock)
 static void *
 hal_posixthread_entry(struct HALThread *thread)
 {
-	TMOD_HAL *hal = thread->hth_HALBase;
+	struct THALBase *hal = thread->hth_HALBase;
 	struct HALSpecific *hps = hal->hmb_Specific;
 
 	if (pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL))
@@ -293,8 +294,8 @@ hal_posixthread_entry(struct HALThread *thread)
 }
 
 EXPORT TBOOL
-hal_initthread(TMOD_HAL *hal, THALO *thread,
-	TTASKENTRY void (*function)(TAPTR task), TAPTR data)
+hal_initthread(struct THALBase *hal, struct THALObject *thread,
+	TTASKENTRY void (*function)(struct TTask *task), TAPTR data)
 {
 	struct HALThread *t = THALNewObject(hal, thread, struct HALThread);
 	if (t)
@@ -328,7 +329,7 @@ hal_initthread(TMOD_HAL *hal, THALO *thread,
 }
 
 EXPORT void
-hal_destroythread(TMOD_HAL *hal, THALO *thread)
+hal_destroythread(struct THALBase *hal, struct THALObject *thread)
 {
 	struct HALThread *t = THALGetObject(thread, struct HALThread);
 	if (t->hth_Function)
@@ -343,7 +344,7 @@ hal_destroythread(TMOD_HAL *hal, THALO *thread)
 }
 
 EXPORT TAPTR
-hal_findself(TMOD_HAL *hal)
+hal_findself(struct THALBase *hal)
 {
 	struct HALSpecific *hps = hal->hmb_Specific;
 	struct HALThread *t = pthread_getspecific(hps->hsp_TSDKey);
@@ -356,7 +357,7 @@ hal_findself(TMOD_HAL *hal)
 */
 
 EXPORT void
-hal_signal(TMOD_HAL *hal, THALO *thread, TUINT signals)
+hal_signal(struct THALBase *hal, struct THALObject *thread, TUINT signals)
 {
 	struct HALThread *t = THALGetObject(thread, struct HALThread);
 	pthread_mutex_lock(&t->hth_SigMutex);
@@ -370,7 +371,7 @@ hal_signal(TMOD_HAL *hal, THALO *thread, TUINT signals)
 }
 
 EXPORT TUINT
-hal_setsignal(TMOD_HAL *hal, TUINT newsig, TUINT sigmask)
+hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask)
 {
 	TUINT oldsig;
 	struct HALSpecific *hps = hal->hmb_Specific;
@@ -391,7 +392,7 @@ hal_setsignal(TMOD_HAL *hal, TUINT newsig, TUINT sigmask)
 }
 
 EXPORT TUINT
-hal_wait(TMOD_HAL *hal, TUINT sigmask)
+hal_wait(struct THALBase *hal, TUINT sigmask)
 {
 	TUINT sig;
 	struct HALSpecific *hps = hal->hmb_Specific;
@@ -416,8 +417,8 @@ hal_timedwaitevent(TAPTR hal, struct HALThread *t, TTIME *wt,
 	TUINT sig;
 
 	struct timespec tv;
-	tv.tv_sec = wt->ttm_Sec;
-	tv.tv_nsec = wt->ttm_USec * 1000;
+	tv.tv_sec = wt->tdt_Int64 / 1000000;
+	tv.tv_nsec = (wt->tdt_Int64 % 1000000) * 1000;
 
 	pthread_mutex_lock(&t->hth_SigMutex);
 
@@ -439,13 +440,12 @@ hal_timedwaitevent(TAPTR hal, struct HALThread *t, TTIME *wt,
 **	Time and date
 */
 
-EXPORT void
-hal_getsystime(TMOD_HAL *hal, TTIME *time)
+static void
+hal_getsystime(struct THALBase *hal, TTIME *time)
 {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	time->ttm_Sec = tv.tv_sec;
-	time->ttm_USec = tv.tv_usec;
+	time->tdt_Int64 = (TINT64) tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
 /*****************************************************************************/
@@ -462,7 +462,7 @@ hal_getsystime(TMOD_HAL *hal, TTIME *time)
 */
 
 static time_t
-hal_timefromdate(TMOD_HAL *hal, TDATE *dt)
+hal_timefromdate(struct THALBase *hal, TDATE *dt)
 {
 	/*
 	**	1.1.1601 ... 1.1.1970:
@@ -472,21 +472,21 @@ hal_timefromdate(TMOD_HAL *hal, TDATE *dt)
 	**		11644473600000000 us
 	*/
 
-	TUINT64 t = dt->tdt_Day.tdtt_Int64;
+	TUINT64 t = dt->tdt_Int64;
 	t -= 11644473600000000ULL;
 	t /= 1000000;
 	return (time_t) t;
 }
 
 static TINT
-hal_tzbias(TMOD_HAL *hal)
+hal_tzbias(struct THALBase *hal)
 {
 	struct HALSpecific *hps = hal->hmb_Specific;
 	return hps->hsp_TZSec;
 }
 
 static TINT
-hal_dsbias(TMOD_HAL *hal, time_t t)
+hal_dsbias(struct THALBase *hal, time_t t)
 {
 	struct HALSpecific *hps = hal->hmb_Specific;
 	struct tm *tm;
@@ -499,13 +499,13 @@ hal_dsbias(TMOD_HAL *hal, time_t t)
 }
 
 static TINT
-hal_datebias(TMOD_HAL *hal, TDATE *dt)
+hal_datebias(struct THALBase *hal, TDATE *dt)
 {
 	return hal_tzbias(hal) + hal_dsbias(hal, hal_timefromdate(hal, dt));
 }
 
 static TINT
-hal_getsysdate(TMOD_HAL *hal, TDATE *datep, TINT *tzsecp)
+hal_getsysdate(struct THALBase *hal, TDATE *datep, TINT *tzsecp)
 {
 	struct timeval tv;
 	TINT tzsec;
@@ -526,7 +526,7 @@ hal_getsysdate(TMOD_HAL *hal, TDATE *datep, TINT *tzsecp)
 		syst *= 1000000;
 		syst += tv.tv_usec;
 		syst += 11644473600000000ULL;
-		datep->tdt_Day.tdtt_Int64 = syst;
+		datep->tdt_Int64 = syst;
 	}
 
 	return 0;
@@ -604,7 +604,7 @@ hal_getmodsymbol(TSTRPTR modname)
 }
 
 EXPORT TAPTR
-hal_loadmodule(TMOD_HAL *hal, TSTRPTR name, TUINT16 version, TUINT *psize,
+hal_loadmodule(struct THALBase *hal, TSTRPTR name, TUINT16 version, TUINT *psize,
 	TUINT *nsize)
 {
 	struct HALModule *halmod = hal_alloc(hal, sizeof(struct HALModule));
@@ -672,14 +672,14 @@ hal_loadmodule(TMOD_HAL *hal, TSTRPTR name, TUINT16 version, TUINT *psize,
 }
 
 EXPORT TBOOL
-hal_callmodule(TMOD_HAL *hal, TAPTR mod, TAPTR task, TAPTR data)
+hal_callmodule(struct THALBase *hal, TAPTR mod, struct TTask *task, TAPTR data)
 {
 	struct HALModule *hum = mod;
 	return (TBOOL) (*hum->hmd_InitFunc)(task, data, hum->hmd_Version, TNULL);
 }
 
 EXPORT void
-hal_unloadmodule(TMOD_HAL *hal, TAPTR halmod)
+hal_unloadmodule(struct THALBase *hal, TAPTR halmod)
 {
 	struct HALModule *hum = halmod;
 	hal_closemodule(hum->hmd_Lib);
@@ -736,7 +736,7 @@ hal_scanpathtolist(struct THook *hook, TSTRPTR path, TSTRPTR name)
 }
 
 EXPORT TBOOL
-hal_scanmodules(TMOD_HAL *hal, TSTRPTR path, struct THook *hook)
+hal_scanmodules(struct THALBase *hal, TSTRPTR path, struct THook *hook)
 {
 	TSTRPTR p;
 	struct HALSpecific *hps = hal->hmb_Specific;
@@ -768,7 +768,7 @@ hal_scanmodules(TMOD_HAL *hal, TSTRPTR path, struct THook *hook)
 */
 
 LOCAL struct TTimeRequest *
-hal_open(TMOD_HAL *hal, TAPTR task, TTAGITEM *tags)
+hal_open(struct THALBase *hal, struct TTask *task, TTAGITEM *tags)
 {
 	struct HALSpecific *hps = hal->hmb_Specific;
 	TAPTR exec = (TAPTR) TGetTag(tags, THalBase_Exec, TNULL);
@@ -810,7 +810,7 @@ hal_open(TMOD_HAL *hal, TAPTR task, TTAGITEM *tags)
 /*****************************************************************************/
 
 LOCAL void
-hal_close(TMOD_HAL *hal, TAPTR task)
+hal_close(struct THALBase *hal, struct TTask *task)
 {
 	struct HALSpecific *hps = hal->hmb_Specific;
 	pthread_mutex_lock(&hps->hsp_DevLock);
@@ -830,11 +830,10 @@ hal_close(TMOD_HAL *hal, TAPTR task)
 
 /*****************************************************************************/
 
-static void TTASKENTRY
-hal_devfunc(TAPTR task)
+static void TTASKENTRY hal_devfunc(struct TTask *task)
 {
 	TAPTR exec = TGetExecBase(task);
-	TMOD_HAL *hal = TExecGetHALBase(exec);
+	struct THALBase *hal = (struct THALBase *) TExecGetHALBase(exec);
 	struct HALSpecific *hps = hal->hmb_Specific;
 	struct HALThread *thread = pthread_getspecific(hps->hsp_TSDKey);
 	TAPTR port = TExecGetUserPort(exec, task);
@@ -843,8 +842,7 @@ hal_devfunc(TAPTR task)
 	TTIME waittime, curtime;
 	struct TNode *nnode, *node;
 
- 	waittime.ttm_Sec = 2000000000;
- 	waittime.ttm_USec = 0;
+ 	waittime.tdt_Int64 = 0x7fffffffffffffffULL;
 
 	for (;;)
 	{
@@ -859,24 +857,24 @@ hal_devfunc(TAPTR task)
 
 		while ((msg = TExecGetMsg(exec, port)))
 		{
-			hal_addtime(&msg->ttr_Data.ttr_Time, &curtime);
+			TAddTime(&msg->ttr_Data.ttr_Time, &curtime);
 			TAddTail(&hps->hsp_ReqList, (struct TNode *) msg);
 		}
 
-		waittime.ttm_Sec = 2000000000;
-		waittime.ttm_USec = 0;
+		waittime.tdt_Int64 = 0x7fffffffffffffffULL;
+
 		node = hps->hsp_ReqList.tlh_Head;
 		for (; (nnode = node->tln_Succ); node = nnode)
 		{
 			struct TTimeRequest *tr = (struct TTimeRequest *) node;
 			TTIME *tm = &tr->ttr_Data.ttr_Time;
-			if (hal_cmptime(&curtime, tm) >= 0)
+			if (TCmpTime(&curtime, tm) >= 0)
 			{
 				TREMOVE(node);
 				TExecReplyMsg(exec, node);
 				continue;
 			}
-			if (hal_cmptime(tm, &waittime) < 0)
+			if (TCmpTime(tm, &waittime) < 0)
 				waittime = *tm;
 		}
 
@@ -887,7 +885,7 @@ hal_devfunc(TAPTR task)
 }
 
 EXPORT void
-hal_beginio(TMOD_HAL *hal, struct TTimeRequest *req)
+hal_beginio(struct THALBase *hal, struct TTimeRequest *req)
 {
 	struct HALSpecific *hps = hal->hmb_Specific;
 	TAPTR exec = hps->hsp_ExecBase;
@@ -897,42 +895,44 @@ hal_beginio(TMOD_HAL *hal, struct TTimeRequest *req)
 	switch (req->ttr_Req.io_Command)
 	{
 		/* execute asynchronously */
-		case TTREQ_ADDLOCALDATE:
-			x = hal_datebias(hal, &req->ttr_Data.ttr_Date.ttr_Date);
+		case TTREQ_WAITLOCALDATE:
+			x = hal_datebias(hal, &req->ttr_Data.ttr_Date);
 			x *= 1000000;
-		case TTREQ_ADDUNIDATE:
-			x += req->ttr_Data.ttr_Date.ttr_Date.tdt_Day.tdtt_Int64;
+		case TTREQ_WAITUNIVERSALDATE:
+			x += req->ttr_Data.ttr_Date.tdt_Int64;
 			x -= 11644473600000000ULL;
-			req->ttr_Data.ttr_Time.ttm_Sec = x / 1000000;
-			x -= req->ttr_Data.ttr_Time.ttm_Sec * 1000000;
-			req->ttr_Data.ttr_Time.ttm_USec = x;
+			req->ttr_Data.ttr_Time.tdt_Int64 = x;
 			hal_getsystime(hal, &nowtime);
-			hal_subtime(&req->ttr_Data.ttr_Time, &nowtime);
+			TSubTime(&req->ttr_Data.ttr_Time, &nowtime);
 			/* relative time */
-		case TTREQ_ADDTIME:
+		case TTREQ_WAITTIME:
 			TExecPutMsg(exec, TExecGetUserPort(exec, hps->hsp_DevTask),
 				req->ttr_Req.io_ReplyPort, req);
 			return;
 
 		/* execute synchronously */
 		default:
-		case TTREQ_GETUNIDATE:
-			hal_getsysdate(hal, &req->ttr_Data.ttr_Date.ttr_Date,
-				&req->ttr_Data.ttr_Date.ttr_TimeZone);
+		case TTREQ_GETUNIVERSALDATE:
+		{
+			TINT timezone_bias;
+			hal_getsysdate(hal, &req->ttr_Data.ttr_Date, &timezone_bias);
 			break;
+		}
 
 		case TTREQ_GETLOCALDATE:
-			hal_getsysdate(hal, &req->ttr_Data.ttr_Date.ttr_Date, TNULL);
+			hal_getsysdate(hal, &req->ttr_Data.ttr_Date, TNULL);
 			break;
 
-		case TTREQ_GETTIME:
+		case TTREQ_GETSYSTEMTIME:
 			hal_getsystime(hal, &req->ttr_Data.ttr_Time);
 			break;
 
+		#if 0
 		case TTREQ_GETDSFROMDATE:
-			req->ttr_Data.ttr_DSSec = hal_dsbias(hal,
-				hal_timefromdate(hal, &req->ttr_Data.ttr_Date.ttr_Date));
+			req->ttr_Data.ttr_DSBias = hal_dsbias(hal,
+				hal_timefromdate(hal, &req->ttr_Data.ttr_Date));
 			break;
+		#endif
 	}
 
 	if (!(req->ttr_Req.io_Flags & TIOF_QUICK))
@@ -943,7 +943,7 @@ hal_beginio(TMOD_HAL *hal, struct TTimeRequest *req)
 }
 
 EXPORT TINT
-hal_abortio(TMOD_HAL *hal, struct TTimeRequest *req)
+hal_abortio(struct THALBase *hal, struct TTimeRequest *req)
 {
 	struct HALSpecific *hps = hal->hmb_Specific;
 	TAPTR exec = hps->hsp_ExecBase;

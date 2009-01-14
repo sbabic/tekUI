@@ -275,7 +275,8 @@ exec_checkmodules(TEXECBASE *exec)
 	for (; (nnode = node->tln_Succ); node = nnode)
 	{
 		struct TModule *mod = (struct TModule *) node;
-		if (mod == (TAPTR) exec || mod == exec->texb_HALBase)
+		if (mod == (struct TModule *) exec ||
+			mod == (struct TModule *) exec->texb_HALBase)
 			continue;
 		TDBPRINTF(TDB_FAIL,
 			("Module not closed: %s\n", mod->tmd_Handle.thn_Name));
@@ -360,8 +361,8 @@ exec_main(TEXECBASE *exec, struct TTask *exectask, struct TTagItem *tags)
 
 	if (exec->texb_NumTasks || exec->texb_NumInitTasks)
 	{
-		TDBPRINTF(TDB_FAIL,("Number of tasks running: %d - initializing: %d\n",
-			exec->texb_NumTasks, exec->texb_NumInitTasks));
+		TDBPRINTF(TDB_FAIL,("%d tasks still running, exiting forcibly\n",
+			exec->texb_NumTasks + exec->texb_NumInitTasks));
 		TDBFATAL();
 	}
 
@@ -633,8 +634,7 @@ exec_createtask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
 					newtask->tsk_Request.trq_Task.trt_Tags = tags;
 
 					if (THALInitThread(hal, &newtask->tsk_Thread,
-						(TTASKENTRY void (*)(TAPTR data)) exec_taskentryfunc,
-							newtask))
+						exec_taskentryfunc, newtask))
 					{
 						/* kick it to life */
 						THALSignal(hal, &newtask->tsk_Thread,
@@ -660,7 +660,7 @@ exec_createtask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
 */
 
 static void
-exec_closetaskfh(struct TTask *task, TAPTR fh, TUINT flag)
+exec_closetaskfh(struct TTask *task, TFILE *fh, TUINT flag)
 {
 	if (task->tsk_Flags & flag)
 	{

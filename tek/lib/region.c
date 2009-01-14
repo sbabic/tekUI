@@ -454,7 +454,7 @@ static TBOOL subrect(lua_State *L, TAPTR exec, struct Region *region, TINT s[])
 	struct TList r1;
 	struct TNode *next, *node;
 	TBOOL success = TTRUE;
-	
+
 	TINITLIST(&r1);
 	node = region->rg_List.tlh_Head;
 	for (; success && (next = node->tln_Succ); node = next)
@@ -487,7 +487,7 @@ static TBOOL subrect(lua_State *L, TAPTR exec, struct Region *region, TINT s[])
 		freelist(exec, &r1);
 		luaL_error(L, "out of memory");
 	}
-	
+
 	return success;
 }
 
@@ -556,12 +556,12 @@ static int region_checkoverlap(lua_State *L)
 static void *optudata(lua_State *L, int ud, const char *tname)
 {
 	void *p = lua_touserdata(L, ud);
-	if (p != NULL) 
+	if (p != NULL)
 	{
-		if (lua_getmetatable(L, ud)) 
+		if (lua_getmetatable(L, ud))
 		{
 			lua_getfield(L, LUA_REGISTRYINDEX, tname);
-			if (lua_rawequal(L, -1, -2)) 
+			if (lua_rawequal(L, -1, -2))
 			{
 				lua_pop(L, 2);
 				return p;
@@ -580,15 +580,79 @@ static int region_subregion(lua_State *L)
 	{
 		TAPTR exec = self->rg_ExecBase;
 		struct TNode *rnext, *rnode;
-		
+
 		rnode = region->rg_List.tlh_Head;
 		for (; (rnext = rnode->tln_Succ); rnode = rnext)
 		{
 			struct RectNode *rn = (struct RectNode *) rnode;
 			subrect(L, exec, self, rn->rn_Rect);
 		}
-	}	
+	}
 	return 0;
+}
+
+static TBOOL andrect(TAPTR exec, struct TList *temp,
+	struct Region *region, TINT s0, TINT s1, TINT s2, TINT s3)
+{
+	struct TNode *next, *node = region->rg_List.tlh_Head;
+	TBOOL success = TTRUE;
+	for (; success && (next = node->tln_Succ); node = next)
+	{
+		struct RectNode *dr = (struct RectNode *) node;
+		TINT x0 = dr->rn_Rect[0];
+		TINT y0 = dr->rn_Rect[1];
+		TINT x1 = dr->rn_Rect[2];
+		TINT y1 = dr->rn_Rect[3];
+		if (OVERLAP(x0, y0, x1, y1, s0, s1, s2, s3))
+		{
+			success = insertrect(exec, temp,
+				TMAX(x0, s0), TMAX(y0, s1), TMIN(x1, s2), TMIN(y1, s3));
+		}
+	}
+	if (!success)
+		freelist(exec, temp);
+	return success;
+}
+
+static int region_andrect(lua_State *L)
+{
+	struct Region *self = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	TAPTR exec = self->rg_ExecBase;
+	struct TList temp;
+	TINITLIST(&temp);
+	if (andrect(exec, &temp, self,
+		luaL_checkinteger(L, 2), luaL_checkinteger(L, 3),
+		luaL_checkinteger(L, 4), luaL_checkinteger(L, 5)))
+	{
+		freelist(exec, &self->rg_List);
+		relinklist(&self->rg_List, &temp);
+		return TTRUE;
+	}
+	return TFALSE;
+}
+
+static int region_andregion(lua_State *L)
+{
+	struct Region *dregion = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *sregion = optudata(L, 2, TEK_CLASS_UI_REGION_NAME);
+	TAPTR exec = dregion->rg_ExecBase;
+	struct TNode *next, *node = sregion->rg_List.tlh_Head;
+	TBOOL success = TTRUE;
+	struct TList temp;
+	TINITLIST(&temp);
+	for (; success && (next = node->tln_Succ); node = next)
+	{
+		struct RectNode *sr = (struct RectNode *) node;
+		success = andrect(exec, &temp, dregion, sr->rn_Rect[0],
+			sr->rn_Rect[1], sr->rn_Rect[2], sr->rn_Rect[3]);
+	}
+	if (success)
+	{
+		freelist(exec, &dregion->rg_List);
+		relinklist(&dregion->rg_List, &temp);
+	}
+	/* note: if unsucessful, dregion is of no use anymore */
+	return success;
 }
 
 /*****************************************************************************/
@@ -611,6 +675,8 @@ static const luaL_Reg regionmethods[] =
 	{ "overlapRect", region_overlaprect },
 	{ "checkOverlap", region_checkoverlap },
 	{ "subRegion", region_subregion },
+	{ "andRect", region_andrect },
+	{ "andRegion", region_andregion },
 	{ NULL, NULL }
 };
 

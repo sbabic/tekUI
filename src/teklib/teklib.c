@@ -413,3 +413,135 @@ TCallHookPkt(struct THook *hook, TAPTR obj, TTAG msg)
 	return (*hook->thk_Entry)(hook, obj, msg);
 }
 
+/*****************************************************************************/
+/*
+**	TAddTime(a, b) - Add time: a + b -> a
+*/
+
+TLIBAPI void TAddTime(TTIME *a, TTIME *b)
+{
+	a->tdt_Int64 += b->tdt_Int64;
+}
+
+/*****************************************************************************/
+/*
+**	TSubTime(a, b) - Subtract time: a - b -> a
+*/
+
+TLIBAPI void TSubTime(TTIME *a, TTIME *b)
+{
+	a->tdt_Int64 -= b->tdt_Int64;
+}
+
+/*****************************************************************************/
+/*
+**	TCmpTime(a, b) - a > b: 1, a < b: -1, a = b: 0
+*/
+
+TLIBAPI TINT TCmpTime(TTIME *a, TTIME *b)
+{
+	if (a->tdt_Int64 < b->tdt_Int64) return -1;
+	if (a->tdt_Int64 > b->tdt_Int64) return 1;
+	return 0;
+}
+
+/*****************************************************************************/
+/*
+**	TAddDate(date, d, ndays, time)
+**	Add a number of days, and optionally a time, to date d1.
+*/
+
+TLIBAPI void TAddDate(TDATE *d, TINT ndays, TTIME *tm)
+{
+	d->tdt_Int64 += (TINT64) ndays * 86400000000ULL;
+	if (tm)
+		d->tdt_Int64 += tm->tdt_Int64;
+}
+
+/*****************************************************************************/
+/*
+**	TSubDate(date, d, ndays, time)
+**	Subtract a number of days, and optionally a time, from a date.
+*/
+
+TLIBAPI void TSubDate(TDATE *d, TINT ndays, TTIME *tm)
+{
+	d->tdt_Int64 -= (TINT64) ndays * 86400000000ULL;
+	if (tm)
+		d->tdt_Int64 -= tm->tdt_Int64;
+}
+
+/*****************************************************************************/
+/*
+**	ndays = TDiffDate(date, d1, d2, tm)
+**	Get the number of days difference between two dates,
+**	and optionally the number of seconds/microseconds
+*/
+
+TLIBAPI TINT TDiffDate(TDATE *d1, TDATE *d2, TTIME *tm)
+{
+	TUINT64 dd = d1->tdt_Int64 - d2->tdt_Int64;
+	if (tm)
+		tm->tdt_Int64 = dd % 86400000000ULL;
+	return dd / 86400000000ULL;
+}
+
+/*****************************************************************************/
+/*
+**	success = TCreateTime(time, days, seconds, microseconds)
+**	Compose a TTIME from days, seconds, microseconds
+*/
+
+TLIBAPI TBOOL TCreateTime(TTIME *t, TINT d, TINT s, TINT us)
+{
+	if (t)
+	{
+		TINT64 x = (TINT64) d * 86400000000ULL;
+		x += (TINT64) s * 1000000;
+		t->tdt_Int64 = x + us;
+		return TTRUE;
+	}
+	return TFALSE;
+}
+
+/*****************************************************************************/
+/*
+**	success = TExtractTime(time, pdays, pseconds, pmicroseconds)
+**	Extract time in days, seconds, microseconds. Returns TFALSE if
+**	an overflow occurred.
+*/
+
+TLIBAPI TBOOL TExtractTime(TTIME *t, TINT *d, TINT *s, TINT *us)
+{
+	if (t)
+	{
+		TINT64 x = t->tdt_Int64;
+		if (us)
+		{
+			if (s == TNULL && d == TNULL)
+			{
+				*us = x;
+				return (x >= -0x80000000 && x <= 0x7fffffff);
+			}
+			*us = x % 1000000;
+		}
+		x /= 1000000;
+		if (s)
+		{
+			if (d == TNULL)
+			{
+				*s = x;
+				return (x >= -0x80000000 && x <= 0x7fffffff);
+			}
+			*s = x % 86400;
+		}
+		x /= 86400;
+		if (d)
+		{
+			*d = x;
+			return (x >= -0x80000000 && x <= 0x7fffffff);
+		}
+		return TTRUE;
+	}
+	return TFALSE;
+}

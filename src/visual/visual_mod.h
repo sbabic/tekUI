@@ -21,7 +21,7 @@
 
 #define VISUAL_VERSION		4
 #define VISUAL_REVISION		0
-#define VISUAL_NUMVECTORS	43
+#define VISUAL_NUMVECTORS	41
 
 #ifndef LOCAL
 #define LOCAL
@@ -45,28 +45,30 @@ struct vis_HashNode
 	TUINT hash;
 };
 
-typedef struct
+struct TVisualBase
 {
 	/* Module header: */
 	struct TModule vis_Module;
 	/* Exec module base ptr: */
 	TAPTR vis_ExecBase;
+	/* Util module base ptr: */
+	TAPTR vis_UtilBase;
 	/* Module global memory manager (thread safe): */
 	TAPTR vis_MemMgr;
 	/* Locking for module base structure: */
 	TAPTR vis_Lock;
 	/* Number of module opens: */
-	TAPTR vis_RefCount;
+	TUINT vis_RefCount;
 	/* Hash of displays: */
 	struct vis_Hash *vis_Displays;
 
-	/* Instance-specific (not in base): */
+	/* Instance-specific: */
 
 	struct TVRequest *vis_InitRequest;
 	/* Display: */
 	TAPTR vis_Display;
-	/* Visual instance ptr from backend: */
-	TAPTR vis_Visual;
+	/* Window on the display: */
+	TAPTR vis_Window;
 	/* Current set of input types to listen for: */
 	TUINT vis_InputMask;
 	/* Request pool: */
@@ -79,70 +81,69 @@ typedef struct
 	struct TList vis_WaitList;
 	/* Number of requests allocated so far: */
 	TINT vis_NumRequests;
+};
 
-} TMOD_VIS;
-
-LOCAL struct vis_Hash *vis_createhash(TMOD_VIS *mod, TAPTR udata);
-LOCAL void vis_destroyhash(TMOD_VIS *mod, struct vis_Hash *hash);
-LOCAL int vis_puthash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key,
+LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, TAPTR udata);
+LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash);
+LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key,
 	TTAG value);
-LOCAL int vis_gethash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key,
+LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key,
 	TTAG *valp);
-LOCAL int vis_remhash(TMOD_VIS *mod, struct vis_Hash *hash, const TSTRPTR key);
-LOCAL TUINT vis_hashtolist(TMOD_VIS *mod, struct vis_Hash *hash,
+LOCAL int vis_remhash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key);
+LOCAL TUINT vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash,
 	struct TList *list);
-LOCAL void vis_hashunlist(TMOD_VIS *mod, struct vis_Hash *hash);
+LOCAL void vis_hashunlist(struct TVisualBase *mod, struct vis_Hash *hash);
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_openvisual(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT void vis_closevisual(TMOD_VIS *mod, TMOD_VIS *inst);
-EXPORT TAPTR vis_attach(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT TAPTR vis_openfont(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT void vis_closefont(TMOD_VIS *mod, TAPTR font);
-EXPORT TUINT vis_getfattrs(TMOD_VIS *mod, TAPTR font, TTAGITEM *tags);
-EXPORT TINT vis_textsize(TMOD_VIS *mod, TAPTR font, TSTRPTR t);
-EXPORT TAPTR vis_queryfonts(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT TTAGITEM *vis_getnextfont(TMOD_VIS *mod, TAPTR fqhandle);
+EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT void vis_closevisual(struct TVisualBase *mod, struct TVisualBase *inst);
+EXPORT TAPTR vis_attach(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT TAPTR vis_openfont(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT void vis_closefont(struct TVisualBase *mod, TAPTR font);
+EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, TAPTR font,
+	TTAGITEM *tags);
+EXPORT TINT vis_textsize(struct TVisualBase *mod, TAPTR font, TSTRPTR t);
+EXPORT TAPTR vis_queryfonts(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT TTAGITEM *vis_getnextfont(struct TVisualBase *mod, TAPTR fqhandle);
 
-EXPORT TAPTR vis_getport(TMOD_VIS *mod);
-EXPORT TUINT vis_setinput(TMOD_VIS *mod, TUINT cmask, TUINT smask);
-EXPORT TUINT vis_getattrs(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT TUINT vis_setattrs(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT TVPEN vis_allocpen(TMOD_VIS *mod, TUINT rgb);
-EXPORT void vis_freepen(TMOD_VIS *mod, TVPEN pen);
-EXPORT void vis_setfont(TMOD_VIS *mod, TAPTR font);
-EXPORT void vis_clear(TMOD_VIS *mod, TVPEN pen);
-EXPORT void vis_rect(TMOD_VIS *mod, TINT x, TINT y, TINT w, TINT h, TVPEN pen);
-EXPORT void vis_frect(TMOD_VIS *mod, TINT x, TINT y, TINT w, TINT h,
+EXPORT TAPTR vis_getport(struct TVisualBase *mod);
+EXPORT TUINT vis_setinput(struct TVisualBase *mod, TUINT cmask, TUINT smask);
+EXPORT TUINT vis_getattrs(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT TUINT vis_setattrs(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT TVPEN vis_allocpen(struct TVisualBase *mod, TUINT rgb);
+EXPORT void vis_freepen(struct TVisualBase *mod, TVPEN pen);
+EXPORT void vis_setfont(struct TVisualBase *mod, TAPTR font);
+EXPORT void vis_clear(struct TVisualBase *mod, TVPEN pen);
+EXPORT void vis_rect(struct TVisualBase *mod, TINT x, TINT y, TINT w, TINT h,
 	TVPEN pen);
-EXPORT void vis_line(TMOD_VIS *mod, TINT x1, TINT y1, TINT x2, TINT y2,
+EXPORT void vis_frect(struct TVisualBase *mod, TINT x, TINT y, TINT w, TINT h,
 	TVPEN pen);
-EXPORT void vis_plot(TMOD_VIS *mod, TINT x, TINT y, TVPEN pen);
-EXPORT void vis_text(TMOD_VIS *mod, TINT x, TINT y, TSTRPTR t, TUINT l,
-	TVPEN fg, TVPEN bg);
+EXPORT void vis_line(struct TVisualBase *mod, TINT x1, TINT y1, TINT x2,
+	TINT y2, TVPEN pen);
+EXPORT void vis_plot(struct TVisualBase *mod, TINT x, TINT y, TVPEN pen);
+EXPORT void vis_text(struct TVisualBase *mod, TINT x, TINT y, TSTRPTR t,
+	TUINT l, TVPEN fg, TVPEN bg);
 
-EXPORT void vis_drawstrip(TMOD_VIS *mod, TINT *array, TINT num, TTAGITEM *tags);
-EXPORT void vis_drawtags(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT void vis_drawfan(TMOD_VIS *mod, TINT *array, TINT num, TTAGITEM *tags);
-EXPORT void vis_drawarc(TMOD_VIS *mod, TINT x, TINT y, TINT w, TINT h,
-	TINT angle1, TINT angle2, TVPEN pen);
-
-EXPORT void vis_copyarea(TMOD_VIS *mod, TINT x, TINT y, TINT w, TINT h,
-	TINT dx, TINT dy, TTAGITEM *tags);
-EXPORT void vis_setcliprect(TMOD_VIS *mod, TINT x, TINT y, TINT w, TINT h,
+EXPORT void vis_drawstrip(struct TVisualBase *mod, TINT *array, TINT num,
+	TTAGITEM *tags);
+EXPORT void vis_drawtags(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT void vis_drawfan(struct TVisualBase *mod, TINT *array, TINT num,
 	TTAGITEM *tags);
 
-EXPORT TAPTR vis_opendisplay(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT void vis_closedisplay(TMOD_VIS *mod, TAPTR display);
-EXPORT TAPTR vis_querydisplays(TMOD_VIS *mod, TTAGITEM *tags);
-EXPORT TTAGITEM *vis_getnextdisplay(TMOD_VIS *mod, TAPTR dqhandle);
+EXPORT void vis_copyarea(struct TVisualBase *mod, TINT x, TINT y, TINT w,
+	TINT h, TINT dx, TINT dy, TTAGITEM *tags);
+EXPORT void vis_setcliprect(struct TVisualBase *mod, TINT x, TINT y, TINT w,
+	TINT h, TTAGITEM *tags);
 
-EXPORT void vis_unsetcliprect(TMOD_VIS *mod);
-EXPORT void vis_drawfarc(TMOD_VIS *mod, TINT x, TINT y, TINT w, TINT h,
-	TINT angle1, TINT angle2, TVPEN pen);
+EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT void vis_closedisplay(struct TVisualBase *mod, TAPTR display);
+EXPORT TAPTR vis_querydisplays(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT TTAGITEM *vis_getnextdisplay(struct TVisualBase *mod, TAPTR dqhandle);
 
-EXPORT void vis_drawbuffer(TMOD_VIS *inst,
+EXPORT void vis_unsetcliprect(struct TVisualBase *mod);
+
+EXPORT void vis_drawbuffer(struct TVisualBase *inst,
 	TINT x, TINT y, TAPTR buf, TINT w, TINT h, TINT totw, TTAGITEM *tags);
 
 #endif

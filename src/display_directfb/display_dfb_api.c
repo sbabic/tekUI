@@ -1,3 +1,4 @@
+
 /*
 **	teklib/src/display_dfb/display_dfb_api.c - DirectFB Display driver
 **	Written by Franciska Schulze <fschulze at schulze-mueller.de>
@@ -6,23 +7,23 @@
 
 #include "display_dfb_mod.h"
 
-TBOOL getimsg(TMOD_DFB *mod, VISUAL *v, TIMSG **msgptr, TUINT type);
-TVOID genimsg(TMOD_DFB *mod, VISUAL *vold, VISUAL *vnew, TUINT type);
+TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type);
+TVOID genimsg(DFBDISPLAY *mod, DFBWINDOW *vold, DFBWINDOW *vnew, TUINT type);
 
 /*****************************************************************************/
 
 LOCAL void
-dfb_openvisual(TMOD_DFB *mod, struct TVRequest *req)
+dfb_openvisual(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	TTAGITEM *tags = req->tvr_Op.OpenVisual.Tags;
+	TTAGITEM *tags = req->tvr_Op.OpenWindow.Tags;
 	TAPTR exec = TGetExecBase(mod);
-	VISUAL *v;
+	DFBWINDOW *v;
 	DFBWindowDescription wdsc;
 
 	struct FontNode *fn;
 
-	v = TExecAlloc0(exec, mod->dfb_MemMgr, sizeof(VISUAL));
-	req->tvr_Op.OpenVisual.Instance = v;
+	v = TExecAlloc0(exec, mod->dfb_MemMgr, sizeof(DFBWINDOW));
+	req->tvr_Op.OpenWindow.Window = v;
 	if (v == TNULL) return;
 
 	v->eventmask = (TUINT) TGetTag(tags, TVisual_EventMask, 0);
@@ -32,7 +33,7 @@ dfb_openvisual(TMOD_DFB *mod, struct TVRequest *req)
 	v->fgpen = TVPEN_UNDEFINED;
 
 	TInitList(&v->imsgqueue);
-	v->imsgport = req->tvr_Op.OpenVisual.IMsgPort;
+	v->imsgport = req->tvr_Op.OpenWindow.IMsgPort;
 
 	v->title = (TSTRPTR)
 		TGetTag(tags, TVisual_Title, (TTAG) "TEKlib visual");
@@ -111,7 +112,7 @@ dfb_openvisual(TMOD_DFB *mod, struct TVRequest *req)
 		if (!v->borderless)
 		{
 			/* generate focus events */
-			genimsg(mod, (VISUAL *)mod->dfb_Focused, v, TITYPE_FOCUS);
+			genimsg(mod, (DFBWINDOW *)mod->dfb_Focused, v, TITYPE_FOCUS);
 			mod->dfb_Focused = (TAPTR) v;
 		}
 
@@ -143,27 +144,27 @@ dfb_openvisual(TMOD_DFB *mod, struct TVRequest *req)
 
 	/* failure: */
 	TDBPRINTF(TDB_ERROR,("Open failed\n"));
-	req->tvr_Op.OpenVisual.Instance = TNULL;
+	req->tvr_Op.OpenWindow.Window = TNULL;
 }
 
 /*****************************************************************************/
 
 LOCAL void
-dfb_closevisual(TMOD_DFB *mod, struct TVRequest *req)
+dfb_closevisual(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	struct DFBPen *pen;
 	TAPTR exec = TGetExecBase(mod);
-	VISUAL *v = req->tvr_Op.CloseVisual.Instance;
+	DFBWINDOW *v = req->tvr_Op.CloseWindow.Window;
 	if (v == TNULL) return;
 
-	TDBPRINTF(TDB_ERROR,("Visual close\n"));
+	TDBPRINTF(TDB_INFO,("Visual close\n"));
 
 	TRemove(&v->node);
 
 	if (mod->dfb_Focused == (TAPTR) v)
 	{
 		/* pass focus on to the next window */
-		VISUAL *vt = (VISUAL *)TFIRSTNODE(&mod->dfb_vlist);
+		DFBWINDOW *vt = (DFBWINDOW *)TFIRSTNODE(&mod->dfb_vlist);
 		if (vt) genimsg(mod, TNULL, vt, TITYPE_FOCUS);
 		mod->dfb_Focused = (TAPTR) vt;
 	}
@@ -187,9 +188,9 @@ dfb_closevisual(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_setinput(TMOD_DFB *mod, struct TVRequest *req)
+dfb_setinput(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.SetInput.Instance;
+	DFBWINDOW *v = req->tvr_Op.SetInput.Window;
 	req->tvr_Op.SetInput.OldMask = v->eventmask;
 	v->eventmask = req->tvr_Op.SetInput.Mask;
 }
@@ -197,14 +198,14 @@ dfb_setinput(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 static void
-setbgpen(TMOD_DFB *mod, VISUAL *v, TVPEN pen)
+setbgpen(DFBDISPLAY *mod, DFBWINDOW *v, TVPEN pen)
 {
 	if (pen != v->bgpen && pen != TVPEN_UNDEFINED)
 		v->bgpen = pen;
 }
 
 static TVPEN
-setfgpen(TMOD_DFB *mod, VISUAL *v, TVPEN pen)
+setfgpen(DFBDISPLAY *mod, DFBWINDOW *v, TVPEN pen)
 {
 	TVPEN oldpen = v->fgpen;
 	if (pen != oldpen && pen != TVPEN_UNDEFINED)
@@ -221,9 +222,9 @@ setfgpen(TMOD_DFB *mod, VISUAL *v, TVPEN pen)
 /*****************************************************************************/
 
 LOCAL void
-dfb_allocpen(TMOD_DFB *mod, struct TVRequest *req)
+dfb_allocpen(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.AllocPen.Instance;
+	DFBWINDOW *v = req->tvr_Op.AllocPen.Window;
 	TUINT rgb = req->tvr_Op.AllocPen.RGB;
 	struct DFBPen *pen = TExecAlloc(mod->dfb_ExecBase, mod->dfb_MemMgr,
 		sizeof(struct DFBPen));
@@ -243,7 +244,7 @@ dfb_allocpen(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_freepen(TMOD_DFB *mod, struct TVRequest *req)
+dfb_freepen(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	struct DFBPen *pen = (struct DFBPen *) req->tvr_Op.FreePen.Pen;
 	TRemove(&pen->node);
@@ -253,9 +254,9 @@ dfb_freepen(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_frect(TMOD_DFB *mod, struct TVRequest *req)
+dfb_frect(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.FRect.Instance;
+	DFBWINDOW *v = req->tvr_Op.FRect.Window;
 	TUINT x = req->tvr_Op.FRect.Rect[0];
 	TUINT y = req->tvr_Op.FRect.Rect[1];
 	TUINT w = req->tvr_Op.FRect.Rect[2];
@@ -268,9 +269,9 @@ dfb_frect(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_line(TMOD_DFB *mod, struct TVRequest *req)
+dfb_line(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.Line.Instance;
+	DFBWINDOW *v = req->tvr_Op.Line.Window;
 	TUINT x0 = req->tvr_Op.Line.Rect[0];
 	TUINT y0 = req->tvr_Op.Line.Rect[1];
 	TUINT x1 = req->tvr_Op.Line.Rect[2];
@@ -283,9 +284,9 @@ dfb_line(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_rect(TMOD_DFB *mod, struct TVRequest *req)
+dfb_rect(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.Rect.Instance;
+	DFBWINDOW *v = req->tvr_Op.Rect.Window;
 	TUINT x = req->tvr_Op.Rect.Rect[0];
 	TUINT y = req->tvr_Op.Rect.Rect[1];
 	TUINT w = req->tvr_Op.Rect.Rect[2];
@@ -298,9 +299,9 @@ dfb_rect(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_plot(TMOD_DFB *mod, struct TVRequest *req)
+dfb_plot(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.Plot.Instance;
+	DFBWINDOW *v = req->tvr_Op.Plot.Window;
 	TUINT x = req->tvr_Op.Plot.Rect[0];
 	TUINT y = req->tvr_Op.Plot.Rect[1];
 
@@ -311,10 +312,10 @@ dfb_plot(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_drawstrip(TMOD_DFB *mod, struct TVRequest *req)
+dfb_drawstrip(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	TINT i, x0, y0, x1, y1, x2, y2;
-	VISUAL *v = req->tvr_Op.Strip.Instance;
+	DFBWINDOW *v = req->tvr_Op.Strip.Window;
 	TINT *array = req->tvr_Op.Strip.Array;
 	TINT num = req->tvr_Op.Strip.Num;
 	TTAGITEM *tags = req->tvr_Op.Strip.Tags;
@@ -356,10 +357,10 @@ dfb_drawstrip(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_drawfan(TMOD_DFB *mod, struct TVRequest *req)
+dfb_drawfan(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	TINT i, x0, y0, x1, y1, x2, y2;
-	VISUAL *v = req->tvr_Op.Fan.Instance;
+	DFBWINDOW *v = req->tvr_Op.Fan.Window;
 	TINT *array = req->tvr_Op.Fan.Array;
 	TINT num = req->tvr_Op.Fan.Num;
 	TTAGITEM *tags = req->tvr_Op.Fan.Tags;
@@ -399,7 +400,7 @@ dfb_drawfan(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_drawarc(TMOD_DFB *mod, struct TVRequest *req)
+dfb_drawarc(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	TDBPRINTF(TDB_ERROR,("dfb_drawarc: not yet implemented!\n"));
 }
@@ -407,7 +408,7 @@ dfb_drawarc(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_drawfarc(TMOD_DFB *mod, struct TVRequest *req)
+dfb_drawfarc(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	TDBPRINTF(TDB_ERROR,("dfb_drawfarc: not yet implemented!\n"));
 }
@@ -415,9 +416,9 @@ dfb_drawfarc(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_copyarea(TMOD_DFB *mod, struct TVRequest *req)
+dfb_copyarea(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.CopyArea.Instance;
+	DFBWINDOW *v = req->tvr_Op.CopyArea.Window;
 	DFBRectangle *rect = (DFBRectangle *)req->tvr_Op.CopyArea.Rect;
 	TINT x = req->tvr_Op.CopyArea.DestX;
 	TINT y = req->tvr_Op.CopyArea.DestY;
@@ -428,9 +429,9 @@ dfb_copyarea(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_setcliprect(TMOD_DFB *mod, struct TVRequest *req)
+dfb_setcliprect(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.ClipRect.Instance;
+	DFBWINDOW *v = req->tvr_Op.ClipRect.Window;
 	DFBRegion clip;
 
 	clip.x1 = req->tvr_Op.ClipRect.Rect[0];
@@ -443,9 +444,9 @@ dfb_setcliprect(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_unsetcliprect(TMOD_DFB *mod, struct TVRequest *req)
+dfb_unsetcliprect(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.ClipRect.Instance;
+	DFBWINDOW *v = req->tvr_Op.ClipRect.Window;
 	DFBRegion clip;
 
 	clip.x1 = 0;
@@ -458,9 +459,9 @@ dfb_unsetcliprect(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_clear(TMOD_DFB *mod, struct TVRequest *req)
+dfb_clear(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.Clear.Instance;
+	DFBWINDOW *v = req->tvr_Op.Clear.Window;
 	struct DFBPen *pen = (struct DFBPen *) req->tvr_Op.Clear.Pen;
 	setfgpen(mod, v, req->tvr_Op.Clear.Pen);
 	v->winsurface->Clear(v->winsurface, pen->r, pen->g, pen->b, pen->a);
@@ -469,9 +470,9 @@ dfb_clear(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_drawbuffer(TMOD_DFB *mod, struct TVRequest *req)
+dfb_drawbuffer(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.DrawBuffer.Instance;
+	DFBWINDOW *v = req->tvr_Op.DrawBuffer.Window;
 	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
 	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
 	TINT xd = req->tvr_Op.DrawBuffer.RRect[0];
@@ -503,7 +504,7 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
-	VISUAL *v = data->v;
+	DFBWINDOW *v = data->v;
 
 	switch (item->tti_Tag)
 	{
@@ -539,12 +540,12 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 LOCAL void
-dfb_getattrs(TMOD_DFB *mod, struct TVRequest *req)
+dfb_getattrs(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
 
-	data.v = req->tvr_Op.GetAttrs.Instance;
+	data.v = req->tvr_Op.GetAttrs.Window;
 	data.num = 0;
 	data.mod = mod;
 	TInitHook(&hook, getattrfunc, &data);
@@ -560,7 +561,7 @@ setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
-	VISUAL *v = data->v;
+	DFBWINDOW *v = data->v;
 
 	switch (item->tti_Tag)
 	{
@@ -588,11 +589,11 @@ setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 LOCAL void
-dfb_setattrs(TMOD_DFB *mod, struct TVRequest *req)
+dfb_setattrs(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
-	VISUAL *v = req->tvr_Op.SetAttrs.Instance;
+	DFBWINDOW *v = req->tvr_Op.SetAttrs.Window;
 
 	data.v = v;
 	data.num = 0;
@@ -647,8 +648,8 @@ dfb_setattrs(TMOD_DFB *mod, struct TVRequest *req)
 
 struct drawdata
 {
-	VISUAL *v;
-	TMOD_DFB *mod;
+	DFBWINDOW *v;
+	DFBDISPLAY *mod;
 	TINT x0, x1, y0, y1;
 };
 
@@ -709,11 +710,11 @@ drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 LOCAL void
-dfb_drawtags(TMOD_DFB *mod, struct TVRequest *req)
+dfb_drawtags(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	struct THook hook;
 	struct drawdata data;
-	data.v = req->tvr_Op.DrawTags.Instance;
+	data.v = req->tvr_Op.DrawTags.Window;
 	data.mod = mod;
 
 	TInitHook(&hook, drawtagfunc, &data);
@@ -723,9 +724,9 @@ dfb_drawtags(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_drawtext(TMOD_DFB *mod, struct TVRequest *req)
+dfb_drawtext(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	VISUAL *v = req->tvr_Op.Text.Instance;
+	DFBWINDOW *v = req->tvr_Op.Text.Window;
 	TSTRPTR text = req->tvr_Op.Text.Text;
 	TINT len = req->tvr_Op.Text.Length;
 	TUINT x = req->tvr_Op.Text.X;
@@ -754,16 +755,16 @@ dfb_drawtext(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_setfont(TMOD_DFB *mod, struct TVRequest *req)
+dfb_setfont(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	dfb_hostsetfont(mod, req->tvr_Op.SetFont.Instance,
+	dfb_hostsetfont(mod, req->tvr_Op.SetFont.Window,
 		req->tvr_Op.SetFont.Font);
 }
 
 /*****************************************************************************/
 
 LOCAL void
-dfb_openfont(TMOD_DFB *mod, struct TVRequest *req)
+dfb_openfont(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	req->tvr_Op.OpenFont.Font =
 		dfb_hostopenfont(mod, req->tvr_Op.OpenFont.Tags);
@@ -772,7 +773,7 @@ dfb_openfont(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_textsize(TMOD_DFB *mod, struct TVRequest *req)
+dfb_textsize(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	req->tvr_Op.TextSize.Width =
 		dfb_hosttextsize(mod, req->tvr_Op.TextSize.Font,
@@ -782,7 +783,7 @@ dfb_textsize(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_getfontattrs(TMOD_DFB *mod, struct TVRequest *req)
+dfb_getfontattrs(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
@@ -799,7 +800,7 @@ dfb_getfontattrs(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_closefont(TMOD_DFB *mod, struct TVRequest *req)
+dfb_closefont(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	dfb_hostclosefont(mod, req->tvr_Op.CloseFont.Font);
 }
@@ -807,7 +808,7 @@ dfb_closefont(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_queryfonts(TMOD_DFB *mod, struct TVRequest *req)
+dfb_queryfonts(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	req->tvr_Op.QueryFonts.Handle =
 		dfb_hostqueryfonts(mod, req->tvr_Op.QueryFonts.Tags);
@@ -816,7 +817,7 @@ dfb_queryfonts(TMOD_DFB *mod, struct TVRequest *req)
 /*****************************************************************************/
 
 LOCAL void
-dfb_getnextfont(TMOD_DFB *mod, struct TVRequest *req)
+dfb_getnextfont(DFBDISPLAY *mod, struct TVRequest *req)
 {
 	req->tvr_Op.GetNextFont.Attrs =
 		dfb_hostgetnextfont(mod, req->tvr_Op.GetNextFont.Handle);

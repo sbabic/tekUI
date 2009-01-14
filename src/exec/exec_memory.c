@@ -225,7 +225,7 @@ exec_AllocMMU(TEXECBASE *exec, struct TMemManager *mmu, TUINT size)
 			mem++;
 		}
 		else
-			TDBPRINTF(TDB_WARN,("alloc failed size %d\n", size));
+			TDBPRINTF(TDB_INFO,("alloc failed size %d\n", size));
 	}
 	else
 		TDBPRINTF(TDB_WARN,("called with size=0\n"));

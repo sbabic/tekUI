@@ -24,7 +24,7 @@ exec_systaskdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 	{
 		struct TTask *task = obj;
 		TEXECBASE *exec = (TEXECBASE *) TGetExecBase(task);
-		TAPTR hal = exec->texb_HALBase;
+		struct THALBase *hal = exec->texb_HALBase;
 
 		THALDestroyThread(hal, &task->tsk_Thread);
 		THALLock(hal, &exec->texb_Lock);
@@ -121,8 +121,8 @@ exec_CreateSysTask(TEXECBASE *exec, TTASKFUNC func, struct TTagItem *tags)
 						newtask->tsk_Status = TTASK_RUNNING;
 
 						/* create thread */
-						if (THALInitThread(hal, &newtask->tsk_Thread,
-							(TTASKENTRY void (*)(TAPTR data)) func, newtask))
+						if (THALInitThread(hal, &newtask->tsk_Thread, func,
+							newtask))
 						{
 							exec_initsystask(exec, newtask);
 							if (func)

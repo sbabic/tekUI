@@ -373,7 +373,7 @@ TEKlib_GetEntry(TAPTR boot, TAPTR knmod, TSTRPTR name)
 
 TLIBAPI TUINT
 TEKlib_CallModule(TAPTR boot, TAPTR ModBase, TMODINITFUNC entry,
-	TAPTR task, TAPTR mod, TUINT16 version, TTAGITEM *tags)
+	struct TTask *task, TAPTR mod, TUINT16 version, TTAGITEM *tags)
 {
 	return (*entry)(task, mod, version, tags);
 }

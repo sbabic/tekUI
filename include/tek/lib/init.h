@@ -36,7 +36,7 @@ struct TEKlibInit
 	/* hal module base */
 	TAPTR tli_HALBase;
 	/* exec module base */
-	struct TModule *tli_ExecBase;
+	struct TExecBase *tli_ExecBase;
 	/* PROGDIR: */
 	TSTRPTR tli_ProgDir;
 	/* SYS: */
@@ -49,10 +49,10 @@ struct TEKlibInit
 	struct THALObject tli_InitEvent;
 	/* execbase task handle */
 	struct TTask *tli_ExecTask;
-	/* application task handle */
-	struct THandle *tli_AppTask;
+	/* application task */
+	struct TTask *tli_AppTask;
 	/* io task handle */
-	TAPTR tli_IOTask;
+	struct TTask *tli_IOTask;
 	/* original destructor for app task */
 	struct THook tli_OrgAppTaskHook;
 	/* attributes for HAL init */
@@ -80,7 +80,7 @@ struct TEKlibInit
 **	User entrypoint
 */
 
-extern TTASKENTRY void TEKMain(TAPTR task);
+extern TTASKENTRY void TEKMain(struct TTask *task);
 
 /*****************************************************************************/
 /*
@@ -100,6 +100,6 @@ TLIBAPI TAPTR TEKlib_LoadModule(TAPTR handle, TSTRPTR progdir, TSTRPTR moddir,
 TLIBAPI void TEKlib_CloseModule(TAPTR handle, TAPTR halmod);
 TLIBAPI TMODINITFUNC TEKlib_GetEntry(TAPTR handle, TAPTR halmod, TSTRPTR name);
 TLIBAPI TUINT TEKlib_CallModule(TAPTR handle, TAPTR ModBase, TMODINITFUNC entry,
-	TAPTR task, TAPTR mod, TUINT16 version, TTAGITEM *tags);
+	struct TTask *task, TAPTR mod, TUINT16 version, TTAGITEM *tags);
 
 #endif

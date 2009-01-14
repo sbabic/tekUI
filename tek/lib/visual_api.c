@@ -79,7 +79,6 @@ tek_lib_visual_wait(lua_State *L)
 LOCAL LUACFUNC TINT
 tek_lib_visual_sleep(lua_State *L)
 {
-	lua_Number sec = luaL_checknumber(L, 1);
 	TEKVisual *vis;
 	TTIME dt;
 
@@ -87,10 +86,9 @@ tek_lib_visual_sleep(lua_State *L)
 	vis = lua_touserdata(L, -1);
 	lua_pop(L, 1);
 
-	dt.ttm_Sec = sec;
-	dt.ttm_USec = (sec - dt.ttm_Sec) * 1000000;
+	dt.tdt_Int64 = luaL_checknumber(L, 1) * 1000000;
+	TWaitTime(vis->vis_TimeRequest, &dt, 0);
 
-	TDelay(vis->vis_TimeRequest, &dt);
 	return 0;
 }
 
@@ -106,9 +104,9 @@ tek_lib_visual_gettime(lua_State *L)
 	vis = lua_touserdata(L, -1);
 	lua_pop(L, 1);
 
-	TQueryTime(vis->vis_TimeRequest, &dt);
-	lua_pushinteger(L, dt.ttm_Sec);
-	lua_pushinteger(L, dt.ttm_USec);
+	TGetSystemTime(vis->vis_TimeRequest, &dt);
+	lua_pushinteger(L, dt.tdt_Int64 / 1000000);
+	lua_pushinteger(L, dt.tdt_Int64 % 1000000);
 	return 2;
 }
 
@@ -275,9 +273,9 @@ tek_lib_visual_getmsg(lua_State *L)
 			lua_createtable(L, size, 0);
 		}
 
-		lua_pushinteger(L, imsg->timsg_TimeStamp.ttm_USec);
+		lua_pushinteger(L, imsg->timsg_TimeStamp.tdt_Int64 % 1000000);
 		lua_rawseti(L, -2, 0);
-		lua_pushinteger(L, imsg->timsg_TimeStamp.ttm_Sec);
+		lua_pushinteger(L, imsg->timsg_TimeStamp.tdt_Int64 / 1000000);
 		lua_rawseti(L, -2, 1);
 		lua_pushinteger(L, imsg->timsg_Type);
 		lua_rawseti(L, -2, 2);

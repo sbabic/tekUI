@@ -1,10 +1,10 @@
-
 #ifndef _TEK_CONFIG_H
 #define	_TEK_CONFIG_H
 
 /*
-**	$Id: config.h,v 1.4 2006/09/10 14:36:58 tmueller Exp $
 **	teklib/tek/config.h - Platform and compiler specific
+**
+**	Written by Timm S. Mueller <tmueller at neoscientists.org>
 **	See copyright notice in teklib/COPYRIGHT
 */
 
@@ -85,7 +85,7 @@
 /*****************************************************************************/
 /*
 **	Inline
-**	Override with platform-specific declarations if available
+**	Override with compiler-specific declarations if available
 */
 
 #ifndef TINLINE

@@ -9,64 +9,64 @@
 */
 
 #define TIOLockFile(io,name,mode,tags) \
-	(*(((TMODCALL TAPTR(**)(TAPTR,TSTRPTR,TUINT,TTAGITEM *))(io))[-9]))(io,name,mode,tags)
+	(*(((TMODCALL TFILE *(**)(TAPTR,TSTRPTR,TUINT,TTAGITEM *))(io))[-9]))(io,name,mode,tags)
 
 #define TIOUnlockFile(io,lock) \
-	(*(((TMODCALL void(**)(TAPTR,TAPTR))(io))[-10]))(io,lock)
+	(*(((TMODCALL void(**)(TAPTR,TFILE *))(io))[-10]))(io,lock)
 
 #define TIOOpenFile(io,name,mode,tags) \
-	(*(((TMODCALL TAPTR(**)(TAPTR,TSTRPTR,TUINT,TTAGITEM *))(io))[-11]))(io,name,mode,tags)
+	(*(((TMODCALL TFILE *(**)(TAPTR,TSTRPTR,TUINT,TTAGITEM *))(io))[-11]))(io,name,mode,tags)
 
-#define TIOCloseFile(io,fh) \
-	(*(((TMODCALL TBOOL(**)(TAPTR,TAPTR))(io))[-12]))(io,fh)
+#define TIOCloseFile(io,a) \
+	(*(((TMODCALL TBOOL(**)(TAPTR,TFILE *))(io))[-12]))(io,a)
 
-#define TIORead(io,fh,buf,len) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TAPTR,TINT))(io))[-13]))(io,fh,buf,len)
+#define TIORead(io,a,buf,len) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TAPTR,TINT))(io))[-13]))(io,a,buf,len)
 
-#define TIOWrite(io,fh,buf,len) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TAPTR,TINT))(io))[-14]))(io,fh,buf,len)
+#define TIOWrite(io,a,buf,len) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TAPTR,TINT))(io))[-14]))(io,a,buf,len)
 
-#define TIOFlush(io,fh) \
-	(*(((TMODCALL TBOOL(**)(TAPTR,TAPTR))(io))[-15]))(io,fh)
+#define TIOFlush(io,a) \
+	(*(((TMODCALL TBOOL(**)(TAPTR,TFILE *))(io))[-15]))(io,a)
 
-#define TIOSeek(io,fh,offs,offshi,mode) \
-	(*(((TMODCALL TUINT(**)(TAPTR,TAPTR,TINT,TINT *,TINT))(io))[-16]))(io,fh,offs,offshi,mode)
+#define TIOSeek(io,a,offs,offshi,mode) \
+	(*(((TMODCALL TUINT(**)(TAPTR,TFILE *,TINT,TINT *,TINT))(io))[-16]))(io,a,offs,offshi,mode)
 
-#define TIOFPutC(io,fh,c) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TINT))(io))[-17]))(io,fh,c)
+#define TIOFPutC(io,a,c) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TINT))(io))[-17]))(io,a,c)
 
-#define TIOFGetC(io,fh) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR))(io))[-18]))(io,fh)
+#define TIOFGetC(io,a) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *))(io))[-18]))(io,a)
 
-#define TIOFEoF(io,fh) \
-	(*(((TMODCALL TBOOL(**)(TAPTR,TAPTR))(io))[-19]))(io,fh)
+#define TIOFEoF(io,a) \
+	(*(((TMODCALL TBOOL(**)(TAPTR,TFILE *))(io))[-19]))(io,a)
 
-#define TIOFRead(io,fh,buf,len) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TAPTR,TINT))(io))[-20]))(io,fh,buf,len)
+#define TIOFRead(io,a,buf,len) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TAPTR,TINT))(io))[-20]))(io,a,buf,len)
 
-#define TIOFWrite(io,fh,buf,len) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TAPTR,TINT))(io))[-21]))(io,fh,buf,len)
+#define TIOFWrite(io,a,buf,len) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TAPTR,TINT))(io))[-21]))(io,a,buf,len)
 
-#define TIOExamine(io,lock,tags) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TTAGITEM *))(io))[-22]))(io,lock,tags)
+#define TIOExamine(io,a,tags) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TTAGITEM *))(io))[-22]))(io,a,tags)
 
-#define TIOExNext(io,lock,tags) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TTAGITEM *))(io))[-23]))(io,lock,tags)
+#define TIOExNext(io,a,tags) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TTAGITEM *))(io))[-23]))(io,a,tags)
 
-#define TIOChangeDir(io,lock) \
-	(*(((TMODCALL TAPTR(**)(TAPTR,TAPTR))(io))[-24]))(io,lock)
+#define TIOChangeDir(io,a) \
+	(*(((TMODCALL TFILE *(**)(TAPTR,TFILE *))(io))[-24]))(io,a)
 
-#define TIOParentDir(io,lock) \
-	(*(((TMODCALL TAPTR(**)(TAPTR,TAPTR))(io))[-25]))(io,lock)
+#define TIOParentDir(io,a) \
+	(*(((TMODCALL TFILE *(**)(TAPTR,TFILE *))(io))[-25]))(io,a)
 
-#define TIONameOf(io,lock,buf,len) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TSTRPTR,TINT))(io))[-26]))(io,lock,buf,len)
+#define TIONameOf(io,a,buf,len) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TSTRPTR,TINT))(io))[-26]))(io,a,buf,len)
 
-#define TIODupLock(io,lock) \
-	(*(((TMODCALL TAPTR(**)(TAPTR,TAPTR))(io))[-27]))(io,lock)
+#define TIODupLock(io,a) \
+	(*(((TMODCALL TFILE *(**)(TAPTR,TFILE *))(io))[-27]))(io,a)
 
-#define TIOOpenFromLock(io,lock) \
-	(*(((TMODCALL TAPTR(**)(TAPTR,TAPTR))(io))[-28]))(io,lock)
+#define TIOOpenFromLock(io,a) \
+	(*(((TMODCALL TFILE *(**)(TAPTR,TFILE *))(io))[-28]))(io,a)
 
 #define TIOAddPart(io,p1,p2,buf,len) \
 	(*(((TMODCALL TINT(**)(TAPTR,TSTRPTR,TSTRPTR,TSTRPTR,TINT))(io))[-29]))(io,p1,p2,buf,len)
@@ -75,7 +75,7 @@
 	(*(((TMODCALL TBOOL(**)(TAPTR,TSTRPTR,TSTRPTR))(io))[-30]))(io,name,path)
 
 #define TIOAssignLock(io,name,lock) \
-	(*(((TMODCALL TBOOL(**)(TAPTR,TSTRPTR,TAPTR))(io))[-31]))(io,name,lock)
+	(*(((TMODCALL TBOOL(**)(TAPTR,TSTRPTR,TFILE *))(io))[-31]))(io,name,lock)
 
 #define TIORename(io,name,newname) \
 	(*(((TMODCALL TBOOL(**)(TAPTR,TSTRPTR,TSTRPTR))(io))[-32]))(io,name,newname)
@@ -101,20 +101,20 @@
 #define TIOFault(io,err,buf,len,tags) \
 	(*(((TMODCALL TINT(**)(TAPTR,TINT,TSTRPTR,TINT,TTAGITEM *))(io))[-39]))(io,err,buf,len,tags)
 
-#define TIOWaitChar(io,fh,timeout) \
-	(*(((TMODCALL TBOOL(**)(TAPTR,TAPTR,TINT))(io))[-40]))(io,fh,timeout)
+#define TIOWaitChar(io,a,timeout) \
+	(*(((TMODCALL TBOOL(**)(TAPTR,TFILE *,TINT))(io))[-40]))(io,a,timeout)
 
-#define TIOIsInteractive(io,fh) \
-	(*(((TMODCALL TBOOL(**)(TAPTR,TAPTR))(io))[-41]))(io,fh)
+#define TIOIsInteractive(io,a) \
+	(*(((TMODCALL TBOOL(**)(TAPTR,TFILE *))(io))[-41]))(io,a)
 
 #define TIOOutputFH(io) \
-	(*(((TMODCALL TAPTR(**)(TAPTR))(io))[-42]))(io)
+	(*(((TMODCALL TFILE *(**)(TAPTR))(io))[-42]))(io)
 
 #define TIOInputFH(io) \
-	(*(((TMODCALL TAPTR(**)(TAPTR))(io))[-43]))(io)
+	(*(((TMODCALL TFILE *(**)(TAPTR))(io))[-43]))(io)
 
 #define TIOErrorFH(io) \
-	(*(((TMODCALL TAPTR(**)(TAPTR))(io))[-44]))(io)
+	(*(((TMODCALL TFILE *(**)(TAPTR))(io))[-44]))(io)
 
 #define TIOMakeName(io,name,dest,dlen,mode,tags) \
 	(*(((TMODCALL TINT(**)(TAPTR,TSTRPTR,TSTRPTR,TINT,TINT,TTAGITEM *))(io))[-45]))(io,name,dest,dlen,mode,tags)
@@ -122,14 +122,14 @@
 #define TIOMount(io,name,action,tags) \
 	(*(((TMODCALL TBOOL(**)(TAPTR,TSTRPTR,TINT,TTAGITEM *))(io))[-46]))(io,name,action,tags)
 
-#define TIOFUngetC(io,fh,c) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TINT))(io))[-47]))(io,fh,c)
+#define TIOFUngetC(io,a,c) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TINT))(io))[-47]))(io,a,c)
 
-#define TIOFPutS(io,fh,s) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TSTRPTR))(io))[-48]))(io,fh,s)
+#define TIOFPutS(io,a,s) \
+	(*(((TMODCALL TINT(**)(TAPTR,TFILE *,TSTRPTR))(io))[-48]))(io,a,s)
 
-#define TIOFGetS(io,fh,buf,len) \
-	(*(((TMODCALL TSTRPTR(**)(TAPTR,TAPTR,TSTRPTR,TINT))(io))[-49]))(io,fh,buf,len)
+#define TIOFGetS(io,a,buf,len) \
+	(*(((TMODCALL TSTRPTR(**)(TAPTR,TFILE *,TSTRPTR,TINT))(io))[-49]))(io,a,buf,len)
 
 #define TIOSetFileDate(io,name,date,tags) \
 	(*(((TMODCALL TBOOL(**)(TAPTR,TSTRPTR,TDATE *,TTAGITEM *))(io))[-50]))(io,name,date,tags)

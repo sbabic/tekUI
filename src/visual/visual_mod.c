@@ -7,10 +7,10 @@
 
 #include "visual_mod.h"
 
-static TMOD_VIS *vis_modopen(TMOD_VIS *mod, TTAGITEM *tags);
-static void vis_modclose(TMOD_VIS *mod);
-static TBOOL vis_init(TMOD_VIS *mod);
-static void vis_exit(TMOD_VIS *mod);
+static struct TVisualBase *vis_modopen(struct TVisualBase *mod, TTAGITEM *tags);
+static void vis_modclose(struct TVisualBase *mod);
+static TBOOL vis_init(struct TVisualBase *mod);
+static void vis_exit(struct TVisualBase *mod);
 
 static const TMFPTR
 vis_vectors[VISUAL_NUMVECTORS] =
@@ -51,24 +51,20 @@ vis_vectors[VISUAL_NUMVECTORS] =
 	(TMFPTR) vis_drawstrip,
 	(TMFPTR) vis_drawtags,
 	(TMFPTR) vis_drawfan,
-	(TMFPTR) vis_drawarc,
 	(TMFPTR) vis_copyarea,
+	(TMFPTR) vis_drawbuffer,
+
 	(TMFPTR) vis_setcliprect,
+	(TMFPTR) vis_unsetcliprect,
 
 	(TMFPTR) vis_opendisplay,
 	(TMFPTR) vis_closedisplay,
 	(TMFPTR) vis_querydisplays,
 	(TMFPTR) vis_getnextdisplay,
-
-	(TMFPTR) vis_unsetcliprect,
-	(TMFPTR) vis_drawfarc,
-
-	(TMFPTR) vis_drawbuffer,
-
 };
 
 static void
-vis_destroy(TMOD_VIS *mod)
+vis_destroy(struct TVisualBase *mod)
 {
 	TDestroy(mod->vis_Lock);
 }
@@ -76,7 +72,7 @@ vis_destroy(TMOD_VIS *mod)
 static THOOKENTRY TTAG
 vis_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 {
-	TMOD_VIS *mod = (TMOD_VIS *) hook->thk_Data;
+	struct TVisualBase *mod = (struct TVisualBase *) hook->thk_Data;
 	switch (msg)
 	{
 		case TMSG_DESTROY:
@@ -91,17 +87,17 @@ vis_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 TMODENTRY TUINT
-tek_init_visual(TAPTR task, struct TModule *vis, TUINT16 version,
+tek_init_visual(struct TTask *task, struct TModule *vis, TUINT16 version,
 	TTAGITEM *tags)
 {
-	TMOD_VIS *mod = (TMOD_VIS *) vis;
+	struct TVisualBase *mod = (struct TVisualBase *) vis;
 	if (mod == TNULL)
 	{
 		if (version == 0xffff)
 			return sizeof(TAPTR) * VISUAL_NUMVECTORS;
 
 		if (version <= VISUAL_VERSION)
-			return sizeof(TMOD_VIS);
+			return sizeof(struct TVisualBase);
 
 		return 0;
 	}
@@ -129,10 +125,10 @@ tek_init_visual(TAPTR task, struct TModule *vis, TUINT16 version,
 **	Module open/close
 */
 
-static TMOD_VIS *
-vis_modopen(TMOD_VIS *mod, TTAGITEM *tags)
+static struct TVisualBase *
+vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 {
-	TMOD_VIS *inst = TNULL;
+	struct TVisualBase *inst = TNULL;
 	TBOOL success = TTRUE;
 
 	TExecLock(mod->vis_ExecBase, mod->vis_Lock);
@@ -147,7 +143,7 @@ vis_modopen(TMOD_VIS *mod, TTAGITEM *tags)
 
 	if (success)
 	{
-		TMOD_VIS *base = (TMOD_VIS *) TGetTag(tags, TVisual_Attach, TNULL);
+		struct TVisualBase *base = (struct TVisualBase *) TGetTag(tags, TVisual_Attach, TNULL);
 		if (TGetTag(tags, TVisual_NewInstance, TFALSE)) base = mod;
 
 		if (base)
@@ -181,9 +177,9 @@ vis_modopen(TMOD_VIS *mod, TTAGITEM *tags)
 }
 
 static void
-vis_modclose(TMOD_VIS *inst)
+vis_modclose(struct TVisualBase *inst)
 {
-	TMOD_VIS *mod = (TMOD_VIS *) inst->vis_Module.tmd_ModSuper;
+	struct TVisualBase *mod = (struct TVisualBase *) inst->vis_Module.tmd_ModSuper;
 	if (inst != mod)
 	{
 		struct TNode *node;
@@ -217,7 +213,7 @@ vis_modclose(TMOD_VIS *inst)
 */
 
 static TBOOL
-vis_init(TMOD_VIS *mod)
+vis_init(struct TVisualBase *mod)
 {
 	for (;;)
 	{
@@ -231,7 +227,7 @@ vis_init(TMOD_VIS *mod)
 }
 
 static void
-vis_exit(TMOD_VIS *mod)
+vis_exit(struct TVisualBase *mod)
 {
 	if (mod->vis_Displays)
 	{
@@ -239,7 +235,8 @@ vis_exit(TMOD_VIS *mod)
 		struct TNode *next, *node;
 
 		if (mod->vis_InitRequest)
-			TDisplayFreeReq(mod->vis_InitRequest->tvr_Req.io_Device,
+			TDisplayFreeReq((struct TDisplayBase *)
+				mod->vis_InitRequest->tvr_Req.io_Device,
 				mod->vis_InitRequest);
 
 		TInitList(&dlist);

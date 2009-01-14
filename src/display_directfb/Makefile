@@ -8,7 +8,7 @@ EXTRADEFS += $(DFB_DEFS) -DFNT_DEFDIR=\"$(LUA_SHARE)/tek/ui/font/\" \
 ###############################################################################
 
 LIBS = \
-	$(LIBDIR)/libdisplay_dfb.a
+	$(LIBDIR)/libdisplay_directfb.a
 
 $(OBJDIR)/display_dfb_mod.lo: \
 	display_dfb_mod.c display_dfb_mod.h
@@ -23,7 +23,7 @@ $(OBJDIR)/display_dfb_utf8.lo: \
 	display_dfb_utf8.c display_dfb_mod.h
 	$(CC) $(LIBCFLAGS) -o $@ -c display_dfb_utf8.c
 
-$(LIBDIR)/libdisplay_dfb.a: \
+$(LIBDIR)/libdisplay_directfb.a: \
 	$(OBJDIR)/display_dfb_mod.lo $(OBJDIR)/display_dfb_api.lo \
 	$(OBJDIR)/display_dfb_font.lo $(OBJDIR)/display_dfb_utf8.lo
 	$(AR) $@ $?

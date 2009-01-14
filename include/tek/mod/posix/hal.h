@@ -40,7 +40,7 @@ struct HALThread
 {
 	pthread_t hth_PThread;				/* Thread handle */
 	void *hth_Data;						/* Task data ptr */
-	void (*hth_Function)(void *);		/* Task function */
+	void (*hth_Function)(struct TTask *);	/* Task function */
 	TAPTR hth_HALBase;					/* HAL module base ptr */
 	pthread_mutex_t hth_SigMutex;		/* Signal mutex */
 	pthread_cond_t hth_SigCond;			/* Signal conditional */
@@ -72,28 +72,28 @@ struct HALModule
 **
 **	Revision 1.6  2006/03/11 16:19:45  tmueller
 **	AbortIO now interrupts running TimeRequests as well, not just queued ones
-**	
+**
 **	Revision 1.5  2005/11/20 16:08:39  tmueller
 **	added stricter funcptr declarations for modentries
-**	
+**
 **	Revision 1.4  2005/09/13 02:45:09  tmueller
 **	updated copyright reference
-**	
+**
 **	Revision 1.3  2003/12/20 14:00:18  tmueller
 **	hsp_TZSecDays renamed to hsp_TZDays
-**	
+**
 **	Revision 1.2  2003/12/19 14:16:18  tmueller
 **	Added hsp_TZSecDays field
-**	
+**
 **	Revision 1.1.1.1  2003/12/11 07:18:00  tmueller
 **	Krypton import
-**	
+**
 **	Revision 1.2  2003/10/28 08:52:46  tmueller
 **	Reworked HAL-internal structures
-**	
+**
 **	Revision 1.1.1.1  2003/03/08 18:28:40  tmueller
 **	Import to new chrooted pserver repository.
-**	
+**
 **	Revision 1.1.1.1  2002/11/30 05:15:33  bifat
 **	import
 */

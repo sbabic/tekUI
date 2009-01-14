@@ -1,10 +1,8 @@
-
 #ifndef _TEK_CONFIG_POSIX_H
 #define _TEK_CONFIG_POSIX_H
 
 /*
-**	$Id: posix.h,v 1.3 2006/09/10 14:36:55 tmueller Exp $
-**	teklib/tek/config/posix.h - POSIX types
+**	teklib/tek/config/posix.h - POSIX configuration
 **
 **	Written by Timm S. Mueller <tmueller at neoscientists.org>
 **	See copyright notice in teklib/COPYRIGHT
@@ -52,17 +50,13 @@ struct TMemHeadAlign { TUINT8 tmha_Chunk[48]; };
 */
 
 struct THALObject { TUINTPTR tho_Chunk[4]; };
-typedef struct THALObject THALO;
 
 /*****************************************************************************/
 /*
 **	Date type container
 */
 
-typedef union {
-	TUINT64 tdtt_Int64;
-	struct { TUINT32 hi, lo; } tdtt_HiLo;
-} TDATE_T;
+typedef union { TINT64 tdt_Int64; } TDATE_T;
 
 /*****************************************************************************/
 /*

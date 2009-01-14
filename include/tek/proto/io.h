@@ -1,4 +1,3 @@
-
 #ifndef _TEK_PROTO_IO_H
 #define _TEK_PROTO_IO_H
 
@@ -9,10 +8,10 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
-#include <tek/mod/io.h>
+#include <tek/mod/ioext.h>
 #include <tek/stdcall/io.h>
 
 extern TMODENTRY TUINT
-tek_init_io(TAPTR, struct TModule *, TUINT16, TTAGITEM *);
+tek_init_io(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
 
 #endif /* _TEK_PROTO_IO_H */

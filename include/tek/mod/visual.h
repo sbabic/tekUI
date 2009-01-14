@@ -11,6 +11,14 @@
 
 /*****************************************************************************/
 /*
+**	Forward declarations
+*/
+
+/* Visual module base structure: */
+struct TVisualBase;
+
+/*****************************************************************************/
+/*
 **	Types
 */
 
@@ -60,6 +68,13 @@ typedef TTAG TVPEN;
 
 #define TVisual_ExposeHook			(TVISTAGS_ + 0x10e)
 
+#define TVisual_Modulo				(TVISTAGS_ + 0x10f)
+#define TVisual_Format				(TVISTAGS_ + 0x110)
+#define TVisual_BufPtr				(TVISTAGS_ + 0x111)
+#define TVisual_DriverName			(TVISTAGS_ + 0x112)
+#define TVisual_Device				(TVISTAGS_ + 0x113)
+#define TVisual_Window				(TVISTAGS_ + 0x114)
+
 /* Tagged rendering: */
 
 #define TVisualDraw_Command			(TVISTAGS_ + 0x300)
@@ -78,8 +93,6 @@ typedef TTAG TVPEN;
 #define TVisualHost_GrabButton		(TVISTAGS_ + 0x202)
 #endif
 
-#define TVisual_Extended			(TVISTAGS_ + 0x400)
-
 /*****************************************************************************/
 /*
 **	Visual request
@@ -90,43 +103,41 @@ struct TVRequest
 	struct TIORequest tvr_Req;
 	union
 	{
-		struct { TAPTR Instance; TTAGITEM *Tags; TAPTR IMsgPort; } OpenVisual;
-		struct { TAPTR Instance; } CloseVisual;
+		struct { TAPTR Window; TTAGITEM *Tags; TAPTR IMsgPort; } OpenWindow;
+		struct { TAPTR Window; } CloseWindow;
 		struct { TAPTR Font; TTAGITEM *Tags; } OpenFont;
 		struct { TAPTR Font; } CloseFont;
 		struct { TAPTR Font; TTAGITEM *Tags; TUINT Num; } GetFontAttrs;
 		struct { TAPTR Font; TSTRPTR Text; TINT Width; } TextSize;
 		struct { TAPTR Handle; TTAGITEM *Tags; } QueryFonts;
 		struct { TAPTR Handle; TTAGITEM *Attrs; } GetNextFont;
-		struct { TAPTR Instance; TUINT Mask; TUINT OldMask; } SetInput;
-		struct { TAPTR Instance; TTAGITEM *Tags; TUINT Num; } GetAttrs;
-		struct { TAPTR Instance; TTAGITEM *Tags; TUINT Num; } SetAttrs;
-		struct { TAPTR Instance; TUINT RGB; TVPEN Pen; } AllocPen;
-		struct { TAPTR Instance; TVPEN Pen; } FreePen;
-		struct { TAPTR Instance; TSTRPTR Font; } SetFont;
-		struct { TAPTR Instance; TVPEN Pen; } Clear;
-		struct { TAPTR Instance; TINT Rect[4]; TVPEN Pen; } Rect;
-		struct { TAPTR Instance; TINT Rect[4]; TVPEN Pen; } FRect;
-		struct { TAPTR Instance; TINT Rect[4]; TVPEN Pen; } Line;
-		struct { TAPTR Instance; TINT Rect[2]; TVPEN Pen; } Plot;
-		struct { TAPTR Instance; TINT X, Y; TSTRPTR Text; TINT Length;
+		struct { TAPTR Window; TUINT Mask; TUINT OldMask; } SetInput;
+		struct { TAPTR Window; TTAGITEM *Tags; TUINT Num; } GetAttrs;
+		struct { TAPTR Window; TTAGITEM *Tags; TUINT Num; } SetAttrs;
+		struct { TAPTR Window; TUINT RGB; TVPEN Pen; } AllocPen;
+		struct { TAPTR Window; TVPEN Pen; } FreePen;
+		struct { TAPTR Window; TSTRPTR Font; } SetFont;
+		struct { TAPTR Window; TVPEN Pen; } Clear;
+		struct { TAPTR Window; TINT Rect[4]; TVPEN Pen; } Rect;
+		struct { TAPTR Window; TINT Rect[4]; TVPEN Pen; } FRect;
+		struct { TAPTR Window; TINT Rect[4]; TVPEN Pen; } Line;
+		struct { TAPTR Window; TINT Rect[2]; TVPEN Pen; } Plot;
+		struct { TAPTR Window; TINT X, Y; TSTRPTR Text; TINT Length;
 			TVPEN FgPen, BgPen; } Text;
-		struct { TAPTR Instance; TINT *Array; TINT Num; TTAGITEM *Tags; } Strip;
-		struct { TAPTR Instance; TTAGITEM *Tags; } DrawTags;
-		struct { TAPTR Instance; TINT *Array; TINT Num; TTAGITEM *Tags; } Fan;
-		struct { TAPTR Instance; TINT Rect[4]; TINT Angle1; TINT Angle2;
-			TVPEN Pen;} Arc;
-		struct { TAPTR Instance; TINT Rect[4]; TINT DestX; TINT DestY;
+		struct { TAPTR Window; TINT *Array; TINT Num; TTAGITEM *Tags; } Strip;
+		struct { TAPTR Window; TTAGITEM *Tags; } DrawTags;
+		struct { TAPTR Window; TINT *Array; TINT Num; TTAGITEM *Tags; } Fan;
+		struct { TAPTR Window; TINT Rect[4]; TINT DestX; TINT DestY;
 			TTAGITEM *Tags; } CopyArea;
-		struct { TAPTR Instance; TINT Rect[4]; TTAGITEM *Tags; } ClipRect;
-		struct { TAPTR Instance; TINT RRect[4]; TAPTR Buf; TINT TotWidth;
+		struct { TAPTR Window; TINT Rect[4]; TTAGITEM *Tags; } ClipRect;
+		struct { TAPTR Window; TINT RRect[4]; TAPTR Buf; TINT TotWidth;
 			TTAGITEM *Tags; } DrawBuffer;
 	} tvr_Op;
 };
 
 /* Command codes: */
-#define TVCMD_OPENVISUAL	0x1001
-#define TVCMD_CLOSEVISUAL	0x1002
+#define TVCMD_OPENWINDOW	0x1001
+#define TVCMD_CLOSEWINDOW	0x1002
 #define TVCMD_OPENFONT		0x1003
 #define TVCMD_CLOSEFONT		0x1004
 #define TVCMD_GETFONTATTRS	0x1005
@@ -154,6 +165,7 @@ struct TVRequest
 #define TVCMD_UNSETCLIPRECT	0x101b
 #define TVCMD_DRAWFARC		0x101c
 #define TVCMD_DRAWBUFFER	0x101d
+#define TVCMD_EXTENDED		0x2000
 
 /*****************************************************************************/
 /*
@@ -339,8 +351,8 @@ typedef struct TInputMessage
 /* is a qualifier here: */
 #define TKEYQ_NUMBLOCK			0x00000100
 
-/*	Combinations: Use e.g. msg->timsg_Qualifier & TKEYQ_SHIFT
-**	to find out whether any SHIFT key was held */
+/* Combinations: Use e.g. msg->timsg_Qualifier & TKEYQ_SHIFT
+** to find out whether any SHIFT key was held */
 
 #define TKEYQ_SHIFT				(TKEYQ_LSHIFT|TKEYQ_RSHIFT)
 #define TKEYQ_CTRL				(TKEYQ_LCTRL|TKEYQ_RCTRL)

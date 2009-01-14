@@ -7,12 +7,12 @@
 
 #include "display_x11_mod.h"
 
-static TAPTR x11_modopen(TMOD_X11 *mod, TTAGITEM *tags);
-static void x11_modclose(TMOD_X11 *mod);
-static TMODAPI void x11_beginio(TMOD_X11 *mod, struct TVRequest *req);
-static TMODAPI TINT x11_abortio(TMOD_X11 *mod, struct TVRequest *req);
-static TMODAPI struct TVRequest *x11_allocreq(TMOD_X11 *mod);
-static TMODAPI void x11_freereq(TMOD_X11 *mod, struct TVRequest *req);
+static TAPTR x11_modopen(X11DISPLAY *mod, TTAGITEM *tags);
+static void x11_modclose(X11DISPLAY *mod);
+static TMODAPI void x11_beginio(X11DISPLAY *mod, struct TVRequest *req);
+static TMODAPI TINT x11_abortio(X11DISPLAY *mod, struct TVRequest *req);
+static TMODAPI struct TVRequest *x11_allocreq(X11DISPLAY *mod);
+static TMODAPI void x11_freereq(X11DISPLAY *mod, struct TVRequest *req);
 
 static const TMFPTR
 x11_vectors[X11DISPLAY_NUMVECTORS] =
@@ -31,7 +31,7 @@ x11_vectors[X11DISPLAY_NUMVECTORS] =
 };
 
 static void
-x11_destroy(TMOD_X11 *mod)
+x11_destroy(X11DISPLAY *mod)
 {
 	TDBPRINTF(TDB_TRACE,("X11 module destroy...\n"));
 	TDestroy(mod->x11_Lock);
@@ -40,7 +40,7 @@ x11_destroy(TMOD_X11 *mod)
 static THOOKENTRY TTAG
 x11_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 {
-	TMOD_X11 *mod = (TMOD_X11 *) hook->thk_Data;
+	X11DISPLAY *mod = (X11DISPLAY *) hook->thk_Data;
 	switch (msg)
 	{
 		case TMSG_DESTROY:
@@ -55,17 +55,17 @@ x11_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 TMODENTRY TUINT
-tek_init_display_x11(TAPTR task, struct TModule *vis, TUINT16 version,
+tek_init_display_x11(struct TTask *task, struct TModule *vis, TUINT16 version,
 	TTAGITEM *tags)
 {
-	TMOD_X11 *mod = (TMOD_X11 *) vis;
+	X11DISPLAY *mod = (X11DISPLAY *) vis;
 	if (mod == TNULL)
 	{
 		if (version == 0xffff)
 			return sizeof(TAPTR) * X11DISPLAY_NUMVECTORS;
 
 		if (version <= X11DISPLAY_VERSION)
-			return sizeof(TMOD_X11);
+			return sizeof(X11DISPLAY);
 
 		return 0;
 	}
@@ -93,7 +93,7 @@ tek_init_display_x11(TAPTR task, struct TModule *vis, TUINT16 version,
 **	Module open/close
 */
 
-static TAPTR x11_modopen(TMOD_X11 *mod, TTAGITEM *tags)
+static TAPTR x11_modopen(X11DISPLAY *mod, TTAGITEM *tags)
 {
 	TBOOL success = TTRUE;
 	TExecLock(mod->x11_ExecBase, mod->x11_Lock);
@@ -108,7 +108,7 @@ static TAPTR x11_modopen(TMOD_X11 *mod, TTAGITEM *tags)
 }
 
 static void
-x11_modclose(TMOD_X11 *mod)
+x11_modclose(X11DISPLAY *mod)
 {
 	TDBPRINTF(TDB_TRACE,("Device close\n"));
 	TExecLock(mod->x11_ExecBase, mod->x11_Lock);
@@ -123,7 +123,7 @@ x11_modclose(TMOD_X11 *mod)
 */
 
 static TMODAPI void
-x11_beginio(TMOD_X11 *mod, struct TVRequest *req)
+x11_beginio(X11DISPLAY *mod, struct TVRequest *req)
 {
 	TExecPutMsg(mod->x11_ExecBase, mod->x11_CmdPort,
 		req->tvr_Req.io_ReplyPort, req);
@@ -131,7 +131,7 @@ x11_beginio(TMOD_X11 *mod, struct TVRequest *req)
 }
 
 static TMODAPI TINT
-x11_abortio(TMOD_X11 *mod, struct TVRequest *req)
+x11_abortio(X11DISPLAY *mod, struct TVRequest *req)
 {
 	/* not supported: */
 	return -1;
@@ -143,7 +143,7 @@ x11_abortio(TMOD_X11 *mod, struct TVRequest *req)
 */
 
 static TMODAPI struct TVRequest *
-x11_allocreq(TMOD_X11 *mod)
+x11_allocreq(X11DISPLAY *mod)
 {
 	struct TVRequest *req = TExecAllocMsg(mod->x11_ExecBase,
 		sizeof(struct TVRequest));
@@ -153,7 +153,7 @@ x11_allocreq(TMOD_X11 *mod)
 }
 
 static TMODAPI void
-x11_freereq(TMOD_X11 *mod, struct TVRequest *req)
+x11_freereq(X11DISPLAY *mod, struct TVRequest *req)
 {
 	TExecFree(mod->x11_ExecBase, req);
 }

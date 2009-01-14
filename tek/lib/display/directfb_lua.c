@@ -1,6 +1,6 @@
 
 /*
-**	tek.lib.display.dfb - binding of TEKlib's DirectFB driver to Lua
+**	tek.lib.display.directfb - binding of TEKlib's DirectFB driver to Lua
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 */
@@ -13,11 +13,11 @@
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
 
-#define TEK_LIB_DISPLAY_DFB_CLASSNAME "tek.lib.display.dfb*"
-#define TEK_LIB_DISPLAY_DFB_BASECLASSNAME "tek.lib.display.dfb.base*"
+#define TEK_LIB_DISPLAY_DFB_CLASSNAME "tek.lib.display.directfb*"
+#define TEK_LIB_DISPLAY_DFB_BASECLASSNAME "tek.lib.display.directfb.base*"
 
 extern TMODENTRY TUINT
-tek_init_display_dfb(TAPTR, struct TModule *, TUINT16, TTAGITEM *);
+tek_init_display_directfb(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
 static TCALLBACK TINT tek_lib_display_dfb_close(lua_State *L);
 
 typedef struct
@@ -30,7 +30,7 @@ typedef struct
 
 static const struct TInitModule initmodules[] =
 {
-	{ "display_dfb", tek_init_display_dfb, TNULL, 0 },
+	{ "display_directfb", tek_init_display_directfb, TNULL, 0 },
 	{ TNULL }
 };
 
@@ -71,7 +71,7 @@ tek_lib_display_dfb_close(lua_State *L)
 
 /*****************************************************************************/
 
-int luaopen_tek_lib_display_dfb(lua_State *L)
+int luaopen_tek_lib_display_directfb(lua_State *L)
 {
 	TAPTR exec;
 	TEKDisplay *display;
@@ -88,7 +88,7 @@ int luaopen_tek_lib_display_dfb(lua_State *L)
 	exec = *(TAPTR *) lua_touserdata(L, -1);
 
 	/* register functions: */
-	luaL_register(L, "tek.lib.display.dfb", libfuncs);
+	luaL_register(L, "tek.lib.display.directfb", libfuncs);
 	/* s: exectab, execbase, libtab */
 
 	/* create userdata: */

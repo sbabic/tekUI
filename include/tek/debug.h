@@ -1,9 +1,9 @@
-
 #ifndef _TEK_DEBUG_H
 #define _TEK_DEBUG_H
 
 /*
 **	tek/debug.h - Debug support
+**
 **	Written by Timm S. Mueller <tmueller at neoscientists.org>
 **	See copyright notice in teklib/COPYRIGHT
 */
