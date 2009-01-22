@@ -34,33 +34,44 @@ static void exec_unlockatom(TEXECBASE *exec, struct TTask *msg);
 
 /*****************************************************************************/
 /*
-**	success = TDoExec(exec, tags)
-**	entrypoint to exec internal services and initializations
+**	success = TDoExec(exec, cmd, tags)
+**	entrypoint for exec internal services and initializations
 */
 
 EXPORT TBOOL
-exec_DoExec(TEXECBASE *exec, struct TTagItem *tags)
+exec_DoExec(TEXECBASE *exec, TUINT cmd, struct TTagItem *tags)
 {
 	struct TTask *task = exec_FindTask(exec, TNULL);
+	switch (cmd)
+	{
+		case TEXEC_CMD_RUN:
+			/* determine which context to run: */
+			if (task == exec_FindTask(exec, (TSTRPTR) TTASKNAME_EXEC))
+			{
+				/* perform execbase context */
+				exec_main(exec, task, tags);
+				return TTRUE;
+			}
+			else if (task == exec_FindTask(exec, (TSTRPTR) TTASKNAME_RAMLIB))
+			{
+				/* perform ramlib context */
+				exec_ramlib(exec, task, tags);
+				return TTRUE;
+			}
+			break;
 
-	if (task == exec_FindTask(exec, (TSTRPTR) TTASKNAME_EXEC))
-	{
-		/* perform execbase context */
-		exec_main(exec, task, tags);
-		return TTRUE;
-	}
-	else if (task == exec_FindTask(exec, (TSTRPTR) TTASKNAME_RAMLIB))
-	{
-		/* perform ramlib context */
-		exec_ramlib(exec, task, tags);
-		return TTRUE;
-	}
-	else if (task == exec_FindTask(exec, (TSTRPTR) TTASKNAME_ENTRY))
-	{
-		/* place for initializations in entry context */
-		return TTRUE;
-	}
+		case TEXEC_CMD_INIT:
+			/* place for initializations in entry context */
+			task->tsk_TimeReq = exec_AllocTimeRequest(exec, TNULL);
+			if (task->tsk_TimeReq)
+				return TTRUE;
+			break;
 
+		case TEXEC_CMD_EXIT:
+			/* place for de-initializations in entry context */
+			exec_FreeTimeRequest(exec, task->tsk_TimeReq);
+			return TTRUE;
+	}
 	return TFALSE;
 }
 
@@ -700,6 +711,10 @@ exec_taskentryfunc(struct TTask *task)
 			goto closedown;
 	}
 
+	task->tsk_TimeReq = exec_AllocTimeRequest(exec, TNULL);
+	if (task->tsk_TimeReq == TNULL)
+		goto closedown;
+
 	task->tsk_FHIn = (TAPTR) TGetTag(tags, TTask_InputFH, TNULL);
 	task->tsk_FHOut = (TAPTR) TGetTag(tags, TTask_OutputFH, TNULL);
 	task->tsk_FHErr = (TAPTR) TGetTag(tags, TTask_ErrorFH, TNULL);
@@ -740,13 +755,16 @@ exec_taskentryfunc(struct TTask *task)
 
 closedown:
 
+	exec_FreeTimeRequest(exec, task->tsk_TimeReq);
+	task->tsk_TimeReq = TNULL;
+
 	if (task->tsk_IOBase)
 	{
 		/* if we are responsible for a currentdir lock, close it */
 		TAPTR cd = TIOChangeDir(task->tsk_IOBase, TNULL);
 		if (cd)
 			TIOUnlockFile(task->tsk_IOBase, cd);
-		exec_CloseModule(exec, task->tsk_IOBase);
+		exec_CloseModule(exec, (struct TModule *) task->tsk_IOBase);
 	}
 
 	if (status)

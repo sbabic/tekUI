@@ -461,6 +461,15 @@ struct TModInitNode
 
 /*****************************************************************************/
 /*
+**	Execbase command codes:
+*/
+
+#define TEXEC_CMD_RUN	0
+#define TEXEC_CMD_INIT	1
+#define TEXEC_CMD_EXIT	2
+
+/*****************************************************************************/
+/*
 **	Macro versions of some library functions
 */
 

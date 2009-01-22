@@ -87,7 +87,7 @@ tek_lib_visual_sleep(lua_State *L)
 	lua_pop(L, 1);
 
 	dt.tdt_Int64 = luaL_checknumber(L, 1) * 1000000;
-	TWaitTime(vis->vis_TimeRequest, &dt, 0);
+	TWaitTime(&dt, 0);
 
 	return 0;
 }
@@ -104,7 +104,7 @@ tek_lib_visual_gettime(lua_State *L)
 	vis = lua_touserdata(L, -1);
 	lua_pop(L, 1);
 
-	TGetSystemTime(vis->vis_TimeRequest, &dt);
+	TGetSystemTime(&dt);
 	lua_pushinteger(L, dt.tdt_Int64 / 1000000);
 	lua_pushinteger(L, dt.tdt_Int64 % 1000000);
 	return 2;

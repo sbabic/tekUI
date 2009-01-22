@@ -1,7 +1,6 @@
 
 /*
-**	$Id: exec_all.c,v 1.2 2006/09/10 14:39:46 tmueller Exp $
-**	teklib/src/exec/exec_all.c - Stub to build module from single source
+**	teklib/src/visual/visual_all.c - Stub to build module from single source
 **
 **	Written by Timm S. Mueller <tmueller at neoscientists.org>
 **	See copyright notice in teklib/COPYRIGHT
@@ -21,8 +20,6 @@
 
 #include "../teklib/teklib.c"
 
-#include "exec_mod.c"
-#include "exec_api.c"
-#include "exec_memory.c"
-#include "exec_doexec.c"
-#include "exec_time.c"
+#include "visual_mod.c"
+#include "visual_api.c"
+#include "visual_hash.c"

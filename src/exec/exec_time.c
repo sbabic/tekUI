@@ -37,28 +37,27 @@ exec_FreeTimeRequest(struct TExecBase *TExecBase, struct TTimeRequest *req)
 
 /*****************************************************************************/
 /*
-**	exec_getsystemtime(time, treq, time)
+**	exec_getsystemtime(time)
 **	Insert system time into *time
 */
 
 EXPORT void
-exec_GetSystemTime(struct TExecBase *TExecBase, struct TTimeRequest *tr,
-	TTIME *timep)
+exec_GetSystemTime(struct TExecBase *TExecBase, TTIME *timep)
 {
-	if (tr && timep)
+	if (timep)
 	{
-		TAPTR saverp = tr->ttr_Req.io_ReplyPort;
-		tr->ttr_Req.io_ReplyPort = TNULL;
+		struct TTask *task = TFindTask(TNULL);
+		struct TTimeRequest *tr = task->tsk_TimeReq;
+		tr->ttr_Req.io_ReplyPort = &task->tsk_SyncPort;
 		tr->ttr_Req.io_Command = TTREQ_GETSYSTEMTIME;
-		if (TDoIO((struct TIORequest *) tr) == 0)
-			*timep = tr->ttr_Data.ttr_Time;
-		tr->ttr_Req.io_ReplyPort = saverp;
+		TDoIO((struct TIORequest *) tr);
+		*timep = tr->ttr_Data.ttr_Time;
 	}
 }
 
 /*****************************************************************************/
 /*
-**	err = exec_getlocaldate(time, treq, date)
+**	err = exec_getlocaldate(time, date)
 **
 **	Insert datetime into *date.
 **
@@ -68,54 +67,56 @@ exec_GetSystemTime(struct TExecBase *TExecBase, struct TTimeRequest *tr,
 */
 
 static TINT
-execi_getdate(struct TExecBase *TExecBase, struct TTimeRequest *tr, TDATE *dtp,
-	TUINT command)
+execi_getdate(struct TExecBase *TExecBase, TDATE *dtp, TUINT command)
 {
 	TINT err = -1;
-	if (tr)
+	if (dtp)
 	{
-		struct TMsgPort *saverp = tr->ttr_Req.io_ReplyPort;
-		tr->ttr_Req.io_ReplyPort = TNULL;
+		struct TTask *task = TFindTask(TNULL);
+		struct TTimeRequest *tr = task->tsk_TimeReq;
+		tr->ttr_Req.io_ReplyPort = &task->tsk_SyncPort;
 		tr->ttr_Req.io_Command = command;
-		err = -2;
+		tr->ttr_Req.io_Error = 0;
 		if (TDoIO((struct TIORequest *) tr) == 0)
 		{
 			if (dtp)
 				*dtp = tr->ttr_Data.ttr_Date;
 			err = 0;
 		}
-		tr->ttr_Req.io_ReplyPort = saverp;
+		else
+			err = -2;
 	}
 	return err;
 }
 
 EXPORT TINT
-exec_GetLocalDate(struct TExecBase *TExecBase, struct TTimeRequest *tr, TDATE *dtp)
+exec_GetLocalDate(struct TExecBase *TExecBase, TDATE *dtp)
 {
-	return execi_getdate(TExecBase, tr, dtp, TTREQ_GETLOCALDATE);
+	return execi_getdate(TExecBase, dtp, TTREQ_GETLOCALDATE);
 }
 
 EXPORT TINT
-exec_GetUniversalDate(struct TExecBase *TExecBase, struct TTimeRequest *tr, TDATE *dtp)
+exec_GetUniversalDate(struct TExecBase *TExecBase, TDATE *dtp)
 {
-	return execi_getdate(TExecBase, tr, dtp, TTREQ_GETUNIVERSALDATE);
+	return execi_getdate(TExecBase, dtp, TTREQ_GETUNIVERSALDATE);
 }
 
 /*****************************************************************************/
 /*
-**	sig = exec_wait(time, treq, time, sigmask)
+**	sig = exec_wait(time, time, sigmask)
 **	wait an amount of time, or for a set of signals
 */
 
 EXPORT TUINT
-exec_WaitTime(struct TExecBase *TExecBase, struct TTimeRequest *tr, TTIME *timeout,
-	TUINT sigmask)
+exec_WaitTime(struct TExecBase *TExecBase, TTIME *timeout, TUINT sigmask)
 {
 	TUINT sig = 0;
 
-	if (timeout)
+	if (timeout && (timeout->tdt_Int64))
 	{
-		TAPTR saverp = tr->ttr_Req.io_ReplyPort;
+		struct TTask *task = TFindTask(TNULL);
+		struct TTimeRequest *tr = task->tsk_TimeReq;
+		struct TMsgPort *saverp = tr->ttr_Req.io_ReplyPort;
 
 		tr->ttr_Req.io_ReplyPort = TGetSyncPort(TNULL);
 		tr->ttr_Req.io_Command = TTREQ_WAITTIME;
@@ -142,19 +143,20 @@ exec_WaitTime(struct TExecBase *TExecBase, struct TTimeRequest *tr, TTIME *timeo
 
 /*****************************************************************************/
 /*
-**	sig = exec_waitdate(time, treq, date, sigmask)
+**	sig = exec_waitdate(time, date, sigmask)
 **	wait for an universal date, or a set of signals
 */
 
 EXPORT TUINT
-exec_WaitDate(struct TExecBase *TExecBase, struct TTimeRequest *tr, TDATE *date,
-	TUINT sigmask)
+exec_WaitDate(struct TExecBase *TExecBase, TDATE *date, TUINT sigmask)
 {
 	TUINT sig = 0;
 
 	if (date)
 	{
-		TAPTR saverp = tr->ttr_Req.io_ReplyPort;
+		struct TTask *task = TFindTask(TNULL);
+		struct TTimeRequest *tr = task->tsk_TimeReq;
+		struct TMsgPort *saverp = tr->ttr_Req.io_ReplyPort;
 
 		tr->ttr_Req.io_ReplyPort = TGetSyncPort(TNULL);
 		tr->ttr_Req.io_Command = TTREQ_WAITUNIVERSALDATE;

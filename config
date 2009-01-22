@@ -51,8 +51,8 @@ MODDIR = $(BINDIR)/mod
 #------------------------------------------------------------------------------
 
 CC = gcc
-DEBUG = -g -DTDEBUG=10
-WARN = -Wall -Wno-unused-parameter
+DEBUG = -g
+WARN = -Wall -Wno-unused-parameter -Wno-unused
 OPT = -O2
 INCL = -I. -Iinclude -I$(INCDIR)
 LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) -fpic

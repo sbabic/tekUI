@@ -68,7 +68,7 @@ LOCAL TUINT exec_sendmsg(TEXECBASE *exec, struct TTask *task,
 */
 
 EXPORT TBOOL exec_StrEqual(TEXECBASE *exec, TSTRPTR s1, TSTRPTR s2);
-EXPORT TBOOL exec_DoExec(TEXECBASE *exec, struct TTagItem *tags);
+EXPORT TBOOL exec_DoExec(TEXECBASE *exec, TUINT cmd, struct TTagItem *tags);
 EXPORT struct TTask *exec_CreateSysTask(TEXECBASE *exec, TTASKFUNC func,
 	struct TTagItem *tags);
 EXPORT TUINT exec_AllocSignal(TEXECBASE *exec, TUINT signals);
@@ -147,16 +147,11 @@ EXPORT TBOOL exec_RemModules(TEXECBASE *exec, struct TModInitNode *tmin,
 EXPORT struct TTimeRequest *exec_AllocTimeRequest(TEXECBASE *tmod,
 	TTAGITEM *tags);
 EXPORT void exec_FreeTimeRequest(TEXECBASE *tmod, struct TTimeRequest *req);
-EXPORT void exec_GetSystemTime(TEXECBASE *tmod, struct TTimeRequest *req,
-	TTIME *timep);
-EXPORT TINT exec_GetLocalDate(TEXECBASE *tmod, struct TTimeRequest *tr,
-	TDATE *dtp);
-EXPORT TINT exec_GetUniversalDate(TEXECBASE *tmod, struct TTimeRequest *tr,
-	TDATE *dtp);
-EXPORT TUINT exec_WaitTime(TEXECBASE *tmod, struct TTimeRequest *tr, TTIME *timep,
-	TUINT sig);
-EXPORT TUINT exec_WaitDate(TEXECBASE *tmod, struct TTimeRequest *tr,
-	TDATE *date, TUINT sig);
+EXPORT void exec_GetSystemTime(TEXECBASE *tmod, TTIME *timep);
+EXPORT TINT exec_GetLocalDate(TEXECBASE *tmod, TDATE *dtp);
+EXPORT TINT exec_GetUniversalDate(TEXECBASE *tmod, TDATE *dtp);
+EXPORT TUINT exec_WaitTime(TEXECBASE *tmod, TTIME *timep, TUINT sig);
+EXPORT TUINT exec_WaitDate(TEXECBASE *tmod, TDATE *date, TUINT sig);
 
 /*****************************************************************************/
 /*

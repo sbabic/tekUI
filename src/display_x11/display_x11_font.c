@@ -177,7 +177,7 @@ fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 	{
 		struct FontQueryHandle *fqh = obj;
 		X11DISPLAY *mod = fqh->handle.thn_Owner;
-		TAPTR exec = TGetExecBase(mod);
+		TAPTR TExecBase = TGetExecBase(mod);
 		struct TNode *node, *next;
 
 		node = fqh->reslist.tlh_Head;
@@ -190,14 +190,14 @@ fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 
 			/* destroy fontname */
 			if (fqn->tags[0].tti_Value)
-				TExecFree(exec, (TAPTR)fqn->tags[0].tti_Value);
+				TFree((TAPTR)fqn->tags[0].tti_Value);
 
 			/* destroy node */
-			TExecFree(exec, fqn);
+			TFree(fqn);
 		}
 
 		/* destroy queryhandle */
-		TExecFree(exec, fqh);
+		TFree(fqh);
 	}
 
 	return 0;
@@ -214,7 +214,7 @@ fnt_getsubstring(X11DISPLAY *mod, TSTRPTR fstring, TINT m)
 	TINT i, p = 0;
 	TINT mcount = 0;
 	TSTRPTR substr = TNULL;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	/* match '-' at pos m and m+1 */
 	for (i = 0; i < strlen(fstring); i++)
@@ -230,10 +230,10 @@ fnt_getsubstring(X11DISPLAY *mod, TSTRPTR fstring, TINT m)
 	}
 
 	/* extract substring */
-	substr = TExecAlloc0(exec, mod->x11_MemMgr, i-p);
+	substr = TAlloc0(mod->x11_MemMgr, i-p);
 	if (substr)
 	{
-		TExecCopyMem(exec, fstring+p+1, substr, i-p-1);
+		TCopyMem(fstring+p+1, substr, i-p-1);
 		TDBPRINTF(TDB_TRACE,("extracted = '%s'\n", substr));
 	}
 	else
@@ -249,7 +249,7 @@ fnt_getsubstring(X11DISPLAY *mod, TSTRPTR fstring, TINT m)
 static void
 fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 {
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	/* "-*-%s-%s-%s-*-*-%d-*-*-*-*-*-%s" */
 	switch (tag->tti_Tag)
@@ -267,7 +267,7 @@ fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 			if (pxsize)
 			{
 				tag->tti_Value = (TTAG) atoi(pxsize);
-				TExecFree(exec, pxsize);
+				TFree(pxsize);
 			}
 			break;
 		}
@@ -280,7 +280,7 @@ fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 				/* italic attribute set? */
 				if (strncmp(FNT_SLANT_I, slant, strlen(FNT_SLANT_I)) == 0)
 					tag->tti_Value = (TTAG) TTRUE;
-				TExecFree(exec, slant);
+				TFree(slant);
 			}
 			break;
 		}
@@ -293,7 +293,7 @@ fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 				/* bold attribute set? */
 				if (strncmp(FNT_WGHT_BOLD, weight, strlen(FNT_WGHT_BOLD)) == 0)
 					tag->tti_Value = (TTAG) TTRUE;
-				TExecFree(exec, weight);
+				TFree(weight);
 			}
 			break;
 		}
@@ -310,11 +310,11 @@ fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 static struct FontQueryNode *
 fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TINT pxsize)
 {
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 	struct FontQueryNode *fqnode = TNULL;
 
 	/* allocate fquery node */
-	fqnode = TExecAlloc0(exec, mod->x11_MemMgr, sizeof(struct FontQueryNode));
+	fqnode = TAlloc0(mod->x11_MemMgr, sizeof(struct FontQueryNode));
 	if (fqnode)
 	{
 		FcChar8 *fname = TNULL;
@@ -325,11 +325,11 @@ fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TINT pxsize)
  		{
  			/* got fontname, now copy it to fqnode */
  			TINT flen = strlen((char *)fname);
-			TSTRPTR myfname = TExecAlloc0(exec, mod->x11_MemMgr, flen + 1);
+			TSTRPTR myfname = TAlloc0(mod->x11_MemMgr, flen + 1);
 
 			if (myfname)
 			{
-				TExecCopyMem(exec, fname, myfname, flen);
+				TCopyMem(fname, myfname, flen);
  				fqnode->tags[0].tti_Tag = TVisual_FontName;
 				fqnode->tags[0].tti_Value = (TTAG) myfname;
 			}
@@ -389,7 +389,7 @@ fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TINT pxsize)
 		} /* endif fqnode->tags[0].tti_Value */
 		else
 		{
-			TExecFree(exec, fqnode);
+			TFree(fqnode);
 			fqnode = TNULL;
 		}
 
@@ -408,11 +408,11 @@ fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TINT pxsize)
 static struct FontQueryNode *
 fnt_getfqnode_xlib(X11DISPLAY *mod, TSTRPTR fontname)
 {
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 	struct FontQueryNode *fqnode = TNULL;
 
 	/* allocate fquery node */
-	fqnode = TExecAlloc0(exec, mod->x11_MemMgr, sizeof(struct FontQueryNode));
+	fqnode = TAlloc0(mod->x11_MemMgr, sizeof(struct FontQueryNode));
 	if (fqnode)
 	{
 		/* fquerynode ready - fill in attributes */
@@ -438,7 +438,7 @@ fnt_getfqnode_xlib(X11DISPLAY *mod, TSTRPTR fontname)
 		}
 		else
 		{
-			TExecFree(exec, fqnode);
+			TFree(fqnode);
 			fqnode = TNULL;
 		}
 	}
@@ -537,7 +537,7 @@ fnt_getfnnodes(X11DISPLAY *mod, struct TList *fnlist, TSTRPTR fname)
 	TINT i, p = 0;
 	TBOOL lastrun = TFALSE;
 	TINT fnlen = strlen(fname);
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	for (i = 0; i < fnlen; i++)
 	{
@@ -546,15 +546,15 @@ fnt_getfnnodes(X11DISPLAY *mod, struct TList *fnlist, TSTRPTR fname)
 		if (fname[i] == ',' || lastrun)
 		{
 			TINT len = (i > p) ? (lastrun ? (i-p+1) : (i-p)) : fnlen+1;
-			TSTRPTR ts = TExecAlloc0(exec, mod->x11_MemMgr, len+1);
+			TSTRPTR ts = TAlloc0(mod->x11_MemMgr, len+1);
 
 			if (ts)
 			{
 				struct fnt_node *fnn;
 
-				TExecCopyMem(exec, fname+p, ts, len);
+				TCopyMem(fname+p, ts, len);
 
-				fnn = TExecAlloc0(exec, mod->x11_MemMgr, sizeof(struct fnt_node));
+				fnn = TAlloc0(mod->x11_MemMgr, sizeof(struct fnt_node));
 				if (fnn)
 				{
 					/* add fnnode to fnlist */
@@ -627,7 +627,7 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 	struct fnt_attr *fattr, TUINT flag)
 {
 	TUINT match = 0;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	if (flag & FNT_MATCH_NAME)
 	{
@@ -643,7 +643,7 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 			fname[i] = tolower(fname[i]);
 
 		len = strlen((TSTRPTR)fcfname);
-		tempname = TExecAlloc0(exec, mod->x11_MemMgr, len+1);
+		tempname = TAlloc0(mod->x11_MemMgr, len+1);
 		if (!tempname)
 		{
 			TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
@@ -657,7 +657,7 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 		if (strncmp(fname, tempname, len) == 0)
 			match = FNT_MATCH_NAME;
 
-		TExecFree(exec, tempname);
+		TFree(tempname);
 	}
 
 	if (flag & FNT_MATCH_SIZE)
@@ -727,9 +727,9 @@ utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len)
 	struct utf8reader rd;
 	struct readstringdata rs;
 	TUINT8 *latin = TNULL;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
-	latin = TExecAlloc0(exec, mod->x11_MemMgr, len+1);
+	latin = TAlloc0(mod->x11_MemMgr, len+1);
 	if (latin)
 	{
 		TINT i = 0;
@@ -806,7 +806,7 @@ x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags)
 	struct fnt_attr fattr;
 	struct FontNode *fn;
 	TAPTR font = TNULL;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	/* fetch user specified attributes */
 	fattr.fname = (TSTRPTR) TGetTag(tags, TVisual_FontName, (TTAG) FNT_DEFNAME);
@@ -817,7 +817,7 @@ x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags)
 
 	if (fattr.fname)
 	{
-		fn = TExecAlloc0(exec, mod->x11_MemMgr, sizeof(struct FontNode));
+		fn = TAlloc0(mod->x11_MemMgr, sizeof(struct FontNode));
 		if (fn)
 		{
 			fn->handle.thn_Owner = mod;
@@ -840,7 +840,7 @@ x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags)
 			{
 				/* load failed, free fontnode */
 				TDBPRINTF(TDB_ERROR,("X unable to load '%s'\n", fattr.fname));
-				TExecFree(exec, fn);
+				TFree(fn);
 			}
 		}
 		else
@@ -856,7 +856,7 @@ static TBOOL
 hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 {
 	TBOOL succ = TFALSE;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
@@ -882,7 +882,7 @@ hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 	#endif
 	{
 		/* load xlib font */
-		TSTRPTR fquery = TExecAlloc0(exec, mod->x11_MemMgr,
+		TSTRPTR fquery = TAlloc0(mod->x11_MemMgr,
 			FNT_LENGTH + strlen(fattr->fname));
 
 		if (fquery)
@@ -902,7 +902,7 @@ hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 			if (fn->font)
 				succ = TTRUE;
 
-			TExecFree(exec, fquery);
+			TFree(fquery);
 		}
 		else
 			TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
@@ -968,7 +968,7 @@ x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags)
 	struct fnt_attr fattr;
 	struct TNode *node, *next;
 	struct FontQueryHandle *fqh = TNULL;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	/* init fontname list */
 	TInitList(&fattr.fnlist);
@@ -985,7 +985,7 @@ x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags)
 	fattr.fnum = (TINT) TGetTag(tags, TVisual_FontNumResults, (TTAG) INT_MAX);
 
 	/* init result list */
-	fqh = TExecAlloc0(exec, mod->x11_MemMgr, sizeof(struct FontQueryHandle));
+	fqh = TAlloc0(mod->x11_MemMgr, sizeof(struct FontQueryHandle));
 	if (fqh)
 	{
 		fqh->handle.thn_Owner = mod;
@@ -1011,9 +1011,9 @@ x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags)
 	for (node = fattr.fnlist.tlh_Head; (next = node->tln_Succ); node = next)
 	{
 		struct fnt_node *fnn = (struct fnt_node *)node;
-		TExecFree(exec, fnn->fname);
+		TFree(fnn->fname);
 		TRemove(&fnn->node);
-		TExecFree(exec, fnn);
+		TFree(fnn);
 	}
 
 	return fqh;
@@ -1025,7 +1025,7 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 {
 	FcPattern *pattern = TNULL;
 	struct TNode *node, *next;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 	TUINT matchflg = 0;
 	TINT fcount = 0;
 
@@ -1086,9 +1086,9 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 
 		/* don't call FcConfigSubstitute because matching
 			should be as exact as possible */
-		TDB(10, ((*mod->x11_fciface.FcPatternPrint)(pattern)));
+		TDB(TDB_TRACE, ((*mod->x11_fciface.FcPatternPrint)(pattern)));
 		(*mod->x11_fciface.FcDefaultSubstitute)(pattern);
-		TDB(10, ((*mod->x11_fciface.FcPatternPrint)(pattern)));
+		TDB(TDB_TRACE, ((*mod->x11_fciface.FcPatternPrint)(pattern)));
 
 		fontset = (*mod->x11_fciface.FcFontSort)(NULL, pattern, FcFalse, TNULL, &result);
 		if (fontset)
@@ -1121,8 +1121,8 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 						else
 						{
 							/* max count of desired results reached */
-							TExecFree(exec, (TSTRPTR)fqnode->tags[0].tti_Value);
-							TExecFree(exec, fqnode);
+							TFree((TSTRPTR)fqnode->tags[0].tti_Value);
+							TFree(fqnode);
 							break;
 						}
 					}
@@ -1130,8 +1130,8 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 					{
 						/* fqnode is not unique, destroy it */
 						TDBPRINTF(TDB_ERROR,("X node is not unique\n"));
-						TExecFree(exec, (TSTRPTR)fqnode->tags[0].tti_Value);
-						TExecFree(exec, fqnode);
+						TFree((TSTRPTR)fqnode->tags[0].tti_Value);
+						TFree(fqnode);
 					}
 				}
 			}
@@ -1156,7 +1156,7 @@ hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_att
 {
 	TSTRPTR fquery = TNULL;
 	TCHR **fontlist = TNULL;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 	struct TNode *node, *next;
 
 	for (node = fattr->fnlist.tlh_Head; (next = node->tln_Succ); node = next)
@@ -1166,7 +1166,7 @@ hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_att
 
 		if (fnn->fname)
 		{
-			fquery = TExecAlloc0(exec, mod->x11_MemMgr, FNT_LENGTH + strlen(fnn->fname));
+			fquery = TAlloc0(mod->x11_MemMgr, FNT_LENGTH + strlen(fnn->fname));
 			if (!fquery)
 			{
 				TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
@@ -1228,13 +1228,13 @@ hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_att
 			{
 				/* fqnode is not unique, destroy it */
 				TDBPRINTF(TDB_ERROR,("X node is not unique\n"));
-				TExecFree(exec, (TSTRPTR)fqnode->tags[0].tti_Value);
-				TExecFree(exec, fqnode);
+				TFree((TSTRPTR)fqnode->tags[0].tti_Value);
+				TFree(fqnode);
 			}
 
 		} /* end of fontlist iteration */
 
-		TExecFree(exec, fquery);
+		TFree(fquery);
 
 		if (fontlist)
 			XFreeFontNames(fontlist);
@@ -1336,7 +1336,7 @@ LOCAL void
 x11_hostclosefont(X11DISPLAY *mod, TAPTR font)
 {
 	struct FontNode *fn = (struct FontNode *) font;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	if (font == mod->x11_fm.deffont)
 	{
@@ -1385,7 +1385,7 @@ x11_hostclosefont(X11DISPLAY *mod, TAPTR font)
 	TRemove(&fn->handle.thn_Node);
 
 	/* free fontnode itself */
-	TExecFree(exec, fn);
+	TFree(fn);
 }
 
 /*****************************************************************************/
@@ -1409,7 +1409,7 @@ x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text)
 {
 	TINT width = 0;
 	struct FontNode *fn = (struct FontNode *) font;
-	TAPTR exec = TGetExecBase(mod);
+	TAPTR TExecBase = TGetExecBase(mod);
 
 	#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
@@ -1426,7 +1426,7 @@ x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text)
 		if (latin)
 		{
 			width = XTextWidth(fn->font, latin, strlen(latin));
-			TExecFree(exec, latin);
+			TFree(latin);
 		}
 	}
 	return width;
@@ -1577,5 +1577,3 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	data->num++;
 	return TTRUE;
 }
-
-/*****************************************************************************/

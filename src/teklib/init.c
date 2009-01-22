@@ -203,7 +203,7 @@ static TTASKENTRY void
 init_execfunc(struct TTask *task)
 {
 	TAPTR exec = TGetExecBase(task);
-	TExecDoExec(exec, TNULL);
+	TExecDoExec(exec, TEXEC_CMD_RUN, TNULL);
 }
 
 /*****************************************************************************/
@@ -240,6 +240,9 @@ init_destroyapptask(struct THook *hook, TAPTR apptask, TTAG msg)
 	init_destroyatom(exec, init->tli_AtomArgs, "sys.arguments");
 	init_destroyatom(exec, init->tli_AtomArgV, "sys.argv");
 	init_destroyatom(exec, init->tli_AtomInitMods, "sys.imods");
+
+	/* deinitializations in basetask: */
+	TExecDoExec(init->tli_ExecBase, TEXEC_CMD_EXIT, TNULL);
 
 	TExecSignal(init->tli_ExecBase, init->tli_ExecTask, TTASK_SIG_ABORT);
 	TExecSignal(init->tli_ExecBase, init->tli_IOTask, TTASK_SIG_ABORT);
@@ -321,7 +324,7 @@ TEKCreate(TTAGITEM *usertags)
 							/* this is the backdoor for the remaining
 							** initializations in the entrytask context */
 
-							if (TExecDoExec(init->tli_ExecBase, TNULL))
+							if (TExecDoExec(init->tli_ExecBase, TEXEC_CMD_INIT, TNULL))
 							{
 								struct THandle *ath =
 									(struct THandle *) init->tli_AppTask;

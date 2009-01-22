@@ -187,15 +187,9 @@ dfb_init(DFBDISPLAY *mod, TTAGITEM *tags)
 	for (;;)
 	{
 		TTAGITEM tags[2];
-
-		mod->dfb_TimeReq =
-			TExecAllocTimeRequest(mod->dfb_ExecBase, TNULL);
-		if (mod->dfb_TimeReq == TNULL) break;
-
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
 		tags[1].tti_Tag = TTAG_DONE;
-
 		mod->dfb_Task = TExecCreateTask(mod->dfb_ExecBase,
 			(TTASKFUNC) dfb_taskfunc, (TINITFUNC) dfb_initinstance, tags);
 		if (mod->dfb_Task == TNULL) break;
@@ -220,8 +214,6 @@ dfb_exit(DFBDISPLAY *mod)
 		dfb_wake(mod);
 		TDestroy(mod->dfb_Task);
 	}
-
-	TExecFreeTimeRequest(mod->dfb_ExecBase, mod->dfb_TimeReq);
 }
 
 /*****************************************************************************/
@@ -534,7 +526,7 @@ dfb_taskfunc(struct TTask *task)
 	TTIME nextt;
 	TTIME waitt, nowt;
 
-	TExecGetSystemTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nextt);
+	TExecGetSystemTime(inst->dfb_ExecBase, &nextt);
 	TAddTime(&nextt, &intt);
 
 	TDBPRINTF(TDB_ERROR,("Device instance running\n"));
@@ -561,7 +553,7 @@ dfb_taskfunc(struct TTask *task)
 		FD_SET(inst->dfb_FDSigPipeRead, &rset);
 
 		/* calculate new delta to wait: */
-		TExecGetSystemTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nowt);
+		TExecGetSystemTime(inst->dfb_ExecBase, &nowt);
 		waitt = nextt;
 		TSubTime(&waitt, &nowt);
 
@@ -586,7 +578,7 @@ dfb_taskfunc(struct TTask *task)
 		}
 
 		/* check if time interval has expired: */
-		TExecGetSystemTime(inst->dfb_ExecBase, inst->dfb_TimeReq, &nowt);
+		TExecGetSystemTime(inst->dfb_ExecBase, &nowt);
 		if (TCmpTime(&nowt, &nextt) > 0)
 		{
 			/* expired; send interval: */
@@ -991,7 +983,7 @@ TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type)
 		msg->timsg_Qualifier = mod->dfb_KeyQual;
 		msg->timsg_MouseX = mod->dfb_MouseX;
 		msg->timsg_MouseY = mod->dfb_MouseY;
-		TExecGetSystemTime(mod->dfb_ExecBase, mod->dfb_TimeReq, &msg->timsg_TimeStamp);
+		TExecGetSystemTime(mod->dfb_ExecBase, &msg->timsg_TimeStamp);
 		*msgptr = msg;
 		return TTRUE;
 	}

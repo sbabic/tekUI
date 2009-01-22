@@ -1,4 +1,3 @@
-
 #ifndef _TEK_MODS_VISUAL_MOD_H
 #define _TEK_MODS_VISUAL_MOD_H
 
@@ -11,10 +10,8 @@
 #include <tek/debug.h>
 #include <tek/exec.h>
 #include <tek/teklib.h>
-
-#include <tek/proto/exec.h>
 #include <tek/mod/visual.h>
-
+#include <tek/inline/exec.h>
 #include <tek/proto/display.h>
 
 /*****************************************************************************/
@@ -49,10 +46,6 @@ struct TVisualBase
 {
 	/* Module header: */
 	struct TModule vis_Module;
-	/* Exec module base ptr: */
-	TAPTR vis_ExecBase;
-	/* Util module base ptr: */
-	TAPTR vis_UtilBase;
 	/* Module global memory manager (thread safe): */
 	TAPTR vis_MemMgr;
 	/* Locking for module base structure: */
@@ -85,11 +78,12 @@ struct TVisualBase
 
 LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, TAPTR udata);
 LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash);
-LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key,
-	TTAG value);
-LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key,
-	TTAG *valp);
-LOCAL int vis_remhash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key);
+LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash,
+	const TSTRPTR key, TTAG value);
+LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash,
+	const TSTRPTR key, TTAG *valp);
+LOCAL int vis_remhash(struct TVisualBase *mod, struct vis_Hash *hash,
+	const TSTRPTR key);
 LOCAL TUINT vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash,
 	struct TList *list);
 LOCAL void vis_hashunlist(struct TVisualBase *mod, struct vis_Hash *hash);

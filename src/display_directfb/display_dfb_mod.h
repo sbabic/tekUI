@@ -187,8 +187,6 @@ typedef struct
 	struct TList dfb_imsgpool;
 	/* list of all visuals: */
 	struct TList dfb_vlist;
-	/* Timerequest: */
-	TAPTR dfb_TimeReq;
 	/* Module global memory manager (thread safe): */
 	struct TMemManager *dfb_MemMgr;
 

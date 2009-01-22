@@ -1,3 +1,5 @@
+#ifndef _TEK_TEKLIB_C
+#define _TEK_TEKLIB_C
 
 /*
 **	$Id: teklib.c,v 1.5 2006/09/10 20:30:25 tmueller Exp $
@@ -545,3 +547,5 @@ TLIBAPI TBOOL TExtractTime(TTIME *t, TINT *d, TINT *s, TINT *us)
 	}
 	return TFALSE;
 }
+
+#endif /* _TEK_TEKLIB_C */

@@ -451,29 +451,11 @@ exec_WaitIO(TEXECBASE *exec, struct TIORequest *ioreq)
 EXPORT TINT
 exec_DoIO(TEXECBASE *exec, struct TIORequest *ioreq)
 {
-	TAPTR replyport = ioreq->io_ReplyPort;
-
-	if (replyport == TNULL)
-	{
-		/* temporarily use task's syncport */
-		struct TTask *task = THALFindSelf(exec->texb_HALBase);
-		ioreq->io_ReplyPort = &task->tsk_SyncPort;
-	}
-
 	ioreq->io_Flags |= TIOF_QUICK;
 	TGETMSGPTR(ioreq)->tmsg_Flags = 0;
-
 	_TModBeginIO(ioreq->io_Device, ioreq);
 	exec_WaitIO(exec, ioreq);
-
-	if (replyport == TNULL)
-	{
-		/* restore task's syncport */
-		ioreq->io_ReplyPort = TNULL;
-		/* clear potentially pending sync signal */
-		THALSetSignal(exec->texb_HALBase, 0, TTASK_SIG_SINGLE);
-	}
-
+	THALSetSignal(exec->texb_HALBase, 0, TTASK_SIG_SINGLE);
 	return (TINT) ioreq->io_Error;
 }
 
@@ -488,7 +470,6 @@ exec_CheckIO(TEXECBASE *exec, struct TIORequest *ioreq)
 {
 	struct TMessage *msg = TGETMSGPTR(ioreq);
 	TUINT status = msg->tmsg_Flags;
-
 	return (TBOOL) (!(status & TMSGF_SENT) ||
 		(status == (TMSG_STATUS_REPLIED | TMSGF_QUEUED)));
 }

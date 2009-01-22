@@ -31,6 +31,7 @@ static const unsigned int hash_primes[] =
 static void
 hash_resize(struct TVisualBase *mod, struct vis_Hash *hash)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	TINT numbuckets = hash->numbuckets;
 	TSIZE load = hash->numnodes / numbuckets;
 	int pi = hash->primeidx;
@@ -45,7 +46,7 @@ hash_resize(struct TVisualBase *mod, struct vis_Hash *hash)
 	{
 		struct vis_HashNode **newbuckets;
 		int newnumbuckets = hash_primes[pi];
-		newbuckets = TExecAlloc0(mod->vis_ExecBase, mod->vis_MemMgr,
+		newbuckets = TAlloc0(mod->vis_MemMgr,
 			sizeof(struct vis_HashNode) * newnumbuckets);
 		if (newbuckets)
 		{
@@ -63,7 +64,7 @@ hash_resize(struct TVisualBase *mod, struct vis_Hash *hash)
 				}
 			}
 
-			TExecFree(mod->vis_ExecBase, hash->buckets);
+			TFree(hash->buckets);
 			hash->buckets = newbuckets;
 			hash->numbuckets = newnumbuckets;
 			hash->primeidx = pi;
@@ -104,9 +105,10 @@ hash_lookupstring(struct vis_Hash *hash, const char *key, TUINT *hvalp)
 
 /*****************************************************************************/
 
-LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key,
-	TTAG value)
+LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash,
+	const TSTRPTR key, TTAG value)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct vis_HashNode **bucket, *newnode;
 	TUINT hval;
 
@@ -119,12 +121,12 @@ LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTR
 	}
 
 	/* key does not exist - create new node */
-	newnode = TExecAlloc(mod->vis_ExecBase, mod->vis_MemMgr,
+	newnode = TAlloc(mod->vis_MemMgr,
 		sizeof(struct vis_HashNode));
 	if (newnode)
 	{
 		size_t len = strlen(key) + 1;
-		char *newkey = TExecAlloc(mod->vis_ExecBase, mod->vis_MemMgr, len);
+		char *newkey = TAlloc(mod->vis_MemMgr, len);
 		if (newkey)
 		{
 			memcpy(newkey, key, len);
@@ -137,14 +139,14 @@ LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTR
 			hash_resize(mod, hash);
 			return 1;
 		}
-		TExecFree(mod->vis_ExecBase, newnode);
+		TFree(newnode);
 	}
 
 	return 0;
 }
 
-LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key,
-	TTAG *valp)
+LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash,
+	const TSTRPTR key, TTAG *valp)
 {
 	TUINT hval;
 	struct vis_HashNode **bucket = (*hash->lookupfunc)(hash, key, &hval);
@@ -157,16 +159,18 @@ LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTR
 	return 0;
 }
 
-LOCAL int vis_remhash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTRPTR key)
+LOCAL int vis_remhash(struct TVisualBase *mod, struct vis_Hash *hash,
+	const TSTRPTR key)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	TUINT hval;
 	struct vis_HashNode **bucket = (*hash->lookupfunc)(hash, key, &hval);
 	if (*bucket)
 	{
 		struct vis_HashNode *node = *bucket;
 		*bucket = (struct vis_HashNode *) node->node.tln_Succ;
-		TExecFree(mod->vis_ExecBase, (void *) node->key);
-		TExecFree(mod->vis_ExecBase, node);
+		TFree((void *) node->key);
+		TFree(node);
 		hash->numnodes--;
 		hash_resize(mod, hash);
 		return 1;
@@ -176,12 +180,12 @@ LOCAL int vis_remhash(struct TVisualBase *mod, struct vis_Hash *hash, const TSTR
 
 LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, void *udata)
 {
-	struct vis_Hash *hash = TExecAlloc(mod->vis_ExecBase,
-		mod->vis_MemMgr, sizeof(struct vis_Hash));
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	struct vis_Hash *hash = TAlloc(mod->vis_MemMgr, sizeof(struct vis_Hash));
 	if (hash)
 	{
 		hash->udata = udata;
-		hash->buckets = TExecAlloc0(mod->vis_ExecBase, mod->vis_MemMgr,
+		hash->buckets = TAlloc0(mod->vis_MemMgr,
 			sizeof(struct vis_Hash) * HASH_MINSIZE);
 		if (hash->buckets)
 		{
@@ -192,19 +196,18 @@ LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, void *udata)
 			hash->list = TNULL;
 			return hash;
 		}
-		TExecFree(mod->vis_ExecBase, hash);
+		TFree(hash);
 	}
 	return TNULL;
 }
 
 LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	if (hash)
 	{
 		TINT i;
-
 		vis_hashunlist(mod, hash);
-
 		for (i = 0; i < hash->numbuckets; ++i)
 		{
 			struct vis_HashNode *node, *nnode = hash->buckets[i];
@@ -213,18 +216,19 @@ LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash)
 				nnode = (struct vis_HashNode *) node->node.tln_Succ;
 				if (node)
 				{
-					TExecFree(mod->vis_ExecBase, node->key);
-					TExecFree(mod->vis_ExecBase, node);
+					TFree(node->key);
+					TFree(node);
 				}
 			}
 		}
-		TExecFree(mod->vis_ExecBase, hash->buckets);
-		TExecFree(mod->vis_ExecBase, hash);
+		TFree(hash->buckets);
+		TFree(hash);
 	}
 }
 
 LOCAL TUINT
-vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash, struct TList *list)
+vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash,
+	struct TList *list)
 {
 	if (list && hash->numnodes > 0)
 	{

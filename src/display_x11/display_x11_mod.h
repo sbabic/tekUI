@@ -21,6 +21,7 @@
 #include <X11/XKBlib.h>
 
 #include <tek/proto/exec.h>
+#include <tek/inline/exec.h>
 #include <tek/mod/visual.h>
 
 /*****************************************************************************/
@@ -187,10 +188,6 @@ typedef struct
 {
 	/* Module header: */
 	struct TModule x11_Module;
-	/* Exec module base ptr: */
-	TAPTR x11_ExecBase;
-	/* Timerequest: */
-	TAPTR x11_TimeReq;
 	/* Module global memory manager (thread safe): */
 	TAPTR x11_MemMgr;
 	/* Locking for module base structure: */
@@ -272,7 +269,7 @@ typedef struct
 	GC gc;
 
 	XftDraw *draw;
-	TAPTR curfont;				/* current active font */
+	TAPTR curfont; /* current active font */
 
 	Atom atom_wm_delete_win;
 
@@ -365,7 +362,8 @@ LOCAL TAPTR x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags);
 LOCAL TAPTR x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags);
 LOCAL void x11_hostclosefont(X11DISPLAY *mod, TAPTR font);
 LOCAL TINT  x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text);
-LOCAL THOOKENTRY TTAG x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg);
+LOCAL THOOKENTRY TTAG x11_hostgetfattrfunc(struct THook *hook, TAPTR obj,
+	TTAG msg);
 LOCAL TTAGITEM *x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle);
 
 TSTRPTR utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len);

@@ -209,19 +209,19 @@
 #define TFreeTimeRequest(req) \
 	(*(((TMODCALL void(**)(TAPTR,TAPTR))(TExecBase))[-76]))(TExecBase,req)
 
-#define TGetSystemTime(req,t) \
-	(*(((TMODCALL void(**)(TAPTR,TAPTR,TTIME *))(TExecBase))[-77]))(TExecBase,req,t)
+#define TGetSystemTime(t) \
+	(*(((TMODCALL void(**)(TAPTR,TTIME *))(TExecBase))[-77]))(TExecBase,t)
 
-#define TGetUniversalDate(req,dt) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TDATE *))(TExecBase))[-78]))(TExecBase,req,dt)
+#define TGetUniversalDate(dt) \
+	(*(((TMODCALL TINT(**)(TAPTR,TDATE *))(TExecBase))[-78]))(TExecBase,dt)
 
-#define TGetLocalDate(req,dt) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TDATE *))(TExecBase))[-79]))(TExecBase,req,dt)
+#define TGetLocalDate(dt) \
+	(*(((TMODCALL TINT(**)(TAPTR,TDATE *))(TExecBase))[-79]))(TExecBase,dt)
 
-#define TWaitTime(req,t,sig) \
-	(*(((TMODCALL TUINT(**)(TAPTR,TAPTR,TTIME *,TUINT))(TExecBase))[-80]))(TExecBase,req,t,sig)
+#define TWaitTime(t,sig) \
+	(*(((TMODCALL TUINT(**)(TAPTR,TTIME *,TUINT))(TExecBase))[-80]))(TExecBase,t,sig)
 
-#define TWaitDate(req,dt,sig) \
-	(*(((TMODCALL TUINT(**)(TAPTR,TAPTR,TDATE *,TUINT))(TExecBase))[-81]))(TExecBase,req,dt,sig)
+#define TWaitDate(dt,sig) \
+	(*(((TMODCALL TUINT(**)(TAPTR,TDATE *,TUINT))(TExecBase))[-81]))(TExecBase,dt,sig)
 
 #endif /* _TEK_INLINE_EXEC_H */

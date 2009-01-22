@@ -7,7 +7,8 @@
 
 #include "visual_mod.h"
 
-static struct TVisualBase *vis_modopen(struct TVisualBase *mod, TTAGITEM *tags);
+static struct TVisualBase *vis_modopen(struct TVisualBase *mod,
+	TTAGITEM *tags);
 static void vis_modclose(struct TVisualBase *mod);
 static TBOOL vis_init(struct TVisualBase *mod);
 static void vis_exit(struct TVisualBase *mod);
@@ -104,8 +105,8 @@ tek_init_visual(struct TTask *task, struct TModule *vis, TUINT16 version,
 
 	for (;;)
 	{
-		mod->vis_ExecBase = TGetExecBase(mod);
-		mod->vis_Lock = TExecCreateLock(mod->vis_ExecBase, TNULL);
+		struct TExecBase *TExecBase = TGetExecBase(mod);
+		mod->vis_Lock = TCreateLock(TNULL);
 		if (mod->vis_Lock == TNULL) break;
 
 		mod->vis_Module.tmd_Version = VISUAL_VERSION;
@@ -128,10 +129,11 @@ tek_init_visual(struct TTask *task, struct TModule *vis, TUINT16 version,
 static struct TVisualBase *
 vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVisualBase *inst = TNULL;
 	TBOOL success = TTRUE;
 
-	TExecLock(mod->vis_ExecBase, mod->vis_Lock);
+	TLock(mod->vis_Lock);
 
 	if (mod->vis_RefCount == 0)
 		success = vis_init(mod);
@@ -139,11 +141,12 @@ vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 	if (success)
 		mod->vis_RefCount++;
 
-	TExecUnlock(mod->vis_ExecBase, mod->vis_Lock);
+	TUnlock(mod->vis_Lock);
 
 	if (success)
 	{
-		struct TVisualBase *base = (struct TVisualBase *) TGetTag(tags, TVisual_Attach, TNULL);
+		struct TVisualBase *base =
+			(struct TVisualBase *) TGetTag(tags, TVisual_Attach, TNULL);
 		if (TGetTag(tags, TVisual_NewInstance, TFALSE)) base = mod;
 
 		if (base)
@@ -154,10 +157,8 @@ vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 			{
 				TInitList(&inst->vis_ReqPool);
 				TInitList(&inst->vis_WaitList);
-				inst->vis_IMsgPort =
-					TExecCreatePort(inst->vis_ExecBase, TNULL);
-				inst->vis_CmdRPort =
-					TExecCreatePort(inst->vis_ExecBase, TNULL);
+				inst->vis_IMsgPort = TCreatePort(TNULL);
+				inst->vis_CmdRPort = TCreatePort(TNULL);
 				if (inst->vis_IMsgPort == TNULL || inst->vis_CmdRPort == TNULL)
 				{
 					TDestroy(inst->vis_CmdRPort);
@@ -179,32 +180,34 @@ vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 static void
 vis_modclose(struct TVisualBase *inst)
 {
-	struct TVisualBase *mod = (struct TVisualBase *) inst->vis_Module.tmd_ModSuper;
+	struct TVisualBase *mod =
+		(struct TVisualBase *) inst->vis_Module.tmd_ModSuper;
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	if (inst != mod)
 	{
 		struct TNode *node;
 		TAPTR imsg;
 
-		while ((imsg = TExecGetMsg(inst->vis_ExecBase, inst->vis_IMsgPort)))
-			TExecAckMsg(inst->vis_ExecBase, imsg);
+		while ((imsg = TGetMsg(inst->vis_IMsgPort)))
+			TAckMsg(imsg);
 
 		while ((node = TRemHead(&inst->vis_ReqPool)))
-			TExecFree(inst->vis_ExecBase, node);
+			TFree(node);
 
 		while ((node = TRemHead(&inst->vis_WaitList)))
 		{
-			TExecWaitIO(inst->vis_ExecBase, (struct TIORequest *) node);
-			TExecFree(inst->vis_ExecBase, node);
+			TWaitIO((struct TIORequest *) node);
+			TFree(node);
 		}
 
 		TDestroy(inst->vis_CmdRPort);
 		TDestroy(inst->vis_IMsgPort);
 		TFreeInstance(inst);
 	}
-	TExecLock(mod->vis_ExecBase, mod->vis_Lock);
+	TLock(mod->vis_Lock);
 	if (--mod->vis_RefCount == 0)
 		vis_exit(mod);
-	TExecUnlock(mod->vis_ExecBase, mod->vis_Lock);
+	TUnlock(mod->vis_Lock);
 }
 
 /*****************************************************************************/
@@ -229,6 +232,7 @@ vis_init(struct TVisualBase *mod)
 static void
 vis_exit(struct TVisualBase *mod)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	if (mod->vis_Displays)
 	{
 		struct TList dlist;
@@ -245,7 +249,7 @@ vis_exit(struct TVisualBase *mod)
 		{
 			struct TModule *dmod = (struct TModule *)
 				((struct vis_HashNode *) node)->value;
-			TExecCloseModule(mod->vis_ExecBase, dmod);
+			TCloseModule(dmod);
 		}
 
 		vis_destroyhash(mod, mod->vis_Displays);

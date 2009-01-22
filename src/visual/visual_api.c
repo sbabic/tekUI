@@ -12,7 +12,9 @@
 static struct TVRequest *
 visi_getreq(struct TVisualBase *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
 {
-	struct TVisualBase *mod = (struct TVisualBase *) inst->vis_Module.tmd_ModSuper;
+	struct TVisualBase *mod =
+		(struct TVisualBase *) inst->vis_Module.tmd_ModSuper;
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVRequest *req = TNULL;
 
 	if (display == TNULL)
@@ -22,7 +24,7 @@ visi_getreq(struct TVisualBase *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
 	{
 		if (mod == inst)
 		{
-			TExecLock(inst->vis_ExecBase, inst->vis_Lock);
+			TLock(inst->vis_Lock);
 			if (inst->vis_InitRequest)
 			{
 				req = inst->vis_InitRequest;
@@ -31,14 +33,14 @@ visi_getreq(struct TVisualBase *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
 			}
 			else
 			{
-				TExecUnlock(inst->vis_ExecBase, inst->vis_Lock);
+				TUnlock(inst->vis_Lock);
 				req = TDisplayAllocReq(display);
 			}
 
 			if (req)
 			{
 				req->tvr_Req.io_Command = cmd;
-				req->tvr_Req.io_ReplyPort = TNULL; /* syncport */
+				req->tvr_Req.io_ReplyPort = TGetSyncPort(TNULL);
 			}
 		}
 		else
@@ -55,7 +57,7 @@ visi_getreq(struct TVisualBase *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
 					if (inst->vis_NumRequests >= VISUAL_MAXREQPERINSTANCE)
 					{
 						/* wait and unlink from waitlist: */
-						TExecWaitIO(inst->vis_ExecBase, &req->tvr_Req);
+						TWaitIO(&req->tvr_Req);
 						TRemove(&req->tvr_Req.io_Node);
 					}
 					else
@@ -83,44 +85,48 @@ visi_getreq(struct TVisualBase *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
 }
 
 static void
-visi_ungetreq(struct TVisualBase *inst, struct TVRequest *req)
+visi_ungetreq(struct TVisualBase *mod, struct TVRequest *req)
 {
-	if (inst->vis_Module.tmd_ModSuper == (struct TModule *) inst)
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	if (mod->vis_Module.tmd_ModSuper == (struct TModule *) mod)
 	{
-		TExecLock(inst->vis_ExecBase, inst->vis_Lock);
-		if (inst->vis_InitRequest == TNULL)
+		TLock(mod->vis_Lock);
+		if (mod->vis_InitRequest == TNULL)
 		{
-			inst->vis_InitRequest = req;
+			mod->vis_InitRequest = req;
 			/* after returning initreq, base gets UNLOCKED: */
-			TExecUnlock(inst->vis_ExecBase, inst->vis_Lock);
+			TUnlock(mod->vis_Lock);
 		}
 		else
 			TDisplayFreeReq((struct TDisplayBase *)
 				req->tvr_Req.io_Device, req);
-		TExecUnlock(inst->vis_ExecBase, inst->vis_Lock);
+		TUnlock(mod->vis_Lock);
 	}
 	else
-		TAddTail(&inst->vis_ReqPool, &req->tvr_Req.io_Node);
+		TAddTail(&mod->vis_ReqPool, &req->tvr_Req.io_Node);
 }
 
 static void
-visi_dosync(struct TVisualBase *inst, struct TVRequest *req)
+visi_dosync(struct TVisualBase *mod, struct TVRequest *req)
 {
-	TExecDoIO(inst->vis_ExecBase, &req->tvr_Req);
-	visi_ungetreq(inst, req);
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	TDoIO(&req->tvr_Req);
+	visi_ungetreq(mod, req);
 }
 
 static void
-visi_doasync(struct TVisualBase *inst, struct TVRequest *req)
+visi_doasync(struct TVisualBase *mod, struct TVRequest *req)
 {
-	TExecPutIO(inst->vis_ExecBase, &req->tvr_Req);
-	TAddTail(&inst->vis_WaitList, &req->tvr_Req.io_Node);
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	TPutIO(&req->tvr_Req);
+	TAddTail(&mod->vis_WaitList, &req->tvr_Req.io_Node);
 }
 
 /*****************************************************************************/
 
 EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVisualBase *inst;
 	TTAGITEM otags[2];
 
@@ -129,8 +135,7 @@ EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
 	otags[1].tti_Tag = TTAG_MORE;
 	otags[1].tti_Value = (TTAG) tags;
 
-	inst = (struct TVisualBase *)
-		TExecOpenModule(mod->vis_ExecBase, "visual", 0, otags);
+	inst = (struct TVisualBase *) TOpenModule("visual", 0, otags);
 	if (inst)
 	{
 		struct TVRequest *req =
@@ -140,7 +145,7 @@ EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
 			req->tvr_Op.OpenWindow.Window = TNULL;
 			req->tvr_Op.OpenWindow.IMsgPort = inst->vis_IMsgPort;
 			req->tvr_Op.OpenWindow.Tags = tags;
-			TExecDoIO(inst->vis_ExecBase, &req->tvr_Req);
+			TDoIO(&req->tvr_Req);
 
 			inst->vis_Window = req->tvr_Op.OpenWindow.Window;
 			if (inst->vis_Window)
@@ -152,7 +157,7 @@ EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
 				return inst;
 			}
 		}
-		TExecCloseModule(mod->vis_ExecBase, (struct TModule *) inst);
+		TCloseModule((struct TModule *) inst);
 	}
 	TDBPRINTF(TDB_ERROR,("open failed\n"));
 	return TNULL;
@@ -162,25 +167,27 @@ EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
 
 EXPORT void vis_closevisual(struct TVisualBase *mod, struct TVisualBase *inst)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVRequest *req = visi_getreq(mod, TVCMD_CLOSEWINDOW,
 		inst->vis_Display, TNULL);
 	req->tvr_Req.io_Command = TVCMD_CLOSEWINDOW;
 	req->tvr_Op.CloseWindow.Window = inst->vis_Window;
 	visi_dosync(inst, req);
 	TDisplayFreeReq(inst->vis_Display, inst->vis_InitRequest);
-	TExecCloseModule(mod->vis_ExecBase, (struct TModule *) inst);
+	TCloseModule((struct TModule *) inst);
 }
 
 /*****************************************************************************/
 
 EXPORT TAPTR vis_attach(struct TVisualBase *mod, TTAGITEM *tags)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	TTAGITEM otags[2];
 	otags[0].tti_Tag = TVisual_Attach;
 	otags[0].tti_Value = (TTAG) mod;
 	otags[1].tti_Tag = TTAG_MORE;
 	otags[1].tti_Value = (TTAG) tags;
-	return TExecOpenModule(mod->vis_ExecBase, "visual", 0, otags);
+	return TOpenModule("visual", 0, otags);
 }
 
 /*****************************************************************************/
@@ -188,11 +195,12 @@ EXPORT TAPTR vis_attach(struct TVisualBase *mod, TTAGITEM *tags)
 EXPORT TAPTR vis_openfont(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	TAPTR font = TNULL;
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVRequest *req = visi_getreq(mod, TVCMD_OPENFONT, TNULL, tags);
 	if (req)
 	{
 		req->tvr_Op.OpenFont.Tags = tags;
-		TExecDoIO(mod->vis_ExecBase, &req->tvr_Req);
+		TDoIO(&req->tvr_Req);
 		font = req->tvr_Op.OpenFont.Font;
 		visi_ungetreq(mod, req);
 	}
@@ -220,13 +228,14 @@ EXPORT void vis_closefont(struct TVisualBase *mod, TAPTR font)
 EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, TAPTR font, TTAGITEM *tags)
 {
 	TUINT n = 0;
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVRequest *req = visi_getreq(mod, TVCMD_GETFONTATTRS,
 		TGetOwner(font), TNULL);
 	if (req)
 	{
 		req->tvr_Op.GetFontAttrs.Font = font;
 		req->tvr_Op.GetFontAttrs.Tags = tags;
-		TExecDoIO(mod->vis_ExecBase, &req->tvr_Req);
+		TDoIO(&req->tvr_Req);
 		n = req->tvr_Op.TextSize.Width;
 		visi_ungetreq(mod, req);
 	}
@@ -238,13 +247,14 @@ EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, TAPTR font, TTAGITEM *tags)
 EXPORT TINT vis_textsize(struct TVisualBase *mod, TAPTR font, TSTRPTR t)
 {
 	TINT size = -1;
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVRequest *req = visi_getreq(mod, TVCMD_TEXTSIZE,
 		TGetOwner(font), TNULL);
 	if (req)
 	{
 		req->tvr_Op.TextSize.Font = font;
 		req->tvr_Op.TextSize.Text = t;
-		TExecDoIO(mod->vis_ExecBase, &req->tvr_Req);
+		TDoIO(&req->tvr_Req);
 		size = req->tvr_Op.TextSize.Width;
 		visi_ungetreq(mod, req);
 	}
@@ -256,11 +266,12 @@ EXPORT TINT vis_textsize(struct TVisualBase *mod, TAPTR font, TSTRPTR t)
 EXPORT TAPTR vis_queryfonts(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	TAPTR handle = TNULL;
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVRequest *req = visi_getreq(mod, TVCMD_QUERYFONTS, TNULL, tags);
 	if (req)
 	{
 		req->tvr_Op.QueryFonts.Tags = tags;
-		TExecDoIO(mod->vis_ExecBase, &req->tvr_Req);
+		TDoIO(&req->tvr_Req);
 		handle = req->tvr_Op.QueryFonts.Handle;
 		visi_ungetreq(mod, req);
 	}
@@ -272,10 +283,11 @@ EXPORT TAPTR vis_queryfonts(struct TVisualBase *mod, TTAGITEM *tags)
 EXPORT TTAGITEM *vis_getnextfont(struct TVisualBase *mod, TAPTR fqhandle)
 {
 	TTAGITEM *attrs;
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVRequest *req = visi_getreq(mod, TVCMD_GETNEXTFONT,
 		TGetOwner(fqhandle), TNULL);
 	req->tvr_Op.GetNextFont.Handle = fqhandle;
-	TExecDoIO(mod->vis_ExecBase, &req->tvr_Req);
+	TDoIO(&req->tvr_Req);
 	attrs = req->tvr_Op.GetNextFont.Attrs;
 	visi_ungetreq(mod, req);
 	return attrs;
@@ -410,8 +422,8 @@ EXPORT void vis_frect(struct TVisualBase *inst, TINT x, TINT y, TINT w, TINT h,
 
 /*****************************************************************************/
 
-EXPORT void vis_line(struct TVisualBase *inst, TINT x0, TINT y0, TINT x1, TINT y1,
-	TVPEN pen)
+EXPORT void vis_line(struct TVisualBase *inst, TINT x0, TINT y0, TINT x1,
+	TINT y1, TVPEN pen)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_LINE,
 		inst->vis_Display, TNULL);
@@ -450,8 +462,8 @@ EXPORT void vis_drawtags(struct TVisualBase *inst, TTAGITEM *tags)
 
 /*****************************************************************************/
 
-EXPORT void vis_text(struct TVisualBase *inst, TINT x, TINT y, TSTRPTR t, TUINT l,
-	TVPEN fg, TVPEN bg)
+EXPORT void vis_text(struct TVisualBase *inst, TINT x, TINT y, TSTRPTR t,
+	TUINT l, TVPEN fg, TVPEN bg)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_TEXT,
 		inst->vis_Display, TNULL);
@@ -467,7 +479,8 @@ EXPORT void vis_text(struct TVisualBase *inst, TINT x, TINT y, TSTRPTR t, TUINT 
 
 /*****************************************************************************/
 
-EXPORT void vis_drawstrip(struct TVisualBase *inst, TINT *array, TINT num, TTAGITEM *tags)
+EXPORT void vis_drawstrip(struct TVisualBase *inst, TINT *array, TINT num,
+	TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_DRAWSTRIP,
 		inst->vis_Display, TNULL);
@@ -480,7 +493,8 @@ EXPORT void vis_drawstrip(struct TVisualBase *inst, TINT *array, TINT num, TTAGI
 
 /*****************************************************************************/
 
-EXPORT void vis_drawfan(struct TVisualBase *inst, TINT *array, TINT num, TTAGITEM *tags)
+EXPORT void vis_drawfan(struct TVisualBase *inst, TINT *array, TINT num,
+	TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_DRAWFAN,
 		inst->vis_Display, TNULL);
@@ -493,8 +507,8 @@ EXPORT void vis_drawfan(struct TVisualBase *inst, TINT *array, TINT num, TTAGITE
 
 /*****************************************************************************/
 
-EXPORT void vis_copyarea(struct TVisualBase *inst, TINT x, TINT y, TINT w, TINT h,
-	TINT dx, TINT dy, TTAGITEM *tags)
+EXPORT void vis_copyarea(struct TVisualBase *inst, TINT x, TINT y, TINT w,
+	TINT h, TINT dx, TINT dy, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_COPYAREA,
 		inst->vis_Display, TNULL);
@@ -511,8 +525,8 @@ EXPORT void vis_copyarea(struct TVisualBase *inst, TINT x, TINT y, TINT w, TINT 
 
 /*****************************************************************************/
 
-EXPORT void vis_setcliprect(struct TVisualBase *inst, TINT x, TINT y, TINT w, TINT h,
-	TTAGITEM *tags)
+EXPORT void vis_setcliprect(struct TVisualBase *inst, TINT x, TINT y, TINT w,
+	TINT h, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_SETCLIPRECT,
 		inst->vis_Display, TNULL);
@@ -539,6 +553,7 @@ EXPORT void vis_unsetcliprect(struct TVisualBase *inst)
 
 EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags)
 {
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	/* displaybase in taglist? */
 	TAPTR display =
 		(struct TVRequest *) TGetTag(tags, TVisual_Display, TNULL);
@@ -556,9 +571,9 @@ EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags)
 			name = DEF_DISPLAYNAME;
 
 		/* lookup display by name: */
-		TExecLock(mod->vis_ExecBase, mod->vis_Lock);
+		TLock(mod->vis_Lock);
 		success = vis_gethash(mod, mod->vis_Displays, name, &hashval);
-		TExecUnlock(mod->vis_ExecBase, mod->vis_Lock);
+		TUnlock(mod->vis_Lock);
 
 		if (success)
 			display = (TAPTR) hashval;
@@ -566,16 +581,17 @@ EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags)
 		{
 			/* try to open named display: */
 			TDBPRINTF(TDB_INFO,("loading module %s\n", name));
-			display = TExecOpenModule(mod->vis_ExecBase, name, 0, tags);
+			display = TOpenModule(name, 0, tags);
 			if (display)
 			{
 				/* store display in hash: */
-				TExecLock(mod->vis_ExecBase, mod->vis_Lock);
-				success = vis_puthash(mod, mod->vis_Displays, name, (TTAG) display);
-				TExecUnlock(mod->vis_ExecBase, mod->vis_Lock);
+				TLock(mod->vis_Lock);
+				success = vis_puthash(mod, mod->vis_Displays, name,
+					(TTAG) display);
+				TUnlock(mod->vis_Lock);
 				if (!success)
 				{
-					TExecCloseModule(mod->vis_ExecBase, display);
+					TCloseModule(display);
 					display = TNULL;
 				}
 			}

@@ -11,8 +11,8 @@
 
 /* -- Functions for bootstrapping Exec, not needed outside init code -- */
 
-#define TExecDoExec(exec,tags) \
-	(*(((TMODCALL TBOOL(**)(TAPTR,TTAGITEM *))(exec))[-9]))(exec,tags)
+#define TExecDoExec(exec,cmd,tags) \
+	(*(((TMODCALL TBOOL(**)(TAPTR,TUINT,TTAGITEM *))(exec))[-9]))(exec,cmd,tags)
 
 #define TExecCreateSysTask(exec,func,tags) \
 	(*(((TMODCALL struct TTask *(**)(TAPTR,TTASKFUNC,TTAGITEM *))(exec))[-10]))(exec,func,tags)
@@ -225,19 +225,19 @@
 #define TExecFreeTimeRequest(exec,req) \
 	(*(((TMODCALL void(**)(TAPTR,TAPTR))(exec))[-76]))(exec,req)
 
-#define TExecGetSystemTime(exec,req,t) \
-	(*(((TMODCALL void(**)(TAPTR,TAPTR,TTIME *))(exec))[-77]))(exec,req,t)
+#define TExecGetSystemTime(exec,t) \
+	(*(((TMODCALL void(**)(TAPTR,TTIME *))(exec))[-77]))(exec,t)
 
-#define TExecGetUniversalDate(exec,req,dt) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TDATE *))(exec))[-78]))(exec,req,dt)
+#define TExecGetUniversalDate(exec,dt) \
+	(*(((TMODCALL TINT(**)(TAPTR,TDATE *))(exec))[-78]))(exec,dt)
 
-#define TExecGetLocalDate(exec,req,dt) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TDATE *))(exec))[-79]))(exec,req,dt)
+#define TExecGetLocalDate(exec,dt) \
+	(*(((TMODCALL TINT(**)(TAPTR,TDATE *))(exec))[-79]))(exec,dt)
 
-#define TExecWaitTime(exec,req,t,sig) \
-	(*(((TMODCALL TUINT(**)(TAPTR,TAPTR,TTIME *,TUINT))(exec))[-80]))(exec,req,t,sig)
+#define TExecWaitTime(exec,t,sig) \
+	(*(((TMODCALL TUINT(**)(TAPTR,TTIME *,TUINT))(exec))[-80]))(exec,t,sig)
 
-#define TExecWaitDate(exec,req,dt,sig) \
-	(*(((TMODCALL TUINT(**)(TAPTR,TAPTR,TDATE *,TUINT))(exec))[-81]))(exec,req,dt,sig)
+#define TExecWaitDate(exec,dt,sig) \
+	(*(((TMODCALL TUINT(**)(TAPTR,TDATE *,TUINT))(exec))[-81]))(exec,dt,sig)
 
 #endif /* _TEK_STDCALL_EXEC_H */

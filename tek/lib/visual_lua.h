@@ -1,4 +1,3 @@
-
 #ifndef LUA_TEK_LIB_VISUAL_H
 #define LUA_TEK_LIB_VISUAL_H
 
@@ -44,8 +43,6 @@ typedef struct TEKVisual
 	TAPTR vis_Base;
 	/* Execbase: */
 	TAPTR vis_ExecBase;
-	/* Time request */
-	TAPTR vis_TimeRequest;
 	/* Reference to base (stored in metatable): */
 	int vis_refBase;
 	/* Is base instance: */

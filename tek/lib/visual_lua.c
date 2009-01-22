@@ -280,7 +280,6 @@ tek_lib_visual_close(lua_State *L)
 			TVisualCloseFont(vis->vis_Base, vis->vis_Font);
 			TCloseModule(vis->vis_Base);
 		}
-		TFreeTimeRequest(vis->vis_TimeRequest);
 		/* collected visual base; remove TEKlib module: */
 		TRemModules((struct TModInitNode *) &im_visual, 0);
 		TDBPRINTF(TDB_INFO,("visual module removed\n"));
@@ -374,10 +373,6 @@ int luaopen_tek_lib_visual(lua_State *L)
 	{
 		TTAGITEM ftags[2];
 		TTAGITEM dtags[2];
-
-		/* Create a timerequest: */
-		vis->vis_TimeRequest = TAllocTimeRequest(TNULL);
-		if (vis->vis_TimeRequest == TNULL) break;
 
 		/* Open the Visual module: */
 		vis->vis_Base = TExecOpenModule(exec, "visual", 0, TNULL);

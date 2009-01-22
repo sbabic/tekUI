@@ -353,7 +353,7 @@ struct TTask
 	TINT tsk_IOErr;
 
 	/* I/O module base ptr */
-	TAPTR tsk_IOBase;
+	struct TIOBase *tsk_IOBase;
 
 	/* Input stream */
 	TAPTR tsk_FHIn;
@@ -361,6 +361,9 @@ struct TTask
 	TAPTR tsk_FHOut;
 	/* Error stream */
 	TAPTR tsk_FHErr;
+
+	/* Task time request: */
+	TAPTR tsk_TimeReq;
 
 	/* Task flags, see below */
 	TUINT tsk_Flags;
