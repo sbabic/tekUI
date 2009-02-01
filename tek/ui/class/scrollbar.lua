@@ -59,7 +59,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 7.3"
+_VERSION = "ScrollBar 7.4"
 
 local ScrollBar = _M
 
@@ -203,7 +203,7 @@ function ScrollBar.new(class, self)
 	self.Notifications = false
 
 	local img1, img2
-	local class1, class2 = "ScrollBarArrowLeft", "ScrollBarArrowRight"
+	local class1, class2 = "scrollbar-arrowleft", "scrollbar-arrowright"
 	local increase = self.Step
 
 	if self.Orientation == "vertical" then
@@ -212,13 +212,13 @@ function ScrollBar.new(class, self)
 			increase = -self.Step
 		else
 			img1, img2 = ArrowUpImage, ArrowDownImage
-			class1, class2 = "ScrollBarArrowUp", "ScrollBarArrowDown"
+			class1, class2 = "scrollbar-arrowup", "scrollbar-arrowdown"
 		end
 	else
 		if self.ArrowOrientation == "vertical" then
 			img1, img2 = ArrowUpImage, ArrowDownImage
 			increase = -self.Step
-			class1, class2 = "ScrollBarArrowUp", "ScrollBarArrowDown"
+			class1, class2 = "scrollbar-arrowup", "scrollbar-arrowdown"
 		else
 			img1, img2 = ArrowLeftImage, ArrowRightImage
 		end

@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.11"
+_VERSION = "Theme 6.12"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -311,6 +311,30 @@ local DEF_STYLESHEET = ui.prepareProperties
 	[".page-button-group"] = {
 		["margin"] = "4 2 0 0",
 		["padding-left"] = 2,
+	},
+
+	[".scrollbar-arrowup"] =
+	{
+		["margin-bottom"] = 0,
+		["border-width"] = 3,
+	},
+
+	[".scrollbar-arrowdown"] =
+	{
+		["margin-top"] = 0,
+		["border-width"] = 3,
+	},
+
+	[".scrollbar-arrowleft"] =
+	{
+		["margin-right"] = 0,
+		["border-width"] = 3,
+	},
+
+	[".scrollbar-arrowright"] =
+	{
+		["margin-left"] = 0,
+		["border-width"] = 3,
 	},
 
 	--
