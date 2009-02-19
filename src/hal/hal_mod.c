@@ -71,7 +71,7 @@ tek_init_hal(struct TTask *task, struct TModule *mod, TUINT16 version,
 	hal->hmb_Module.tmd_Handle.thn_Hook.thk_Entry = hal_dispatch;
 	hal->hmb_Module.tmd_Handle.thn_Hook.thk_Data = hal;
 
-	TInitVectors(hal, hal_vectors, HAL_NUMVECTORS);
+	TInitVectors(&hal->hmb_Module, hal_vectors, HAL_NUMVECTORS);
 
 	if (hal_init(hal, tags))
 	{

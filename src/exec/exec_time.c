@@ -10,7 +10,6 @@
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
-#include <tek/inline/exec.h>
 #include <tek/proto/hal.h>
 
 #include "exec_mod.h"

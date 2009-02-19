@@ -4757,7 +4757,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v7.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v8.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4787,9 +4787,18 @@
 							<code>Enter &#091;ISG&#093;</code> (string)
 							<blockquote>
 								<p>
-									Text that is being 'entered' (by pressing the Return key) into
-									the TextInput field. Setting this value causes the invocation of
+									The text that is being entered (by pressing the Return key) into
+									the input field. Setting this value causes the invocation of
 									the <a href="#TextInput:onEnter"><code>TextInput:onEnter()</code></a> method.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>EnterNext &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Indicates that by pressing the Return key, the focus should advance
+									to the next element that can receive the input.
 								</p>
 							</blockquote>
 						</li>
@@ -4798,7 +4807,7 @@
 							<blockquote>
 								<p>
 									Indicates that leaving the element by pressing the Tab key
-									should set the <code>Enter</code> attribute and invoke its handler.
+									should set the <code>Enter</code> attribute and invoke the respective handler.
 								</p>
 							</blockquote>
 						</li>
@@ -4820,6 +4829,27 @@
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<a href="#TextInput:addChar"><code>TextInput:addChar()</code></a> - Perform character addition
+						</li>
+						<li style="list-style-type: none">
+							<a href="#TextInput:backSpace"><code>TextInput:backSpace()</code></a> - Perform 'Backspace' function
+						</li>
+						<li style="list-style-type: none">
+							<a href="#TextInput:delChar"><code>TextInput:delChar()</code></a> - Perform 'Del' function
+						</li>
+						<li style="list-style-type: none">
+							<a href="#TextInput:getChar"><code>TextInput:getChar()</code></a> - Get character under cursor or at position
+						</li>
+						<li style="list-style-type: none">
+							<a href="#TextInput:getCursor"><code>TextInput:getCursor()</code></a> - Get cursor position
+						</li>
+						<li style="list-style-type: none">
+							<a href="#TextInput:moveCursorLeft"><code>TextInput:moveCursorLeft()</code></a> - Move the cursor one step to the left
+						</li>
+						<li style="list-style-type: none">
+							<a href="#TextInput:moveCursorRight"><code>TextInput:moveCursorRight()</code></a> - Move the cursor one step to the right
+						</li>
 						<li style="list-style-type: none">
 							<a href="#TextInput:onEnter"><code>TextInput:onEnter()</code></a> - Handler invoked when <code>Enter</code> ist set
 						</li>
@@ -4873,9 +4903,52 @@
 				<hr />
 			</div>
 		</div>
+		<div class="node"><h3><a name="TextInput:moveCursorLeft" id="TextInput:moveCursorLeft"><code>success = moveCursorLeft()</code></a></h3>
+			<p>
+				Advance the cursor position by 1 to the left.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="TextInput:moveCursorRight" id="TextInput:moveCursorRight"><code>success = moveCursorRight()</code></a></h3>
+			<p>
+				Advance the cursor position by 1 to the right.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="TextInput:getChar" id="TextInput:getChar"><code>char = getChar([pos])</code></a></h3>
+			<p>
+				Get the character under the cursor, or at the
+				specified position.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="TextInput:getCursor" id="TextInput:getCursor"><code>self:getCursor()</code></a></h3>
+			<p>
+				Get cursor position
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="TextInput:setCursor" id="TextInput:setCursor"><code>self:setCursor(pos)</code></a></h3>
 			<p>
 				Set cursor position, absolute
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="TextInput:backSpace" id="TextInput:backSpace"><code>backSpace()</code></a></h3>
+			<p>
+				Perform backspace
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="TextInput:delChar" id="TextInput:delChar"><code>delChar()</code></a></h3>
+			<p>
+				Perform delete character
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="TextInput:addChar" id="TextInput:addChar"><code>addChar(utf8s)</code></a></h3>
+			<p>
+				Perform add character
 			</p>
 			<hr />
 		</div>
@@ -5980,6 +6053,12 @@ end
 							<a href="#UTF8String:len"><code>UTF8String:len()</code></a> - Return the length in characters
 						</li>
 						<li style="list-style-type: none">
+							<a href="#UTF8String:overwrite"><code>UTF8String:overwrite()</code></a> - Overwrite string
+						</li>
+						<li style="list-style-type: none">
+							<a href="#UTF8String:set"><code>UTF8String:set()</code></a> - Set a string
+						</li>
+						<li style="list-style-type: none">
 							<a href="#UTF8String:sub"><code>UTF8String:sub()</code></a> - Return substring of a string
 						</li>
 					</ul>
@@ -5995,6 +6074,12 @@ end
 				</blockquote>
 				<hr />
 			</div>
+		</div>
+		<div class="node"><h3><a name="UTF8String:set" id="UTF8String:set"><code>UTF8String:set(s)</code></a></h3>
+			<p>
+				Reset string object to a new UTF-8 encoded string
+			</p>
+			<hr />
 		</div>
 		<div class="node"><h3><a name="UTF8String:new" id="UTF8String:new"><code>object = UTF8String.new(class, string)</code></a></h3>
 			<p>
@@ -6051,6 +6136,13 @@ end
 				Equivalent to
 				<a href="http://www.lua.org/manual/5.1/manual.html#pdf-string.byte">string.byte</a>,
 				except for that it may return characters in the Unicode range.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="UTF8String:overwrite" id="UTF8String:overwrite"><code>UTF8String:overwrite(s[, pos])</code></a></h3>
+			<p>
+				Overwrite the UTF8 string with the
+				specified (also UTF-8 encoded) string, starting a the given position.
 			</p>
 			<hr />
 		</div>
@@ -7304,7 +7396,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Sun Feb  1 14:55:08 2009
+			Document generated on Thu Feb 19 01:58:34 2009
 		</p>
 	</div>
 	</body>

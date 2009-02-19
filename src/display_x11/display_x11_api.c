@@ -725,7 +725,6 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 	TINT len = req->tvr_Op.Text.Length;
 	TUINT x = req->tvr_Op.Text.X;
 	TUINT y = req->tvr_Op.Text.Y;
-	TAPTR TExecBase = TGetExecBase(mod);
 
 	struct X11Pen *fgpen = (struct X11Pen *) req->tvr_Op.Text.FgPen;
 	struct X11Pen *bgpen = (struct X11Pen *) req->tvr_Op.Text.BgPen;
@@ -745,13 +744,12 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 		else
 		#endif
 		{
-			TSTRPTR latin = utf8tolatin(mod, text, len);
+			TSTRPTR latin = x11_utf8tolatin(mod, text, len, &len);
 			if (latin)
 			{
 				XFontStruct *f = ((struct FontNode *) v->curfont)->font;
 				XDrawString(mod->x11_Display, v->window, v->gc,
-					x, y + f->ascent, (char *) latin, strlen(latin));
-				TFree(latin);
+					x, y + f->ascent, (char *) latin, len);
 			}
 		}
 	}
@@ -761,7 +759,7 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 		if (mod->x11_use_xft)
 		{
 			XftFont *f = ((struct FontNode *) v->curfont)->xftfont;
-			TINT w = x11_hosttextsize(mod, v->curfont, text);
+			TINT w = x11_hosttextsize(mod, v->curfont, text, len);
 
 			(*mod->x11_xftiface.XftDrawRect)(v->draw, &bgpen->xftcolor,
 							x, y, w, f->height + 1);
@@ -772,13 +770,12 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 		else
 		#endif
 		{
-			TSTRPTR latin = utf8tolatin(mod, text, len);
+			TSTRPTR latin = x11_utf8tolatin(mod, text, len, &len);
 			if (latin)
 			{
 				XFontStruct *f = ((struct FontNode *) v->curfont)->font;
 				XDrawImageString(mod->x11_Display, v->window, v->gc,
-					x, y + f->ascent, (char *) latin, strlen(latin));
-				TFree(latin);
+					x, y + f->ascent, (char *) latin, len);
 			}
 		}
 	}
@@ -798,7 +795,7 @@ LOCAL void x11_textsize(X11DISPLAY *mod, struct TVRequest *req)
 {
 	req->tvr_Op.TextSize.Width =
 		x11_hosttextsize(mod, req->tvr_Op.TextSize.Font,
-			req->tvr_Op.TextSize.Text);
+			req->tvr_Op.TextSize.Text, strlen(req->tvr_Op.TextSize.Text));
 }
 
 /*****************************************************************************/

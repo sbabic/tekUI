@@ -15,7 +15,7 @@ static const union TMemMsg msg_destroy = { TMMSG_DESTROY };
 
 /*****************************************************************************/
 /*
-**	mmu = exec_CreateMMU(exec, allocator, mmutype, tags)
+**	mmu = exec_CreateMemManager(exec, allocator, mmutype, tags)
 **	Create a memory manager
 */
 
@@ -25,8 +25,9 @@ exec_destroymmu(struct THook *hook, TAPTR obj, TTAG msg)
 	if (msg == TMSG_DESTROY)
 	{
 		struct TMemManager *mmu = obj;
+		struct TExecBase *TExecBase = TGetExecBase(mmu);
 		TCALLHOOKPKT(&mmu->tmm_Hook, mmu, (TTAG) &msg_destroy);
-		exec_Free((TEXECBASE *) mmu->tmm_Handle.thn_Owner, mmu);
+		TFree(mmu);
 	}
 	return 0;
 }
@@ -37,9 +38,10 @@ exec_destroymmu_and_allocator(struct THook *hook, TAPTR obj, TTAG msg)
 	if (msg == TMSG_DESTROY)
 	{
 		struct TMemManager *mmu = obj;
+		struct TExecBase *TExecBase = TGetExecBase(mmu);
 		TCALLHOOKPKT(&mmu->tmm_Hook, mmu, (TTAG) &msg_destroy);
 		TDESTROY(mmu->tmm_Allocator);
-		exec_Free((TEXECBASE *) mmu->tmm_Handle.thn_Owner, mmu);
+		TFree(mmu);
 	}
 	return 0;
 }
@@ -50,43 +52,41 @@ exec_destroymmu_and_free(struct THook *hook, TAPTR obj, TTAG msg)
 	if (msg == TMSG_DESTROY)
 	{
 		struct TMemManager *mmu = obj;
-		TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+		struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 		TCALLHOOKPKT(&mmu->tmm_Hook, mmu, (TTAG) &msg_destroy);
-		exec_Free(exec, mmu->tmm_Allocator);
-		exec_Free(exec, mmu);
+		TFree(mmu->tmm_Allocator);
+		TFree(mmu);
 	}
 	return 0;
 }
 
 EXPORT struct TMemManager *
-exec_CreateMMU(TEXECBASE *exec, TAPTR allocator, TUINT mmutype,
-	struct TTagItem *tags)
+exec_CreateMemManager(struct TExecBase *TExecBase, TAPTR allocator,
+	TUINT mmutype, struct TTagItem *tags)
 {
-	struct TMemManager *mmu = exec_AllocMMU(exec, TNULL,
-		sizeof(struct TMemManager));
+	struct TMemManager *mmu = TAlloc(TNULL, sizeof(struct TMemManager));
 	if (mmu)
 	{
 		THOOKENTRY THOOKFUNC destructor = TNULL;
 		TBOOL success = TTRUE;
 		TAPTR staticmem = TNULL;
 
-		if ((mmutype & TMMUT_Pooled) && allocator == TNULL)
+		if ((mmutype & TMMT_Pooled) && allocator == TNULL)
 		{
-			/* Create a MMU based on an internal pooled allocator */
-			allocator = exec_CreatePool(exec, tags);
+			/* Create a MM based on an internal pooled allocator */
+			allocator = TCreatePool(tags);
 			destructor = exec_destroymmu_and_allocator;
 		}
-		else if (mmutype & TMMUT_Static)
+		else if (mmutype & TMMT_Static)
 		{
-			/* Create a MMU based on a static memory block */
+			/* Create a MM based on a static memory block */
 			TUINT blocksize = (TUINT) TGetTag(tags, TMem_StaticSize, 0);
 			success = TFALSE;
 			if (blocksize > sizeof(union TMemHead))
 			{
 				if (allocator == TNULL)
 				{
-					allocator = staticmem = exec_AllocMMU(exec, TNULL,
-						blocksize);
+					allocator = staticmem = TAlloc(TNULL, blocksize);
 					if (allocator)
 					{
 						destructor = exec_destroymmu_and_free;
@@ -118,110 +118,46 @@ exec_CreateMMU(TEXECBASE *exec, TAPTR allocator, TUINT mmutype,
 
 		if (success)
 		{
-			if (exec_initmmu(exec, mmu, allocator, mmutype, tags))
+			if (exec_initmm(TExecBase, mmu, allocator, mmutype, tags))
 			{
-				/* Overwrite destructor. The one provided by exec_initmmu()
+				/* Overwrite destructor. The one provided by exec_initmm()
 				doesn't know how to free the memory manager. */
 				mmu->tmm_Handle.thn_Hook.thk_Entry = destructor;
 				return mmu;
 			}
 		}
 
-		exec_Free(exec, staticmem);
-		exec_Free(exec, mmu);
+		TFree(staticmem);
+		TFree(mmu);
 	}
 	return TNULL;
 }
 
 /*****************************************************************************/
 /*
-**	exec_CopyMem(exec, from, to, size)
-**	Copy memory
-*/
-
-EXPORT void
-exec_CopyMem(TEXECBASE *exec, TAPTR from, TAPTR to, TUINT numbytes)
-{
-	THALCopyMem(exec->texb_HALBase, from, to, numbytes);
-}
-
-/*****************************************************************************/
-/*
-**	exec_FillMem(exec, dest, numbytes, fillval)
-**	Fill memory
-*/
-
-EXPORT void
-exec_FillMem(TEXECBASE *exec, TAPTR dest, TUINT len, TUINT8 fillval)
-{
-	if (((TUINTPTR) dest | len) & 3)
-		THALFillMem(exec->texb_HALBase, dest, len, fillval);
-	else
-	{
-		TUINT f32;
-		f32 = fillval;
-		f32 = (f32 << 8) | f32;
-		f32 = (f32 << 16) | f32;
-		exec_FillMem32(exec, dest, len, f32);
-	}
-}
-
-/*****************************************************************************/
-/*
-**	exec_FillMem32(exec, dest, numbytes, fillval)
-**	Fill memory, 32bit aligned
-*/
-
-EXPORT void
-exec_FillMem32(TEXECBASE *exec, TUINT *dest, TUINT len, TUINT fill)
-{
-	TUINT len8;
-	len >>= 2;
-	len8 = (len >> 3) + 1;
-
-	switch (len & 7)
-	{
-		do
-		{
-					*dest++ = fill;
-			case 7:	*dest++ = fill;
-			case 6:	*dest++ = fill;
-			case 5:	*dest++ = fill;
-			case 4:	*dest++ = fill;
-			case 3:	*dest++ = fill;
-			case 2:	*dest++ = fill;
-			case 1:	*dest++ = fill;
-			case 0:	len8--;
-
-		} while (len8);
-	}
-}
-
-/*****************************************************************************/
-/*
-**	mem = exec_AllocMMU(exec, mmu, size)
+**	mem = exec_Alloc(exec, mmu, size)
 **	Allocate memory via memory manager
 */
 
 EXPORT TAPTR
-exec_AllocMMU(TEXECBASE *exec, struct TMemManager *mmu, TUINT size)
+exec_Alloc(struct TExecBase *TExecBase, struct TMemManager *mmu, TSIZE size)
 {
-	union TMMUInfo *mem = TNULL;
+	union TMemManagerInfo *mem = TNULL;
 	if (size)
 	{
 		union TMemMsg msg;
 		msg.tmmsg_Type = TMMSG_ALLOC;
-		msg.tmmsg_Alloc.tmmsg_Size = size + sizeof(union TMMUInfo);
+		msg.tmmsg_Alloc.tmmsg_Size = size + sizeof(union TMemManagerInfo);
 
 		if (mmu == TNULL)
-			mmu = &exec->texb_BaseMMU;
+			mmu = &TExecBase->texb_BaseMemManager;
 
-		mem = (union TMMUInfo *) TCALLHOOKPKT(&mmu->tmm_Hook, mmu,
+		mem = (union TMemManagerInfo *) TCALLHOOKPKT(&mmu->tmm_Hook, mmu,
 			(TTAG) &msg);
 		if (mem)
 		{
 			mem->tmu_Node.tmu_UserSize = size;
-			mem->tmu_Node.tmu_MMU = mmu;
+			mem->tmu_Node.tmu_MemManager = mmu;
 			mem++;
 		}
 		else
@@ -235,16 +171,15 @@ exec_AllocMMU(TEXECBASE *exec, struct TMemManager *mmu, TUINT size)
 
 /*****************************************************************************/
 /*
-**	mem = exec_AllocMMU0(exec, mmu, size)
+**	mem = exec_Alloc0(exec, mmu, size)
 **	Allocate memory via memory manager, zero'ed out
 */
 
-EXPORT TAPTR
-exec_AllocMMU0(TEXECBASE *exec, struct TMemManager *mmu, TUINT size)
+EXPORT TAPTR exec_Alloc0(struct TExecBase *TExecBase,
+	struct TMemManager *mmu, TSIZE size)
 {
-	TAPTR mem = exec_AllocMMU(exec, mmu, size);
-	if (mem)
-		exec_FillMem(exec, mem, size, 0);
+	TAPTR mem = TAlloc(mmu, size);
+	if (mem) TFillMem(mem, size, 0);
 	return mem;
 }
 
@@ -255,31 +190,31 @@ exec_AllocMMU0(TEXECBASE *exec, struct TMemManager *mmu, TUINT size)
 **	possible to allocate a fresh block of memory with this function.
 */
 
-EXPORT TAPTR
-exec_Realloc(TEXECBASE *exec, TAPTR mem, TUINT newsize)
+EXPORT TAPTR exec_Realloc(struct TExecBase *TExecBase, TAPTR mem,
+	TSIZE newsize)
 {
-	union TMMUInfo *newmem = TNULL;
+	union TMemManagerInfo *newmem = TNULL;
 	if (mem)
 	{
-		union TMMUInfo *mmuinfo = (union TMMUInfo *) mem - 1;
-		struct TMemManager *mmu = mmuinfo->tmu_Node.tmu_MMU;
+		union TMemManagerInfo *mmuinfo = (union TMemManagerInfo *) mem - 1;
+		struct TMemManager *mmu = mmuinfo->tmu_Node.tmu_MemManager;
 		union TMemMsg msg;
 
 		if (mmu == TNULL)
-			mmu = &exec->texb_BaseMMU;
+			mmu = &TExecBase->texb_BaseMemManager;
 
 		if (newsize)
 		{
-			TUINT oldsize = mmuinfo->tmu_Node.tmu_UserSize;
+			TSIZE oldsize = mmuinfo->tmu_Node.tmu_UserSize;
 			if (oldsize == newsize)
 				return mem;
 
 			msg.tmmsg_Type = TMMSG_REALLOC;
 			msg.tmmsg_Realloc.tmmsg_Ptr = mmuinfo;
-			msg.tmmsg_Realloc.tmmsg_OSize = oldsize + sizeof(union TMMUInfo);
-			msg.tmmsg_Realloc.tmmsg_NSize = newsize + sizeof(union TMMUInfo);
+			msg.tmmsg_Realloc.tmmsg_OSize = oldsize + sizeof(union TMemManagerInfo);
+			msg.tmmsg_Realloc.tmmsg_NSize = newsize + sizeof(union TMemManagerInfo);
 
-			newmem = (union TMMUInfo *)
+			newmem = (union TMemManagerInfo *)
 				TCALLHOOKPKT(&mmu->tmm_Hook, mmu, (TTAG) &msg);
 
 			if (newmem)
@@ -293,7 +228,7 @@ exec_Realloc(TEXECBASE *exec, TAPTR mem, TUINT newsize)
 			msg.tmmsg_Type = TMMSG_FREE;
 			msg.tmmsg_Free.tmmsg_Ptr = mmuinfo;
 			msg.tmmsg_Free.tmmsg_Size =
-				mmuinfo->tmu_Node.tmu_UserSize + sizeof(union TMMUInfo);
+				mmuinfo->tmu_Node.tmu_UserSize + sizeof(union TMemManagerInfo);
 			TCALLHOOKPKT(&mmu->tmm_Hook, mmu, (TTAG) &msg);
 		}
 	}
@@ -311,16 +246,15 @@ exec_Free(TEXECBASE *exec, TAPTR mem)
 {
 	if (mem)
 	{
-		union TMMUInfo *mmuinfo = (union TMMUInfo *) mem - 1;
-		struct TMemManager *mmu = mmuinfo->tmu_Node.tmu_MMU;
+		union TMemManagerInfo *mmuinfo = (union TMemManagerInfo *) mem - 1;
+		struct TMemManager *mmu = mmuinfo->tmu_Node.tmu_MemManager;
 		union TMemMsg msg;
-
 		if (mmu == TNULL)
-			mmu = &exec->texb_BaseMMU;
+			mmu = &exec->texb_BaseMemManager;
 		msg.tmmsg_Type = TMMSG_FREE;
 		msg.tmmsg_Free.tmmsg_Ptr = mmuinfo;
 		msg.tmmsg_Free.tmmsg_Size =
-			mmuinfo->tmu_Node.tmu_UserSize + sizeof(union TMMUInfo);
+			mmuinfo->tmu_Node.tmu_UserSize + sizeof(union TMemManagerInfo);
 		TCALLHOOKPKT(&mmu->tmm_Hook, mmu, (TTAG) &msg);
 	}
 }
@@ -332,7 +266,7 @@ exec_Free(TEXECBASE *exec, TAPTR mem)
 */
 
 LOCAL TBOOL
-exec_initmemhead(union TMemHead *mh, TAPTR mem, TUINT size, TUINT flags,
+exec_initmemhead(union TMemHead *mh, TAPTR mem, TSIZE size, TUINT flags,
 	TUINT bytealign)
 {
 	TUINT align = sizeof(TAPTR);
@@ -367,7 +301,7 @@ exec_initmemhead(union TMemHead *mh, TAPTR mem, TUINT size, TUINT flags,
 */
 
 LOCAL TAPTR
-exec_staticalloc(union TMemHead *mh, TUINT size)
+exec_staticalloc(union TMemHead *mh, TSIZE size)
 {
 	size = (size + mh->tmh_Node.tmh_Align) & ~mh->tmh_Node.tmh_Align;
 
@@ -442,7 +376,7 @@ exactfit:			*mnp = mn->tmn_Node.tmn_Next;
 */
 
 LOCAL void
-exec_staticfree(union TMemHead *mh, TAPTR mem, TUINT size)
+exec_staticfree(union TMemHead *mh, TAPTR mem, TSIZE size)
 {
 	union TMemNode **mnp, *mn, *pmn;
 
@@ -479,13 +413,12 @@ exec_staticfree(union TMemHead *mh, TAPTR mem, TUINT size)
 
 /*****************************************************************************/
 /*
-**	newmem = exec_staticrealloc(hal, mh, oldmem, oldsize, newsize)
+**	newmem = exec_staticrealloc(exec, mh, oldmem, oldsize, newsize)
 **	Realloc static memheader allocation
 */
 
-LOCAL TAPTR
-exec_staticrealloc(TAPTR hal, union TMemHead *mh, TAPTR oldmem,
-	TUINT oldsize, TUINT newsize)
+LOCAL TAPTR exec_staticrealloc(struct TExecBase *TExecBase, union TMemHead *mh,
+	TAPTR oldmem, TUINT oldsize, TUINT newsize)
 {
 	TAPTR newmem;
 	union TMemNode **mnp, *mn, *mend;
@@ -569,7 +502,7 @@ notfound:
 	newmem = exec_staticalloc(mh, newsize);
 	if (newmem)
 	{
-		THALCopyMem(hal, oldmem, newmem, TMIN(oldsize, newsize));
+		TCopyMem(oldmem, newmem, TMIN(oldsize, newsize));
 		exec_staticfree(mh, oldmem, oldsize);
 	}
 
@@ -582,22 +515,22 @@ notfound:
 **	Get size of an allocation made from a memory manager
 */
 
-EXPORT TUINT
+EXPORT TSIZE
 exec_GetSize(TEXECBASE *exec, TAPTR mem)
 {
-	return mem ? ((union TMMUInfo *) mem - 1)->tmu_Node.tmu_UserSize : 0;
+	return mem ? ((union TMemManagerInfo *) mem - 1)->tmu_Node.tmu_UserSize : 0;
 }
 
 /*****************************************************************************/
 /*
-**	mmu = exec_GetMMU(exec, allocation)
+**	mmu = exec_GetMemManager(exec, allocation)
 **	Get the memory manager an allocation was made from
 */
 
 EXPORT TAPTR
-exec_GetMMU(TEXECBASE *exec, TAPTR mem)
+exec_GetMemManager(TEXECBASE *exec, TAPTR mem)
 {
-	return mem ? ((union TMMUInfo *) mem - 1)->tmu_Node.tmu_MMU : TNULL;
+	return mem ? ((union TMemManagerInfo *) mem - 1)->tmu_Node.tmu_MemManager : TNULL;
 }
 
 /*****************************************************************************/
@@ -612,38 +545,37 @@ exec_destroypool(struct THook *hook, TAPTR obj, TTAG msg)
 	if (msg == TMSG_DESTROY)
 	{
 		struct TMemPool *pool = obj;
-		TEXECBASE *exec = (TEXECBASE *) TGetExecBase(pool);
+		struct TExecBase *TExecBase = TGetExecBase(pool);
 		union TMemHead *node = (union TMemHead *) pool->tpl_List.tlh_Head;
 		struct TNode *nnode;
 		if (pool->tpl_Flags & TMEMHF_FREE)
 		{
 			while ((nnode = ((struct TNode *) node)->tln_Succ))
 			{
-				exec_Free(exec, node);
+				TFree(node);
 				node = (union TMemHead *) nnode;
 			}
 		}
-		exec_Free(exec, pool);
+		TFree(pool);
 	}
 	return 0;
 }
 
 EXPORT TAPTR
-exec_CreatePool(TEXECBASE *exec, struct TTagItem *tags)
+exec_CreatePool(struct TExecBase *TExecBase, struct TTagItem *tags)
 {
 	TUINT fixedsize = TGetTag(tags, TPool_StaticSize, 0);
 	if (fixedsize)
 	{
-		struct TMemPool *pool = exec_AllocMMU(exec, TNULL,
-			sizeof(struct TMemPool));
+		struct TMemPool *pool = TAlloc(TNULL, sizeof(struct TMemPool));
 		if (pool)
 		{
 			union TMemHead *fixed = (TAPTR) TGetTag(tags, TPool_Static, TNULL);
 			pool->tpl_Flags = TMEMHF_FIXED;
 			if (fixed == TNULL)
 			{
-				TAPTR mmu = (TAPTR) TGetTag(tags, TPool_MMU, TNULL);
-				fixed = exec_AllocMMU(exec, mmu, fixedsize);
+				TAPTR mmu = (TAPTR) TGetTag(tags, TPool_MemManager, TNULL);
+				fixed = TAlloc(mmu, fixedsize);
 				pool->tpl_Flags |= TMEMHF_FREE;
 			}
 
@@ -653,7 +585,7 @@ exec_CreatePool(TEXECBASE *exec, struct TTagItem *tags)
 				pool->tpl_Flags |= ((TBOOL) TGetTag(tags, TMem_LowFrag,
 					(TTAG) TFALSE)) ? TMEMHF_LOWFRAG : TMEMHF_NONE;
 
-				pool->tpl_Handle.thn_Owner = (struct TModule *) exec;
+				pool->tpl_Handle.thn_Owner = (struct TModule *) TExecBase;
 				pool->tpl_Handle.thn_Hook.thk_Entry = exec_destroypool;
 
 				TINITLIST(&pool->tpl_List);
@@ -664,7 +596,7 @@ exec_CreatePool(TEXECBASE *exec, struct TTagItem *tags)
 			}
 			else
 			{
-				exec_Free(exec, pool);
+				TFree(pool);
 				pool = TNULL;
 			}
 		}
@@ -677,8 +609,7 @@ exec_CreatePool(TEXECBASE *exec, struct TTagItem *tags)
 		TUINT thressize = (TUINT) TGetTag(tags, TPool_ThresSize, (TTAG) 256);
 		if (pudsize >= thressize)
 		{
-			struct TMemPool *pool = exec_AllocMMU(exec, TNULL,
-				sizeof(struct TMemPool));
+			struct TMemPool *pool = TAlloc(TNULL, sizeof(struct TMemPool));
 			if (pool)
 			{
 				pool->tpl_Align = sizeof(union TMemNode) - 1;
@@ -692,10 +623,10 @@ exec_CreatePool(TEXECBASE *exec, struct TTagItem *tags)
 				pool->tpl_Flags |= ((TBOOL) TGetTag(tags, TMem_LowFrag,
 					(TTAG) TFALSE)) ? TMEMHF_LOWFRAG : TMEMHF_NONE;
 
-				pool->tpl_Handle.thn_Owner = (struct TModule *) exec;
+				pool->tpl_Handle.thn_Owner = (struct TModule *) TExecBase;
 				pool->tpl_Handle.thn_Hook.thk_Entry = exec_destroypool;
 
-				pool->tpl_MMU = (TAPTR) TGetTag(tags, TPool_MMU, TNULL);
+				pool->tpl_MemManager = (TAPTR) TGetTag(tags, TPool_MemManager, TNULL);
 
 				TINITLIST(&pool->tpl_List);
 			}
@@ -713,8 +644,8 @@ exec_CreatePool(TEXECBASE *exec, struct TTagItem *tags)
 **	Alloc memory from a pool
 */
 
-EXPORT TAPTR
-exec_AllocPool(TEXECBASE *exec, struct TMemPool *pool, TUINT size)
+EXPORT TAPTR exec_AllocPool(struct TExecBase *TExecBase, struct TMemPool *pool,
+	TSIZE size)
 {
 	if (size && pool)
 	{
@@ -730,11 +661,11 @@ exec_AllocPool(TEXECBASE *exec, struct TMemPool *pool, TUINT size)
 		{
 			/* auto-adapt pool parameters */
 
-			TINT p, t;
+			TINTPTR p, t;
 
 			t = pool->tpl_ThresSize;
 			/* tend to 4x typical size */
-			t += (((TINT) size) - (t >> 2)) >> 2;
+			t += (((TINTPTR) size) - (t >> 2)) >> 2;
 			p = pool->tpl_PudSize;
 			/* tend to 8x thressize */
 			p += (t - (p >> 3)) >> 3;
@@ -751,7 +682,7 @@ exec_AllocPool(TEXECBASE *exec, struct TMemPool *pool, TUINT size)
 
 			TAPTR mem;
 			struct TNode *tempnode;
-			TUINT pudsize;
+			TSIZE pudsize;
 
 			node = (union TMemHead *) pool->tpl_List.tlh_Head;
 			while ((tempnode = ((struct TNode *) node)->tln_Succ))
@@ -765,8 +696,7 @@ exec_AllocPool(TEXECBASE *exec, struct TMemPool *pool, TUINT size)
 			}
 
 			pudsize = (pool->tpl_PudSize + pool->tpl_Align) & ~pool->tpl_Align;
-			node = exec_AllocMMU(exec, pool->tpl_MMU,
-				sizeof(union TMemHead) + pudsize);
+			node = TAlloc(pool->tpl_MemManager, sizeof(union TMemHead) + pudsize);
 			if (node)
 			{
 				exec_initmemhead(node, node + 1, pudsize, pool->tpl_Flags,
@@ -780,8 +710,7 @@ exec_AllocPool(TEXECBASE *exec, struct TMemPool *pool, TUINT size)
 			/* large allocation */
 
 			size = (size + pool->tpl_Align) & ~pool->tpl_Align;
-			node = exec_AllocMMU(exec, pool->tpl_MMU,
-				sizeof(union TMemHead) + size);
+			node = TAlloc(pool->tpl_MemManager, sizeof(union TMemHead) + size);
 			if (node)
 			{
 				exec_initmemhead(node, node + 1, size,
@@ -800,8 +729,8 @@ exec_AllocPool(TEXECBASE *exec, struct TMemPool *pool, TUINT size)
 **	Return memory to a pool
 */
 
-EXPORT void
-exec_FreePool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *mem, TUINT size)
+EXPORT void exec_FreePool(struct TExecBase *TExecBase, struct TMemPool *pool,
+	TINT8 *mem, TSIZE size)
 {
 	TDBASSERT(99, (mem == TNULL) == (size == 0));
 	if (mem)
@@ -825,7 +754,7 @@ exec_FreePool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *mem, TUINT size)
 					{
 						/* flush puddle */
 						TREMOVE((struct TNode *) node);
-						exec_Free(exec, node);
+						TFree(node);
 					}
 					else
 					{
@@ -848,9 +777,8 @@ exec_FreePool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *mem, TUINT size)
 **	Realloc pool allocation
 */
 
-EXPORT TAPTR
-exec_ReallocPool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *oldmem,
-	TUINT oldsize, TUINT newsize)
+EXPORT TAPTR exec_ReallocPool(struct TExecBase *TExecBase,
+	struct TMemPool *pool, TINT8 *oldmem, TSIZE oldsize, TSIZE newsize)
 {
 	if (oldmem && oldsize)
 	{
@@ -860,7 +788,7 @@ exec_ReallocPool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *oldmem,
 
 		if (newsize == 0)
 		{
-			exec_FreePool(exec, pool, oldmem, oldsize);
+			TFreePool(pool, oldmem, oldsize);
 			return TNULL;
 		}
 
@@ -868,8 +796,8 @@ exec_ReallocPool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *oldmem,
 
 		if (pool->tpl_Flags & TMEMHF_FIXED)
 		{
-			return exec_staticrealloc(exec->texb_HALBase, node, oldmem,
-				oldsize, newsize);
+			return exec_staticrealloc(TExecBase, node, oldmem, oldsize,
+				newsize);
 		}
 
 		memend = oldmem + oldsize;
@@ -881,8 +809,8 @@ exec_ReallocPool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *oldmem,
 			{
 				TAPTR newmem;
 
-				newmem = exec_staticrealloc(exec->texb_HALBase, node, oldmem,
-					oldsize, newsize);
+				newmem = exec_staticrealloc(TExecBase, node,
+					oldmem, oldsize, newsize);
 				if (newmem)
 				{
 					if (node->tmh_Node.tmh_Flags & TMEMHF_LARGE)
@@ -895,11 +823,10 @@ exec_ReallocPool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *oldmem,
 					return newmem;
 				}
 
-				newmem = exec_AllocPool(exec, pool, newsize);
+				newmem = TAllocPool(pool, newsize);
 				if (newmem)
 				{
-					THALCopyMem(exec->texb_HALBase, oldmem, newmem,
-						TMIN(oldsize, newsize));
+					TCopyMem(oldmem, newmem, TMIN(oldsize, newsize));
 					exec_staticfree(node, oldmem, oldsize);
 					if (node->tmh_Node.tmh_Free ==
 						(TUINTPTR) node->tmh_Node.tmh_MemEnd -
@@ -907,7 +834,7 @@ exec_ReallocPool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *oldmem,
 					{
 						/* flush puddle */
 						TREMOVE((struct TNode *) node);
-						exec_Free(exec, node);
+						TFree(node);
 					}
 					else
 					{
@@ -921,7 +848,7 @@ exec_ReallocPool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *oldmem,
 		}
 	}
 	else if ((oldmem == TNULL) && (oldsize == 0))
-		return exec_AllocPool(exec, pool, newsize);
+		return TAllocPool(pool, newsize);
 
 	TDBASSERT(99, TFALSE);
 	return TNULL;
@@ -931,67 +858,63 @@ exec_ReallocPool(TEXECBASE *exec, struct TMemPool *pool, TINT8 *oldmem,
 /*
 **	TNULL message allocator -
 **	Note that this kind of allocator is using execbase->texb_Lock, not
-**	the lock supplied with the MMU. There may be no 'self'-context available
-**	when a message MMU is used to allocate the initial task structures
+**	the lock supplied with the MM. There may be no 'self'-context available
+**	when a message MM is used to allocate the initial task structures
 **	during the Exec setup.
 */
 
-static TAPTR
-exec_mmu_msgalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_msgalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	TAPTR hal = exec->texb_HALBase;
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TAPTR hal = TExecBase->texb_HALBase;
 	TINT8 *mem;
-	THALLock(hal, &exec->texb_Lock);
+	THALLock(hal, &TExecBase->texb_Lock);
 	mem = THALAlloc(hal, size +
 		sizeof(struct TNode) + sizeof(struct TMessage));
 	if (mem)
 	{
 		TAddTail(&mmu->tmm_TrackList, (struct TNode *) mem);
-		THALUnlock(hal, &exec->texb_Lock);
+		THALUnlock(hal, &TExecBase->texb_Lock);
 		((struct TMessage *) (mem + sizeof(struct TNode)))->tmsg_Flags =
 			TMSG_STATUS_FAILED;
 		return (TAPTR) (mem + sizeof(struct TNode) + sizeof(struct TMessage));
 	}
-	THALUnlock(hal, &exec->texb_Lock);
+	THALUnlock(hal, &TExecBase->texb_Lock);
 	return TNULL;
 }
 
-static void
-exec_mmu_msgfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_msgfree(struct TMemManager *mmu, TINT8 *mem, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	TAPTR hal = exec->texb_HALBase;
-	THALLock(hal, &exec->texb_Lock);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TAPTR hal = TExecBase->texb_HALBase;
+	THALLock(hal, &TExecBase->texb_Lock);
 	TREMOVE((struct TNode *) (mem - sizeof(struct TNode) -
 		sizeof(struct TMessage)));
 	THALFree(hal, mem - sizeof(struct TNode) - sizeof(struct TMessage),
 		size + sizeof(struct TNode) + sizeof(struct TMessage));
-	THALUnlock(hal, &exec->texb_Lock);
+	THALUnlock(hal, &TExecBase->texb_Lock);
 }
 
-static void
-exec_mmu_msgdestroy(struct TMemManager *mmu)
+static void exec_mmu_msgdestroy(struct TMemManager *mmu)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	TAPTR hal = exec->texb_HALBase;
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TAPTR hal = TExecBase->texb_HALBase;
 	struct TNode *nextnode, *node = mmu->tmm_TrackList.tlh_Head;
 	TINT numfreed = 0;
 	while ((nextnode = node->tln_Succ))
 	{
-		THALFree(hal, node, ((union TMMUInfo *) ((TINT8 *) (node + 1) +
+		THALFree(hal, node, ((union TMemManagerInfo *) ((TINT8 *) (node + 1) +
 			sizeof(struct TMessage)))->tmu_Node.tmu_UserSize +
 				sizeof(struct TNode) +
-			sizeof(struct TMessage) + sizeof(union TMMUInfo));
+			sizeof(struct TMessage) + sizeof(union TMemManagerInfo));
 		numfreed++;
 		node = nextnode;
 	}
 	if (numfreed)
-		TDBPRINTF(TDB_ERROR,("freed %d pending allocations\n", numfreed));
+		TDBPRINTF(TDB_WARN,("freed %d pending allocations\n", numfreed));
 }
 
-static THOOKENTRY TTAG
-exec_mmu_msg(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_msg(struct THook *hook, TAPTR obj, TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1012,7 +935,7 @@ exec_mmu_msg(struct THook *hook, TAPTR obj, TTAG m)
 			TDBPRINTF(TDB_ERROR,("messages cannot be reallocated\n"));
 			break;
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
@@ -1022,29 +945,26 @@ exec_mmu_msg(struct THook *hook, TAPTR obj, TTAG m)
 **	static memheader allocator
 */
 
-static TAPTR
-exec_mmu_staticalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_staticalloc(struct TMemManager *mmu, TSIZE size)
 {
 	return exec_staticalloc(mmu->tmm_Allocator, size);
 }
 
-static void
-exec_mmu_staticfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_staticfree(struct TMemManager *mmu, TINT8 *mem,
+	TSIZE size)
 {
 	exec_staticfree(mmu->tmm_Allocator, mem, size);
 }
 
-static TAPTR
-exec_mmu_staticrealloc(struct TMemManager *mmu, TINT8 *oldmem, TUINT oldsize,
-	TUINT newsize)
+static TAPTR exec_mmu_staticrealloc(struct TMemManager *mmu, TINT8 *oldmem,
+	TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	return exec_staticrealloc(exec->texb_HALBase, mmu->tmm_Allocator, oldmem,
-		oldsize, newsize);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	return exec_staticrealloc(TExecBase, mmu->tmm_Allocator, oldmem, oldsize,
+		newsize);
 }
 
-static THOOKENTRY TTAG
-exec_mmu_static(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_static(struct THook *hook, TAPTR obj, TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1066,7 +986,7 @@ exec_mmu_static(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
@@ -1076,31 +996,26 @@ exec_mmu_static(struct THook *hook, TAPTR obj, TTAG m)
 **	pooled allocator
 */
 
-static TAPTR
-exec_mmu_poolalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_poolalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	return exec_AllocPool(exec, mmu->tmm_Allocator, size);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	return TAllocPool(mmu->tmm_Allocator, size);
 }
 
-static void
-exec_mmu_poolfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_poolfree(struct TMemManager *mmu, TINT8 *mem, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	exec_FreePool(exec, mmu->tmm_Allocator, mem, size);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TFreePool(mmu->tmm_Allocator, mem, size);
 }
 
-static TAPTR
-exec_mmu_poolrealloc(struct TMemManager *mmu, TINT8 *oldmem, TUINT oldsize,
-	TUINT newsize)
+static TAPTR exec_mmu_poolrealloc(struct TMemManager *mmu, TINT8 *oldmem,
+	TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	return exec_ReallocPool(exec, mmu->tmm_Allocator, oldmem,
-		oldsize, newsize);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	return TReallocPool(mmu->tmm_Allocator, oldmem, oldsize, newsize);
 }
 
-static THOOKENTRY TTAG
-exec_mmu_pool(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_pool(struct THook *hook, TAPTR obj, TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1122,7 +1037,7 @@ exec_mmu_pool(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
@@ -1132,47 +1047,42 @@ exec_mmu_pool(struct THook *hook, TAPTR obj, TTAG m)
 **	pooled+tasksafe allocator
 */
 
-static TAPTR
-exec_mmu_pooltaskalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_pooltaskalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *mem;
-	exec_Lock(exec, &mmu->tmm_Lock);
-	mem = exec_AllocPool(exec, mmu->tmm_Allocator, size);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
+	mem = TAllocPool(mmu->tmm_Allocator, size);
+	TUnlock(&mmu->tmm_Lock);
 	return mem;
 }
 
-static void
-exec_mmu_pooltaskfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_pooltaskfree(struct TMemManager *mmu, TINT8 *mem,
+	TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	exec_Lock(exec, &mmu->tmm_Lock);
-	exec_FreePool(exec, mmu->tmm_Allocator, mem, size);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TLock(&mmu->tmm_Lock);
+	TFreePool(mmu->tmm_Allocator, mem, size);
+	TUnlock(&mmu->tmm_Lock);
 }
 
-static TAPTR
-exec_mmu_pooltaskrealloc(struct TMemManager *mmu, TINT8 *oldmem, TUINT oldsize,
-	TUINT newsize)
+static TAPTR exec_mmu_pooltaskrealloc(struct TMemManager *mmu, TINT8 *oldmem,
+	TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *newmem;
-	exec_Lock(exec, &mmu->tmm_Lock);
-	newmem = exec_ReallocPool(exec, mmu->tmm_Allocator, oldmem, oldsize,
-		newsize);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
+	newmem = TReallocPool(mmu->tmm_Allocator, oldmem, oldsize, newsize);
+	TUnlock(&mmu->tmm_Lock);
 	return newmem;
 }
 
-static void
-exec_mmu_pooltaskdestroy(struct TMemManager *mmu)
+static void exec_mmu_pooltaskdestroy(struct TMemManager *mmu)
 {
 	TDESTROY(&mmu->tmm_Lock);
 }
 
-static THOOKENTRY TTAG
-exec_mmu_pooltask(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_pooltask(struct THook *hook, TAPTR obj, TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1195,7 +1105,7 @@ exec_mmu_pooltask(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
@@ -1205,47 +1115,44 @@ exec_mmu_pooltask(struct THook *hook, TAPTR obj, TTAG m)
 **	static memheader allocator, task-safe
 */
 
-static TAPTR
-exec_mmu_statictaskalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_statictaskalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *mem;
-	exec_Lock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
 	mem = exec_staticalloc(mmu->tmm_Allocator, size);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TUnlock(&mmu->tmm_Lock);
 	return mem;
 }
 
-static void
-exec_mmu_statictaskfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_statictaskfree(struct TMemManager *mmu, TINT8 *mem,
+	TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	exec_Lock(exec, &mmu->tmm_Lock);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TLock(&mmu->tmm_Lock);
 	exec_staticfree(mmu->tmm_Allocator, mem, size);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TUnlock(&mmu->tmm_Lock);
 }
 
-static TAPTR
-exec_mmu_statictaskrealloc(struct TMemManager *mmu, TINT8 *oldmem,
+static TAPTR exec_mmu_statictaskrealloc(struct TMemManager *mmu, TINT8 *oldmem,
 	TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *newmem;
-	exec_Lock(exec, &mmu->tmm_Lock);
-	newmem = exec_staticrealloc(exec->texb_HALBase, mmu->tmm_Allocator,
-		oldmem, oldsize, newsize);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
+	newmem = exec_staticrealloc(TExecBase, mmu->tmm_Allocator, oldmem, oldsize,
+		newsize);
+	TUnlock(&mmu->tmm_Lock);
 	return newmem;
 }
 
-static void
-exec_mmu_statictaskdestroy(struct TMemManager *mmu)
+static void exec_mmu_statictaskdestroy(struct TMemManager *mmu)
 {
 	TDESTROY(&mmu->tmm_Lock);
 }
 
-static THOOKENTRY TTAG
-exec_mmu_statictask(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_statictask(struct THook *hook, TAPTR obj,
+	TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1268,56 +1175,51 @@ exec_mmu_statictask(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
 
 /*****************************************************************************/
 /*
-**	tasksafe MMU allocator
+**	tasksafe MM allocator
 */
 
-static TAPTR
-exec_mmu_taskalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_taskalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *mem;
-	exec_Lock(exec, &mmu->tmm_Lock);
-	mem = exec_AllocMMU(exec, mmu->tmm_Allocator, size);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
+	mem = TAlloc(mmu->tmm_Allocator, size);
+	TUnlock(&mmu->tmm_Lock);
 	return mem;
 }
 
-static TAPTR
-exec_mmu_taskrealloc(struct TMemManager *mmu, TINT8 *oldmem, TUINT oldsize,
-	TUINT newsize)
+static TAPTR exec_mmu_taskrealloc(struct TMemManager *mmu, TINT8 *oldmem,
+	TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *newmem;
-	exec_Lock(exec, &mmu->tmm_Lock);
-	newmem = exec_Realloc(exec, oldmem, newsize);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
+	newmem = TRealloc(oldmem, newsize);
+	TUnlock(&mmu->tmm_Lock);
 	return newmem;
 }
 
-static void
-exec_mmu_taskfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_taskfree(struct TMemManager *mmu, TINT8 *mem, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	exec_Lock(exec, &mmu->tmm_Lock);
-	exec_Free(exec, mem);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TLock(&mmu->tmm_Lock);
+	TFree(mem);
+	TUnlock(&mmu->tmm_Lock);
 }
 
-static void
-exec_mmu_taskdestroy(struct TMemManager *mmu)
+static void exec_mmu_taskdestroy(struct TMemManager *mmu)
 {
 	TDESTROY(&mmu->tmm_Lock);
 }
 
-static THOOKENTRY TTAG
-exec_mmu_task(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_task(struct THook *hook, TAPTR obj, TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1340,22 +1242,20 @@ exec_mmu_task(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
 
 /*****************************************************************************/
 /*
-**	tracking MMU allocator
+**	tracking MM allocator
 */
 
-static TAPTR
-exec_mmu_trackalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_trackalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	TINT8 *mem = exec_AllocMMU(exec, mmu->tmm_Allocator,
-		size + sizeof(struct TNode));
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TINT8 *mem = TAlloc(mmu->tmm_Allocator, size + sizeof(struct TNode));
 	if (mem)
 	{
 		TAddHead(&mmu->tmm_TrackList, (struct TNode *) mem);
@@ -1364,14 +1264,13 @@ exec_mmu_trackalloc(struct TMemManager *mmu, TUINT size)
 	return TNULL;
 }
 
-static TAPTR
-exec_mmu_trackrealloc(struct TMemManager *mmu, TINT8 *oldmem, TUINT oldsize,
-	TUINT newsize)
+static TAPTR exec_mmu_trackrealloc(struct TMemManager *mmu, TINT8 *oldmem,
+	TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *newmem;
 	TREMOVE((struct TNode *) (oldmem - sizeof(struct TNode)));
-	newmem = exec_Realloc(exec, oldmem - sizeof(struct TNode),
+	newmem = TRealloc(oldmem - sizeof(struct TNode),
 		newsize + sizeof(struct TNode));
 	if (newmem)
 	{
@@ -1381,32 +1280,29 @@ exec_mmu_trackrealloc(struct TMemManager *mmu, TINT8 *oldmem, TUINT oldsize,
 	return (TAPTR) newmem;
 }
 
-static void
-exec_mmu_trackfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_trackfree(struct TMemManager *mmu, TINT8 *mem, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TREMOVE((struct TNode *) (mem - sizeof(struct TNode)));
-	exec_Free(exec, mem - sizeof(struct TNode));
+	TFree(mem - sizeof(struct TNode));
 }
 
-static void
-exec_mmu_trackdestroy(struct TMemManager *mmu)
+static void exec_mmu_trackdestroy(struct TMemManager *mmu)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	struct TNode *nextnode, *node = mmu->tmm_TrackList.tlh_Head;
 	TINT numfreed = 0;
 	while ((nextnode = node->tln_Succ))
 	{
-		exec_Free(exec, node);
+		TFree(node);
 		numfreed++;
 		node = nextnode;
 	}
 	if (numfreed)
-		TDBPRINTF(TDB_ERROR,("freed %d pending allocations\n", numfreed));
+		TDBPRINTF(TDB_WARN,("freed %d pending allocations\n", numfreed));
 }
 
-static THOOKENTRY TTAG
-exec_mmu_track(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_track(struct THook *hook, TAPTR obj, TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1429,76 +1325,73 @@ exec_mmu_track(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
 
 /*****************************************************************************/
 /*
-**	tasksafe+tracking MMU allocator
+**	tasksafe+tracking MM allocator
 */
 
-static TAPTR
-exec_mmu_tasktrackalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_tasktrackalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *mem;
-	exec_Lock(exec, &mmu->tmm_Lock);
-	mem = exec_AllocMMU(exec, mmu->tmm_Allocator, size + sizeof(struct TNode));
+	TLock(&mmu->tmm_Lock);
+	mem = TAlloc(mmu->tmm_Allocator, size + sizeof(struct TNode));
 	if (mem)
 	{
 		TAddHead(&mmu->tmm_TrackList, (struct TNode *) mem);
 		mem += sizeof(struct TNode);
 	}
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TUnlock(&mmu->tmm_Lock);
 	return (TAPTR) mem;
 }
 
-static TAPTR
-exec_mmu_tasktrackrealloc(struct TMemManager *mmu, TINT8 *oldmem,
+static TAPTR exec_mmu_tasktrackrealloc(struct TMemManager *mmu, TINT8 *oldmem,
 	TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TINT8 *newmem;
-	exec_Lock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
 	TREMOVE((struct TNode *) (oldmem - sizeof(struct TNode)));
-	newmem = exec_Realloc(exec, oldmem - sizeof(struct TNode),
+	newmem = TRealloc(oldmem - sizeof(struct TNode),
 		newsize + sizeof(struct TNode));
 	if (newmem)
 	{
 		TAddHead(&mmu->tmm_TrackList, (struct TNode *) newmem);
 		newmem += sizeof(struct TNode);
 	}
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TUnlock(&mmu->tmm_Lock);
 	return (TAPTR) newmem;
 }
 
-static void
-exec_mmu_tasktrackfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_tasktrackfree(struct TMemManager *mmu, TINT8 *mem,
+	TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	exec_Lock(exec, &mmu->tmm_Lock);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TLock(&mmu->tmm_Lock);
 	TREMOVE((struct TNode *) (mem - sizeof(struct TNode)));
-	exec_Free(exec, mem - sizeof(struct TNode));
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TFree(mem - sizeof(struct TNode));
+	TUnlock(&mmu->tmm_Lock);
 }
 
-static void
-exec_mmu_tasktrackdestroy(struct TMemManager *mmu)
+static void exec_mmu_tasktrackdestroy(struct TMemManager *mmu)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	struct TNode *nextnode, *node = mmu->tmm_TrackList.tlh_Head;
 	TINT numfreed = 0;
 	while ((nextnode = node->tln_Succ))
 	{
-		exec_Free(exec, node);
+		TFree(node);
 		numfreed++;
 		node = nextnode;
 	}
 	TDESTROY(&mmu->tmm_Lock);
 	if (numfreed)
-		TDBPRINTF(TDB_ERROR,("freed %d pending allocations\n", numfreed));
+		TDBPRINTF(TDB_WARN,("freed %d pending allocations\n", numfreed));
 }
 
 static THOOKENTRY TTAG
@@ -1525,7 +1418,7 @@ exec_mmu_tasktrack(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
@@ -1535,63 +1428,59 @@ exec_mmu_tasktrack(struct THook *hook, TAPTR obj, TTAG m)
 **	TNULL tasksafe+tracking allocator
 */
 
-static TAPTR
-exec_mmu_kntasktrackalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_kntasktrackalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	struct TNode *mem;
-	exec_Lock(exec, &mmu->tmm_Lock);
-	mem = exec_AllocMMU(exec, &exec->texb_BaseMMU,
-		size + sizeof(struct TNode));
+	TLock(&mmu->tmm_Lock);
+	mem = TAlloc(&TExecBase->texb_BaseMemManager, size + sizeof(struct TNode));
 	if (mem)
 	{
 		TAddHead(&mmu->tmm_TrackList, mem);
 		mem++;
 	}
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TUnlock(&mmu->tmm_Lock);
 	return (TAPTR) mem;
 }
 
-static TAPTR
-exec_mmu_kntasktrackrealloc(struct TMemManager *mmu, TINT8 *oldmem,
-	TUINT oldsize, TUINT newsize)
+static TAPTR exec_mmu_kntasktrackrealloc(struct TMemManager *mmu,
+	TINT8 *oldmem, TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	struct TNode *newmem;
 	oldmem -= sizeof(struct TNode);
-	exec_Lock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
 	TREMOVE((struct TNode *) oldmem);
-	newmem = exec_Realloc(exec, oldmem, newsize + sizeof(struct TNode));
+	newmem = TRealloc(oldmem, newsize + sizeof(struct TNode));
 	if (newmem)
 	{
 		TAddHead(&mmu->tmm_TrackList, newmem);
 		newmem++;
 	}
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TUnlock(&mmu->tmm_Lock);
 	return (TAPTR) newmem;
 }
 
-static void
-exec_mmu_kntasktrackfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_kntasktrackfree(struct TMemManager *mmu, TINT8 *mem,
+	TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	mem -= sizeof(struct TNode);
-	exec_Lock(exec, &mmu->tmm_Lock);
+	TLock(&mmu->tmm_Lock);
 	TREMOVE((struct TNode *) mem);
-	exec_Free(exec, mem);
-	exec_Unlock(exec, &mmu->tmm_Lock);
+	TFree(mem);
+	TUnlock(&mmu->tmm_Lock);
 }
 
-static void
-exec_mmu_kntasktrackdestroy(struct TMemManager *mmu)
+static void exec_mmu_kntasktrackdestroy(struct TMemManager *mmu)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	struct TNode *nextnode, *node = mmu->tmm_TrackList.tlh_Head;
 	TINT numfreed = 0;
 
 	while ((nextnode = node->tln_Succ))
 	{
-		exec_Free(exec, node);
+		TFree(node);
 		numfreed++;
 		node = nextnode;
 	}
@@ -1600,12 +1489,12 @@ exec_mmu_kntasktrackdestroy(struct TMemManager *mmu)
 
 	#ifdef TDEBUG
 	if (numfreed > 0)
-		TDBPRINTF(TDB_ERROR,("freed %d pending allocations\n",numfreed));
+		TDBPRINTF(TDB_WARN,("freed %d pending allocations\n",numfreed));
 	#endif
 }
 
-static THOOKENTRY TTAG
-exec_mmu_kntasktrack(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_kntasktrack(struct THook *hook, TAPTR obj,
+	TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1628,40 +1517,36 @@ exec_mmu_kntasktrack(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
 
 /*****************************************************************************/
 /*
-**	MMU-on-MMU allocator
+**	MM-on-MM allocator
 */
 
-static TAPTR
-exec_mmu_mmualloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_mmualloc(struct TMemManager *mmu, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	return exec_AllocMMU(exec, mmu->tmm_Allocator, size);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	return TAlloc(mmu->tmm_Allocator, size);
 }
 
-static TAPTR
-exec_mmu_mmurealloc(struct TMemManager *mmu, TINT8 *oldmem, TUINT oldsize,
-	TUINT newsize)
+static TAPTR exec_mmu_mmurealloc(struct TMemManager *mmu, TINT8 *oldmem,
+	TUINT oldsize, TUINT newsize)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	return exec_Realloc(exec, oldmem, newsize);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	return TRealloc(oldmem, newsize);
 }
 
-static void
-exec_mmu_mmufree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_mmufree(struct TMemManager *mmu, TINT8 *mem, TSIZE size)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(mmu);
-	exec_Free(exec, mem);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	TFree(mem);
 }
 
-static THOOKENTRY TTAG
-exec_mmu_mmu(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_mmu(struct THook *hook, TAPTR obj, TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1683,7 +1568,7 @@ exec_mmu_mmu(struct THook *hook, TAPTR obj, TTAG m)
 				msg->tmmsg_Realloc.tmmsg_OSize,
 				msg->tmmsg_Realloc.tmmsg_NSize);
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
@@ -1693,31 +1578,27 @@ exec_mmu_mmu(struct THook *hook, TAPTR obj, TTAG m)
 **	TNULL allocator
 */
 
-static TAPTR
-exec_mmu_kernelalloc(struct TMemManager *mmu, TUINT size)
+static TAPTR exec_mmu_kernelalloc(struct TMemManager *mmu, TSIZE size)
 {
-	TAPTR hal = ((TEXECBASE *) TGetExecBase(mmu))->texb_HALBase;
-	TAPTR mem = THALAlloc(hal, size);
-	return mem;
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	return THALAlloc(TExecBase->texb_HALBase, size);
 }
 
-static void
-exec_mmu_kernelfree(struct TMemManager *mmu, TINT8 *mem, TUINT size)
+static void exec_mmu_kernelfree(struct TMemManager *mmu, TINT8 *mem,
+	TSIZE size)
 {
-	TAPTR hal = ((TEXECBASE *) TGetExecBase(mmu))->texb_HALBase;
-	THALFree(hal, mem, size);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	THALFree(TExecBase->texb_HALBase, mem, size);
 }
 
-static TAPTR
-exec_mmu_kernelrealloc(struct TMemManager *mmu, TINT8 *oldmem, TUINT oldsize,
-	TUINT newsize)
+static TAPTR exec_mmu_kernelrealloc(struct TMemManager *mmu, TINT8 *oldmem,
+	TUINT oldsize, TUINT newsize)
 {
-	TAPTR hal = ((TEXECBASE *) TGetExecBase(mmu))->texb_HALBase;
-	return THALRealloc(hal, oldmem, oldsize, newsize);
+	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
+	return THALRealloc(TExecBase->texb_HALBase, oldmem, oldsize, newsize);
 }
 
-static THOOKENTRY TTAG
-exec_mmu_kernel(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_kernel(struct THook *hook, TAPTR obj, TTAG m)
 {
 	struct TMemManager *mmu = obj;
 	union TMemMsg *msg = (union TMemMsg *) m;
@@ -1749,8 +1630,7 @@ exec_mmu_kernel(struct THook *hook, TAPTR obj, TTAG m)
 **	void allocator
 */
 
-static THOOKENTRY TTAG
-exec_mmu_void(struct THook *hook, TAPTR obj, TTAG m)
+static THOOKENTRY TTAG exec_mmu_void(struct THook *hook, TAPTR obj, TTAG m)
 {
 	union TMemMsg *msg = (union TMemMsg *) m;
 	switch (msg->tmmsg_Type)
@@ -1761,19 +1641,19 @@ exec_mmu_void(struct THook *hook, TAPTR obj, TTAG m)
 		case TMMSG_REALLOC:
 			break;
 		default:
-			TDBPRINTF(TDB_FAIL,("unknown hookmsg\n"));
+			TDBPRINTF(TDB_ERROR,("unknown hookmsg\n"));
 	}
 	return 0;
 }
 
 /*****************************************************************************/
 /*
-**	success = exec_initmmu(exec, mmu, allocator, mmutype, tags)
+**	success = exec_initmm(exec, mmu, allocator, mmutype, tags)
 **	Initialize Memory Manager
 */
 
-static THOOKENTRY TTAG
-exec_mmudestroyfunc(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG exec_mmudestroyfunc(struct THook *hook, TAPTR obj,
+	TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
@@ -1783,42 +1663,32 @@ exec_mmudestroyfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	return 0;
 }
 
-LOCAL TBOOL
-exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
-	TUINT mmutype, TTAGITEM *tags)
+LOCAL TBOOL exec_initmm(TEXECBASE *TExecBase, struct TMemManager *mmu,
+	TAPTR allocator, TUINT mmutype, TTAGITEM *tags)
 {
-	exec_FillMem(exec, mmu, sizeof(struct TMemManager), 0);
+	/* used before TExecFillMem is functional: */
+	THALFillMem(TExecBase->texb_HALBase, mmu, sizeof(struct TMemManager), 0);
+
 	mmu->tmm_Handle.thn_Hook.thk_Entry = exec_mmudestroyfunc;
 	mmu->tmm_Type = mmutype;
-	mmu->tmm_Handle.thn_Owner = (struct TModule *) exec;
+	mmu->tmm_Handle.thn_Owner = (struct TModule *) TExecBase;
 	mmu->tmm_Allocator = allocator;
 
 	switch (mmutype)
 	{
-		#if 0
-		case TMMUT_Debug:
-			if (exec_initlock(exec, &mmu->tmm_Lock))
-			{
-				TINITLIST(&mmu->tmm_TrackList);
-				mmu->tmm_Hook.thk_Entry = mmu_db;
-				return TTRUE;
-			}
-			break;
-		#endif
-
-		case TMMUT_MMU:
-			/* MMU on top of another MMU - no additional functionality */
+		case TMMT_MemManager:
+			/* MM on top of another MM - no additional functionality */
 			if (allocator)
 				mmu->tmm_Hook.thk_Entry = exec_mmu_mmu;
 			else
 				mmu->tmm_Hook.thk_Entry = exec_mmu_kernel;
 			return TTRUE;
 
-		case TMMUT_Tracking:
+		case TMMT_Tracking:
 			TINITLIST(&mmu->tmm_TrackList);
 			if (allocator)
 			{
-				/* implement memory-tracking on top of another MMU */
+				/* implement memory-tracking on top of another MM */
 				mmu->tmm_Hook.thk_Entry = exec_mmu_track;
 				return TTRUE;
 			}
@@ -1827,7 +1697,7 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 				/* If tracking is requested for a TNULL allocator, we must
 				additionally provide locking for the tracklist, because
 				kernel allocators are tasksafe by definition. */
-				if (exec_initlock(exec, &mmu->tmm_Lock))
+				if (exec_initlock(TExecBase, &mmu->tmm_Lock))
 				{
 					mmu->tmm_Hook.thk_Entry = exec_mmu_kntasktrack;
 					return TTRUE;
@@ -1835,11 +1705,11 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 			}
 			break;
 
-		case TMMUT_TaskSafe:
+		case TMMT_TaskSafe:
 			if (allocator)
 			{
-				/* implement task-safety on top of another MMU */
-				if (exec_initlock(exec, &mmu->tmm_Lock))
+				/* implement task-safety on top of another MM */
+				if (exec_initlock(TExecBase, &mmu->tmm_Lock))
 				{
 					mmu->tmm_Hook.thk_Entry = exec_mmu_task;
 					return TTRUE;
@@ -1847,15 +1717,15 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 			}
 			else
 			{
-				/* a TNULL MMU is task-safe by definition */
+				/* a TNULL MM is task-safe by definition */
 				mmu->tmm_Hook.thk_Entry = exec_mmu_kernel;
 				return TTRUE;
 			}
 			break;
 
-		case TMMUT_TaskSafe | TMMUT_Tracking:
-			/* implement task-safety and tracking on top of another MMU */
-			if (exec_initlock(exec, &mmu->tmm_Lock))
+		case TMMT_TaskSafe | TMMT_Tracking:
+			/* implement task-safety and tracking on top of another MM */
+			if (exec_initlock(TExecBase, &mmu->tmm_Lock))
 			{
 				TINITLIST(&mmu->tmm_TrackList);
 				if (allocator)
@@ -1866,7 +1736,7 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 			}
 			break;
 
-		case TMMUT_Message:
+		case TMMT_Message:
 			if (allocator == TNULL) /* must be TNULL for now */
 			{
 				/* note that we use the execbase lock */
@@ -1876,8 +1746,8 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 			}
 			break;
 
-		case TMMUT_Static:
-			/*	MMU on top of memheader */
+		case TMMT_Static:
+			/*	MM on top of memheader */
 			if (allocator)
 			{
 				mmu->tmm_Hook.thk_Entry = exec_mmu_static;
@@ -1885,11 +1755,11 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 			}
 			break;
 
-		case TMMUT_Static | TMMUT_TaskSafe:
-			/*	MMU on top of memheader, task-safe */
+		case TMMT_Static | TMMT_TaskSafe:
+			/*	MM on top of memheader, task-safe */
 			if (allocator)
 			{
-				if (exec_initlock(exec, &mmu->tmm_Lock))
+				if (exec_initlock(TExecBase, &mmu->tmm_Lock))
 				{
 					mmu->tmm_Hook.thk_Entry = exec_mmu_statictask;
 					return TTRUE;
@@ -1897,8 +1767,8 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 			}
 			break;
 
-		case TMMUT_Pooled:
-			/*	MMU on top of a pool */
+		case TMMT_Pooled:
+			/*	MM on top of a pool */
 			if (allocator)
 			{
 				mmu->tmm_Hook.thk_Entry = exec_mmu_pool;
@@ -1906,11 +1776,11 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 			}
 			break;
 
-		case TMMUT_Pooled | TMMUT_TaskSafe:
-			/*	MMU on top of a pool, task-safe */
+		case TMMT_Pooled | TMMT_TaskSafe:
+			/*	MM on top of a pool, task-safe */
 			if (allocator)
 			{
-				if (exec_initlock(exec, &mmu->tmm_Lock))
+				if (exec_initlock(TExecBase, &mmu->tmm_Lock))
 				{
 					mmu->tmm_Hook.thk_Entry = exec_mmu_pooltask;
 					return TTRUE;
@@ -1918,19 +1788,18 @@ exec_initmmu(TEXECBASE *exec, struct TMemManager *mmu, TAPTR allocator,
 			}
 			break;
 
-		case TMMUT_Void:
+		case TMMT_Void:
 			mmu->tmm_Hook.thk_Entry = exec_mmu_void;
 			mmu->tmm_Allocator = TNULL;
-			mmu->tmm_Type = TMMUT_Void;
+			mmu->tmm_Type = TMMT_Void;
 			return TTRUE;
 	}
 
-	/* As a fallback, initialize a void MMU that is incapable of allocating.
-	** This allows safe usage of an MMU without checking the return value of
-	** TInitMMU() */
+	/* As a fallback, initialize a void MM that is incapable of allocating.
+	** This allows safe usage of an MM without checking the return value */
 
 	mmu->tmm_Hook.thk_Entry = exec_mmu_void;
 	mmu->tmm_Allocator = TNULL;
- 	mmu->tmm_Type = TMMUT_Void;
+ 	mmu->tmm_Type = TMMT_Void;
 	return TFALSE;
 }

@@ -9,6 +9,7 @@
 */
 
 #include <tek/exec.h>
+#include <tek/mod/ioext.h>
 #include <tek/stdcall/exec.h>
 
 extern TMODENTRY TUINT

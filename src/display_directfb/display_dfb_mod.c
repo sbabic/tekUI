@@ -16,9 +16,9 @@ static TMODAPI void dfb_beginio(DFBDISPLAY *mod, struct TVRequest *req);
 static TMODAPI TINT dfb_abortio(DFBDISPLAY *mod, struct TVRequest *req);
 static TMODAPI struct TVRequest *dfb_allocreq(DFBDISPLAY *mod);
 static TMODAPI void dfb_freereq(DFBDISPLAY *mod, struct TVRequest *req);
-static TTASKENTRY TBOOL dfb_initinstance(struct TTask *task);
+static TBOOL dfb_initinstance(struct TTask *task);
 static void dfb_exitinstance(DFBDISPLAY *inst);
-static TTASKENTRY void dfb_taskfunc(struct TTask *task);
+static void dfb_taskfunc(struct TTask *task);
 LOCAL void dfb_wake(DFBDISPLAY *inst);
 static void dfb_processevent(DFBDISPLAY *mod);
 static TVOID dfb_processvisualevent(DFBDISPLAY *mod, DFBWINDOW *v, DFBEvent *evt);
@@ -47,7 +47,7 @@ static void
 dfb_destroy(DFBDISPLAY *mod)
 {
 	TDBPRINTF(TDB_TRACE,("Module destroy...\n"));
-	TDestroy(mod->dfb_Lock);
+	TDestroy((struct THandle *) mod->dfb_Lock);
 }
 
 static THOOKENTRY TTAG
@@ -63,6 +63,12 @@ dfb_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 			return (TTAG) dfb_modopen(mod, obj);
 		case TMSG_CLOSEMODULE:
 			dfb_modclose(obj);
+			break;
+		case TMSG_INITTASK:
+			return dfb_initinstance(obj);
+		case TMSG_RUNTASK:
+			dfb_taskfunc(obj);
+			break;
 	}
 	return 0;
 }
@@ -98,7 +104,8 @@ tek_init_display_directfb(struct TTask *task, struct TModule *vis, TUINT16 versi
 			mod->dfb_Module.tmd_Revision = DFBDISPLAY_REVISION;
 			mod->dfb_Module.tmd_Handle.thn_Hook.thk_Entry = dfb_dispatch;
 			mod->dfb_Module.tmd_Flags = TMODF_VECTORTABLE | TMODF_OPENCLOSE;
-			TInitVectors(mod, dfb_vectors, DFBDISPLAY_NUMVECTORS);
+			TInitVectors((struct TModule *) mod, dfb_vectors,
+				DFBDISPLAY_NUMVECTORS);
 			return TTRUE;
 		}
 		dfb_destroy(mod);
@@ -191,7 +198,7 @@ dfb_init(DFBDISPLAY *mod, TTAGITEM *tags)
 		tags[0].tti_Value = (TTAG) mod;
 		tags[1].tti_Tag = TTAG_DONE;
 		mod->dfb_Task = TExecCreateTask(mod->dfb_ExecBase,
-			(TTASKFUNC) dfb_taskfunc, (TINITFUNC) dfb_initinstance, tags);
+			&mod->dfb_Module.tmd_Handle.thn_Hook, tags);
 		if (mod->dfb_Task == TNULL) break;
 
 		mod->dfb_CmdPort = TExecGetUserPort(mod->dfb_ExecBase, mod->dfb_Task);
@@ -212,7 +219,7 @@ dfb_exit(DFBDISPLAY *mod)
 	{
 		TExecSignal(mod->dfb_ExecBase, mod->dfb_Task, TTASK_SIG_ABORT);
 		dfb_wake(mod);
-		TDestroy(mod->dfb_Task);
+		TDestroy((struct THandle *) mod->dfb_Task);
 	}
 }
 
@@ -241,8 +248,7 @@ loadimage (IDirectFB *dfb, const char *filename)
 
 /*****************************************************************************/
 
-static TTASKENTRY TBOOL
-dfb_initinstance(struct TTask *task)
+static TBOOL dfb_initinstance(struct TTask *task)
 {
 	DFBDISPLAY *inst = TExecGetTaskData(TGetExecBase(task), task);
 
@@ -508,8 +514,7 @@ dfb_docmd(DFBDISPLAY *inst, struct TVRequest *req)
 	}
 }
 
-static TTASKENTRY void
-dfb_taskfunc(struct TTask *task)
+static void dfb_taskfunc(struct TTask *task)
 {
 	static char pipebuf[256];
 	DFBDISPLAY *inst = TExecGetTaskData(TGetExecBase(task), task);

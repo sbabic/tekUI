@@ -20,18 +20,28 @@
 --
 --	ATTRIBUTES::
 --		- {{Enter [ISG]}} (string)
---			Text that is being 'entered' (by pressing the Return key) into
---			the TextInput field. Setting this value causes the invocation of
+--			The text that is being entered (by pressing the Return key) into
+--			the input field. Setting this value causes the invocation of
 --			the TextInput:onEnter() method.
+--		- {{EnterNext [IG]}} (boolean)
+--			Indicates that by pressing the Return key, the focus should advance
+--			to the next element that can receive the input.
 --		- {{TabEnter [IG]}} (boolean)
 --			Indicates that leaving the element by pressing the Tab key
---			should set the {{Enter}} attribute and invoke its handler.
+--			should set the {{Enter}} attribute and invoke the respective handler.
 --
 --	STYLE PROPERTIES::
 --		- {{cursor-background-color}}
 --		- {{cursor-color}}
 --
 --	IMPLEMENTS::
+--		- TextInput:addChar() - Perform character addition
+--		- TextInput:backSpace() - Perform 'Backspace' function
+--		- TextInput:delChar() - Perform 'Del' function
+--		- TextInput:getChar() - Get character under cursor or at position
+--		- TextInput:getCursor() - Get cursor position
+--		- TextInput:moveCursorLeft() - Move the cursor one step to the left
+--		- TextInput:moveCursorRight() - Move the cursor one step to the right
 --		- TextInput:onEnter() - Handler invoked when {{Enter}} ist set
 --		- TextInput:setCursor() - Set cursor position
 --
@@ -66,7 +76,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 7.3"
+_VERSION = "TextInput 8.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -81,21 +91,22 @@ local NOTIFY_ENTER = { ui.NOTIFY_SELF, "onEnter", ui.NOTIFY_VALUE }
 local TextInput = _M
 
 function TextInput.init(self)
-	self.FGPenCursor = false
 	self.BGPenCursor = false
 	self.BlinkState = false
 	self.BlinkTick = false
 	self.BlinkTickInit = false
 	self.Editing = false
 	self.Enter = false
+	self.EnterNext = self.EnterNext or false
+	self.FGPenCursor = false
 	self.FHeight = false
 	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
+	self.Mode = "touch"
+	self.ShortcutMark = false
 	self.TabEnter = self.TabEnter or false
 	self.Text = self.Text or ""
 	self.TextBuffer = UTF8String:new(self.Text)
-	self.Mode = "touch"
-	self.ShortcutMark = false
 	-- cursor position in characters:
 	self.TextCursor = self.TextCursor or self.TextBuffer:len() + 1
 	-- character offset in displayed text:
@@ -318,6 +329,10 @@ function TextInput:onFocus(focused)
 	Text.onFocus(self, focused)
 end
 
+-------------------------------------------------------------------------------
+--	updateInterval:
+-------------------------------------------------------------------------------
+
 function TextInput:updateInterval(msg)
 	self.BlinkTick = self.BlinkTick - 1
 	if self.BlinkTick < 0 then
@@ -331,7 +346,11 @@ function TextInput:updateInterval(msg)
 	return msg
 end
 
-local function crsrleft(self)
+-------------------------------------------------------------------------------
+--	success = moveCursorLeft(): Advance the cursor position by 1 to the left.
+-------------------------------------------------------------------------------
+
+function TextInput:moveCursorLeft()
 	self.TextCursor = self.TextCursor - 1
 	if self.TextCursor < 0 then
 		self.TextCursor = 0
@@ -344,7 +363,11 @@ local function crsrleft(self)
 	return true
 end
 
-local function crsrright(self)
+-------------------------------------------------------------------------------
+--	success = moveCursorRight(): Advance the cursor position by 1 to the right.
+-------------------------------------------------------------------------------
+
+function TextInput:moveCursorRight()
 	self.TextCursor = self.TextCursor + 1
 	if self.TextCursor >= self.TextWidth then
 		self.TextCursor = self.TextWidth - 1
@@ -355,6 +378,16 @@ local function crsrright(self)
 		end
 	end
 	return true
+end
+
+-------------------------------------------------------------------------------
+--	char = getChar([pos]): Get the character under the cursor, or at the
+--	specified position.
+-------------------------------------------------------------------------------
+
+function TextInput:getChar(pos)
+	pos = pos or self.TextCursor
+	return self.TextBuffer:sub(pos + 1, pos + 1)
 end
 
 -------------------------------------------------------------------------------
@@ -373,6 +406,14 @@ function TextInput:passMsg(msg)
 		end
 	end
 	return Text.passMsg(self, msg)
+end
+
+-------------------------------------------------------------------------------
+--	self:getCursor(): Get cursor position
+-------------------------------------------------------------------------------
+
+function TextInput:getCursor()
+	return self.TextOffset + self.TextCursor
 end
 
 -------------------------------------------------------------------------------
@@ -396,6 +437,38 @@ function TextInput:setCursor(tc)
 end
 
 -------------------------------------------------------------------------------
+--	backSpace(): Perform backspace
+-------------------------------------------------------------------------------
+
+function TextInput:backSpace()
+	if self:moveCursorLeft() then
+		local pos = self:getCursor() + 1
+		self.TextBuffer:erase(pos, pos)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	delChar(): Perform delete character
+-------------------------------------------------------------------------------
+
+function TextInput:delChar()
+	local t = self.TextBuffer
+	if t:len() > 0 then
+		local pos = self:getCursor() + 1
+		t:erase(pos, pos)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	addChar(utf8s): Perform add character
+-------------------------------------------------------------------------------
+
+function TextInput:addChar(utf8code)
+	self.TextBuffer:insert(utf8code, self:getCursor() + 1)
+	self:moveCursorRight()
+end
+
+-------------------------------------------------------------------------------
 --	msg = handleInput(msg)
 -------------------------------------------------------------------------------
 
@@ -409,17 +482,13 @@ function TextInput:handleInput(msg)
 			local tc = self.TextCursor
 			while true do
 				if code == 0xf010 then
-					crsrleft(self)
+					self:moveCursorLeft()
 				elseif code == 0xf011 then
-					crsrright(self)
+					self:moveCursorRight()
 				elseif code == 8 then -- backspace:
-					if crsrleft(self) then
-						t:erase(to + tc, to + tc)
-					end
+					self:backSpace()
 				elseif code == 127 then -- del:
-					if t:len() > 0 then
-						t:erase(to + tc + 1, to + tc + 1)
-					end
+					self:delChar()
 				elseif self.Editing and self.TabEnter and
 					(code == 9 or code == 0xf013) then
 					self:setEditing(false)
@@ -434,6 +503,13 @@ function TextInput:handleInput(msg)
 					self:setEditing(false)
 					self:setValue("Text", t:get())
 					self:setValue("Enter", t:get())
+					if self.EnterNext then
+						local w = self.Window
+						local ne = w:getNextElement(self)
+						if ne then
+							w:setFocusElement(ne)
+						end
+					end
 					return false
 				elseif code == 27 then
 					self:setEditing(false)
@@ -444,15 +520,17 @@ function TextInput:handleInput(msg)
 				elseif code == 0xf026 then -- posend
 					self:setCursor(self.TextBuffer:len())
 				elseif code > 31 and code < 256 then
-					t:insert(utf8code, to + tc + 1)
-					crsrright(self)
+					self:addChar(utf8code)
 				else
 					break
 				end
 				-- something changed:
 				self.BlinkTick = 0
 				self.BlinkState = 0
-				self.Text = t:get() -- make the updated text available
+
+				-- self.Text = t:get() -- make the updated text available
+				self:setValue("Text", self.TextBuffer:get())
+
 				return false
 			end
 		elseif msg[2] == ui.MSG_KEYUP then

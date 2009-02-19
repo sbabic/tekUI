@@ -27,6 +27,7 @@ tek_init_exec(struct TTask *task, struct TModule *mod, TUINT16 version,
 	TTAGITEM *tags)
 {
 	TEXECBASE *exec = (TEXECBASE *) mod;
+
 	if (exec == TNULL)
 	{
 		if (version == 0xffff)
@@ -45,11 +46,81 @@ tek_init_exec(struct TTask *task, struct TModule *mod, TUINT16 version,
 		exec->texb_Module.tmd_Revision = EXEC_REVISION;
  		exec->texb_Module.tmd_Flags = TMODF_VECTORTABLE;
 
-		TInitVectors(exec, exec_vectors, EXEC_NUMVECTORS);
+		TInitVectors(&exec->texb_Module, exec_vectors, EXEC_NUMVECTORS);
 
-		/* overwrite TExecCopyMem vector with THALCopyMem vector,
-		for getting rid of one callframe */
-		((TMFPTR *) exec)[-16] = ((TMFPTR *) exec->texb_HALBase)[-13];
+		/* overwrite CopyMem and FillMem with HAL functions,
+		for getting rid of one callframe: */
+		((TMFPTR *) exec)[-14] = ((TMFPTR *) exec->texb_HALBase)[-13];
+		((TMFPTR *) exec)[-15] = ((TMFPTR *) exec->texb_HALBase)[-14];
+
+		#if defined(ENABLE_EXEC_IFACE)
+		/* initialize interface: */
+ 		exec->texb_Module.tmd_Flags |= TMODF_QUERYIFACE;
+		TInitInterface(&exec->texb_Exec1IFace.IFace,
+			(struct TModule *) exec, "exec", 1);
+		exec->texb_Exec1IFace.GetHALBase = ((TAPTR *) exec)[-11];
+		exec->texb_Exec1IFace.OpenModule = ((TAPTR *) exec)[-12];
+		exec->texb_Exec1IFace.CloseModule = ((TAPTR *) exec)[-13];
+		exec->texb_Exec1IFace.CopyMem = ((TAPTR *) exec)[-14];
+		exec->texb_Exec1IFace.FillMem = ((TAPTR *) exec)[-15];
+		exec->texb_Exec1IFace.CreateMemManager = ((TAPTR *) exec)[-16];
+		exec->texb_Exec1IFace.Alloc = ((TAPTR *) exec)[-17];
+		exec->texb_Exec1IFace.Alloc0 = ((TAPTR *) exec)[-18];
+		exec->texb_Exec1IFace.QueryInterface = ((TAPTR *) exec)[-19];
+		exec->texb_Exec1IFace.Free = ((TAPTR *) exec)[-20];
+		exec->texb_Exec1IFace.Realloc = ((TAPTR *) exec)[-21];
+		exec->texb_Exec1IFace.GetMemManager = ((TAPTR *) exec)[-22];
+		exec->texb_Exec1IFace.GetSize = ((TAPTR *) exec)[-23];
+		exec->texb_Exec1IFace.CreateLock = ((TAPTR *) exec)[-24];
+		exec->texb_Exec1IFace.Lock = ((TAPTR *) exec)[-25];
+		exec->texb_Exec1IFace.Unlock = ((TAPTR *) exec)[-26];
+		exec->texb_Exec1IFace.AllocSignal = ((TAPTR *) exec)[-27];
+		exec->texb_Exec1IFace.FreeSignal = ((TAPTR *) exec)[-28];
+		exec->texb_Exec1IFace.Signal = ((TAPTR *) exec)[-29];
+		exec->texb_Exec1IFace.SetSignal = ((TAPTR *) exec)[-30];
+		exec->texb_Exec1IFace.Wait = ((TAPTR *) exec)[-31];
+		exec->texb_Exec1IFace.StrEqual = ((TAPTR *) exec)[-32];
+		exec->texb_Exec1IFace.CreatePort = ((TAPTR *) exec)[-33];
+		exec->texb_Exec1IFace.PutMsg = ((TAPTR *) exec)[-34];
+		exec->texb_Exec1IFace.GetMsg = ((TAPTR *) exec)[-35];
+		exec->texb_Exec1IFace.AckMsg = ((TAPTR *) exec)[-36];
+		exec->texb_Exec1IFace.ReplyMsg = ((TAPTR *) exec)[-37];
+		exec->texb_Exec1IFace.DropMsg = ((TAPTR *) exec)[-38];
+		exec->texb_Exec1IFace.SendMsg = ((TAPTR *) exec)[-39];
+		exec->texb_Exec1IFace.WaitPort = ((TAPTR *) exec)[-40];
+		exec->texb_Exec1IFace.GetPortSignal = ((TAPTR *) exec)[-41];
+		exec->texb_Exec1IFace.GetUserPort = ((TAPTR *) exec)[-42];
+		exec->texb_Exec1IFace.GetSyncPort = ((TAPTR *) exec)[-43];
+		exec->texb_Exec1IFace.CreateTask = ((TAPTR *) exec)[-44];
+		exec->texb_Exec1IFace.FindTask = ((TAPTR *) exec)[-45];
+		exec->texb_Exec1IFace.GetTaskData = ((TAPTR *) exec)[-46];
+		exec->texb_Exec1IFace.SetTaskData = ((TAPTR *) exec)[-47];
+		exec->texb_Exec1IFace.GetTaskMemManager = ((TAPTR *) exec)[-48];
+		exec->texb_Exec1IFace.AllocMsg = ((TAPTR *) exec)[-49];
+		exec->texb_Exec1IFace.AllocMsg0 = ((TAPTR *) exec)[-50];
+		exec->texb_Exec1IFace.LockAtom = ((TAPTR *) exec)[-51];
+		exec->texb_Exec1IFace.UnlockAtom = ((TAPTR *) exec)[-52];
+		exec->texb_Exec1IFace.GetAtomData = ((TAPTR *) exec)[-53];
+		exec->texb_Exec1IFace.SetAtomData = ((TAPTR *) exec)[-54];
+		exec->texb_Exec1IFace.CreatePool = ((TAPTR *) exec)[-55];
+		exec->texb_Exec1IFace.AllocPool = ((TAPTR *) exec)[-56];
+		exec->texb_Exec1IFace.FreePool = ((TAPTR *) exec)[-57];
+		exec->texb_Exec1IFace.ReallocPool = ((TAPTR *) exec)[-58];
+		exec->texb_Exec1IFace.PutIO = ((TAPTR *) exec)[-59];
+		exec->texb_Exec1IFace.WaitIO = ((TAPTR *) exec)[-60];
+		exec->texb_Exec1IFace.DoIO = ((TAPTR *) exec)[-61];
+		exec->texb_Exec1IFace.CheckIO = ((TAPTR *) exec)[-62];
+		exec->texb_Exec1IFace.AbortIO = ((TAPTR *) exec)[-63];
+		exec->texb_Exec1IFace.AddModules = ((TAPTR *) exec)[-69];
+		exec->texb_Exec1IFace.RemModules = ((TAPTR *) exec)[-70];
+		exec->texb_Exec1IFace.AllocTimeRequest = ((TAPTR *) exec)[-71];
+		exec->texb_Exec1IFace.FreeTimeRequest = ((TAPTR *) exec)[-72];
+		exec->texb_Exec1IFace.GetSystemTime = ((TAPTR *) exec)[-73];
+		exec->texb_Exec1IFace.GetUniversalDate = ((TAPTR *) exec)[-74];
+		exec->texb_Exec1IFace.GetLocalDate = ((TAPTR *) exec)[-75];
+		exec->texb_Exec1IFace.WaitTime = ((TAPTR *) exec)[-76];
+		exec->texb_Exec1IFace.WaitDate = ((TAPTR *) exec)[-77];
+		#endif
 
 		return TTRUE;
 	}
@@ -78,23 +149,18 @@ exec_vectors[EXEC_NUMVECTORS] =
 	(TMFPTR) exec_CreateSysTask,
 	(TMFPTR) exec_GetHALBase,
 
-	(TMFPTR) TNULL,
 	(TMFPTR) exec_OpenModule,
  	(TMFPTR) exec_CloseModule,
-	(TMFPTR) TNULL,
 
-	(TMFPTR) exec_CopyMem,
-	(TMFPTR) exec_FillMem,
-	(TMFPTR) exec_FillMem32,
-
-	(TMFPTR) exec_CreateMMU,
-	(TMFPTR) exec_AllocMMU,
-	(TMFPTR) exec_AllocMMU0,
+	(TMFPTR) TNULL, /* filled in during init */
+	(TMFPTR) TNULL, /* filled in during init */
+	(TMFPTR) exec_CreateMemManager,
+	(TMFPTR) exec_Alloc,
+	(TMFPTR) exec_Alloc0,
 	(TMFPTR) exec_QueryInterface,
-	(TMFPTR) exec_DropInterface,
 	(TMFPTR) exec_Free,
 	(TMFPTR) exec_Realloc,
-	(TMFPTR) exec_GetMMU,
+	(TMFPTR) exec_GetMemManager,
 	(TMFPTR) exec_GetSize,
 
 	(TMFPTR) exec_CreateLock,
@@ -124,7 +190,7 @@ exec_vectors[EXEC_NUMVECTORS] =
 	(TMFPTR) exec_FindTask,
 	(TMFPTR) exec_GetTaskData,
 	(TMFPTR) exec_SetTaskData,
-	(TMFPTR) exec_GetTaskMMU,
+	(TMFPTR) exec_GetTaskMemManager,
 	(TMFPTR) exec_AllocMsg,
 	(TMFPTR) exec_AllocMsg0,
 
@@ -170,12 +236,27 @@ exec_vectors[EXEC_NUMVECTORS] =
 static THOOKENTRY TTAG
 exec_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 {
-	if (msg == TMSG_DESTROY)
+	struct TExecBase *TExecBase = hook->thk_Data;
+	switch (msg)
 	{
-		TEXECBASE *exec = obj;
-		THALDestroyLock(exec->texb_HALBase, &exec->texb_Lock);
-		TDESTROY(&exec->texb_BaseMMU);
-		TDESTROY(&exec->texb_MsgMMU);
+		case TMSG_DESTROY:
+			THALDestroyLock(TExecBase->texb_HALBase, &TExecBase->texb_Lock);
+			TDESTROY(&TExecBase->texb_BaseMemManager);
+			TDESTROY(&TExecBase->texb_MsgMemManager);
+			break;
+		#if defined(ENABLE_EXEC_IFACE)
+		case TMSG_QUERYIFACE:
+		{
+			struct TInterfaceQuery *ifq = obj;
+			if (TStrEqual(ifq->tifq_Name, "exec") &&
+				ifq->tifq_Version >= 1)
+				return (TTAG) &TExecBase->texb_Exec1IFace;
+			return TNULL;
+		}
+		case TMSG_DROPIFACE:
+			TDBPRINTF(TDB_WARN,("drop interface: %p\n", obj));
+			break;
+		#endif
 	}
 	return 0;
 }
@@ -200,12 +281,13 @@ exec_init(TEXECBASE *exec, TTAGITEM *tags)
 
 	if (THALInitLock(hal, &exec->texb_Lock))
 	{
-		if (exec_initmmu(exec, &exec->texb_MsgMMU, TNULL, TMMUT_Message,
+		if (exec_initmm(exec, &exec->texb_MsgMemManager, TNULL, TMMT_Message,
 			TNULL))
 		{
-			if (exec_initmmu(exec, &exec->texb_BaseMMU, TNULL, TMMUT_TaskSafe,
+			if (exec_initmm(exec, &exec->texb_BaseMemManager, TNULL, TMMT_TaskSafe,
 				TNULL))
 			{
+				exec->texb_Module.tmd_Handle.thn_Hook.thk_Data = exec;
 				exec->texb_Module.tmd_Handle.thn_Name = TMODNAME_EXEC;
 				exec->texb_Module.tmd_Handle.thn_Owner =
 					(struct TModule *) exec;
@@ -238,7 +320,7 @@ exec_init(TEXECBASE *exec, TTAGITEM *tags)
 
 				return TTRUE;
 			}
-			TDESTROY(&exec->texb_MsgMMU);
+			TDESTROY(&exec->texb_MsgMemManager);
 		}
 		THALDestroyLock(hal, &exec->texb_Lock);
 	}
@@ -402,41 +484,14 @@ exec_initlock(TEXECBASE *exec, struct TLock *lock)
 
 /*****************************************************************************/
 /*
-**	msg = exec_getmsg(exec, port)
-**	Get next pending message from messageport
-*/
-
-LOCAL TAPTR
-exec_getmsg(TEXECBASE *exec, struct TMsgPort *port)
-{
-	struct TMessage *msg;
-	TAPTR hal = exec->texb_HALBase;
-
-	THALLock(hal, &port->tmp_Lock);
-	msg = (struct TMessage *) TRemHead(&port->tmp_MsgList);
-	THALUnlock(hal, &port->tmp_Lock);
-
-	if (msg)
-	{
-		if (!(msg->tmsg_Flags & TMSGF_QUEUED))
-			TDBPRINTF(TDB_ERROR,("got msg with TMSGF_QUEUED not set\n"));
-		msg->tmsg_Flags &= ~TMSGF_QUEUED;
-		return (TAPTR)((TINT8 *) (msg + 1) + sizeof(union TMMUInfo));
-	}
-	return TNULL;
-}
-
-/*****************************************************************************/
-/*
 **	success = exec_sendmsg(exec, task, port, msg)
 **	Send message, two-way, blocking
 */
 
-LOCAL TUINT
-exec_sendmsg(TEXECBASE *exec, struct TTask *task, struct TMsgPort *port,
-	TAPTR mem)
+LOCAL TUINT exec_sendmsg(TEXECBASE *TExecBase, struct TTask *task,
+	struct TMsgPort *port, TAPTR mem)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	struct TMessage *msg = TGETMSGPTR(mem);
 	TAPTR reply;
 
@@ -457,8 +512,8 @@ exec_sendmsg(TEXECBASE *exec, struct TTask *task, struct TMsgPort *port,
 
 	for (;;)
 	{
-		THALWait(exec->texb_HALBase, task->tsk_SyncPort.tmp_Signal);
-		reply = exec_getmsg(exec, msg->tmsg_RPort);
+		THALWait(TExecBase->texb_HALBase, task->tsk_SyncPort.tmp_Signal);
+		reply = TGetMsg(msg->tmsg_RPort);
 		if (reply)
 		{
 			TUINT status = msg->tmsg_Flags;

@@ -1003,3 +1003,46 @@ tek_lib_visual_drawrgb(lua_State *L)
 
 	return 0;
 }
+
+/*****************************************************************************/
+/*
+**	drawppm(visual, ppm, x0, y0)
+*/
+
+LOCAL LUACFUNC TINT
+tek_lib_visual_drawppm(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	size_t srclen;
+	const char *srcbuf = luaL_checklstring(L, 2, &srclen);
+	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
+	TINT x0 = luaL_checkinteger(L, 3) + sx;
+	TINT y0 = luaL_checkinteger(L, 4) + sy;
+	int w, h, maxv;
+
+	if (sscanf(srcbuf, "P6\n%d %d\n%d\n", &w, &h, &maxv) == 3 ||
+		sscanf(srcbuf, "P6\n#%*80[^\n]\n%d %d\n%d\n", &w, &h, &maxv) == 3)
+	{
+		if (maxv > 0 && maxv < 256)
+		{
+			TUINT *buf;
+			srcbuf += srclen - 3 * w * h;
+			buf = TExecAlloc(vis->vis_ExecBase, TNULL, w * h * sizeof(TUINT));
+			if (buf)
+			{
+				TUINT8 r, g, b;
+				int i;
+				for (i = 0; i < w * h; ++i)
+				{
+					r = *srcbuf++;
+					g = *srcbuf++;
+					b = *srcbuf++;
+					buf[i] = (r << 16) | (g << 8) | b;
+				}
+				TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, w, h, w, TNULL);
+				TExecFree(vis->vis_ExecBase, buf);
+			}
+		}
+	}
+	return 0;
+}

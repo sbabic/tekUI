@@ -24,7 +24,7 @@ typedef TUINT TBOOL;
 /* Tag type; integers and pointers: */
 typedef TINTPTR TTAG;
 /* Size type: */
-typedef TINTPTR TSIZE;
+typedef TUINTPTR TSIZE;
 /* Stringptr type: */
 typedef TCHR * TSTRPTR;
 

@@ -17,62 +17,59 @@
 **	Create TEKlib-internal task
 */
 
-static THOOKENTRY TTAG
-exec_systaskdestroy(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG exec_systaskdestroy(struct THook *hook, TAPTR obj,
+	TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
 		struct TTask *task = obj;
-		TEXECBASE *exec = (TEXECBASE *) TGetExecBase(task);
-		struct THALBase *hal = exec->texb_HALBase;
-
-		THALDestroyThread(hal, &task->tsk_Thread);
-		THALLock(hal, &exec->texb_Lock);
+		struct TExecBase *TExecBase = TGetExecBase(task);
+		struct THALBase *THALBase = TExecBase->texb_HALBase;
+		THALDestroyThread(THALBase, &task->tsk_Thread);
+		THALLock(THALBase, &TExecBase->texb_Lock);
 		TREMOVE((struct TNode *) task);
-		THALUnlock(hal, &exec->texb_Lock);
+		THALUnlock(THALBase, &TExecBase->texb_Lock);
 		TDESTROY(&task->tsk_SyncPort);
 		TDESTROY(&task->tsk_UserPort);
-		TDESTROY(&task->tsk_HeapMMU);
-		THALDestroyLock(hal, &task->tsk_TaskLock);
-		exec_Free(exec, task);
+		TDESTROY(&task->tsk_HeapMemManager);
+		THALDestroyLock(THALBase, &task->tsk_TaskLock);
+		TFree(task);
 	}
-
 	return 0;
 }
 
-static void
-exec_initsystask(TEXECBASE *exec, struct TTask *task)
+static void exec_initsystask(struct TExecBase *TExecBase, struct TTask *task)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 
 	/* special initializations of reserved system tasks */
-	if (exec_StrEqual(exec, task->tsk_Handle.thn_Name, TTASKNAME_EXEC))
+	if (TStrEqual(task->tsk_Handle.thn_Name, TTASKNAME_EXEC))
 	{
 		/* insert to execbase */
-		exec->texb_ExecTask = task;
+		TExecBase->texb_ExecTask = task;
 		/* the exectask userport will be used for task messages */
-		exec->texb_ExecPort = &task->tsk_UserPort;
+		TExecBase->texb_ExecPort = &task->tsk_UserPort;
 		/* the exectask syncport will be 'abused' for async mod replies */
-		exec->texb_ModReply = &task->tsk_SyncPort;
+		TExecBase->texb_ModReply = &task->tsk_SyncPort;
 	}
-	else if (exec_StrEqual(exec, task->tsk_Handle.thn_Name, TTASKNAME_RAMLIB))
+	else if (TStrEqual(task->tsk_Handle.thn_Name, TTASKNAME_RAMLIB))
 	{
 		/* insert to execbase */
-		exec->texb_IOTask = task;
+		TExecBase->texb_IOTask = task;
 	}
 
 	/* link to task list */
-	THALLock(hal, &exec->texb_Lock);
-	TAddTail(&exec->texb_TaskList, (struct TNode *) task);
-	THALUnlock(hal, &exec->texb_Lock);
+	THALLock(hal, &TExecBase->texb_Lock);
+	TAddTail(&TExecBase->texb_TaskList, (struct TNode *) task);
+	THALUnlock(hal, &TExecBase->texb_Lock);
 
 	TDBPRINTF(TDB_TRACE,("added task name: %s\n", task->tsk_Handle.thn_Name));
 }
 
-EXPORT struct TTask *
-exec_CreateSysTask(TEXECBASE *exec, TTASKFUNC func, struct TTagItem *tags)
+EXPORT struct TTask *exec_CreateSysTask(struct TExecBase *TExecBase,
+	TTASKFUNC func, struct TTagItem *tags)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	struct TTask *newtask;
 	TUINT tnlen = 0;
 	TSTRPTR tname;
@@ -86,21 +83,20 @@ exec_CreateSysTask(TEXECBASE *exec, TTASKFUNC func, struct TTagItem *tags)
 	}
 
 	/* tasks are messages */
-	newtask = exec_AllocMMU(exec, &exec->texb_MsgMMU,
-		sizeof(struct TTask) + tnlen);
+	newtask = TAlloc(&TExecBase->texb_MsgMemManager, sizeof(struct TTask) + tnlen);
 	if (newtask)
 	{
-		exec_FillMem(exec, newtask, sizeof(struct TTask), 0);
+		TFillMem(newtask, sizeof(struct TTask), 0);
 		if (THALInitLock(hal, &newtask->tsk_TaskLock))
 		{
-			if (exec_initmmu(exec, &newtask->tsk_HeapMMU, TNULL,
-				TMMUT_Tracking | TMMUT_TaskSafe, TNULL))
+			if (exec_initmm(TExecBase, &newtask->tsk_HeapMemManager, TNULL,
+				TMMT_Tracking | TMMT_TaskSafe, TNULL))
 			{
-				if (exec_initport(exec, &newtask->tsk_UserPort, newtask,
+				if (exec_initport(TExecBase, &newtask->tsk_UserPort, newtask,
 					TTASK_SIG_USER))
 				{
-					if (exec_initport(exec, &newtask->tsk_SyncPort, newtask,
-						TTASK_SIG_SINGLE))
+					if (exec_initport(TExecBase, &newtask->tsk_SyncPort,
+						newtask, TTASK_SIG_SINGLE))
 					{
 						if (tname)
 						{
@@ -113,7 +109,7 @@ exec_CreateSysTask(TEXECBASE *exec, TTASKFUNC func, struct TTagItem *tags)
 							exec_systaskdestroy;
 
 						newtask->tsk_Handle.thn_Owner =
-							(struct TModule *) exec;
+							(struct TModule *) TExecBase;
 						newtask->tsk_UserData =
 							(TAPTR) TGetTag(tags, TTask_UserData, TNULL);
 						newtask->tsk_SigFree = ~((TUINT) TTASK_SIG_RESERVED);
@@ -124,7 +120,7 @@ exec_CreateSysTask(TEXECBASE *exec, TTASKFUNC func, struct TTagItem *tags)
 						if (THALInitThread(hal, &newtask->tsk_Thread, func,
 							newtask))
 						{
-							exec_initsystask(exec, newtask);
+							exec_initsystask(TExecBase, newtask);
 							if (func)
 							{
 								THALSignal(hal, &newtask->tsk_Thread,
@@ -137,11 +133,11 @@ exec_CreateSysTask(TEXECBASE *exec, TTASKFUNC func, struct TTagItem *tags)
 					}
 					TDESTROY(&newtask->tsk_UserPort);
 				}
-				TDESTROY(&newtask->tsk_HeapMMU);
+				TDESTROY(&newtask->tsk_HeapMemManager);
 			}
 			THALDestroyLock(hal, &newtask->tsk_TaskLock);
 		}
-		exec_Free(exec, newtask);
+		TFree(newtask);
 	}
 
 	return TNULL;
@@ -152,8 +148,7 @@ exec_CreateSysTask(TEXECBASE *exec, TTASKFUNC func, struct TTagItem *tags)
 **	iseq = exec_StrEqual(exec, s1, s2)
 */
 
-EXPORT TBOOL
-exec_StrEqual(TEXECBASE *exec, TSTRPTR s1, TSTRPTR s2)
+EXPORT TBOOL exec_StrEqual(struct TExecBase *TExecBase, TSTRPTR s1, TSTRPTR s2)
 {
 	if (s1 && s2)
 	{
@@ -173,11 +168,10 @@ exec_StrEqual(TEXECBASE *exec, TSTRPTR s1, TSTRPTR s2)
 **	Alloc signal(s) from a task
 */
 
-EXPORT TUINT
-exec_AllocSignal(TEXECBASE *exec, TUINT signals)
+EXPORT TUINT exec_AllocSignal(struct TExecBase *TExecBase, TUINT signals)
 {
-	struct TTask *task = THALFindSelf(exec->texb_HALBase);
-	return exec_allocsignal(exec, task, signals);
+	struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
+	return exec_allocsignal(TExecBase, task, signals);
 }
 
 /*****************************************************************************/
@@ -186,11 +180,10 @@ exec_AllocSignal(TEXECBASE *exec, TUINT signals)
 **	Return signal(s) to a task
 */
 
-EXPORT void
-exec_FreeSignal(TEXECBASE *exec, TUINT signals)
+EXPORT void exec_FreeSignal(struct TExecBase *TExecBase, TUINT signals)
 {
-	struct TTask *task = THALFindSelf(exec->texb_HALBase);
-	exec_freesignal(exec, task, signals);
+	struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
+	exec_freesignal(TExecBase, task, signals);
 }
 
 /*****************************************************************************/
@@ -199,10 +192,10 @@ exec_FreeSignal(TEXECBASE *exec, TUINT signals)
 **	Set/get task's signal state
 */
 
-EXPORT TUINT
-exec_SetSignal(TEXECBASE *exec, TUINT newsignals, TUINT sigmask)
+EXPORT TUINT exec_SetSignal(struct TExecBase *TExecBase, TUINT newsignals,
+	TUINT sigmask)
 {
-	return THALSetSignal(exec->texb_HALBase, newsignals, sigmask);
+	return THALSetSignal(TExecBase->texb_HALBase, newsignals, sigmask);
 }
 
 /*****************************************************************************/
@@ -212,11 +205,11 @@ exec_SetSignal(TEXECBASE *exec, TUINT newsignals, TUINT sigmask)
 **	affecting signals are already present in the task's signal mask.
 */
 
-EXPORT void
-exec_Signal(TEXECBASE *exec, struct TTask *task, TUINT signals)
+EXPORT void exec_Signal(struct TExecBase *TExecBase, struct TTask *task,
+	TUINT signals)
 {
 	if (task)
-		THALSignal(exec->texb_HALBase, &task->tsk_Thread, signals);
+		THALSignal(TExecBase->texb_HALBase, &task->tsk_Thread, signals);
 }
 
 /*****************************************************************************/
@@ -225,25 +218,24 @@ exec_Signal(TEXECBASE *exec, struct TTask *task, TUINT signals)
 **	Suspend task to wait for a set of signals
 */
 
-EXPORT TUINT
-exec_Wait(TEXECBASE *exec, TUINT sig)
+EXPORT TUINT exec_Wait(struct TExecBase *TExecBase, TUINT sig)
 {
-	return sig ? THALWait(exec->texb_HALBase, sig) : 0;
+	return sig ? THALWait(TExecBase->texb_HALBase, sig) : 0;
 }
 
 /*****************************************************************************/
 /*
-**	mmu = exec_GetTaskMMU(exec, task)
+**	mmu = exec_GetTaskMemManager(exec, task)
 **	Get task's heap memory manager. Allocations made from this
 **	memory manager are automatically freed on exit of this task
 */
 
-EXPORT TAPTR
-exec_GetTaskMMU(TEXECBASE *exec, struct TTask *task)
+EXPORT TAPTR exec_GetTaskMemManager(struct TExecBase *TExecBase,
+	struct TTask *task)
 {
 	if (task == TNULL)
-		task = THALFindSelf(exec->texb_HALBase);
-	return &task->tsk_HeapMMU;
+		task = THALFindSelf(TExecBase->texb_HALBase);
+	return &task->tsk_HeapMemManager;
 }
 
 /*****************************************************************************/
@@ -252,11 +244,10 @@ exec_GetTaskMMU(TEXECBASE *exec, struct TTask *task)
 **	Get task's user port
 */
 
-EXPORT TAPTR
-exec_GetUserPort(TEXECBASE *exec, struct TTask *task)
+EXPORT TAPTR exec_GetUserPort(struct TExecBase *TExecBase, struct TTask *task)
 {
 	if (task == TNULL)
-		task = THALFindSelf(exec->texb_HALBase);
+		task = THALFindSelf(TExecBase->texb_HALBase);
 	return &task->tsk_UserPort;
 }
 
@@ -267,11 +258,10 @@ exec_GetUserPort(TEXECBASE *exec, struct TTask *task)
 **	message passing. Functions like TDoIO() and TSendMsg() are using it.
 */
 
-EXPORT TAPTR
-exec_GetSyncPort(TEXECBASE *exec, struct TTask *task)
+EXPORT TAPTR exec_GetSyncPort(struct TExecBase *TExecBase, struct TTask *task)
 {
 	if (task == TNULL)
-		task = THALFindSelf(exec->texb_HALBase);
+		task = THALFindSelf(TExecBase->texb_HALBase);
 	return &task->tsk_SyncPort;
 }
 
@@ -281,11 +271,10 @@ exec_GetSyncPort(TEXECBASE *exec, struct TTask *task)
 **	Get a task's userdata pointer
 */
 
-EXPORT TAPTR
-exec_GetTaskData(TEXECBASE *exec, struct TTask *task)
+EXPORT TAPTR exec_GetTaskData(struct TExecBase *TExecBase, struct TTask *task)
 {
 	if (task == TNULL)
-		task = THALFindSelf(exec->texb_HALBase);
+		task = THALFindSelf(TExecBase->texb_HALBase);
 	return task->tsk_UserData;
 }
 
@@ -295,10 +284,10 @@ exec_GetTaskData(TEXECBASE *exec, struct TTask *task)
 **	Set task's userdata pointer
 */
 
-EXPORT TAPTR
-exec_SetTaskData(TEXECBASE *exec, struct TTask *task, TAPTR data)
+EXPORT TAPTR exec_SetTaskData(struct TExecBase *TExecBase, struct TTask *task,
+	TAPTR data)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	TAPTR olddata;
 	if (task == TNULL)
 		task = THALFindSelf(hal);
@@ -317,10 +306,9 @@ exec_SetTaskData(TEXECBASE *exec, struct TTask *task, TAPTR data)
 **	the inner working, this should be considered a private function.
 */
 
-EXPORT TAPTR
-exec_GetHALBase(TEXECBASE *exec)
+EXPORT TAPTR exec_GetHALBase(struct TExecBase *TExecBase)
 {
-	return exec->texb_HALBase;
+	return TExecBase->texb_HALBase;
 }
 
 /*****************************************************************************/
@@ -329,10 +317,9 @@ exec_GetHALBase(TEXECBASE *exec)
 **	Allocate message memory
 */
 
-EXPORT TAPTR
-exec_AllocMsg(TEXECBASE *exec, TUINT size)
+EXPORT TAPTR exec_AllocMsg(struct TExecBase *TExecBase, TSIZE size)
 {
-	return exec_AllocMMU(exec, &exec->texb_MsgMMU, size);
+	return TAlloc(&TExecBase->texb_MsgMemManager, size);
 }
 
 /*****************************************************************************/
@@ -341,12 +328,11 @@ exec_AllocMsg(TEXECBASE *exec, TUINT size)
 **	Allocate message memory, blank
 */
 
-EXPORT TAPTR
-exec_AllocMsg0(TEXECBASE *exec, TUINT size)
+EXPORT TAPTR exec_AllocMsg0(struct TExecBase *TExecBase, TSIZE size)
 {
-	TAPTR mem = exec_AllocMMU(exec, &exec->texb_MsgMMU, size);
+	TAPTR mem = TAlloc(&TExecBase->texb_MsgMemManager, size);
 	if (mem)
-		exec_FillMem(exec, mem, size, 0);
+		TFillMem(mem, size, 0);
 	return mem;
 }
 
@@ -356,8 +342,7 @@ exec_AllocMsg0(TEXECBASE *exec, TUINT size)
 **	Get a message port's underlying signal
 */
 
-EXPORT TUINT
-exec_GetPortSignal(TEXECBASE *exec, TAPTR port)
+EXPORT TUINT exec_GetPortSignal(struct TExecBase *TExecBase, TAPTR port)
 {
 	if (port)
 		return ((struct TMsgPort *) port)->tmp_Signal;
@@ -370,8 +355,7 @@ exec_GetPortSignal(TEXECBASE *exec, TAPTR port)
 **	Get an atom's data pointer
 */
 
-EXPORT TTAG
-exec_GetAtomData(TEXECBASE *exec, struct TAtom *atom)
+EXPORT TTAG exec_GetAtomData(struct TExecBase *TExecBase, struct TAtom *atom)
 {
 	if (atom)
 		return atom->tatm_Data;
@@ -384,8 +368,8 @@ exec_GetAtomData(TEXECBASE *exec, struct TAtom *atom)
 **	Set an atom's data pointer
 */
 
-EXPORT TTAG
-exec_SetAtomData(TEXECBASE *exec, struct TAtom *atom, TTAG data)
+EXPORT TTAG exec_SetAtomData(struct TExecBase *TExecBase, struct TAtom *atom,
+	TTAG data)
 {
 	TTAG olddata = atom->tatm_Data;
 	atom->tatm_Data = data;
@@ -399,8 +383,7 @@ exec_SetAtomData(TEXECBASE *exec, struct TAtom *atom, TTAG data)
 **	preferring asynchronous operation.
 */
 
-EXPORT void
-exec_PutIO(TEXECBASE *exec, struct TIORequest *ioreq)
+EXPORT void exec_PutIO(struct TExecBase *TExecBase, struct TIORequest *ioreq)
 {
 	ioreq->io_Flags &= ~TIOF_QUICK;
 	TGETMSGPTR(ioreq)->tmsg_Flags = 0;
@@ -414,10 +397,9 @@ exec_PutIO(TEXECBASE *exec, struct TIORequest *ioreq)
 **	processed synchronously, drop through immediately.
 */
 
-EXPORT TINT
-exec_WaitIO(TEXECBASE *exec, struct TIORequest *ioreq)
+EXPORT TINT exec_WaitIO(struct TExecBase *TExecBase, struct TIORequest *ioreq)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	struct TMessage *msg = TGETMSGPTR(ioreq);
 	TUINT status = msg->tmsg_Flags;
 
@@ -448,14 +430,13 @@ exec_WaitIO(TEXECBASE *exec, struct TIORequest *ioreq)
 **	for synchronous operation, if supported by the device.
 */
 
-EXPORT TINT
-exec_DoIO(TEXECBASE *exec, struct TIORequest *ioreq)
+EXPORT TINT exec_DoIO(struct TExecBase *TExecBase, struct TIORequest *ioreq)
 {
 	ioreq->io_Flags |= TIOF_QUICK;
 	TGETMSGPTR(ioreq)->tmsg_Flags = 0;
 	_TModBeginIO(ioreq->io_Device, ioreq);
-	exec_WaitIO(exec, ioreq);
-	THALSetSignal(exec->texb_HALBase, 0, TTASK_SIG_SINGLE);
+	TWaitIO(ioreq);
+	THALSetSignal(TExecBase->texb_HALBase, 0, TTASK_SIG_SINGLE);
 	return (TINT) ioreq->io_Error;
 }
 
@@ -465,8 +446,8 @@ exec_DoIO(TEXECBASE *exec, struct TIORequest *ioreq)
 **	Test if an I/O request is ready
 */
 
-EXPORT TBOOL
-exec_CheckIO(TEXECBASE *exec, struct TIORequest *ioreq)
+EXPORT TBOOL exec_CheckIO(struct TExecBase *TExecBase,
+	struct TIORequest *ioreq)
 {
 	struct TMessage *msg = TGETMSGPTR(ioreq);
 	TUINT status = msg->tmsg_Flags;
@@ -480,8 +461,7 @@ exec_CheckIO(TEXECBASE *exec, struct TIORequest *ioreq)
 **	Attempt to abort an I/O request
 */
 
-EXPORT TINT
-exec_AbortIO(TEXECBASE *exec, struct TIORequest *ioreq)
+EXPORT TINT exec_AbortIO(struct TExecBase *TExecBase, struct TIORequest *ioreq)
 {
 	return _TModAbortIO(ioreq->io_Device, ioreq);
 }
@@ -492,35 +472,32 @@ exec_AbortIO(TEXECBASE *exec, struct TIORequest *ioreq)
 **	Create locking object.
 */
 
-static THOOKENTRY TTAG
-exec_destroyfreelock(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG exec_destroyfreelock(struct THook *hook, TAPTR obj,
+	TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
 		struct TLock *lock = obj;
-		TEXECBASE *exec = (TEXECBASE *) TGetExecBase(lock);
-		THALDestroyLock(exec->texb_HALBase, &lock->tlk_HLock);
-		exec_Free(exec, lock);
+		struct TExecBase *TExecBase = (struct TExecBase *) TGetExecBase(lock);
+		THALDestroyLock(TExecBase->texb_HALBase, &lock->tlk_HLock);
+		TFree(lock);
 	}
 	return 0;
 }
 
-EXPORT TAPTR
-exec_CreateLock(TEXECBASE *exec, TTAGITEM *tags)
+EXPORT TAPTR exec_CreateLock(struct TExecBase *TExecBase, TTAGITEM *tags)
 {
 	struct TLock *lock;
-
-	lock = exec_AllocMMU(exec, TNULL, sizeof(struct TLock));
+	lock = TAlloc(TNULL, sizeof(struct TLock));
 	if (lock)
 	{
-		if (exec_initlock(exec, lock))
+		if (exec_initlock(TExecBase, lock))
 		{
 			lock->tlk_Handle.thn_Hook.thk_Entry = exec_destroyfreelock;
 			return (TAPTR) lock;
 		}
-		exec_Free(exec, lock);
+		TFree(lock);
 	}
-
 	return TNULL;
 }
 
@@ -529,16 +506,13 @@ exec_CreateLock(TEXECBASE *exec, TTAGITEM *tags)
 **	exec_Lock(exec, lock)
 */
 
-EXPORT void
-exec_Lock(TEXECBASE *exec, struct TLock *lock)
+EXPORT void exec_Lock(struct TExecBase *TExecBase, struct TLock *lock)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	struct TTask *waiter = THALFindSelf(hal);
 	struct TLockWait request;
 	request.tlr_Task = waiter;
-
 	THALLock(hal, &lock->tlk_HLock);
-
 	if (lock->tlk_Owner == TNULL)
 	{
 		lock->tlk_Owner = waiter;
@@ -555,7 +529,6 @@ exec_Lock(TEXECBASE *exec, struct TLock *lock)
 		TAddTail(&lock->tlk_Waiters, &request.tlr_Node);
 		lock->tlk_WaitCount++;
 		THALUnlock(hal, &lock->tlk_HLock);
-
 		THALWait(hal, TTASK_SIG_SINGLE);
 	}
 }
@@ -565,15 +538,11 @@ exec_Lock(TEXECBASE *exec, struct TLock *lock)
 **	exec_Unlock(exec, lock)
 */
 
-EXPORT void
-exec_Unlock(TEXECBASE *exec, struct TLock *lock)
+EXPORT void exec_Unlock(struct TExecBase *TExecBase, struct TLock *lock)
 {
-	TAPTR hal = exec->texb_HALBase;
-
+	TAPTR hal = TExecBase->texb_HALBase;
 	THALLock(hal, &lock->tlk_HLock);
-
 	lock->tlk_NestCount--;
-
 	if (lock->tlk_NestCount == 0)
 	{
 		if (lock->tlk_WaitCount > 0)
@@ -588,7 +557,6 @@ exec_Unlock(TEXECBASE *exec, struct TLock *lock)
 		else
 			lock->tlk_Owner = TNULL;
 	}
-
 	THALUnlock(hal, &lock->tlk_HLock);
 }
 
@@ -598,38 +566,36 @@ exec_Unlock(TEXECBASE *exec, struct TLock *lock)
 **	Create a message port
 */
 
-static THOOKENTRY TTAG
-exec_destroyuserport(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG exec_destroyuserport(struct THook *hook, TAPTR obj,
+	TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
 		struct TMsgPort *port = obj;
-		TEXECBASE *exec = (TEXECBASE *) TGetExecBase(port);
-		exec_freesignal(exec, port->tmp_SigTask, port->tmp_Signal);
-		THALDestroyLock(exec->texb_HALBase, &port->tmp_Lock);
-		exec_Free(exec, port);
+		struct TExecBase *TExecBase = (struct TExecBase *) TGetExecBase(port);
+		exec_freesignal(TExecBase, port->tmp_SigTask, port->tmp_Signal);
+		THALDestroyLock(TExecBase->texb_HALBase, &port->tmp_Lock);
+		TFree(port);
 	}
 	return 0;
 }
 
-EXPORT struct TMsgPort *
-exec_CreatePort(TEXECBASE *exec, struct TTagItem *tags)
+EXPORT struct TMsgPort *exec_CreatePort(struct TExecBase *TExecBase,
+	struct TTagItem *tags)
 {
-	struct TTask *task = THALFindSelf(exec->texb_HALBase);
+	struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
 	struct TMsgPort *port =
-		exec_AllocMMU(exec, &task->tsk_HeapMMU, sizeof(struct TMsgPort));
-
+		TAlloc(&task->tsk_HeapMemManager, sizeof(struct TMsgPort));
 	if (port)
 	{
-		if (exec_initport(exec, port, task, 0))
+		if (exec_initport(TExecBase, port, task, 0))
 		{
 			/* overwrite destructor */
 			port->tmp_Handle.thn_Hook.thk_Entry = exec_destroyuserport;
 			return port;
 		}
-		exec_Free(exec, port);
+		TFree(port);
 	}
-
 	return TNULL;
 }
 
@@ -639,13 +605,12 @@ exec_CreatePort(TEXECBASE *exec, struct TTagItem *tags)
 **	Wait for a message port to be non-empty
 */
 
-EXPORT TAPTR
-exec_WaitPort(TEXECBASE *exec, struct TMsgPort *port)
+EXPORT TAPTR exec_WaitPort(struct TExecBase *TExecBase, struct TMsgPort *port)
 {
 	struct TNode *node = TNULL;
 	if (port)
 	{
-		TAPTR hal = exec->texb_HALBase;
+		TAPTR hal = TExecBase->texb_HALBase;
 		TDBASSERT(99, THALFindSelf(hal) == port->tmp_SigTask);
 		for (;;)
 		{
@@ -670,12 +635,25 @@ exec_WaitPort(TEXECBASE *exec, struct TMsgPort *port)
 **	Get next pending message from message port
 */
 
-EXPORT TAPTR
-exec_GetMsg(TEXECBASE *exec, struct TMsgPort *port)
+EXPORT TAPTR exec_GetMsg(struct TExecBase *TExecBase, struct TMsgPort *port)
 {
 	if (port)
-		return exec_getmsg(exec, port);
-	TDBPRINTF(TDB_WARN,("port=TNULL\n"));
+	{
+		struct TMessage *msg;
+		TAPTR hal = TExecBase->texb_HALBase;
+		THALLock(hal, &port->tmp_Lock);
+		msg = (struct TMessage *) TRemHead(&port->tmp_MsgList);
+		THALUnlock(hal, &port->tmp_Lock);
+		if (msg)
+		{
+			if (!(msg->tmsg_Flags & TMSGF_QUEUED))
+				TDBPRINTF(TDB_ERROR,("got msg with TMSGF_QUEUED not set\n"));
+			msg->tmsg_Flags &= ~TMSGF_QUEUED;
+			return (TAPTR)((TINT8 *) (msg + 1) + sizeof(union TMemManagerInfo));
+		}
+	}
+	else
+		TDBPRINTF(TDB_WARN,("port=TNULL\n"));
 	return TNULL;
 }
 
@@ -685,13 +663,12 @@ exec_GetMsg(TEXECBASE *exec, struct TMsgPort *port)
 **	Put msg to a message port, with a reply expected at replyport
 */
 
-EXPORT void
-exec_PutMsg(TEXECBASE *exec, struct TMsgPort *port, struct TMsgPort *replyport,
-	TAPTR mem)
+EXPORT void exec_PutMsg(struct TExecBase *TExecBase, struct TMsgPort *port,
+	struct TMsgPort *replyport, TAPTR mem)
 {
 	if (port && mem)
 	{
-		TAPTR hal = exec->texb_HALBase;
+		TAPTR hal = TExecBase->texb_HALBase;
 		struct TMessage *msg = TGETMSGPTR(mem);
 
 		msg->tmsg_RPort = replyport;
@@ -717,11 +694,10 @@ exec_PutMsg(TEXECBASE *exec, struct TMsgPort *port, struct TMsgPort *replyport,
 **	this function indicates that the message body is unmodified.
 */
 
-EXPORT void
-exec_AckMsg(TEXECBASE *exec, TAPTR mem)
+EXPORT void exec_AckMsg(struct TExecBase *TExecBase, TAPTR mem)
 {
 	if (mem)
-		exec_returnmsg(exec, mem, TMSG_STATUS_ACKD | TMSGF_QUEUED);
+		exec_returnmsg(TExecBase, mem, TMSG_STATUS_ACKD | TMSGF_QUEUED);
 	else
 		TDBPRINTF(TDB_WARN,("msg=TNULL\n"));
 }
@@ -733,11 +709,10 @@ exec_AckMsg(TEXECBASE *exec, TAPTR mem)
 **	message body has or may have been modified.
 */
 
-EXPORT void
-exec_ReplyMsg(TEXECBASE *exec, TAPTR mem)
+EXPORT void exec_ReplyMsg(struct TExecBase *TExecBase, TAPTR mem)
 {
 	if (mem)
-		exec_returnmsg(exec, mem, TMSG_STATUS_REPLIED | TMSGF_QUEUED);
+		exec_returnmsg(TExecBase, mem, TMSG_STATUS_REPLIED | TMSGF_QUEUED);
 	else
 		TDBPRINTF(TDB_WARN,("msg=TNULL\n"));
 }
@@ -750,11 +725,10 @@ exec_ReplyMsg(TEXECBASE *exec, TAPTR mem)
 **	it's particularly useful for synchronized messages sent with TSendMsg().
 */
 
-EXPORT void
-exec_DropMsg(TEXECBASE *exec, TAPTR mem)
+EXPORT void exec_DropMsg(struct TExecBase *TExecBase, TAPTR mem)
 {
 	if (mem)
-		exec_returnmsg(exec, mem, TMSG_STATUS_FAILED | TMSGF_QUEUED);
+		exec_returnmsg(TExecBase, mem, TMSG_STATUS_FAILED | TMSGF_QUEUED);
 	else
 		TDBPRINTF(TDB_WARN,("msg=TNULL\n"));
 }
@@ -765,13 +739,13 @@ exec_DropMsg(TEXECBASE *exec, TAPTR mem)
 **	Send message, two-way, blocking
 */
 
-EXPORT TUINT
-exec_SendMsg(TEXECBASE *exec, struct TMsgPort *port, TAPTR msg)
+EXPORT TUINT exec_SendMsg(struct TExecBase *TExecBase, struct TMsgPort *port,
+	TAPTR msg)
 {
 	if (port && msg)
 	{
-		struct TTask *task = THALFindSelf(exec->texb_HALBase);
-		return exec_sendmsg(exec, task, port, msg);
+		struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
+		return exec_sendmsg(TExecBase, task, port, msg);
 	}
 	TDBPRINTF(TDB_WARN,("port/msg=TNULL\n"));
 	return TMSG_STATUS_FAILED;
@@ -783,18 +757,17 @@ exec_SendMsg(TEXECBASE *exec, struct TMsgPort *port, TAPTR msg)
 **	Find a task by name, or the caller's own task, if name is TNULL
 */
 
-EXPORT struct TTask *
-exec_FindTask(TEXECBASE *exec, TSTRPTR name)
+EXPORT struct TTask *exec_FindTask(struct TExecBase *TExecBase, TSTRPTR name)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	struct TTask *task;
 	if (name == TNULL)
 		task = THALFindSelf(hal);
 	else
 	{
-		THALLock(hal, &exec->texb_Lock);
-		task = (struct TTask *) TFindHandle(&exec->texb_TaskList, name);
-		THALUnlock(hal, &exec->texb_Lock);
+		THALLock(hal, &TExecBase->texb_Lock);
+		task = (struct TTask *) TFindHandle(&TExecBase->texb_TaskList, name);
+		THALUnlock(hal, &TExecBase->texb_Lock);
 	}
 	return task;
 }
@@ -805,28 +778,27 @@ exec_FindTask(TEXECBASE *exec, TSTRPTR name)
 **	Open a module and/or an module instance
 */
 
-EXPORT TAPTR
-exec_OpenModule(TEXECBASE *exec, TSTRPTR modname, TUINT16 version,
-	struct TTagItem *tags)
+EXPORT TAPTR exec_OpenModule(struct TExecBase *TExecBase, TSTRPTR modname,
+	TUINT16 version, struct TTagItem *tags)
 {
 	if (modname)
 	{
 		TTAGITEM extratags[2];
-		struct TTask *task = THALFindSelf(exec->texb_HALBase);
+		struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
 		union TTaskRequest *taskreq;
 
 		/* called in module init? this is not allowed */
-		if (task == exec->texb_IOTask)
+		if (task == TExecBase->texb_IOTask)
 			return TNULL;
 
 		/* Shortcut: provide access to a 'timer.device', which is actually
 		** the hal module. A ptr to the Execbase must be supplied as well */
 
-		if (exec_StrEqual(exec, (TSTRPTR) TMODNAME_TIMER, modname))
+		if (TStrEqual((TSTRPTR) TMODNAME_TIMER, modname))
 		{
 			modname = (TSTRPTR) TMODNAME_HAL;
 			extratags[0].tti_Tag = THalBase_Exec;
-			extratags[0].tti_Value = (TTAG) exec;
+			extratags[0].tti_Value = (TTAG) TExecBase;
 			extratags[1].tti_Tag = TTAG_MORE;
 			extratags[1].tti_Value = (TTAG) tags;
 			tags = extratags;
@@ -840,7 +812,7 @@ exec_OpenModule(TEXECBASE *exec, TSTRPTR modname, TUINT16 version,
 		taskreq->trq_Mod.trm_Module = TNULL;
 
 		/* note that the task itself is the message, not taskreq */
-		if (exec_sendmsg(exec, task, exec->texb_ExecPort, task))
+		if (exec_sendmsg(TExecBase, task, TExecBase->texb_ExecPort, task))
 		{
 			struct TModule *mod = taskreq->trq_Mod.trm_Module;
 			struct TModule *inst;
@@ -860,7 +832,7 @@ exec_OpenModule(TEXECBASE *exec, TSTRPTR modname, TUINT16 version,
 
 			task->tsk_ReqCode = TTREQ_CLOSEMOD;
 			taskreq->trq_Mod.trm_Module = mod;
-			exec_sendmsg(exec, task, exec->texb_ExecPort, task);
+			exec_sendmsg(TExecBase, task, TExecBase->texb_ExecPort, task);
 		}
 	}
 	else
@@ -875,12 +847,11 @@ exec_OpenModule(TEXECBASE *exec, TSTRPTR modname, TUINT16 version,
 **	Close module
 */
 
-EXPORT void
-exec_CloseModule(TEXECBASE *exec, struct TModule *inst)
+EXPORT void exec_CloseModule(struct TExecBase *TExecBase, struct TModule *inst)
 {
 	if (inst)
 	{
-		struct TTask *task = THALFindSelf(exec->texb_HALBase);
+		struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
 		union TTaskRequest *taskreq = &task->tsk_Request;
 		struct TModule *mod = inst->tmd_ModSuper;
 
@@ -889,7 +860,7 @@ exec_CloseModule(TEXECBASE *exec, struct TModule *inst)
 
 		task->tsk_ReqCode = TTREQ_CLOSEMOD;
 		taskreq->trq_Mod.trm_Module = mod;
-		exec_sendmsg(exec, task, exec->texb_ExecPort, task);
+		exec_sendmsg(TExecBase, task, TExecBase->texb_ExecPort, task);
 	}
 }
 
@@ -899,33 +870,25 @@ exec_CloseModule(TEXECBASE *exec, struct TModule *inst)
 **	Query a module for an interface
 */
 
-EXPORT TAPTR
-exec_QueryInterface(TEXECBASE *exec, struct TModule *mod, TSTRPTR name,
-	TUINT16 version, struct TTagItem *tags)
+EXPORT TAPTR exec_QueryInterface(struct TExecBase *TExecBase,
+	struct TModule *mod, TSTRPTR name, TUINT16 version, struct TTagItem *tags)
 {
 	if (mod && (mod->tmd_Flags & TMODF_QUERYIFACE))
 	{
-		struct TIFaceQuery ifq;
-		ifq.tfq_Name = name;
-		ifq.tfq_Version = version;
-		ifq.tfq_Tags = tags;
-		return (struct TModule *) TCALLHOOKPKT(&mod->tmd_Handle.thn_Hook,
+		struct TInterfaceQuery ifq;
+		struct TInterface *iface;
+		ifq.tifq_Name = name;
+		ifq.tifq_Version = version;
+		ifq.tifq_Tags = tags;
+		iface = (struct TInterface *) TCALLHOOKPKT(&mod->tmd_Handle.thn_Hook,
 			&ifq, TMSG_QUERYIFACE);
+		if (iface)
+		{
+			iface->tif_Handle.thn_Owner = mod;
+			return iface;
+		}
 	}
 	return TNULL;
-}
-
-/*****************************************************************************/
-/*
-**	exec_DropInterface(exec, mod, iface)
-**	Drop an interface
-*/
-
-EXPORT void
-exec_DropInterface(TEXECBASE *exec, struct TModule *mod, TAPTR iface)
-{
-	if (mod && iface && (mod->tmd_Flags & TMODF_QUERYIFACE))
-		TCALLHOOKPKT(&mod->tmd_Handle.thn_Hook, iface, TMSG_DROPIFACE);
 }
 
 /*****************************************************************************/
@@ -934,17 +897,15 @@ exec_DropInterface(TEXECBASE *exec, struct TModule *mod, TAPTR iface)
 **	Create task
 */
 
-EXPORT struct TTask *
-exec_CreateTask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
-	struct TTagItem *tags)
+EXPORT struct TTask * exec_CreateTask(struct TExecBase *TExecBase,
+	struct THook *hook, struct TTagItem *tags)
 {
 	struct TTask *newtask = TNULL;
-
-	if (func || initfunc)
+	if (hook)
 	{
 		struct TTagItem tasktags[3];
 		union TTaskRequest *taskreq;
-		struct TTask *task = THALFindSelf(exec->texb_HALBase);
+		struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
 
 		tasktags[0].tti_Tag = TTAG_GOSUB;
 		tasktags[0].tti_Value = (TTAG) tags; /* prefer user tags */
@@ -955,11 +916,11 @@ exec_CreateTask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
 
 		task->tsk_ReqCode = TTREQ_CREATETASK;
 		taskreq = &task->tsk_Request;
-		taskreq->trq_Task.trt_Func = func;
-		taskreq->trq_Task.trt_InitFunc = initfunc;
+
+		taskreq->trq_Task.trt_TaskHook = *hook;
 		taskreq->trq_Task.trt_Tags = tasktags;
 
-		if (exec_sendmsg(exec, task, exec->texb_ExecPort, task))
+		if (exec_sendmsg(TExecBase, task, TExecBase->texb_ExecPort, task))
 			newtask = taskreq->trq_Task.trt_Task;
 	}
 	else
@@ -974,23 +935,20 @@ exec_CreateTask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
 **	Lock named atom
 */
 
-EXPORT struct TAtom *
-exec_LockAtom(TEXECBASE *exec, TAPTR atom, TUINT mode)
+EXPORT struct TAtom *exec_LockAtom(struct TExecBase *TExecBase, TAPTR atom,
+	TUINT mode)
 {
 	if (atom)
 	{
-		struct TTask *task = THALFindSelf(exec->texb_HALBase);
-
+		struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
 		task->tsk_ReqCode = TTREQ_LOCKATOM;
 		task->tsk_Request.trq_Atom.tra_Atom = atom;
 		task->tsk_Request.trq_Atom.tra_Task = task;
 		task->tsk_Request.trq_Atom.tra_Mode = mode;
-
-		if (exec_sendmsg(exec, task, exec->texb_ExecPort, task))
+		if (exec_sendmsg(TExecBase, task, TExecBase->texb_ExecPort, task))
 			atom = task->tsk_Request.trq_Atom.tra_Atom;
-
 		if (atom && (mode & TATOMF_DESTROY))
-			exec_UnlockAtom(exec, atom, TATOMF_DESTROY);
+			TUnlockAtom(atom, TATOMF_DESTROY);
 	}
 	return atom;
 }
@@ -1001,19 +959,17 @@ exec_LockAtom(TEXECBASE *exec, TAPTR atom, TUINT mode)
 **	Unlock an atom
 */
 
-EXPORT void
-exec_UnlockAtom(TEXECBASE *exec, struct TAtom *atom, TUINT mode)
+EXPORT void exec_UnlockAtom(struct TExecBase *TExecBase, struct TAtom *atom,
+	TUINT mode)
 {
 	if (atom)
 	{
-		struct TTask *task = THALFindSelf(exec->texb_HALBase);
-
+		struct TTask *task = THALFindSelf(TExecBase->texb_HALBase);
 		task->tsk_ReqCode = TTREQ_UNLOCKATOM;
 		task->tsk_Request.trq_Atom.tra_Atom = atom;
 		task->tsk_Request.trq_Atom.tra_Task = task;
 		task->tsk_Request.trq_Atom.tra_Mode = mode | TATOMF_UNLOCK;
-
-		exec_sendmsg(exec, task, exec->texb_ExecPort, task);
+		exec_sendmsg(TExecBase, task, TExecBase->texb_ExecPort, task);
 	}
 }
 
@@ -1024,20 +980,19 @@ exec_UnlockAtom(TEXECBASE *exec, struct TAtom *atom, TUINT mode)
 **	set its status
 */
 
-EXPORT void
-exec_InsertMsg(TEXECBASE *exec, struct TMsgPort *port, TAPTR mem,
-	TAPTR predmem, TUINT status)
+EXPORT void exec_InsertMsg(struct TExecBase *TExecBase, struct TMsgPort *port,
+	TAPTR mem, TAPTR predmem, TUINT status)
 {
 	struct TMessage *msg = TGETMSGPTR(mem);
 	struct TMessage *predmsg = predmem ? TGETMSGPTR(predmem) : TNULL;
 
-	THALLock(exec->texb_HALBase, &port->tmp_Lock);
+	THALLock(TExecBase->texb_HALBase, &port->tmp_Lock);
 	if (predmsg)
 		TInsert(&port->tmp_MsgList, &msg->tmsg_Node, &predmsg->tmsg_Node);
 	else
 		TAddTail(&port->tmp_MsgList, &msg->tmsg_Node);
 
-	THALUnlock(exec->texb_HALBase, &port->tmp_Lock);
+	THALUnlock(TExecBase->texb_HALBase, &port->tmp_Lock);
 
 	msg->tmsg_Flags = status | TMSGF_QUEUED;
 }
@@ -1048,11 +1003,11 @@ exec_InsertMsg(TEXECBASE *exec, struct TMsgPort *port, TAPTR mem,
 **	Remove msg from message port
 */
 
-EXPORT void
-exec_RemoveMsg(TEXECBASE *exec, struct TMsgPort *port, TAPTR mem)
+EXPORT void exec_RemoveMsg(struct TExecBase *TExecBase, struct TMsgPort *port,
+	TAPTR mem)
 {
 	struct TMessage *msg = TGETMSGPTR(mem);
-	THALLock(exec->texb_HALBase, &port->tmp_Lock);
+	THALLock(TExecBase->texb_HALBase, &port->tmp_Lock);
 	#ifdef TDEBUG
 	{
 		struct TNode *next, *node = port->tmp_MsgList.tlh_Head;
@@ -1071,7 +1026,7 @@ exec_RemoveMsg(TEXECBASE *exec, struct TMsgPort *port, TAPTR mem)
 	}
 	#endif
 	TREMOVE(&msg->tmsg_Node);
-	THALUnlock(exec->texb_HALBase, &port->tmp_Lock);
+	THALUnlock(TExecBase->texb_HALBase, &port->tmp_Lock);
 }
 
 /*****************************************************************************/
@@ -1080,8 +1035,7 @@ exec_RemoveMsg(TEXECBASE *exec, struct TMsgPort *port, TAPTR mem)
 **	Get message status
 */
 
-EXPORT TUINT
-exec_GetMsgStatus(TEXECBASE *exec, TAPTR mem)
+EXPORT TUINT exec_GetMsgStatus(struct TExecBase *TExecBase, TAPTR mem)
 {
 	return TGETMSGPTR(mem)->tmsg_Flags;
 }
@@ -1092,8 +1046,8 @@ exec_GetMsgStatus(TEXECBASE *exec, TAPTR mem)
 **	Set a message's replyport
 */
 
-EXPORT struct TMsgPort *
-exec_SetMsgReplyPort(TEXECBASE *exec, TAPTR mem, struct TMsgPort *rport)
+EXPORT struct TMsgPort *exec_SetMsgReplyPort(struct TExecBase *TExecBase,
+	TAPTR mem, struct TMsgPort *rport)
 {
 	struct TMessage *msg = TGETMSGPTR(mem);
 	struct TMsgPort *oport = msg->tmsg_RPort;
@@ -1107,14 +1061,14 @@ exec_SetMsgReplyPort(TEXECBASE *exec, TAPTR mem, struct TMsgPort *rport)
 **	Set MsgPort hook
 */
 
-EXPORT struct THook *
-exec_SetPortHook(TEXECBASE *exec, struct TMsgPort *port, struct THook *hook)
+EXPORT struct THook *exec_SetPortHook(struct TExecBase *TExecBase,
+	struct TMsgPort *port, struct THook *hook)
 {
 	struct THook *oldhook;
-	THALLock(exec->texb_HALBase, &port->tmp_Lock);
+	THALLock(TExecBase->texb_HALBase, &port->tmp_Lock);
 	oldhook = port->tmp_Hook;
 	port->tmp_Hook = hook;
-	THALUnlock(exec->texb_HALBase, &port->tmp_Lock);
+	THALUnlock(TExecBase->texb_HALBase, &port->tmp_Lock);
 	return oldhook;
 }
 
@@ -1127,9 +1081,8 @@ exec_SetPortHook(TEXECBASE *exec, struct TMsgPort *port, struct THook *hook)
 **	Remove a module init node from the list of internal modules
 */
 
-static TBOOL
-exec_addremmodule(TEXECBASE *exec, struct TModInitNode *tmin, TUINT reqcode,
-	TUINT flags)
+static TBOOL exec_addremmodule(struct TExecBase *TExecBase,
+	struct TModInitNode *tmin, TUINT reqcode, TUINT flags)
 {
 	struct TTask *task;
 	union TTaskRequest *taskreq;
@@ -1137,25 +1090,25 @@ exec_addremmodule(TEXECBASE *exec, struct TModInitNode *tmin, TUINT reqcode,
 	if (tmin == TNULL || tmin->tmin_Modules == TNULL)
 		return TFALSE;
 
-	task = THALFindSelf(exec->texb_HALBase);
+	task = THALFindSelf(TExecBase->texb_HALBase);
 	task->tsk_ReqCode = reqcode;
 
 	taskreq = &task->tsk_Request;
 	taskreq->trq_AddRemMod.trm_ModInitNode = tmin;
 	taskreq->trq_AddRemMod.trm_Flags = flags;
 
-	exec_sendmsg(exec, task, &exec->texb_IOTask->tsk_UserPort, task);
+	exec_sendmsg(TExecBase, task, &TExecBase->texb_IOTask->tsk_UserPort, task);
 	return TTRUE;
 }
 
-EXPORT TBOOL
-exec_AddModules(TEXECBASE *exec, struct TModInitNode *tmin, TUINT flags)
+EXPORT TBOOL exec_AddModules(struct TExecBase *TExecBase,
+	struct TModInitNode *tmin, TUINT flags)
 {
-	return exec_addremmodule(exec, tmin, TTREQ_ADDMOD, flags);
+	return exec_addremmodule(TExecBase, tmin, TTREQ_ADDMOD, flags);
 }
 
-EXPORT TBOOL
-exec_RemModules(TEXECBASE *exec, struct TModInitNode *tmin, TUINT flags)
+EXPORT TBOOL exec_RemModules(struct TExecBase *TExecBase,
+	struct TModInitNode *tmin, TUINT flags)
 {
-	return exec_addremmodule(exec, tmin, TTREQ_REMMOD, flags);
+	return exec_addremmodule(TExecBase, tmin, TTREQ_REMMOD, flags);
 }

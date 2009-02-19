@@ -19,6 +19,8 @@
 --		- UTF8String:get() - Return the string in UTF-8-encoded form
 --		- UTF8String:insert() - Insert a string at a position
 --		- UTF8String:len() - Return the length in characters
+--		- UTF8String:overwrite() - Overwrite string
+--		- UTF8String:set() - Set a string
 --		- UTF8String:sub() - Return substring of a string
 --
 --	OVERRIDES::
@@ -40,7 +42,7 @@ local tostring = tostring
 local type = type
 
 module("tek.class.utf8string", tek.class)
-_VERSION = "UTF8String 1.2"
+_VERSION = "UTF8String 2.0"
 
 local UTF8String = _M
 
@@ -165,19 +167,30 @@ local function readstring(data)
 end
 
 -------------------------------------------------------------------------------
---	object = UTF8String.new(class, string): Create an UTF-8 string object
---	from an (already UTF-8 encoded) regular string.
+--	UTF8String:set(s): Reset string object to a new UTF-8 encoded string
 -------------------------------------------------------------------------------
 
-function UTF8String.new(class, s)
+function UTF8String:set(s)
 	local buf = { }
-	local self = { s or false, buf, s or false, 0 }
+	self[1] = s or false
+	self[2] = buf
+	self[3] = s or false
+	self[4] = 0
 	if s then
 		for i, c in utf8values(readstring, self) do
 			buf[i] = c
 		end
 	end
-	return Class.new(class, self)
+	return self
+end
+
+-------------------------------------------------------------------------------
+--	object = UTF8String.new(class, string): Create an UTF-8 string object
+--	from an (already UTF-8 encoded) regular string.
+-------------------------------------------------------------------------------
+
+function UTF8String.new(class, s)
+	return Class.new(class, set({ }, s))
 end
 
 -------------------------------------------------------------------------------
@@ -316,4 +329,22 @@ function UTF8String:byte(p0, p1)
 		end
 		return unpack(t)
 	end
+end
+
+-------------------------------------------------------------------------------
+--	UTF8String:overwrite(s[, pos]): Overwrite the UTF8 string with the
+--	specified (also UTF-8 encoded) string, starting a the given position.
+-------------------------------------------------------------------------------
+
+function UTF8String:overwrite(s, pos)
+	pos = pos or 1
+	local buf = self[2]
+	self[3], self[4] = s, 0
+	for _, c in utf8values(readstring, self) do
+		if pos > 0 and pos <= #buf then
+			buf[pos] = c
+		end
+		pos = pos + 1
+	end
+	self[1] = false
 end

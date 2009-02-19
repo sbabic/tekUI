@@ -589,6 +589,7 @@ EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags)
 				success = vis_puthash(mod, mod->vis_Displays, name,
 					(TTAG) display);
 				TUnlock(mod->vis_Lock);
+
 				if (!success)
 				{
 					TCloseModule(display);

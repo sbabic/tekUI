@@ -14,7 +14,7 @@
 */
 
 #include <tek/teklib.h>
-#include <tek/proto/exec.h>
+#include <tek/inline/exec.h>
 
 /*****************************************************************************/
 /*
@@ -22,8 +22,7 @@
 **	Prepare list header
 */
 
-TLIBAPI void
-TInitList(struct TList *list)
+TLIBAPI void TInitList(struct TList *list)
 {
 	list->tlh_TailPred = (struct TNode *) list;
 	list->tlh_Tail = TNULL;
@@ -36,8 +35,7 @@ TInitList(struct TList *list)
 **	Add a node at the head of a list
 */
 
-TLIBAPI void
-TAddHead(struct TList *list, struct TNode *node)
+TLIBAPI void TAddHead(struct TList *list, struct TNode *node)
 {
 	struct TNode *temp = list->tlh_Head;
 	list->tlh_Head = node;
@@ -52,8 +50,7 @@ TAddHead(struct TList *list, struct TNode *node)
 **	Add a node at the tail of a list
 */
 
-TLIBAPI void
-TAddTail(struct TList *list, struct TNode *node)
+TLIBAPI void TAddTail(struct TList *list, struct TNode *node)
 {
 	struct TNode *temp = list->tlh_TailPred;
 	list->tlh_TailPred = node;
@@ -68,8 +65,7 @@ TAddTail(struct TList *list, struct TNode *node)
 **	Unlink and return a list's first node
 */
 
-TLIBAPI struct TNode *
-TRemHead(struct TList *list)
+TLIBAPI struct TNode *TRemHead(struct TList *list)
 {
 	struct TNode *temp = list->tlh_Head;
 	if (temp->tln_Succ)
@@ -87,8 +83,7 @@ TRemHead(struct TList *list)
 **	Unlink and return a list's last node
 */
 
-TLIBAPI struct TNode *
-TRemTail(struct TList *list)
+TLIBAPI struct TNode *TRemTail(struct TList *list)
 {
 	struct TNode *temp = list->tlh_TailPred;
 	if (temp->tln_Pred)
@@ -106,8 +101,7 @@ TRemTail(struct TList *list)
 **	Unlink node from a list
 */
 
-TLIBAPI void
-TRemove(struct TNode *node)
+TLIBAPI void TRemove(struct TNode *node)
 {
 	struct TNode *temp = node->tln_Succ;
 	node->tln_Pred->tln_Succ = temp;
@@ -120,8 +114,7 @@ TRemove(struct TNode *node)
 **	Move a node one position up in a list
 */
 
-TLIBAPI void
-TNodeUp(struct TNode *node)
+TLIBAPI void TNodeUp(struct TNode *node)
 {
 	struct TNode *temp = node->tln_Pred;
 	if (temp->tln_Pred)
@@ -141,8 +134,8 @@ TNodeUp(struct TNode *node)
 **	Insert node after prednode
 */
 
-TLIBAPI void
-TInsert(struct TList *list, struct TNode *node, struct TNode *prednode)
+TLIBAPI void TInsert(struct TList *list, struct TNode *node,
+	struct TNode *prednode)
 {
 	if (list)
 	{
@@ -176,8 +169,7 @@ TInsert(struct TList *list, struct TNode *node, struct TNode *prednode)
 **	Invoke destructor on a handle
 */
 
-TLIBAPI void
-TDestroy(TAPTR handle)
+TLIBAPI void TDestroy(struct THandle *handle)
 {
 	if (handle)
 		TCALLHOOKPKT(&((struct THandle *) handle)->thn_Hook, handle,
@@ -190,8 +182,7 @@ TDestroy(TAPTR handle)
 **	Unlink and invoke destructor on handles in a list
 */
 
-TLIBAPI void
-TDestroyList(struct TList *list)
+TLIBAPI void TDestroyList(struct TList *list)
 {
 	struct TNode *nextnode, *node = list->tlh_Head;
 	while ((nextnode = node->tln_Succ))
@@ -208,23 +199,22 @@ TDestroyList(struct TList *list)
 **	Get module instance copy
 */
 
-TLIBAPI TAPTR
-TNewInstance(TAPTR mod, TUINT possize, TUINT negsize)
+TLIBAPI struct TModule *TNewInstance(struct TModule *mod, TSIZE possize,
+	TSIZE negsize)
 {
-	TAPTR exec = TGetExecBase(mod);
-	TAPTR inst = TExecAlloc(exec, TNULL, possize + negsize);
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	TAPTR inst = TAlloc(TNULL, possize + negsize);
 	if (inst)
 	{
-		TUINT size = TMIN(((struct TModule *) mod)->tmd_NegSize, negsize);
+		TSIZE size = TMIN(((struct TModule *) mod)->tmd_NegSize, negsize);
 		inst = (TINT8 *) inst + negsize;
 		if (size > 0)
-			TExecCopyMem(exec, (TINT8 *) mod - size, (TINT8 *) inst - size,
-				size);
+			TCopyMem((TINT8 *) mod - size, (TINT8 *) inst - size, size);
 		size = TMIN(((struct TModule *) mod)->tmd_PosSize, possize);
-		TExecCopyMem(exec, mod, inst, size);
+		TCopyMem(mod, inst, size);
 		((struct TModule *) inst)->tmd_PosSize = possize;
 		((struct TModule *) inst)->tmd_NegSize = negsize;
-		((struct TModule *) inst)->tmd_InitTask = TExecFindTask(exec, TNULL);
+		((struct TModule *) inst)->tmd_InitTask = TFindTask(TNULL);
 	}
 	return inst;
 }
@@ -235,13 +225,12 @@ TNewInstance(TAPTR mod, TUINT possize, TUINT negsize)
 **	Free module instance
 */
 
-TLIBAPI void
-TFreeInstance(TAPTR mod)
+TLIBAPI void TFreeInstance(struct TModule *mod)
 {
 	if (mod)
 	{
-		TAPTR exec = TGetExecBase(mod);
-		TExecFree(exec, (TINT8 *) mod - ((struct TModule *) mod)->tmd_NegSize);
+		struct TExecBase *TExecBase = TGetExecBase(mod);
+		TFree((TINT8 *) mod - ((struct TModule *) mod)->tmd_NegSize);
 	}
 }
 
@@ -251,10 +240,10 @@ TFreeInstance(TAPTR mod)
 **	Init module vectors
 */
 
-TLIBAPI void
-TInitVectors(TAPTR mod, const TMFPTR *vectors, TUINT numv)
+TLIBAPI void TInitVectors(struct TModule *mod, const TMFPTR *vectors,
+	TUINT numv)
 {
-	TMFPTR *vecp = mod;
+	TMFPTR *vecp = (TMFPTR *) mod;
 	while (numv--)
 		*(--vecp) = *vectors++;
 }
@@ -264,8 +253,7 @@ TInitVectors(TAPTR mod, const TMFPTR *vectors, TUINT numv)
 **	complete = TForEachTag(taglist, hook)
 */
 
-TLIBAPI TBOOL
-TForEachTag(struct TTagItem *taglist, struct THook *hook)
+TLIBAPI TBOOL TForEachTag(struct TTagItem *taglist, struct THook *hook)
 {
 	TBOOL complete = TFALSE;
 	if (hook)
@@ -312,8 +300,7 @@ TForEachTag(struct TTagItem *taglist, struct THook *hook)
 **	Get tag value
 */
 
-TLIBAPI TTAG
-TGetTag(struct TTagItem *taglist, TUINT tag, TTAG defvalue)
+TLIBAPI TTAG TGetTag(struct TTagItem *taglist, TUINT tag, TTAG defvalue)
 {
 	TUINT listtag;
 	while (taglist)
@@ -360,8 +347,7 @@ TGetTag(struct TTagItem *taglist, TUINT tag, TTAG defvalue)
 **	Find named handle
 */
 
-TLIBAPI struct THandle *
-TFindHandle(struct TList *list, TSTRPTR name)
+TLIBAPI struct THandle *TFindHandle(struct TList *list, TSTRPTR name)
 {
 	struct TNode *nnode, *node;
 	for (node = list->tlh_Head; (nnode = node->tln_Succ); node = nnode)
@@ -393,24 +379,21 @@ TFindHandle(struct TList *list, TSTRPTR name)
 **	be entirely language/compiler specific.
 */
 
-static THOOKENTRY TTAG
-_THookEntry(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG _THookEntry(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	TTAG (*func)(struct THook *, TAPTR, TTAG) =
 		(TTAG (*)(struct THook *, TAPTR, TTAG)) hook->thk_SubEntry;
 	return (*func)(hook, obj, msg);
 }
 
-TLIBAPI void
-TInitHook(struct THook *hook, THOOKFUNC func, TAPTR data)
+TLIBAPI void TInitHook(struct THook *hook, THOOKFUNC func, TAPTR data)
 {
 	hook->thk_Entry = _THookEntry;
 	hook->thk_SubEntry = func;
 	hook->thk_Data = data;
 }
 
-TLIBAPI TTAG
-TCallHookPkt(struct THook *hook, TAPTR obj, TTAG msg)
+TLIBAPI TTAG TCallHookPkt(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	return (*hook->thk_Entry)(hook, obj, msg);
 }
@@ -546,6 +529,37 @@ TLIBAPI TBOOL TExtractTime(TTIME *t, TINT *d, TINT *s, TINT *us)
 		return TTRUE;
 	}
 	return TFALSE;
+}
+
+/*****************************************************************************/
+/*
+**	TInitInterface(interface, module, name, version)
+**	Initialize an interface structure
+*/
+
+static THOOKENTRY TTAG teklib_destroyiface(struct THook *h, TAPTR obj,
+	TTAG msg)
+{
+	if (msg == TMSG_DESTROY)
+	{
+		struct TInterface *iface = obj;
+		struct TModule *mod = iface->tif_Module;
+		if (mod->tmd_Flags & TMODF_QUERYIFACE)
+			TCALLHOOKPKT(&mod->tmd_Handle.thn_Hook, iface, TMSG_DROPIFACE);
+	}
+	return 0;
+}
+
+TLIBAPI void TInitInterface(struct TInterface *iface, struct TModule *mod,
+	TSTRPTR name, TUINT16 version)
+{
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	TInitHook(&iface->tif_Handle.thn_Hook, teklib_destroyiface, TNULL);
+	iface->tif_Handle.thn_Owner = TExecBase;
+	iface->tif_Handle.thn_Name = name;
+	iface->tif_Module = mod;
+	iface->tif_Reserved = TNULL;
+	iface->tif_Version = version;
 }
 
 #endif /* _TEK_TEKLIB_C */

@@ -141,7 +141,7 @@ fnt_checkfqnode(struct TList *rlist, struct FontQueryNode *fqnode)
 	TBOOL newweight = (TBOOL)fqnode->tags[3].tti_Value;
 	*/
 
-	TINT flen = strlen(newfname);
+	TSIZE flen = strlen(newfname);
 
 	for (node = rlist->tlh_Head; (next = node->tln_Succ); node = next)
 	{

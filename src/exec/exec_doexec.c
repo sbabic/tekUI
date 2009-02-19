@@ -24,8 +24,8 @@ static void exec_loadmod(TEXECBASE *exec, struct TTask *task,
 static void exec_unloadmod(TEXECBASE *exec, struct TTask *task,
 	struct TTask *taskmsg);
 static void exec_newtask(TEXECBASE *exec, struct TTask *taskmsg);
-static struct TTask *exec_createtask(TEXECBASE *exec, TTASKFUNC func,
-	TINITFUNC initfunc, struct TTagItem *tags);
+static struct TTask *exec_createtask(TEXECBASE *exec,
+	struct THook *hook, struct TTagItem *tags);
 static TTASKENTRY void exec_taskentryfunc(struct TTask *task);
 static void exec_childinit(TEXECBASE *exec);
 static void exec_childexit(TEXECBASE *exec);
@@ -38,38 +38,38 @@ static void exec_unlockatom(TEXECBASE *exec, struct TTask *msg);
 **	entrypoint for exec internal services and initializations
 */
 
-EXPORT TBOOL
-exec_DoExec(TEXECBASE *exec, TUINT cmd, struct TTagItem *tags)
+EXPORT TBOOL exec_DoExec(TEXECBASE *TExecBase, TUINT cmd,
+	struct TTagItem *tags)
 {
-	struct TTask *task = exec_FindTask(exec, TNULL);
+	struct TTask *task = TFindTask(TNULL);
 	switch (cmd)
 	{
 		case TEXEC_CMD_RUN:
 			/* determine which context to run: */
-			if (task == exec_FindTask(exec, (TSTRPTR) TTASKNAME_EXEC))
+			if (task == TFindTask(TTASKNAME_EXEC))
 			{
 				/* perform execbase context */
-				exec_main(exec, task, tags);
+				exec_main(TExecBase, task, tags);
 				return TTRUE;
 			}
-			else if (task == exec_FindTask(exec, (TSTRPTR) TTASKNAME_RAMLIB))
+			else if (task == TFindTask(TTASKNAME_RAMLIB))
 			{
 				/* perform ramlib context */
-				exec_ramlib(exec, task, tags);
+				exec_ramlib(TExecBase, task, tags);
 				return TTRUE;
 			}
 			break;
 
 		case TEXEC_CMD_INIT:
 			/* place for initializations in entry context */
-			task->tsk_TimeReq = exec_AllocTimeRequest(exec, TNULL);
+			task->tsk_TimeReq = TAllocTimeRequest(TNULL);
 			if (task->tsk_TimeReq)
 				return TTRUE;
 			break;
 
 		case TEXEC_CMD_EXIT:
 			/* place for de-initializations in entry context */
-			exec_FreeTimeRequest(exec, task->tsk_TimeReq);
+			TFreeTimeRequest(task->tsk_TimeReq);
 			return TTRUE;
 	}
 	return TFALSE;
@@ -80,38 +80,38 @@ exec_DoExec(TEXECBASE *exec, TUINT cmd, struct TTagItem *tags)
 **	Ramlib task - Module loading
 */
 
-static void
-exec_ramlib(TEXECBASE *exec, struct TTask *task, struct TTagItem *tags)
+static void exec_ramlib(TEXECBASE *TExecBase, struct TTask *task,
+	struct TTagItem *tags)
 {
 	struct TMsgPort *port = &task->tsk_UserPort;
 	TUINT waitsig = TTASK_SIG_ABORT | port->tmp_Signal;
 
-	TUINT sig;
 	struct TTask *taskmsg;
 	TINT n = 0;
 
 	for (;;)
 	{
-		sig = THALWait(exec->texb_HALBase, waitsig);
-		if (sig & TTASK_SIG_ABORT) break;
+		TUINT sig = THALWait(TExecBase->texb_HALBase, waitsig);
+		if (sig & TTASK_SIG_ABORT)
+			break;
 
-		while ((taskmsg = exec_getmsg(exec, port)))
+		while ((taskmsg = TGetMsg(port)))
 		{
 			switch (taskmsg->tsk_ReqCode)
 			{
 				case TTREQ_LOADMOD:
-					exec_loadmod(exec, task, taskmsg);
+					exec_loadmod(TExecBase, task, taskmsg);
 					break;
 
 				case TTREQ_UNLOADMOD:
-					exec_unloadmod(exec, task, taskmsg);
+					exec_unloadmod(TExecBase, task, taskmsg);
 					break;
 
 				case TTREQ_ADDMOD:
-					TAddHead(&exec->texb_IntModList, (struct TNode *)
+					TAddHead(&TExecBase->texb_IntModList, (struct TNode *)
 						taskmsg->tsk_Request.trq_AddRemMod.trm_ModInitNode);
 					taskmsg->tsk_Request.trq_AddRemMod.trm_Result = TTRUE;
-					exec_ReplyMsg(exec, taskmsg);
+					TReplyMsg(taskmsg);
 					break;
 
 				case TTREQ_REMMOD:
@@ -120,14 +120,15 @@ exec_ramlib(TEXECBASE *exec, struct TTask *task, struct TTagItem *tags)
 					TRemove((struct TNode *)
 						taskmsg->tsk_Request.trq_AddRemMod.trm_ModInitNode);
 					taskmsg->tsk_Request.trq_AddRemMod.trm_Result = TTRUE;
-					exec_ReplyMsg(exec, taskmsg);
+					TReplyMsg(taskmsg);
 					break;
 			}
 		}
 	}
 
-	while ((taskmsg = exec_getmsg(exec, port)))
+	while ((taskmsg = TGetMsg(port)))
 		n++;
+
 	if (n > 0)
 	{
 		TDBPRINTF(TDB_FAIL,("Module requests pending: %d\n", n));
@@ -137,11 +138,11 @@ exec_ramlib(TEXECBASE *exec, struct TTask *task, struct TTagItem *tags)
 
 /*****************************************************************************/
 
-static void
-exec_loadmod(TEXECBASE *exec, struct TTask *task, struct TTask *taskmsg)
+static void exec_loadmod(TEXECBASE *TExecBase, struct TTask *task,
+	struct TTask *taskmsg)
 {
 	TAPTR halmod = TNULL;
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	union TTaskRequest *req = &taskmsg->tsk_Request;
 	TSTRPTR modname = req->trq_Mod.trm_InitMod.tmd_Handle.thn_Name;
 	TUINT nsize = 0, psize = 0;
@@ -150,22 +151,20 @@ exec_loadmod(TEXECBASE *exec, struct TTask *task, struct TTask *taskmsg)
 
 	/* try to open from list of internal modules: */
 
-	node = exec->texb_IntModList.tlh_Head;
+	node = TExecBase->texb_IntModList.tlh_Head;
 	for (; (nnode = node->tln_Succ); node = nnode)
 	{
-		struct TInitModule *im =
-			((struct TModInitNode *) node)->tmin_Modules;
+		struct TInitModule *im = ((struct TModInitNode *) node)->tmin_Modules;
 		TSTRPTR tempn;
 
 		for (; (tempn = im->tinm_Name); im++)
 		{
-			if (exec_StrEqual(exec, tempn, modname))
+			if (TStrEqual(tempn, modname))
 			{
 				psize = (*im->tinm_InitFunc)(TNULL, TNULL,
 					req->trq_Mod.trm_InitMod.tmd_Version, TNULL);
 				if (psize)
-					nsize = (*im->tinm_InitFunc)(TNULL, TNULL, 0xffff,
-						TNULL);
+					nsize = (*im->tinm_InitFunc)(TNULL, TNULL, 0xffff, TNULL);
 				imod = im;
 				break;
 			}
@@ -189,14 +188,14 @@ exec_loadmod(TEXECBASE *exec, struct TTask *task, struct TTask *taskmsg)
 		while (*s++);
 		nlen = s - modname;
 
-		mmem = exec_AllocMMU(exec, TNULL, psize + nsize + nlen);
+		mmem = TAlloc(TNULL, psize + nsize + nlen);
 		if (mmem)
 		{
 			TBOOL success = TFALSE;
 			struct TModule *mod = (struct TModule *) (mmem + nsize);
 			TSTRPTR d = (TSTRPTR) mmem + nsize + psize;
 
-			exec_FillMem(exec, mmem, psize + nsize, 0);
+			TFillMem(mmem, psize + nsize, 0);
 
 			s = modname;
 			/* insert and copy name: */
@@ -205,7 +204,7 @@ exec_loadmod(TEXECBASE *exec, struct TTask *task, struct TTask *taskmsg)
 
 			/* modsuper: */
 			mod->tmd_Handle.thn_Hook.thk_Data = mod;
-			mod->tmd_Handle.thn_Owner = (struct TModule *) exec;
+			mod->tmd_Handle.thn_Owner = (struct TModule *) TExecBase;
 			mod->tmd_ModSuper = mod;
 			mod->tmd_InitTask = task;
 			mod->tmd_HALMod = halmod;
@@ -230,11 +229,11 @@ exec_loadmod(TEXECBASE *exec, struct TTask *task, struct TTask *taskmsg)
 					TDBFATAL();
 				}
 				req->trq_Mod.trm_Module = mod;
-				exec_ReplyMsg(exec, taskmsg);
+				TReplyMsg(taskmsg);
 				return;
 			}
 
-			exec_Free(exec, mmem);
+			TFree(mmem);
 		}
 
 		if (halmod)
@@ -242,35 +241,35 @@ exec_loadmod(TEXECBASE *exec, struct TTask *task, struct TTask *taskmsg)
 	}
 
 	/* failed */
-	exec_DropMsg(exec, taskmsg);
+	TDropMsg(taskmsg);
 }
 
 /*****************************************************************************/
 
-static void
-exec_unloadmod(TEXECBASE *exec, struct TTask *task, struct TTask *taskmsg)
+static void exec_unloadmod(TEXECBASE *TExecBase, struct TTask *task,
+	struct TTask *taskmsg)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	union TTaskRequest *req = &taskmsg->tsk_Request;
 	struct TModule *mod = req->trq_Mod.trm_Module;
 
 	TDBPRINTF(TDB_TRACE,("unload mod: %s\n", mod->tmd_Handle.thn_Name));
 
-	/* invoke module destructor */
+	/* Invoke module destructor: */
 	TDESTROY(mod);
 
-	/* unload */
+	/* Unload: */
 	if (mod->tmd_HALMod)
 		THALUnloadModule(hal, mod->tmd_HALMod);
 
-	/* free */
-	exec_Free(exec, (TINT8 *) mod - mod->tmd_NegSize);
+	/* Free: */
+	TFree((TINT8 *) mod - mod->tmd_NegSize);
 
-	/* restore original replyport */
+	/* Restore original replyport: */
 	TGETMSGPTR(taskmsg)->tmsg_RPort = req->trq_Mod.trm_RPort;
 
-	/* return to caller */
-	exec_returnmsg(exec, taskmsg, TMSG_STATUS_ACKD | TMSGF_QUEUED);
+	/* Return to caller: */
+	TAckMsg(taskmsg);
 }
 
 /*****************************************************************************/
@@ -278,16 +277,15 @@ exec_unloadmod(TEXECBASE *exec, struct TTask *task, struct TTask *taskmsg)
 **	Exec task
 */
 
-static void
-exec_checkmodules(TEXECBASE *exec)
+static void exec_checkmodules(TEXECBASE *TExecBase)
 {
 	TINT n = 0;
-	struct TNode *nnode, *node = exec->texb_ModList.tlh_Head;
+	struct TNode *nnode, *node = TExecBase->texb_ModList.tlh_Head;
 	for (; (nnode = node->tln_Succ); node = nnode)
 	{
 		struct TModule *mod = (struct TModule *) node;
-		if (mod == (struct TModule *) exec ||
-			mod == (struct TModule *) exec->texb_HALBase)
+		if (mod == (struct TModule *) TExecBase ||
+			mod == (struct TModule *) TExecBase->texb_HALBase)
 			continue;
 		TDBPRINTF(TDB_FAIL,
 			("Module not closed: %s\n", mod->tmd_Handle.thn_Name));
@@ -301,43 +299,41 @@ exec_checkmodules(TEXECBASE *exec)
 	}
 }
 
-static void
-exec_main(TEXECBASE *exec, struct TTask *exectask, struct TTagItem *tags)
+static void exec_main(TEXECBASE *TExecBase, struct TTask *exectask,
+	struct TTagItem *tags)
 {
-	struct TMsgPort *execport = exec->texb_ExecPort;
-	struct TMsgPort *modreply = exec->texb_ModReply;
+	struct TMsgPort *execport = TExecBase->texb_ExecPort;
+	struct TMsgPort *modreply = TExecBase->texb_ModReply;
 	TUINT waitsig = TTASK_SIG_ABORT | execport->tmp_Signal |
 		modreply->tmp_Signal | TTASK_SIG_CHILDINIT | TTASK_SIG_CHILDEXIT;
-
-	TUINT sig;
 	struct TTask *taskmsg;
 
 	for (;;)
 	{
-		sig = THALWait(exec->texb_HALBase, waitsig);
+		TUINT sig = THALWait(TExecBase->texb_HALBase, waitsig);
 		if (sig & TTASK_SIG_ABORT)
 			break;
 
 		if (sig & modreply->tmp_Signal)
-			while ((taskmsg = exec_getmsg(exec, modreply)))
-				exec_replymod(exec, taskmsg);
+			while ((taskmsg = TGetMsg(modreply)))
+				exec_replymod(TExecBase, taskmsg);
 
 		if (sig & execport->tmp_Signal)
 		{
-			while ((taskmsg = exec_getmsg(exec, execport)))
+			while ((taskmsg = TGetMsg(execport)))
 			{
 				switch (taskmsg->tsk_ReqCode)
 				{
 					case TTREQ_OPENMOD:
-						exec_requestmod(exec, taskmsg);
+						exec_requestmod(TExecBase, taskmsg);
 						break;
 
 					case TTREQ_CLOSEMOD:
-						exec_closemod(exec, taskmsg);
+						exec_closemod(TExecBase, taskmsg);
 						break;
 
 					case TTREQ_CREATETASK:
-						exec_newtask(exec, taskmsg);
+						exec_newtask(TExecBase, taskmsg);
 						break;
 
 					case TTREQ_DESTROYTASK:
@@ -345,7 +341,7 @@ exec_main(TEXECBASE *exec, struct TTask *exectask, struct TTagItem *tags)
 						/* insert backptr to self */
 						taskmsg->tsk_Request.trq_Task.trt_Parent = taskmsg;
 						/* add request to taskexitlist */
-						TAddTail(&exec->texb_TaskExitList,
+						TAddTail(&TExecBase->texb_TaskExitList,
 							(struct TNode *) &taskmsg->tsk_Request);
 						/* force list processing */
 						sig |= TTASK_SIG_CHILDEXIT;
@@ -353,87 +349,83 @@ exec_main(TEXECBASE *exec, struct TTask *exectask, struct TTagItem *tags)
 					}
 
 					case TTREQ_LOCKATOM:
-						exec_lockatom(exec, taskmsg);
+						exec_lockatom(TExecBase, taskmsg);
 						break;
 
 					case TTREQ_UNLOCKATOM:
-						exec_unlockatom(exec, taskmsg);
+						exec_unlockatom(TExecBase, taskmsg);
 						break;
 				}
 			}
 		}
 
 		if (sig & TTASK_SIG_CHILDINIT)
-			exec_childinit(exec);
+			exec_childinit(TExecBase);
 
 		if (sig & TTASK_SIG_CHILDEXIT)
-			exec_childexit(exec);
+			exec_childexit(TExecBase);
 	}
 
-	if (exec->texb_NumTasks || exec->texb_NumInitTasks)
+	if (TExecBase->texb_NumTasks || TExecBase->texb_NumInitTasks)
 	{
 		TDBPRINTF(TDB_FAIL,("%d tasks still running, exiting forcibly\n",
-			exec->texb_NumTasks + exec->texb_NumInitTasks));
+			TExecBase->texb_NumTasks + TExecBase->texb_NumInitTasks));
 		TDBFATAL();
 	}
 
-	exec_checkmodules(exec);
+	exec_checkmodules(TExecBase);
 }
 
 /*****************************************************************************/
 
-static void
-exec_requestmod(TEXECBASE *exec, struct TTask *taskmsg)
+static void exec_requestmod(TEXECBASE *TExecBase, struct TTask *taskmsg)
 {
-	struct TModule *mod;
-	union TTaskRequest *req;
-
-	req = &taskmsg->tsk_Request;
-	mod = (struct TModule *) TFindHandle(&exec->texb_ModList,
+	union TTaskRequest *req = &taskmsg->tsk_Request;
+	struct TModule *mod =
+		(struct TModule *) TFindHandle(&TExecBase->texb_ModList,
 		req->trq_Mod.trm_InitMod.tmd_Handle.thn_Name);
 
 	if (mod == TNULL)
 	{
-		/* prepare load request */
+		/* Prepare load request: */
 		taskmsg->tsk_ReqCode = TTREQ_LOADMOD;
 
-		/* backup msg original replyport */
+		/* Backup msg original replyport: */
 		req->trq_Mod.trm_RPort = TGETMSGREPLYPORT(taskmsg);
 
-		/* init list of waiters */
+		/* Init list of waiters: */
 		TINITLIST(&req->trq_Mod.trm_Waiters);
 
-		/* mark module as uninitialized */
+		/* Mark module as uninitialized: */
 		req->trq_Mod.trm_InitMod.tmd_Flags = 0;
 
-		/* insert request as fake/uninitialized module to modlist */
-		TAddTail(&exec->texb_ModList, (struct TNode *) req);
+		/* Insert request as fake/uninitialized module to modlist: */
+		TAddTail(&TExecBase->texb_ModList, (struct TNode *) req);
 
-		/* forward this request to I/O task */
-		exec_PutMsg(exec, &exec->texb_IOTask->tsk_UserPort,
-			exec->texb_ModReply, taskmsg);
+		/* Forward this request to I/O task: */
+		TPutMsg(&TExecBase->texb_IOTask->tsk_UserPort,
+			TExecBase->texb_ModReply, taskmsg);
 
 		return;
 	}
 
 	if (mod->tmd_Version < req->trq_Mod.trm_InitMod.tmd_Version)
 	{
-		/* mod version insufficient */
-		exec_returnmsg(exec, taskmsg, TMSG_STATUS_FAILED | TMSGF_QUEUED);
+		/* Mod version insufficient: */
+		TDropMsg(taskmsg);
 		return;
 	}
 
 	if (mod->tmd_Flags & TMODF_INITIALIZED)
 	{
-		/* request succeeded, reply */
+		/* Request succeeded, reply: */
 		mod->tmd_RefCount++;
 		req->trq_Mod.trm_Module = mod;
-		exec_returnmsg(exec, taskmsg, TMSG_STATUS_REPLIED | TMSGF_QUEUED);
+		TReplyMsg(taskmsg);
 		return;
 	}
 
-	/* this mod is an initializing request.
-	add new request to list of its waiters */
+	/* Mod is an initializing request, add to list of its waiters: */
 
 	req->trq_Mod.trm_ReqTask = taskmsg;
 
@@ -443,8 +435,7 @@ exec_requestmod(TEXECBASE *exec, struct TTask *taskmsg)
 
 /*****************************************************************************/
 
-static void
-exec_replymod(TEXECBASE *exec, struct TTask *taskmsg)
+static void exec_replymod(TEXECBASE *TExecBase, struct TTask *taskmsg)
 {
 	struct TModule *mod;
 	union TTaskRequest *req;
@@ -454,63 +445,56 @@ exec_replymod(TEXECBASE *exec, struct TTask *taskmsg)
 	node = req->trq_Mod.trm_Waiters.tlh_Head;
 	mod = req->trq_Mod.trm_Module;
 
-	/* unlink fake/initializing module request from modlist */
+	/* Unlink fake/initializing module request from modlist: */
 	TREMOVE((struct TNode *) req);
 
-	/* restore original replyport */
+	/* Restore original replyport: */
 	TGETMSGPTR(taskmsg)->tmsg_RPort = req->trq_Mod.trm_RPort;
 
 	if (TGETMSGSTATUS(taskmsg) == TMSG_STATUS_FAILED)
 	{
-		/* fail-reply to all waiters */
+		/* Fail-reply to all waiters: */
 		while ((tnode = node->tln_Succ))
 		{
 			TREMOVE(node);
-
-			/* reply to opener */
-			exec_returnmsg(exec,
-				((union TTaskRequest *) node)->trq_Mod.trm_ReqTask,
-				TMSG_STATUS_FAILED | TMSGF_QUEUED);
-
+			/* Reply to opener: */
+			TDropMsg(((union TTaskRequest *) node)->trq_Mod.trm_ReqTask);
 			node = tnode;
 		}
 
-		/* forward failure to opener */
-		exec_returnmsg(exec, taskmsg, TMSG_STATUS_FAILED | TMSGF_QUEUED);
+		/* Forward failure to opener: */
+		TDropMsg(taskmsg);
 		return;
 	}
 
-	/* mark as ready */
+	/* Mark as ready: */
 	mod->tmd_Flags |= TMODF_INITIALIZED;
 
-	/* link real module to modlist */
-	TAddTail(&exec->texb_ModList, (struct TNode *) mod);
+	/* Link real module to modlist: */
+	TAddTail(&TExecBase->texb_ModList, (struct TNode *) mod);
 
-	/* send replies to all waiters */
+	/* Send replies to all waiters: */
 	while ((tnode = node->tln_Succ))
 	{
 		TREMOVE(node);
 
-		/* insert module */
+		/* Insert module: */
 		((union TTaskRequest *) node)->trq_Mod.trm_Module = mod;
 
-		/* reply to opener */
-		exec_returnmsg(exec,
-			((union TTaskRequest *) node)->trq_Mod.trm_ReqTask,
-			TMSG_STATUS_REPLIED | TMSGF_QUEUED);
+		/* Reply to opener: */
+		TReplyMsg(((union TTaskRequest *) node)->trq_Mod.trm_ReqTask);
 
 		mod->tmd_RefCount++;
 		node = tnode;
 	}
 
-	/* forward success to opener */
-	exec_returnmsg(exec, taskmsg, TMSG_STATUS_REPLIED | TMSGF_QUEUED);
+	/* Forward success to opener: */
+	TReplyMsg(taskmsg);
 }
 
 /*****************************************************************************/
 
-static void
-exec_closemod(TEXECBASE *exec, struct TTask *taskmsg)
+static void exec_closemod(TEXECBASE *TExecBase, struct TTask *taskmsg)
 {
 	struct TModule *mod;
 	union TTaskRequest *req;
@@ -520,52 +504,43 @@ exec_closemod(TEXECBASE *exec, struct TTask *taskmsg)
 
 	if (--mod->tmd_RefCount == 0)
 	{
-		/* remove from modlist */
+		/* Remove from modlist: */
 		TREMOVE((struct TNode *) mod);
 
-		/* prepare unload request */
+		/* Prepare unload request: */
 		taskmsg->tsk_ReqCode = TTREQ_UNLOADMOD;
 
-		/* backup msg original replyport */
+		/* Backup msg original replyport: */
 		req->trq_Mod.trm_RPort = TGETMSGREPLYPORT(taskmsg);
 
-		/* forward this request to I/O task */
-		exec_PutMsg(exec, &exec->texb_IOTask->tsk_UserPort, TNULL, taskmsg);
+		/* Forward this request to I/O task: */
+		TPutMsg(&TExecBase->texb_IOTask->tsk_UserPort, TNULL, taskmsg);
 
 		return;
 	}
 
-	/* confirm */
-	exec_returnmsg(exec, taskmsg, TMSG_STATUS_ACKD | TMSGF_QUEUED);
+	/* Confirm: */
+	TAckMsg(taskmsg);
 }
 
 /*****************************************************************************/
 
-static void
-exec_newtask(TEXECBASE *exec, struct TTask *taskmsg)
+static void exec_newtask(TEXECBASE *TExecBase, struct TTask *taskmsg)
 {
-	union TTaskRequest *req;
 	struct TTask *newtask;
-
-	req = &taskmsg->tsk_Request;
-
-	req->trq_Task.trt_Task = newtask =
-		exec_createtask(exec, req->trq_Task.trt_Func,
-		req->trq_Task.trt_InitFunc, req->trq_Task.trt_Tags);
-
+	union TTaskRequest *req = &taskmsg->tsk_Request;
+	req->trq_Task.trt_Task = newtask = exec_createtask(TExecBase,
+		&req->trq_Task.trt_TaskHook, req->trq_Task.trt_Tags);
 	if (newtask)
 	{
-		/* insert ptr to self, i.e. the requesting parent */
+		/* Insert ptr to self, i.e. the requesting parent: */
 		req->trq_Task.trt_Parent = taskmsg;
-		/* add request (not taskmsg) to list of initializing tasks */
-		TAddTail(&exec->texb_TaskInitList, (struct TNode *) req);
-		exec->texb_NumInitTasks++;
+		/* Add request (not taskmsg) to list of initializing tasks: */
+		TAddTail(&TExecBase->texb_TaskInitList, (struct TNode *) req);
+		TExecBase->texb_NumInitTasks++;
 	}
 	else
-	{
-		/* failed */
-		exec_returnmsg(exec, taskmsg, TMSG_STATUS_FAILED | TMSGF_QUEUED);
-	}
+		TDropMsg(taskmsg);
 }
 
 /*****************************************************************************/
@@ -573,27 +548,26 @@ exec_newtask(TEXECBASE *exec, struct TTask *taskmsg)
 **	create task
 */
 
-static THOOKENTRY TTAG
-exec_usertaskdestroy(struct THook *h, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG exec_usertaskdestroy(struct THook *h, TAPTR obj,
+	TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
 		struct TTask *task = obj;
-		TEXECBASE *exec = (TEXECBASE *) TGetExecBase(task);
-		struct TTask *self = THALFindSelf(exec->texb_HALBase);
+		TEXECBASE *TExecBase = (TEXECBASE *) TGetExecBase(task);
+		struct TTask *self = THALFindSelf(TExecBase->texb_HALBase);
 		union TTaskRequest *req = &self->tsk_Request;
 		self->tsk_ReqCode = TTREQ_DESTROYTASK;
 		req->trq_Task.trt_Task = task;
-		exec_sendmsg(exec, self, exec->texb_ExecPort, self);
+		exec_sendmsg(TExecBase, self, TExecBase->texb_ExecPort, self);
 	}
 	return 0;
 }
 
-static struct TTask *
-exec_createtask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
+static struct TTask *exec_createtask(TEXECBASE *TExecBase, struct THook *hook,
 	struct TTagItem *tags)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	TUINT tnlen = 0;
 	struct TTask *newtask;
 	TSTRPTR tname;
@@ -607,21 +581,20 @@ exec_createtask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
 	}
 
 	/* note that tasks are message allocations */
-	newtask = exec_AllocMMU(exec, &exec->texb_MsgMMU,
-		sizeof(struct TTask) + tnlen);
+	newtask = TAlloc(&TExecBase->texb_MsgMemManager, sizeof(struct TTask) + tnlen);
 	if (newtask == TNULL)
 		return TNULL;
 
-	exec_FillMem(exec, newtask, sizeof(struct TTask), 0);
+	TFillMem(newtask, sizeof(struct TTask), 0);
 	if (THALInitLock(hal, &newtask->tsk_TaskLock))
 	{
-		if (exec_initmmu(exec, &newtask->tsk_HeapMMU, TNULL,
-			TMMUT_TaskSafe | TMMUT_Tracking, TNULL))
+		if (exec_initmm(TExecBase, &newtask->tsk_HeapMemManager, TNULL,
+			TMMT_TaskSafe | TMMT_Tracking, TNULL))
 		{
-			if (exec_initport(exec, &newtask->tsk_UserPort, newtask,
+			if (exec_initport(TExecBase, &newtask->tsk_UserPort, newtask,
 				TTASK_SIG_USER))
 			{
-				if (exec_initport(exec, &newtask->tsk_SyncPort, newtask,
+				if (exec_initport(TExecBase, &newtask->tsk_SyncPort, newtask,
 					TTASK_SIG_SINGLE))
 				{
 					if (tname)
@@ -633,15 +606,15 @@ exec_createtask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
 
 					newtask->tsk_Handle.thn_Hook.thk_Entry =
 						exec_usertaskdestroy;
-					newtask->tsk_Handle.thn_Owner = (struct TModule *) exec;
+					newtask->tsk_Handle.thn_Owner =
+						(struct TModule *) TExecBase;
 					newtask->tsk_UserData =
 						(TAPTR) TGetTag(tags, TTask_UserData, TNULL);
 					newtask->tsk_SigFree = ~((TUINT) TTASK_SIG_RESERVED);
 					newtask->tsk_SigUsed = TTASK_SIG_RESERVED;
 					newtask->tsk_Status = TTASK_INITIALIZING;
 
-					newtask->tsk_Request.trq_Task.trt_Func = func;
-					newtask->tsk_Request.trq_Task.trt_InitFunc = initfunc;
+					newtask->tsk_Request.trq_Task.trt_TaskHook = *hook;
 					newtask->tsk_Request.trq_Task.trt_Tags = tags;
 
 					if (THALInitThread(hal, &newtask->tsk_Thread,
@@ -657,11 +630,10 @@ exec_createtask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
 				}
 				TDESTROY(&newtask->tsk_UserPort);
 			}
-			TDESTROY(&newtask->tsk_HeapMMU);
+			TDESTROY(&newtask->tsk_HeapMemManager);
 		}
 		THALDestroyLock(hal, &newtask->tsk_TaskLock);
 	}
-
 	return TNULL;
 }
 
@@ -670,8 +642,7 @@ exec_createtask(TEXECBASE *exec, TTASKFUNC func, TINITFUNC initfunc,
 **	Task entry
 */
 
-static void
-exec_closetaskfh(struct TTask *task, TFILE *fh, TUINT flag)
+static void exec_closetaskfh(struct TTask *task, TFILE *fh, TUINT flag)
 {
 	if (task->tsk_Flags & flag)
 	{
@@ -680,14 +651,12 @@ exec_closetaskfh(struct TTask *task, TFILE *fh, TUINT flag)
 	}
 }
 
-static TTASKENTRY void
-exec_taskentryfunc(struct TTask *task)
+static TTASKENTRY void exec_taskentryfunc(struct TTask *task)
 {
-	TEXECBASE *exec = (TEXECBASE *) TGetExecBase(task);
+	TEXECBASE *TExecBase = (TEXECBASE *) TGetExecBase(task);
 	union TTaskRequest *req = &task->tsk_Request;
-
-	TTASKFUNC func = req->trq_Task.trt_Func;
-	TINITFUNC initfunc = req->trq_Task.trt_InitFunc;
+	/* need a copy: */
+	struct THook taskhook = req->trq_Task.trt_TaskHook;
 	TTAGITEM *tags = req->trq_Task.trt_Tags;
 
 	TAPTR currentdir = (TAPTR) TGetTag(tags, TTask_CurrentDir, TNULL);
@@ -695,7 +664,7 @@ exec_taskentryfunc(struct TTask *task)
 
 	if (currentdir)
 	{
-		task->tsk_IOBase = exec_OpenModule(exec, (TSTRPTR) "io", 0, TNULL);
+		task->tsk_IOBase = (struct TIOBase *) TOpenModule("io", 0, TNULL);
 		if (task->tsk_IOBase)
 		{
 			TAPTR newcd = TIODupLock(task->tsk_IOBase, currentdir);
@@ -711,7 +680,7 @@ exec_taskentryfunc(struct TTask *task)
 			goto closedown;
 	}
 
-	task->tsk_TimeReq = exec_AllocTimeRequest(exec, TNULL);
+	task->tsk_TimeReq = TAllocTimeRequest(TNULL);
 	if (task->tsk_TimeReq == TNULL)
 		goto closedown;
 
@@ -719,21 +688,14 @@ exec_taskentryfunc(struct TTask *task)
 	task->tsk_FHOut = (TAPTR) TGetTag(tags, TTask_OutputFH, TNULL);
 	task->tsk_FHErr = (TAPTR) TGetTag(tags, TTask_ErrorFH, TNULL);
 
-	if (initfunc)
-		status = (*initfunc)(task);
-	else
-		status = 1;
-
+	status = TCALLHOOKPKT(&taskhook, task, TMSG_INITTASK);
 	if (status)
 	{
 		/* change from initializing to running state */
-
 		task->tsk_Status = TTASK_RUNNING;
-		THALSignal(exec->texb_HALBase, &exec->texb_ExecTask->tsk_Thread,
-			TTASK_SIG_CHILDINIT);
-
-		if (func)
-			(*func)(task);
+		THALSignal(TExecBase->texb_HALBase,
+			&TExecBase->texb_ExecTask->tsk_Thread, TTASK_SIG_CHILDINIT);
+		TCALLHOOKPKT(&taskhook, task, TMSG_RUNTASK);
 	}
 
 	if (task->tsk_Flags & (TTASKF_CLOSEOUTPUT | TTASKF_CLOSEINPUT |
@@ -744,7 +706,7 @@ exec_taskentryfunc(struct TTask *task)
 			/* Someone passed a filehandle to this task, but we don't
 			even have the I/O module open. It should be investigated if
 			this can fail: */
-			task->tsk_IOBase = exec_OpenModule(exec, (TSTRPTR) "io", 0, TNULL);
+			task->tsk_IOBase = (struct TIOBase *) TOpenModule("io", 0, TNULL);
 			if (task->tsk_IOBase == TNULL)
 				TDBFATAL();
 		}
@@ -755,7 +717,7 @@ exec_taskentryfunc(struct TTask *task)
 
 closedown:
 
-	exec_FreeTimeRequest(exec, task->tsk_TimeReq);
+	TFreeTimeRequest(task->tsk_TimeReq);
 	task->tsk_TimeReq = TNULL;
 
 	if (task->tsk_IOBase)
@@ -764,37 +726,36 @@ closedown:
 		TAPTR cd = TIOChangeDir(task->tsk_IOBase, TNULL);
 		if (cd)
 			TIOUnlockFile(task->tsk_IOBase, cd);
-		exec_CloseModule(exec, (struct TModule *) task->tsk_IOBase);
+		TCloseModule((struct TModule *) task->tsk_IOBase);
 	}
 
 	if (status)
 	{
 		/* succeeded */
 		task->tsk_Status = TTASK_FINISHED;
-		THALSignal(exec->texb_HALBase, &exec->texb_ExecTask->tsk_Thread,
-				TTASK_SIG_CHILDEXIT);
+		THALSignal(TExecBase->texb_HALBase,
+			&TExecBase->texb_ExecTask->tsk_Thread, TTASK_SIG_CHILDEXIT);
 	}
 	else
 	{
 		/* system initialization failed */
 		task->tsk_Status = TTASK_FAILED;
-		THALSignal(exec->texb_HALBase, &exec->texb_ExecTask->tsk_Thread,
-			TTASK_SIG_CHILDINIT);
+		THALSignal(TExecBase->texb_HALBase,
+			&TExecBase->texb_ExecTask->tsk_Thread, TTASK_SIG_CHILDINIT);
 	}
 }
 
 /*****************************************************************************/
 
-static void
-exec_destroytask(TEXECBASE *exec, struct TTask *task)
+static void exec_destroytask(TEXECBASE *TExecBase, struct TTask *task)
 {
-	TAPTR hal = exec->texb_HALBase;
+	TAPTR hal = TExecBase->texb_HALBase;
 	THALDestroyThread(hal, &task->tsk_Thread);
 	TDESTROY(&task->tsk_SyncPort);
 	TDESTROY(&task->tsk_UserPort);
-	TDESTROY(&task->tsk_HeapMMU);
+	TDESTROY(&task->tsk_HeapMemManager);
 	THALDestroyLock(hal, &task->tsk_TaskLock);
-	exec_Free(exec, task);
+	TFree(task);
 }
 
 /*****************************************************************************/
@@ -802,48 +763,39 @@ exec_destroytask(TEXECBASE *exec, struct TTask *task)
 **	handle tasks that change from initializing to running state
 */
 
-static void
-exec_childinit(TEXECBASE *exec)
+static void exec_childinit(TEXECBASE *TExecBase)
 {
-	TAPTR hal = exec->texb_HALBase;
-	struct TNode *nnode, *node;
-
-	node = exec->texb_TaskInitList.tlh_Head;
+	TAPTR hal = TExecBase->texb_HALBase;
+	struct TNode *nnode, *node = TExecBase->texb_TaskInitList.tlh_Head;
 	while ((nnode = node->tln_Succ))
 	{
 		union TTaskRequest *req = (union TTaskRequest *) node;
 		struct TTask *task = req->trq_Task.trt_Task;
 		struct TTask *taskmsg = req->trq_Task.trt_Parent;
-
 		if (task->tsk_Status == TTASK_FAILED)
 		{
-			/* remove request from taskinitlist */
+			/* Remove request from taskinitlist: */
 			TREMOVE((struct TNode *) req);
-			exec->texb_NumInitTasks--;
-
-			/* destroy task corpse */
-			exec_destroytask(exec, task);
-
-			/* fail-reply taskmsg to sender */
-			exec_returnmsg(exec, taskmsg, TMSG_STATUS_FAILED | TMSGF_QUEUED);
+			TExecBase->texb_NumInitTasks--;
+			/* Destroy task corpse: */
+			exec_destroytask(TExecBase, task);
+			/* Fail-reply taskmsg to sender: */
+			TDropMsg(taskmsg);
 		}
 		else if (task->tsk_Status != TTASK_INITIALIZING)
 		{
-			/* remove taskmsg from taskinitlist */
+			/* Remove taskmsg from taskinitlist: */
 			TREMOVE((struct TNode *) req);
-			exec->texb_NumInitTasks--;
-
-			/* link task to list of running tasks */
-			THALLock(hal, &exec->texb_Lock);
+			TExecBase->texb_NumInitTasks--;
+			/* Link task to list of running tasks: */
+			THALLock(hal, &TExecBase->texb_Lock);
 			/* note: using node as tempnode argument here */
-			TAddTail(&exec->texb_TaskList, (struct TNode *) task);
-			THALUnlock(hal, &exec->texb_Lock);
-			exec->texb_NumTasks++;
-
-			/* reply taskmsg */
-			exec_returnmsg(exec, taskmsg, TMSG_STATUS_REPLIED | TMSGF_QUEUED);
+			TAddTail(&TExecBase->texb_TaskList, (struct TNode *) task);
+			THALUnlock(hal, &TExecBase->texb_Lock);
+			TExecBase->texb_NumTasks++;
+			/* Reply taskmsg: */
+			TReplyMsg(taskmsg);
 		}
-
 		node = nnode;
 	}
 }
@@ -853,37 +805,29 @@ exec_childinit(TEXECBASE *exec)
 **	handle exiting tasks
 */
 
-static void
-exec_childexit(TEXECBASE *exec)
+static void exec_childexit(TEXECBASE *TExecBase)
 {
-	TAPTR hal = exec->texb_HALBase;
-	struct TNode *nnode, *node;
-
-	node = exec->texb_TaskExitList.tlh_Head;
+	TAPTR hal = TExecBase->texb_HALBase;
+	struct TNode *nnode, *node = TExecBase->texb_TaskExitList.tlh_Head;
 	while ((nnode = node->tln_Succ))
 	{
 		union TTaskRequest *req = (union TTaskRequest *) node;
 		struct TTask *task = req->trq_Task.trt_Task;
 		struct TTask *taskmsg = req->trq_Task.trt_Parent;
-
 		if (task->tsk_Status == TTASK_FINISHED)
 		{
-			/* unlink task from list of running tasks */
-			THALLock(hal, &exec->texb_Lock);
+			/* Unlink task from list of running tasks: */
+			THALLock(hal, &TExecBase->texb_Lock);
 			TREMOVE((struct TNode *) task);
-			THALUnlock(hal, &exec->texb_Lock);
-
-			/* destroy task */
-			exec_destroytask(exec, task);
-
-			/* unlink taskmsg from list of exiting tasks */
+			THALUnlock(hal, &TExecBase->texb_Lock);
+			/* Destroy task: */
+			exec_destroytask(TExecBase, task);
+			/* Unlink taskmsg from list of exiting tasks: */
 			TREMOVE((struct TNode *) req);
-			exec->texb_NumTasks--;
-
-			/* reply to caller */
-			exec_returnmsg(exec, taskmsg, TMSG_STATUS_REPLIED | TMSGF_QUEUED);
+			TExecBase->texb_NumTasks--;
+			/* Reply to caller: */
+			TReplyMsg(taskmsg);
 		}
-
 		node = nnode;
 	}
 }
@@ -894,20 +838,19 @@ exec_childexit(TEXECBASE *exec)
 */
 
 static void
-exec_replyatom(TEXECBASE *exec, struct TTask *msg, struct TAtom *atom)
+exec_replyatom(TEXECBASE *TExecBase, struct TTask *msg, struct TAtom *atom)
 {
 	msg->tsk_Request.trq_Atom.tra_Atom = atom;
-	exec_returnmsg(exec, msg, TMSG_STATUS_REPLIED | TMSGF_QUEUED);
+	TReplyMsg(msg);
 }
 
 static TAPTR
-exec_lookupatom(TEXECBASE *exec, TSTRPTR name)
+exec_lookupatom(TEXECBASE *TExecBase, TSTRPTR name)
 {
-	return TFindHandle(&exec->texb_AtomList, name);
+	return TFindHandle(&TExecBase->texb_AtomList, name);
 }
 
-static struct TAtom *
-exec_newatom(TEXECBASE *exec, TSTRPTR name)
+static struct TAtom *exec_newatom(TEXECBASE *TExecBase, TSTRPTR name)
 {
 	struct TAtom *atom;
 	TSTRPTR s, d;
@@ -915,10 +858,10 @@ exec_newatom(TEXECBASE *exec, TSTRPTR name)
 	s = d = name;
 	while (*s++);
 
-	atom = exec_AllocMMU0(exec, TNULL, sizeof(struct TAtom) + (s - d));
+	atom = TAlloc0(TNULL, sizeof(struct TAtom) + (s - d));
 	if (atom)
 	{
-		atom->tatm_Handle.thn_Owner = (struct TModule *) exec;
+		atom->tatm_Handle.thn_Owner = (struct TModule *) TExecBase;
 		s = d;
 		d = (TSTRPTR) (atom + 1);
 		atom->tatm_Handle.thn_Name = d;
@@ -926,7 +869,7 @@ exec_newatom(TEXECBASE *exec, TSTRPTR name)
 		TINITLIST(&atom->tatm_Waiters);
 		atom->tatm_State = TATOMF_LOCKED;
 		atom->tatm_Nest = 1;
-		TAddHead(&exec->texb_AtomList, (struct TNode *) atom);
+		TAddHead(&TExecBase->texb_AtomList, (struct TNode *) atom);
 		TDBPRINTF(TDB_TRACE,("atom %s created - nest: 1\n", name));
 	}
 
@@ -935,8 +878,7 @@ exec_newatom(TEXECBASE *exec, TSTRPTR name)
 
 /*****************************************************************************/
 
-static void
-exec_lockatom(TEXECBASE *exec, struct TTask *msg)
+static void exec_lockatom(TEXECBASE *TExecBase, struct TTask *msg)
 {
 	TUINT mode = msg->tsk_Request.trq_Atom.tra_Mode;
 	struct TAtom *atom = msg->tsk_Request.trq_Atom.tra_Atom;
@@ -947,7 +889,7 @@ exec_lockatom(TEXECBASE *exec, struct TTask *msg)
 		case TATOMF_CREATE | TATOMF_SHARED | TATOMF_NAME:
 		case TATOMF_CREATE | TATOMF_NAME:
 
-			atom = exec_lookupatom(exec, (TSTRPTR) atom);
+			atom = exec_lookupatom(TExecBase, (TSTRPTR) atom);
 			if (atom)
 				goto obtain;
 			goto create;
@@ -955,7 +897,7 @@ exec_lockatom(TEXECBASE *exec, struct TTask *msg)
 		case TATOMF_CREATE | TATOMF_SHARED | TATOMF_TRY | TATOMF_NAME:
 		case TATOMF_CREATE | TATOMF_TRY | TATOMF_NAME:
 
-			atom = exec_lookupatom(exec, (TSTRPTR) atom);
+			atom = exec_lookupatom(TExecBase, (TSTRPTR) atom);
 			if (atom)
 			{
 				atom = TNULL; /* already exists - deny */
@@ -963,10 +905,10 @@ exec_lockatom(TEXECBASE *exec, struct TTask *msg)
 			}
 
 		create:
-			atom = exec_newatom(exec, msg->tsk_Request.trq_Atom.tra_Atom);
+			atom = exec_newatom(TExecBase, msg->tsk_Request.trq_Atom.tra_Atom);
 
 		reply:
-			exec_replyatom(exec, msg, atom);
+			exec_replyatom(TExecBase, msg, atom);
 			return;
 
 		case TATOMF_NAME | TATOMF_SHARED | TATOMF_TRY:
@@ -974,7 +916,7 @@ exec_lockatom(TEXECBASE *exec, struct TTask *msg)
 		case TATOMF_NAME | TATOMF_TRY:
 		case TATOMF_NAME:
 
-			atom = exec_lookupatom(exec, (TSTRPTR) atom);
+			atom = exec_lookupatom(TExecBase, (TSTRPTR) atom);
 
 		case TATOMF_SHARED | TATOMF_TRY:
 		case TATOMF_SHARED:
@@ -1039,8 +981,7 @@ exec_lockatom(TEXECBASE *exec, struct TTask *msg)
 
 /*****************************************************************************/
 
-static void
-exec_unlockatom(TEXECBASE *exec, struct TTask *msg)
+static void exec_unlockatom(TEXECBASE *TExecBase, struct TTask *msg)
 {
 	TUINT mode = msg->tsk_Request.trq_Atom.tra_Mode;
 	struct TAtom *atom = msg->tsk_Request.trq_Atom.tra_Atom;
@@ -1062,14 +1003,14 @@ exec_unlockatom(TEXECBASE *exec, struct TTask *msg)
 			{
 				waiter = (union TTaskRequest *) node;
 				TREMOVE(node);
-				exec_replyatom(exec, waiter->trq_Atom.tra_Task, TNULL);
+				exec_replyatom(TExecBase, waiter->trq_Atom.tra_Task, TNULL);
 				node = nextnode;
 			}
 
 			TDBPRINTF(TDB_TRACE,
 				("atom free: %s\n", atom->tatm_Handle.thn_Name));
 			TREMOVE((struct TNode *) atom);
-			exec_Free(exec, atom);
+			TFree(atom);
 		}
 		else
 		{
@@ -1082,7 +1023,7 @@ exec_unlockatom(TEXECBASE *exec, struct TTask *msg)
 				atom->tatm_State = TATOMF_LOCKED;
 				TDBPRINTF(TDB_TRACE,
 					("restarted waiter. nest: %d\n", atom->tatm_Nest));
-				exec_replyatom(exec, waiter->trq_Atom.tra_Task, atom);
+				exec_replyatom(TExecBase, waiter->trq_Atom.tra_Task, atom);
 
 				/* just restarted a shared waiter?
 					then restart ALL shared waiters */
@@ -1102,8 +1043,8 @@ exec_unlockatom(TEXECBASE *exec, struct TTask *msg)
 							TDBPRINTF(TDB_TRACE,
 								("restarted waiter. nest: %d\n",
 								atom->tatm_Nest));
-							exec_replyatom(exec, waiter->trq_Atom.tra_Task,
-								atom);
+							exec_replyatom(TExecBase,
+								waiter->trq_Atom.tra_Task, atom);
 						}
 						node = nextnode;
 					}
@@ -1113,6 +1054,5 @@ exec_unlockatom(TEXECBASE *exec, struct TTask *msg)
 			}
 		}
 	}
-
-	exec_returnmsg(exec, msg, TMSG_STATUS_ACKD | TMSGF_QUEUED);
+	TAckMsg(msg);
 }

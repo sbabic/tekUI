@@ -74,11 +74,11 @@ typedef TTAG (*THOOKFUNC)(struct THook *, TAPTR obj, TTAG msg);
 
 struct THook
 {
-	/* Entrypoint following uniform, per-platform calling conventions */
+	/* Entrypoint following uniform, per-platform calling conventions: */
  	THOOKENTRY THOOKFUNC thk_Entry;
-	/* Optional language/compiler specific entrypoint */
+	/* Optional language/compiler specific entrypoint: */
 	THOOKFUNC thk_SubEntry;
-	/* Userdata */
+	/* User data: */
 	TAPTR thk_Data;
 };
 
@@ -100,6 +100,10 @@ struct THook
 #define TMSG_QUERYIFACE		6
 /* Drop module interface: */
 #define TMSG_DROPIFACE		7
+/* Initialize user task: */
+#define TMSG_INITTASK		8
+/* Call task procedure: */
+#define TMSG_RUNTASK		9
 /* Offset to user-defined hook messages: */
 #define TMSG_USER			0x1000
 
@@ -148,9 +152,9 @@ struct TModule
 	/* (Back-) ptr to module super instance */
 	struct TModule *tmd_ModSuper;
 	/* Modbase negative size [bytes] */
-	TUINT tmd_NegSize;
+	TSIZE tmd_NegSize;
 	/* Modbase positive size [bytes] */
-	TUINT tmd_PosSize;
+	TSIZE tmd_PosSize;
 	/* Flags */
 	TUINT tmd_Flags;
 	/* Number of instances open */
@@ -173,25 +177,26 @@ struct TModule
 
 struct TInterface
 {
-	/* Node header */
-	struct TNode tif_Node;
-	/* Interface name */
-	TSTRPTR tif_Name;
-	/* Module to which interface is bound */
+	/* Interface handle: */
+	struct THandle tif_Handle;
+	/* Module this interface is bound to: */
 	struct TModule *tif_Module;
-	/* Reserved for future extensions */
+	/* Reserved for future extensions, initialize to TNULL: */
 	TAPTR tif_Reserved;
-	/* Interface version */
+	/* Interface version: */
 	TUINT16 tif_Version;
-	/* Flags */
-	TUINT16 tif_Flags;
+	/* Padding, leave untouched: */
+	TUINT16 tif_Reserved2;
 };
 
-struct TIFaceQuery
+struct TInterfaceQuery
 {
-	TSTRPTR tfq_Name;
-	TTAGITEM *tfq_Tags;
-	TUINT16 tfq_Version;
+	/* Interface name: */
+	TSTRPTR tifq_Name;
+	/* Interface query tags, currently TNULL: */
+	TTAGITEM *tifq_Tags;
+	/* Interface version: */
+	TUINT16 tifq_Version;
 };
 
 /*****************************************************************************/
@@ -224,13 +229,10 @@ typedef TDATE_T TDATE;
 #define TTASK_SIG_USER		0x00000008
 
 /*
-**	Task entry functions
+**	Task entry function
 */
 
-/* Main function */
 typedef TTASKENTRY void (*TTASKFUNC)(struct TTask *task);
-/* Init function */
-typedef TTASKENTRY TBOOL (*TINITFUNC)(struct TTask *task);
 
 /*
 **	Task tags
@@ -243,11 +245,11 @@ typedef TTASKENTRY TBOOL (*TINITFUNC)(struct TTask *task);
 /* Task name */
 #define TTask_Name			(TEXECTAGS_ + 1)
 /* Parent memory manager */
-#define TTask_MMU			(TEXECTAGS_ + 2)
+#define TTask_MemManager	(TEXECTAGS_ + 2)
 /* Task's heap memmanager */
-#define TTask_HeapMMU		(TEXECTAGS_ + 3)
+#define TTask_HeapMemManager (TEXECTAGS_ + 3)
 /* Message memory manager */
-#define TTask_MsgMMU		(TEXECTAGS_ + 4)
+#define TTask_MsgMemManager	(TEXECTAGS_ + 4)
 /* Lock to a currentdir */
 #define TTask_CurrentDir	(TEXECTAGS_ + 5)
 /* Input file handle */
@@ -374,22 +376,22 @@ struct TModInitNode
 **	Memory manager types
 */
 
-/* Null MMU incapable of allocating */
-#define TMMUT_Void		0x00000000
-/* Put MMU on top of a parent MMU */
-#define TMMUT_MMU		0x00000001
-/* Put MMU on top of a static memblock */
-#define TMMUT_Static	0x00000002
-/* Put MMU on top of a pooled allocator */
-#define TMMUT_Pooled	0x00000004
-/* Leak-tracking on top of a parent MMU */
-#define TMMUT_Tracking	0x00000008
-/* Thread-safety on top of a parent MMU */
-#define TMMUT_TaskSafe	0x00000100
-/* Msg allocator on parent msg MMU */
-#define TMMUT_Message	0x00000200
-/* Bounds checking on top of parent MMU */
-#define TMMUT_Debug		0x00000400
+/* Null MemManager incapable of allocating */
+#define TMMT_Void		0x00000000
+/* Put MemManager on top of a parent MemManager */
+#define TMMT_MemManager	0x00000001
+/* Put MemManager on top of a static memblock */
+#define TMMT_Static		0x00000002
+/* Put MemManager on top of a pooled allocator */
+#define TMMT_Pooled		0x00000004
+/* Leak-tracking on top of a parent MemManager */
+#define TMMT_Tracking	0x00000008
+/* Thread-safety on top of a parent MemManager */
+#define TMMT_TaskSafe	0x00000100
+/* Msg allocator on parent msg MemManager */
+#define TMMT_Message	0x00000200
+/* Bounds checking on top of parent MemManager */
+#define TMMT_Debug		0x00000400
 
 /*
 **	Tags for memory allocators
@@ -400,7 +402,7 @@ struct TModInitNode
 /* Static mmu: size of memblock */
 #define TMem_StaticSize		(TEXECTAGS_ + 65)
 /* Parent memory manager */
-#define	TPool_MMU			(TEXECTAGS_ + 66)
+#define	TPool_MemManager	(TEXECTAGS_ + 66)
 /* Size of puddles */
 #define	TPool_PudSize		(TEXECTAGS_ + 67)
 /* Thressize for large puddles */

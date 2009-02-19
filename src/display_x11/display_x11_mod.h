@@ -40,6 +40,8 @@
 
 /*****************************************************************************/
 
+#define X11_UTF8_BUFSIZE 4096
+
 struct utf8reader
 {
 	/* character reader callback: */
@@ -68,7 +70,7 @@ LOCAL unsigned char *encodeutf8(unsigned char *buf, int c);
 #define	FNT_WILDCARD		"*"
 
 #define FNTQUERY_NUMATTR	(5+1)
-#define	FNTQUERY_UNDEFINED	-1
+#define	FNTQUERY_UNDEFINED	0xffffffff
 
 #define FNT_ITALIC			0x1
 #define	FNT_BOLD			0x2
@@ -125,7 +127,7 @@ struct fnt_attr
 {
 	struct TList fnlist;	/* list of fontnames */
 	TSTRPTR fname;
-	TINT  fpxsize;
+	TUINT  fpxsize;
 	TBOOL fitalic;
 	TBOOL fbold;
 	TBOOL fscale;
@@ -243,6 +245,8 @@ typedef struct
 	TINT x11_KeyQual;
 	TINT x11_MouseX, x11_MouseY;
 
+	TUINT8 x11_utf8buffer[X11_UTF8_BUFSIZE];
+
 } X11DISPLAY;
 
 struct X11Pen
@@ -325,6 +329,9 @@ struct attrdata
 
 LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags);
 LOCAL void x11_exit(X11DISPLAY *mod);
+LOCAL TTASKENTRY void x11_taskfunc(struct TTask *task);
+LOCAL TTASKENTRY TBOOL x11_initinstance(struct TTask *task);
+
 LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req);
 LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req);
 LOCAL void x11_setinput(X11DISPLAY *mod, struct TVRequest *req);
@@ -361,11 +368,12 @@ LOCAL void x11_hostsetfont(X11DISPLAY *mod, X11WINDOW *v, TAPTR font);
 LOCAL TAPTR x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags);
 LOCAL TAPTR x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags);
 LOCAL void x11_hostclosefont(X11DISPLAY *mod, TAPTR font);
-LOCAL TINT  x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text);
+LOCAL TINT x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text,
+	TINT len);
 LOCAL THOOKENTRY TTAG x11_hostgetfattrfunc(struct THook *hook, TAPTR obj,
 	TTAG msg);
 LOCAL TTAGITEM *x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle);
-
-TSTRPTR utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len);
+LOCAL TSTRPTR x11_utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len,
+	TINT *bytelen);
 
 #endif /* _TEK_DISPLAY_X11_MOD_H */

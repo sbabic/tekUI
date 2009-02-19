@@ -41,7 +41,7 @@ typedef uintptr_t			TUINTPTR;
 */
 
 struct TMemNodeAlign { TUINT8 tmna_Chunk[8]; };
-struct TMMUInfoAlign { TUINT8 tmua_Chunk[8]; };
+struct TMemManagerInfoAlign { TUINT8 tmua_Chunk[8]; };
 struct TMemHeadAlign { TUINT8 tmha_Chunk[48]; };
 
 /*****************************************************************************/

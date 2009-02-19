@@ -47,6 +47,11 @@ static THOOKENTRY TTAG x11_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 			return (TTAG) x11_modopen(mod, obj);
 		case TMSG_CLOSEMODULE:
 			x11_modclose(obj);
+			break;
+		case TMSG_INITTASK:
+			return x11_initinstance(obj);
+		case TMSG_RUNTASK:
+			x11_taskfunc(obj);
 	}
 	return 0;
 }
@@ -77,7 +82,7 @@ TMODENTRY TUINT tek_init_display_x11(struct TTask *task, struct TModule *vis,
 		mod->x11_Module.tmd_Revision = X11DISPLAY_REVISION;
 		mod->x11_Module.tmd_Handle.thn_Hook.thk_Entry = x11_dispatch;
 		mod->x11_Module.tmd_Flags = TMODF_VECTORTABLE | TMODF_OPENCLOSE;
-		TInitVectors(mod, x11_vectors, X11DISPLAY_NUMVECTORS);
+		TInitVectors(&mod->x11_Module, x11_vectors, X11DISPLAY_NUMVECTORS);
 		return TTRUE;
 	}
 
@@ -152,4 +157,56 @@ static TMODAPI void x11_freereq(X11DISPLAY *mod, struct TVRequest *req)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
 	TFree(req);
+}
+
+/*****************************************************************************/
+/*
+**	convert an utf8 encoded string to latin-1
+*/
+
+struct readstringdata
+{
+	const unsigned char *src;
+	size_t srclen;
+};
+
+static int readstring(struct utf8reader *rd)
+{
+	struct readstringdata *ud = rd->udata;
+	if (ud->srclen == 0)
+		return -1;
+	ud->srclen--;
+	return *ud->src++;
+}
+
+LOCAL TSTRPTR x11_utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len,
+	TINT *bytelen)
+{
+	struct utf8reader rd;
+	struct readstringdata rs;
+	TUINT8 *latin = mod->x11_utf8buffer;
+	TINT i = 0;
+	TINT c;
+
+	rs.src = (unsigned char *) utf8string;
+	rs.srclen = len;
+
+	rd.readchar = readstring;
+	rd.accu = 0;
+	rd.numa = 0;
+	rd.bufc = -1;
+	rd.udata = &rs;
+
+	while (i < X11_UTF8_BUFSIZE - 1 && (c = readutf8(&rd)) >= 0)
+	{
+		if (c < 256)
+			latin[i++] = c;
+		else
+			latin[i++] = 0xbf;
+	}
+
+	if (bytelen)
+		*bytelen = i;
+
+	return (TSTRPTR) latin;
 }

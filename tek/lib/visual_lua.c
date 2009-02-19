@@ -65,6 +65,7 @@ static const luaL_Reg classmethods[] =
 	{ "unsetcliprect", tek_lib_visual_unsetcliprect },
 	{ "setshift", tek_lib_visual_setshift },
 	{ "drawrgb", tek_lib_visual_drawrgb },
+	{ "drawppm", tek_lib_visual_drawppm },
 	{ TNULL, TNULL }
 };
 

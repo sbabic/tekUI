@@ -269,8 +269,7 @@ init_destroyapptask(struct THook *hook, TAPTR apptask, TTAG msg)
 **	Create application task in current context
 */
 
-TLIBAPI TAPTR
-TEKCreate(TTAGITEM *usertags)
+TLIBAPI struct TTask *TEKCreate(TTAGITEM *usertags)
 {
 	struct TEKlibInit *init;
 	TAPTR boot = TEKlib_Init(usertags);
@@ -298,7 +297,7 @@ TEKCreate(TTAGITEM *usertags)
 				init->tli_ExecTags[2].tti_Tag = TTAG_MORE;
 				init->tli_ExecTags[2].tti_Value = (TTAG) usertags;
 				init->tli_AppTask = TExecCreateSysTask(init->tli_ExecBase,
-					TNULL,  init->tli_ExecTags);
+					TNULL, init->tli_ExecTags);
 				if (init->tli_AppTask)
 				{
 					/* fill in missing fields in execbase */
@@ -323,7 +322,6 @@ TEKCreate(TTAGITEM *usertags)
 						{
 							/* this is the backdoor for the remaining
 							** initializations in the entrytask context */
-
 							if (TExecDoExec(init->tli_ExecBase, TEXEC_CMD_INIT, TNULL))
 							{
 								struct THandle *ath =
@@ -336,7 +334,6 @@ TEKCreate(TTAGITEM *usertags)
 								/* application is running */
 								return init->tli_AppTask;
 							}
-
 							TExecSignal(init->tli_ExecBase, init->tli_ExecTask,
 								TTASK_SIG_ABORT);
 							TDESTROY(init->tli_ExecTask);

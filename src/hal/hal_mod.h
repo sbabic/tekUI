@@ -58,12 +58,12 @@ LOCAL void hal_close(struct THALBase *hal, struct TTask *task);
 
 EXPORT void hal_beginio(struct THALBase *hal, struct TTimeRequest *req);
 EXPORT TINT hal_abortio(struct THALBase *hal, struct TTimeRequest *req);
-EXPORT TAPTR hal_alloc(struct THALBase *hal, TUINT size);
-EXPORT void hal_free(struct THALBase *hal, TAPTR mem, TUINT size);
-EXPORT TAPTR hal_realloc(struct THALBase *hal, TAPTR mem, TUINT oldsize,
-	TUINT newsize);
-EXPORT void hal_copymem(struct THALBase *hal, TAPTR from, TAPTR to, TUINT numbytes);
-EXPORT void hal_fillmem(struct THALBase *hal, TAPTR dest, TUINT numbytes,
+EXPORT TAPTR hal_alloc(struct THALBase *hal, TSIZE size);
+EXPORT void hal_free(struct THALBase *hal, TAPTR mem, TSIZE size);
+EXPORT TAPTR hal_realloc(struct THALBase *hal, TAPTR mem, TSIZE oldsize,
+	TSIZE newsize);
+EXPORT void hal_copymem(struct THALBase *hal, TAPTR from, TAPTR to, TSIZE len);
+EXPORT void hal_fillmem(struct THALBase *hal, TAPTR dest, TSIZE numbytes,
 	TUINT8 fillval);
 EXPORT TBOOL hal_initlock(struct THALBase *hal, struct THALObject *lock);
 EXPORT void hal_destroylock(struct THALBase *hal, struct THALObject *lock);

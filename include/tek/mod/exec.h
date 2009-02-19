@@ -11,23 +11,26 @@
 */
 
 #include <tek/exec.h>
+#if defined(ENABLE_EXEC_IFACE)
+#include <tek/iface/exec.h>
+#endif
 
 /*****************************************************************************/
 /*
-**	MMU allocation header
+**	MemManager allocation header
 */
 
-union TMMUInfo
+union TMemManagerInfo
 {
 	struct
 	{
 		/* Ptr to memory manager */
-		struct TMemManager *tmu_MMU;
+		struct TMemManager *tmu_MemManager;
 		/* Size of allocation (excl. mmuinfo) */
-		TUINT tmu_UserSize;
+		TSIZE tmu_UserSize;
 	} tmu_Node;
 	/* Enforce per-platform alignment */
-	struct TMMUInfoAlign tmu_Align;
+	struct TMemManagerInfoAlign tmu_Align;
 };
 
 /*****************************************************************************/
@@ -42,7 +45,7 @@ union TMemNode
 		/* Next free node, or TNULL */
 		union TMemNode *tmn_Next;
 		/* Size of this node, in bytes */
-		TUINT tmn_Size;
+		TSIZE tmn_Size;
 	} tmn_Node;
 	/* Enforce per-platform alignment */
 	struct TMemNodeAlign tmn_Align;
@@ -66,15 +69,15 @@ union TMemHead
 		/* End of memory block, aligned */
 		TINT8 *tmh_MemEnd;
 		/* Padding */
-		TAPTR tmh_Pad1;
+ 		/*TAPTR tmh_Pad1;*/
 		/* Number of free bytes */
-		TUINTPTR tmh_Free;
+		TSIZE tmh_Free;
 		/* Alignment in bytes - 1 */
 		TUINT tmh_Align;
 		/* Flags, see below */
 		TUINT tmh_Flags;
 		/* Padding */
-		TUINT tmh_Pad2;
+ 		/*TUINT tmh_Pad2;*/
 	} tmh_Node;
 	/* enforce alignment */
 	struct TMemHeadAlign tmh_Align;
@@ -105,11 +108,11 @@ struct TMemPool
 	/* List of puddles */
 	struct TList tpl_List;
 	/* Parent allocator */
-	TAPTR tpl_MMU;
+	TAPTR tpl_MemManager;
 	/* Size of puddles */
-	TUINT tpl_PudSize;
+	TSIZE tpl_PudSize;
 	/* Threshold for large allocations */
-	TUINT tpl_ThresSize;
+	TSIZE tpl_ThresSize;
 	/* Alignment in bytes - 1 */
 	TUINT16 tpl_Align;
 	/* Flags (passed to memheader) */
@@ -173,7 +176,7 @@ struct TMsgPort
 
 /*****************************************************************************/
 /*
-**	Memory manager, aka 'MMU'
+**	Memory manager
 */
 
 #define TMMSG_DESTROY		0
@@ -187,20 +190,20 @@ union TMemMsg
 	struct
 	{
 		TUINT tmmsg_Type;
-		TUINT tmmsg_Size;
+		TSIZE tmmsg_Size;
 	} tmmsg_Alloc;
 	struct
 	{
 		TUINT tmmsg_Type;
 		TAPTR tmmsg_Ptr;
-		TUINT tmmsg_Size;
+		TSIZE tmmsg_Size;
 	} tmmsg_Free;
 	struct
 	{
 		TUINT tmmsg_Type;
 		TAPTR tmmsg_Ptr;
-		TUINT tmmsg_OSize;
-		TUINT tmmsg_NSize;
+		TSIZE tmmsg_OSize;
+		TSIZE tmmsg_NSize;
 	} tmmsg_Realloc;
 };
 
@@ -210,13 +213,13 @@ struct TMemManager
 	struct THandle tmm_Handle;
 	/* Callback hook */
 	struct THook tmm_Hook;
-	/* MMU's underlying allocator */
+	/* MemManager's underlying allocator */
 	TAPTR tmm_Allocator;
 	/* List header for tracking managers */
 	struct TList tmm_TrackList;
 	/* Locking for thread-safe managers */
 	struct TLock tmm_Lock;
-	/* MMU type and capability flags */
+	/* MemManager type and capability flags */
 	TUINT tmm_Type;
 };
 
@@ -236,12 +239,10 @@ union TTaskRequest
 		struct TNode trt_Node;
 		/* Task to be created/closed */
 		struct TTask *trt_Task;
-		/* Backptr to initiating task */
+		/* Ptr to parent (initiating) task */
 		struct TTask *trt_Parent;
-		/* Task function */
-		TTASKFUNC trt_Func;
-		/* Task init function */
-		TINITFUNC trt_InitFunc;
+		/* Hook for dispatch to init and main function */
+		struct THook trt_TaskHook;
 		/* User-supplied tags for creation */
 		TTAGITEM *trt_Tags;
 	} trq_Task;
@@ -333,7 +334,7 @@ struct TTask
 	struct TMsgPort tsk_SyncPort;
 
 	/* Heap memory manager */
-	struct TMemManager tsk_HeapMMU;
+	struct TMemManager tsk_HeapMemManager;
 
 	/* HAL locking object */
 	struct THALObject tsk_TaskLock;
@@ -411,9 +412,9 @@ typedef struct TExecBase
 	/* HAL module base */
 	struct THALBase *texb_HALBase;
 	/* General purpose memory manager */
-	struct TMemManager texb_BaseMMU;
+	struct TMemManager texb_BaseMemManager;
 	/* Message memory manager */
-	struct TMemManager texb_MsgMMU;
+	struct TMemManager texb_MsgMemManager;
 	/* Locking for Execbase structures */
 	struct THALObject texb_Lock;
 	/* List of modules */
@@ -442,7 +443,10 @@ typedef struct TExecBase
 	TINT texb_NumTasks;
 	/* Number of initializing tasks */
 	TINT texb_NumInitTasks;
-
+	#if defined(ENABLE_EXEC_IFACE)
+	/* Public Exec interface version 1: */
+	struct TExecIFace texb_Exec1IFace;
+	#endif
 } TEXECBASE;
 
 /*
@@ -480,7 +484,7 @@ struct TMessage
 */
 
 #define TGETMSGPTR(mem) \
-	((struct TMessage *) ((TINT8 *) (mem) - sizeof(union TMMUInfo)) - 1)
+	((struct TMessage *) ((TINT8 *) (mem) - sizeof(union TMemManagerInfo)) - 1)
 #define TGETMSGSTATUS(mem) \
 	TGETMSGPTR(mem)->tmsg_Flags
 #define TGETMSGREPLYPORT(mem) \

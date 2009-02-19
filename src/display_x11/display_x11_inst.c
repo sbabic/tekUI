@@ -7,8 +7,6 @@
 
 TBOOL initlibxft(X11DISPLAY *mod);
 
-static TTASKENTRY void x11_taskfunc(struct TTask *task);
-static TTASKENTRY TBOOL x11_initinstance(struct TTask *task);
 static void x11_exitinstance(X11DISPLAY *inst);
 static void x11_processevent(X11DISPLAY *mod);
 static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
@@ -29,15 +27,13 @@ LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags)
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
 		tags[1].tti_Tag = TTAG_DONE;
-
-		mod->x11_Task = TCreateTask(
-			(TTASKFUNC) x11_taskfunc, (TINITFUNC) x11_initinstance, tags);
-		if (mod->x11_Task == TNULL) break;
-
+		mod->x11_Task = TCreateTask(&mod->x11_Module.tmd_Handle.thn_Hook,
+			tags);
+		if (mod->x11_Task == TNULL)
+			break;
 		mod->x11_CmdPort = TGetUserPort(mod->x11_Task);
 		mod->x11_CmdPortSignal = TGetPortSignal(
 			mod->x11_CmdPort);
-
 		return TTRUE;
 	}
 	x11_exit(mod);
@@ -143,7 +139,7 @@ static TBOOL getprops(X11DISPLAY *inst)
 
 /*****************************************************************************/
 
-static TTASKENTRY TBOOL x11_initinstance(struct TTask *task)
+LOCAL TBOOL x11_initinstance(struct TTask *task)
 {
 	X11DISPLAY *inst = TExecGetTaskData(TGetExecBase(task), task);
 
@@ -360,7 +356,7 @@ static void x11_docmd(X11DISPLAY *inst, struct TVRequest *req)
 	}
 }
 
-static TTASKENTRY void x11_taskfunc(struct TTask *task)
+LOCAL void x11_taskfunc(struct TTask *task)
 {
 	TAPTR TExecBase = TGetExecBase(task);
 	X11DISPLAY *inst = TGetTaskData(task);

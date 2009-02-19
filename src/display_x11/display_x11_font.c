@@ -211,13 +211,15 @@ fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 static TSTRPTR
 fnt_getsubstring(X11DISPLAY *mod, TSTRPTR fstring, TINT m)
 {
-	TINT i, p = 0;
+	TINT p = 0;
 	TINT mcount = 0;
 	TSTRPTR substr = TNULL;
 	TAPTR TExecBase = TGetExecBase(mod);
+	TSIZE len = strlen(fstring);
+	TSIZE i;
 
 	/* match '-' at pos m and m+1 */
-	for (i = 0; i < strlen(fstring); i++)
+	for (i = 0; i < len; i++)
 	{
 		if (fstring[i] == '-')
 		{
@@ -308,7 +310,7 @@ fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 */
 #if defined(ENABLE_XFT)
 static struct FontQueryNode *
-fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TINT pxsize)
+fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TUINT pxsize)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
 	struct FontQueryNode *fqnode = TNULL;
@@ -348,7 +350,7 @@ fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TINT pxsize)
 				(pattern, FC_PIXEL_SIZE, 0, &fpxsize) == FcResultMatch)
 			{
 				fqnode->tags[i].tti_Tag = TVisual_FontPxSize;
-				fqnode->tags[i++].tti_Value = (TTAG) ((TINT)fpxsize);
+				fqnode->tags[i++].tti_Value = (TTAG) fpxsize;
 			}
 			else
 			{
@@ -463,14 +465,14 @@ fnt_checkfqnode(struct TList *rlist, struct FontQueryNode *fqnode)
 	TINT newpxsize = (TINT)fqnode->tags[1].tti_Value;
 	TBOOL newslant = (TBOOL)fqnode->tags[2].tti_Value;
 	TBOOL newweight = (TBOOL)fqnode->tags[3].tti_Value;
-	TINT flen = strlen(newfname);
+	TSIZE flen = strlen(newfname);
 
 	for (node = rlist->tlh_Head; (next = node->tln_Succ); node = next)
 	{
 		struct FontQueryNode *fqn = (struct FontQueryNode *)node;
 		flags = 0;
 
-		if (strlen((TSTRPTR)fqn->tags[0].tti_Value) == flen)
+		if (strlen((TSTRPTR) fqn->tags[0].tti_Value) == flen)
 		{
 			if (strncmp((TSTRPTR)fqn->tags[0].tti_Value, newfname, flen) == 0)
 				flags = FNT_MATCH_NAME;
@@ -664,7 +666,7 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 	{
 		double fcsize;
 		(*mod->x11_fciface.FcPatternGetDouble)(pattern, FC_PIXEL_SIZE, 0, &fcsize);
-		if (fattr->fpxsize == (TINT) fcsize)
+		if (fattr->fpxsize == fcsize)
 			match |= FNT_MATCH_SIZE;
 	}
 
@@ -698,63 +700,6 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 	return match;
 }
 #endif
-
-/*****************************************************************************/
-/* convert an utf8 encoded string to latin-1
-*/
-
-struct readstringdata
-{
-	/* src string: */
-	const unsigned char *src;
-	/* src string length: */
-	size_t srclen;
-};
-
-static int readstring(struct utf8reader *rd)
-{
-	struct readstringdata *ud = rd->udata;
-	if (ud->srclen == 0)
-		return -1;
-	ud->srclen--;
-	return *ud->src++;
-}
-
-TSTRPTR
-utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len)
-{
-	TINT c;
-	struct utf8reader rd;
-	struct readstringdata rs;
-	TUINT8 *latin = TNULL;
-	TAPTR TExecBase = TGetExecBase(mod);
-
-	latin = TAlloc0(mod->x11_MemMgr, len+1);
-	if (latin)
-	{
-		TINT i = 0;
-		rs.src = (unsigned char *)utf8string;
-		rs.srclen = len;
-
-		rd.readchar = readstring;
-		rd.accu = 0;
-		rd.numa = 0;
-		rd.bufc = -1;
-		rd.udata = &rs;
-
-		while ((c = readutf8(&rd)) >= 0)
-		{
-			if (c < 256)
-				latin[i++] = c;
-			else
-				latin[i++] = 0xbf;
-		}
-	}
-	else
-		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
-
-	return (TSTRPTR) latin;
-}
 
 /*****************************************************************************/
 /* CALL:
@@ -1056,7 +1001,7 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 		/* font pxsize attribute is ignored when the scaleable
 			attribute of the font is set, because some scaleable
 			fonts don't seem to support FC_PIXEL_SIZE attribute  */
-		if (fattr->fpxsize != FNTQUERY_UNDEFINED && fattr->fscale != TTRUE)
+		if (fattr->fpxsize != FNTQUERY_UNDEFINED && !fattr->fscale)
 		{
 			(*mod->x11_fciface.FcPatternAddDouble)
 				(pattern, FC_PIXEL_SIZE, (double) fattr->fpxsize);
@@ -1390,7 +1335,7 @@ x11_hostclosefont(X11DISPLAY *mod, TAPTR font)
 
 /*****************************************************************************/
 /* CALL:
-**  x11_hosttextsize(visualbase, fontpointer, textstring)
+**  x11_hosttextsize(visualbase, fontpointer, textstring, len)
 **
 ** USE:
 **  to obtain the width of a given string when the font referred to
@@ -1405,29 +1350,25 @@ x11_hostclosefont(X11DISPLAY *mod, TAPTR font)
 */
 
 LOCAL TINT
-x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text)
+x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text, TINT len)
 {
 	TINT width = 0;
 	struct FontNode *fn = (struct FontNode *) font;
-	TAPTR TExecBase = TGetExecBase(mod);
 
 	#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
 	{
 		XGlyphInfo extents;
 		(*mod->x11_xftiface.XftTextExtentsUtf8)(mod->x11_Display, fn->xftfont,
-			(FcChar8 *)text, strlen(text), &extents);
+			(FcChar8 *)text, len, &extents);
 		width = extents.xOff; /* why not extents.width?!? */
 	}
 	else
 	#endif
 	{
-		TSTRPTR latin = utf8tolatin(mod, text, strlen(text));
+		TSTRPTR latin = x11_utf8tolatin(mod, text, len, &len);
 		if (latin)
-		{
-			width = XTextWidth(fn->font, latin, strlen(latin));
-			TFree(latin);
-		}
+			width = XTextWidth(fn->font, latin, len);
 	}
 	return width;
 }

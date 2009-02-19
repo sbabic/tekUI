@@ -198,13 +198,13 @@ hal_free(struct THALBase *hal, TAPTR mem, TUINT size)
 }
 
 EXPORT void
-hal_copymem(struct THALBase *hal, TAPTR from, TAPTR to, TUINT numbytes)
+hal_copymem(struct THALBase *hal, TAPTR from, TAPTR to, TSIZE numbytes)
 {
 	memcpy(to, from, numbytes);
 }
 
 EXPORT void
-hal_fillmem(struct THALBase *hal, TAPTR dest, TUINT numbytes, TUINT8 fillval)
+hal_fillmem(struct THALBase *hal, TAPTR dest, TSIZE numbytes, TUINT8 fillval)
 {
 	memset(dest, (int) fillval, numbytes);
 }

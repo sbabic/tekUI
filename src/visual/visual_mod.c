@@ -113,7 +113,7 @@ tek_init_visual(struct TTask *task, struct TModule *vis, TUINT16 version,
 		mod->vis_Module.tmd_Revision = VISUAL_REVISION;
 		mod->vis_Module.tmd_Handle.thn_Hook.thk_Entry = vis_dispatch;
 		mod->vis_Module.tmd_Flags = TMODF_VECTORTABLE | TMODF_OPENCLOSE;
-		TInitVectors(mod, vis_vectors, VISUAL_NUMVECTORS);
+		TInitVectors(&mod->vis_Module, vis_vectors, VISUAL_NUMVECTORS);
 		return TTRUE;
 	}
 
@@ -151,8 +151,8 @@ vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 
 		if (base)
 		{
-			inst = TNewInstance(base, base->vis_Module.tmd_PosSize,
-				base->vis_Module.tmd_NegSize);
+			inst = (struct TVisualBase *) TNewInstance((struct TModule *) base,
+				base->vis_Module.tmd_PosSize, base->vis_Module.tmd_NegSize);
 			if (inst)
 			{
 				TInitList(&inst->vis_ReqPool);
@@ -163,7 +163,7 @@ vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 				{
 					TDestroy(inst->vis_CmdRPort);
 					TDestroy(inst->vis_IMsgPort);
-					TFreeInstance(inst);
+					TFreeInstance(&inst->vis_Module);
 					inst = TNULL;
 				}
 			}
@@ -202,7 +202,7 @@ vis_modclose(struct TVisualBase *inst)
 
 		TDestroy(inst->vis_CmdRPort);
 		TDestroy(inst->vis_IMsgPort);
-		TFreeInstance(inst);
+		TFreeInstance(&inst->vis_Module);
 	}
 	TLock(mod->vis_Lock);
 	if (--mod->vis_RefCount == 0)
