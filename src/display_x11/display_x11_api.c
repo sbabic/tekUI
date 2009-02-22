@@ -730,7 +730,6 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 	struct X11Pen *bgpen = (struct X11Pen *) req->tvr_Op.Text.BgPen;
 
 	setfgpen(mod, v, (TVPEN) fgpen);
-	setbgpen(mod, v, (TVPEN) bgpen);
 
 	if ((TVPEN) bgpen == TVPEN_UNDEFINED)
 	{
@@ -760,10 +759,8 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 		{
 			XftFont *f = ((struct FontNode *) v->curfont)->xftfont;
 			TINT w = x11_hosttextsize(mod, v->curfont, text, len);
-
 			(*mod->x11_xftiface.XftDrawRect)(v->draw, &bgpen->xftcolor,
 							x, y, w, f->height + 1);
-
 			(*mod->x11_xftiface.XftDrawStringUtf8)(v->draw, &fgpen->xftcolor,
 				f, x, y + f->ascent, (FcChar8 *)text, len);
 		}
@@ -774,6 +771,7 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 			if (latin)
 			{
 				XFontStruct *f = ((struct FontNode *) v->curfont)->font;
+				setbgpen(mod, v, (TVPEN) bgpen);
 				XDrawImageString(mod->x11_Display, v->window, v->gc,
 					x, y + f->ascent, (char *) latin, len);
 			}

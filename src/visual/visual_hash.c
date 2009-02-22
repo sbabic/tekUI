@@ -8,13 +8,13 @@ struct vis_Hash
 	struct vis_HashNode **(*lookupfunc)(struct vis_Hash *hash,
 		const char *key, TUINT *hvalp);
 	TSIZE numnodes;
-	TINT numbuckets;
+	TUINT numbuckets;
 	TINT primeidx;
 	TAPTR udata;
 	struct TList *list;
 };
 
-static const unsigned int hash_primes[] =
+static const TUINT hash_primes[] =
 {
 	11, 19, 37, 73, 109, 163, 251, 367, 557, 823, 1237, 1861, 2777,
  	4177, 6247, 9371, 14057, 21089, 31627, 47431, 71143, 106721, 160073,
@@ -34,11 +34,11 @@ hash_resize(struct TVisualBase *mod, struct vis_Hash *hash)
 	struct TExecBase *TExecBase = TGetExecBase(mod);
 	TINT numbuckets = hash->numbuckets;
 	TSIZE load = hash->numnodes / numbuckets;
-	int pi = hash->primeidx;
+	TINT pi = hash->primeidx;
 
 	if (numbuckets < HASH_MAXSIZE && load >= HASH_MAXLOAD)
-		for (; pi < HASH_NUMPRIMES - 1 && hash_primes[pi + 1] < hash->numnodes;
-			++pi);
+		for (; pi < (TINT) HASH_NUMPRIMES - 1 &&
+			hash_primes[pi + 1] < hash->numnodes; ++pi);
 	else if (numbuckets > HASH_MINSIZE && load <= HASH_MINLOAD)
 		for (; pi >= 0 && hash_primes[pi] >= hash->numnodes; --pi);
 
@@ -50,7 +50,7 @@ hash_resize(struct TVisualBase *mod, struct vis_Hash *hash)
 			sizeof(struct vis_HashNode) * newnumbuckets);
 		if (newbuckets)
 		{
-			int i;
+			TUINT i;
 			for (i = 0; i < hash->numbuckets; ++i)
 			{
 				struct vis_HashNode *next, *node = hash->buckets[i];
@@ -206,7 +206,7 @@ LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash)
 	struct TExecBase *TExecBase = TGetExecBase(mod);
 	if (hash)
 	{
-		TINT i;
+		TUINT i;
 		vis_hashunlist(mod, hash);
 		for (i = 0; i < hash->numbuckets; ++i)
 		{

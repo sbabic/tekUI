@@ -11,9 +11,9 @@
 #include <tek/type.h>
 
 #if defined(TDEBUG) && TDEBUG > 0
-	extern TLIBAPI TINT TDebugPutS(TSTRPTR s);
-	extern TLIBAPI TINT TDebugPrintF(TSTRPTR fmt, ...);
-	extern TLIBAPI TINT TDebugFatal(void);
+	extern TINT TDebugPutS(TSTRPTR s);
+	extern TINT TDebugPrintF(TSTRPTR fmt, ...);
+	extern TINT TDebugFatal(void);
 	#define TDB(level, x) ((level) >= (TDEBUG) ? ((x), (void)0) : (void)0)
 	#define TDBPUTS(level, s) TDB(level, TDebugPutS(s))
 	#define TDBFATAL() TDEBUG_PLATFORM_FATAL()

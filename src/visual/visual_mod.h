@@ -42,6 +42,12 @@ struct vis_HashNode
 	TUINT hash;
 };
 
+struct vis_FontQueryHandle
+{
+	struct THandle vfq_Handle;
+
+};
+
 struct TVisualBase
 {
 	/* Module header: */
@@ -90,14 +96,15 @@ LOCAL void vis_hashunlist(struct TVisualBase *mod, struct vis_Hash *hash);
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags);
-EXPORT void vis_closevisual(struct TVisualBase *mod, struct TVisualBase *inst);
-EXPORT TAPTR vis_attach(struct TVisualBase *mod, TTAGITEM *tags);
-EXPORT TAPTR vis_openfont(struct TVisualBase *mod, TTAGITEM *tags);
-EXPORT void vis_closefont(struct TVisualBase *mod, TAPTR font);
-EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, TAPTR font,
+EXPORT struct TVisualBase *vis_openvisual(struct TVisualBase *mod,
 	TTAGITEM *tags);
-EXPORT TINT vis_textsize(struct TVisualBase *mod, TAPTR font, TSTRPTR t);
+EXPORT void vis_closevisual(struct TVisualBase *mod, struct TVisualBase *inst);
+EXPORT struct TVisualBase *vis_attach(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT struct TVRequest *vis_openfont(struct TVisualBase *mod, TTAGITEM *tags);
+EXPORT void vis_closefont(struct TVisualBase *mod, struct TVRequest *font);
+EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, struct TVRequest *font,
+	TTAGITEM *tags);
+EXPORT TINT vis_textsize(struct TVisualBase *mod, struct TVRequest *font, TSTRPTR t);
 EXPORT TAPTR vis_queryfonts(struct TVisualBase *mod, TTAGITEM *tags);
 EXPORT TTAGITEM *vis_getnextfont(struct TVisualBase *mod, TAPTR fqhandle);
 
@@ -107,7 +114,7 @@ EXPORT TUINT vis_getattrs(struct TVisualBase *mod, TTAGITEM *tags);
 EXPORT TUINT vis_setattrs(struct TVisualBase *mod, TTAGITEM *tags);
 EXPORT TVPEN vis_allocpen(struct TVisualBase *mod, TUINT rgb);
 EXPORT void vis_freepen(struct TVisualBase *mod, TVPEN pen);
-EXPORT void vis_setfont(struct TVisualBase *mod, TAPTR font);
+EXPORT void vis_setfont(struct TVisualBase *mod, struct TVRequest *font);
 EXPORT void vis_clear(struct TVisualBase *mod, TVPEN pen);
 EXPORT void vis_rect(struct TVisualBase *mod, TINT x, TINT y, TINT w, TINT h,
 	TVPEN pen);

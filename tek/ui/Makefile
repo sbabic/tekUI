@@ -27,10 +27,10 @@ CATALOGS2 = locale/schulze-mueller.de/dirlist-class/en \
 
 ###############################################################################
 
-MODS = layout/default.so
+MODS = layout/default$(DLLEXT)
 
-layout/default.so: $(OBJDIR)/default.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/default.lo
+layout/default$(DLLEXT): $(OBJDIR)/default.lo
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/default.lo $(LUA_DLLS)
 
 $(OBJDIR)/default.lo: layout/default.c
 	$(CC) $(LIBCFLAGS) -o $@ -c layout/default.c
@@ -50,7 +50,7 @@ install:
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/style
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
-	$(INSTALL) -s layout/default.so $(LUA_LIB)/tek/ui/layout
+	$(INSTALL) -s layout/default$(DLLEXT) $(LUA_LIB)/tek/ui/layout
 	$(INSTALL) $(CLASSES) $(LUA_SHARE)/tek/ui/class
 	$(INSTALL) $(BORDERS) $(LUA_SHARE)/tek/ui/border
 	$(INSTALL) $(HOOKS) $(LUA_SHARE)/tek/ui/hook

@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.12"
+_VERSION = "Theme 6.13"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -541,7 +541,7 @@ function Theme.getStyleSheet(themename)
 		props = importGTKConfig()
 	end
 	local fname = ("tek/ui/style/%s.css"):format(themename)
-	local s, msg = ui.loadStyleSheet(fname)
+	local s = ui.loadStyleSheet(fname)
 	if s then
 		if props then
 			copyprops(props, s)
@@ -549,7 +549,7 @@ function Theme.getStyleSheet(themename)
 			props = s
 		end
 	else
-		db.warn("failed to load style sheet '%s' : %s", fname, msg)
+		db.warn("failed to load style sheet '%s'", fname)
 	end
 	return props
 end

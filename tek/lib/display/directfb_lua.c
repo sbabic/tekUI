@@ -31,7 +31,7 @@ typedef struct
 static const struct TInitModule initmodules[] =
 {
 	{ "display_directfb", tek_init_display_directfb, TNULL, 0 },
-	{ TNULL }
+	{ TNULL, TNULL, TNULL, 0 }
 };
 
 static struct TModInitNode im_display =

@@ -1,6 +1,6 @@
 
 /*
-**	tek.lib.display.x11 - binding of TEKlib's X11 driver to Lua
+**	tek.lib.display.windows - binding of TEKlib's X11 driver to Lua
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 */
@@ -13,12 +13,12 @@
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
 
-#define TEK_LIB_DISPLAY_X11_CLASSNAME "tek.lib.display.x11*"
-#define TEK_LIB_DISPLAY_X11_BASECLASSNAME "tek.lib.display.x11.base*"
+#define TEK_LIB_DISPLAY_X11_CLASSNAME "tek.lib.display.windows*"
+#define TEK_LIB_DISPLAY_X11_BASECLASSNAME "tek.lib.display.windows.base*"
 
 extern TMODENTRY TUINT
-tek_init_display_x11(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
-static TCALLBACK TINT tek_lib_display_x11_close(lua_State *L);
+tek_init_display_windows(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
+static TCALLBACK TINT tek_lib_display_windows_close(lua_State *L);
 
 typedef struct
 {
@@ -30,7 +30,7 @@ typedef struct
 
 static const struct TInitModule initmodules[] =
 {
-	{ "display_x11", tek_init_display_x11, TNULL, 0 },
+	{ "display_windows", tek_init_display_windows, TNULL, 0 },
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
@@ -48,14 +48,14 @@ static const luaL_Reg libfuncs[] =
 
 static const luaL_Reg libmethods[] =
 {
-	{ "__gc", tek_lib_display_x11_close },
+	{ "__gc", tek_lib_display_windows_close },
 	{ TNULL, TNULL }
 };
 
 /*****************************************************************************/
 
 static TCALLBACK TINT
-tek_lib_display_x11_close(lua_State *L)
+tek_lib_display_windows_close(lua_State *L)
 {
 	TEKDisplay *display = luaL_checkudata(L, 1, TEK_LIB_DISPLAY_X11_CLASSNAME);
 	TDBPRINTF(TDB_TRACE,("display %08x closing\n", display));
@@ -71,7 +71,7 @@ tek_lib_display_x11_close(lua_State *L)
 
 /*****************************************************************************/
 
-int luaopen_tek_lib_display_x11(lua_State *L)
+TMODENTRY int luaopen_tek_lib_display_windows(lua_State *L)
 {
 	TAPTR exec;
 	TEKDisplay *display;
@@ -88,7 +88,7 @@ int luaopen_tek_lib_display_x11(lua_State *L)
 	exec = *(TAPTR *) lua_touserdata(L, -1);
 
 	/* register functions: */
-	luaL_register(L, "tek.lib.display.x11", libfuncs);
+	luaL_register(L, "tek.lib.display.windows", libfuncs);
 	/* s: exectab, execbase, libtab */
 
 	/* create userdata: */

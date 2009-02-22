@@ -45,3 +45,6 @@ docs:
 
 kdiff:
 	-(a=$$(mktemp -du) && hg clone $$PWD $$a && kdiff3 $$a $$PWD; rm -rf $$a)
+
+web-docs:
+	@bin/gendoc.lua tek/ -p -n tekUI Reference manual | tr "\t" " "

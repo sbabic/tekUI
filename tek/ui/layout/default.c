@@ -48,7 +48,7 @@ static int lib_layoutaxis(lua_State *L)
 
 	int it = 0;
 	size_t len;
-	int ssb, ssn;
+	int ssb, ssn = 0;
 	int i;
 
 	lua_Integer fw0 = 0;
@@ -147,7 +147,7 @@ static int lib_layoutaxis(lua_State *L)
 
 	len = lua_objlen(L, -3);
 	lua_createtable(L, len, 0);
-	for (i = 1; i <= len; ++i)
+	for (i = 1; i <= (int) len; ++i)
 	{
 		lua_rawgeti(L, -4, i);
 		lua_rawseti(L, -2, i);

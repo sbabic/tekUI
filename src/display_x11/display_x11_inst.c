@@ -725,7 +725,7 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 	{
 		case ClientMessage:
 			if ((v->eventmask & TITYPE_CLOSE) &&
-				ev->xclient.data.l[0] == v->atom_wm_delete_win)
+				(Atom) ev->xclient.data.l[0] == v->atom_wm_delete_win)
 			{
 				if (getimsg(mod, v, &imsg, TITYPE_CLOSE))
 					TAddTail(&v->imsgqueue, &imsg->timsg_Node);

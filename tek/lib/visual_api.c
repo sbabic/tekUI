@@ -160,16 +160,24 @@ tek_lib_visual_openfont(lua_State *L)
 		ftags[2].tti_Tag = TVisual_FontUlThickness;
 		ftags[2].tti_Value = (TTAG) &font->font_UlThickness;
 		ftags[3].tti_Tag = TTAG_DONE;
-		TVisualGetFontAttrs(vis->vis_Base, font->font_Font, ftags);
 
-		/* attach class metatable to userdata object: */
-		luaL_newmetatable(L, TEK_LIB_VISUALFONT_CLASSNAME);
-		/* s: fontdata, meta */
-		lua_setmetatable(L, -2);
-		/* s: fontdata */
-		lua_pushinteger(L, font->font_Height);
-		/* s: fontdata, height */
-		return 2;
+		if (TVisualGetFontAttrs(vis->vis_Base, font->font_Font, ftags) == 3)
+		{
+			TDBPRINTF(TDB_INFO,("Height: %d - Pos: %d - Thick: %d\n",
+				font->font_Height, font->font_UlPosition,
+				font->font_UlThickness));
+
+			/* attach class metatable to userdata object: */
+			luaL_newmetatable(L, TEK_LIB_VISUALFONT_CLASSNAME);
+			/* s: fontdata, meta */
+			lua_setmetatable(L, -2);
+			/* s: fontdata */
+			lua_pushinteger(L, font->font_Height);
+			/* s: fontdata, height */
+			return 2;
+		}
+
+		TDestroy(font->font_Font);
 	}
 
 	lua_pop(L, 1);
@@ -220,14 +228,12 @@ tek_lib_visual_getfontattrs(lua_State *L)
 		lua_pushvalue(L, 2);
 	else
 		lua_newtable(L);
-
 	lua_pushinteger(L, font->font_Height);
 	lua_setfield(L, -2, "Height");
 	lua_pushinteger(L, font->font_Height - font->font_UlPosition);
 	lua_setfield(L, -2, "UlPosition");
 	lua_pushinteger(L, font->font_UlThickness);
 	lua_setfield(L, -2, "UlThickness");
-
 	return 1;
 }
 

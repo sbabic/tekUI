@@ -1,7 +1,7 @@
 
 #include "visual_mod.h"
 
-#if TSYS_WINNT
+#if defined(TSYS_WINNT)
 #define DEF_DISPLAYNAME	"display_windows"
 #else
 #define DEF_DISPLAYNAME	"display_x11"
@@ -9,8 +9,8 @@
 
 /*****************************************************************************/
 
-static struct TVRequest *
-visi_getreq(struct TVisualBase *inst, TUINT cmd, TAPTR display, TTAGITEM *tags)
+static struct TVRequest *visi_getreq(struct TVisualBase *inst, TUINT cmd,
+	struct TDisplayBase *display, TTAGITEM *tags)
 {
 	struct TVisualBase *mod =
 		(struct TVisualBase *) inst->vis_Module.tmd_ModSuper;
@@ -124,7 +124,8 @@ visi_doasync(struct TVisualBase *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
+EXPORT struct TVisualBase *vis_openvisual(struct TVisualBase *mod,
+	TTAGITEM *tags)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVisualBase *inst;
@@ -146,7 +147,6 @@ EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
 			req->tvr_Op.OpenWindow.IMsgPort = inst->vis_IMsgPort;
 			req->tvr_Op.OpenWindow.Tags = tags;
 			TDoIO(&req->tvr_Req);
-
 			inst->vis_Window = req->tvr_Op.OpenWindow.Window;
 			if (inst->vis_Window)
 			{
@@ -159,6 +159,7 @@ EXPORT TAPTR vis_openvisual(struct TVisualBase *mod, TTAGITEM *tags)
 		}
 		TCloseModule((struct TModule *) inst);
 	}
+
 	TDBPRINTF(TDB_ERROR,("open failed\n"));
 	return TNULL;
 }
@@ -179,7 +180,7 @@ EXPORT void vis_closevisual(struct TVisualBase *mod, struct TVisualBase *inst)
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_attach(struct TVisualBase *mod, TTAGITEM *tags)
+EXPORT struct TVisualBase *vis_attach(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
 	TTAGITEM otags[2];
@@ -187,76 +188,67 @@ EXPORT TAPTR vis_attach(struct TVisualBase *mod, TTAGITEM *tags)
 	otags[0].tti_Value = (TTAG) mod;
 	otags[1].tti_Tag = TTAG_MORE;
 	otags[1].tti_Value = (TTAG) tags;
-	return TOpenModule("visual", 0, otags);
+	return (struct TVisualBase *) TOpenModule("visual", 0, otags);
 }
 
 /*****************************************************************************/
 
-EXPORT TAPTR vis_openfont(struct TVisualBase *mod, TTAGITEM *tags)
+EXPORT struct TVRequest *vis_openfont(struct TVisualBase *mod, TTAGITEM *tags)
 {
-	TAPTR font = TNULL;
-	struct TExecBase *TExecBase = TGetExecBase(mod);
-	struct TVRequest *req = visi_getreq(mod, TVCMD_OPENFONT, TNULL, tags);
-	if (req)
+	struct TVRequest *fontreq = visi_getreq(mod, TVCMD_OPENFONT, TNULL, tags);
+	if (fontreq)
 	{
-		req->tvr_Op.OpenFont.Tags = tags;
-		TDoIO(&req->tvr_Req);
-		font = req->tvr_Op.OpenFont.Font;
-		visi_ungetreq(mod, req);
+		struct TExecBase *TExecBase = TGetExecBase(mod);
+		fontreq->tvr_Op.OpenFont.Tags = tags;
+		TDoIO(&fontreq->tvr_Req);
+		if (fontreq->tvr_Op.OpenFont.Font)
+			return fontreq;
+		visi_ungetreq(mod, fontreq);
 	}
-	return font;
+	return TNULL;
 }
 
 /*****************************************************************************/
 
-EXPORT void vis_closefont(struct TVisualBase *mod, TAPTR font)
+EXPORT void vis_closefont(struct TVisualBase *mod, struct TVRequest *fontreq)
 {
-	if (font)
+	if (fontreq)
 	{
-		struct TVRequest *req = visi_getreq(mod, TVCMD_CLOSEFONT,
-			TGetOwner(font), TNULL);
-		if (req)
-		{
-			req->tvr_Op.CloseFont.Font = font;
-			visi_dosync(mod, req);
-		}
+		fontreq->tvr_Req.io_Command = TVCMD_CLOSEFONT;
+		visi_dosync(mod, fontreq);
 	}
 }
 
 /*****************************************************************************/
 
-EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, TAPTR font, TTAGITEM *tags)
+EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, struct TVRequest *fontreq,
+	TTAGITEM *tags)
 {
 	TUINT n = 0;
-	struct TExecBase *TExecBase = TGetExecBase(mod);
-	struct TVRequest *req = visi_getreq(mod, TVCMD_GETFONTATTRS,
-		TGetOwner(font), TNULL);
-	if (req)
+	if (fontreq)
 	{
-		req->tvr_Op.GetFontAttrs.Font = font;
-		req->tvr_Op.GetFontAttrs.Tags = tags;
-		TDoIO(&req->tvr_Req);
-		n = req->tvr_Op.TextSize.Width;
-		visi_ungetreq(mod, req);
+		struct TExecBase *TExecBase = TGetExecBase(mod);
+		fontreq->tvr_Req.io_Command = TVCMD_GETFONTATTRS;
+		fontreq->tvr_Op.GetFontAttrs.Tags = tags;
+		TDoIO(&fontreq->tvr_Req);
+		n = fontreq->tvr_Op.TextSize.Width;
 	}
 	return n;
 }
 
 /*****************************************************************************/
 
-EXPORT TINT vis_textsize(struct TVisualBase *mod, TAPTR font, TSTRPTR t)
+EXPORT TINT vis_textsize(struct TVisualBase *mod, struct TVRequest *fontreq,
+	TSTRPTR t)
 {
 	TINT size = -1;
-	struct TExecBase *TExecBase = TGetExecBase(mod);
-	struct TVRequest *req = visi_getreq(mod, TVCMD_TEXTSIZE,
-		TGetOwner(font), TNULL);
-	if (req)
+	if (fontreq)
 	{
-		req->tvr_Op.TextSize.Font = font;
-		req->tvr_Op.TextSize.Text = t;
-		TDoIO(&req->tvr_Req);
-		size = req->tvr_Op.TextSize.Width;
-		visi_ungetreq(mod, req);
+		struct TExecBase *TExecBase = TGetExecBase(mod);
+		fontreq->tvr_Req.io_Command = TVCMD_TEXTSIZE;
+		fontreq->tvr_Op.TextSize.Text = t;
+		TDoIO(&fontreq->tvr_Req);
+		size = fontreq->tvr_Op.TextSize.Width;
 	}
 	return size;
 }
@@ -368,13 +360,15 @@ EXPORT void vis_freepen(struct TVisualBase *inst, TVPEN pen)
 /*****************************************************************************/
 /* TODO: inst->display <-> font->display must match */
 
-EXPORT void vis_setfont(struct TVisualBase *inst, TAPTR font)
+EXPORT void vis_setfont(struct TVisualBase *inst, struct TVRequest *fontreq)
 {
-	struct TVRequest *req = visi_getreq(inst, TVCMD_SETFONT,
-		inst->vis_Display, TNULL);
-	req->tvr_Op.SetFont.Window = inst->vis_Window;
-	req->tvr_Op.SetFont.Font = font;
-	visi_dosync(inst, req);
+	if (fontreq)
+	{
+		struct TExecBase *TExecBase = TGetExecBase(inst);
+		fontreq->tvr_Req.io_Command = TVCMD_SETFONT;
+		fontreq->tvr_Op.SetFont.Window = inst->vis_Window;
+		TDoIO(&fontreq->tvr_Req);
+	}
 }
 
 /*****************************************************************************/

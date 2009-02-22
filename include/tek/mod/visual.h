@@ -87,12 +87,6 @@ typedef TTAG TVPEN;
 #define TVisualDraw_FgPen			(TVISTAGS_ + 0x307)
 #define TVisualDraw_BgPen			(TVISTAGS_ + 0x308)
 
-#if 0
-/* Platform-specific / experimental tags: */
-#define TVisualHost_GrabPointer		(TVISTAGS_ + 0x201)
-#define TVisualHost_GrabButton		(TVISTAGS_ + 0x202)
-#endif
-
 /*****************************************************************************/
 /*
 **	Visual request
@@ -103,7 +97,8 @@ struct TVRequest
 	struct TIORequest tvr_Req;
 	union
 	{
-		struct { TAPTR Window; TTAGITEM *Tags; TAPTR IMsgPort; } OpenWindow;
+		struct { TAPTR Window; TTAGITEM *Tags; struct TMsgPort *IMsgPort; }
+			OpenWindow;
 		struct { TAPTR Window; } CloseWindow;
 		struct { TAPTR Font; TTAGITEM *Tags; } OpenFont;
 		struct { TAPTR Font; } CloseFont;
@@ -116,7 +111,7 @@ struct TVRequest
 		struct { TAPTR Window; TTAGITEM *Tags; TUINT Num; } SetAttrs;
 		struct { TAPTR Window; TUINT RGB; TVPEN Pen; } AllocPen;
 		struct { TAPTR Window; TVPEN Pen; } FreePen;
-		struct { TAPTR Window; TSTRPTR Font; } SetFont;
+		struct { TAPTR Font; TAPTR Window; } SetFont;
 		struct { TAPTR Window; TVPEN Pen; } Clear;
 		struct { TAPTR Window; TINT Rect[4]; TVPEN Pen; } Rect;
 		struct { TAPTR Window; TINT Rect[4]; TVPEN Pen; } FRect;
@@ -253,7 +248,7 @@ typedef struct TInputMessage
 **	Keycodes (cooked)
 */
 
-/* may still have a qualifier, though: */
+/* no key (but may still have a qualifier): */
 #define TKEYC_NONE				0x00000000
 
 /*
@@ -334,7 +329,7 @@ typedef struct TInputMessage
 **	bindings should never rely on TKEYQ_PROP alone. Some keyboards
 **	do not have a numblock, so usage of the TKEYQ_NUMBLOCK qualifier
 **	without an alternative is disencouraged, too. Also note that some
-**	keyboards don't have a right control key.
+**	keyboards don't have a right control key, etc.
 */
 
 /* no qualifier: */

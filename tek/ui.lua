@@ -75,7 +75,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 14.4"
+_VERSION = "tekUI 14.5"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -83,7 +83,8 @@ local OldCPath = package and package.cpath or ""
 
 -- Get executable path and name:
 if arg and arg[0] then
-	ProgDir, ProgName = arg[0]:match("^(.-/?)([^/]*)$")
+	local p = package and package.config:sub(1, 1) or "/"
+	ProgDir, ProgName = arg[0]:match("^(.-" .. p .. "?)([^" .. p .. "]*)$")
 end
 
 -- Modified package path to find modules in the local program directory:

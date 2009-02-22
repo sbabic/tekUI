@@ -680,7 +680,7 @@ static const luaL_Reg regionmethods[] =
 	{ NULL, NULL }
 };
 
-int luaopen_tek_lib_region(lua_State *L)
+TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 {
 	luaL_register(L, "tek.lib.region", libfuncs);
 	/* s: libtab */

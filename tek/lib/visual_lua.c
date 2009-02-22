@@ -17,7 +17,7 @@
 static const struct TInitModule initmodules[] =
 {
 	{ "visual", tek_init_visual, TNULL, 0 },
-	{ TNULL }
+	{ TNULL, TNULL, TNULL, 0 }
 };
 
 static struct TModInitNode im_visual =
@@ -291,7 +291,7 @@ tek_lib_visual_close(lua_State *L)
 
 /*****************************************************************************/
 
-int luaopen_tek_lib_visual(lua_State *L)
+TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 {
 	TEKVisual *vis;
 	TAPTR exec;
@@ -384,7 +384,12 @@ int luaopen_tek_lib_visual(lua_State *L)
 		dtags[0].tti_Value = (TTAG) "display_" DISPLAY_DRIVER;
 		dtags[1].tti_Tag = TTAG_DONE;
 		vis->vis_Display = TVisualOpenDisplay(vis->vis_Base, dtags);
-		if (vis->vis_Display == TNULL) break;
+		if (vis->vis_Display == TNULL)
+		{
+			TDBPRINTF(TDB_ERROR,("Failed to open driver 'display_%s'\n",
+				DISPLAY_DRIVER));
+			break;
+		}
 
 		/* Open default font: */
 		dtags[0].tti_Tag = TVisual_Display;

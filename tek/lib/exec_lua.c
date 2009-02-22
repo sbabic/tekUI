@@ -18,7 +18,7 @@ static const struct TInitModule initmodules[] =
 {
 	{"hal", tek_init_hal, TNULL, 0},
 	{"exec", tek_init_exec, TNULL, 0},
-	{TNULL}
+	{ TNULL, TNULL, TNULL, 0 }
 };
 
 static const luaL_Reg libfuncs[] =
@@ -40,7 +40,7 @@ tek_lib_exec_base_gc(lua_State *L)
 	return 0;
 }
 
-int luaopen_tek_lib_exec(lua_State *L)
+TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 {
 	TAPTR *pexec;
 	TTAGITEM tags[2];

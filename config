@@ -1,29 +1,69 @@
 
 #------------------------------------------------------------------------------
-# Platform to build against [Choices: posix]
+# Platform to build against [Choices: posix, winnt]:
 #------------------------------------------------------------------------------
 
 PLATFORM ?= posix
 
 #------------------------------------------------------------------------------
-# Default display driver [Choices: x11, directfb]
-# For the DirectFB driver, also adjust src/Makefile and tek/lib/Makefile
+# Dynamic link library extension [Choices: .so, .dll]:
+#------------------------------------------------------------------------------
+
+DLLEXT = .so
+
+#------------------------------------------------------------------------------
+# Default display driver [Choices: x11, windows, directfb]:
+# (If you change it, also adjust src/Makefile and tek/lib/Makefile)
 #------------------------------------------------------------------------------
 
 DISPLAY_DRIVER ?= x11
 
 #------------------------------------------------------------------------------
-# Installation paths:
+# Compiler configuration:
 #------------------------------------------------------------------------------
 
-LUA_LIB = /usr/local/lib/lua/5.1
-LUA_SHARE = /usr/local/share/lua/5.1
+CCPREFIX =
+CC = $(CCPREFIX)gcc -fpic
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# For Windows using MingW:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# CC = $(CCPREFIX)gcc -mno-cygwin -DWIN32
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Cross-build using MingW:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# CCPREFIX = i586-mingw32-
 
 #------------------------------------------------------------------------------
-# Libraries:
+# Platform libraries:
 #------------------------------------------------------------------------------
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# POSIX:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 PLATFORM_LIBS = -pthread
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Windows:
+# (Assuming that lua51.dll is in the top-level directory of the distribution)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# PLATFORM_LIBS = -lmsvcrt -lkernel32 -lwinmm -luser32 -lshell32 -ladvapi32
+# LUA_DLLS = -L $(BASEDIR) -llua51
+
+
+#------------------------------------------------------------------------------
+# The basic setup should be complete up to this point.
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Other libraries:
+#------------------------------------------------------------------------------
 
 LUA_DEFS = -I/usr/local/include/lua51 -I/usr/include/lua5.1
 
@@ -35,8 +75,18 @@ X11_DEFS = $(FREETYPE_DEFS) -D_XOPEN_SOURCE -D ENABLE_XFT -I/usr/X11R6/include
 DFB_LIBS = `pkg-config --libs directfb`
 DFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
 
+WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
+
 #------------------------------------------------------------------------------
-# Paths:
+# Installation paths:
+# (Installation is not always required, e.g. x11 and windows can do without)
+#------------------------------------------------------------------------------
+
+LUA_LIB = /usr/local/lib/lua/5.1
+LUA_SHARE = /usr/local/share/lua/5.1
+
+#------------------------------------------------------------------------------
+# Build paths:
 #------------------------------------------------------------------------------
 
 BASEDIR ?= .
@@ -50,12 +100,11 @@ MODDIR = $(BINDIR)/mod
 # Compiler flags:
 #------------------------------------------------------------------------------
 
-CC = gcc
-DEBUG = -g
-WARN = -Wall -Wno-unused-parameter -Wno-unused
+DEBUG = -DTDEBUG=10
+WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function
 OPT = -O2
 INCL = -I. -Iinclude -I$(INCDIR)
-LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) -fpic
+LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 MODCFLAGS = -shared -L $(LIBDIR)
 BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 
@@ -63,7 +112,7 @@ BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 # Build tools:
 #------------------------------------------------------------------------------
 
-AR = ar r
+AR = $(CCPREFIX)ar r
 RM = rm
 RMDIR = rm -r
 MKDIR = mkdir -p
