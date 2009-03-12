@@ -67,7 +67,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.4"
+_VERSION = "ScrollGroup 9.5"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -89,6 +89,7 @@ function ScrollGroup.new(class, self)
 	self.HSliderGroup = self.HSliderGroup or false
 	self.HSliderMode = self.HSliderMode or "off"
 	self.HSliderNotify = { self, "onSetSliderLeft", ui.NOTIFY_VALUE }
+	self.ScrollStep = self.ScrollStep or 10
 	self.VSliderMode = self.VSliderMode or "off"
 	self.VSliderEnabled = false
 	self.VSliderGroup = self.VSliderGroup or false
@@ -101,7 +102,7 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "horizontal",
 			Min = 0,
-			Step = 10,
+			Step = self.ScrollStep,
 		}
 		self.HSliderGroup = hslider
 		self.HSliderEnabled = true
@@ -112,7 +113,7 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "vertical",
 			Min = 0,
-			Step = 10,
+			Step = self.ScrollStep,
 		}
 		self.VSliderGroup = vslider
 		self.VSliderEnabled = true

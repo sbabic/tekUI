@@ -14,8 +14,8 @@
 --		Spacer
 --
 --	OVERVIEW::
---		This class implements a separator
---		that helps to arrange elements in a group visually.
+--		This class implements a separator that helps to arrange elements in
+--		a group.
 --
 --	OVERRIDES::
 --		- Area:askMinMax()

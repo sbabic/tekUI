@@ -43,29 +43,13 @@
 **	Fonts
 */
 
-#ifndef FNT_DEFDIR
-#define	FNT_DEFDIR          TEKHOST_SYSDIR "fonts/"
-#endif
-
-#define FNT_DEFNAME         "VeraMono"
-#define FNT_DEFPXSIZE       14
+#define FNT_DEFNAME         ""
+#define FNT_DEFPXSIZE       10
 
 #define	FNT_WILDCARD        "*"
 
 #define FNTQUERY_NUMATTR	(5+1)
 #define	FNTQUERY_UNDEFINED	-1
-
-#define FNT_ITALIC			0x1
-#define	FNT_BOLD			0x2
-#define FNT_UNDERLINE		0x4
-
-#define FNT_MATCH_NAME		0x01
-#define FNT_MATCH_SIZE		0x02
-#define FNT_MATCH_SLANT		0x04
-#define	FNT_MATCH_WEIGHT	0x08
-#define	FNT_MATCH_SCALE		0x10
-/* all mandatory properties: */
-#define FNT_MATCH_ALL		0x0f
 
 struct FontManager
 {
@@ -142,9 +126,6 @@ typedef struct
 	HWND fbd_DeviceHWnd;
 	HDC fbd_DeviceHDC;
 
-// 	TINT fbd_MouseX, fbd_MouseY;
-// 	TUINT fbd_KeyQual;
-
 	HINSTANCE fbd_HInst;
 	ATOM fbd_ClassAtom;
 
@@ -158,9 +139,6 @@ typedef struct
 	TINT fbv_Modulo;
 
 	WINDISPLAY *fbv_Display;
-
-	/* Clipping boundaries: */
-// 	TINT fbv_ClipRect[4];
 
 	/* Window extents: */
 	TUINT fbv_Left, fbv_Top;
@@ -192,6 +170,17 @@ typedef struct
 	TUINT fbv_KeyQual;
 
 	BITMAPINFOHEADER fbv_DrawBitMap;
+
+	BYTE fbv_KeyState[256];
+
+	RECT fbv_ClipRect;
+
+	char fbv_RegionData[1024];
+
+	TBOOL fbv_Borderless;
+
+	/* userdata attached to this window, also propagated in messages: */
+	TTAG fbv_UserData;
 
 } WINWINDOW;
 
@@ -238,6 +227,7 @@ LOCAL TBOOL fb_init(WINDISPLAY *mod, TTAGITEM *tags);
 LOCAL TBOOL fb_getimsg(WINDISPLAY *mod, WINWINDOW *v, TIMSG **msgptr,
 	TUINT type);
 LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval);
+LOCAL void fb_sendimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG *imsg);
 
 LOCAL void fb_exit(WINDISPLAY *mod);
 LOCAL void fb_wake(WINDISPLAY *inst);

@@ -16,7 +16,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 1.9"
+_VERSION = "Tunnel 1.10"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -38,8 +38,6 @@ function Tunnel.init(self)
 
 	self.MinWidth = self.MinWidth or 128
 	self.MinHeight = self.MinHeight or 128
-	self.MaxWidth = self.MaxWidth or 640
-	self.MaxHeight = self.MaxHeight or 480
 
 	-- movement table:
 	self.dx = {  }
@@ -53,7 +51,7 @@ function Tunnel.init(self)
 	self.cy = 8
 
 	self.numseg = 6
-	self.speed = 13
+	self.speed = 8
 	self.z = 0
 	self.viewz = 0x50
 	self.dist = 0x100

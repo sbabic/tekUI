@@ -29,6 +29,9 @@ static TBOOL fb_initwindow(TAPTR task)
 	{
 		RECT wrect;
 		BITMAPINFOHEADER *bmi;
+		TUINT style;
+		TIMSG *imsg;
+		const char *classname;
 
 		win = TAlloc0(mod->fbd_MemMgr, sizeof(WINWINDOW));
 		if (win == TNULL)
@@ -38,23 +41,55 @@ static TBOOL fb_initwindow(TAPTR task)
 
 		win->fbv_Width = (TUINT) TGetTag(tags, TVisual_Width, FB_DEF_WIDTH);
 		win->fbv_Height = (TUINT) TGetTag(tags, TVisual_Height, FB_DEF_HEIGHT);
-		win->fbv_Left = (TUINT) TGetTag(tags, TVisual_WinLeft, 0);
-		win->fbv_Top = (TUINT) TGetTag(tags, TVisual_WinTop, 0);
+		win->fbv_Left = (TUINT) TGetTag(tags, TVisual_WinLeft, 0xffffffff);
+		win->fbv_Top = (TUINT) TGetTag(tags, TVisual_WinTop, 0xffffffff);
 		win->fbv_Title = (TSTRPTR) TGetTag(tags, TVisual_Title,
 			(TTAG) "TEKlib Visual");
+		win->fbv_Borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
+		win->fbv_UserData = TGetTag(tags, TVisual_UserData, TNULL);
 
-		wrect.left = win->fbv_Left;
-		wrect.top = win->fbv_Top;
-		wrect.right = win->fbv_Left + win->fbv_Width - 1;
-		wrect.bottom = win->fbv_Top + win->fbv_Height - 1;
-		AdjustWindowRectEx(&wrect, WS_OVERLAPPEDWINDOW, FALSE, 0);
+		if (win->fbv_Borderless)
+		{
+			style = WS_OVERLAPPEDWINDOW;
+			classname = FB_DISPLAY_CLASSNAME; /* TODO: own class */
+		}
+		else
+		{
+			style = WS_OVERLAPPEDWINDOW;
+			classname = FB_DISPLAY_CLASSNAME;
+		}
 
-		win->fbv_HWnd = CreateWindowEx(0, FB_DISPLAY_CLASSNAME, win->fbv_Title,
-			WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-			wrect.right - wrect.left + 1, wrect.bottom - wrect.top + 1,
-			(HWND) NULL, (HMENU) NULL, mod->fbd_HInst, (LPVOID) NULL);
+		if (win->fbv_Left != 0xffffffff && win->fbv_Top != 0xffffffff)
+		{
+			wrect.left = win->fbv_Left;
+			wrect.top = win->fbv_Top;
+			wrect.right = win->fbv_Left + win->fbv_Width - 1;
+			wrect.bottom = win->fbv_Top + win->fbv_Height - 1;
+			if (!AdjustWindowRectEx(&wrect, style, FALSE, 0))
+				break;
+			win->fbv_Left = wrect.left;
+			win->fbv_Top = wrect.top;
+			win->fbv_HWnd = CreateWindowEx(0, classname,
+				win->fbv_Title, style, win->fbv_Left, win->fbv_Top,
+				wrect.right - wrect.left + 1, wrect.bottom - wrect.top + 1,
+				(HWND) NULL, (HMENU) NULL, mod->fbd_HInst, (LPVOID) NULL);
+		}
+		else
+		{
+			win->fbv_HWnd = CreateWindowEx(0, classname,
+				win->fbv_Title, style, CW_USEDEFAULT, CW_USEDEFAULT,
+				win->fbv_Width, win->fbv_Height,
+				(HWND) NULL, (HMENU) NULL, mod->fbd_HInst, (LPVOID) NULL);
+		}
+
 		if (win->fbv_HWnd == TNULL)
 			break;
+
+		GetWindowRect(win->fbv_HWnd, &wrect);
+		win->fbv_Left = wrect.left;
+		win->fbv_Top = wrect.top;
+		win->fbv_Width = wrect.right - wrect.left + 1;
+		win->fbv_Height = wrect.bottom - wrect.top + 1;
 
 		SetWindowLong(win->fbv_HWnd, GWL_USERDATA, (LONG) win);
 
@@ -98,9 +133,26 @@ static TBOOL fb_initwindow(TAPTR task)
 
 		TSetTaskData(task, win);
 
+		if ((win->fbv_InputMask & TITYPE_FOCUS) &&
+			(fb_getimsg(mod, win, &imsg, TITYPE_FOCUS)))
+		{
+			imsg->timsg_Code = 1;
+			fb_sendimsg(mod, win, imsg);
+		}
+		if ((win->fbv_InputMask & TITYPE_REFRESH) &&
+			(fb_getimsg(mod, win, &imsg, TITYPE_REFRESH)))
+		{
+			imsg->timsg_X = 0;
+			imsg->timsg_Y = 0;
+			imsg->timsg_Width = win->fbv_Width;
+			imsg->timsg_Height = win->fbv_Height;
+			fb_sendimsg(mod, win, imsg);
+		}
+
 		return TTRUE;
 	}
 
+	TDBPRINTF(TDB_ERROR,("Window open failed\n"));
 	fb_closeall(mod, win, TFALSE);
 	return TFALSE;
 }
@@ -217,7 +269,9 @@ fb_setinput(WINDISPLAY *mod, struct TVRequest *req)
 	WINWINDOW *v = req->tvr_Op.SetInput.Window;
 	req->tvr_Op.SetInput.OldMask = v->fbv_InputMask;
 	v->fbv_InputMask = req->tvr_Op.SetInput.Mask;
-	TDBPRINTF(TDB_INFO,("Setinputmask: %08x\n", v->fbv_InputMask));
+	TDBPRINTF(TDB_TRACE,("Setinputmask: %08x\n", v->fbv_InputMask));
+	/* spool out possible remaining messages: */
+	fb_sendimessages(mod, TFALSE);
 }
 
 /*****************************************************************************/
@@ -417,10 +471,40 @@ LOCAL void
 fb_copyarea(WINDISPLAY *mod, struct TVRequest *req)
 {
 	WINWINDOW *win = req->tvr_Op.FRect.Window;
-// 	WINWINDOW *v = req->tvr_Op.CopyArea.Window;
-// 	TINT dx = req->tvr_Op.CopyArea.DestX;
-// 	TINT dy = req->tvr_Op.CopyArea.DestY;
-// 	fbp_copyarea(v, req->tvr_Op.CopyArea.Rect, dx, dy);
+	struct THook *exposehook = (struct THook *)
+		TGetTag(req->tvr_Op.CopyArea.Tags, TVisual_ExposeHook, TNULL);
+	TINT *sr = req->tvr_Op.CopyArea.Rect;
+	TINT dx = req->tvr_Op.CopyArea.DestX - sr[0];
+	TINT dy = req->tvr_Op.CopyArea.DestY - sr[1];
+	RECT r;
+
+	r.left = sr[4];
+	r.top = sr[5];
+	r.right = sr[4] + sr[2];
+	r.bottom = sr[5] + sr[3];
+
+	if (exposehook)
+	{
+		RGNDATAHEADER *rdh = (RGNDATAHEADER *) win->fbv_RegionData;
+		RECT *rd = (RECT *) (rdh + 1);
+		HRGN updateregion = CreateRectRgn(0, 0, 0, 0);
+		ScrollDC(win->fbv_HDC, dx, dy, &r, &r, updateregion, NULL);
+		if (GetRegionData(updateregion, 1024, (LPRGNDATA) rdh))
+		{
+			TUINT i;
+			for (i = 0; i < rdh->nCount; ++i)
+				TCallHookPkt(exposehook, win, (TTAG) (rd + i));
+		}
+		else
+		{
+			TDBPRINTF(TDB_WARN,("Regiondata buffer too small\n"));
+			InvalidateRgn(win->fbv_HWnd, updateregion, FALSE);
+		}
+		DeleteObject(updateregion);
+	}
+	else
+		ScrollDC(win->fbv_HDC, dx, dy, &r, &r, NULL, NULL);
+
 	win->fbv_Dirty = TTRUE;
 }
 
@@ -429,11 +513,16 @@ fb_copyarea(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_setcliprect(WINDISPLAY *mod, struct TVRequest *req)
 {
-// 	WINWINDOW *v = req->tvr_Op.ClipRect.Window;
-// 	v->fbv_ClipRect[0] = req->tvr_Op.ClipRect.Rect[0];
-// 	v->fbv_ClipRect[1] = req->tvr_Op.ClipRect.Rect[1];
-// 	v->fbv_ClipRect[2] = v->fbv_ClipRect[0] + req->tvr_Op.ClipRect.Rect[2] - 1;
-// 	v->fbv_ClipRect[3] = v->fbv_ClipRect[1] + req->tvr_Op.ClipRect.Rect[3] - 1;
+	WINWINDOW *win = req->tvr_Op.FRect.Window;
+	RECT *cr = &win->fbv_ClipRect;
+	HRGN rgn;
+	cr->left = req->tvr_Op.ClipRect.Rect[0];
+	cr->top = req->tvr_Op.ClipRect.Rect[1];
+	cr->right = cr->left + req->tvr_Op.ClipRect.Rect[2];
+	cr->bottom = cr->top + req->tvr_Op.ClipRect.Rect[3];
+	rgn = CreateRectRgnIndirect(cr);
+	SelectClipRgn(win->fbv_HDC, rgn);
+	DeleteObject(rgn);
 }
 
 /*****************************************************************************/
@@ -441,11 +530,13 @@ fb_setcliprect(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_unsetcliprect(WINDISPLAY *mod, struct TVRequest *req)
 {
-// 	WINWINDOW *v = req->tvr_Op.ClipRect.Window;
-// 	v->fbv_ClipRect[0] = v->fbv_WinRect[0];
-// 	v->fbv_ClipRect[1] = v->fbv_WinRect[1];
-// 	v->fbv_ClipRect[2] = v->fbv_WinRect[2];
-// 	v->fbv_ClipRect[3] = v->fbv_WinRect[3];
+	WINWINDOW *win = req->tvr_Op.FRect.Window;
+	RECT *cr = &win->fbv_ClipRect;
+	SelectClipRgn(win->fbv_HDC, NULL);
+	cr->left = 0;
+	cr->top = 0;
+	cr->right = win->fbv_Width;
+	cr->bottom = win->fbv_Height;
 }
 
 /*****************************************************************************/
@@ -501,6 +592,9 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	{
 		default:
 			return TTRUE;
+		case TVisual_UserData:
+			*((TTAG *) item->tti_Value) = v->fbv_UserData;
+			break;
 		case TVisual_Width:
 			*((TINT *) item->tti_Value) = v->fbv_Width;
 			break;
@@ -508,10 +602,10 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			*((TINT *) item->tti_Value) = v->fbv_Height;
 			break;
 		case TVisual_WinLeft:
-// 			*((TINT *) item->tti_Value) = v->fbv_WinRect[0];
+			*((TINT *) item->tti_Value) = v->fbv_Left;
 			break;
 		case TVisual_WinTop:
-// 			*((TINT *) item->tti_Value) = v->fbv_WinRect[1];
+			*((TINT *) item->tti_Value) = v->fbv_Top;
 			break;
 		case TVisual_MinWidth:
 // 			*((TINT *) item->tti_Value) =

@@ -71,7 +71,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.16"
+_VERSION = "Slider 6.17"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -86,6 +86,7 @@ local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 local Slider = _M
 
 function Slider.init(self)
+	self.ClickDirection = false
 	self.ForceInteger = self.ForceInteger or false
 	self.HoldXY = { }
 	self.Mode = "button"
@@ -274,21 +275,24 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:clickContainer(xy)
-	local b1, b2, b3, b4 = self.Child:getBorder()
-	if self.Orientation == "horizontal" then
-		local cx = self.Step
-		if xy[1] < self.Child.Rect[1] - b1 then
-			self:decrease(self.Step)
-		elseif xy[1] > self.Child.Rect[3] + b3 then
-			self:increase(self.Step)
+	if not self.ClickDirection then
+		local b1, b2, b3, b4 = self.Child:getBorder()
+		if self.Orientation == "horizontal" then
+			if xy[1] < self.Child.Rect[1] - b1 then
+				self.ClickDirection = -1
+			elseif xy[1] > self.Child.Rect[3] + b3 then
+				self.ClickDirection = 1
+			end
+		else
+			if xy[2] < self.Child.Rect[2] - b2 then
+				self.ClickDirection = -1
+			elseif xy[2] > self.Child.Rect[4] + b4 then
+				self.ClickDirection = 1
+			end
 		end
-	else
-		local cy = self.Step
-		if xy[2] < self.Child.Rect[2] - b2 then
-			self:decrease(self.Step)
-		elseif xy[2] > self.Child.Rect[4] + b4 then
-			self:increase(self.Step)
-		end
+	end
+	if self.ClickDirection then
+		self:increase(self.ClickDirection * self.Step)
 	end
 end
 
@@ -297,10 +301,14 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:onHold(hold)
-	if hold and not self.Move0 then
-		if self.HoldXY[1] then
-			self:clickContainer(self.HoldXY)
+	if hold then
+		if not self.Move0 then
+			if self.HoldXY[1] then
+				self:clickContainer(self.HoldXY)
+			end
 		end
+	else
+		self.ClickDirection = false
 	end
 	Numeric.onHold(self, hold)
 end
@@ -422,6 +430,7 @@ function Slider:passMsg(msg)
 					win:setMovingElement()
 				end
 				self.Move0 = false
+				self.ClickDirection = false
 			end
 		elseif msg[2] == ui.MSG_MOUSEMOVE then
 			if win.MovingElement == self then

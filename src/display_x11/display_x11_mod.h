@@ -247,6 +247,10 @@ typedef struct
 
 	TUINT8 x11_utf8buffer[X11_UTF8_BUFSIZE];
 
+	#if defined(NOCURSOR)
+	Cursor x11_NullCursor;
+	#endif
+
 } X11DISPLAY;
 
 struct X11Pen
@@ -301,6 +305,9 @@ typedef struct
 
 	XShmSegmentInfo shminfo;
 
+	/* userdata attached to this window, also propagated in messages: */
+	TTAG userdata;
+
 } X11WINDOW;
 
 struct attrdata
@@ -331,6 +338,8 @@ LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags);
 LOCAL void x11_exit(X11DISPLAY *mod);
 LOCAL TTASKENTRY void x11_taskfunc(struct TTask *task);
 LOCAL TTASKENTRY TBOOL x11_initinstance(struct TTask *task);
+
+LOCAL void x11_sendimessages(X11DISPLAY *mod, TBOOL do_interval);
 
 LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req);
 LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req);

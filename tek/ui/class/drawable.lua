@@ -50,7 +50,7 @@ local overlap = Region.overlapCoords
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 10.1"
+_VERSION = "Drawable 12.0"
 
 DEBUG_DELAY = 0.003
 
@@ -81,8 +81,8 @@ function Drawable.init(self)
 	return Object.init(self)
 end
 
-function Drawable:open(title, w, h, minw, minh, maxw, maxh, x, y, center,
-	fulls)
+function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
+	center, fulls)
 	assert(not w or w > 0)
 	assert(not h or h > 0)
 	assert(not minw or minw >= 0)
@@ -90,9 +90,9 @@ function Drawable:open(title, w, h, minw, minh, maxw, maxh, x, y, center,
 	assert(not maxw or maxw > 0)
 	assert(not maxh or maxh > 0)
 	if not self.Visual then
-
 		self.Visual = self.Display:openVisual
 		{
+			UserData = userdata,
 			Title = title,
 			Width = w,
 			Height = h,
@@ -108,12 +108,9 @@ function Drawable:open(title, w, h, minw, minh, maxw, maxh, x, y, center,
 			EventMask = self.Interval and ui.MSG_ALL or
 				ui.MSG_ALL - ui.MSG_INTERVAL
 		}
-
 		self.DebugPen1 = self.Visual:allocpen(255, 255, 0)
 		self.DebugPen2 = self.Visual:allocpen(0, 0, 0)
-
 		self.Display:allocPens(self.Visual, self.Pens)
-
 		return true
 	end
 end
@@ -159,6 +156,10 @@ end
 
 function Drawable:drawRGB(...)
 	self.Visual:drawrgb(...)
+end
+
+function Drawable:drawPPM(...)
+	self.Visual:drawppm(...)
 end
 
 -------------------------------------------------------------------------------

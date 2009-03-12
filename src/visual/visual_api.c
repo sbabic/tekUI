@@ -129,7 +129,7 @@ EXPORT struct TVisualBase *vis_openvisual(struct TVisualBase *mod,
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TVisualBase *inst;
-	TTAGITEM otags[2];
+	TTAGITEM otags[3];
 
 	otags[0].tti_Tag = TVisual_NewInstance;
 	otags[0].tti_Value = TTRUE;
@@ -143,9 +143,14 @@ EXPORT struct TVisualBase *vis_openvisual(struct TVisualBase *mod,
 			visi_getreq(inst, TVCMD_OPENWINDOW, TNULL, tags);
 		if (req)
 		{
+			otags[0].tti_Tag = TTAG_GOSUB;
+			otags[0].tti_Value = (TTAG) tags;
+			otags[1].tti_Tag = TVisual_UserData;
+			otags[1].tti_Value = (TTAG) inst;
+			otags[2].tti_Tag = TTAG_DONE;
 			req->tvr_Op.OpenWindow.Window = TNULL;
 			req->tvr_Op.OpenWindow.IMsgPort = inst->vis_IMsgPort;
-			req->tvr_Op.OpenWindow.Tags = tags;
+			req->tvr_Op.OpenWindow.Tags = otags;
 			TDoIO(&req->tvr_Req);
 			inst->vis_Window = req->tvr_Op.OpenWindow.Window;
 			if (inst->vis_Window)

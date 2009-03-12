@@ -45,7 +45,6 @@ struct vis_HashNode
 struct vis_FontQueryHandle
 {
 	struct THandle vfq_Handle;
-
 };
 
 struct TVisualBase
@@ -58,11 +57,11 @@ struct TVisualBase
 	TAPTR vis_Lock;
 	/* Number of module opens: */
 	TUINT vis_RefCount;
+	/* Flags: */
+	TUINT vis_Flags;
 	/* Hash of displays: */
 	struct vis_Hash *vis_Displays;
-
 	/* Instance-specific: */
-
 	struct TVRequest *vis_InitRequest;
 	/* Display: */
 	TAPTR vis_Display;
@@ -81,6 +80,9 @@ struct TVisualBase
 	/* Number of requests allocated so far: */
 	TINT vis_NumRequests;
 };
+
+#define TVISFL_CMDRPORT_OWNER	0x0001
+#define TVISFL_IMSGPORT_OWNER	0x0002
 
 LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, TAPTR udata);
 LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash);

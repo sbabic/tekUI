@@ -100,7 +100,7 @@ MODDIR = $(BINDIR)/mod
 # Compiler flags:
 #------------------------------------------------------------------------------
 
-DEBUG = -DTDEBUG=10
+DEBUG = -g -DTDEBUG=5
 WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function
 OPT = -O2
 INCL = -I. -Iinclude -I$(INCDIR)

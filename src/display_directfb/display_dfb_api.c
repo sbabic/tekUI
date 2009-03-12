@@ -26,6 +26,7 @@ dfb_openvisual(DFBDISPLAY *mod, struct TVRequest *req)
 	req->tvr_Op.OpenWindow.Window = v;
 	if (v == TNULL) return;
 
+	v->userdata = TGetTag(tags, TVisual_UserData, TNULL);
 	v->eventmask = (TUINT) TGetTag(tags, TVisual_EventMask, 0);
 
 	TInitList(&v->penlist);
@@ -193,6 +194,8 @@ dfb_setinput(DFBDISPLAY *mod, struct TVRequest *req)
 	DFBWINDOW *v = req->tvr_Op.SetInput.Window;
 	req->tvr_Op.SetInput.OldMask = v->eventmask;
 	v->eventmask = req->tvr_Op.SetInput.Mask;
+	/* spool out possible remaining messages: */
+	dfb_sendimessages(mod, TFALSE);
 }
 
 /*****************************************************************************/
@@ -510,6 +513,9 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	{
 		default:
 			return TTRUE;
+		case TVisual_UserData:
+			*((TTAG *) item->tti_Value) = v->userdata;
+			break;
 		case TVisual_Width:
 			*((TINT *) item->tti_Value) = v->winwidth;
 			break;

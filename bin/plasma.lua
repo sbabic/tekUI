@@ -105,9 +105,9 @@ end
 
 local abort, paint
 repeat
-	v:wait()
+	visual.wait()
 	repeat
-		local msg = v:getmsg()
+		local msg = visual.getmsg()
 		if msg then
 			local typ, code, mx, my = msg[2], msg[3], msg[4], msg[5]
 			if typ == 1 -- closewindow
@@ -124,4 +124,3 @@ repeat
 		paint = false
 	end
 until abort
-

@@ -222,6 +222,10 @@ typedef struct
 
 	/* current active font */
 	TAPTR curfont;
+
+	/* userdata attached to this window, also propagated in messages: */
+	TTAG userdata;
+
 } DFBWINDOW;
 
 struct DFBPen
@@ -246,6 +250,7 @@ struct attrdata
 
 LOCAL TBOOL dfb_init(DFBDISPLAY *mod, TTAGITEM *tags);
 LOCAL void dfb_exit(DFBDISPLAY *mod);
+LOCAL void dfb_sendimessages(DFBDISPLAY *mod, TBOOL do_interval);
 LOCAL void dfb_wake(DFBDISPLAY *inst);
 LOCAL void dfb_openvisual(DFBDISPLAY *mod, struct TVRequest *req);
 LOCAL void dfb_closevisual(DFBDISPLAY *mod, struct TVRequest *req);

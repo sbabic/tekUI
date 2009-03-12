@@ -126,6 +126,14 @@ tek_init_visual(struct TTask *task, struct TModule *vis, TUINT16 version,
 **	Module open/close
 */
 
+static void vis_destroyports(struct TVisualBase *mod)
+{
+	if (mod->vis_Flags & TVISFL_CMDRPORT_OWNER)
+		TDestroy(mod->vis_CmdRPort);
+	if (mod->vis_Flags & TVISFL_IMSGPORT_OWNER)
+		TDestroy(mod->vis_IMsgPort);
+}
+
 static struct TVisualBase *
 vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 {
@@ -157,12 +165,26 @@ vis_modopen(struct TVisualBase *mod, TTAGITEM *tags)
 			{
 				TInitList(&inst->vis_ReqPool);
 				TInitList(&inst->vis_WaitList);
-				inst->vis_IMsgPort = TCreatePort(TNULL);
-				inst->vis_CmdRPort = TCreatePort(TNULL);
+
+				inst->vis_IMsgPort = (struct TMsgPort *)
+					TGetTag(tags, TVisual_IMsgPort, TNULL);
+				if (inst->vis_IMsgPort == TNULL)
+				{
+					inst->vis_IMsgPort = TCreatePort(TNULL);
+					inst->vis_Flags |= TVISFL_IMSGPORT_OWNER;
+				}
+
+				inst->vis_CmdRPort = (struct TMsgPort *)
+					TGetTag(tags, TVisual_CmdRPort, TNULL);
+				if (inst->vis_CmdRPort == TNULL)
+				{
+					inst->vis_CmdRPort = TCreatePort(TNULL);
+					inst->vis_Flags |= TVISFL_CMDRPORT_OWNER;
+				}
+
 				if (inst->vis_IMsgPort == TNULL || inst->vis_CmdRPort == TNULL)
 				{
-					TDestroy(inst->vis_CmdRPort);
-					TDestroy(inst->vis_IMsgPort);
+					vis_destroyports(inst);
 					TFreeInstance(&inst->vis_Module);
 					inst = TNULL;
 				}
@@ -188,8 +210,17 @@ vis_modclose(struct TVisualBase *inst)
 		struct TNode *node;
 		TAPTR imsg;
 
-		while ((imsg = TGetMsg(inst->vis_IMsgPort)))
-			TAckMsg(imsg);
+		if (inst->vis_Flags & TVISFL_IMSGPORT_OWNER)
+		{
+			TINT n = 0;
+			while ((imsg = TGetMsg(inst->vis_IMsgPort)))
+			{
+				TAckMsg(imsg);
+				n++;
+			}
+			if (n > 0)
+				TDBPRINTF(TDB_WARN,("freed &d pending input message\n", n));
+		}
 
 		while ((node = TRemHead(&inst->vis_ReqPool)))
 			TFree(node);
@@ -200,8 +231,7 @@ vis_modclose(struct TVisualBase *inst)
 			TFree(node);
 		}
 
-		TDestroy(inst->vis_CmdRPort);
-		TDestroy(inst->vis_IMsgPort);
+		vis_destroyports(inst);
 		TFreeInstance(&inst->vis_Module);
 	}
 	TLock(mod->vis_Lock);

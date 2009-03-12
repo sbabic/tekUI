@@ -82,7 +82,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 8.1"
+_VERSION = "Display 9.0"
 
 -------------------------------------------------------------------------------
 --	Class data and constants:
@@ -115,12 +115,12 @@ local DEF_RGB_CURSOR     = "#c85014"
 -- local DEF_RGB_SILVER     = "#c0c0c0"
 -- local DEF_RGB_ORANGE     = "#ffa500"
 
-local DEF_MAINFONT  = "sans-serif,helvetica,Vera:12"
-local DEF_SMALLFONT = "sans-serif,helvetica,Vera:10"
-local DEF_MENUFONT  = "sans-serif,helvetica,Vera:14"
-local DEF_FIXEDFONT = "monospace,fixed,VeraMono:14"
-local DEF_LARGEFONT = "sans-serif,helvetica,Vera:20"
-local DEF_HUGEFONT  = "sans-serif,helvetica,Vera:28"
+local DEF_MAINFONT  = "sans-serif,helvetica,arial,Vera:14"
+local DEF_SMALLFONT = "sans-serif,helvetica,arial,Vera:12"
+local DEF_MENUFONT  = "sans-serif,helvetica,arial,Vera:14"
+local DEF_FIXEDFONT = "monospace,fixed,courier new,VeraMono:14"
+local DEF_LARGEFONT = "sans-serif,helvetica,arial,Vera:18"
+local DEF_HUGEFONT  = "sans-serif,helvetica,arial,Vera:24"
 
 local ColorDefaults =
 {
@@ -279,9 +279,9 @@ function Display:openFont(fname)
 		size = size ~= "" and tonumber(size) or nil
 		for name in name:gmatch("%s*([^,]*)%s*,?") do
 			if name == "" then
-				name = FontDefaults[""][2]:match("^([^:]*):?(%d*)$")
+				name = FontDefaults[""][2]:match("^([^:,]*),?[^:]*:?(%d*)$")
 			end
-			db.info("Fontname: %s -> %s:%d", fname, name, size or -1)
+			db.info("Open font: '%s' -> '%s:%d'", fname, name, size or -1)
 			local font = Visual.openfont(name, size)
 			if font then
 				local r = { font, font:getattrs { }, fname, name }
@@ -318,6 +318,14 @@ end
 
 function Display:wait(...)
 	return Visual.wait(...)
+end
+
+-------------------------------------------------------------------------------
+--	getmsg:
+-------------------------------------------------------------------------------
+
+function Display:getmsg(...)
+	return Visual.getmsg(...)
 end
 
 -------------------------------------------------------------------------------

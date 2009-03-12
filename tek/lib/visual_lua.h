@@ -42,9 +42,13 @@ typedef struct TEKVisual
 	/* Visualbase: */
 	TAPTR vis_Base;
 	/* Execbase: */
-	TAPTR vis_ExecBase;
+	struct TExecBase *vis_ExecBase;
 	/* Reference to base (stored in metatable): */
 	int vis_refBase;
+	/* Reference to self (stored in metatable): */
+	int vis_refSelf;
+	/* Reference to userdata (stored in metatable): */
+	int vis_refUserData;
 	/* Is base instance: */
 	TBOOL vis_isBase;
 
@@ -68,6 +72,9 @@ typedef struct TEKVisual
 
 	TINT vis_RectBufferNum;
 	TINT *vis_RectBuffer;
+
+	struct TMsgPort *vis_CmdRPort;
+	struct TMsgPort *vis_IMsgPort;
 
 } TEKVisual;
 
@@ -108,14 +115,13 @@ typedef struct
 
 LOCAL LUACFUNC TINT tek_lib_visual_open(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_close(lua_State *L);
-
+LOCAL LUACFUNC int tek_lib_visual_getuserdata(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_wait(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_sleep(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_openfont(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_closefont(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_textsize_font(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_gettime(lua_State *L);
-
 LOCAL LUACFUNC TINT tek_lib_visual_setinput(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_clearinput(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getmsg(lua_State *L);
@@ -138,6 +144,5 @@ LOCAL LUACFUNC TINT tek_lib_visual_setshift(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_drawrgb(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getfontattrs(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_drawppm(lua_State *L);
-
 
 #endif

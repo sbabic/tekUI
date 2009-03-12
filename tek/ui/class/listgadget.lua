@@ -12,6 +12,7 @@
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.gadget : Text]] /
 --		ListGadget
 --
 --	OVERVIEW::
@@ -114,7 +115,7 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Display = ui.Display
-local Gadget = ui.Gadget
+local Text = ui.Text
 local List = require "tek.class.list"
 local Region = require "tek.lib.region"
 local ScrollGroup = ui.ScrollGroup
@@ -136,8 +137,8 @@ local tostring = tostring
 local type = type
 local unpack = unpack
 
-module("tek.ui.class.listgadget", tek.ui.class.gadget)
-_VERSION = "ListGadget 13.7"
+module("tek.ui.class.listgadget", tek.ui.class.text)
+_VERSION = "ListGadget 13.8"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -188,7 +189,7 @@ function ListGadget.init(self)
 	-- selection modes ("none", "single", "multi"):
 	self.SelectMode = self.SelectMode or "single"
 	self.TrackDamage = self.TrackDamage or true
-	return Gadget.init(self)
+	return Text.init(self)
 end
 
 -------------------------------------------------------------------------------
@@ -197,7 +198,7 @@ end
 
 function ListGadget:connect(parent)
 	self.Canvas = parent
-	return Gadget.connect(self, parent)
+	return Text.connect(self, parent)
 end
 
 -------------------------------------------------------------------------------
@@ -214,7 +215,7 @@ function ListGadget:getProperties(p, pclass)
 	b[2] = b[2] or tonumber(self:getProperty(p, pclass, "border-top-width"))
 	b[3] = b[3] or tonumber(self:getProperty(p, pclass, "border-right-width"))
 	b[4] = b[4] or tonumber(self:getProperty(p, pclass, "border-bottom-width"))
-	Gadget.getProperties(self, p, pclass)
+	Text.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -222,7 +223,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:setup(app, window)
-	Gadget.setup(self, app, window)
+	Text.setup(self, app, window)
 	self:initSelectedLines()
 	self:addNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
 	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
@@ -242,7 +243,7 @@ function ListGadget:cleanup()
 	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
 	self:remNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
 	self.SelectedLines = false
-	Gadget.cleanup(self)
+	Text.cleanup(self)
 	self.Canvas = false
 end
 
@@ -251,7 +252,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:show(display, drawable)
-	if Gadget.show(self, display, drawable) then
+	if Text.show(self, display, drawable) then
 		self.CursorObject:show(display, drawable)
 		self.Font = display:openFont(self.FontSpec)
 		self.FWidth, self.FHeight = Display:getTextSize(self.Font, "x")
@@ -271,7 +272,7 @@ function ListGadget:hide()
 		self.Display:closeFont(self.Font)
 		self.Font = false
 	end
-	Gadget.hide(self)
+	Text.hide(self)
 end
 
 -------------------------------------------------------------------------------
@@ -283,7 +284,7 @@ function ListGadget:askMinMax(m1, m2, m3, m4)
 	m2 = m2 + self.FHeight
 	m3 = ui.HUGE
 	m4 = ui.HUGE
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
+	return Text.askMinMax(self, m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
@@ -694,7 +695,7 @@ end
 
 function ListGadget:setState(bg, fg)
 	bg = bg or self.BGPen
-	Gadget.setState(self, bg, fg)
+	Text.setState(self, bg, fg)
 end
 
 -------------------------------------------------------------------------------
@@ -885,7 +886,7 @@ function ListGadget:passMsg(msg)
 			end
 		end
 	end
-	return Gadget.passMsg(self, msg)
+	return Text.passMsg(self, msg)
 end
 
 -------------------------------------------------------------------------------
@@ -953,7 +954,7 @@ function ListGadget:onFocus(focused)
 	else
 		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
 	end
-	Gadget.onFocus(self, focused)
+	Text.onFocus(self, focused)
 end
 
 -------------------------------------------------------------------------------

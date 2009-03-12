@@ -19,6 +19,8 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 	req->tvr_Op.OpenWindow.Window = v;
 	if (v == TNULL) return;
 
+	v->userdata = TGetTag(tags, TVisual_UserData, TNULL);
+
 	for (;;)
 	{
 		XSetWindowAttributes swa;
@@ -136,6 +138,14 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		v->base_mask = StructureNotifyMask | ExposureMask | FocusChangeMask;
 		swa.event_mask = x11_seteventmask(mod, v,
 			(TUINT) TGetTag(tags, TVisual_EventMask, 0));
+
+		#if defined(NOCURSOR)
+		if (getenv("NOCURSOR"))
+		{
+			swa.cursor = mod->x11_NullCursor;
+			swa_mask |= CWCursor;
+		}
+		#endif
 
 		v->window = XCreateWindow(mod->x11_Display,
 			RootWindow(mod->x11_Display, mod->x11_Screen),
@@ -268,6 +278,9 @@ LOCAL void x11_setinput(X11DISPLAY *mod, struct TVRequest *req)
 	TUINT eventmask = req->tvr_Op.SetInput.Mask;
 	XSelectInput(mod->x11_Display, v->window,
 		x11_seteventmask(mod, v, eventmask));
+	/* spool out possible remaining messages: */
+	x11_sendimessages(mod, TFALSE);
+
 }
 
 LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req)
@@ -595,6 +608,9 @@ static THOOKENTRY TTAG getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	{
 		default:
 			return TTRUE;
+		case TVisual_UserData:
+			*((TTAG *) item->tti_Value) = v->userdata;
+			break;
 		case TVisual_Width:
 			*((TINT *) item->tti_Value) = v->winwidth;
 			break;

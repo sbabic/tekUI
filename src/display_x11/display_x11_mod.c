@@ -128,8 +128,7 @@ static void x11_modclose(X11DISPLAY *mod)
 static TMODAPI void x11_beginio(X11DISPLAY *mod, struct TVRequest *req)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
-	TPutMsg(mod->x11_CmdPort,
-		req->tvr_Req.io_ReplyPort, req);
+	TPutMsg(mod->x11_CmdPort, req->tvr_Req.io_ReplyPort, req);
 	x11_wake(mod);
 }
 

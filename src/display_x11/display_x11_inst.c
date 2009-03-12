@@ -11,7 +11,6 @@ static void x11_exitinstance(X11DISPLAY *inst);
 static void x11_processevent(X11DISPLAY *mod);
 static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 	TAPTR msgstate, XEvent *ev);
-static void x11_sendimessages(X11DISPLAY *mod, TBOOL do_interval);
 
 /*****************************************************************************/
 /*
@@ -27,13 +26,12 @@ LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags)
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
 		tags[1].tti_Tag = TTAG_DONE;
-		mod->x11_Task = TCreateTask(&mod->x11_Module.tmd_Handle.thn_Hook,
-			tags);
+		mod->x11_Task =
+			TCreateTask(&mod->x11_Module.tmd_Handle.thn_Hook, tags);
 		if (mod->x11_Task == TNULL)
 			break;
 		mod->x11_CmdPort = TGetUserPort(mod->x11_Task);
-		mod->x11_CmdPortSignal = TGetPortSignal(
-			mod->x11_CmdPort);
+		mod->x11_CmdPortSignal = TGetPortSignal(mod->x11_CmdPort);
 		return TTRUE;
 	}
 	x11_exit(mod);
@@ -139,6 +137,31 @@ static TBOOL getprops(X11DISPLAY *inst)
 
 /*****************************************************************************/
 
+#if defined(NOCURSOR)
+static void x11_createnullcursor(X11DISPLAY *mod)
+{
+	Pixmap cursormask;
+	XGCValues xgc;
+	GC gc;
+	XColor dummycolour;
+	Display *display = mod->x11_Display;
+	Window root = XRootWindow(mod->x11_Display, mod->x11_Screen);
+	cursormask = XCreatePixmap(display, root, 1, 1, 1);
+	xgc.function = GXclear;
+	gc = XCreateGC(display, cursormask, GCFunction, &xgc);
+	XFillRectangle(display, cursormask, gc, 0, 0, 1, 1);
+	dummycolour.pixel = 0;
+	dummycolour.red = 0;
+	dummycolour.flags = 04;
+	mod->x11_NullCursor = XCreatePixmapCursor(display, cursormask, cursormask,
+		&dummycolour, &dummycolour, 0, 0);
+	XFreePixmap(display,cursormask);
+	XFreeGC(display,gc);
+}
+#endif
+
+/*****************************************************************************/
+
 LOCAL TBOOL x11_initinstance(struct TTask *task)
 {
 	X11DISPLAY *inst = TExecGetTaskData(TGetExecBase(task), task);
@@ -200,6 +223,10 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 
 		inst->x11_fm.deffont = x11_hostopenfont(inst, ftags);
 		if (inst->x11_fm.deffont == TNULL) break;
+
+		#if defined(NOCURSOR)
+		x11_createnullcursor(inst);
+		#endif
 
 		TDBPRINTF(TDB_TRACE,("instance init successful\n"));
 		return TTRUE;
@@ -492,7 +519,7 @@ static void x11_processevent(X11DISPLAY *mod)
 
 		if (v == TNULL)
 		{
-			TDBPRINTF(TDB_WARN,
+			TDBPRINTF(TDB_INFO,
 				("Message Type %04x from unknown window: %p\n", ev.type, w));
 			continue;
 		}
@@ -510,6 +537,7 @@ static TBOOL getimsg(X11DISPLAY *mod, X11WINDOW *v, TIMSG **msgptr, TUINT type)
 		msg = TAllocMsg0(sizeof(TIMSG));
 	if (msg)
 	{
+		msg->timsg_UserData = v->userdata;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->x11_KeyQual;
 		msg->timsg_MouseX = mod->x11_MouseX;
@@ -791,9 +819,9 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 				imsg->timsg_Width = ev->xexpose.width;
 				imsg->timsg_Height = ev->xexpose.height;
 				TAddTail(&v->imsgqueue, &imsg->timsg_Node);
-					TDBPRINTF(TDB_TRACE,("Expose: REFRESH: %d %d %d %d\n",
-						imsg->timsg_X, imsg->timsg_Y,
-						imsg->timsg_Width, imsg->timsg_Height));
+				TDBPRINTF(TDB_TRACE,("Expose: REFRESH: %d %d %d %d\n",
+					imsg->timsg_X, imsg->timsg_Y,
+					imsg->timsg_Width, imsg->timsg_Height));
 			}
 			break;
 

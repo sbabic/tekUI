@@ -113,7 +113,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 10.3"
+_VERSION = "Gadget 10.6"
 
 local Gadget = _M
 
@@ -346,6 +346,18 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:onSelect(selected)
+
+	--	HACK for better touchpad support -- unfortunately an element is
+	--	deselected also when the mouse is leaving the window, so this is
+	--	not entirely satisfactory.
+
+	-- if not selected then
+	-- 	if self.Active then
+	-- 		db.warn("Element deselected, forcing inactive")
+	-- 		self.Window:setActiveElement()
+	-- 	end
+	-- end
+
 	self.RedrawBorder = true
 	self:setState()
 end
@@ -424,7 +436,8 @@ function Gadget:passMsg(msg)
 		he = he == self and not he.Disabled and he
 		if msg[2] == ui.MSG_MOUSEBUTTON then
 			if msg[3] == 1 then -- leftdown:
-				if he then
+				if not self.Disabled and
+					self:getElementByXY(msg[4], msg[5]) == self then
 					win:setHiliteElement(self)
 					if self:checkFocus() then
 						win:setFocusElement(self)

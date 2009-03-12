@@ -25,7 +25,6 @@ static TVOID dfb_processvisualevent(DFBDISPLAY *mod, DFBWINDOW *v, DFBEvent *evt
 static TBOOL processkey(DFBDISPLAY *mod, DFBWINDOW *v, DFBWindowEvent *ev, TBOOL keydown);
 TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type);
 TVOID genimsg(DFBDISPLAY *mod, DFBWINDOW *vold, DFBWINDOW *vnew, TUINT type);
-static void dfb_sendimessages(DFBDISPLAY *mod, TBOOL do_interval);
 
 static const TMFPTR
 dfb_vectors[DFBDISPLAY_NUMVECTORS] =
@@ -984,6 +983,7 @@ TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type)
 		msg = TExecAllocMsg0(mod->dfb_ExecBase, sizeof(TIMSG));
 	if (msg)
 	{
+		msg->timsg_UserData = v->userdata;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->dfb_KeyQual;
 		msg->timsg_MouseX = mod->dfb_MouseX;
@@ -996,8 +996,7 @@ TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type)
 	return TFALSE;
 }
 
-static void
-dfb_sendimessages(DFBDISPLAY *mod, TBOOL do_interval)
+LOCAL void dfb_sendimessages(DFBDISPLAY *mod, TBOOL do_interval)
 {
 	struct TNode *next, *node = mod->dfb_vlist.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)

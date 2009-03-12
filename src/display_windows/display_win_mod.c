@@ -189,15 +189,6 @@ fb_init(WINDISPLAY *mod, TTAGITEM *tags)
 	for (;;)
 	{
 		TTAGITEM tags[2];
-		struct TAtom *atom;
-
-// 		atom = TLockAtom("win32.hwnd", TATOMF_NAME | TATOMF_SHARED);
-// 		if (atom)
-// 		{
-// 			mod->fbd_DeviceHWnd = (HWND) TGetAtomData(atom);
-// 			mod->fbd_DeviceHDC = GetDC(mod->fbd_DeviceHWnd);
-// 			TUnlockAtom(atom, TATOMF_KEEP);
-// 		}
 
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
@@ -256,7 +247,7 @@ static TBOOL fb_initinstance(TAPTR task)
 		wclass.hInstance = mod->fbd_HInst;
 		wclass.hIcon = LoadIcon(NULL,IDI_APPLICATION);
 		wclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wclass.hbrBackground = GetStockObject(BLACK_BRUSH);
+		wclass.hbrBackground = NULL;
 		wclass.lpszMenuName = NULL;
 		wclass.lpszClassName = FB_DISPLAY_CLASSNAME;
 		wclass.hIconSm = NULL;
@@ -399,11 +390,6 @@ static void fb_runinstance(TAPTR task)
 	fb_exitinstance(mod);
 }
 
-// LOCAL void fb_wake(WINDISPLAY *mod)
-// {
-// 	TExecSignal(mod->fbd_ExecBase, mod->fbd_Task, mod->fbd_CmdPortSignal);
-// }
-
 /*****************************************************************************/
 
 static void
@@ -513,6 +499,7 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 		msg = TAllocMsg0(sizeof(TIMSG));
 	if (msg)
 	{
+		msg->timsg_UserData = win->fbv_UserData;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = win->fbv_KeyQual;
 		msg->timsg_MouseX = win->fbv_MouseX;
@@ -529,7 +516,6 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 
 static void fb_notifywindows(WINDISPLAY *mod)
 {
-	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TNode *next, *node = mod->fbd_VisualList.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -562,13 +548,9 @@ LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval)
 	}
 }
 
-static void fb_sendimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG *imsg)
+LOCAL void fb_sendimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG *imsg)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
-// 	TExecLock(mod->fbd_ExecBase, mod->fbd_Lock);
-// 	TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
-// 	TExecUnlock(mod->fbd_ExecBase, mod->fbd_Lock);
-// 	TExecSignal(mod->fbd_ExecBase, mod->fbd_Task, TTASK_SIG_USER);
 	TPutMsg(win->fbv_IMsgPort, TNULL, imsg);
 }
 
@@ -576,10 +558,9 @@ static void fb_sendimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG *imsg)
 
 static TBOOL getqualifier(WINDISPLAY *mod, WINWINDOW *win)
 {
-	BYTE keystate[256];
 	TUINT quali = TKEYQ_NONE;
 	TBOOL newquali;
-
+	BYTE *keystate = win->fbv_KeyState;
 	GetKeyboardState(keystate);
 	if (keystate[VK_LSHIFT] & 0x80) quali |= TKEYQ_LSHIFT;
 	if (keystate[VK_RSHIFT] & 0x80) quali |= TKEYQ_RSHIFT;
@@ -587,12 +568,122 @@ static TBOOL getqualifier(WINDISPLAY *mod, WINWINDOW *win)
 	if (keystate[VK_RCONTROL] & 0x80) quali |= TKEYQ_RCTRL;
 	if (keystate[VK_LMENU] & 0x80) quali |= TKEYQ_LALT;
 	if (keystate[VK_RMENU] & 0x80) quali |= TKEYQ_RALT;
-	if (keystate[VK_NUMLOCK] & 1) quali |= TKEYQ_NUMBLOCK;
-
+	/*if (keystate[VK_NUMLOCK] & 1) quali |= TKEYQ_NUMBLOCK;*/
 	newquali = (win->fbv_KeyQual != quali);
 	win->fbv_KeyQual = quali;
-
 	return newquali;
+}
+
+static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type, TINT code)
+{
+	TIMSG *imsg;
+	TINT numchars = 0;
+	WCHAR buff[2];
+
+	getqualifier(mod, win);
+
+	switch (code)
+	{
+		case VK_LEFT:
+			code = TKEYC_CRSRLEFT;
+			break;
+		case VK_UP:
+			code = TKEYC_CRSRUP;
+			break;
+		case VK_RIGHT:
+			code = TKEYC_CRSRRIGHT;
+			break;
+		case VK_DOWN:
+			code = TKEYC_CRSRDOWN;
+			break;
+
+		case VK_ESCAPE:
+			code = TKEYC_ESC;
+			break;
+		case VK_DELETE:
+			code = TKEYC_DEL;
+			break;
+		case VK_BACK:
+			code = TKEYC_BCKSPC;
+			break;
+		case VK_TAB:
+			code = TKEYC_TAB;
+			break;
+		case VK_RETURN:
+			code = TKEYC_RETURN;
+			break;
+
+		case VK_HELP:
+			code = TKEYC_HELP;
+			break;
+		case VK_INSERT:
+			code = TKEYC_INSERT;
+			break;
+		case VK_PRIOR:
+			code = TKEYC_PAGEUP;
+			break;
+		case VK_NEXT:
+			code = TKEYC_PAGEDOWN;
+			break;
+		case VK_HOME:
+			code = TKEYC_POSONE;
+			break;
+		case VK_END:
+			code = TKEYC_POSEND;
+			break;
+		case VK_PRINT:
+			code = TKEYC_PRINT;
+			break;
+		case VK_SCROLL:
+			code = TKEYC_SCROLL;
+			break;
+		case VK_PAUSE:
+			code = TKEYC_PAUSE;
+			break;
+		case VK_DECIMAL:
+			code = '.';
+			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
+			break;
+		case VK_ADD:
+			code = '+';
+			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
+			break;
+		case VK_SUBTRACT:
+			code = '-';
+			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
+			break;
+		case VK_MULTIPLY:
+			code = '*';
+			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
+			break;
+		case VK_DIVIDE:
+			code = '/';
+			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
+			break;
+
+		case VK_F1: case VK_F2: case VK_F3: case VK_F4:
+		case VK_F5: case VK_F6: case VK_F7: case VK_F8:
+		case VK_F9: case VK_F10: case VK_F11: case VK_F12:
+			code = (TUINT) (code - VK_F1) + TKEYC_F1;
+			break;
+		default:
+			numchars = ToUnicode(code, 0, win->fbv_KeyState,
+				buff, 2, 0);
+			if (numchars > 0)
+				code = buff[0];
+	}
+
+	if ((win->fbv_InputMask & type) &&
+		fb_getimsg(mod, win, &imsg, type))
+	{
+		ptrdiff_t len;
+		imsg->timsg_Code = code;
+		len = (ptrdiff_t)
+			encodeutf8(imsg->timsg_KeyCode, imsg->timsg_Code) -
+			(ptrdiff_t) imsg->timsg_KeyCode;
+		imsg->timsg_KeyCode[len] = 0;
+		fb_sendimsg(mod, win, imsg);
+	}
 }
 
 static LRESULT CALLBACK
@@ -614,6 +705,9 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				fb_sendimsg(mod, win, imsg);
 			return 0;
 
+		case WM_ERASEBKGND:
+			return 0;
+
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
@@ -626,6 +720,9 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					imsg->timsg_Y = ps.rcPaint.top;
 					imsg->timsg_Width = ps.rcPaint.right - ps.rcPaint.left + 1;
 					imsg->timsg_Height = ps.rcPaint.bottom - ps.rcPaint.top + 1;
+					TDBPRINTF(TDB_TRACE,("dirty: %d %d %d %d\n",
+						imsg->timsg_X, imsg->timsg_Y, imsg->timsg_Width,
+						imsg->timsg_Height));
 					fb_sendimsg(mod, win, imsg);
 				}
 				EndPaint(win->fbv_HWnd, &ps);
@@ -634,12 +731,15 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_ACTIVATE:
-			if ((win->fbv_InputMask & TITYPE_FOCUS) &&
+			#if 0
+			TDBPRINTF(TDB_INFO,("Window %p - Focus: %d\n", win, (LOWORD(wParam) != WA_INACTIVE)));
+			if (!win->fbv_Borderless && (win->fbv_InputMask & TITYPE_FOCUS) &&
 				(fb_getimsg(mod, win, &imsg, TITYPE_FOCUS)))
 			{
 				imsg->timsg_Code = (LOWORD(wParam) != WA_INACTIVE);
 				fb_sendimsg(mod, win, imsg);
 			}
+			#endif
 			return 0;
 
 		case WM_SIZE:
@@ -655,7 +755,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return 0;
 
 		case WM_CAPTURECHANGED:
-			TDBPRINTF(20,("CAPTURE CHANGED\n"));
+			TDBPRINTF(TDB_INFO,("Capture changed\n"));
 			break;
 
 		case WM_MOUSEMOVE:
@@ -714,7 +814,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_LBUTTONDOWN:
 			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON)))
+				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 			{
 				imsg->timsg_Code = TMBCODE_LEFTDOWN;
 				fb_sendimsg(mod, win, imsg);
@@ -722,7 +822,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return 0;
 		case WM_LBUTTONUP:
 			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON)))
+				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 			{
 				imsg->timsg_Code = TMBCODE_LEFTUP;
 				fb_sendimsg(mod, win, imsg);
@@ -730,7 +830,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return 0;
 		case WM_RBUTTONDOWN:
 			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON)))
+				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 			{
 				imsg->timsg_Code = TMBCODE_RIGHTDOWN;
 				fb_sendimsg(mod, win, imsg);
@@ -738,7 +838,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return 0;
 		case WM_RBUTTONUP:
 			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON)))
+				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 			{
 				imsg->timsg_Code = TMBCODE_RIGHTUP;
 				fb_sendimsg(mod, win, imsg);
@@ -746,7 +846,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return 0;
 		case WM_MBUTTONDOWN:
 			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON)))
+				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 			{
 				imsg->timsg_Code = TMBCODE_MIDDLEDOWN;
 				fb_sendimsg(mod, win, imsg);
@@ -754,68 +854,27 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return 0;
 		case WM_MBUTTONUP:
 			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON)))
+				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 			{
 				imsg->timsg_Code = TMBCODE_MIDDLEUP;
 				fb_sendimsg(mod, win, imsg);
 			}
 			return 0;
 
-		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
-			if (win->fbv_InputMask & TITYPE_KEYDOWN)
-			{
-				TINT code;
-				switch (wParam)
-				{
-					default:
-						if (getqualifier(mod, win))
-							/* send qualifier alone: */
-							code = TKEYC_NONE;
-						else
-							/* send nothing: */
-							return 0;
-						break;
-
-					case VK_DELETE:
-						code = TKEYC_DEL;
-						break;
-					case VK_LEFT:
-						code = TKEYC_CRSRLEFT;
-						break;
-					case VK_UP:
-						code = TKEYC_CRSRUP;
-						break;
-					case VK_RIGHT:
-						code = TKEYC_CRSRRIGHT;
-						break;
-					case VK_DOWN:
-						code = TKEYC_CRSRDOWN;
-						break;
-					case VK_F1: case VK_F2: case VK_F3: case VK_F4:
-					case VK_F5: case VK_F6: case VK_F7: case VK_F8:
-					case VK_F9: case VK_F10: case VK_F11: case VK_F12:
-						code = (TUINT) (wParam - VK_F1) + TKEYC_F1;
-						break;
-				}
-
-				if (fb_getimsg(mod, win, &imsg, TITYPE_KEYDOWN))
-				{
-					imsg->timsg_Code = code;
-					TDBPRINTF(20,("keydown (1): %d\n", code));
-					fb_sendimsg(mod, win, imsg);
-				}
-			}
+			processkey(mod, win, TITYPE_KEYDOWN, 0);
 			return 0;
 
-		case WM_CHAR:
-			if ((win->fbv_InputMask & TITYPE_KEYDOWN) &&
-				fb_getimsg(mod, win, &imsg, TITYPE_KEYDOWN))
-			{
-				imsg->timsg_Code = wParam;
-				TDBPRINTF(20,("keydown (2): %d\n", wParam));
-				fb_sendimsg(mod, win, imsg);
-			}
+		case WM_SYSKEYUP:
+			processkey(mod, win, TITYPE_KEYUP, 0);
+			return 0;
+
+		case WM_KEYDOWN:
+			processkey(mod, win, TITYPE_KEYDOWN, wParam);
+			return 0;
+
+		case WM_KEYUP:
+			processkey(mod, win, TITYPE_KEYUP, wParam);
 			return 0;
 	}
 

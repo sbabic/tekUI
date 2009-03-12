@@ -6,6 +6,8 @@
 */
 
 #include <string.h>
+#include <tek/mod/exec.h>
+#include <tek/proto/hal.h>
 #include "visual_lua.h"
 
 #if !defined(DISPLAY_DRIVER)
@@ -37,6 +39,8 @@ static const luaL_Reg libfuncs[] =
 	{ "closefont", tek_lib_visual_closefont },
 	{ "textsize", tek_lib_visual_textsize_font },
 	{ "gettime", tek_lib_visual_gettime },
+	{ "wait", tek_lib_visual_wait },
+	{ "getmsg", tek_lib_visual_getmsg },
 	{ TNULL, TNULL }
 };
 
@@ -46,8 +50,6 @@ static const luaL_Reg classmethods[] =
 	{ "setinput", tek_lib_visual_setinput },
 	{ "clearinput", tek_lib_visual_clearinput },
 	{ "close", tek_lib_visual_close },
-	{ "wait", tek_lib_visual_wait },
-	{ "getmsg", tek_lib_visual_getmsg },
 	{ "allocpen", tek_lib_visual_allocpen },
 	{ "freepen", tek_lib_visual_freepen },
 	{ "frect", tek_lib_visual_frect },
@@ -66,6 +68,7 @@ static const luaL_Reg classmethods[] =
 	{ "setshift", tek_lib_visual_setshift },
 	{ "drawrgb", tek_lib_visual_drawrgb },
 	{ "drawppm", tek_lib_visual_drawppm },
+	{ "getuserdata", tek_lib_visual_getuserdata },
 	{ TNULL, TNULL }
 };
 
@@ -80,6 +83,7 @@ static const luaL_Reg fontmethods[] =
 /*****************************************************************************/
 /*
 **	visual_open { args }
+**	args.UserData - Lua Userdata
 **	args.Title - Title of Window
 **	args.Width - Width of the window
 **	args.Height - Height of the window
@@ -96,7 +100,7 @@ static const luaL_Reg fontmethods[] =
 LOCAL LUACFUNC TINT
 tek_lib_visual_open(lua_State *L)
 {
-	TTAGITEM tags[14], *tp = tags;
+	TTAGITEM tags[17], *tp = tags;
 	TEKVisual *visbase, *vis;
 
 	vis = lua_newuserdata(L, sizeof(TEKVisual));
@@ -141,6 +145,22 @@ tek_lib_visual_open(lua_State *L)
 	/* place ref to base in metatable: */
 	vis->vis_refBase = luaL_ref(L, -2);
 	/* s: visinst, vismeta */
+
+	/* place ref to self in metatable: */
+	lua_pushvalue(L, -2);
+	/* s: visinst, vismeta, visinst */
+	vis->vis_refSelf = luaL_ref(L, -2);
+	/* s: visinst, vismeta */
+
+	/* place reference to userdata in metatable: */
+	lua_getfield(L, 1, "UserData");
+	if (!lua_isnil(L, -1))
+		vis->vis_refUserData = luaL_ref(L, -2);
+	else
+	{
+		vis->vis_refUserData = -1;
+		lua_pop(L, 1);
+	}
 
 	tp->tti_Tag = TVisual_Title;
 	lua_getfield(L, 1, "Title");
@@ -223,6 +243,15 @@ tek_lib_visual_open(lua_State *L)
 	tp->tti_Tag = TVisual_Display;
 	tp++->tti_Value = (TTAG) vis->vis_Display;
 
+	tp->tti_Tag = TVisual_UserData;
+	tp++->tti_Value = (TTAG) vis->vis_refSelf;
+
+	tp->tti_Tag = TVisual_CmdRPort;
+	tp++->tti_Value = (TTAG) visbase->vis_CmdRPort;
+
+	tp->tti_Tag = TVisual_IMsgPort;
+	tp++->tti_Value = (TTAG) visbase->vis_IMsgPort;
+
 	tp->tti_Tag = TTAG_DONE;
 
 	vis->vis_Visual = TVisualOpen(visbase->vis_Base, tags);
@@ -258,9 +287,47 @@ tek_lib_visual_close(lua_State *L)
 	TFree(vis->vis_RectBuffer);
 	vis->vis_RectBuffer = TNULL;
 
+	if (vis->vis_Visual)
+	{
+		TEKVisual *visbase;
+		struct TNode *next, *node;
+		struct TList tmplist;
+		struct TMsgPort *port;
+
+		lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
+		/* s: visbase */
+		visbase = lua_touserdata(L, -1);
+		lua_pop(L, 1);
+		port = visbase->vis_IMsgPort;
+
+		/* stop sending messages: */
+		TVisualSetInput(vis->vis_Visual, TITYPE_ALL, TITYPE_NONE);
+
+		/* clean up message port: */
+		TInitList(&tmplist);
+		THALLock(visbase->vis_ExecBase->texb_HALBase, &port->tmp_Lock);
+		node = port->tmp_MsgList.tlh_Head;
+		for (; (next = node->tln_Succ); node = next)
+		{
+			TIMSG *imsg = TGETMSGBODY(node);
+			if (imsg->timsg_UserData == vis->vis_refSelf)
+			{
+				TRemove(node);
+				TAddTail(&tmplist, node);
+			}
+		}
+		THALUnlock(visbase->vis_ExecBase->texb_HALBase, &port->tmp_Lock);
+
+		while ((node = TRemHead(&tmplist)))
+			TAckMsg(TGETMSGBODY(node));
+	}
+
 	if (vis->vis_refBase >= 0)
 	{
 		lua_getmetatable(L, 1);
+		if (vis->vis_refUserData >= 0)
+			luaL_unref(L, -1, vis->vis_refUserData);
+		luaL_unref(L, -1, vis->vis_refSelf);
 		luaL_unref(L, -1, vis->vis_refBase);
 		vis->vis_refBase = -1;
 		lua_pop(L, 1);
@@ -276,6 +343,9 @@ tek_lib_visual_close(lua_State *L)
 
 	if (vis->vis_isBase)
 	{
+		TDestroy((struct THandle *) vis->vis_IMsgPort);
+		TDestroy((struct THandle *) vis->vis_CmdRPort);
+
 		if (vis->vis_Base)
 		{
 			TVisualCloseFont(vis->vis_Base, vis->vis_Font);
@@ -379,6 +449,11 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 		vis->vis_Base = TExecOpenModule(exec, "visual", 0, TNULL);
 		if (vis->vis_Base == TNULL) break;
 
+		vis->vis_CmdRPort = TExecCreatePort(exec, TNULL);
+		if (vis->vis_CmdRPort == TNULL) break;
+		vis->vis_IMsgPort = TExecCreatePort(exec, TNULL);
+		if (vis->vis_IMsgPort == TNULL) break;
+
 		/* Open a display: */
 		dtags[0].tti_Tag = TVisual_DisplayName;
 		dtags[0].tti_Value = (TTAG) "display_" DISPLAY_DRIVER;
@@ -406,6 +481,9 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 		/* success: */
 		return 0;
 	}
+
+	TDestroy((struct THandle *) vis->vis_IMsgPort);
+	TDestroy((struct THandle *) vis->vis_CmdRPort);
 
 	luaL_error(L, "Visual initialization failure");
 	return 0;

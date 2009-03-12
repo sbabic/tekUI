@@ -15,62 +15,15 @@ static TAPTR checkinstptr(lua_State *L, int n, const char *classname)
 #define checkfontptr(L, n) checkinstptr(L, n, TEK_LIB_VISUALFONT_CLASSNAME)
 
 /*****************************************************************************/
-/*
-**	visual_wait(table[, numv])
-**	Waits for one or a set of visuals. Places true in the table for
-**	each visual that has messages pending. If specified, no more than
-**	numv entries in the table will be processed. Alternatively, accepts
-**	a single visual as its sole argument.
-*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_wait(lua_State *L)
 {
-	TEKVisual *vis = TNULL;
-	TUINT sig = 0;
-	int i, n;
-
-	if (lua_istable(L, 1))
-	{
-		n = lua_isnone(L, 2) ? 32 : luaL_checkinteger(L, 2);
-		for (i = 1; i <= n; ++i)
-		{
-			lua_rawgeti(L, 1, i);
-			if (lua_isnil(L, -1) || !lua_isuserdata(L, -1))
-			{
-				n = i - 1;
-				lua_pop(L, 1);
-				break;
-			}
-			vis = checkvisptr(L, -1);
-			sig |= TGetPortSignal(TVisualGetPort(vis->vis_Visual));
-			lua_pop(L, 1);
-		}
-	}
-	else
-	{
-		vis = checkvisptr(L, 1);
-		sig = TGetPortSignal(TVisualGetPort(vis->vis_Visual));
-		n = 1;
-	}
-
-	if (sig)
-	{
-		sig = TWait(sig);
-		if (lua_istable(L, 1))
-		{
-			for (i = 1; i <= n; ++i)
-			{
-				lua_rawgeti(L, 1, i);
-				vis = lua_touserdata(L, -1);
-				lua_pushboolean(L,
-					sig & TGetPortSignal(TVisualGetPort(vis->vis_Visual)));
-				lua_rawseti(L, 1, i);
-				lua_pop(L, 1);
-			}
-		}
-	}
-
+	TEKVisual *vis;
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
+	vis = lua_touserdata(L, -1);
+	TWaitPort(vis->vis_IMsgPort);
+	lua_pop(L, 1);
 	return 0;
 }
 
@@ -81,14 +34,11 @@ tek_lib_visual_sleep(lua_State *L)
 {
 	TEKVisual *vis;
 	TTIME dt;
-
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
-	lua_pop(L, 1);
-
 	dt.tdt_Int64 = luaL_checknumber(L, 1) * 1000000;
 	TWaitTime(&dt, 0);
-
+	lua_pop(L, 1);
 	return 0;
 }
 
@@ -99,12 +49,10 @@ tek_lib_visual_gettime(lua_State *L)
 {
 	TEKVisual *vis;
 	TTIME dt;
-
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
-	lua_pop(L, 1);
-
 	TGetSystemTime(&dt);
+	lua_remove(L, -3);
 	lua_pushinteger(L, dt.tdt_Int64 / 1000000);
 	lua_pushinteger(L, dt.tdt_Int64 % 1000000);
 	return 2;
@@ -262,22 +210,37 @@ tek_lib_visual_clearinput(lua_State *L)
 LOCAL LUACFUNC TINT
 tek_lib_visual_getmsg(lua_State *L)
 {
-	TEKVisual *vis = checkvisptr(L, 1);
-	TIMSG *imsg = (TIMSG *) TGetMsg(TVisualGetPort(vis->vis_Visual));
+	TEKVisual *vis;
+	TIMSG *imsg;
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
+	/* s: visbase */
+	vis = lua_touserdata(L, -1);
+	imsg = (TIMSG *) TGetMsg(vis->vis_IMsgPort);
 	if (imsg)
 	{
-		if (lua_istable(L, 2))
-			lua_pushvalue(L, 2);
+		if (lua_istable(L, 1))
+			lua_pushvalue(L, 1);
 		else
 		{
-			TINT size = 7;
+			TINT size = 8;
 			if (imsg->timsg_Type == TITYPE_REFRESH)
 				size += 4;
 			else if (imsg->timsg_Type == TITYPE_KEYUP ||
 				imsg->timsg_Type == TITYPE_KEYDOWN)
-				size += 1;
+				size++;
 			lua_createtable(L, size, 0);
 		}
+
+		/* insert userdata index at index -1 in message table: */
+		lua_getmetatable(L, -2);
+		/* s: msgtab, reftab */
+		lua_rawgeti(L, -1, (int) imsg->timsg_UserData);
+		/* s: msgtable, reftab, visual */
+
+		lua_rawseti(L, -3, -1);
+		/* s: msgtable, reftab */
+		lua_pop(L, 1);
+		/* s: msgtable */
 
 		lua_pushinteger(L, imsg->timsg_TimeStamp.tdt_Int64 % 1000000);
 		lua_rawseti(L, -2, 0);
@@ -315,9 +278,12 @@ tek_lib_visual_getmsg(lua_State *L)
 				break;
 		}
 
+		/* s: visbase, desttable */
 		TAckMsg(imsg);
+		lua_remove(L, -2);
 		return 1;
 	}
+	lua_pop(L, 1);
 	return 0;
 }
 
@@ -728,6 +694,27 @@ tek_lib_visual_getattrs(lua_State *L)
 	return 4;
 }
 
+/*****************************************************************************/
+
+LOCAL LUACFUNC TINT
+tek_lib_visual_getuserdata(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	if (vis->vis_refUserData >= 0)
+	{
+		lua_getmetatable(L, 1);
+		/* s: metatable */
+		lua_rawgeti(L, -1, vis->vis_refUserData);
+		/* s: metatable, userdata */
+		lua_remove(L, -2);
+	}
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+/*****************************************************************************/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_setattrs(lua_State *L)
 {
@@ -769,26 +756,6 @@ tek_lib_visual_setattrs(lua_State *L)
 		tp++;
 		lua_pop(L, 1);
 	}
-
-	#if 0
-	lua_getfield(L, 2, "GrabButton");
-	if (lua_isnumber(L, -1))
-	{
-		tp->tti_Tag = (TTAG) TVisualHost_GrabButton;
-		tp->tti_Value = (TTAG) lua_tointeger(L, -1);
-		tp++;
-		lua_pop(L, 1);
-	}
-
-	lua_getfield(L, 2, "GrabPointer");
-	if (lua_isnumber(L, -1))
-	{
-		tp->tti_Tag = (TTAG) TVisualHost_GrabPointer;
-		tp->tti_Value = (TTAG) lua_tointeger(L, -1);
-		tp++;
-		lua_pop(L, 1);
-	}
-	#endif
 
 	tp->tti_Tag = TTAG_DONE;
 	lua_pushnumber(L, TVisualSetAttrs(vis->vis_Visual, tags));

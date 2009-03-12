@@ -9,13 +9,26 @@ ABOUT_APPLICATION_INFORMATION = "Anwendungsinformation";
 ABOUT_LICENSE = "_Lizenz";
 ABOUT_SYSTEM = "_System";
 ABOUT_TEKUI = "Über tekUI";
-ALIGNMENT_DEMO = "Ausrichtungsdemo";
+ALIGNMENT_BUTTON = "Ausrichtung";
+ALIGNMENT_DESCRIPTION = [[
+» Bestimmte Attribute legend fest, wie Elemente innerhalb ihrer Gruppe ausgerichtet sind, wenn sie den ihnen zugewiesenen Platz nicht vollständig beanspruchen.
+
+» Den Effekt können Sie am besten beobachten, indem Sie die Größe des Fensters verändern.
+]];
+ALIGNMENT_TITLE = "Ausrichtung";
 ALIGN_HORIZONTAL = "Ausrichtung Horizontal";
 ALIGN_VERTICAL = "Ausrichtung Vertikal";
+ANIMATIONS_BUTTON = "Animationen";
 ANIMATIONS_DESCRIPTION = [[
-Diese Demonstration zeigt drei verschiedene animierte Klassen.
+» tekUI unterstützt einen Zeitgeber, an den sich jedes GUI-Element binden kann.
 
-Diese Klassen sind nich Teil der systemweiten Installation von tekUI; sie werden in dem Verzeichnis gefunden, in dem sich die Anwendung befindet.
+» Er liefert eine stabile Ereignisquelle, die für animierte Klassen, Multimedia-Steuerelemente und weiche Animationen verwendet werden kann.
+
+» Das Zeitgeberintervall wird von dem ersten Element, das es anfordert, initiiert. tekUI ist streng ereignisgesteuert und verbraucht keine CPU-Zeit, wenn nichts zu tun ist.
+
+» Die registerbasierte Virtual Machine von Lua ist klein (weniger als 100K) und sehr schnell. Tatsächlich ist sie schneller als die meisten anderen VMs – übertroffen wird sie z.B. von Java nur mit JIT-Kompilierung, welche eine 10 bis 100 Mal größere Laufzeitumgebung erfordert.
+
+» Der Plasmaeffekt ist in reinem Lua geschrieben und läuft bequem mit 50Hz. Beachten Sie, dass Lua- und C-Klassen austauschbar sind; zeitkritische Klassen können zu jeder Zeit während der Entwicklung nach C portiert werden.
 ]];
 ANIMATIONS_FOCUS = "Fokus";
 ANIMATIONS_PARAMETERS = "Parameter";
@@ -24,55 +37,75 @@ ANIMATIONS_SPEED = "Geschwindigkeit";
 ANIMATIONS_START = "_Start";
 ANIMATIONS_STOP = "Sto_p";
 ANIMATIONS_TITLE = "Animationen";
-ARE_YOU_IMPRESSED = "Sind Sie beeindruckt?";
 AVAILABLE_DEMOS = "Verfügbare Demos";
 BEGIN = "Anfang";
-BORDER_LEGEND = "Rahmenlegende";
+BORDERS_BUTTON = "Rahmen";
+BORDERS_TITLE = "Rahmen";
+BORDER_CAPTION = "Rahmentitel";
+BORDER_DYNAMIC_THICKNESS = "Dynamische Stärke";
+BORDER_GROOVE = "Kerbe";
+BORDER_INDIVIDUAL_STYLE = "Individueller Rahmenstil";
+BORDER_INDIVIDUAL_STYLES = "Individuelle Stile";
+BORDER_INSET = "Eingedrückt";
+BORDER_OUTSET = "Hervorspringend";
+BORDER_RIDGE = "Relief";
+BORDER_WATCH = "Rahmen beobachten";
 BUTTONS_BUTTON = "Knopf";
-BUTTONS_BUTTON_STYLE = "Knopfstil";
-BUTTONS_CAPTION_STYLE = "Beschriftungsstil";
+BUTTONS_CAPTION_STYLE = "Beschriftung";
 BUTTONS_CENTER = "Mitte";
 BUTTONS_COLORS = "Farben";
 BUTTONS_DESCRIPTION = [[
-Dieses Demo zeigt unterschiedliche Knopfstile, Rahmen und Farben.
+» Die visuelle Klasse eines Elements (und andere Attribute) legen sein Erscheinungsbild und Verhalten fest.
+
+» Knöpfe sind tatsächlich bloß Textelemente mit einem Knopf-"Modus" (Verhaltensattribut) und "Klass" (Erscheinungsbild).
+
+» Weitere Attribute stehen z.B. für die Farbe und Ausrichtung des Textes zur Verfügung. Beachten Sie auch, dass verschiedene Zeichensätze und Texte, die sich über mehrere Zeilen erstrecken, unterstützt werden.
 ]];
-BUTTONS_NORMAL_STYLE = "Normaler Stil";
+BUTTONS_NORMAL_STYLE = "Normal";
 BUTTONS_RIGHT_BOTTOM = "Rechts\nUnten";
-BUTTONS_TEXT_ALIGNMENTS = "Textausrichtungen";
+BUTTONS_TEXT_ALIGNMENTS = "Textausrichtung";
 BUTTONS_TITLE = "Knöpfe";
 BUTTONS_TOP_LEFT = "Oben\nLinks";
 CANCEL = "Abbruch";
 CENTER = "Mitte";
-CHOICES = "Auswahlmöglichkeiten";
-CHOICE_ASK_AGAIN_LATER = "Später _fragen";
-CHOICE_BEER = "_Bier";
-CHOICE_COFFEE = "_Kaffee";
-CHOICE_JUICE = "_Saft";
-CHOICE_MAYBE = "_Möglicherweise";
-CHOICE_MILK = "Mi_lch";
-CHOICE_NO = "_Nein";
-CHOICE_PERHAPS = "Eventuell";
-CHOICE_POSSIBLY = "_Vielleicht";
-CHOICE_TEA = "_Tee";
-CHOICE_WATER = "W_asser";
-CHOICE_WHAT_ME = "Was, ich_?";
-CHOICE_WINE = "_Wein";
-CHOICE_YES = "_Ja";
-CHOOSE_FILE = "Datei _wählen";
-CLOSE_ALL = "Alle _Schließen";
+CHOICES_BEER = "Bier";
+CHOICES_COFFEE = "Kaffee";
+CHOICES_DRINKING_STRAW = "Strohhalm";
+CHOICES_HOT = "Heiß";
+CHOICES_JUICE = "Saft";
+CHOICES_MANGO_LASSI = "Mango Lassi";
+CHOICES_ORDER_BEVERAGES = "Getränke Bestellen";
+CHOICES_SHAKEN = "Geschüttelt";
+CHOICES_STIRRED = "Gerührt";
+CHOICES_TITLE = "Auswahl";
+CHOICES_WHISKY = "Whisky";
+CHOICES_WITH_ICE = "Mit Eis";
+CHOOSE_FILE = "Datei Wählen";
+CLOSE_ALL = "Alle Schließen";
+COEFFICIENTS = "Koeffizienten";
 COMMENT = "Kommentar";
-CONFIRM_QUIT_APPLICATION = "Sind Sie sicher, dass Sie\ndie Anwendung beenden wollen?";
+CONFIRM_QUIT_APPLICATION = "Wollen Sie wirklich\ndie Anwendung beenden?";
+CUSTOMCLASS_ADDRESS = "Adresse";
+CUSTOMCLASS_DESCRIPTION = [[
+» Spezielle Probleme, wie die Eingabe gültiger IP-Adressen über einen Touchscreen, können mit geringem Aufwand gelöst werden.
+
+» In diesem Beispiel wurde eine "Netzwerk"-Eingabeklasse mit besonderem Verhalten von der normalen Eingabeklasse abgeleitet.
+
+» Knöpfe in der Tastenfeld-Gruppe stammen von der normalen Textklasse ab. Sie fügen ihr jeweiliges Tastaturereignis in die Nachrichtenschlange des Fensters ein.
+
+» Beide Probleme wurden in jeweils wenigen Zeilen Skript implementiert, dabei kam die Vererbung vom "Ad-Hoc"-Typ zum Einsatz.
+]];
+CUSTOMCLASS_DHCP = "Automatisch Beziehen (DHCP)";
+CUSTOMCLASS_DNS = "DNS";
+CUSTOMCLASS_GATEWAY = "Gateway";
+CUSTOMCLASS_KEYPAD = "Tastenfeld";
+CUSTOMCLASS_NETMASK = "Netzmaske";
+CUSTOMCLASS_NETWORK_CONFIGURATION = "Netzwerkkonfiguration";
+CUSTOMCLASS_TITLE = "Spezialklasse";
 DEBUGGING = "Debugging";
 DEBUG_CONSOLE = "Debugkonsole";
 DEBUG_LEVEL = "Debug-Level";
 DEBUG_OPTIONS = "Debug-Optionen";
-DEMO_TEXT = [[
-Willkommen zum tekUI-Demo.
-
-In der Liste zur Linken finden sie einige Beispiele, die die Möglichkeiten des tekUI Toolkits demonstrieren.
-
-Beachten Sie, dass das gesamte Demo als ein einziger Konstruktor formuliert ist; dank dem eingebauten Benachrichtungssystem werden keine Funktionen für einfache Interaktionen zwischen Elementen benötigt.
-]];
 DISCLAIMER = "Haftungsausschluss";
 DISCLAIMER_TEXT = [[
 
@@ -81,22 +114,34 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ]];
 END = "Ende";
 FILE_REQUEST = "Dateiauswahl";
+FLOATTEXT_DYNAMIC_LAYOUT = "Dynamisches Layout";
+FLOATTEXT_PREFORMATTED = "Vorformatiert";
+FLOATTEXT_TITLE = "Fließtext",
+FLOATTEXT_YOU_CAN_DRAG_THE_BAR = "Sie können den Griff in der Mitte bewegen.";
+GRAPHICS_BITMAPS = "Bitmaps";
+GRAPHICS_CHECKMARKS = "Häkchen";
+GRAPHICS_DESCRIPTION = [[
+» tekUI hat eine eingebaute Vektorgrafikklasse, die für Standardelemente wie Pfeile, Häkchen und Radioknöpfe verwendet wird.
+
+» Die Skalierung und Farbe von Vektorgrafiken passt sich an die Bildschirmpalette und die Elementgröße an. Außerdem sind Vektorgrafiken normalerweise ressourcenfreundlicher als Bitmaps.
+
+» Wenn die Struktur der Applikation fertiggestellt und ein Farbschema gewählt ist, können Bitmapgrafiken an Stelle von Vektorgrafiken verwendet werden, was der Anwendung ein hübscheres Aussehen verleihen kann.
+]];
+GRAPHICS_RADIOBUTTONS = "Radioknöpfe";
+GRAPHICS_TITLE = "Grafiken";
 GROUP = "Gruppe";
 HELLO = "Hallo";
 HELLO_WORLD = "Hallo, Welt!";
 INTERPRETER_VERSION = "Interpreterversion: %s";
-IMPRESSED = "Beeindruckt";
 LAYOUT_BALANCING_GROUP = "Verschiebbare Gruppe";
-LAYOUT_DESCRIPTION = [[
-	Dies führt die verschiedenen Layoutoptionen vor.
-]];
 LAYOUT_DIFFERENT_WEIGHTS = "Verschiedene Gewichtungen";
-LAYOUT_FIXED_VS_FREE = "Fest und Frei";
 LAYOUT_FIX = "Fest";
+LAYOUT_FIXED_VS_FREE = "Fest und Frei";
 LAYOUT_GRID = "Gitter";
-LAYOUT_RELATIVE_SIZES = "Relative Größen";
-LAYOUT_SAME_SIZES = "Einheitliche Größen";
+LAYOUT_RELATIVE_SIZES = "Relative Größe";
+LAYOUT_SAME_SIZES = "Einheitliche Größe";
 LAYOUT_TITLE = "Layout";
+LIST_TITLE = "Listen";
 LUA_COPYRIGHT_TEXT = [[
 
 Copyright © 1994-2007 Lua.org, PUC-Rio.
@@ -113,26 +158,27 @@ MENU_ABOUT = "Über...";
 MENU_FILE = "_Datei";
 MENU_QUIT = "Be_enden";
 MULTISELECT = "_Mehrfachauswahl";
-NOTIFICATIONS_CONNECTIONS = "Verbindungen";
-NOTIFICATIONS_DESCRIPTION = [[
-	Elemente können über einen Nachrichtenmechanismus miteinander verbunden werden.
-]];
-NOTIFICATIONS_TITLE = "Benachrichtigungen";
 OKAY = "_Okay";
 OPEN_ALL = "Alle öffnen";
-ORDER = "Bestellen";
-ORDER_BEVERAGES = "Getränke bestellen";
 OUTPUT = "Ausgabe";
 PATH = "_Pfad";
+POPUPS_DESCRIPTION = [[
+» Popup-Elemente und ihre Abkömmlinge sind rekursiv und dürfen weitere Popups als Kinder enthalten. Tatsächlich können Popups Element fast jeden Typs enthalten.
+
+» Menüs sind einfach Gruppen vom Typ "Menüleiste" mit Elementen vom Typ "Menüeintrag". Andere Kombinationen sind ebenfalls möglich. Es ist möglich, mehrere Menüs pro Fenster zu haben sowie Menüs an ungewöhnlichen Stellen.
+
+» Sorgfältig eingestellte Verzögerungen und Toleranzen für das Auf- und zuklappen sorgen für ein gutes Bediengefühl.
+]];
+POPUPS_TITLE = "Popups";
+PRESENTATION_TITLE = "Präsentation";
 PROPERTY = "Eigenschaft";
 QUIT = "Beenden";
-RESET = "Zurücksetzen";
-REVOKE = "Widerrufen";
+REVOKED = "Widerrufen";
 SELECTED = "Gewählt";
+SLIDER_CONNECTIONS = "Verbindungen";
 SLIDER_CONTINUOUS = "Fließend";
-SLIDER_DESCRIPTION = "Schieberegler";
-SLIDER_INTEGER_STEP = "Integer-Schrittweite";
-SLIDER_GAUGES = "Pegel";
+SLIDER_GAUGE = "Balken";
+SLIDER_INTEGER_STEP = "Ganzzahlige Schrittweite";
 SLIDER_RANGE = "Bereich";
 SLIDER_SLIDERS = "Schieberegler";
 SLIDER_TITLE = "Schieberegler";
@@ -140,7 +186,7 @@ SLOW_RENDERING = "Langsames Zeichnen";
 STATUS = "Status";
 SYSTEM_INFORMATION = "Systeminformation";
 TEKUI_COPYRIGHT_TEXT = [[
-Copyright © 2008 by the authors:
+Copyright © 2008, 2009 by the authors:
 
 Timm S. Müller <tmueller@schulze-mueller.de>
 Franciska Schulze <fschulze@schulze-mueller.de>

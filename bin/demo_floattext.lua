@@ -1,35 +1,59 @@
 #!/usr/bin/env lua
 
 local ui = require "tek.ui"
+local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 
-ui.Application:new
+-------------------------------------------------------------------------------
+--	Create demo window:
+-------------------------------------------------------------------------------
+
+local window = ui.Window:new
 {
-	Title = "FloatText Demo",
+	Orientation = "vertical",
+	Id = "floattext-window",
+	Title = L.FLOATTEXT_TITLE,
+	Status = "hide",
+	Notifications =
+	{
+		["Status"] =
+		{
+			["show"] =
+			{
+				{ ui.NOTIFY_ID, "floattext-window-button", "setValue", "Selected", true }
+			},
+			["hide"] =
+			{
+				{ ui.NOTIFY_ID, "floattext-window-button", "setValue", "Selected", false }
+			},
+		},
+	},
+	Width = "free",
+	Height = "free",
+	Orientation = "vertical",
 	Children =
 	{
-		ui.Window:new
+		ui.Group:new
 		{
-			Orientation = "vertical",
 			Children =
 			{
-				ui.Text:new
-				{
-					Text = "Poems",
-					Style = "font: ui-huge",
-				},
 				ui.Group:new
 				{
+					Orientation = "vertical",
 					Children =
 					{
+						ui.Text:new
+						{
+							Text = L.FLOATTEXT_PREFORMATTED,
+						},
 						ui.Canvas:new
 						{
+							Weight = 0x6000,
 							CanvasWidth = 500,
 							CanvasHeight = 500,
 							Child = ui.FloatText:new
 							{
-								Style = "font: ui-large; background-color: dark; color: light;",
+								Style = "font: ui-fixed; background-color: dark; color: light;",
 								Preformatted = true,
-								FontSpec = "ui-fixed",
 								Text = [[
 
                         Ecce homo
@@ -44,10 +68,23 @@ ui.Application:new
         Flamme bin ich sicherlich
 ]]
 							}
+						}
+					}
+				},
+				ui.Handle:new { },
+				ui.Group:new
+				{
+					Orientation = "vertical",
+					Children =
+					{
+						ui.Text:new
+						{
+							MinWidth = 0,
+							Text = L.FLOATTEXT_DYNAMIC_LAYOUT,
 						},
-						ui.Handle:new { },
 						ui.ScrollGroup:new
 						{
+							ScrollStep = 30,
 							HSliderMode = "off",
 							VSliderMode = "on",
 							Child = ui.Canvas:new
@@ -104,26 +141,31 @@ ui.Application:new
 							}
 						}
 					}
-				},
-				ui.Text:new
-				{
-					Text = "_Okay",
-					Mode = "button",
-					Class = "button",
-					Notifications =
-					{
-						["Pressed"] =
-						{
-							[false] =
-							{
-								{
-									ui.NOTIFY_APPLICATION, "setValue", "Status", "quit"
-								}
-							}
-						}
-					}
 				}
 			}
+		},
+		ui.Text:new
+		{
+			Text = L.FLOATTEXT_YOU_CAN_DRAG_THE_BAR,
 		}
 	}
-}:run()
+}
+
+-------------------------------------------------------------------------------
+--	Started stand-alone or as part of the demo?
+-------------------------------------------------------------------------------
+
+if ui.ProgName:match("^demo_") then
+	local app = ui.Application:new()
+	ui.Application.connect(window)
+	app:addMember(window)
+	window:setValue("Status", "show")
+	app:run()
+else
+	return
+	{
+		Window = window,
+		Name = L.FLOATTEXT_TITLE,
+		Description = L.FLOATTEXT_DESCRIPTION
+	}
+end

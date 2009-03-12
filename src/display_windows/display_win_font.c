@@ -22,6 +22,21 @@ LOCAL TAPTR fb_hostopenfont(WINDISPLAY *mod, TTAGITEM *tags)
 	TUINT sz = (TUINT) TGetTag(tags, TVisual_FontPxSize, 0);
 	HFONT font;
 
+	/* check availability: */
+	TAPTR fqh = fb_hostqueryfonts(mod, tags);
+	if (fqh)
+	{
+		TBOOL have_font = fb_hostgetnextfont(mod, fqh) != TNULL;
+		TDestroy(fqh);
+		if (!have_font)
+		{
+			TDBPRINTF(TDB_INFO,("Failed to open font '%s':%d\n", name, sz));
+			return TNULL;
+		}
+	}
+	else
+		return TNULL;
+
 	font = CreateFont(
 		sz,
 		0,
@@ -37,6 +52,8 @@ LOCAL TAPTR fb_hostopenfont(WINDISPLAY *mod, TTAGITEM *tags)
 		DEFAULT_QUALITY,
 		FF_DONTCARE | DEFAULT_PITCH,
 		name);
+
+	TDBPRINTF(TDB_INFO,("CreateFont %s:%d => %p\n", name, sz, font));
 
 	return font;
 }

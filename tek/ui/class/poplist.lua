@@ -42,6 +42,7 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Canvas = ui.Canvas
 local Gadget = ui.Gadget
@@ -57,7 +58,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 5.4"
+_VERSION = "PopList 5.5"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -83,7 +84,8 @@ local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectEntry", ui.NOTIFY_VALUE }
 local PopListGadget = ListGadget:newClass()
 
 function PopListGadget:passMsg(msg)
-	if msg[2] == ui.MSG_MOUSEMOVE then
+	if msg[2] == ui.MSG_MOUSEMOVE or
+		(msg[2] == ui.MSG_MOUSEBUTTON and msg[3] == 1) then
 		local lnr = self:findLine(msg[5])
 		if lnr then
 			if lnr ~= self.SelectedLine then
@@ -91,6 +93,14 @@ function PopListGadget:passMsg(msg)
 				self:setValue("SelectedLine", lnr)
 			end
 		end
+	elseif msg[2] == ui.MSG_MOUSEBUTTON and msg[3] == 2 then
+		if not self.Active then
+			-- emulate click:
+			db.warn("need to emulate click")
+			self:setValue("Active", true)
+		end
+		-- let it collapse:
+		self:setValue("Active", false)
 	end
 end
 
@@ -136,7 +146,8 @@ end
 function PopList.new(class, self)
 	self = self or { }
 	self.ListObject = self.ListObject or List:new()
-	self.ListGadget = PopListGadget:new { ListObject = self.ListObject }
+	self.ListGadget = PopListGadget:new { ListObject = self.ListObject,
+		Class = self.Class, Style = self.Style }
 	self.Children =
 	{
 		ScrollGroup:new
@@ -207,7 +218,7 @@ function PopList:onSelectEntry(lnr)
 end
 
 -------------------------------------------------------------------------------
---	PopListt:setList(listobject): Sets a new [[#tek.class.list : List]]
+--	PopList:setList(listobject): Sets a new [[#tek.class.list : List]]
 --	object.
 -------------------------------------------------------------------------------
 
@@ -215,4 +226,13 @@ function PopList:setList(listobject)
 	assert(not listobject or listobject:checkDescend(List))
 	self.ListObject = listobject
 	self.ListGadget:setList(listobject)
+end
+
+-------------------------------------------------------------------------------
+--	PopList:getProperties: overrides
+-------------------------------------------------------------------------------
+
+function PopList:getProperties(p, pclass)
+	self.ListGadget:getProperties(p, pclass)
+	PopItem.getProperties(self, p, pclass)
 end

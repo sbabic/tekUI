@@ -92,7 +92,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 9.0"
+_VERSION = "Window 10.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -100,11 +100,12 @@ _VERSION = "Window 9.0"
 
 local HUGE = ui.HUGE
 
-local NOTIFY_STATUS = { ui.NOTIFY_SELF, "onChangeStatus", ui.NOTIFY_VALUE,
-	ui.NOTIFY_OLDVALUE }
+local NOTIFY_STATUS = { ui.NOTIFY_SELF, "onChangeStatus", ui.NOTIFY_VALUE }
 
-local DEF_DBLCLICKTIMELIMIT = 320000 -- in micro seconds
-local DEF_DBLCLICKDISTLIMIT = 25 -- max square pixel distance between clicks
+-- Double click time limit, in microseconds:
+local DEF_DBLCLICKTIMELIMIT = 320000 -- 600000 for touch screens
+-- Max. square pixel distance between clicks:
+local DEF_DBLCLICKJITTER = 70 -- 3000 for touch screens
 
 local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, ui.MSG_MOUSEMOVE, ui.MSG_MOUSEBUTTON,
@@ -125,6 +126,8 @@ function Window.init(self)
 	self.CopyArea = { }
 	self.DblClickElement = false
 	self.DblClickCheckInfo = { } -- check_element, sec, usec, mousex, mousey
+	self.DblClickTimeout = self.DblClickTimeout or DEF_DBLCLICKTIMELIMIT
+	self.DblClickJitter = self.DblClickJitter or DEF_DBLCLICKJITTER
 	self.FocusElement = false
 	self.FullScreen = self.FullScreen or false
 	self.HiliteElement = false
@@ -158,8 +161,27 @@ function Window.init(self)
 	self.MouseX = false
 	self.MouseY = false
 	self.MovingElement = false
+	self.MsgQueue = { }
+	self.NewSizeMsg = false
+	self.NewSizeMsgStore =
+	{
+		[2] = ui.MSG_NEWSIZE,
+		[3] = 0,
+		[4] = 0,
+		[5] = 0,
+		[6] = 0,
+	}
 	-- Root window in a cascade of popup windows:
 	self.PopupRootWindow = self.PopupRootWindow or false
+	self.RefreshMsg = false
+	self.RefreshMsgStore =
+	{
+		[2] = ui.MSG_REFRESH,
+		[3] = 0,
+		[4] = 0,
+		[5] = 0,
+		[6] = 0,
+	}
 	self.Status = self.Status or "initializing"
 	self.Title = self.Title or false
 	self.Top = self.Top or false
@@ -318,16 +340,16 @@ function Window:hideWindow()
 end
 
 -------------------------------------------------------------------------------
---	Window:onChangeStatus(status, oldstatus): This method is invoked when
---	the Window's {{Status}} has changed.
+--	Window:onChangeStatus(status): This method is invoked when the Window's
+--	{{Status}} has changed.
 -------------------------------------------------------------------------------
 
 function Window:onChangeStatus(showhide, oldvalue)
 	if showhide == "show" then
-		self.Status = oldvalue
+		self.Status = "hide"
 		self:showWindow()
 	elseif showhide == "hide" then
-		self.Status = oldvalue
+		self.Status = "show"
 		self:hideWindow()
 	end
 end
@@ -360,7 +382,7 @@ end
 function Window:openWindow()
 	if self.Status ~= "show" then
 		local m1, m2, m3, m4, x, y, w, h = self:getWindowDimensions()
-		if self.Drawable:open(self.Title or self.Application.Title,
+		if self.Drawable:open(self, self.Title or self.Application.Title,
 			w, h, m1, m2, m3, m4, x, y, self.Center, self.FullScreen) then
 			local wm = self.WindowMinMax
 			wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
@@ -417,8 +439,22 @@ end
 -------------------------------------------------------------------------------
 
 function Window:getMsg(msg)
+	local m = remove(self.MsgQueue)
+	if m then
+		msg[-1], msg[0], msg[1], msg[2], msg[3], msg[4], msg[5],
+			msg[6], msg[7], msg[8], msg[9], msg[10] = unpack(m, -1, 10)
+		return true
+	end
+end
+
+-------------------------------------------------------------------------------
+--	postMsg:
+-------------------------------------------------------------------------------
+
+function Window:postMsg(msg)
 	if self.Status == "show" then
-		return self.Drawable:getMsg(msg)
+		msg[-1] = self
+		insert(self.MsgQueue, msg)
 	end
 end
 
@@ -458,7 +494,7 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_FOCUS] = function(self, msg)
-		self:setValue("WindowFocus", msg[3])
+		self:setValue("WindowFocus", msg[3] == 1)
 		self:setHiliteElement()
 		self:setActiveElement()
 		return msg
@@ -825,7 +861,7 @@ end
 
 function Window:checkDblClickTime(as, au, bs, bu)
 	bs, bu = subtime(bs, bu, as, au)
-	return subtime(bs, bu, 0, DEF_DBLCLICKTIMELIMIT) < 0
+	return subtime(bs, bu, 0, self.DblClickTimeout) < 0
 end
 
 -------------------------------------------------------------------------------
@@ -851,7 +887,7 @@ function Window:setDblClickElement(e, notify)
 			local d1 = self.MouseX - di[4]
 			local d2 = self.MouseY - di[5]
 			if self:checkDblClickTime(di[2], di[3], ts, tu) and
-				d1 * d1 + d2 * d2 < DEF_DBLCLICKDISTLIMIT then
+				d1 * d1 + d2 * d2 < self.DblClickJitter then
 				self.DblClickElement = e
 				de:setValue("DblClick", true, notify)
 			end

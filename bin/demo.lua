@@ -30,15 +30,17 @@ function loaddemos(app)
 
 	local demos = { }
 
-	for fname in lfs.readdir(ui.ProgDir .. "demos/") do
-		fname = ui.ProgDir .. "demos/" .. fname
-		db.info("Loading demo '%s' ...", fname)
-		local success, res = pcall(dofile, fname)
-		if success then
-			table.insert(demos, res)
-		else
-			db.error("*** Error loading demo '%s'", fname)
-			db.error(res)
+	for fname in lfs.readdir(ui.ProgDir) do
+		if fname:match("^demo_.*") then
+			fname = ui.ProgDir .. "/" .. fname
+			db.info("Loading demo '%s' ...", fname)
+			local success, res = pcall(dofile, fname)
+			if success then
+				table.insert(demos, res)
+			else
+				db.error("*** Error loading demo '%s'", fname)
+				db.error(res)
+			end
 		end
 	end
 
@@ -65,9 +67,9 @@ function loaddemos(app)
 
 end
 
--- -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-------------------------------------------------------------------------------
 --	Application:
--- -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-------------------------------------------------------------------------------
 
 local QuitNotification =
 {
@@ -86,8 +88,7 @@ app = ui.Application:new
 	Copyright = "Copyright © 2008, Schulze-Müller GbR",
 	ApplicationId = APP_ID,
 	VendorDomain = VENDOR,
--- 	ThemeName = "internal",
-
+	-- ThemeName = "internal",
 	Children =
 	{
 		ui.Window:new
@@ -157,8 +158,8 @@ app = ui.Application:new
 					["hide"] =
 					{
 						{ ui.NOTIFY_ID, "about-button", "setValue", "Selected", false }
-					},
-				},
+					}
+				}
 			},
 			Children =
 			{
@@ -300,39 +301,11 @@ app = ui.Application:new
 													Children =
 													{
 														ui.Text:new { Id = "about-mem-used" },
-
-														ui.Group:new
-														{
-															Children =
-															{
-																ui.Gauge:new { Id = "about-mem-gauge" },
-																ui.Text:new
-																{
-																	Text = L.RESET,
-																	Class = "button",
-																	Mode = "button",
-																	Style = "width: auto",
-																	Notifications =
-																	{
-																		["Pressed"] =
-																		{
-																			[false] =
-																			{
-																				{ ui.NOTIFY_WINDOW, ui.NOTIFY_FUNCTION, function(self)
-																					self.UserData.MinMem = false
-																					self.UserData.MaxMem = false
-																				end }
-																			}
-																		}
-																	}
-																},
-															}
-														},
+														ui.Gauge:new { Id = "about-mem-gauge" },
 													}
 												}
 											}
 										},
-
 										ui.Group:new
 										{
 											Legend = L.DEBUGGING,
@@ -459,8 +432,8 @@ app = ui.Application:new
 					["hide"] =
 					{
 						{ ui.NOTIFY_APPLICATION, "setValue", "Status", "quit" }
-					},
-				},
+					}
+				}
 			},
 			Children =
 			{
@@ -485,9 +458,9 @@ app = ui.Application:new
 											[false] =
 											{
 												{ ui.NOTIFY_ID, "about-window", "setValue", "Status", "show" }
-											},
-										},
-									},
+											}
+										}
+									}
 								},
 								ui.Spacer:new { },
 								ui.MenuItem:new
@@ -501,13 +474,13 @@ app = ui.Application:new
 											[false] =
 											{
 												QuitNotification
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+											}
+										}
+									}
+								}
+							}
+						}
+					}
 				},
 				ui.Text:new
 				{
@@ -539,8 +512,8 @@ app = ui.Application:new
 											Id = "demo-group",
 											Style = "max-width: free",
 											Orientation = "vertical",
-										},
-									},
+										}
+									}
 								},
 								ui.Group:new
 								{
@@ -585,7 +558,7 @@ app = ui.Application:new
 													}
 												}
 											}
-										},
+										}
 									}
 								}
 							}
@@ -605,13 +578,11 @@ app = ui.Application:new
 									Text = L.DEMO_TEXT,
 								}
 							}
-						},
-					},
-				},
-			},
-		},
-
-
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -622,4 +593,3 @@ loaddemos(app)
 -- -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 app:run()
-

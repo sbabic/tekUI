@@ -74,6 +74,10 @@ typedef TTAG TVPEN;
 #define TVisual_DriverName			(TVISTAGS_ + 0x112)
 #define TVisual_Device				(TVISTAGS_ + 0x113)
 #define TVisual_Window				(TVISTAGS_ + 0x114)
+#define TVisual_UserData			(TVISTAGS_ + 0x115)
+#define TVisual_CmdRPort			(TVISTAGS_ + 0x116)
+#define TVisual_IMsgPort			(TVISTAGS_ + 0x117)
+
 
 /* Tagged rendering: */
 
@@ -171,6 +175,8 @@ typedef struct TInputMessage
 {
 	/* Node header: */
 	struct TNode timsg_Node;
+	/* Copy of window userdata: */
+	TTAG timsg_UserData;
 	/* Timestamp: */
 	TTIME timsg_TimeStamp;
 	/* Message type: */

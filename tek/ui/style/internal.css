@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.9
+**	Version: 1.10
 */
 
 /*
@@ -230,7 +230,7 @@ tek.ui.class.window {
 	border-color: dark;
 	border-width: 1;
 	background-color: fill;
-	padding: 4;
+	padding: 5;
 }
 
 .knob {
@@ -238,7 +238,7 @@ tek.ui.class.window {
 	border-focus-width: 0;
 	border-rim-width: 1;
 	margin: 0;
-	padding: 4;
+	padding: 5;
 }
 
 .legend {
@@ -287,27 +287,27 @@ tek.ui.class.window {
 	margin: 0;
 }
 
-.page-button-group = {
+.page-button-group {
 	margin: 4 2 0 0;
 	padding-left: 2;
 }
 
-.scrollbar-arrowup = {
+.scrollbar-arrowup {
 	margin-bottom: 0;
 	border-width: 3;
 }
 
-.scrollbar-arrowdown = {
+.scrollbar-arrowdown {
 	margin-top: 0;
 	border-width: 3;
 }
 
-.scrollbar-arrowleft = {
+.scrollbar-arrowleft {
 	margin-right: 0;
 	border-width: 3;
 }
 
-.scrollbar-arrowright = {
+.scrollbar-arrowright {
 	margin-left: 0;
 	border-width: 3;
 }

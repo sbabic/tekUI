@@ -100,7 +100,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 9.3"
+_VERSION = "Application 10.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -110,6 +110,19 @@ local Application = _M
 
 function Application.new(class, self)
 	self = Family.new(class, self)
+	self.MsgDispatch =
+	{
+		[ui.MSG_CLOSE] = self.passMsgNoModal,
+		[ui.MSG_FOCUS] = self.passMsgAlways,
+		[ui.MSG_NEWSIZE] = self.passMsgNewSize,
+		[ui.MSG_REFRESH] = self.passMsgRefresh,
+		[ui.MSG_MOUSEOVER] = self.passMsgNoModal,
+		[ui.MSG_KEYDOWN] = self.passMsgNoModal,
+		[ui.MSG_MOUSEMOVE] = self.passMsgNoModal,
+		[ui.MSG_MOUSEBUTTON] = self.passMsgNoModal,
+		[ui.MSG_INTERVAL] = self.passMsgAlways,
+		[ui.MSG_KEYUP] = self.passMsgNoModal,
+	}
 	-- Check linkage of members and connect them recursively:
 	if self:connect() then
 		self.Status = "disconnected"
@@ -132,8 +145,8 @@ function Application.init(self)
 	self.Coroutines = { }
 	self.Display = false
 	self.ElementById = { }
-	self.ModalWindows = { } -- stack
-	self.MsgActive = { }
+	self.ModalWindows = { } -- stack of
+	self.MsgDispatch = false
 	self.OpenWindows = { }
 	self.ProgramName = self.ProgramName or self.Title or false
 	self.Status = "initializing"
@@ -141,8 +154,6 @@ function Application.init(self)
 	self.ThemeName = self.ThemeName or "desktop"
 	self.VendorName = self.VendorName or "unknown"
 	self.VendorDomain = self.VendorDomain or "unknown"
-	self.WaitVisuals = { }
-	self.WaitWindows = { }
 	self.Properties = { ui.Theme.getStyleSheet("internal") }
 	if self.ThemeName and self.ThemeName ~= "internal" then
 		local s = ui.prepareProperties(ui.Theme.getStyleSheet(self.ThemeName))
@@ -374,45 +385,53 @@ function Application:hideWindow(window)
 end
 
 -------------------------------------------------------------------------------
--- 	wait:
+-- 	Message handlers: passAlways() passes a message always, passMsgNoModal()
+--	passes a message only to the modal window (if there is one),
+--	passMsgNewSize() bundles new sizes, passMsgRefresh() bundles damages for
+--	the current window.
 -------------------------------------------------------------------------------
 
-function Application:waitWindows(suspend)
+function Application:passMsgAlways(win, msg)
+	win:passMsg(msg)
+end
 
-	local ow = self.OpenWindows
-	local vt = self.WaitVisuals
-	local ct = self.WaitWindows
-	local numv = 0
-
-	-- update windows:
-	for _, w in ipairs(ow) do
-		if w.Status == "show" and w:update() then
-			numv = numv + 1
-			vt[numv] = w.Drawable.Visual
-			ct[numv] = w
-		end
+function Application:passMsgNoModal(win, msg)
+	local mw = self.ModalWindows[1]
+	if not mw or mw == win then
+		win:passMsg(msg)
 	end
+end
 
-	-- purge hidden windows from list:
-	for i = #ow, 1, -1 do
-		if ow[i].Status ~= "show" then
-			remove(ow, i)
-		end
+function Application:passMsgNewSize(win, msg)
+	-- bundle newsizes:
+	local newsize = win.NewSizeMsg
+	if not newsize then
+		newsize = win.NewSizeMsgStore
+		win.NewSizeMsg = newsize
+	else
 	end
+	newsize[0] = msg[0] -- update timestamp
+	newsize[1] = msg[1]
+end
 
-	if suspend then
-		-- wait for open windows:
-		self.Display:wait(vt, numv)
+function Application:passMsgRefresh(win, msg)
+	-- bundle damage rects:
+	local refresh = win.RefreshMsg
+	if not refresh then
+		refresh = win.RefreshMsgStore
+		win.RefreshMsg = refresh
+		refresh[7] = msg[7]
+		refresh[8] = msg[8]
+		refresh[9] = msg[9]
+		refresh[10] = msg[10]
+	else
+		refresh[7] = min(refresh[7], msg[7])
+		refresh[8] = min(refresh[8], msg[8])
+		refresh[9] = max(refresh[9], msg[9])
+		refresh[10] = max(refresh[10], msg[10])
 	end
-
-	-- service windows that have messages pending:
-	local ma = self.MsgActive
-	for i = 1, numv do
-		if vt[i] then
-			insert(ma, ct[i])
-		end
-	end
-
+	refresh[0] = msg[0] -- update timestamp
+	refresh[1] = msg[1]
 end
 
 -------------------------------------------------------------------------------
@@ -421,103 +440,61 @@ end
 --	to "quit".
 -------------------------------------------------------------------------------
 
---	state[1] = self (application)
---	state[2] = current window
---	state[3] = newmsg
---	state[4] = bundled newsize msg
---	state[5] = bundled refresh msg
-
-local function passmsg_always(state, msg)
-	state[2]:passMsg(msg)
-end
-
-local function passmsg_checkmodal(state, msg)
-	local mw = state[1].ModalWindows[1]
-	if not mw or mw == state[2] then
-		state[2]:passMsg(msg)
-	end
-end
-
-local msgdispatch =
-{
-	[ui.MSG_CLOSE] = passmsg_checkmodal,
-	[ui.MSG_FOCUS] = passmsg_always,
-	[ui.MSG_NEWSIZE] = function(state, msg)
-		-- bundle newsizes:
-		if not state[4] then
-			state[4] = msg
-			state[3] = nil
-		else
-			-- update timestamp:
-			state[4][0] = msg[0]
-			state[4][1] = msg[1]
-		end
-	end,
-	[ui.MSG_REFRESH] = function(state, msg)
-		-- bundle damage rects:
-		local refresh = state[5]
-		if not refresh then
-			state[5] = msg
-			state[3] = nil
-		else
-			refresh[0] = msg[0] -- update timestamp
-			refresh[1] = msg[1]
-			refresh[7] = min(refresh[7], msg[7])
-			refresh[8] = min(refresh[8], msg[8])
-			refresh[9] = max(refresh[9], msg[9])
-			refresh[10] = max(refresh[10], msg[10])
-		end
-	end,
-	[ui.MSG_MOUSEOVER] = passmsg_checkmodal,
-	[ui.MSG_KEYDOWN] = passmsg_checkmodal,
-	[ui.MSG_MOUSEMOVE] = passmsg_checkmodal,
-	[ui.MSG_MOUSEBUTTON] = passmsg_checkmodal,
-	[ui.MSG_INTERVAL] = passmsg_always,
-	[ui.MSG_KEYUP] = passmsg_checkmodal,
-}
-
 function Application:run()
 
-	assert(self.Status == "connected", "Application not in connected state")
+	-- assert(self.Status == "connected", "Application not in connected state")
 
 	-- open all windows that aren't in "hide" state:
 	self:showWindow()
 
 	self.Status = "running"
 
-	local state = { self }
-	local ma = self.MsgActive
+	local d = self.Display
+	local ow = self.OpenWindows
+	local msg = { }
+	local msgdispatch = self.MsgDispatch
 
 	-- the main loop:
 
-	while self.Status == "running" and #self.OpenWindows > 0 do
+	while self.Status == "running" and #ow > 0 do
 
 		local idle = self:serviceCoroutines()
 
-		if collectgarbage then
-			collectgarbage("step")
+		-- update open windows, spool out refreshes and newsizes:
+		for _, win in ipairs(ow) do
+			if win.Status == "show" then
+				while win:getMsg(msg) do
+					msgdispatch[msg[2]](self, win, msg)
+				end
+				if win.RefreshMsg then
+					win:passMsg(win.RefreshMsg)
+				end
+				if win.NewSizeMsg then
+					win:passMsg(win.NewSizeMsg)
+				end
+				win:update()
+			end
+			win.RefreshMsg = false
+			win.NewSizeMsg = false
 		end
 
-		-- if no coroutines are running, we can go to sleep:
-		self:waitWindows(idle)
+		-- purge (now) hidden windows from list:
+		for i = #ow, 1, -1 do
+			if ow[i].Status ~= "show" then
+				remove(ow, i)
+			end
+		end
 
-		while #ma > 0 do
-			state[2] = remove(ma, 1)
-			repeat
-				state[3] = state[3] or { }
-				msg = state[2]:getMsg(state[3])
-				if msg then
-					msgdispatch[msg[2]](state, msg)
-				end
-			until not msg
-			if state[4] then
-				state[2]:passMsg(state[4])
-				state[4] = false
+		-- wait if no coroutines are running and windows are open:
+		if idle and #ow > 0 then
+			if collectgarbage then
+				collectgarbage("step")
 			end
-			if state[5] then
-				state[2]:passMsg(state[5])
-				state[5] = false
-			end
+			d:wait()
+		end
+
+		while d:getmsg(msg) do
+			msgdispatch[msg[2]](self, msg[-1]:getuserdata(), msg)
 		end
 
 	end

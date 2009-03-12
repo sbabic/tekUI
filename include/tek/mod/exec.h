@@ -485,6 +485,9 @@ struct TMessage
 
 #define TGETMSGPTR(mem) \
 	((struct TMessage *) ((TINT8 *) (mem) - sizeof(union TMemManagerInfo)) - 1)
+#define TGETMSGBODY(msg) \
+	((TAPTR) ((TINT8 *) (((struct TMessage *) (msg)) + 1) + sizeof(union TMemManagerInfo)))
+
 #define TGETMSGSTATUS(mem) \
 	TGETMSGPTR(mem)->tmsg_Flags
 #define TGETMSGREPLYPORT(mem) \

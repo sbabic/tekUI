@@ -1,8 +1,16 @@
 #!/usr/bin/env lua
 
 local ui = require "tek.ui"
-
+local Gauge = ui.Gauge
+local Group = ui.Group
+local ScrollBar = ui.ScrollBar
+local Slider = ui.Slider
+local Text = ui.Text
 local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
+
+-------------------------------------------------------------------------------
+--	Create demo window:
+-------------------------------------------------------------------------------
 
 local window = ui.Window:new
 {
@@ -21,23 +29,23 @@ local window = ui.Window:new
 			["hide"] =
 			{
 				{ ui.NOTIFY_ID, "slider-window-button", "setValue", "Selected", false }
-			},
-		},
+			}
+		}
 	},
 	Children =
 	{
-		ui.Group:new
+		Group:new
 		{
 			Legend = L.SLIDER_SLIDERS,
 			GridWidth = 3,
 			Children =
 			{
-				ui.Text:new
+				Text:new
 				{
 					Text = L.SLIDER_CONTINUOUS,
 					Style = "width: fill",
 				},
-				ui.ScrollBar:new
+				ScrollBar:new
 				{
 					Id = "slider-slider-1",
 					Style = "width: free",
@@ -57,20 +65,19 @@ local window = ui.Window:new
 						}
 					}
 				},
-				ui.Text:new
+				Text:new
 				{
 					Id = "slider-text-1",
 					Style = "width: fill",
 					Text = "  0.00  ",
 					KeepMinWidth = true,
 				},
-
-				ui.Text:new
+				Text:new
 				{
 					Text = L.SLIDER_INTEGER_STEP,
 					Style = "width: fill",
 				},
-				ui.ScrollBar:new
+				ScrollBar:new
 				{
 					Id = "slider-slider-2",
 					Style = "width: free",
@@ -91,20 +98,19 @@ local window = ui.Window:new
 						}
 					}
 				},
-				ui.Text:new
+				Text:new
 				{
 					Id = "slider-text-2",
 					Style = "width: fill",
 					Text = "  0  ",
 					KeepMinWidth = true,
 				},
-
-				ui.Text:new
+				Text:new
 				{
 					Text = L.SLIDER_RANGE,
 					Style = "width: fill",
 				},
-				ui.ScrollBar:new
+				ScrollBar:new
 				{
 					Id = "slider-slider-3",
 					Style = "width: free",
@@ -125,33 +131,150 @@ local window = ui.Window:new
 						}
 					}
 				},
-				ui.Text:new
+				Text:new
 				{
 					Id = "slider-text-3",
 					Style = "width: fill",
 					Text = "  0  ",
 					KeepMinWidth = true,
-				},
-
+				}
 			}
 		},
-		ui.Group:new
+		Group:new
 		{
-			Legend = L.SLIDER_GAUGES,
+			Legend = L.SLIDER_GAUGE,
 			Children =
 			{
-				ui.Gauge:new
+				Gauge:new
 				{
 					Min = 0,
 					Max = 10,
 					Id = "slider-gauge-1",
-				},
+				}
 			}
 		},
+
+		Group:new
+		{
+			Style = "width: free; height: free",
+			Legend = L.SLIDER_CONNECTIONS,
+			Children =
+			{
+				Slider:new
+				{
+					Id = "slider-1",
+					Orientation = "vertical",
+					Step = 5,
+					Notifications =
+					{
+						["Value"] =
+						{
+							[ui.NOTIFY_ALWAYS] =
+							{
+								{ ui.NOTIFY_ID, "slider-2", "setValue", "Value", ui.NOTIFY_VALUE },
+							}
+						}
+					}
+				},
+				Slider:new
+				{
+					Id = "slider-2",
+					Orientation = "vertical",
+					Step = 5,
+					Notifications =
+					{
+						["Value"] =
+						{
+							[ui.NOTIFY_ALWAYS] =
+							{
+								{ ui.NOTIFY_ID, "slider-3", "setValue", "Value", ui.NOTIFY_VALUE },
+							}
+						}
+					}
+				},
+				Group:new
+				{
+					Orientation = "vertical",
+					Style = "height: auto; vertical-grid-align: center",
+					Children =
+					{
+						Slider:new
+						{
+							Id = "slider-7",
+							Step = 5,
+							Notifications =
+							{
+								["Value"] =
+								{
+									[ui.NOTIFY_ALWAYS] =
+									{
+										{ ui.NOTIFY_ID, "slider-1", "setValue", "Value", ui.NOTIFY_VALUE },
+										{ ui.NOTIFY_ID, "slider-6", "setValue", "Value", ui.NOTIFY_VALUE },
+									}
+								}
+							}
+						},
+						Group:new
+						{
+							Style = "Width: free",
+							Children =
+							{
+								Gauge:new
+								{
+									Id = "slider-3",
+									Style = "Width: free",
+								},
+								Gauge:new
+								{
+									Id = "slider-4",
+									Style = "width: free",
+								}
+							}
+						}
+					}
+				},
+				Slider:new
+				{
+					Id = "slider-5",
+					Orientation = "vertical",
+					Step = 5,
+					Notifications =
+					{
+						["Value"] =
+						{
+							[ui.NOTIFY_ALWAYS] =
+							{
+								{ ui.NOTIFY_ID, "slider-4", "setValue", "Value", ui.NOTIFY_VALUE },
+							}
+						}
+					}
+				},
+				Slider:new
+				{
+					Id = "slider-6",
+					Orientation = "vertical",
+					Step = 5,
+					Notifications =
+					{
+						["Value"] =
+						{
+							[ui.NOTIFY_ALWAYS] =
+							{
+								{ ui.NOTIFY_ID, "slider-5", "setValue", "Value", ui.NOTIFY_VALUE },
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
-if ui.ProgName == "slider.lua" then
+-------------------------------------------------------------------------------
+--	Started stand-alone or as part of the demo?
+-------------------------------------------------------------------------------
+
+if ui.ProgName:match("^demo_") then
 	local app = ui.Application:new()
 	ui.Application.connect(window)
 	app:addMember(window)
@@ -161,7 +284,7 @@ else
 	return
 	{
 		Window = window,
-		Name = "Slider",
+		Name = L.SLIDER_TITLE,
 		Description = L.SLIDER_DESCRIPTION,
 	}
 end

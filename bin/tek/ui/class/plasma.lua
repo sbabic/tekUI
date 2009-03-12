@@ -6,8 +6,7 @@
 --
 
 local ui = require "tek.ui"
-local db = require "tek.lib.debug"
-local Area = ui.Area
+local Frame = ui.Frame
 
 local cos = math.cos
 local floor = math.floor
@@ -17,8 +16,8 @@ local pi = math.pi
 local sin = math.sin
 local unpack = unpack
 
-module("tek.ui.class.plasma", tek.ui.class.area)
-_VERSION = "Plasma 1.2"
+module("tek.ui.class.plasma", tek.ui.class.frame)
+_VERSION = "Plasma 2.0"
 
 local WIDTH = 80
 local HEIGHT = 60
@@ -54,7 +53,17 @@ function Plasma.new(class, self)
 	self.PalIndex = 0
 	self.SinTab = { }
 	self.Params = { 0, 0, 0, 0, 0 } -- xp1, xp2, yp1, yp2, yp3
-	return Area.new(class, self)
+	self.DeltaX1 = 12
+	self.DeltaX2 = 13
+	self.DeltaY1 = 8
+	self.DeltaY2 = 11
+	self.DeltaY3 = 18
+	self.SpeedX1 = 7
+	self.SpeedX2 = -2
+	self.SpeedY1 = 9
+	self.SpeedY2 = -4
+	self.SpeedY3 = 5
+	return Frame.new(class, self)
 end
 
 function Plasma.init(self)
@@ -68,11 +77,11 @@ function Plasma.init(self)
 	self.MinHeight = HEIGHT * PIXHEIGHT
 	self.MaxWidth = WIDTH * PIXWIDTH
 	self.MaxHeight = HEIGHT * PIXHEIGHT
-	return Area.init(self)
+	return Frame.init(self)
 end
 
 function Plasma:show(display, drawable)
-	if Area.show(self, display, drawable) then
+	if Frame.show(self, display, drawable) then
 		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 		return true
 	end
@@ -80,7 +89,7 @@ end
 
 function Plasma:hide()
 	self.Window:remInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
-	Area.hide(self)
+	Frame.hide(self)
 end
 
 function Plasma:draw()
@@ -94,34 +103,40 @@ function Plasma:draw()
 	local yc1, yc2, yc3 = yp1, yp2, yp3
 	local c
 
+	local dxc1 = floor(self.DeltaX1)
+	local dxc2 = floor(self.DeltaX2)
+	local dyc1 = floor(self.DeltaY1)
+	local dyc2 = floor(self.DeltaY2)
+	local dyc3 = floor(self.DeltaY3)
+
 	for y = 0, HEIGHT - 1 do
 		local xc1, xc2 = xp1, xp2
 		local ysin = sintab[yc1] + sintab[yc2] + sintab[yc3] + 5
 		for x = y * WIDTH, (y + 1) * WIDTH - 1 do
 			c = sintab[xc1] + sintab[xc2] + ysin
 			screen[x] = palette[floor(c * pscale)]
-			xc1 = (xc1 - 12) % 1024
-			xc2 = (xc2 + 13) % 1024
+			xc1 = (xc1 + dxc1) % 1024
+			xc2 = (xc2 + dxc2) % 1024
 		end
-		yc1 = (yc1 + 8) % 1024
-		yc2 = (yc2 + 11) % 1024
-		yc3 = (yc3 - 18) % 1024
+		yc1 = (yc1 + dyc1) % 1024
+		yc2 = (yc2 + dyc2) % 1024
+		yc3 = (yc3 + dyc3) % 1024
 	end
 
 	local d = self.Drawable
 	local r = self.Rect
-	d:drawRGB(r[1], r[2], screen, WIDTH, HEIGHT, 6, 6)
+	d:drawRGB(r[1], r[2], screen, WIDTH, HEIGHT, PIXWIDTH, PIXHEIGHT)
 
 end
 
 function Plasma:updateInterval(msg)
 	local p = self.Params
 	local xp1, xp2, yp1, yp2, yp3 = unpack(p)
-	yp1 = (yp1 - 9) % 1024
-	yp2 = (yp2 + 4) % 1024
-	yp3 = (yp3 + 5) % 1024
-	xp1 = (xp1 + 7) % 1024
-	xp2 = (xp2 - 2) % 1024
+	yp1 = (yp1 + self.SpeedY1) % 1024
+	yp2 = (yp2 + self.SpeedY2) % 1024
+	yp3 = (yp3 + self.SpeedY3) % 1024
+	xp1 = (xp1 + self.SpeedX1) % 1024
+	xp2 = (xp2 + self.SpeedX2) % 1024
 	p[1], p[2], p[3], p[4], p[5] = xp1, xp2, yp1, yp2, yp3
 	self.Redraw = true
 	return msg

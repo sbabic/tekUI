@@ -44,9 +44,9 @@ $(OBJDIR)/region.lo: region.c
 $(OBJDIR)/exec_lua.lo: exec_lua.c
 	$(CC) $(LIBCFLAGS) -o $@ -c exec_lua.c
 
-$(OBJDIR)/visual_lua.lo: visual_lua.c
+$(OBJDIR)/visual_lua.lo: visual_lua.c visual_lua.h
 	$(CC) $(LIBCFLAGS) -o $@ -c visual_lua.c
-$(OBJDIR)/visual_api.lo: visual_api.c
+$(OBJDIR)/visual_api.lo: visual_api.c visual_lua.h
 	$(CC) $(LIBCFLAGS) -o $@ -c visual_api.c
 
 $(OBJDIR)/x11_lua.lo: display/x11_lua.c
