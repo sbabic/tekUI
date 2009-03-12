@@ -100,7 +100,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 10.0"
+_VERSION = "Application 10.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -462,20 +462,18 @@ function Application:run()
 
 		-- update open windows, spool out refreshes and newsizes:
 		for _, win in ipairs(ow) do
-			if win.Status == "show" then
-				while win:getMsg(msg) do
-					msgdispatch[msg[2]](self, win, msg)
-				end
-				if win.RefreshMsg then
-					win:passMsg(win.RefreshMsg)
-				end
-				if win.NewSizeMsg then
-					win:passMsg(win.NewSizeMsg)
-				end
-				win:update()
+			while win:getMsg(msg) do
+				msgdispatch[msg[2]](self, win, msg)
 			end
-			win.RefreshMsg = false
-			win.NewSizeMsg = false
+			if win.RefreshMsg then
+				win:passMsg(win.RefreshMsg)
+				win.RefreshMsg = false
+			end
+			if win.NewSizeMsg then
+				win:passMsg(win.NewSizeMsg)
+				win.NewSizeMsg = false
+			end
+			win:update()
 		end
 
 		-- purge (now) hidden windows from list:

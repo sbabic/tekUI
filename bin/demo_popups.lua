@@ -282,6 +282,7 @@ local window = Window:new
 									Style = "font:kochi mincho",
 									KeepMinWidth = true,
 									Width = "fill",
+									Height = "fill",
 									MinWidth = 80,
 									ListObject = List:new
 									{

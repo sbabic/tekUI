@@ -92,7 +92,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 10.1"
+_VERSION = "Window 10.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -439,7 +439,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:getMsg(msg)
-	local m = remove(self.MsgQueue)
+	local m = self.Status == "show" and remove(self.MsgQueue)
 	if m then
 		msg[-1], msg[0], msg[1], msg[2], msg[3], msg[4], msg[5],
 			msg[6], msg[7], msg[8], msg[9], msg[10] = unpack(m, -1, 10)
