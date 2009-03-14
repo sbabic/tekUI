@@ -714,11 +714,10 @@ static TBOOL getimsg(X11DISPLAY *mod, X11WINDOW *v, TIMSG **msgptr, TUINT type)
 	TAPTR TExecBase = TGetExecBase(mod);
 	TIMSG *msg = (TIMSG *) TRemHead(&mod->x11_imsgpool);
 	if (msg == TNULL)
-		msg = TAllocMsg(sizeof(TIMSG));
+		msg = TAllocMsg0(sizeof(TIMSG));
 	if (msg)
 	{
 		msg->timsg_UserData = v->userdata;
-		msg->timsg_ExtraSize = 0;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->x11_KeyQual;
 		msg->timsg_MouseX = mod->x11_MouseX;
@@ -737,7 +736,7 @@ static TBOOL getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
 	TIMSG *msg = TAllocMsg(sizeof(TIMSG) + size);
 	if (msg)
 	{
-		msg->timsg_UserData = 0;
+		TFillMem(msg, sizeof(TIMSG), 0);
 		msg->timsg_ExtraSize = size;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->x11_KeyQual;
