@@ -443,7 +443,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	for (;;)
 	{
 		TTAGITEM ftags[2];
-		TTAGITEM dtags[2];
+		TTAGITEM dtags[3];
 
 		/* Open the Visual module: */
 		vis->vis_Base = TExecOpenModule(exec, "visual", 0, TNULL);
@@ -457,7 +457,9 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 		/* Open a display: */
 		dtags[0].tti_Tag = TVisual_DisplayName;
 		dtags[0].tti_Value = (TTAG) "display_" DISPLAY_DRIVER;
-		dtags[1].tti_Tag = TTAG_DONE;
+		dtags[1].tti_Tag = TVisual_IMsgPort;
+		dtags[1].tti_Value = (TTAG) vis->vis_IMsgPort;
+		dtags[2].tti_Tag = TTAG_DONE;
 		vis->vis_Display = TVisualOpenDisplay(vis->vis_Base, dtags);
 		if (vis->vis_Display == TNULL)
 		{

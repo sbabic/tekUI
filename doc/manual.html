@@ -624,7 +624,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v11.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -695,7 +695,8 @@
 							<blockquote>
 								<p>
 									Name of a theme, which usually maps to an equally named
-									style sheet file (with the extension &quot;.css&quot;) in the file system.
+									style sheet file (with the extension &quot;.css&quot;) under
+									<code>tek/ui/style/</code>.
 									Themes with reserved meaning are:
 								</p>
 								<blockquote>
@@ -716,8 +717,8 @@
 							<code>Title &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
-									Title of the application, which will also be inherited by Window
-									objects; if unspecified, <code>ProgramName</code> will be used.
+									Title of the application, which will also be inherited by windows;
+									if unspecified, <code>ProgramName</code> will be used.
 								</p>
 							</blockquote>
 						</li>
@@ -763,6 +764,9 @@
 							<a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a> - adds a coroutine to the application
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Application:addInputHandler"><code>Application:addInputHandler()</code></a> - add input handler to the application
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Application:connect"><code>Application:connect()</code></a> - connects children recursively
 						</li>
 						<li style="list-style-type: none">
@@ -770,6 +774,9 @@
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Application:getElementById"><code>Application:getElementById()</code></a> - returns an element by Id
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Application:remInputHandler"><code>Application:remInputHandler()</code></a> - remove input handler from application
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Application:run"><code>Application:run()</code></a> - runs the application
@@ -915,6 +922,37 @@
 				Returns a table of locale strings for
 				<code>ApplicationId</code> and <code>VendorDomain</code>. See <a href="#ui:getLocale"><code>ui.getLocale()</code></a> for more
 				information.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:addInputHandler" id="Application:addInputHandler"><code>addInputHandler(msgtype, object, func)</code></a></h3>
+			<p>
+				Adds an <code>object</code> and
+				<code>function</code> to the application's chain of handlers for input of
+				the specified type. Currently, the only message type an appliction is
+				able to react on is <code>ui.MSG_USER</code>. All other message types are specific
+				to a Window. Input handlers are invoked as follows:
+			</p>
+<pre>
+message = function(object, message)
+</pre>
+			<p>
+				The handler is expected to return the message, which will in turn pass
+				it on to the next handler in the chain.
+				See also <a href="#Window:addInputHandler"><code>Window:addInputHandler()</code></a> for more information.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:remInputHandler" id="Application:remInputHandler"><code>Application:remInputHandler(msgtype, object, func)</code></a></h3>
+			<p>
+				Removes an input
+				handler that was previously registered with <a href="#Application:addInputHandler"><code>Application:addInputHandler()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:passMsg" id="Application:passMsg"><code>passMsg(msg)</code></a></h3>
+			<p>
+				See <a href="#Area:passMsg"><code>Area:passMsg()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -1832,7 +1870,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v12.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7060,7 +7098,7 @@ method(object, arg1, ...)
 		</p>
 		<hr />
 	</div>
-	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v14.5)</a></h2>
+	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v15.0)</a></h2>
 		<div class="definition"><dfn>OVERVIEW</dfn>
 			<blockquote>
 				<p>
@@ -7397,7 +7435,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Thu Mar 12 23:54:13 2009
+			Document generated on Sat Mar 14 20:03:58 2009
 		</p>
 	</div>
 	</body>

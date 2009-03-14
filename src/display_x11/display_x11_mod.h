@@ -251,6 +251,9 @@ typedef struct
 	Cursor x11_NullCursor;
 	#endif
 
+	TTAGITEM *x11_InitTags;
+	struct TMsgPort *x11_IMsgPort;
+
 } X11DISPLAY;
 
 struct X11Pen

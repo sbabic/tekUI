@@ -175,6 +175,8 @@ typedef struct TInputMessage
 {
 	/* Node header: */
 	struct TNode timsg_Node;
+	/* Size of extra data following the message body: */
+	TTAG timsg_ExtraSize;
 	/* Copy of window userdata: */
 	TTAG timsg_UserData;
 	/* Timestamp: */
@@ -215,22 +217,20 @@ typedef struct TInputMessage
 #define TITYPE_REFRESH			0x00000008
 /* Mouse moved in/out: */
 #define TITYPE_MOUSEOVER		0x00000010
-
 /* key down: */
 #define	TITYPE_KEYDOWN			0x00000100
 /* Mouse movement: */
 #define TITYPE_MOUSEMOVE		0x00000200
 /* Mouse button: */
 #define TITYPE_MOUSEBUTTON		0x00000400
-
 /* 1/50s interval: */
 #define TITYPE_INTERVAL			0x00000800
-
 /* key up: */
 #define TITYPE_KEYUP			0x00001000
-
 /* "Cooked" keystroke, an alias to keydown: */
 #define	TITYPE_COOKEDKEY		TITYPE_KEYDOWN
+/* User message: */
+#define	TITYPE_USER				0x00002000
 
 /*****************************************************************************/
 /*

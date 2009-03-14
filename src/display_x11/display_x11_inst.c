@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <dlfcn.h>
 #include <sys/select.h>
+#include <sys/ioctl.h>
 
 #include "display_x11_mod.h"
 
@@ -11,6 +12,135 @@ static void x11_exitinstance(X11DISPLAY *inst);
 static void x11_processevent(X11DISPLAY *mod);
 static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 	TAPTR msgstate, XEvent *ev);
+static TBOOL getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type,
+	TSIZE size);
+
+#if defined(ENABLE_STDIN)
+/*****************************************************************************/
+/*
+**	File reader
+*/
+
+struct FileReader
+{
+	int File;
+	size_t ReadBytes;
+	char ReadBuf[256];
+	int BufBytes;
+	int BufPos;
+ 	int (*ReadCharFunc)(struct FileReader *, char c);
+ 	int (*ReadLineFunc)(struct FileReader *, char **line, size_t *len);
+	char *Buffer;
+	size_t Pos;
+	size_t Size;
+	size_t MaxLen;
+	int State;
+};
+
+static int readchar(struct FileReader *r, char c)
+{
+	if (r->State != 0)
+		return 0;
+	for (;;)
+	{
+		if (r->Pos >= r->Size)
+		{
+			char *nbuf;
+			r->Size = r->Size ? r->Size << 1 : 32;
+			if (r->Size > r->MaxLen)
+			{
+				/* length exceeded */
+				r->State = 1;
+				break;
+			}
+			nbuf = realloc(r->Buffer, r->Size);
+			if (nbuf == NULL)
+			{
+				/* out of memory */
+				r->State = 2;
+				break;
+			}
+			r->Buffer = nbuf;
+		}
+		r->Buffer[r->Pos++] = c;
+		return 1;
+	}
+
+	free(r->Buffer);
+	r->Buffer = NULL;
+	r->Size = 0;
+	r->Pos = 0;
+	return 0;
+}
+
+static int readline(struct FileReader *r, char **line, size_t *len)
+{
+	int c;
+	while (r->ReadBytes > 0 || r->BufBytes > 0)
+	{
+		if (r->BufBytes == 0)
+		{
+			int rdbytes = TMIN(sizeof(r->ReadBuf), r->ReadBytes);
+			read(r->File, r->ReadBuf, rdbytes);
+			r->BufPos = 0;
+			r->BufBytes = rdbytes;
+			r->ReadBytes -= rdbytes;
+		}
+		c = r->ReadBuf[r->BufPos++];
+		r->BufBytes--;
+		if (c == '\r')
+			continue;
+		if (c == '\n')
+		{
+			if (r->State != 0)
+			{
+				r->State = 0;
+				continue;
+			}
+			c = 0;
+		}
+		if ((*r->ReadCharFunc)(r, c) == 0)
+			continue;
+
+		if (c == 0)
+		{
+			*line = r->Buffer;
+			*len = r->Pos;
+			r->Pos = 0;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+static int reader_init(struct FileReader *r, int fd, size_t maxlen)
+{
+	r->File = fd;
+	r->ReadBytes = 0;
+	r->BufBytes = 0;
+	r->BufPos = 0;
+	r->MaxLen = maxlen;
+	r->ReadCharFunc = readchar;
+	r->ReadLineFunc = readline;
+	r->Buffer = NULL;
+	r->Pos = 0;
+	r->Size = 0;
+	r->State = 0;
+	return 1;
+}
+
+static void
+reader_exit(struct FileReader *r)
+{
+	free(r->Buffer);
+}
+
+static void
+reader_addbytes(struct FileReader *r, int nbytes)
+{
+	r->ReadBytes += nbytes;
+}
+#endif
 
 /*****************************************************************************/
 /*
@@ -20,6 +150,7 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
+	mod->x11_InitTags = tags;
 	for (;;)
 	{
 		TTAGITEM tags[2];
@@ -228,6 +359,9 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		x11_createnullcursor(inst);
 		#endif
 
+		inst->x11_IMsgPort = (struct TMsgPort *) TGetTag(inst->x11_InitTags,
+			TVisual_IMsgPort, TNULL);
+
 		TDBPRINTF(TDB_TRACE,("instance init successful\n"));
 		return TTRUE;
 	}
@@ -400,6 +534,12 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	TTIME nextt;
 	TTIME waitt, nowt;
 
+	#if defined(ENABLE_STDIN)
+	int fd_in = STDIN_FILENO;
+	struct FileReader fr;
+	reader_init(&fr, fd_in, 2048);
+	#endif
+
 	TGetSystemTime(&nextt);
 	TAddTime(&nextt, &intt);
 
@@ -421,6 +561,10 @@ LOCAL void x11_taskfunc(struct TTask *task)
 		XFlush(inst->x11_Display);
 
 		FD_ZERO(&rset);
+		#if defined(ENABLE_STDIN)
+		if (fd_in >= 0)
+			FD_SET(fd_in, &rset);
+		#endif
 		FD_SET(inst->x11_fd_display, &rset);
 		FD_SET(inst->x11_fd_sigpipe_read, &rset);
 
@@ -434,9 +578,41 @@ LOCAL void x11_taskfunc(struct TTask *task)
 
 		/* wait for display, signal fd and timeout: */
 		if (select(inst->x11_fd_max, &rset, NULL, NULL, &tv) > 0)
+		{
+			/* consume one signal: */
 			if (FD_ISSET(inst->x11_fd_sigpipe_read, &rset))
-				/* consume one signal: */
 				read(inst->x11_fd_sigpipe_read, buf, 1);
+
+			#if defined(ENABLE_STDIN)
+			/* stdin line reader: */
+			if (fd_in >= 0 && FD_ISSET(fd_in, &rset))
+			{
+				int nbytes;
+				if (ioctl(fd_in, FIONREAD, &nbytes) == 0)
+				{
+					if (nbytes == 0)
+						fd_in = -1; /* stop processing */
+					else
+					{
+						char *line;
+						size_t len;
+						reader_addbytes(&fr, nbytes);
+						while (readline(&fr, &line, &len))
+						{
+							TIMSG *imsg;
+							if (inst->x11_IMsgPort &&
+								getusermsg(inst, &imsg, TITYPE_USER, len))
+							{
+								memcpy((void *) (imsg + 1), line, len);
+								TPutMsg(inst->x11_IMsgPort, TNULL,
+									&imsg->timsg_Node);
+							}
+						}
+					}
+				}
+			}
+			#endif
+		}
 
 		/* check if time interval has expired: */
 		TGetSystemTime(&nowt);
@@ -465,6 +641,10 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	} while (!(sig & TTASK_SIG_ABORT));
 
 	TDBPRINTF(TDB_INFO,("Device instance closedown\n"));
+
+	#if defined(ENABLE_STDIN)
+	reader_exit(&fr);
+	#endif
 
 	/* closedown: */
 	x11_exitinstance(inst);
@@ -534,10 +714,31 @@ static TBOOL getimsg(X11DISPLAY *mod, X11WINDOW *v, TIMSG **msgptr, TUINT type)
 	TAPTR TExecBase = TGetExecBase(mod);
 	TIMSG *msg = (TIMSG *) TRemHead(&mod->x11_imsgpool);
 	if (msg == TNULL)
-		msg = TAllocMsg0(sizeof(TIMSG));
+		msg = TAllocMsg(sizeof(TIMSG));
 	if (msg)
 	{
 		msg->timsg_UserData = v->userdata;
+		msg->timsg_ExtraSize = 0;
+		msg->timsg_Type = type;
+		msg->timsg_Qualifier = mod->x11_KeyQual;
+		msg->timsg_MouseX = mod->x11_MouseX;
+		msg->timsg_MouseY = mod->x11_MouseY;
+		TGetSystemTime(&msg->timsg_TimeStamp);
+		*msgptr = msg;
+		return TTRUE;
+	}
+	*msgptr = TNULL;
+	return TFALSE;
+}
+
+static TBOOL getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
+{
+	TAPTR TExecBase = TGetExecBase(mod);
+	TIMSG *msg = TAllocMsg(sizeof(TIMSG) + size);
+	if (msg)
+	{
+		msg->timsg_UserData = 0;
+		msg->timsg_ExtraSize = size;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->x11_KeyQual;
 		msg->timsg_MouseX = mod->x11_MouseX;

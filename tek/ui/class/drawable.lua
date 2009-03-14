@@ -50,9 +50,9 @@ local overlap = Region.overlapCoords
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 12.0"
+_VERSION = "Drawable 12.1"
 
-DEBUG_DELAY = 0.003
+DEBUG_DELAY = 3
 
 -------------------------------------------------------------------------------
 -- Class implementation:

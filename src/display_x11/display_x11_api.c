@@ -175,7 +175,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 
 		v->gc = XCreateGC(mod->x11_Display, v->window, gcv_mask, &gcv);
 		XCopyGC(mod->x11_Display,
-			XDefaultGC(mod->x11_Display, mod->x11_Screen),
+			DefaultGC(mod->x11_Display, mod->x11_Screen),
 			GCForeground | GCBackground, v->gc);
 
 		XMapWindow(mod->x11_Display, v->window);

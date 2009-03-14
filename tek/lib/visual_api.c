@@ -28,6 +28,9 @@ tek_lib_visual_wait(lua_State *L)
 }
 
 /*****************************************************************************/
+/*
+**	Sleep specified number of microseconds
+*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_sleep(lua_State *L)
@@ -36,7 +39,7 @@ tek_lib_visual_sleep(lua_State *L)
 	TTIME dt;
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
-	dt.tdt_Int64 = luaL_checknumber(L, 1) * 1000000;
+	dt.tdt_Int64 = luaL_checknumber(L, 1) * 1000;
 	TWaitTime(&dt, 0);
 	lua_pop(L, 1);
 	return 0;
@@ -231,14 +234,34 @@ tek_lib_visual_getmsg(lua_State *L)
 			lua_createtable(L, size, 0);
 		}
 
-		/* insert userdata index at index -1 in message table: */
 		lua_getmetatable(L, -2);
 		/* s: msgtab, reftab */
-		lua_rawgeti(L, -1, (int) imsg->timsg_UserData);
-		/* s: msgtable, reftab, visual */
+		if (imsg->timsg_UserData > 0)
+		{
+			/* If we have a userdata, we regard it as an index into the
+			visual metatable, referencing a visual: */
+			TEKVisual *refvis;
+			lua_rawgeti(L, -1, (int) imsg->timsg_UserData);
+			/* s: msgtable, reftab, visual */
+			refvis = lua_touserdata(L, -1);
+			/* from there, we retrieve the visual's userdata, which
+			stored as a reference in the same table: */
+			lua_rawgeti(L, -2, refvis->vis_refUserData);
+			/* s: msgtable, reftab, visual, userdata */
+			lua_remove(L, -2);
+			/* s: msgtable, reftab, userdata */
+		}
+		else
+		{
+			/* otherwise, we retrieve a "raw" user data package: */
+			lua_pushlstring(L, (void *) (imsg + 1), imsg->timsg_ExtraSize);
+		}
+
+		/* store the userdata in the message at index -1: */
 
 		lua_rawseti(L, -3, -1);
 		/* s: msgtable, reftab */
+
 		lua_pop(L, 1);
 		/* s: msgtable */
 

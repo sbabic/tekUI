@@ -70,7 +70,7 @@ LUA_DEFS = -I/usr/local/include/lua51 -I/usr/include/lua5.1
 FREETYPE_DEFS = -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2
 
 X11_LIBS = -L/usr/X11R6/lib -LX11 -lXext
-X11_DEFS = $(FREETYPE_DEFS) -D_XOPEN_SOURCE -D ENABLE_XFT -I/usr/X11R6/include
+X11_DEFS = $(FREETYPE_DEFS) -D_XOPEN_SOURCE -D ENABLE_XFT -D ENABLE_STDIN -I/usr/X11R6/include
 
 DFB_LIBS = `pkg-config --libs directfb`
 DFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`

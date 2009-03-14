@@ -31,15 +31,16 @@
 --			"running".
 --		- {{ThemeName [IG]}}
 --			Name of a theme, which usually maps to an equally named
---			style sheet file (with the extension ".css") in the file system.
+--			style sheet file (with the extension ".css") under
+--			{{tek/ui/style/}}.
 --			Themes with reserved meaning are:
 --				- "internal": Uses the hardcoded internal style properties
 --				and does not try to load a style sheet file.
 --				- "desktop": Tries to import the desktop's color scheme
 --				(besides trying to load a style sheet named "desktop.css").
 --		- {{Title [IG]}}
---			Title of the application, which will also be inherited by Window
---			objects; if unspecified, {{ProgramName}} will be used.
+--			Title of the application, which will also be inherited by windows;
+--			if unspecified, {{ProgramName}} will be used.
 --		- {{VendorDomain [IG]}}
 --			An uniquely identifying domain name of the vendor, organization
 --			or author manufacturing the application, preferrably without
@@ -59,9 +60,11 @@
 --
 --	IMPLEMENTS::
 --		- Application:addCoroutine() - adds a coroutine to the application
+--		- Application:addInputHandler() - add input handler to the application
 --		- Application:connect() - connects children recursively
 --		- Application:easyRequest() - opens a message box
 --		- Application:getElementById() - returns an element by Id
+--		- Application:remInputHandler() - remove input handler from application
 --		- Application:run() - runs the application
 --		- Application:suspend() - suspends the caller's coroutine
 --		- Application:requestFile() - opens a file requester
@@ -89,6 +92,7 @@ local coresume = coroutine.resume
 local corunning = coroutine.running
 local costatus = coroutine.status
 local coyield = coroutine.yield
+local floor = math.floor
 local insert = table.insert
 local ipairs = ipairs
 local max = math.max
@@ -100,7 +104,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 10.1"
+_VERSION = "Application 11.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -122,6 +126,7 @@ function Application.new(class, self)
 		[ui.MSG_MOUSEBUTTON] = self.passMsgNoModal,
 		[ui.MSG_INTERVAL] = self.passMsgAlways,
 		[ui.MSG_KEYUP] = self.passMsgNoModal,
+		[ui.MSG_USER] = self.passMsg,
 	}
 	-- Check linkage of members and connect them recursively:
 	if self:connect() then
@@ -145,6 +150,10 @@ function Application.init(self)
 	self.Coroutines = { }
 	self.Display = false
 	self.ElementById = { }
+	self.InputHandlers =
+	{
+		[ui.MSG_USER] = { },
+	}
 	self.ModalWindows = { } -- stack of
 	self.MsgDispatch = false
 	self.OpenWindows = { }
@@ -302,6 +311,7 @@ end
 
 function Application:show(display)
 	self.Display = display
+	self:addInputHandler(ui.MSG_USER, self, self.handleInput)
 	for _, w in ipairs(self.Children) do
 		w:show(display)
 	end
@@ -316,6 +326,7 @@ function Application:hide()
 	for _, w in ipairs(self.Children) do
 		w:hide()
 	end
+	self:remInputHandler(ui.MSG_USER, self, self.handleInput)
 	self.Display = nil
 end
 
@@ -391,18 +402,20 @@ end
 --	the current window.
 -------------------------------------------------------------------------------
 
-function Application:passMsgAlways(win, msg)
-	win:passMsg(msg)
+function Application:passMsgAlways(msg)
+	msg[-1]:passMsg(msg)
 end
 
-function Application:passMsgNoModal(win, msg)
+function Application:passMsgNoModal(msg)
+	local win = msg[-1]
 	local mw = self.ModalWindows[1]
 	if not mw or mw == win then
 		win:passMsg(msg)
 	end
 end
 
-function Application:passMsgNewSize(win, msg)
+function Application:passMsgNewSize(msg)
+	local win = msg[-1]
 	-- bundle newsizes:
 	local newsize = win.NewSizeMsg
 	if not newsize then
@@ -414,7 +427,8 @@ function Application:passMsgNewSize(win, msg)
 	newsize[1] = msg[1]
 end
 
-function Application:passMsgRefresh(win, msg)
+function Application:passMsgRefresh(msg)
+	local win = msg[-1]
 	-- bundle damage rects:
 	local refresh = win.RefreshMsg
 	if not refresh then
@@ -458,32 +472,37 @@ function Application:run()
 
 	while self.Status == "running" and #ow > 0 do
 
+		-- service coroutines; idle means they are all suspended:
 		local idle = self:serviceCoroutines()
 
-		-- update open windows, spool out refreshes and newsizes:
+		-- for all open windows:
 		for _, win in ipairs(ow) do
+			-- dispatch special window messages:
 			while win:getMsg(msg) do
-				msgdispatch[msg[2]](self, win, msg)
+				msgdispatch[msg[2]](self, msg)
 			end
+			-- spool out bundled refreshes:
 			if win.RefreshMsg then
 				win:passMsg(win.RefreshMsg)
 				win.RefreshMsg = false
 			end
+			-- spool out bundled newsizes:
 			if win.NewSizeMsg then
 				win:passMsg(win.NewSizeMsg)
 				win.NewSizeMsg = false
 			end
+			-- update:
 			win:update()
 		end
 
-		-- purge (now) hidden windows from list:
+		-- purge windows from list that may have gone to hidden state:
 		for i = #ow, 1, -1 do
 			if ow[i].Status ~= "show" then
 				remove(ow, i)
 			end
 		end
 
-		-- wait if no coroutines are running and windows are open:
+		-- wait if no coroutines are running, and windows are open:
 		if idle and #ow > 0 then
 			if collectgarbage then
 				collectgarbage("step")
@@ -491,8 +510,9 @@ function Application:run()
 			d:wait()
 		end
 
+		-- dispatch input messages:
 		while d:getmsg(msg) do
-			msgdispatch[msg[2]](self, msg[-1]:getuserdata(), msg)
+			msgdispatch[msg[2]](self, msg)
 		end
 
 	end
@@ -724,4 +744,85 @@ end
 
 function Application:getLocale(deflang, lang)
 	return ui.getLocale(self.ApplicationId, self.VendorDomain, deflang, lang)
+end
+
+-------------------------------------------------------------------------------
+--	addInputHandler(msgtype, object, func): Adds an {{object}} and
+--	{{function}} to the application's chain of handlers for input of
+--	the specified type. Currently, the only message type an appliction is
+--	able to react on is {{ui.MSG_USER}}. All other message types are specific
+--	to a Window. Input handlers are invoked as follows:
+--			message = function(object, message)
+--	The handler is expected to return the message, which will in turn pass
+--	it on to the next handler in the chain.
+--	See also Window:addInputHandler() for more information.
+-------------------------------------------------------------------------------
+
+local MSGTYPES = { ui.MSG_USER }
+
+local function testflag(flags, mask)
+	return floor(flags % (mask + mask) / mask) ~= 0
+end
+
+function Application:addInputHandler(msgtype, object, func)
+	local hnd = { object, func }
+	for _, mask in ipairs(MSGTYPES) do
+		local ih = self.InputHandlers[mask]
+		if ih then
+			if testflag(msgtype, mask) then
+				insert(ih, 1, hnd)
+			end
+		end
+	end
+end
+
+-------------------------------------------------------------------------------
+--	Application:remInputHandler(msgtype, object, func): Removes an input
+--	handler that was previously registered with Application:addInputHandler().
+-------------------------------------------------------------------------------
+
+function Application:remInputHandler(msgtype, object, func)
+	for _, mask in ipairs(MSGTYPES) do
+		local ih = self.InputHandlers[mask]
+		if ih then
+			if testflag(msgtype, mask) then
+				for i, h in ipairs(ih) do
+					if h[1] == object and h[2] == func then
+						remove(ih, i)
+						break
+					end
+				end
+			end
+		end
+	end
+end
+
+-------------------------------------------------------------------------------
+--	passMsg(msg): See Area:passMsg().
+-------------------------------------------------------------------------------
+
+function Application:passMsg(msg)
+	for _, hnd in ipairs { unpack(self.InputHandlers[msg[2]]) } do
+		msg = hnd[2](hnd[1], msg)
+		if not msg then
+			return false
+		end
+	end
+	return msg
+end
+
+-------------------------------------------------------------------------------
+--	handleInput:
+-------------------------------------------------------------------------------
+
+local MsgHandlers =
+{
+	[ui.MSG_USER] = function(self, msg)
+		return msg
+	end
+}
+
+function Application:handleInput(msg)
+	MsgHandlers[msg[2]](self, msg)
+	return false
 end

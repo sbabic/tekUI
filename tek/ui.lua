@@ -75,7 +75,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 14.5"
+_VERSION = "tekUI 15.0"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -763,4 +763,5 @@ MSG_MOUSEMOVE   = 0x0200
 MSG_MOUSEBUTTON = 0x0400
 MSG_INTERVAL    = 0x0800
 MSG_KEYUP       = 0x1000
+MSG_USER        = 0x2000
 MSG_ALL         = 0x1f1f
