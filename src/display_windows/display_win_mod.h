@@ -20,6 +20,7 @@
 /*****************************************************************************/
 
 #define FB_DISPLAY_CLASSNAME "tek_display_windows_class"
+#define FB_DISPLAY_CLASSNAME_POPUP "tek_display_windows_popup_class"
 
 #define FB_DISPLAY_VERSION      1
 #define FB_DISPLAY_REVISION     0
@@ -128,6 +129,7 @@ typedef struct
 
 	HINSTANCE fbd_HInst;
 	ATOM fbd_ClassAtom;
+	ATOM fbd_ClassAtomPopup;
 
 	char fbd_utf8buffer[WIN_UTF8_BUFSIZE];
 
@@ -182,6 +184,12 @@ typedef struct
 	/* userdata attached to this window, also propagated in messages: */
 	TTAG fbv_UserData;
 
+	TINT fbv_BorderWidth, fbv_BorderHeight;
+	TINT fbv_BorderLeft, fbv_BorderTop;
+
+	TINT fbv_MinWidth, fbv_MinHeight;
+	TINT fbv_MaxWidth, fbv_MaxHeight;
+
 } WINWINDOW;
 
 struct FBPen
@@ -198,6 +206,7 @@ struct attrdata
 	WINDISPLAY *mod;
 	WINWINDOW *v;
 	TEXTMETRIC textmetric;
+	TINT neww, newh;
 	TINT num;
 };
 
@@ -228,6 +237,9 @@ LOCAL TBOOL fb_getimsg(WINDISPLAY *mod, WINWINDOW *v, TIMSG **msgptr,
 	TUINT type);
 LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval);
 LOCAL void fb_sendimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG *imsg);
+
+LOCAL void win_getminmax(WINWINDOW *win, TINT *pm1, TINT *pm2, TINT *pm3,
+	TINT *pm4, TBOOL windowsize);
 
 LOCAL void fb_exit(WINDISPLAY *mod);
 LOCAL void fb_wake(WINDISPLAY *inst);

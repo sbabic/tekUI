@@ -30,8 +30,10 @@ static TBOOL fb_initwindow(TAPTR task)
 		RECT wrect;
 		BITMAPINFOHEADER *bmi;
 		TUINT style;
+		TUINT exstyle;
 		TIMSG *imsg;
 		const char *classname;
+		TSTRPTR title;
 
 		win = TAlloc0(mod->fbd_MemMgr, sizeof(WINWINDOW));
 		if (win == TNULL)
@@ -48,36 +50,61 @@ static TBOOL fb_initwindow(TAPTR task)
 		win->fbv_Borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
 		win->fbv_UserData = TGetTag(tags, TVisual_UserData, TNULL);
 
+		win->fbv_MinWidth = (TINT) TGetTag(tags, TVisual_MinWidth, (TTAG) -1);
+		win->fbv_MinHeight = (TINT) TGetTag(tags, TVisual_MinHeight, (TTAG) -1);
+		win->fbv_MaxWidth = (TINT) TGetTag(tags, TVisual_MaxWidth, (TTAG) -1);
+		win->fbv_MaxHeight = (TINT) TGetTag(tags, TVisual_MaxHeight, (TTAG) -1);
+
 		if (win->fbv_Borderless)
 		{
-			style = WS_OVERLAPPEDWINDOW;
-			classname = FB_DISPLAY_CLASSNAME; /* TODO: own class */
+			style = (WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS) & ~WS_BORDER;
+			classname = FB_DISPLAY_CLASSNAME_POPUP;
+			title = NULL;
+			exstyle = WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
 		}
 		else
 		{
 			style = WS_OVERLAPPEDWINDOW;
 			classname = FB_DISPLAY_CLASSNAME;
+			title = win->fbv_Title;
+			exstyle = 0;
+		}
+
+		wrect.left = wrect.right = wrect.top = wrect.bottom = 0;
+		AdjustWindowRectEx(&wrect, style, FALSE, exstyle);
+		win->fbv_BorderWidth = wrect.right - wrect.left;
+		win->fbv_BorderHeight = wrect.bottom - wrect.top;
+		win->fbv_BorderLeft = -wrect.left;
+		win->fbv_BorderTop = -wrect.top;
+
+		if (!win->fbv_Borderless)
+		{
+			TINT m1, m2, m3, m4;
+			win_getminmax(win, &m1, &m2, &m3, &m4, TTRUE);
+			win->fbv_Width = TCLAMP(m1, win->fbv_Width, m3);
+			win->fbv_Height = TCLAMP(m2, win->fbv_Height, m4);
 		}
 
 		if (win->fbv_Left != 0xffffffff && win->fbv_Top != 0xffffffff)
 		{
 			wrect.left = win->fbv_Left;
 			wrect.top = win->fbv_Top;
-			wrect.right = win->fbv_Left + win->fbv_Width - 1;
-			wrect.bottom = win->fbv_Top + win->fbv_Height - 1;
-			if (!AdjustWindowRectEx(&wrect, style, FALSE, 0))
+			wrect.right = win->fbv_Left + win->fbv_Width;
+			wrect.bottom = win->fbv_Top + win->fbv_Height;
+			if (!AdjustWindowRectEx(&wrect, style, FALSE, exstyle))
 				break;
+
 			win->fbv_Left = wrect.left;
 			win->fbv_Top = wrect.top;
-			win->fbv_HWnd = CreateWindowEx(0, classname,
-				win->fbv_Title, style, win->fbv_Left, win->fbv_Top,
-				wrect.right - wrect.left + 1, wrect.bottom - wrect.top + 1,
+			win->fbv_HWnd = CreateWindowEx(exstyle, classname,
+				title, style, win->fbv_Left, win->fbv_Top,
+				wrect.right - wrect.left, wrect.bottom - wrect.top,
 				(HWND) NULL, (HMENU) NULL, mod->fbd_HInst, (LPVOID) NULL);
 		}
 		else
 		{
-			win->fbv_HWnd = CreateWindowEx(0, classname,
-				win->fbv_Title, style, CW_USEDEFAULT, CW_USEDEFAULT,
+			win->fbv_HWnd = CreateWindowEx(exstyle, classname,
+				title, style, CW_USEDEFAULT, CW_USEDEFAULT,
 				win->fbv_Width, win->fbv_Height,
 				(HWND) NULL, (HMENU) NULL, mod->fbd_HInst, (LPVOID) NULL);
 		}
@@ -86,10 +113,10 @@ static TBOOL fb_initwindow(TAPTR task)
 			break;
 
 		GetWindowRect(win->fbv_HWnd, &wrect);
-		win->fbv_Left = wrect.left;
-		win->fbv_Top = wrect.top;
-		win->fbv_Width = wrect.right - wrect.left + 1;
-		win->fbv_Height = wrect.bottom - wrect.top + 1;
+		win->fbv_Left = wrect.left + win->fbv_BorderLeft;
+		win->fbv_Top = wrect.top + win->fbv_BorderHeight;
+		win->fbv_Width = wrect.right - wrect.left - win->fbv_BorderWidth;
+		win->fbv_Height = wrect.bottom - wrect.top - win->fbv_BorderHeight;
 
 		SetWindowLong(win->fbv_HWnd, GWL_USERDATA, (LONG) win);
 
@@ -337,11 +364,13 @@ fb_frect(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_line(WINDISPLAY *mod, struct TVRequest *req)
 {
-	WINWINDOW *win = req->tvr_Op.FRect.Window;
-// 	WINWINDOW *v = req->tvr_Op.Line.Window;
-// 	struct FBPen *pen = (struct FBPen *) req->tvr_Op.Line.Pen;
-// 	setfgpen(mod, v, req->tvr_Op.Line.Pen);
-// 	fbp_drawline(v, req->tvr_Op.Line.Rect, pen);
+	WINWINDOW *win = req->tvr_Op.Line.Window;
+	TVPEN pen = req->tvr_Op.Line.Pen;
+	MoveToEx(win->fbv_HDC, req->tvr_Op.Line.Rect[0],
+		req->tvr_Op.Line.Rect[1], NULL);
+	SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->pen);
+	LineTo(win->fbv_HDC, req->tvr_Op.Line.Rect[2],
+		req->tvr_Op.Line.Rect[3]);
 	win->fbv_Dirty = TTRUE;
 }
 
@@ -367,13 +396,11 @@ fb_rect(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_plot(WINDISPLAY *mod, struct TVRequest *req)
 {
-	WINWINDOW *win = req->tvr_Op.FRect.Window;
-// 	WINWINDOW *v = req->tvr_Op.Plot.Window;
-// 	TUINT x = req->tvr_Op.Plot.Rect[0];
-// 	TUINT y = req->tvr_Op.Plot.Rect[1];
-// 	struct FBPen *pen = (struct FBPen *) req->tvr_Op.Plot.Pen;
-// 	setfgpen(mod, v, req->tvr_Op.Plot.Pen);
-// 	fbp_drawpoint(v, x, y, pen);
+	WINWINDOW *win = req->tvr_Op.Plot.Window;
+	TUINT x = req->tvr_Op.Plot.Rect[0];
+	TUINT y = req->tvr_Op.Plot.Rect[1];
+	struct FBPen *fgpen = (struct FBPen *) req->tvr_Op.Plot.Pen;
+	SetPixel(win->fbv_HDC, x, y, fgpen->col);
 	win->fbv_Dirty = TTRUE;
 }
 
@@ -382,44 +409,56 @@ fb_plot(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_drawstrip(WINDISPLAY *mod, struct TVRequest *req)
 {
-	TINT i, x0, y0, x1, y1, x2, y2;
-// 	WINWINDOW *v = req->tvr_Op.Strip.Window;
+	TINT i;
+	WINWINDOW *win = req->tvr_Op.Strip.Window;
 	TINT *array = req->tvr_Op.Strip.Array;
 	TINT num = req->tvr_Op.Strip.Num;
-// 	TTAGITEM *tags = req->tvr_Op.Strip.Tags;
-// 	TVPEN pen = (TVPEN) TGetTag(tags, TVisual_Pen, TVPEN_UNDEFINED);
-// 	TVPEN *penarray = (TVPEN *) TGetTag(tags, TVisual_PenArray, TNULL);
+	TTAGITEM *tags = req->tvr_Op.Strip.Tags;
+	TVPEN *penarray = (TVPEN *) TGetTag(tags, TVisual_PenArray, TNULL);
+	POINT points[3];
 
 	if (num < 3) return;
 
-// 	if (penarray)
-// 		setfgpen(mod, v, penarray[2]);
-// 	else
-// 		setfgpen(mod, v, pen);
-
-	x0 = array[0];
-	y0 = array[1];
-	x1 = array[2];
-	y1 = array[3];
-	x2 = array[4];
-	y2 = array[5];
-
-// 	fbp_drawtriangle(v, x0, y0, x1, y1, x2, y2, (struct FBPen *) v->fgpen);
-
-	for (i = 3; i < num; i++)
+	if (penarray)
 	{
-		x0 = x1;
-		y0 = y1;
-		x1 = x2;
-		y1 = y2;
-		x2 = array[i*2];
-		y2 = array[i*2+1];
-
-// 		if (penarray)
-// 			setfgpen(mod, v, penarray[i]);
-
-// 		fbp_drawtriangle(v, x0, y0, x1, y1, x2, y2, (struct FBPen *) v->fgpen);
+		SelectObject(win->fbv_HDC, ((struct FBPen *) penarray[2])->pen);
+		SelectObject(win->fbv_HDC, ((struct FBPen *) penarray[2])->brush);
 	}
+	else
+	{
+		TVPEN pen = (TVPEN) TGetTag(tags, TVisual_Pen, TVPEN_UNDEFINED);
+		SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->pen);
+		SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->brush);
+	}
+
+	Polygon(win->fbv_HDC, array, 3);
+
+	if (num > 3)
+	{
+		points[0].x = array[0];
+		points[0].y = array[1];
+		points[1].x = array[2];
+		points[1].y = array[3];
+		points[2].x = array[4];
+		points[2].y = array[5];
+		for (i = 3; i < num; ++i)
+		{
+			if (penarray)
+			{
+				SelectObject(win->fbv_HDC, ((struct FBPen *) penarray[i])->pen);
+				SelectObject(win->fbv_HDC, ((struct FBPen *) penarray[i])->brush);
+			}
+			points[0].x = points[1].x;
+			points[0].y = points[1].y;
+			points[1].x = points[2].x;
+			points[1].y = points[2].y;
+			points[2].x = array[i * 2];
+			points[2].y = array[i * 2 + 1];
+			Polygon(win->fbv_HDC, points, 3);
+		}
+	}
+
+	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -427,42 +466,54 @@ fb_drawstrip(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_drawfan(WINDISPLAY *mod, struct TVRequest *req)
 {
-	TINT i, x0, y0, x1, y1, x2, y2;
-// 	WINWINDOW *v = req->tvr_Op.Fan.Window;
-	TINT *array = req->tvr_Op.Fan.Array;
-	TINT num = req->tvr_Op.Fan.Num;
-// 	TTAGITEM *tags = req->tvr_Op.Fan.Tags;
-// 	TVPEN pen = (TVPEN) TGetTag(tags, TVisual_Pen, TVPEN_UNDEFINED);
-// 	TVPEN *penarray = (TVPEN *) TGetTag(tags, TVisual_PenArray, TNULL);
+	TINT i;
+	WINWINDOW *win = req->tvr_Op.Strip.Window;
+	TINT *array = req->tvr_Op.Strip.Array;
+	TINT num = req->tvr_Op.Strip.Num;
+	TTAGITEM *tags = req->tvr_Op.Strip.Tags;
+	TVPEN *penarray = (TVPEN *) TGetTag(tags, TVisual_PenArray, TNULL);
+	POINT points[3];
 
 	if (num < 3) return;
 
-// 	if (penarray)
-// 		setfgpen(mod, v, penarray[2]);
-// 	else
-// 		setfgpen(mod, v, pen);
-
-	x0 = array[0];
-	y0 = array[1];
-	x1 = array[2];
-	y1 = array[3];
-	x2 = array[4];
-	y2 = array[5];
-
-// 	fbp_drawtriangle(v, x0, y0, x1, y1, x2, y2, (struct FBPen *) v->fgpen);
-
-	for (i = 3; i < num; i++)
+	if (penarray)
 	{
-		x1 = x2;
-		y1 = y2;
-		x2 = array[i*2];
-		y2 = array[i*2+1];
-
-// 		if (penarray)
-// 			setfgpen(mod, v, penarray[i]);
-
-// 		fbp_drawtriangle(v, x0, y0, x1, y1, x2, y2, (struct FBPen *) v->fgpen);
+		SelectObject(win->fbv_HDC, ((struct FBPen *) penarray[2])->pen);
+		SelectObject(win->fbv_HDC, ((struct FBPen *) penarray[2])->brush);
 	}
+	else
+	{
+		TVPEN pen = (TVPEN) TGetTag(tags, TVisual_Pen, TVPEN_UNDEFINED);
+		SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->pen);
+		SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->brush);
+	}
+
+	Polygon(win->fbv_HDC, array, 3);
+
+	if (num > 3)
+	{
+		points[0].x = array[0];
+		points[0].y = array[1];
+		points[1].x = array[2];
+		points[1].y = array[3];
+		points[2].x = array[4];
+		points[2].y = array[5];
+		for (i = 3; i < num; ++i)
+		{
+			if (penarray)
+			{
+				SelectObject(win->fbv_HDC, ((struct FBPen *) penarray[i])->pen);
+				SelectObject(win->fbv_HDC, ((struct FBPen *) penarray[i])->brush);
+			}
+			points[1].x = points[2].x;
+			points[1].y = points[2].y;
+			points[2].x = array[i * 2];
+			points[2].y = array[i * 2 + 1];
+			Polygon(win->fbv_HDC, points, 3);
+		}
+	}
+
+	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -608,20 +659,16 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			*((TINT *) item->tti_Value) = v->fbv_Top;
 			break;
 		case TVisual_MinWidth:
-// 			*((TINT *) item->tti_Value) =
-// 				v->fbv_WinRect[2] - v->fbv_WinRect[0] + 1;
+			*((TINT *) item->tti_Value) = v->fbv_MinWidth;
 			break;
 		case TVisual_MinHeight:
-// 			*((TINT *) item->tti_Value) =
-// 				v->fbv_WinRect[3] - v->fbv_WinRect[1] + 1;
+			*((TINT *) item->tti_Value) = v->fbv_MinHeight;
 			break;
 		case TVisual_MaxWidth:
-// 			*((TINT *) item->tti_Value) =
-// 				v->fbv_WinRect[2] - v->fbv_WinRect[0] + 1;
+			*((TINT *) item->tti_Value) = v->fbv_MaxWidth;
 			break;
 		case TVisual_MaxHeight:
-// 			*((TINT *) item->tti_Value) =
-// 				v->fbv_WinRect[3] - v->fbv_WinRect[1] + 1;
+			*((TINT *) item->tti_Value) = v->fbv_MaxHeight;
 			break;
 		case TVisual_Device:
 			*((TAPTR *) item->tti_Value) = data->mod;
@@ -639,11 +686,20 @@ fb_getattrs(WINDISPLAY *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
+	RECT wrect;
+	WINWINDOW *win = req->tvr_Op.GetAttrs.Window;
 
-	data.v = req->tvr_Op.GetAttrs.Window;
+	data.v = win;
 	data.num = 0;
 	data.mod = mod;
 	TInitHook(&hook, getattrfunc, &data);
+
+	GetWindowRect(win->fbv_HWnd, &wrect);
+
+	win->fbv_Left = wrect.left + win->fbv_BorderLeft;
+	win->fbv_Top = wrect.top + win->fbv_BorderHeight;
+	win->fbv_Width = wrect.right - wrect.left - win->fbv_BorderWidth;
+	win->fbv_Height = wrect.bottom - wrect.top - win->fbv_BorderHeight;
 
 	TForEachTag(req->tvr_Op.GetAttrs.Tags, &hook);
 	req->tvr_Op.GetAttrs.Num = data.num;
@@ -656,11 +712,29 @@ setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
-	/*WINWINDOW *v = data->v;*/
+	WINWINDOW *v = data->v;
 	switch (item->tti_Tag)
 	{
 		default:
 			return TTRUE;
+		case TVisual_Width:
+			data->neww = (TINT) item->tti_Value;
+			break;
+		case TVisual_Height:
+			data->newh = (TINT) item->tti_Value;
+			break;
+		case TVisual_MinWidth:
+			v->fbv_MinWidth = (TINT) item->tti_Value;
+			break;
+		case TVisual_MinHeight:
+			v->fbv_MinHeight = (TINT) item->tti_Value;
+			break;
+		case TVisual_MaxWidth:
+			v->fbv_MaxWidth = (TINT) item->tti_Value;
+			break;
+		case TVisual_MaxHeight:
+			v->fbv_MaxHeight = (TINT) item->tti_Value;
+			break;
 	}
 	data->num++;
 	return TTRUE;
@@ -671,15 +745,25 @@ fb_setattrs(WINDISPLAY *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
-	WINWINDOW *v = req->tvr_Op.SetAttrs.Window;
-
-	data.v = v;
+	WINWINDOW *win = req->tvr_Op.SetAttrs.Window;
+	TINT m1, m2, m3, m4, neww, newh;
+	data.v = win;
 	data.num = 0;
 	data.mod = mod;
+	data.neww = -1;
+	data.newh = -1;
 	TInitHook(&hook, setattrfunc, &data);
-
 	TForEachTag(req->tvr_Op.SetAttrs.Tags, &hook);
 	req->tvr_Op.SetAttrs.Num = data.num;
+	win_getminmax(win, &m1, &m2, &m3, &m4, TFALSE);
+	neww = data.neww < 0 ? win->fbv_Width : data.neww;
+	newh = data.newh < 0 ? win->fbv_Height : data.newh;
+	if (neww < win->fbv_MinWidth || newh < win->fbv_MinHeight)
+	{
+		neww = TMAX(neww, m1);
+		newh = TMAX(newh, m2);
+		SetWindowPos(win->fbv_HWnd, NULL, 0, 0, neww, newh, SWP_NOMOVE);
+	}
 }
 
 /*****************************************************************************/

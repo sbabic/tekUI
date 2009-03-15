@@ -435,15 +435,19 @@ LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req)
 	TINT *array = req->tvr_Op.Strip.Array;
 	TINT num = req->tvr_Op.Strip.Num;
 	TTAGITEM *tags = req->tvr_Op.Strip.Tags;
-	TVPEN pen = (TVPEN) TGetTag(tags, TVisual_Pen, TVPEN_UNDEFINED);
 	TVPEN *penarray = (TVPEN *) TGetTag(tags, TVisual_PenArray, TNULL);
 
 	if (num < 3) return;
 
 	if (penarray)
+	{
 		setfgpen(mod, v, penarray[2]);
+	}
 	else
+	{
+		TVPEN pen = (TVPEN) TGetTag(tags, TVisual_Pen, TVPEN_UNDEFINED);
 		setfgpen(mod, v, pen);
+	}
 
 	tri[0].x = (TINT16) array[0];
 	tri[0].y = (TINT16) array[1];

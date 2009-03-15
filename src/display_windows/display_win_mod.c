@@ -233,19 +233,19 @@ static TBOOL fb_initinstance(TAPTR task)
 	{
 // 		TTAGITEM *opentags = mod->fbd_OpenTags;
 		TTAGITEM ftags[3];
-		WNDCLASSEX wclass;
+		WNDCLASSEX wclass, pclass;
 
 		mod->fbd_HInst = GetModuleHandle(NULL);
 		if (mod->fbd_HInst == TNULL)
 			break;
 
 		wclass.cbSize = sizeof(wclass);
-		wclass.style = 0; 	/*CS_HREDRAW | CS_VREDRAW | CS_SAVEBITS;*/
+		wclass.style = 0;
 		wclass.lpfnWndProc = win_wndproc;
 		wclass.cbClsExtra = 0;
 		wclass.cbWndExtra = 0;
 		wclass.hInstance = mod->fbd_HInst;
-		wclass.hIcon = LoadIcon(NULL,IDI_APPLICATION);
+		wclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 		wclass.hCursor = LoadCursor(NULL, IDC_ARROW);
 		wclass.hbrBackground = NULL;
 		wclass.lpszMenuName = NULL;
@@ -253,6 +253,22 @@ static TBOOL fb_initinstance(TAPTR task)
 		wclass.hIconSm = NULL;
 		mod->fbd_ClassAtom = RegisterClassEx(&wclass);
 		if (mod->fbd_ClassAtom == 0)
+			break;
+
+		pclass.cbSize = sizeof(pclass);
+		pclass.style = CS_NOCLOSE;
+		pclass.lpfnWndProc = win_wndproc;
+		pclass.cbClsExtra = 0;
+		pclass.cbWndExtra = 0;
+		pclass.hInstance = mod->fbd_HInst;
+		pclass.hIcon = NULL;
+		pclass.hCursor = LoadCursor(NULL, IDC_ARROW);
+		pclass.hbrBackground = NULL;
+		pclass.lpszMenuName = NULL;
+		pclass.lpszClassName = FB_DISPLAY_CLASSNAME_POPUP;
+		pclass.hIconSm = NULL;
+		mod->fbd_ClassAtomPopup = RegisterClassEx(&pclass);
+		if (mod->fbd_ClassAtomPopup == 0)
 			break;
 
 		/* Create invisible window for this device: */
@@ -324,6 +340,9 @@ fb_exitinstance(WINDISPLAY *mod)
 
 	if (mod->fbd_ClassAtom)
 		UnregisterClass(FB_DISPLAY_CLASSNAME, mod->fbd_HInst);
+
+	if (mod->fbd_ClassAtomPopup)
+		UnregisterClass(FB_DISPLAY_CLASSNAME_POPUP, mod->fbd_HInst);
 }
 
 static void fb_runinstance(TAPTR task)
@@ -686,198 +705,246 @@ static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type, TINT code)
 	}
 }
 
+LOCAL void win_getminmax(WINWINDOW *win, TINT *pm1, TINT *pm2, TINT *pm3,
+	TINT *pm4, TBOOL windowsize)
+{
+	TINT m1 = win->fbv_MinWidth;
+	TINT m2 = win->fbv_MinHeight;
+	TINT m3 = win->fbv_MaxWidth;
+	TINT m4 = win->fbv_MaxHeight;
+	m1 = TMAX(0, m1);
+	m2 = TMAX(0, m2);
+	m3 = m3 < 0 ? 1000000 : m3;
+	m4 = m4 < 0 ? 1000000 : m4;
+	if (windowsize)
+	{
+		m1 += win->fbv_BorderWidth;
+		m2 += win->fbv_BorderHeight;
+		m3 += win->fbv_BorderWidth;
+		m4 += win->fbv_BorderHeight;
+	}
+	*pm1 = m1;
+	*pm2 = m2;
+	*pm3 = m3;
+	*pm4 = m4;
+}
+
 static LRESULT CALLBACK
 win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	TIMSG *imsg;
 	WINWINDOW *win = (WINWINDOW *) GetWindowLong(hwnd, GWL_USERDATA);
 	WINDISPLAY *mod = win ? win->fbv_Display : TNULL;
-
-	switch (uMsg)
+	if (mod)
 	{
-		default:
-			TDBPRINTF(TDB_TRACE,("uMsg: %08x\n", uMsg));
-			break;
-
-		case WM_CLOSE:
-			if ((win->fbv_InputMask & TITYPE_CLOSE) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_CLOSE)))
-				fb_sendimsg(mod, win, imsg);
-			return 0;
-
-		case WM_ERASEBKGND:
-			return 0;
-
-		case WM_PAINT:
+		TIMSG *imsg;
+		switch (uMsg)
 		{
-			PAINTSTRUCT ps;
-			if (BeginPaint(win->fbv_HWnd, &ps))
-			{
-				if ((win->fbv_InputMask & TITYPE_REFRESH) &&
-					(fb_getimsg(mod, win, &imsg, TITYPE_REFRESH)))
-				{
-					imsg->timsg_X = ps.rcPaint.left;
-					imsg->timsg_Y = ps.rcPaint.top;
-					imsg->timsg_Width = ps.rcPaint.right - ps.rcPaint.left + 1;
-					imsg->timsg_Height = ps.rcPaint.bottom - ps.rcPaint.top + 1;
-					TDBPRINTF(TDB_TRACE,("dirty: %d %d %d %d\n",
-						imsg->timsg_X, imsg->timsg_Y, imsg->timsg_Width,
-						imsg->timsg_Height));
+			default:
+				TDBPRINTF(TDB_TRACE,("uMsg: %08x\n", uMsg));
+				break;
+
+			case WM_CLOSE:
+				if ((win->fbv_InputMask & TITYPE_CLOSE) &&
+					(fb_getimsg(mod, win, &imsg, TITYPE_CLOSE)))
 					fb_sendimsg(mod, win, imsg);
-				}
-				EndPaint(win->fbv_HWnd, &ps);
-			}
-			return 0;
-		}
+				return 0;
 
-		case WM_ACTIVATE:
-			#if 0
-			TDBPRINTF(TDB_INFO,("Window %p - Focus: %d\n", win, (LOWORD(wParam) != WA_INACTIVE)));
-			if (!win->fbv_Borderless && (win->fbv_InputMask & TITYPE_FOCUS) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_FOCUS)))
+			case WM_ERASEBKGND:
+				return 0;
+
+			case WM_GETMINMAXINFO:
 			{
-				imsg->timsg_Code = (LOWORD(wParam) != WA_INACTIVE);
-				fb_sendimsg(mod, win, imsg);
-			}
-			#endif
-			return 0;
-
-		case WM_SIZE:
-			if ((win->fbv_InputMask & TITYPE_NEWSIZE) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_NEWSIZE)))
-			{
-				win->fbv_Width = LOWORD(lParam);
-				win->fbv_Height = HIWORD(lParam);
-				imsg->timsg_Width = LOWORD(lParam);
-				imsg->timsg_Height = HIWORD(lParam);
-				fb_sendimsg(mod, win, imsg);
-			}
-			return 0;
-
-		case WM_CAPTURECHANGED:
-			TDBPRINTF(TDB_INFO,("Capture changed\n"));
-			break;
-
-		case WM_MOUSEMOVE:
-		{
-			TINT x = LOWORD(lParam);
-			TINT y = HIWORD(lParam);
-			win->fbv_MouseX = x;
-			win->fbv_MouseY = y;
-			if ((win->fbv_InputMask & TITYPE_MOUSEMOVE) &&
-				(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEMOVE)))
-			{
-				imsg->timsg_MouseX = x;
-				imsg->timsg_MouseY = y;
-				fb_sendimsg(mod, win, imsg);
+				LPMINMAXINFO mm = (LPMINMAXINFO) lParam;
+				win_getminmax(win,
+					&mm->ptMinTrackSize.x, &mm->ptMinTrackSize.y,
+					&mm->ptMaxTrackSize.x, &mm->ptMaxTrackSize.y, TTRUE);
+				return 0;
 			}
 
-			if (win->fbv_InputMask & TITYPE_MOUSEOVER)
+			case WM_PAINT:
 			{
-				POINT scrpos;
-				GetCursorPos(&scrpos);
-// 				TDBPRINTF(20,("in window: %d\n",
-// 					(WindowFromPoint(scrpos) == win->fbv_HWnd)));
-				#if 0
-				POINT scrpos;
-				if (GetCapture() != win->fbv_HWnd)
+				PAINTSTRUCT ps;
+				if (BeginPaint(win->fbv_HWnd, &ps))
 				{
-					SetCapture(win->fbv_HWnd);
-					if (fb_getimsg(mod, win, &imsg, TITYPE_MOUSEOVER))
+					if ((win->fbv_InputMask & TITYPE_REFRESH) &&
+						(fb_getimsg(mod, win, &imsg, TITYPE_REFRESH)))
 					{
-						imsg->timsg_Code = 1;
-						TDBPRINTF(20,("Mouseover=true\n"));
+						imsg->timsg_X = ps.rcPaint.left;
+						imsg->timsg_Y = ps.rcPaint.top;
+						imsg->timsg_Width = ps.rcPaint.right - ps.rcPaint.left + 1;
+						imsg->timsg_Height = ps.rcPaint.bottom - ps.rcPaint.top + 1;
+						TDBPRINTF(TDB_TRACE,("dirty: %d %d %d %d\n",
+							imsg->timsg_X, imsg->timsg_Y, imsg->timsg_Width,
+							imsg->timsg_Height));
 						fb_sendimsg(mod, win, imsg);
 					}
+					EndPaint(win->fbv_HWnd, &ps);
 				}
-				else
+				return 0;
+			}
+
+			case WM_ACTIVATE:
+				#if 0
+				TDBPRINTF(TDB_INFO,("Window %p - Focus: %d\n", win, (LOWORD(wParam) != WA_INACTIVE)));
+				if (!win->fbv_Borderless && (win->fbv_InputMask & TITYPE_FOCUS) &&
+					(fb_getimsg(mod, win, &imsg, TITYPE_FOCUS)))
+				{
+					imsg->timsg_Code = (LOWORD(wParam) != WA_INACTIVE);
+					fb_sendimsg(mod, win, imsg);
+				}
+				#endif
+				return 0;
+
+			case WM_SIZE:
+				win->fbv_Width = LOWORD(lParam);
+				win->fbv_Height = HIWORD(lParam);
+				if ((win->fbv_InputMask & TITYPE_NEWSIZE) &&
+					(fb_getimsg(mod, win, &imsg, TITYPE_NEWSIZE)))
+				{
+					imsg->timsg_Width = win->fbv_Width;
+					imsg->timsg_Height = win->fbv_Height;
+					fb_sendimsg(mod, win, imsg);
+				}
+				return 0;
+
+			case WM_CAPTURECHANGED:
+				TDBPRINTF(TDB_INFO,("Capture changed\n"));
+				break;
+
+			case WM_MOUSEMOVE:
+			{
+				TINT x = LOWORD(lParam);
+				TINT y = HIWORD(lParam);
+				win->fbv_MouseX = x;
+				win->fbv_MouseY = y;
+				if ((win->fbv_InputMask & TITYPE_MOUSEMOVE) &&
+					(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEMOVE)))
+				{
+					imsg->timsg_MouseX = x;
+					imsg->timsg_MouseY = y;
+					fb_sendimsg(mod, win, imsg);
+				}
+
+				if (win->fbv_InputMask & TITYPE_MOUSEOVER)
 				{
 					POINT scrpos;
 					GetCursorPos(&scrpos);
-					if ((WindowFromPoint(scrpos) != win->fbv_HWnd) ||
-						(x < 0) || (y < 0) || (x >= win->fbv_Width) ||
-						(y >= win->fbv_Height))
+	// 				TDBPRINTF(20,("in window: %d\n",
+	// 					(WindowFromPoint(scrpos) == win->fbv_HWnd)));
+					#if 0
+					POINT scrpos;
+					if (GetCapture() != win->fbv_HWnd)
 					{
-						ReleaseCapture();
+						SetCapture(win->fbv_HWnd);
 						if (fb_getimsg(mod, win, &imsg, TITYPE_MOUSEOVER))
 						{
-							imsg->timsg_Code = 0;
-							TDBPRINTF(20,("Mouseover=false\n"));
+							imsg->timsg_Code = 1;
+							TDBPRINTF(20,("Mouseover=true\n"));
 							fb_sendimsg(mod, win, imsg);
 						}
 					}
+					else
+					{
+						POINT scrpos;
+						GetCursorPos(&scrpos);
+						if ((WindowFromPoint(scrpos) != win->fbv_HWnd) ||
+							(x < 0) || (y < 0) || (x >= win->fbv_Width) ||
+							(y >= win->fbv_Height))
+						{
+							ReleaseCapture();
+							if (fb_getimsg(mod, win, &imsg, TITYPE_MOUSEOVER))
+							{
+								imsg->timsg_Code = 0;
+								TDBPRINTF(20,("Mouseover=false\n"));
+								fb_sendimsg(mod, win, imsg);
+							}
+						}
+					}
+					#endif
 				}
-				#endif
+				return 0;
 			}
-			return 0;
+
+			case WM_LBUTTONDOWN:
+				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
+					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
+				{
+					imsg->timsg_Code = TMBCODE_LEFTDOWN;
+					fb_sendimsg(mod, win, imsg);
+				}
+				return 0;
+			case WM_LBUTTONUP:
+				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
+					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
+				{
+					imsg->timsg_Code = TMBCODE_LEFTUP;
+					fb_sendimsg(mod, win, imsg);
+				}
+				return 0;
+			case WM_RBUTTONDOWN:
+				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
+					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
+				{
+					imsg->timsg_Code = TMBCODE_RIGHTDOWN;
+					fb_sendimsg(mod, win, imsg);
+				}
+				return 0;
+			case WM_RBUTTONUP:
+				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
+					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
+				{
+					imsg->timsg_Code = TMBCODE_RIGHTUP;
+					fb_sendimsg(mod, win, imsg);
+				}
+				return 0;
+			case WM_MBUTTONDOWN:
+				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
+					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
+				{
+					imsg->timsg_Code = TMBCODE_MIDDLEDOWN;
+					fb_sendimsg(mod, win, imsg);
+				}
+				return 0;
+			case WM_MBUTTONUP:
+				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
+					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
+				{
+					imsg->timsg_Code = TMBCODE_MIDDLEUP;
+					fb_sendimsg(mod, win, imsg);
+				}
+				return 0;
+
+			case WM_SYSKEYDOWN:
+				processkey(mod, win, TITYPE_KEYDOWN, 0);
+				return 0;
+
+			case WM_SYSKEYUP:
+				processkey(mod, win, TITYPE_KEYUP, 0);
+				return 0;
+
+			case WM_KEYDOWN:
+				processkey(mod, win, TITYPE_KEYDOWN, wParam);
+				return 0;
+
+			case WM_KEYUP:
+				processkey(mod, win, TITYPE_KEYUP, wParam);
+				return 0;
+
+			case 0x020a:
+				if (win->fbv_InputMask & TITYPE_MOUSEBUTTON)
+				{
+					TINT16 zdelta = (TINT16) HIWORD(wParam);
+					if (zdelta != 0 &&
+						fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
+					{
+						imsg->timsg_Code = zdelta > 0 ?
+							TMBCODE_WHEELUP : TMBCODE_WHEELDOWN;
+						fb_sendimsg(mod, win, imsg);
+					}
+				}
+				return 0;
 		}
-
-		case WM_LBUTTONDOWN:
-			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
-			{
-				imsg->timsg_Code = TMBCODE_LEFTDOWN;
-				fb_sendimsg(mod, win, imsg);
-			}
-			return 0;
-		case WM_LBUTTONUP:
-			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
-			{
-				imsg->timsg_Code = TMBCODE_LEFTUP;
-				fb_sendimsg(mod, win, imsg);
-			}
-			return 0;
-		case WM_RBUTTONDOWN:
-			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
-			{
-				imsg->timsg_Code = TMBCODE_RIGHTDOWN;
-				fb_sendimsg(mod, win, imsg);
-			}
-			return 0;
-		case WM_RBUTTONUP:
-			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
-			{
-				imsg->timsg_Code = TMBCODE_RIGHTUP;
-				fb_sendimsg(mod, win, imsg);
-			}
-			return 0;
-		case WM_MBUTTONDOWN:
-			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
-			{
-				imsg->timsg_Code = TMBCODE_MIDDLEDOWN;
-				fb_sendimsg(mod, win, imsg);
-			}
-			return 0;
-		case WM_MBUTTONUP:
-			if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
-				fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
-			{
-				imsg->timsg_Code = TMBCODE_MIDDLEUP;
-				fb_sendimsg(mod, win, imsg);
-			}
-			return 0;
-
-		case WM_SYSKEYDOWN:
-			processkey(mod, win, TITYPE_KEYDOWN, 0);
-			return 0;
-
-		case WM_SYSKEYUP:
-			processkey(mod, win, TITYPE_KEYUP, 0);
-			return 0;
-
-		case WM_KEYDOWN:
-			processkey(mod, win, TITYPE_KEYDOWN, wParam);
-			return 0;
-
-		case WM_KEYUP:
-			processkey(mod, win, TITYPE_KEYUP, wParam);
-			return 0;
 	}
-
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
