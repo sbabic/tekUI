@@ -269,38 +269,38 @@ local window = Window:new
 										ui.PopList.onSelect(self, val)
 										local item = self.ListObject:getItem(self.SelectedEntry)
 										if item then
-											self.Application:getElementById("japan-combo"):setValue("SelectedEntry", self.SelectedEntry)
+-- 											self.Application:getElementById("japan-combo"):setValue("SelectedEntry", self.SelectedEntry)
 											self.Application:getElementById("popup-show"):setValue("Text", item[1][1])
 										end
 									end,
 								},
-								ui.PopList:new
-								{
-									Id = "japan-combo",
-									Text = "日本語",
-									-- Class = "japanese",
-									Style = "font:kochi mincho",
-									KeepMinWidth = true,
-									Width = "fill",
-									Height = "fill",
-									MinWidth = 80,
-									ListObject = List:new
-									{
-										Items =
-										{
-											{ { "日本語" } },
-											{ { "一" } },
-											{ { "二" } },
-											{ { "三" } },
-											{ { "四" } },
-											{ { "五" } },
-											{ { "六" } },
-											{ { "七" } },
-											{ { "八" } },
-											{ { "九" } },
-										}
-									}
-								}
+-- 								ui.PopList:new
+-- 								{
+-- 									Id = "japan-combo",
+-- 									Text = "日本語",
+-- 									-- Class = "japanese",
+-- 									Style = "font:kochi mincho",
+-- 									KeepMinWidth = true,
+-- 									Width = "fill",
+-- 									Height = "fill",
+-- 									MinWidth = 80,
+-- 									ListObject = List:new
+-- 									{
+-- 										Items =
+-- 										{
+-- 											{ { "日本語" } },
+-- 											{ { "一" } },
+-- 											{ { "二" } },
+-- 											{ { "三" } },
+-- 											{ { "四" } },
+-- 											{ { "五" } },
+-- 											{ { "六" } },
+-- 											{ { "七" } },
+-- 											{ { "八" } },
+-- 											{ { "九" } },
+-- 										}
+-- 									}
+-- 								}
 							}
 						},
 						ui.ScrollGroup:new

@@ -467,10 +467,10 @@ LOCAL void
 fb_drawfan(WINDISPLAY *mod, struct TVRequest *req)
 {
 	TINT i;
-	WINWINDOW *win = req->tvr_Op.Strip.Window;
-	TINT *array = req->tvr_Op.Strip.Array;
-	TINT num = req->tvr_Op.Strip.Num;
-	TTAGITEM *tags = req->tvr_Op.Strip.Tags;
+	WINWINDOW *win = req->tvr_Op.Fan.Window;
+	TINT *array = req->tvr_Op.Fan.Array;
+	TINT num = req->tvr_Op.Fan.Num;
+	TTAGITEM *tags = req->tvr_Op.Fan.Tags;
 	TVPEN *penarray = (TVPEN *) TGetTag(tags, TVisual_PenArray, TNULL);
 	POINT points[3];
 
@@ -521,7 +521,7 @@ fb_drawfan(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_copyarea(WINDISPLAY *mod, struct TVRequest *req)
 {
-	WINWINDOW *win = req->tvr_Op.FRect.Window;
+	WINWINDOW *win = req->tvr_Op.CopyArea.Window;
 	struct THook *exposehook = (struct THook *)
 		TGetTag(req->tvr_Op.CopyArea.Tags, TVisual_ExposeHook, TNULL);
 	TINT *sr = req->tvr_Op.CopyArea.Rect;
@@ -564,7 +564,7 @@ fb_copyarea(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_setcliprect(WINDISPLAY *mod, struct TVRequest *req)
 {
-	WINWINDOW *win = req->tvr_Op.FRect.Window;
+	WINWINDOW *win = req->tvr_Op.ClipRect.Window;
 	RECT *cr = &win->fbv_ClipRect;
 	HRGN rgn;
 	cr->left = req->tvr_Op.ClipRect.Rect[0];
@@ -581,7 +581,7 @@ fb_setcliprect(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_unsetcliprect(WINDISPLAY *mod, struct TVRequest *req)
 {
-	WINWINDOW *win = req->tvr_Op.FRect.Window;
+	WINWINDOW *win = req->tvr_Op.ClipRect.Window;
 	RECT *cr = &win->fbv_ClipRect;
 	SelectClipRgn(win->fbv_HDC, NULL);
 	cr->left = 0;
@@ -746,7 +746,7 @@ fb_setattrs(WINDISPLAY *mod, struct TVRequest *req)
 	struct attrdata data;
 	struct THook hook;
 	WINWINDOW *win = req->tvr_Op.SetAttrs.Window;
-	TINT m1, m2, m3, m4, neww, newh;
+	TINT neww, newh;
 	data.v = win;
 	data.num = 0;
 	data.mod = mod;
@@ -755,13 +755,18 @@ fb_setattrs(WINDISPLAY *mod, struct TVRequest *req)
 	TInitHook(&hook, setattrfunc, &data);
 	TForEachTag(req->tvr_Op.SetAttrs.Tags, &hook);
 	req->tvr_Op.SetAttrs.Num = data.num;
-	win_getminmax(win, &m1, &m2, &m3, &m4, TFALSE);
+
+	win_getminmax(win, &win->fbv_MinWidth, &win->fbv_MinHeight,
+		&win->fbv_MaxWidth, &win->fbv_MaxHeight, TFALSE);
 	neww = data.neww < 0 ? win->fbv_Width : data.neww;
 	newh = data.newh < 0 ? win->fbv_Height : data.newh;
+
 	if (neww < win->fbv_MinWidth || newh < win->fbv_MinHeight)
 	{
-		neww = TMAX(neww, m1);
-		newh = TMAX(newh, m2);
+		neww = TMAX(neww, win->fbv_MinWidth);
+		newh = TMAX(newh, win->fbv_MinHeight);
+		neww += win->fbv_BorderWidth;
+		newh += win->fbv_BorderHeight;
 		SetWindowPos(win->fbv_HWnd, NULL, 0, 0, neww, newh, SWP_NOMOVE);
 	}
 }

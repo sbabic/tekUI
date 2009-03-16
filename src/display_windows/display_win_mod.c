@@ -716,6 +716,8 @@ LOCAL void win_getminmax(WINWINDOW *win, TINT *pm1, TINT *pm2, TINT *pm3,
 	m2 = TMAX(0, m2);
 	m3 = m3 < 0 ? 1000000 : m3;
 	m4 = m4 < 0 ? 1000000 : m4;
+	m3 = TMAX(m3, m1);
+	m4 = TMAX(m4, m2);
 	if (windowsize)
 	{
 		m1 += win->fbv_BorderWidth;
@@ -771,8 +773,8 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					{
 						imsg->timsg_X = ps.rcPaint.left;
 						imsg->timsg_Y = ps.rcPaint.top;
-						imsg->timsg_Width = ps.rcPaint.right - ps.rcPaint.left + 1;
-						imsg->timsg_Height = ps.rcPaint.bottom - ps.rcPaint.top + 1;
+						imsg->timsg_Width = ps.rcPaint.right - ps.rcPaint.left;
+						imsg->timsg_Height = ps.rcPaint.bottom - ps.rcPaint.top;
 						TDBPRINTF(TDB_TRACE,("dirty: %d %d %d %d\n",
 							imsg->timsg_X, imsg->timsg_Y, imsg->timsg_Width,
 							imsg->timsg_Height));

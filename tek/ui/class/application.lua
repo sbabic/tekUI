@@ -104,7 +104,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 11.1"
+_VERSION = "Application 12.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -122,9 +122,9 @@ function Application.new(class, self)
 		[ui.MSG_REFRESH] = self.passMsgRefresh,
 		[ui.MSG_MOUSEOVER] = self.passMsgNoModal,
 		[ui.MSG_KEYDOWN] = self.passMsgNoModal,
-		[ui.MSG_MOUSEMOVE] = self.passMsgNoModal,
+		[ui.MSG_MOUSEMOVE] = self.passMsgMouseMove,
 		[ui.MSG_MOUSEBUTTON] = self.passMsgNoModal,
-		[ui.MSG_INTERVAL] = self.passMsgAlways,
+		[ui.MSG_INTERVAL] = self.passMsgInterval,
 		[ui.MSG_KEYUP] = self.passMsgNoModal,
 		[ui.MSG_USER] = self.passMsg,
 	}
@@ -448,6 +448,35 @@ function Application:passMsgRefresh(msg)
 	refresh[1] = msg[1]
 end
 
+function Application:passMsgMouseMove(msg)
+	local win = msg[-1]
+	local mw = self.ModalWindows[1]
+	if not mw or mw == win then
+		local mpm = win.MouseMoveMsg
+		if not mpm then
+			mpm = win.MouseMoveMsgStore
+			win.MouseMoveMsg = mpm
+		end
+		win.MouseX = msg[4]
+		win.MouseY = msg[5]
+		mpm[4] = msg[4]
+		mpm[5] = msg[5]
+		mpm[0] = msg[0] -- update timestamp
+		mpm[1] = msg[1]
+	end
+end
+
+function Application:passMsgInterval(msg)
+	local win = msg[-1]
+	local im = win.IntervalMsg
+	if not im then
+		im = win.IntervalMsgStore
+		win.IntervalMsg = im
+	end
+	im[0] = msg[0] -- update timestamp
+	im[1] = msg[1]
+end
+
 -------------------------------------------------------------------------------
 -- 	success, status = Application:run(): Runs the application. Returns when
 --	all child windows are closed or when the application's {{Status}} is set
@@ -477,19 +506,26 @@ function Application:run()
 
 		-- for all open windows:
 		for _, win in ipairs(ow) do
-			-- dispatch special window messages:
+			-- dispatch user-generated window messages:
 			while win:getMsg(msg) do
 				msgdispatch[msg[2]](self, msg)
 			end
-			-- spool out bundled refreshes:
+			-- spool out bundled refreshes, newsizes, mousemoves, intervals:
 			if win.RefreshMsg then
 				win:passMsg(win.RefreshMsg)
 				win.RefreshMsg = false
 			end
-			-- spool out bundled newsizes:
 			if win.NewSizeMsg then
 				win:passMsg(win.NewSizeMsg)
 				win.NewSizeMsg = false
+			end
+			if win.MouseMoveMsg then
+				win:passMsg(win.MouseMoveMsg)
+				win.MouseMoveMsg = false
+			end
+			if win.IntervalMsg then
+				win:passMsg(win.IntervalMsg)
+				win.IntervalMsg = false
 			end
 			-- update:
 			win:update()

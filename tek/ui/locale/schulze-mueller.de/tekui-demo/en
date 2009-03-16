@@ -11,9 +11,7 @@ ABOUT_SYSTEM = "_System";
 ABOUT_TEKUI = "About tekUI";
 ALIGNMENT_BUTTON = "Alignment";
 ALIGNMENT_DESCRIPTION = [[
-» Certain attributes determine how elements are aligned inside their group, if they do not fill completely the space they were assigned.
-
-» It's best to resize the window to see how it works.
+» Certain attributes determine how elements are aligned if they do not fill up the space inside their group.
 ]];
 ALIGNMENT_TITLE = "Alignment";
 ALIGN_HORIZONTAL = "Align Horizontal";
@@ -26,7 +24,7 @@ ANIMATIONS_DESCRIPTION = [[
 
 » The timer interval is initiated by the first element that requests it. tekUI is strictly event-driven and consumes zero CPU time when idle.
 
-» Lua's register-based virtual machine is small (less than 100K) and very fast. It is actually faster than most other virtual machines – surpassed e.g. by Java only with JIT execution, which requires a runtime environment 10 to 100 times larger.
+» Lua's register-based virtual machine is small (less than 100K) and very fast. It is actually faster than most other virtual machines - surpassed e.g. by Java only with JIT execution, which requires a runtime environment 10 to 100 times larger.
 
 » The plasma effect is a class written in pure Lua, running comfortably at 50Hz. Note that Lua and C classes can be interchanged. Performance-critical classes can be ported to C at any point in the development process.
 ]];
@@ -87,7 +85,7 @@ COMMENT = "Comment";
 CONFIRM_QUIT_APPLICATION = "Do you really want to quit\nthe application?";
 CUSTOMCLASS_ADDRESS = "Address";
 CUSTOMCLASS_DESCRIPTION = [[
-» Special tasks – like entering valid network numbers using a touchscreen – can be solved with little effort.
+» Special tasks - like entering valid network numbers using a touchscreen - can be solved with little effort.
 
 » In this example, a 'network' input class was derived from the input class with special behavior for entering IP numbers.
 

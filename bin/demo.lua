@@ -85,7 +85,7 @@ app = ui.Application:new
 {
 	ProgramName = "tekUI Demo",
 	Author = "Timm S. Müller",
-	Copyright = "Copyright © 2008, Schulze-Müller GbR",
+	Copyright = "Copyright © 2008, 2009, Schulze-Müller GbR",
 	ApplicationId = APP_ID,
 	VendorDomain = VENDOR,
 	-- ThemeName = "internal",
@@ -195,7 +195,7 @@ app = ui.Application:new
 														{ { "ProgramName", "tekUI Demo" } },
 														{ { "Version", "1.0" } },
 														{ { "Author", "Timm S. Müller" } },
-														{ { "Copyright", "© 2008, Schulze-Müller GbR" } },
+														{ { "Copyright", "© 2008, 2009, Schulze-Müller GbR" } },
 													}
 												}
 											}
@@ -515,52 +515,52 @@ app = ui.Application:new
 										}
 									}
 								},
-								ui.Group:new
-								{
-									Children =
-									{
-										ui.Text:new
-										{
-											Text = L.OPEN_ALL,
-											Mode = "button",
-											Class = "button",
-											Notifications =
-											{
-												["Pressed"] =
-												{
-													[false] =
-													{
-														{ ui.NOTIFY_ID, "demo-group", ui.NOTIFY_FUNCTION, function(self)
-															for _, c in ipairs(self.Children) do
-																c:setValue("Selected", true)
-															end
-														end }
-													}
-												}
-											}
-										},
-										ui.Text:new
-										{
-											Text = L.CLOSE_ALL,
-											Mode = "button",
-											Class = "button",
-											Notifications =
-											{
-												["Pressed"] =
-												{
-													[false] =
-													{
-														{ ui.NOTIFY_ID, "demo-group", ui.NOTIFY_FUNCTION, function(self)
-															for _, c in ipairs(self.Children) do
-																c:setValue("Selected", false)
-															end
-														end }
-													}
-												}
-											}
-										}
-									}
-								}
+-- 								ui.Group:new
+-- 								{
+-- 									Children =
+-- 									{
+-- 										ui.Text:new
+-- 										{
+-- 											Text = L.OPEN_ALL,
+-- 											Mode = "button",
+-- 											Class = "button",
+-- 											Notifications =
+-- 											{
+-- 												["Pressed"] =
+-- 												{
+-- 													[false] =
+-- 													{
+-- 														{ ui.NOTIFY_ID, "demo-group", ui.NOTIFY_FUNCTION, function(self)
+-- 															for _, c in ipairs(self.Children) do
+-- 																c:setValue("Selected", true)
+-- 															end
+-- 														end }
+-- 													}
+-- 												}
+-- 											}
+-- 										},
+-- 										ui.Text:new
+-- 										{
+-- 											Text = L.CLOSE_ALL,
+-- 											Mode = "button",
+-- 											Class = "button",
+-- 											Notifications =
+-- 											{
+-- 												["Pressed"] =
+-- 												{
+-- 													[false] =
+-- 													{
+-- 														{ ui.NOTIFY_ID, "demo-group", ui.NOTIFY_FUNCTION, function(self)
+-- 															for _, c in ipairs(self.Children) do
+-- 																c:setValue("Selected", false)
+-- 															end
+-- 														end }
+-- 													}
+-- 												}
+-- 											}
+-- 										}
+-- 									}
+-- 								}
 							}
 						},
 						ui.Handle:new { },

@@ -12,8 +12,6 @@ ABOUT_TEKUI = "Über tekUI";
 ALIGNMENT_BUTTON = "Ausrichtung";
 ALIGNMENT_DESCRIPTION = [[
 » Bestimmte Attribute legend fest, wie Elemente innerhalb ihrer Gruppe ausgerichtet sind, wenn sie den ihnen zugewiesenen Platz nicht vollständig beanspruchen.
-
-» Den Effekt können Sie am besten beobachten, indem Sie die Größe des Fensters verändern.
 ]];
 ALIGNMENT_TITLE = "Ausrichtung";
 ALIGN_HORIZONTAL = "Ausrichtung Horizontal";
@@ -26,7 +24,7 @@ ANIMATIONS_DESCRIPTION = [[
 
 » Das Zeitgeberintervall wird von dem ersten Element, das es anfordert, initiiert. tekUI ist streng ereignisgesteuert und verbraucht keine CPU-Zeit, wenn nichts zu tun ist.
 
-» Die registerbasierte Virtual Machine von Lua ist klein (weniger als 100K) und sehr schnell. Tatsächlich ist sie schneller als die meisten anderen VMs – übertroffen wird sie z.B. von Java nur mit JIT-Kompilierung, welche eine 10 bis 100 Mal größere Laufzeitumgebung erfordert.
+» Die registerbasierte Virtual Machine von Lua ist klein (weniger als 100K) und sehr schnell. Tatsächlich ist sie schneller als die meisten anderen VMs - übertroffen wird sie z.B. von Java nur mit JIT-Kompilierung, welche eine 10 bis 100 Mal größere Laufzeitumgebung erfordert.
 
 » Der Plasmaeffekt ist in reinem Lua geschrieben und läuft bequem mit 50Hz. Beachten Sie, dass Lua- und C-Klassen austauschbar sind; zeitkritische Klassen können zu jeder Zeit während der Entwicklung nach C portiert werden.
 ]];

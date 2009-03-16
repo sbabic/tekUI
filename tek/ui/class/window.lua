@@ -92,7 +92,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 10.2"
+_VERSION = "Window 11.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -153,6 +153,15 @@ function Window.init(self)
 		[ui.MSG_INTERVAL] = { },
 		[ui.MSG_KEYUP] = { },
 	}
+	self.IntervalMsg = false
+	self.IntervalMsgStore =
+	{
+		[2] = ui.MSG_INTERVAL,
+		[3] = 0,
+		[4] = 0,
+		[5] = 0,
+		[6] = 0,
+	}
 	self.IntervalNest = 0
 	self.KeyShortcuts = { }
 	self.LayoutGroup = { }
@@ -160,6 +169,15 @@ function Window.init(self)
 	self.Modal = self.Modal or false
 	self.MouseX = false
 	self.MouseY = false
+	self.MouseMoveMsg = false
+	self.MouseMoveMsgStore =
+	{
+		[2] = ui.MSG_MOUSEMOVE,
+		[3] = 0,
+		[4] = 0,
+		[5] = 0,
+		[6] = 0,
+	}
 	self.MovingElement = false
 	self.MsgQueue = { }
 	self.NewSizeMsg = false
