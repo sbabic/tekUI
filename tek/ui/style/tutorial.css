@@ -1,0 +1,43 @@
+
+/*
+**	tek/ui/style/tutorial.css - Example stylesheet
+**	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+**	See copyright notice in COPYRIGHT
+*/
+
+tek.ui.class.display {
+  font: sans-serif,helvetica,Vera:28;
+  font-fixed: monospace,fixed,VeraMono:19;
+  font-menu: sans-serif,helvetica,Vera:18;
+  font-small: sans-serif,helvetica,Vera:18;
+  font-large: sans-serif,helvetica,Vera:24;
+  font-huge: sans-serif,helvetica,Vera:32;
+}
+
+tek.ui.class.window {
+	padding: 10;
+}
+
+.button {
+	margin: 1;
+	border-width: 10;
+	border-focus-width: 2;
+	border-rim-width: 2;
+}
+
+
+.legend {
+	border-style: groove;
+	border-width: 10;
+}
+
+tek.ui.class.slider {
+	border-width: 10;
+	border-focus-width: 2;
+	border-rim-width: 2;
+}
+
+.knob {
+	border-width: 10;
+	border-rim-width: 2;
+}
