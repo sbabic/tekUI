@@ -153,12 +153,11 @@
 		</div>
 		<div class="node"><h2><a name="status" id="status">1.2. Status, requirements</a></h2>
 			<p>
-				TekUI is in alpha stage of development. It should compile and run out
-				of the box on Linux and FreeBSD. Display drivers are available for
-				X11 and <a href="http://www.directfb.org/">DirectFB</a> (the latter being
-				untested on FreeBSD). See also <a href="todo.html">TODO</a> for a list of
-				known bugs and missing features, and <a href="#requirements">requirements</a> for a list of
-				required packages.
+				TekUI is in alpha stage of development. It is available for the
+				Linux, Windows, and FreeBSD platforms. Display drivers are available
+				for X11, Windows, and DirectFB. See also <a href="todo.html">TODO</a> for a
+				list of known bugs and missing features, and <a href="#requirements">requirements</a> for a
+				list of required packages.
 			</p>
 		</div>
 		<div class="node"><h2><a name="development" id="development">1.3. Development model</a></h2>
@@ -443,7 +442,7 @@
 			<blockquote>
 				<ul>
 					<li>
-						Lua-5.1.2
+						Lua-5.1.x
 					</li>
 					<li>
 						libX11-1.1.3 (for the x11 driver)
@@ -460,16 +459,25 @@
 					<li>
 						DirectFB-0.9.25.1 (for the directfb driver)
 					</li>
+					<li>
+						MingW (for the Windows platform)
+					</li>
 				</ul>
 			</blockquote>
 			<p>
 				LibXft and fontconfig are needed for building the x11 driver, but
 				tekUI falls back to the core X11 API if they are unavailable at
-				runtime. Additionally, for the
+				runtime. Additionally, for the documentation system and the
 				<a href="manual.html#tek.ui.class.dirlist">DirList</a> class to work, an
 				installation of the
 				<a href="http://www.keplerproject.org/luafilesystem/">LuaFileSystem</a> 
 				package is needed.
+			</p>
+			<p>
+				<strong>Linux note</strong>: By popular request, these are the names of packages
+				required to compile and run tekUI on Ubuntu Linux 8.04: <code>lua5.1</code>,
+				<code>liblua5.1-0-dev</code>, <code>liblua5.1-filesystem0</code>, <code>libfreetype6-dev</code>,
+				<code>libxft-dev</code>, <code>libxext-dev</code>.
 			</p>
 		</div>
 		<div class="node"><h2><a name="buildenv" id="buildenv">3.2. Adjusting the build environment</a></h2>
@@ -480,13 +488,16 @@
 			<blockquote>
 				<ul>
 					<li>
-						Ubuntu Linux 7.10
+						Ubuntu Linux 8.04 and 7.10
 					</li>
 					<li>
-						FreeBSD 7.0
+						Windows 2000, Wine
 					</li>
 					<li>
-						Gentoo Linux x86/2007.0, amd64/2006.0, amd64/2007.0
+						FreeBSD 7.0 (see annotations below)
+					</li>
+					<li>
+						Gentoo Linux x86/2008.0, amd64/2007.0, ppc/2007.0
 					</li>
 				</ul>
 			</blockquote>
@@ -497,9 +508,9 @@
 				<code>pmake</code> (common under FreeBSD).
 			</p>
 			<p>
-				<strong>FreeBSD note</strong>: You need a Lua interpreter which is linked with
-				the <code>-pthread</code> option, as tekUI is using multithreaded code
-				in shared libraries, which are dynamically loaded by the interpreter.
+				<strong>FreeBSD note</strong>: You need a Lua binary which is linked with the
+				<code>-pthread</code> option, as tekUI is using multithreaded code in shared
+				libraries, which are dynamically loaded by the interpreter.
 			</p>
 		</div>
 		<div class="node"><h2><a name="building" id="building">3.3. Building</a></h2>
@@ -519,9 +530,9 @@
 		<div class="node"><h2><a name="installation" id="installation">3.4. Installation</a></h2>
 			<p>
 				A system-wide installation of tekUI is not strictly required (in so
-				far as the X11 driver is concerned. The DirectFB driver, in
-				contrast, looks up fonts and cursors globally and must be installed
-				anyway).
+				far as the X11 and Windows drivers are concerned. The DirectFB
+				driver, in contrast, looks up fonts and cursors globally and must be
+				installed anyway).
 			</p>
 			<p>
 				Once tekUI is built, it can be worked with and developed against, as
