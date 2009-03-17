@@ -457,6 +457,7 @@ fb_drawstrip(WINDISPLAY *mod, struct TVRequest *req)
 			Polygon(win->fbv_HDC, points, 3);
 		}
 	}
+	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -510,6 +511,7 @@ fb_drawfan(WINDISPLAY *mod, struct TVRequest *req)
 			Polygon(win->fbv_HDC, points, 3);
 		}
 	}
+	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -552,6 +554,7 @@ fb_copyarea(WINDISPLAY *mod, struct TVRequest *req)
 	else
 		ScrollDC(win->fbv_HDC, dx, dy, &r, &r, NULL, NULL);
 
+	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -622,6 +625,7 @@ fb_drawbuffer(WINDISPLAY *mod, struct TVRequest *req)
 		req->tvr_Op.DrawBuffer.Buf,
 		(const void *) bmi,
 		DIB_RGB_COLORS);
+	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -850,14 +854,16 @@ drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
 LOCAL void
 fb_drawtags(WINDISPLAY *mod, struct TVRequest *req)
 {
+	WINWINDOW *win = req->tvr_Op.DrawTags.Window;
 	struct THook hook;
 	struct drawdata data;
-	data.v = req->tvr_Op.DrawTags.Window;
+	data.v = win;
 	data.mod = mod;
 	data.fgpen = TNULL;
 	data.bgpen = TNULL;
 	TInitHook(&hook, drawtagfunc, &data);
 	TForEachTag(req->tvr_Op.DrawTags.Tags, &hook);
+	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -886,6 +892,7 @@ fb_drawtext(WINDISPLAY *mod, struct TVRequest *req)
 		SetBkMode(win->fbv_HDC, TRANSPARENT);
 		TextOut(win->fbv_HDC, x, y, latin, len);
 	}
+	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/

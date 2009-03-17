@@ -12,8 +12,6 @@ static void x11_exitinstance(X11DISPLAY *inst);
 static void x11_processevent(X11DISPLAY *mod);
 static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 	TAPTR msgstate, XEvent *ev);
-static TBOOL getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type,
-	TSIZE size);
 
 #if defined(ENABLE_STDIN)
 /*****************************************************************************/
@@ -140,6 +138,27 @@ reader_addbytes(struct FileReader *r, int nbytes)
 {
 	r->ReadBytes += nbytes;
 }
+
+static TBOOL getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
+{
+	TAPTR TExecBase = TGetExecBase(mod);
+	TIMSG *msg = TAllocMsg(sizeof(TIMSG) + size);
+	if (msg)
+	{
+		TFillMem(msg, sizeof(TIMSG), 0);
+		msg->timsg_ExtraSize = size;
+		msg->timsg_Type = type;
+		msg->timsg_Qualifier = mod->x11_KeyQual;
+		msg->timsg_MouseX = mod->x11_MouseX;
+		msg->timsg_MouseY = mod->x11_MouseY;
+		TGetSystemTime(&msg->timsg_TimeStamp);
+		*msgptr = msg;
+		return TTRUE;
+	}
+	*msgptr = TNULL;
+	return TFALSE;
+}
+
 #endif
 
 /*****************************************************************************/
@@ -730,26 +749,6 @@ static TBOOL getimsg(X11DISPLAY *mod, X11WINDOW *v, TIMSG **msgptr, TUINT type)
 	return TFALSE;
 }
 
-static TBOOL getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
-{
-	TAPTR TExecBase = TGetExecBase(mod);
-	TIMSG *msg = TAllocMsg(sizeof(TIMSG) + size);
-	if (msg)
-	{
-		TFillMem(msg, sizeof(TIMSG), 0);
-		msg->timsg_ExtraSize = size;
-		msg->timsg_Type = type;
-		msg->timsg_Qualifier = mod->x11_KeyQual;
-		msg->timsg_MouseX = mod->x11_MouseX;
-		msg->timsg_MouseY = mod->x11_MouseY;
-		TGetSystemTime(&msg->timsg_TimeStamp);
-		*msgptr = msg;
-		return TTRUE;
-	}
-	*msgptr = TNULL;
-	return TFALSE;
-}
-
 static TBOOL processkey(X11DISPLAY *mod, X11WINDOW *v, XKeyEvent *ev,
 	TBOOL keydown)
 {
@@ -1147,7 +1146,7 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 
 /*****************************************************************************/
 
-static void x11_sendimessages(X11DISPLAY *mod, TBOOL do_interval)
+LOCAL void x11_sendimessages(X11DISPLAY *mod, TBOOL do_interval)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
 	struct TNode *next, *node = mod->x11_vlist.tlh_Head;
