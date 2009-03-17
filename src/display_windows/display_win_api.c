@@ -81,8 +81,8 @@ static TBOOL fb_initwindow(TAPTR task)
 		{
 			TINT m1, m2, m3, m4;
 			win_getminmax(win, &m1, &m2, &m3, &m4, TTRUE);
-			win->fbv_Width = TCLAMP(m1, win->fbv_Width, m3);
-			win->fbv_Height = TCLAMP(m2, win->fbv_Height, m4);
+			win->fbv_Width = TCLAMP(m1, (TINT) win->fbv_Width, m3);
+			win->fbv_Height = TCLAMP(m2, (TINT) win->fbv_Height, m4);
 		}
 
 		if (win->fbv_Left != 0xffffffff && win->fbv_Top != 0xffffffff)
@@ -431,7 +431,7 @@ fb_drawstrip(WINDISPLAY *mod, struct TVRequest *req)
 		SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->brush);
 	}
 
-	Polygon(win->fbv_HDC, array, 3);
+	Polygon(win->fbv_HDC, (LPPOINT) array, 3);
 
 	if (num > 3)
 	{
@@ -457,8 +457,6 @@ fb_drawstrip(WINDISPLAY *mod, struct TVRequest *req)
 			Polygon(win->fbv_HDC, points, 3);
 		}
 	}
-
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -488,7 +486,7 @@ fb_drawfan(WINDISPLAY *mod, struct TVRequest *req)
 		SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->brush);
 	}
 
-	Polygon(win->fbv_HDC, array, 3);
+	Polygon(win->fbv_HDC, (LPPOINT) array, 3);
 
 	if (num > 3)
 	{
@@ -512,8 +510,6 @@ fb_drawfan(WINDISPLAY *mod, struct TVRequest *req)
 			Polygon(win->fbv_HDC, points, 3);
 		}
 	}
-
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -556,7 +552,6 @@ fb_copyarea(WINDISPLAY *mod, struct TVRequest *req)
 	else
 		ScrollDC(win->fbv_HDC, dx, dy, &r, &r, NULL, NULL);
 
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -627,7 +622,6 @@ fb_drawbuffer(WINDISPLAY *mod, struct TVRequest *req)
 		req->tvr_Op.DrawBuffer.Buf,
 		(const void *) bmi,
 		DIB_RGB_COLORS);
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -758,8 +752,8 @@ fb_setattrs(WINDISPLAY *mod, struct TVRequest *req)
 
 	win_getminmax(win, &win->fbv_MinWidth, &win->fbv_MinHeight,
 		&win->fbv_MaxWidth, &win->fbv_MaxHeight, TFALSE);
-	neww = data.neww < 0 ? win->fbv_Width : data.neww;
-	newh = data.newh < 0 ? win->fbv_Height : data.newh;
+	neww = data.neww < 0 ? (TINT) win->fbv_Width : data.neww;
+	newh = data.newh < 0 ? (TINT) win->fbv_Height : data.newh;
 
 	if (neww < win->fbv_MinWidth || newh < win->fbv_MinHeight)
 	{
@@ -864,7 +858,6 @@ fb_drawtags(WINDISPLAY *mod, struct TVRequest *req)
 	data.bgpen = TNULL;
 	TInitHook(&hook, drawtagfunc, &data);
 	TForEachTag(req->tvr_Op.DrawTags.Tags, &hook);
-	data.v->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -893,7 +886,6 @@ fb_drawtext(WINDISPLAY *mod, struct TVRequest *req)
 		SetBkMode(win->fbv_HDC, TRANSPARENT);
 		TextOut(win->fbv_HDC, x, y, latin, len);
 	}
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/

@@ -757,9 +757,12 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case WM_GETMINMAXINFO:
 			{
 				LPMINMAXINFO mm = (LPMINMAXINFO) lParam;
-				win_getminmax(win,
-					&mm->ptMinTrackSize.x, &mm->ptMinTrackSize.y,
-					&mm->ptMaxTrackSize.x, &mm->ptMaxTrackSize.y, TTRUE);
+				TINT m1, m2, m3, m4;
+				win_getminmax(win, &m1, &m2, &m3, &m4, TTRUE);
+				mm->ptMinTrackSize.x = m1;
+				mm->ptMinTrackSize.y = m2;
+				mm->ptMaxTrackSize.x = m3;
+				mm->ptMaxTrackSize.y = m4;
 				return 0;
 			}
 

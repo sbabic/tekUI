@@ -167,11 +167,11 @@ local window = ui.Window:new
 		{
 			["show"] =
 			{
-				{ ui.NOTIFY_ID, "buttons-presentation-button", "setValue", "Selected", true }
+				{ ui.NOTIFY_ID, "presentation-window-button", "setValue", "Selected", true }
 			},
 			["hide"] =
 			{
-				{ ui.NOTIFY_ID, "buttons-presentation-button", "setValue", "Selected", false }
+				{ ui.NOTIFY_ID, "presentation-window-button", "setValue", "Selected", false }
 			}
 		}
 	},

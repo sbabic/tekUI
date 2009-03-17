@@ -22,7 +22,7 @@ tek_lib_visual_wait(lua_State *L)
 	TEKVisual *vis;
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
-	TWaitPort(vis->vis_IMsgPort);
+	TWait(TGetPortSignal(vis->vis_IMsgPort));
 	lua_pop(L, 1);
 	return 0;
 }
