@@ -42,6 +42,7 @@ TLIBAPI TINT TDiffDate(TDATE *d1, TDATE *d2, TTIME *tm);
 TLIBAPI TBOOL TCreateTime(TTIME *t, TINT d, TINT s, TINT us);
 TLIBAPI TBOOL TExtractTime(TTIME *t, TINT *d, TINT *s, TINT *us);
 TLIBAPI void TInitInterface(struct TInterface *iface, struct TModule *mod, TSTRPTR name, TUINT16 version);
+TLIBAPI TAPTR TGetNextEntry(struct THandle *handle);
 
 #ifdef __cplusplus
 }

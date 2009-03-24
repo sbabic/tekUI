@@ -9,7 +9,7 @@ LIBS = $(LIBDIR)/libexec.a
 # TOOLS = $(BINDIR)/scanmodules $(BINDIR)/interval
 
 $(OBJDIR)/exec_mod.lo: \
-	exec_all.c exec_mod.h $(INCDIR)/tek/mod/exec.h
+	exec_all.c exec_mod.h $(INCDIR)/tek/mod/exec.h exec_mod.c exec_api.c exec_doexec.c exec_memory.c exec_time.c
 	$(CC) $(LIBCFLAGS) -o $@ -c exec_all.c
 
 $(LIBDIR)/libexec.a: \

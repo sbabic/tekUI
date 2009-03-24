@@ -20,6 +20,7 @@
 #endif
 
 #include "../teklib/teklib.c"
+#include "../teklib/string.c"
 
 #include "exec_mod.c"
 #include "exec_api.c"

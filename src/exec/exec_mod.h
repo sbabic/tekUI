@@ -18,9 +18,9 @@
 
 /*****************************************************************************/
 
-#define EXEC_VERSION	9
+#define EXEC_VERSION	10
 #define EXEC_REVISION	0
-#define EXEC_NUMVECTORS	77
+#define EXEC_NUMVECTORS	78
 
 /*****************************************************************************/
 
@@ -144,6 +144,8 @@ EXPORT TINT exec_GetLocalDate(TEXECBASE *tmod, TDATE *dtp);
 EXPORT TINT exec_GetUniversalDate(TEXECBASE *tmod, TDATE *dtp);
 EXPORT TUINT exec_WaitTime(TEXECBASE *tmod, TTIME *timep, TUINT sig);
 EXPORT TUINT exec_WaitDate(TEXECBASE *tmod, TDATE *date, TUINT sig);
+
+EXPORT TAPTR exec_ScanModules(struct TExecBase *TExecBase, TTAGITEM *tags);
 
 /*****************************************************************************/
 /*

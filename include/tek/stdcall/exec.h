@@ -221,4 +221,7 @@
 #define TExecWaitDate(exec,dt,sig) \
 	(*(((TMODCALL TUINT(**)(TAPTR,TDATE *,TUINT))(exec))[-77]))(exec,dt,sig)
 
+#define TExecScanModules(exec,tags) \
+	(*(((TMODCALL struct THandle *(**)(TAPTR,TTAGITEM *))(exec))[-78]))(exec,tags)
+
 #endif /* _TEK_STDCALL_EXEC_H */

@@ -5,7 +5,7 @@
 --	See copyright notice in COPYRIGHT
 --
 --	This class paints sets of 256 16bit numbers coming in as MSG_USER,
---	for which it registeres an input handler with the application.
+--	for which it registers an input handler with the application.
 --
 
 local ui = require "tek.ui"

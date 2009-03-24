@@ -104,6 +104,8 @@ struct THook
 #define TMSG_INITTASK		8
 /* Call task procedure: */
 #define TMSG_RUNTASK		9
+/* Get next entry: */
+#define TMSG_GETNEXTENTRY	10
 /* Offset to user-defined hook messages: */
 #define TMSG_USER			0x1000
 
@@ -411,6 +413,13 @@ struct TModInitNode
 #define	TPool_AutoAdapt		(TEXECTAGS_ + 69)
 #define TPool_Static		(TEXECTAGS_ + 70)
 #define TPool_StaticSize	(TEXECTAGS_ + 71)
+
+/*
+**	Tags for module scanning
+*/
+
+#define TExec_ModuleName	(TEXECTAGS_ + 80)
+#define TExec_ModulePrefix	(TEXECTAGS_ + 81)
 
 /*****************************************************************************/
 /*

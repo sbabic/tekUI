@@ -10,6 +10,7 @@
 #include "exec_mod.h"
 #include <tek/debug.h>
 #include <tek/teklib.h>
+#include <tek/string.h>
 
 /*****************************************************************************/
 /*
@@ -1111,4 +1112,140 @@ EXPORT TBOOL exec_RemModules(struct TExecBase *TExecBase,
 	struct TModInitNode *tmin, TUINT flags)
 {
 	return exec_addremmodule(TExecBase, tmin, TTREQ_REMMOD, flags);
+}
+
+/*****************************************************************************/
+/*
+**	handle = exec_ScanModules(exec, tags)
+**	Scan available modules
+*/
+
+struct ScanModHandle
+{
+	struct THandle handle;
+	struct TList list;
+	struct TNode **nptr;
+};
+
+struct ScanModNode
+{
+	struct TNode node;
+	TTAGITEM tags[2];
+};
+
+static THOOKENTRY TTAG scm_hookfunc(struct THook *hook, TAPTR obj, TTAG msg)
+{
+	switch (msg)
+	{
+		case TMSG_DESTROY:
+		{
+			struct ScanModHandle *hnd = obj;
+			struct TExecBase *TExecBase = hnd->handle.thn_Owner;
+			struct TNode *node, *next;
+			node = hnd->list.tlh_Head;
+			for (; (next = node->tln_Succ); node = next)
+			{
+				struct ScanModNode *smn = (struct ScanModNode *) node;
+				TRemove(&smn->node);
+				TFree(smn);
+			}
+			TFree(hnd);
+			break;
+		}
+		case TMSG_GETNEXTENTRY:
+		{
+			struct ScanModHandle *hnd = obj;
+			struct TNode *next = *hnd->nptr;
+			if (next->tln_Succ == TNULL)
+			{
+				hnd->nptr = &hnd->list.tlh_Head;
+				return TNULL;
+			}
+			hnd->nptr = (struct TNode **) next;
+			return (TTAG) ((struct ScanModNode *) next)->tags;
+		}
+	}
+	return 0;
+}
+
+static THOOKENTRY TTAG scm_addext(struct THook *hook, TAPTR obj, TTAG m)
+{
+	struct THALScanModMsg *msg = (struct THALScanModMsg *) m;
+	struct ScanModHandle *hnd = hook->thk_Data;
+	struct TExecBase *TExecBase = hnd->handle.thn_Owner;
+	TINT len = msg->tsmm_Length;
+	struct ScanModNode *scn =
+		TAlloc(TNULL, sizeof(struct ScanModNode) + len + 1);
+	if (scn)
+	{
+		TCopyMem(msg->tsmm_Name, scn + 1, len);
+		((TUINT8 *) (scn + 1))[len] = 0;
+		scn->tags[0].tti_Tag = TExec_ModuleName;
+		scn->tags[0].tti_Value = (TTAG) (scn + 1);
+		scn->tags[1].tti_Tag = TTAG_DONE;
+		TAddTail(&hnd->list, &scn->node);
+		return TTRUE;
+	}
+	return TFALSE;
+}
+
+EXPORT TAPTR exec_ScanModules(struct TExecBase *TExecBase, TTAGITEM *tags)
+{
+	struct ScanModHandle *hnd = TAlloc0(TNULL, sizeof(struct ScanModHandle));
+	if (hnd)
+	{
+		struct TAtom *iatom;
+		TSTRPTR prefix = (TSTRPTR) TGetTag(tags, TExec_ModulePrefix, TNULL);
+		TSIZE plen = TStrLen(prefix);
+		hnd->handle.thn_Owner = TExecBase;
+		TInitHook(&hnd->handle.thn_Hook, scm_hookfunc, hnd);
+		TInitList(&hnd->list);
+		hnd->nptr = &hnd->list.tlh_Head;
+		/* scan internal modules: */
+		iatom = TLockAtom("sys.imods", TATOMF_NAME | TATOMF_SHARED);
+		if (iatom)
+		{
+			struct TInitModule *imods = (struct TInitModule *) TGetAtomData(iatom);
+			if (imods)
+			{
+				TSTRPTR p;
+				while ((p = imods->tinm_Name))
+				{
+					if (!prefix || !TStrNCmp(prefix, p, plen))
+					{
+						struct ScanModNode *scn;
+						TSIZE len = TStrLen(p) + 1;
+						scn = TAlloc(TNULL, sizeof(struct ScanModNode) + len);
+						if (!scn)
+						{
+							TDestroy(&hnd->handle);
+							hnd = TNULL;
+							break;
+						}
+						TCopyMem(p, scn + 1, len);
+						scn->tags[0].tti_Tag = TExec_ModuleName;
+						scn->tags[0].tti_Value = (TTAG) (scn + 1);
+						scn->tags[1].tti_Tag = TTAG_DONE;
+						TAddTail(&hnd->list, &scn->node);
+					}
+					imods++;
+				}
+			}
+			TUnlockAtom(iatom, 0);
+		}
+
+		/* scan external modules: */
+		if (hnd)
+		{
+			struct THook scanhook;
+			scanhook.thk_Entry = scm_addext;
+			scanhook.thk_Data = hnd;
+			if (!THALScanModules(TExecBase->texb_HALBase, prefix, &scanhook))
+			{
+				TDestroy(&hnd->handle);
+				hnd = TNULL;
+			}
+		}
+	}
+	return hnd;
 }

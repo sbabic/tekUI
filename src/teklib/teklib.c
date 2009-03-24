@@ -172,8 +172,7 @@ TLIBAPI void TInsert(struct TList *list, struct TNode *node,
 TLIBAPI void TDestroy(struct THandle *handle)
 {
 	if (handle)
-		TCALLHOOKPKT(&((struct THandle *) handle)->thn_Hook, handle,
-			TMSG_DESTROY);
+		TCALLHOOKPKT(&handle->thn_Hook, handle, TMSG_DESTROY);
 }
 
 /*****************************************************************************/
@@ -560,6 +559,20 @@ TLIBAPI void TInitInterface(struct TInterface *iface, struct TModule *mod,
 	iface->tif_Module = mod;
 	iface->tif_Reserved = TNULL;
 	iface->tif_Version = version;
+}
+
+/*****************************************************************************/
+/*
+**	entry = TGetNextEntry(handle)
+**	Invoke 'getnextentry' method on a handle
+*/
+
+TLIBAPI TAPTR TGetNextEntry(struct THandle *handle)
+{
+	if (handle)
+		return (TAPTR) TCALLHOOKPKT(&handle->thn_Hook, handle,
+			TMSG_GETNEXTENTRY);
+	return TNULL;
 }
 
 #endif /* _TEK_TEKLIB_C */

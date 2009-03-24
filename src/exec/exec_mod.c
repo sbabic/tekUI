@@ -226,6 +226,8 @@ exec_vectors[EXEC_NUMVECTORS] =
 	(TMFPTR) exec_GetLocalDate,
 	(TMFPTR) exec_WaitTime,
 	(TMFPTR) exec_WaitDate,
+
+	(TMFPTR) exec_ScanModules,
 };
 
 /*****************************************************************************/

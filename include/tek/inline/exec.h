@@ -211,4 +211,7 @@
 #define TWaitDate(dt,sig) \
 	(*(((TMODCALL TUINT(**)(TAPTR,TDATE *,TUINT))(TExecBase))[-77]))(TExecBase,dt,sig)
 
+#define TScanModules(tags) \
+	(*(((TMODCALL struct THandle *(**)(TAPTR,TTAGITEM *))(TExecBase))[-78]))(TExecBase,tags)
+
 #endif /* _TEK_INLINE_EXEC_H */

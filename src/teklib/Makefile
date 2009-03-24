@@ -8,7 +8,8 @@ LIBS = \
 	$(LIBDIR)/libtekdebug.a \
 	$(LIBDIR)/libtekcmain.a \
 	$(LIBDIR)/libtekc.a \
-	$(LIBDIR)/libtek.a
+	$(LIBDIR)/libtek.a \
+	$(LIBDIR)/libtekstring.a \
 
 $(OBJDIR)/init.lo: init.c $(INCDIR)/tek/lib/init.h
 	$(CC) $(LIBCFLAGS) -o $@ -c init.c
@@ -20,6 +21,8 @@ $(OBJDIR)/main.lo: $(PLATFORM)/main.c $(INCDIR)/tek/lib/init.h
 	$(CC) $(LIBCFLAGS) -o $@ -c $(PLATFORM)/main.c
 $(OBJDIR)/host.lo: $(PLATFORM)/host.c $(INCDIR)/tek/lib/init.h
 	$(CC) $(LIBCFLAGS) -o $@ -c $(PLATFORM)/host.c
+$(OBJDIR)/string.lo: string.c
+	$(CC) $(LIBCFLAGS) -o $@ -c string.c
 
 $(LIBDIR)/libtekdebug.a: \
 	$(OBJDIR)/debug.lo
@@ -32,6 +35,9 @@ $(LIBDIR)/libtekc.a: \
 	$(AR) $@ $?
 $(LIBDIR)/libtek.a: \
 	$(OBJDIR)/teklib.lo
+	$(AR) $@ $?
+$(LIBDIR)/libtekstring.a: \
+	$(OBJDIR)/string.lo
 	$(AR) $@ $?
 
 ###############################################################################
