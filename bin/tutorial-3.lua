@@ -4,26 +4,22 @@ ui = require "tek.ui"
 
 ui.Application:new
 {
-	ThemeName = "tutorial",
+	Theme = "tutorial",
 	Children =
 	{
 		ui.Window:new
 		{
-			Title = "tutorial-3",
+			Title = "Tutorial 3",
 			Children =
 			{
-				ui.Text:new
+				ui.Button:new
 				{
 					Text = "Hello",
-					Mode = "button",
-					Class = "button",
 					Width = "auto",
 				},
-				ui.Text:new
+				ui.Button:new
 				{
 					Text = "world",
-					Mode = "button",
-					Class = "button",
 					Height = "free",
 				},
 			}

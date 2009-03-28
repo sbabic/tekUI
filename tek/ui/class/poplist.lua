@@ -23,12 +23,12 @@
 --	ATTRIBUTES::
 --		- {{ListObject [IG]}} ([[#tek.class.list : List]])
 --			List object
---		- {{SelectedEntry [ISG]}} (number)
+--		- {{SelectedLine [ISG]}} (number)
 --			Number of the selected entry, or 0 if none is selected. Changing
 --			this attribute invokes the PopList:onSelectEntry() method.
 --
 --	IMPLEMENTS::
---		- PopList:onSelectEntry() - Handler for the {{SelectedEntry}}
+--		- PopList:onSelectEntry() - Handler for the {{SelectedLine}}
 --		attribute
 --		- PopList:setList() - Sets a new list object
 --
@@ -58,7 +58,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 5.5"
+_VERSION = "PopList 6.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -110,7 +110,7 @@ function PopListGadget:onActivate(active)
 		local entry = self:getItem(lnr)
 		if entry then
 			local popitem = self.Window.PopupBase
-			popitem:setValue("SelectedEntry", lnr)
+			popitem:setValue("SelectedLine", lnr)
 			popitem:setValue("Text", entry[1][1])
 		end
 		-- needed to unregister input-handler:
@@ -139,7 +139,7 @@ function PopList.init(self)
 	self.Image = self.Image or ArrowImage
 	self.TextHAlign = self.TextHAlign or "left"
 	self.Width = self.Width or "fill"
-	self.SelectedEntry = self.SelectedEntry or 0
+	self.SelectedLine = self.SelectedLine or 0
 	return PopItem.init(self)
 end
 
@@ -155,6 +155,7 @@ function PopList.new(class, self)
 			VSliderMode = "auto",
 			Child = Canvas:new
 			{
+				Class = "poplist-canvas",
 				KeepMinWidth = true,
 				KeepMinHeight = true,
 				AutoWidth = true,
@@ -167,16 +168,16 @@ end
 
 function PopList:setup(app, window)
 	PopItem.setup(self, app, window)
-	self:addNotify("SelectedEntry", ui.NOTIFY_CHANGE, NOTIFY_SELECT)
+	self:addNotify("SelectedLine", ui.NOTIFY_CHANGE, NOTIFY_SELECT)
 end
 
 function PopList:cleanup()
-	self:remNotify("SelectedEntry", ui.NOTIFY_CHANGE, NOTIFY_SELECT)
+	self:remNotify("SelectedLine", ui.NOTIFY_CHANGE, NOTIFY_SELECT)
 	PopItem.cleanup(self)
 end
 
 function PopList:show(display, drawable)
-	PopList.onSelectEntry(self, self.SelectedEntry)
+	PopList.onSelectEntry(self, self.SelectedLine)
 	return PopItem.show(self, display, drawable)
 end
 
@@ -184,7 +185,7 @@ function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
 	if lo and not self.KeepMinWidth then
 		local tr = { }
-		local font = self.Display:openFont(self.FontSpec)
+		local font = self.Display:openFont(self.Font)
 		for lnr = 1, lo:getN() do
 			local entry = lo:getItem(lnr)
 			local t = self:newTextRecord(entry[1][1], font, self.TextHAlign,
@@ -207,7 +208,7 @@ end
 
 -------------------------------------------------------------------------------
 --	PopList:onSelectEntry(line): This method is invoked when the
---	{{SelectedEntry}} attribute is set.
+--	{{SelectedLine}} attribute is set.
 -------------------------------------------------------------------------------
 
 function PopList:onSelectEntry(lnr)

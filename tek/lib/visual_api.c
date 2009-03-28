@@ -376,6 +376,9 @@ tek_lib_visual_frect(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
 	TINT x1 = luaL_checkinteger(L, 4) + sx;
 	TINT y1 = luaL_checkinteger(L, 5) + sy;
+
+	if (x0 > x1 || y0 > y1)
+		return 0;
 	TEKPen *pen = checkpenptr(L, 6);
 	TVisualFRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
 		pen->pen_Pen);

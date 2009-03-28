@@ -19,7 +19,7 @@
 --		This class implements a gadget for entering and editing text.
 --
 --	ATTRIBUTES::
---		- {{Enter [ISG]}} (string)
+--		- {{Enter [SG]}} (string)
 --			The text that is being entered (by pressing the Return key) into
 --			the input field. Setting this value causes the invocation of
 --			the TextInput:onEnter() method.
@@ -76,7 +76,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 8.0"
+_VERSION = "TextInput 8.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -100,7 +100,6 @@ function TextInput.init(self)
 	self.EnterNext = self.EnterNext or false
 	self.FGPenCursor = false
 	self.FHeight = false
-	self.FontSpec = self.FontSpec or false
 	self.FWidth = false
 	self.Mode = "touch"
 	self.ShortcutMark = false

@@ -59,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.2"
+_VERSION = "PageGroup 9.3"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ local NOTIFY_PAGENUMBER = { ui.NOTIFY_SELF, "onSetPageNumber",
 --	PageContainerGroup:
 -------------------------------------------------------------------------------
 
-local PageContainerGroup = Group:newClass { _NAME = "_pagecontainer" }
+local PageContainerGroup = Group:newClass { _NAME = "_page-container" }
 
 function PageContainerGroup.init(self)
 	self.PageElement = self.PageElement or false

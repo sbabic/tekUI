@@ -4,12 +4,12 @@ ui = require "tek.ui"
 
 ui.Application:new
 {
-	ThemeName = "tutorial",
+	Theme = "tutorial",
 	Children =
 	{
 		ui.Window:new
 		{
-			Title = "tutorial-6",
+			Title = "Tutorial 6",
 			Orientation = "vertical",
 			Children =
 			{
@@ -18,7 +18,7 @@ ui.Application:new
 					Legend = "Output",
 					Id = "output",
 					Height = "free",
-					FontSpec = ":100",
+					Font = ":100",
 				},
 
 				ui.Slider:new

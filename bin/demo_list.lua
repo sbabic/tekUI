@@ -16,20 +16,6 @@ local window = Window:new
 	Id = "list-window",
 	Title = L.LIST_TITLE,
 	Status = "hide",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "list-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "list-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Children =
 	{
 		ui.ScrollGroup:new
@@ -65,7 +51,7 @@ local window = Window:new
 							{ { "Neurosis", "Times of Grace", "United States", "", "Hardcore/Rock/Sludge Metal" } },
 							{ { "Oppressor", "Elements of Corrosion", "United States", "1998", "Death Metal" } },
 							{ { "Pink Floyd", "Meddle", "United Kingdom", "1971", "Rock" } },
-							{ { "Robert Reich", "Trances/Drones", "United States", "1981", "Ambient/Drone" } },
+							{ { "Robert Rich", "Trances/Drones", "United States", "1981", "Ambient/Drone" } },
 							{ { "Rotting Christ", "Thy Mighty Contract", "Greece", "1993", "Black Metal" } },
 							{ { "Rudimentary Peni", "Death Church", "United States", "1983", "Punkrock" } },
 							{ { "Sepultura", "Beneath the Remains", "Brazil", "1989", "Death Metal" } },

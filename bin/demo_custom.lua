@@ -11,17 +11,15 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 --	Keybutton class:
 -------------------------------------------------------------------------------
 
-local KeyButton = Text:newClass { _NAME = "_keybutton" }
+local KeyButton = ui.Button:newClass { _NAME = "_keybutton" }
 
 function KeyButton.init(self)
 	self.KeyString = self.KeyString or self.Text
 	self.KeyCode = self.KeyCode or self.KeyString:byte()
 	assert(self.KeyCode)
 	assert(self.Group)
-	self.Class = "button"
-	self.Mode = "button"
 	self.Width = "fill"
-	return Text.init(self)
+	return ui.Button.init(self)
 end
 
 function KeyButton:onPress(pressed)
@@ -74,8 +72,8 @@ function NumberInput.new(class, self)
 	{
 		Group:new
 		{
-		 	GridWidth = 3,
-			SameWidth = true,
+		 	Columns = 3,
+			SameSize = "width",
 			Children = self.Buttons1
 		},
 		Group:new
@@ -99,7 +97,7 @@ function NumberInput:onDisable(disable)
 	if disable then
 		self.Buttons2[1]:setValue("Selected", false)
 	end
-	return self:getSuper().onDisable(self, disable)
+	return Group.onDisable(self, disable)
 end
 
 -------------------------------------------------------------------------------
@@ -125,7 +123,7 @@ function NetworkInput:onSelect(selected)
 			e:setValue("Disabled", true)
 		end
 	end
-	self:getSuper().onSelect(self, selected)
+	TextInput.onSelect(self, selected)
 end
 
 function NetworkInput:onDisable(disabled)
@@ -135,21 +133,21 @@ function NetworkInput:onDisable(disabled)
 			e:setValue("Disabled", true)
 		end
 	end
-	self:getSuper().onDisable(self, disabled)
+	TextInput.onDisable(self, disabled)
 end
 
 function NetworkInput:moveCursorRight()
-	local res = self:getSuper().moveCursorRight(self)
+	local res = TextInput.moveCursorRight(self)
 	if self:getChar() == "." then
-		res = self:getSuper().moveCursorRight(self)
+		res = TextInput.moveCursorRight(self)
 	end
 	return res
 end
 
 function NetworkInput:moveCursorLeft()
-	local res = self:getSuper().moveCursorLeft(self)
+	local res = TextInput.moveCursorLeft(self)
 	if self:getChar() == "." then
-		res = self:getSuper().moveCursorLeft(self)
+		res = TextInput.moveCursorLeft(self)
 	end
 	return res
 end
@@ -230,20 +228,6 @@ local window = ui.Window:new
 	Id = "custom-window",
 	Title = L.CUSTOMCLASS_TITLE,
 	Status = "hide",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "custom-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "custom-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Orientation = "vertical",
 	Children =
 	{
@@ -268,12 +252,12 @@ local window = ui.Window:new
 								if not selected then
 									self.Window:clickElement(self.Application:getElementById("input-address"))
 								end
-								self:getSuper().onSelect(self, selected)
+								ui.CheckMark.onSelect(self, selected)
 							end,
 						},
 						Group:new
 						{
-							GridWidth = 2,
+							Columns = 2,
 							Children =
 							{
 								Text:new { Text = L.CUSTOMCLASS_ADDRESS, Class = "caption", Width = "auto", HAlign = "right" },
@@ -285,7 +269,7 @@ local window = ui.Window:new
 										self.Application:getElementById("input-netmask"):setValue("Text", mask)
 										self.Application:getElementById("input-gateway"):setValue("Text", ("%d.%d.0.0"):format(a, b))
 										self.Application:getElementById("input-dns"):setValue("Text", ("%d.%d.0.0"):format(a, b))
-										self:getSuper().onEnter(self, text)
+										NetworkInput.onEnter(self, text)
 									end,
 								},
 								Text:new { Text = L.CUSTOMCLASS_NETMASK, Class = "caption", Width = "auto", HAlign = "right" },

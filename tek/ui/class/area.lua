@@ -15,14 +15,14 @@
 --		This class implements an outer margin, layouting and drawing.
 --
 --	ATTRIBUTES::
---		- {{BGPen [G]}} (userdata)
+--		- {{BGPen [IG]}} (userdata)
 --			A colored pen for painting the background of the element
 --		- {{DamageRegion [G]}} ([[#tek.lib.region : Region]])
 --			see {{TrackDamage}}
 --		- {{Disabled [ISG]}} (boolean)
 --			If '''true''', the element is in disabled state. This attribute is
 --			handled by the [[#tek.ui.class.gadget : Gadget]] class.
---		- {{EraseBackground [IG]}} (boolean)
+--		- {{EraseBG [IG]}} (boolean)
 --			If '''false''', the element's background is painted by the Area
 --			class using the Area:erase() method. Child classes can set this
 --			attribute to '''true''', indicating that they wish to paint the
@@ -151,7 +151,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 14.2"
+_VERSION = "Area 15.1"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ function Area.init(self)
 	self.Disabled = self.Disabled or false
 	self.Display = false
 	self.Drawable = false
-	self.EraseBackground = self.EraseBackground or false
+	self.EraseBG = self.EraseBG or false
 	self.Focus = self.Focus or false
 	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
@@ -405,9 +405,12 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 
 			if dw > 0 or dh > 0 then
 				-- grow + move:
-				self.DamageRegion = Region.new(x0, y0, x1, y1)
-				self.DamageRegion:subRect(r[1] + dx, r[2] + dy, r[3] + dx,
-					r[4] + dy)
+				if self.TrackDamage then
+					self.DamageRegion = Region.new(x0, y0, x1, y1)
+					self.DamageRegion:subRect(r[1] + dx, r[2] + dy, r[3] + dx,
+						r[4] + dy)
+				end
+				self.Redraw = true
 			end
 
 		else
@@ -487,7 +490,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:draw()
-	if not self.EraseBackground then
+	if not self.EraseBG then
 		self:erase()
 	end
 end

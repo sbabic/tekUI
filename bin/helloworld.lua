@@ -11,36 +11,15 @@ ui.Application:new
 			Title = "Hello",
 			Children =
 			{
-				ui.Text:new
+				ui.Button:new
 				{
 					Text = "_Hello, World!",
-					Class = "button",
-					Mode = "button",
-
 					onPress = function(self, pressed)
 						if pressed == false then
 							print "Hello, World!"
 						end
-						ui.Text.onPress(self, pressed)
+						ui.Button.onPress(self, pressed)
 					end,
-
-					-- alternative implementation using Notification:
-
-					-- Notifications =
-					-- {
-					-- 	["Pressed"] =
-					-- 	{
-					-- 		[false] =
-					-- 		{
-					-- 			{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION,
-					-- 				function(self)
-					-- 					print "Hello, World!"
-					-- 				end
-					-- 			},
-					-- 		},
-					-- 	},
-					-- },
-
 				},
 			},
 		},

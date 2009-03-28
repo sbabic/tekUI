@@ -4,19 +4,17 @@ ui = require "tek.ui"
 
 ui.Application:new
 {
-	ThemeName = "tutorial",
+	Theme = "tutorial",
 	Children =
 	{
 		ui.Window:new
 		{
-			Title = "tutorial-4",
+			Title = "Tutorial 4",
 			Children =
 			{
-				ui.Text:new
+				ui.Button:new
 				{
 					Text = "Hello",
-					Mode = "button",
-					Class = "button",
 					Width = "auto",
 
 					onPress = function(self, pressed)
@@ -26,7 +24,7 @@ ui.Application:new
 						else
 							button:setValue("Text", "")
 						end
-						ui.Text.onPress(self, pressed)
+						ui.Button.onPress(self, pressed)
 					end
 
 				},
@@ -35,10 +33,9 @@ ui.Application:new
 					Legend = "Output",
 					Id = "output",
 					Height = "free",
-					FontSpec = ":100",
+					Font = ":100",
 				}
 			}
 		}
 	}
-
 }:run()

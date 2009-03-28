@@ -20,6 +20,9 @@
 --		[[#tek.ui.class.slider : Slider]] and arrow buttons.
 --
 --	ATTRIBUTES::
+--		- {{Integer [IG]}} (boolean)
+--			If '''true''', integer steps are enforced. By default, the
+--			slider moves continuously.
 --		- {{Max [ISG]}} (number)
 --			The maximum value the slider can accept. Setting this value
 --			invokes the ScrollBar:onSetMax() method.
@@ -59,7 +62,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 7.4"
+_VERSION = "ScrollBar 8.0"
 
 local ScrollBar = _M
 
@@ -137,8 +140,8 @@ end
 local SBSlider = Slider:newClass { _NAME = "_scrollbar-slider" }
 
 function SBSlider:onSetValue(v)
-	self.ScrollBar:setValue("Value", v)
 	Slider.onSetValue(self, v)
+	self.ScrollBar:setValue("Value", self.Value)
 end
 
 local function updateSlider(self)
@@ -152,20 +155,20 @@ local function updateSlider(self)
 end
 
 function SBSlider:onSetRange(r)
-	self.ScrollBar:setValue("Range", r)
 	Slider.onSetRange(self, r)
+	self.ScrollBar:setValue("Range", self.Range)
 	updateSlider(self)
 end
 
 function SBSlider:onSetMin(m)
-	self.ScrollBar:setValue("Min", m)
 	Slider.onSetMin(self, m)
+	self.ScrollBar:setValue("Min", self.Min)
 	updateSlider(self)
 end
 
 function SBSlider:onSetMax(m)
-	self.ScrollBar:setValue("Max", m)
 	Slider.onSetMax(self, m)
+	self.ScrollBar:setValue("Max", self.Max)
 	updateSlider(self)
 end
 
@@ -181,7 +184,7 @@ function ScrollBar.new(class, self)
 	self.Value = max(self.Min, min(self.Max, self.Value or self.Default))
 	self.Range = max(self.Max, self.Range or self.Max)
 	self.Step = self.Step or 1
-	self.ForceInteger = self.ForceInteger or false
+	self.Integer = self.Integer or false
 	self.Child = self.Child or false
 	self.ArrowOrientation = self.ArrowOrientation or self.Orientation
 	self.Kind = self.Kind or "scrollbar"
@@ -197,7 +200,7 @@ function ScrollBar.new(class, self)
 		Step = self.Step,
 		Notifications = self.Notifications,
 		Orientation = self.Orientation,
-		ForceInteger = self.ForceInteger,
+		Integer = self.Integer,
 		Kind = self.Kind,
 	}
 	self.Notifications = false

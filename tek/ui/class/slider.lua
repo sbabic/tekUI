@@ -22,7 +22,7 @@
 --		- {{Child [IG]}} ([[#tek.ui.class.gadget : Gadget]])
 --			A gadget for being used as the slider's knob. By default,
 --			an internal knob gadget is used.
---		- {{ForceInteger [IG]}} (boolean)
+--		- {{Integer [IG]}} (boolean)
 --			If '''true''', integer steps are enforced. By default, the
 --			slider moves continuously.
 --		- {{Orientation [IG]}} (string)
@@ -71,7 +71,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 6.17"
+_VERSION = "Slider 7.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -87,7 +87,7 @@ local Slider = _M
 
 function Slider.init(self)
 	self.ClickDirection = false
-	self.ForceInteger = self.ForceInteger or false
+	self.Integer = self.Integer or false
 	self.HoldXY = { }
 	self.Mode = "button"
 	self.Move0 = false
@@ -192,7 +192,7 @@ function Slider:getKnobRect()
 		local y1 = r4 - p[4] - m[4]
 		local r = self.Range - self.Min
 		local v = self.Value
-		v = self.ForceInteger and floor(v) or v
+		v = self.Integer and floor(v) or v
 		if r > 0 then
 			if self.Orientation == "horizontal" then
 				local w = x1 - x0 - km[1] + 1
@@ -338,7 +338,7 @@ function Slider:doMove(x, y)
 		newv = self.Pos0 +
 			(y - self.Move0[2]) * (self.Range - self.Min) / max(h, 1)
 	end
-	if self.ForceInteger then
+	if self.Integer then
 		newv = floor(newv)
 	end
 	self:setValue("Value", newv)

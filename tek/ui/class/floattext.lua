@@ -20,7 +20,7 @@
 --	ATTRIBUTES::
 --		- {{FGPen [IG]}} (userdata)
 --			Pen for rendering the text
---		- {{FontSpec [IG]}} (string)
+--		- {{Font [IG]}} (string)
 --			Font specifier; see [[#tek.ui.class.text : Text]] for a
 --			format description
 --		- {{Preformatted [IG]}} (boolean)
@@ -47,9 +47,6 @@
 --		- Area:setState()
 --		- Element:setup()
 --
---	TODO::
---		Should inherit from Gadget to support borders
---
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
@@ -66,7 +63,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 6.0"
+_VERSION = "FloatText 7.1"
 
 local FloatText = _M
 
@@ -86,11 +83,10 @@ function FloatText.init(self)
 	self.FGPen = self.FGPen or false
 	self.Foreground = false
 	self.FHeight = false
-	self.Font = false
-	self.FontSpec = self.FontSpec or false
+	self.FontHandle = false
+	self.Font = self.Font or false
 	self.FWidth = false
 	self.Lines = false
-	self.Margin = ui.NULLOFFS -- fixed
 	self.Preformatted = self.Preformatted or false
 	self.Reposition = false
 	self.Text = self.Text or ""
@@ -108,7 +104,7 @@ end
 function FloatText:getProperties(p, pclass)
 	self.FGPen = self.FGPen or self:getProperty(p, pclass, "color")
 		or ui.PEN_LISTDETAIL
-	self.FontSpec = self.FontSpec or self:getProperty(p, pclass, "font")
+	self.Font = self.Font or self:getProperty(p, pclass, "font")
 	Area.getProperties(self, p, pclass)
 end
 
@@ -138,8 +134,8 @@ end
 
 function FloatText:show(display, drawable)
 	if Area.show(self, display, drawable) then
-		self.Font = display:openFont(self.FontSpec)
-		self.FWidth, self.FHeight = Display:getTextSize(self.Font, "W")
+		self.FontHandle = display:openFont(self.Font)
+		self.FWidth, self.FHeight = Display:getTextSize(self.FontHandle, "W")
 		self:prepareText()
 		return true
 	end
@@ -151,8 +147,8 @@ end
 
 function FloatText:hide()
 	if self.Display then
-		self.Display:closeFont(self.Font)
-		self.Font = false
+		self.Display:closeFont(self.FontHandle)
+		self.FontHandle = false
 	end
 	Area.hide(self)
 end
@@ -185,7 +181,7 @@ function FloatText:draw()
 		local x1 = ca and x0 + ca.CanvasWidth - 1 or self.Rect[3]
 
 		local fp = p[self.Foreground]
-		d:setFont(self.Font)
+		d:setFont(self.FontHandle)
 		for _, r1, r2, r3, r4 in dr:getRects() do
 			d:pushClipRect(r1, r2, r3, r4)
 			for lnr, t in ipairs(self.Lines) do
@@ -228,7 +224,7 @@ function FloatText:prepareText()
 		if self.Preformatted then
 			-- determine widths line by line
 			for line in self.Text:gmatch("([^\n]*)\n?") do
-				w, h = Display:getTextSize(self.Font, line)
+				w, h = Display:getTextSize(self.FontHandle, line)
 				lw = max(lw, w)
 				i = i + 1
 				wl[i] = w
@@ -236,12 +232,12 @@ function FloatText:prepareText()
 		else
 			-- determine widths word by word
 			for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
-				w, h = Display:getTextSize(self.Font, word)
+				w, h = Display:getTextSize(self.FontHandle, word)
 				lw = max(lw, w)
 				i = i + 1
 				wl[i] = w
 			end
-			self.WordSpacing = Display:getTextSize(self.Font, " ")
+			self.WordSpacing = Display:getTextSize(self.FontHandle, " ")
 		end
 		self.MinWidth, self.MinHeight = lw, h
 		return lw, h
@@ -328,20 +324,25 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:layout(r1, r2, r3, r4, markdamage)
+
+	local m = self.MarginAndBorder
 	local redraw = self.Redraw
-	local width = r3 - r1 + 1
+	local width = r3 - r1 + 1 - m[1] - m[3]
 	local ch = self.CanvasHeight
 	local r = self.Rect
-	local m = self.MarginAndBorder
 	local x0 = r1 + m[1]
 	local y0 = r2 + m[2]
 	local x1 = r3 - m[3]
+
 	if not ch or (not r[1] or r[3] - r[1] + 1 ~= width) then
-		self.Lines, ch = self:layoutText(r1, r2, width)
+		self.Lines, ch = self:layoutText(r1 + m[1], r2 + m[2], width)
+		ch = ch + m[4]
 		self.CanvasHeight = ch
 		redraw = true
 	end
+
 	local y1 = self.Canvas and r2 + ch - 1 - m[4] or r4 - m[4]
+
 	if redraw or markdamage or
 		r[1] ~= x0 or r[2] ~= y0 or r[3] ~= x1 or r[4] ~= y1 then
 		if self.Canvas then
@@ -359,6 +360,7 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 		self.Redraw = true
 		return true
 	end
+
 end
 
 -------------------------------------------------------------------------------
@@ -391,11 +393,14 @@ end
 function FloatText:updateUnusedRegion()
 	-- determine unused region:
 	local m = self.MarginAndBorder
-	local r = self.Rect
-	self.UnusedRegion = Region.new(r[1] + m[1], r[2] + m[2], r[3] - m[3],
-		r[4] - m[4])
-	self.UnusedRegion:subRect(r[1] + m[1], r[2] + m[2], r[3] - m[3],
-		r[2] + m[2] + self.CanvasHeight - 1)
+	if m[1] ~= 0 or m[2] ~= 0 or m[3] ~= 0 or m[4] ~= 0 then
+		local r = self.Rect
+		self.UnusedRegion = Region.new(r[1] - m[1], r[2] - m[2], r[3] + m[3],
+			r[4] + m[4])
+		self.UnusedRegion:subRect(r[1], r[2], r[3], r[4])
+	else
+		self.UnusedRegion = false
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -410,5 +415,17 @@ function FloatText:appendLine(text, movebottom)
 		self:setValue("Text", text)
 	else
 		self:setValue("Text", self.Text .. "\n" .. text)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	markDamage: overrides
+-------------------------------------------------------------------------------
+
+function FloatText:markDamage(r1, r2, r3, r4)
+	Area.markDamage(self, r1, r2, r3, r4)
+	if self.UnusedRegion and
+		self.UnusedRegion:checkOverlap(r1, r2, r3, r4) then
+		self.Redraw = true
 	end
 end

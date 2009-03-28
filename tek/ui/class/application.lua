@@ -29,7 +29,7 @@
 --			Status of the application, can be "connected", "connecting",
 --			"disconnected", "disconnecting", "initializing", "error",
 --			"running".
---		- {{ThemeName [IG]}}
+--		- {{Theme [IG]}}
 --			Name of a theme, which usually maps to an equally named
 --			style sheet file (with the extension ".css") under
 --			{{tek/ui/style/}}.
@@ -104,7 +104,7 @@ local traceback = debug.traceback
 local unpack = unpack
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 12.0"
+_VERSION = "Application 13.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -160,12 +160,12 @@ function Application.init(self)
 	self.ProgramName = self.ProgramName or self.Title or false
 	self.Status = "initializing"
 	self.Title = self.Title or self.ProgramName or false
-	self.ThemeName = self.ThemeName or "desktop"
+	self.Theme = self.Theme or "desktop"
 	self.VendorName = self.VendorName or "unknown"
 	self.VendorDomain = self.VendorDomain or "unknown"
 	self.Properties = { ui.Theme.getStyleSheet("internal") }
-	if self.ThemeName and self.ThemeName ~= "internal" then
-		local s = ui.prepareProperties(ui.Theme.getStyleSheet(self.ThemeName))
+	if self.Theme and self.Theme ~= "internal" then
+		local s = ui.prepareProperties(ui.Theme.getStyleSheet(self.Theme))
 		if s then
 			insert(self.Properties, 1, s)
 		end
@@ -501,23 +501,25 @@ function Application:run()
 
 	while self.Status == "running" and #ow > 0 do
 
-		-- service coroutines; idle means they are all suspended:
-		local idle = self:serviceCoroutines()
+		-- process the geometry-altering newsize messages first:
+		for _, win in ipairs(ow) do
+			if win.NewSizeMsg then
+				win:passMsg(win.NewSizeMsg)
+				win.NewSizeMsg = false
+				win:update()
+			end
+		end
 
-		-- for all open windows:
+		-- process remaining messages for all open windows:
 		for _, win in ipairs(ow) do
 			-- dispatch user-generated window messages:
 			while win:getMsg(msg) do
 				msgdispatch[msg[2]](self, msg)
 			end
-			-- spool out bundled refreshes, newsizes, mousemoves, intervals:
+			-- spool out bundled refreshes, mousemoves, intervals:
 			if win.RefreshMsg then
 				win:passMsg(win.RefreshMsg)
 				win.RefreshMsg = false
-			end
-			if win.NewSizeMsg then
-				win:passMsg(win.NewSizeMsg)
-				win.NewSizeMsg = false
 			end
 			if win.MouseMoveMsg then
 				win:passMsg(win.MouseMoveMsg)
@@ -527,9 +529,12 @@ function Application:run()
 				win:passMsg(win.IntervalMsg)
 				win.IntervalMsg = false
 			end
-			-- update:
+			-- general update:
 			win:update()
 		end
+
+		-- service coroutines; idle means they are all suspended:
+		local idle = self:serviceCoroutines()
 
 		-- purge windows from list that may have gone to hidden state:
 		for i = #ow, 1, -1 do

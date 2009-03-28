@@ -8,7 +8,7 @@ ui.Application:new
 	{
 		ui.Window:new
 		{
-			GridWidth = 2,
+			Columns = 2,
 			Children =
 			{
 				ui.Tunnel:new { MaxWidth = 400, MaxHeight = 200, VAlign = "bottom" },

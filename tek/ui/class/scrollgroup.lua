@@ -67,7 +67,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.5"
+_VERSION = "ScrollGroup 9.6"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -135,13 +135,20 @@ function ScrollGroup.new(class, self)
 	return Group.new(class, self)
 end
 
+-------------------------------------------------------------------------------
+--	askMinMax: overrides
+-------------------------------------------------------------------------------
+
 function ScrollGroup:askMinMax(m1, m2, m3, m4)
 	m1, m2, m3, m4 = Group.askMinMax(self, m1, m2, m3, m4)
+	local cb = self.Child.MarginAndBorder
+	local b = self.MarginAndBorder
 	if self.HSliderMode == "auto" and self.Child.MinWidth == 0 then
-		self.Child.MinWidth = m1
+		local n1 = self.Child:askMinMax(0, 0, 0, 0)
+		self.Child.MinWidth = n1 - cb[1] - cb[3] - b[1] - b[3]
 	end
 	if self.VSliderMode == "auto" and self.Child.MinHeight == 0 then
-		self.Child.MinHeight = m2
+		self.Child.MinHeight = m2 - cb[2] - cb[4] - b[2] - b[4]
 	end
 	return m1, m2, m3, m4
 end

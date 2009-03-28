@@ -1,6 +1,7 @@
 #!/usr/bin/env lua
 
 local ui = require "tek.ui"
+local Button = ui.Button
 local Group = ui.Group
 local Text = ui.Text
 
@@ -17,20 +18,6 @@ local window = ui.Window:new
 	Title = L.BUTTONS_TITLE,
 	Orientation = "vertical",
 	Status = "hide",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "buttons-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "buttons-window-button", "setValue", "Selected", false }
-			},
-		},
-	},
 	Children =
 	{
 		Group:new
@@ -83,16 +70,11 @@ local window = ui.Window:new
 					Style = "height: fill",
 					Children =
 					{
-						Text:new { Mode = "button", Class = "button", Text = "Small",
-							Style = "font: ui-small" },
-						Text:new { Mode = "button", Class = "button", Text = "Main",
-							Style = "font: ui-main" },
-						Text:new { Mode = "button", Class = "button", Text = "Large",
-							Style = "font: ui-large" },
-						Text:new { Mode = "button", Class = "button", Text = "Huge",
-							Style = "font: ui-huge" },
-						Text:new { Mode = "button", Class = "button", Text = "Fixed",
-							Style = "font: ui-fixed" },
+						Button:new { Text = "Small", Style = "font: ui-small" },
+						Button:new { Text = "Main", Style = "font: ui-main" },
+						Button:new { Text = "Large", Style = "font: ui-large" },
+						Button:new { Text = "Huge", Style = "font: ui-huge" },
+						Button:new { Text = "Fixed", Style = "font: ui-fixed" },
 					}
 				},
 				Group:new
@@ -102,18 +84,12 @@ local window = ui.Window:new
 					Style = "height: fill",
 					Children =
 					{
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
-							Style = "background-color: dark; color: shine" },
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
-							Style = "background-color: shadow; color: shine" },
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
-							Style = "background-color: half-shadow; color: shine" },
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
-							Style = "background-color: background; color: detail" },
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
-							Style = "background-color: half-shine; color: dark" },
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_BUTTON,
-							Style = "background-color: shine; color: dark" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: dark; color: shine" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: shadow; color: shine" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: half-shadow; color: shine" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: background; color: detail" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: half-shine; color: dark" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: shine; color: dark" },
 					}
 				},
 				Group:new
@@ -121,15 +97,12 @@ local window = ui.Window:new
 					Orientation = "vertical",
 					Legend = L.BUTTONS_TEXT_ALIGNMENTS,
 					Style = "height: fill",
-					SameHeight = true,
+					SameSize = "height",
 					Children =
 					{
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_TOP_LEFT,
-							Style = "text-align: left; vertical-align: top; height: free" },
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_CENTER,
-							Style = "text-align: center; vertical-align: center; height: free" },
-						Text:new { Mode = "button", Class = "button", Text = L.BUTTONS_RIGHT_BOTTOM,
-							Style = "text-align: right; vertical-align: bottom; height: free" },
+						Button:new { Text = L.BUTTONS_TOP_LEFT, Style = "text-align: left; vertical-align: top; height: free" },
+						Button:new { Text = L.BUTTONS_CENTER, Style = "text-align: center; vertical-align: center; height: free" },
+						Button:new { Text = L.BUTTONS_RIGHT_BOTTOM, Style = "text-align: right; vertical-align: bottom; height: free" },
 					}
 				}
 			}

@@ -19,29 +19,24 @@
 --		various layouting options.
 --
 --	ATTRIBUTES::
---		- {{Children [G]}} (table)
---			Array of child objects
 --		- {{Children [IG]}} (table)
 --			A numerically indexed table of the object's children
+--		- {{Columns [IG]}} (number)
+--			Grid width, in number of elements [Default: 1, not a grid]
 --		- {{FreeRegion [G]}} ([[#tek.lib.region : Region]])
 --			Region inside the group that is not covered by child elements
---		- {{GridHeight [IG]}} (number)
---			Grid height, in number of elements. [Default: 1, not a grid]
---		- {{GridWidth [IG]}} (number)
---			Grid width, in number of elements [Default: 1, not a grid]
 --		- {{Orientation [IG]}} (string)
 --			Orientation of the group; can be
 --				- "horizontal" - The elements are layouted horizontally
 --				- "vertical" - The elements are layouted vertically
 --			Default: "horizontal"
---		- {{SameHeight [IG]}} (boolean)
---			Indicates that the same height should be reserved for all
---			elements in the group [Default: '''false''']
---		- {{SameWidth [IG]}} (boolean)
---			Indicates that the same width should be reserved for all
---			elements in the group [Default: '''false''']
---		- {{SameSize [IG]}} (boolean)
---			A shortcut for {{SameWidth}} and {{SameHeight}}
+--		- {{Rows [IG]}} (number)
+--			Grid height, in number of elements. [Default: 1, not a grid]
+--		- {{SameSize [IG]}} (boolean/string)
+--			'''true''' indicates that the same width and height should
+--			be reserved for all elements in the group; {{"width"}}
+--			and {{"height"}} specify that only the same width or
+--			height should be reserved, respectively. Default: '''false'''
 --
 --	IMPLEMENTS::
 --		- Group:getStructure() - Get group's structural parameters
@@ -78,10 +73,11 @@ local Gadget = ui.Gadget
 local assert = assert
 local floor = math.floor
 local ipairs = ipairs
+local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 15.0"
+_VERSION = "Group 17.1"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -92,13 +88,11 @@ function Group.init(self)
 	self = self or { }
 	self.Children = self.Children or { }
 	self.FreeRegion = false
-	self.GridWidth = self.GridWidth or false
-	self.GridHeight = self.GridHeight or false
+	self.Columns = self.Columns or false
+	self.Rows = self.Rows or false
 	self.Layout = self.Layout or ui.loadClass("layout", "default"):new { }
 	self.Orientation = self.Orientation or "horizontal"
-	self.SameHeight = self.SameHeight or false
 	self.SameSize = self.SameSize or false
-	self.SameWidth = self.SameWidth or false
 	self.Weights = self.Weights or { }
 	return Gadget.init(self)
 end
@@ -169,7 +163,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:getStructure()
-	local gw, gh, nc = self.GridWidth, self.GridHeight, #self.Children
+	local gw, gh, nc = self.Columns, self.Rows, #self.Children
+	gw = tonumber(gw) or gw
+	gh = tonumber(gh) or gh
 	if gw then
 		return 1, gw, floor((nc + gw - 1) / gw)
 	elseif gh then
@@ -186,8 +182,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:getSameSize(axis)
-	return self.SameSize or (axis == 1 and self.SameWidth) or
-		(axis == 2 and self.SameHeight)
+	local ss = self.SameSize
+	return ss == true or (axis == 1 and ss == "width") or
+		(axis == 2 and ss == "height")
 end
 
 -------------------------------------------------------------------------------
@@ -220,6 +217,7 @@ end
 -------------------------------------------------------------------------------
 
 function Group:addMember(child, pos)
+	child:connect(self)
 	self.Application:decodeProperties(child)
 	child:setup(self.Application, self.Window)
 	if child:show(self.Display, self.Drawable) then

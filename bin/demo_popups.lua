@@ -20,20 +20,6 @@ local window = Window:new
 	Id = "popups-window",
 	Title = L.POPUPS_TITLE,
 	Status = "hide",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "popups-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "popups-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Children =
 	{
 		Orientation = "vertical",
@@ -267,9 +253,9 @@ local window = Window:new
 									},
 									onSelect = function(self, val)
 										ui.PopList.onSelect(self, val)
-										local item = self.ListObject:getItem(self.SelectedEntry)
+										local item = self.ListObject:getItem(self.SelectedLine)
 										if item then
--- 											self.Application:getElementById("japan-combo"):setValue("SelectedEntry", self.SelectedEntry)
+-- 											self.Application:getElementById("japan-combo"):setValue("SelectedLine", self.SelectedLine)
 											self.Application:getElementById("popup-show"):setValue("Text", item[1][1])
 										end
 									end,
@@ -330,7 +316,7 @@ local window = Window:new
 											{
 												ui.PopList:new
 												{
-													SelectedEntry = 1,
+													SelectedLine = 1,
 													ListObject = List:new
 													{
 														Items =

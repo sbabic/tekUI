@@ -16,20 +16,6 @@ local window = ui.Window:new
 	Title = L.BORDERS_TITLE,
 	Status = "hide",
 	Height = "auto",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "borders-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "borders-window-button", "setValue", "Selected", false }
-			},
-		},
-	},
 	Children =
 	{
 		Group:new
@@ -39,7 +25,7 @@ local window = ui.Window:new
 			Children =
 			{
 				SameSize = true,
-				GridWidth = 4,
+				Columns = 4,
 				Group:new
 				{
 					Legend = L.BORDER_INSET,
@@ -179,18 +165,14 @@ local window = ui.Window:new
 			Legend = L.BORDER_INDIVIDUAL_STYLES,
 			Children =
 			{
-				Text:new
+				ui.Button:new
 				{
 					Legend = L.BORDER_CAPTION,
 					Text = L.BORDER_CAPTION,
-					Mode = "button",
-					Class = "button",
 				},
-				Text:new
+				ui.Button:new
 				{
 					Style = "border-color: border-focus; border-rim-width: 1; border-rim-color:shine; border-focus-color: dark; border-width: 6 12 6 12;",
-					Mode = "button",
-					Class = "button",
 					Text = L.BORDER_INDIVIDUAL_STYLE,
 					Height = "fill",
 				},
@@ -201,11 +183,9 @@ local window = ui.Window:new
 			Legend = L.BORDER_DYNAMIC_THICKNESS,
 			Children =
 			{
-				Text:new
+				ui.Button:new
 				{
 					Border = { 2, 2, 2, 2 },
-					Mode = "button",
-					Class = "button",
 					Width = "auto",
 					Id = "dyn-border-button",
 					Text = L.BORDER_WATCH,
@@ -218,7 +198,7 @@ local window = ui.Window:new
 					Value = 2,
 					Min = 0,
 					Max = 20,
-					ForceInteger = true,
+					Integer = true,
 					Notifications =
 					{
 						["Value"] =

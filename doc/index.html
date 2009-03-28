@@ -662,13 +662,12 @@ ui.Application:new
 }:run()
 </pre>
 			<p>
-				When overwriting a method like <code>onPress</code> in an instance of its
-				class, also forward the call to the original implementation of the
-				same method; in the example above, this is accomplished by the last
-				line in the <code>onPress</code> function.
+				When overwriting a method like <code>onPress</code>, also forward the call to
+				the original implementation of the same method; in the example above,
+				this is accomplished by the last line in the <code>onPress</code> function.
 			</p>
 			<p>
-				Another, more elobarate way is to equip the element with a
+				A different, more elobarate way is to equip the element with a
 				notification handler, which would look like this:
 			</p>
 <pre>
@@ -699,9 +698,11 @@ ui.Text:new
 </pre>
 			<p>
 				Even though notification handlers can be written in the same
-				expression as the rest of the application, we are now switching
-				to a more dynamic kind of setup, because the deep levels of
-				recursion are starting to interfere with clarity:
+				expression as the rest of the application, this is not always
+				recommendable, as the deep levels of indentation are easily
+				getting in the way of clarity. Notification handlers are commonly
+				added using the <code>addNotify()</code> method, as shown in the next
+				example:
 			</p>
 <pre>
 #/usr/bin/env lua

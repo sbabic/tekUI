@@ -57,6 +57,7 @@ local _, lfs = pcall(require, "lfs")
 local ui = require "tek.ui"
 local List = require "tek.class.list"
 
+local Button = ui.Button
 local Group = ui.Group
 local ListGadget = ui.ListGadget
 local Text = ui.Text
@@ -68,7 +69,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 9.4"
+_VERSION = "DirList 9.6"
 
 local DirList = _M
 
@@ -148,18 +149,18 @@ function DirList.new(class, self)
 	self.PathField = TextInput:new
 	{
 		KeyCode = "d",
-		Text = self.Path
+		Text = self.Path,
+		Height = "fill",
 	}
 
 	self.PathField:addNotify("Enter", ui.NOTIFY_ALWAYS,
 		{ self, "scanDir", ui.NOTIFY_VALUE })
 
-	self.ParentButton = Text:new
+	self.ParentButton = Button:new
 	{
 		Text = L.PARENT,
-		Mode = "button",
-		Class = "button",
 		Width = "auto",
+		Height = "fill",
 	}
 
 	self.ParentButton:addNotify("Pressed", false,
@@ -168,18 +169,18 @@ function DirList.new(class, self)
 	self.LocationField = TextInput:new
 	{
 		KeyCode = "f",
-		Text = self.Location
+		Text = self.Location,
+		Height = "fill",
 	}
 
 	self.LocationField:addNotify("Enter", ui.NOTIFY_ALWAYS,
 		{ self, "setFileEntry", ui.NOTIFY_VALUE })
 
-	self.ReloadButton = Text:new
+	self.ReloadButton = Button:new
 	{
 		Text = L.RELOAD,
-		Mode = "button",
-		Class = "button",
 		Width = "auto",
+		Height = "fill",
 	}
 
 	self.ReloadButton:addNotify("Pressed", false,
@@ -216,12 +217,11 @@ function DirList.new(class, self)
 		},
 	}
 
-	self.OpenGadget = Text:new
+	self.OpenGadget = Button:new
 	{
 		Text = L.OPEN,
-		Mode = "button",
-		Class = "button",
 		Width = "fill",
+		Height = "fill",
 	}
 
 	self.OpenGadget:addNotify("Pressed", false,
@@ -235,11 +235,9 @@ function DirList.new(class, self)
 			self:setValue("Status", "selected")
 		end })
 
-	self.CancelGadget = Text:new
+	self.CancelGadget = Button:new
 	{
 		Text = L.CANCEL,
-		Mode = "button",
-		Class = "button",
 		Width = "fill",
 	}
 
@@ -278,12 +276,13 @@ function DirList.new(class, self)
 			Group:new
 			{
 				Width = "fill",
-				GridWidth = 2,
+				Columns = 2,
 				Children =
 				{
 					Group:new
 					{
 						Width = "fill",
+						Height = "fill",
 						Children =
 						{
 							Text:new
@@ -291,6 +290,7 @@ function DirList.new(class, self)
 								Text = L.LOCATION,
 								Width = "auto",
 								Class = "caption",
+								Height = "fill",
 							},
 							self.LocationField,
 						}

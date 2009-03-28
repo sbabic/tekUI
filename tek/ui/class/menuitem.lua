@@ -41,7 +41,7 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 4.1"
+_VERSION = "MenuItem 5.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -90,10 +90,10 @@ function MenuItem:show(display, drawable)
 		end
 	end
 	if PopItem.show(self, display, drawable) then
-		self:setTextRecord(1, self.Text, self.FontSpec, "left")
+		self:setTextRecord(1, self.Text, self.Font, "left")
 		if self.Shortcut and -- self.Parent.Class ~= "menubar" and
 			not self.Children then
-			self:setTextRecord(2, self.Shortcut, self.FontSpec, "left")
+			self:setTextRecord(2, self.Shortcut, self.Font, "left")
 		end
 		return true
 	end

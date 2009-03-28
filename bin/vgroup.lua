@@ -26,12 +26,12 @@ ui.Application:new
 						CanvasHeight = 500,
 						Child = ui.Group:new
 						{
-							GridWidth = 2,
+							Columns = 2,
 							Children =
 							{
-								ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
-								ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
-								ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+								ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+								ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+								ui.Button:new { Width = "free", Height = "free", Text = "foo" },
 								ui.ScrollGroup:new
 								{
 									Legend = "Virtual Group",
@@ -45,12 +45,12 @@ ui.Application:new
 										CanvasHeight = 500,
 										Child = ui.Group:new
 										{
-											GridWidth = 2,
+											Columns = 2,
 											Children =
 											{
-												ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
-												ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
-												ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+												ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+												ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+												ui.Button:new { Width = "free", Height = "free", Text = "foo" },
 												ui.ScrollGroup:new
 												{
 													Legend = "Virtual Group",
@@ -64,13 +64,13 @@ ui.Application:new
 														CanvasHeight = 500,
 														Child = ui.Group:new
 														{
-															GridWidth = 2,
+															Columns = 2,
 															Children =
 															{
-																ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
-																ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
-																ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
-																ui.text:new { Mode = "button", Class = "button", Width = "free", Height = "free", Text = "foo" },
+																ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+																ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+																ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+																ui.Button:new { Width = "free", Height = "free", Text = "foo" },
 															}
 														}
 													}

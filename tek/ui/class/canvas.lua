@@ -10,6 +10,7 @@
 --		[[#tek.class.object : Object]] /
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
+--		[[#tek.ui.class.area : Frame]] /
 --		Canvas
 --
 --	OVERVIEW::
@@ -74,6 +75,7 @@ local ui = require "tek.ui"
 local Application = ui.Application
 local Area = ui.Area
 local Element = ui.Element
+local Frame = ui.Frame
 local Region = require "tek.lib.region"
 local assert = assert
 local max = math.max
@@ -81,8 +83,8 @@ local min = math.min
 local overlap = Region.overlapCoords
 local unpack = unpack
 
-module("tek.ui.class.canvas", tek.ui.class.area)
-_VERSION = "Canvas 10.9"
+module("tek.ui.class.canvas", tek.ui.class.frame)
+_VERSION = "Canvas 11.0"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -107,13 +109,12 @@ function Canvas.init(self)
 	self.ChildArea = self.ChildArea or Area:new { Margin = ui.NULLOFFS }
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
-	self.Margin = ui.NULLOFFS -- fixed
 	self.TempMsg = { }
 	-- track intra-area damages, so that they can be applied to child object:
 	self.TrackDamage = true
 	self.UnusedRegion = false
 	self.VScrollStep = self.VScrollStep or 10
-	return Area.init(self)
+	return Frame.init(self)
 end
 
 -------------------------------------------------------------------------------
@@ -124,7 +125,7 @@ function Canvas:connect(parent)
 	-- this connects recursively:
 	Application.connect(self.Child, self)
 	self.Child:connect(self)
-	return Area.connect(self, parent)
+	return Frame.connect(self, parent)
 end
 
 -------------------------------------------------------------------------------
@@ -132,7 +133,7 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:disconnect(parent)
-	Area.disconnect(self, parent)
+	Frame.disconnect(self, parent)
 	return Element.disconnect(self.Child, parent)
 end
 
@@ -141,7 +142,7 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:setup(app, window)
-	Area.setup(self, app, window)
+	Frame.setup(self, app, window)
 	self.Child:setup(app, window)
 	self:addNotify("Child", ui.NOTIFY_CHANGE, NOTIFY_CHILD)
 end
@@ -153,7 +154,7 @@ end
 function Canvas:cleanup()
 	self:remNotify("Child", ui.NOTIFY_CHANGE, NOTIFY_CHILD)
 	self.Child:cleanup()
-	Area.cleanup(self)
+	Frame.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
@@ -162,7 +163,7 @@ end
 
 function Canvas:decodeProperties(p)
 	self.Child:decodeProperties(p)
-	Area.decodeProperties(self, p)
+	Frame.decodeProperties(self, p)
 end
 
 -------------------------------------------------------------------------------
@@ -171,7 +172,7 @@ end
 
 function Canvas:show(display, drawable)
 	if self.Child:show(display, drawable) then
-		if Area.show(self, display, drawable) then
+		if Frame.show(self, display, drawable) then
 			return true
 		end
 		self.Child:hide()
@@ -184,7 +185,7 @@ end
 
 function Canvas:hide()
 	self.Child:hide()
-	Area.hide(self)
+	Frame.hide(self)
 end
 
 -------------------------------------------------------------------------------
@@ -202,7 +203,7 @@ function Canvas:askMinMax(m1, m2, m3, m4)
 	m2 = self.KeepMinHeight and m2 or 0
 	m3 = self.MaxWidth and max(self.MaxWidth, m1) or self.CanvasWidth
 	m4 = self.MaxHeight and max(self.MaxHeight, m2) or self.CanvasHeight
-	return Area.askMinMax(self, m1, m2, m3, m4)
+	return Frame.askMinMax(self, m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
@@ -217,7 +218,7 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 	local r = self.Rect
 	local mm = self.Child.MinMax
 
-	local res = Area.layout(self, r1, r2, r3, r4, markdamage)
+	local res = Frame.layout(self, r1, r2, r3, r4, markdamage)
 
 	if self.AutoWidth then
 		local w = r3 - r1 + 1 - m[1] - m[3]
@@ -259,7 +260,7 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 	-- unset shift:
 	d:setShift(-sx, -sy)
 
-	-- propagate intra-area damages calculated in Area.layout to child object:
+	-- propagate intra-area damages calculated in Frame.layout to child object:
 	local dr = self.DamageRegion
 	if dr and markdamage ~= false then
 		local sx = self.CanvasLeft - r[1]
@@ -290,11 +291,9 @@ function Canvas:updateUnusedRegion()
 	-- determine unused region:
 	local r1, r2, r3, r4 = self:getRectangle()
 	if r1 then
-		local m = self.MarginAndBorder
-		self.UnusedRegion = Region.new(r1 + m[1], r2 + m[2], r3 - m[3],
-			r4 - m[4])
+		self.UnusedRegion = Region.new(r1, r2, r3, r4)
 		local o = self.Child.Rect
-		m = self.Child.MarginAndBorder
+		local m = self.Child.MarginAndBorder
 		self.UnusedRegion:subRect(o[1] + r1 - m[1], o[2] + r2 - m[2],
 			o[3] + r1 + m[3], o[4] + r2 + m[4])
 		self.Redraw = true
@@ -306,7 +305,7 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:relayout(e, r1, r2, r3, r4)
-	local res, changed = Area.relayout(self, e, r1, r2, r3, r4)
+	local res, changed = Frame.relayout(self, e, r1, r2, r3, r4)
 	if res then
 		return res, changed
 	end
@@ -340,7 +339,7 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:refresh()
-	Area.refresh(self)
+	Frame.refresh(self)
 	local d = self.Drawable
 	local r = self.Rect
 	local sx = r[1] - self.CanvasLeft
@@ -357,7 +356,7 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:markDamage(r1, r2, r3, r4)
-	Area.markDamage(self, r1, r2, r3, r4)
+	Frame.markDamage(self, r1, r2, r3, r4)
 	-- clip absolute:
 	local r = self.Rect
 	r1, r2, r3, r4 = overlap(r1, r2, r3, r4, r[1], r[2], r[3], r[4])
@@ -445,7 +444,7 @@ function Canvas:getElement(mode)
 	elseif mode == "children" then
 		return { self.Child }
 	end
-	return Area.getElement(self, mode)
+	return Frame.getElement(self, mode)
 end
 
 -------------------------------------------------------------------------------

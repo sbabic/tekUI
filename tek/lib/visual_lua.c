@@ -345,7 +345,6 @@ tek_lib_visual_close(lua_State *L)
 	{
 		TDestroy((struct THandle *) vis->vis_IMsgPort);
 		TDestroy((struct THandle *) vis->vis_CmdRPort);
-
 		if (vis->vis_Base)
 		{
 			TVisualCloseFont(vis->vis_Base, vis->vis_Font);
@@ -486,6 +485,8 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 
 	TDestroy((struct THandle *) vis->vis_IMsgPort);
 	TDestroy((struct THandle *) vis->vis_CmdRPort);
+	vis->vis_IMsgPort = TNULL;
+	vis->vis_CmdRPort = TNULL;
 
 	luaL_error(L, "Visual initialization failure");
 	return 0;

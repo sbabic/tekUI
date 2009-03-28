@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.14"
+_VERSION = "Theme 6.16"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -216,6 +216,10 @@ local DEF_STYLESHEET = ui.prepareProperties
 	["tek.ui.class.textinput"] = {
 		["font"] = "ui-fixed",
 		["border-style"] = "inset",
+		["background-color"] = "list",
+	},
+	["tek.ui.class.textinput:disabled"] = {
+		["background-color"] = "disabled",
 	},
 
 	["tek.ui.class.window"] = {
@@ -313,6 +317,12 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["padding-left"] = 2,
 	},
 
+	[".poplist-canvas"] =
+	{
+		["margin"] = 0,
+		["border-width"] = 0,
+	},
+
 	[".scrollbar-arrowup"] =
 	{
 		["margin-bottom"] = 0,
@@ -341,12 +351,12 @@ local DEF_STYLESHEET = ui.prepareProperties
 	--	internal classes:
 	--
 
-	["_listviewheaditem"] = {
+	["_listview-headitem"] = {
 		["background-color"] = "active",
 		["padding"] = 0,
 	},
 
-	["_pagecontainer"] = {
+	["_page-container"] = {
 		["border-width"] = "0 2 2 2",
 		["margin"] = "0 2 2 2",
 		["padding"] = 2,

@@ -46,15 +46,16 @@ local ScrollGroup = ui.ScrollGroup
 local Text = ui.Text
 
 local ipairs = ipairs
+local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 4.6"
+_VERSION = "ListView 4.7"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
 -------------------------------------------------------------------------------
 
-local HeadItem = Text:newClass { _NAME = "_listviewheaditem" }
+local HeadItem = Text:newClass { _NAME = "_listview-headitem" }
 
 function HeadItem.init(self)
 	self = self or { }
@@ -92,6 +93,27 @@ function LVScrollGroup:onSetCanvasHeight(h)
 	end
 end
 
+local LVCanvas = Canvas:newClass { _NAME = "_lvcanvas" }
+
+function LVCanvas:passMsg(msg)
+	if msg[2] == ui.MSG_MOUSEBUTTON then
+		if msg[3] == 64 or msg[3] == 128 then
+			-- check if mousewheel over ourselves:
+			if self:checkArea(msg[4], msg[5]) then
+				-- shift into canvas area:
+				local m = self.TempMsg
+				local r = self.Rect
+				m[1], m[2], m[3], m[4], m[5], m[6] = unpack(msg, 1, 6)
+					m[4] = m[4] - r[1] + self.CanvasLeft
+					m[5] = m[5] - r[2] + self.CanvasTop
+				-- pass to child:
+				return self.Child:passMsg(m)
+			end
+		end
+	end
+	return Canvas.passMsg(self, msg)
+end
+
 -------------------------------------------------------------------------------
 --	ListView:
 -------------------------------------------------------------------------------
@@ -127,12 +149,8 @@ function ListView.new(class, self)
 				VSliderMode = "off",
 				HSliderMode = self.HSliderMode,
 				KeepMinHeight = true,
-				Child = Canvas:new
+				Child = LVCanvas:new
 				{
-					passMsg = function(self, msg)
-						-- pass input unmodified:
-						return self.Child:passMsg(msg)
-					end,
 					AutoHeight = true,
 					AutoWidth = true,
 					Child = Group:new
@@ -157,6 +175,8 @@ function ListView.new(class, self)
 
 								Child = Canvas:new
 								{
+									Margin = ui.NULLOFFS,
+									Border = ui.NULLOFFS,
 									Child = self.Child
 								}
 							}

@@ -25,7 +25,7 @@ function Coefficient.new(class, self)
 			Max = 31,
 			Value = self.Value1,
 			Step = 3,
-			ForceInteger = true,
+			Integer = true,
 			onSetValue = function(self, val)
 				Slider.onSetValue(self, val)
 				local p = self.Application:getElementById("the-plasma")
@@ -40,7 +40,7 @@ function Coefficient.new(class, self)
 			Max = 15,
 			Value = self.Value2,
 			Step = 3,
-			ForceInteger = true,
+			Integer = true,
 			onSetValue = function(self, val)
 				Slider.onSetValue(self, val)
 				local p = self.Application:getElementById("the-plasma")
@@ -62,20 +62,6 @@ local window = ui.Window:new
 	Id = "anims-window",
 	Title = L.ANIMATIONS_TITLE,
 	Status = "hide",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "anims-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "anims-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Children =
 	{
 		ui.PageGroup:new
@@ -101,7 +87,7 @@ local window = ui.Window:new
 								{
 									Style = "width: fill; height: auto;",
 									Legend = L.ANIMATIONS_PARAMETERS,
-									GridWidth = 2,
+									Columns = 2,
 									Children =
 									{
 										Text:new
@@ -150,7 +136,7 @@ local window = ui.Window:new
 													[ui.NOTIFY_CHANGE] =
 													{
 														{ ui.NOTIFY_ID, "the-tunnel", "setViewZ", ui.NOTIFY_VALUE },
-													},
+													}
 												}
 											}
 										},
@@ -174,7 +160,7 @@ local window = ui.Window:new
 													[ui.NOTIFY_CHANGE] =
 													{
 														{ ui.NOTIFY_ID, "the-tunnel", "setNumSeg", ui.NOTIFY_VALUE },
-													},
+													}
 												}
 											}
 										}
@@ -226,10 +212,8 @@ local window = ui.Window:new
 							Style = "height: auto",
 							Children =
 							{
-								Text:new
+								ui.Button:new
 								{
-									Mode = "button",
-									Class = "button",
 									Text = L.ANIMATIONS_START,
 									Notifications =
 									{
@@ -237,17 +221,13 @@ local window = ui.Window:new
 										{
 											[false] =
 											{
-												{
-													ui.NOTIFY_ID, "the-boing", "setValue", "Running", true
-												}
+												{ ui.NOTIFY_ID, "the-boing", "setValue", "Running", true }
 											}
 										}
 									}
 								},
-								Text:new
+								ui.Button:new
 								{
-									Mode = "button",
-									Class = "button",
 									Text = L.ANIMATIONS_STOP,
 									Notifications =
 									{
@@ -255,9 +235,7 @@ local window = ui.Window:new
 										{
 											[false] =
 											{
-												{
-													ui.NOTIFY_ID, "the-boing", "setValue", "Running", false
-												}
+												{ ui.NOTIFY_ID, "the-boing", "setValue", "Running", false }
 											}
 										}
 									}

@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.10
+**	Version: 1.12
 */
 
 /*
@@ -195,6 +195,11 @@ tek.ui.class.text {
 tek.ui.class.textinput {
 	font: ui-fixed;
 	border-style: inset;
+	background-color: list;
+}
+
+tek.ui.class.textinput:disabled {
+	background-color: disabled;
 }
 
 tek.ui.class.window {
@@ -316,12 +321,12 @@ tek.ui.class.window {
 **	internal classes:
 */
 
-_listviewheaditem {
+_listview-headitem {
 	background-color: active;
 	padding: 0;
 }
 
-_pagecontainer {
+_page-container {
 	border-width: 0 2 2 2;
 	margin: 0 2 2 2;
 	padding: 2;

@@ -13,20 +13,6 @@ local window = ui.Window:new
 	Id = "floattext-window",
 	Title = L.FLOATTEXT_TITLE,
 	Status = "hide",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "floattext-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "floattext-window-button", "setValue", "Selected", false }
-			},
-		},
-	},
 	Width = "free",
 	Height = "free",
 	Orientation = "vertical",
@@ -79,7 +65,6 @@ local window = ui.Window:new
 					{
 						ui.Text:new
 						{
-							MinWidth = 0,
 							Text = L.FLOATTEXT_DYNAMIC_LAYOUT,
 						},
 						ui.ScrollGroup:new
@@ -93,7 +78,6 @@ local window = ui.Window:new
 								Child = ui.FloatText:new
 								{
 									Text = [[
-
 										Under der linden
 										Walther von der Vogelweide (1170-1230)
 
@@ -135,8 +119,7 @@ local window = ui.Window:new
 										bevinde daz, wan er unt ich,
 										und ein kleinez vogellîn:
 										tandaradei,
-										daz mac wol getriuwe sîn.
-									]]
+										daz mac wol getriuwe sîn.]]
 								}
 							}
 						}

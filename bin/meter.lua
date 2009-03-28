@@ -9,7 +9,7 @@ print "# bin/gendata.lua | bin/meter.lua"
 
 ui.Application:new
 {
-	ThemeName = "industrial",
+	Theme = "industrial",
 	Children =
 	{
 		ui.Window:new

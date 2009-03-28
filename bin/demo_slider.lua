@@ -18,26 +18,12 @@ local window = ui.Window:new
 	Title = L.SLIDER_TITLE,
 	Status = "hide",
 	Orientation = "vertical",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "slider-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "slider-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Children =
 	{
 		Group:new
 		{
 			Legend = L.SLIDER_SLIDERS,
-			GridWidth = 3,
+			Columns = 3,
 			Children =
 			{
 				Text:new
@@ -83,7 +69,7 @@ local window = ui.Window:new
 					Style = "width: free",
 					Min = 0,
 					Max = 10,
-					ForceInteger = true,
+					Integer = true,
 					Kind = "number",
 					Notifications =
 					{
@@ -116,7 +102,7 @@ local window = ui.Window:new
 					Style = "width: free",
 					Min = 10,
 					Max = 20,
-					ForceInteger = true,
+					Integer = true,
 					Kind = "number",
 					Notifications =
 					{

@@ -408,12 +408,11 @@ and to '''false''' when it is getting released:
     },
   }:run()
 
-When overwriting a method like {{onPress}} in an instance of its
-class, also forward the call to the original implementation of the
-same method; in the example above, this is accomplished by the last
-line in the {{onPress}} function.
+When overwriting a method like {{onPress}}, also forward the call to
+the original implementation of the same method; in the example above,
+this is accomplished by the last line in the {{onPress}} function.
 
-Another, more elobarate way is to equip the element with a
+A different, more elobarate way is to equip the element with a
 notification handler, which would look like this:
 
   ...
@@ -442,9 +441,11 @@ notification handler, which would look like this:
   ...
 
 Even though notification handlers can be written in the same
-expression as the rest of the application, we are now switching
-to a more dynamic kind of setup, because the deep levels of
-recursion are starting to interfere with clarity:
+expression as the rest of the application, this is not always
+recommendable, as the deep levels of indentation are easily
+getting in the way of clarity. Notification handlers are commonly
+added using the {{addNotify()}} method, as shown in the next
+example:
 
   #/usr/bin/env lua
   ui = require "tek.ui"

@@ -1,22 +1,11 @@
 #!/usr/bin/env lua
 
 local ui = require "tek.ui"
+local Button = ui.Button
 local Group = ui.Group
 local Text = ui.Text
 
 local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
-
--------------------------------------------------------------------------------
---	Button class:
--------------------------------------------------------------------------------
-
-local Button = Text:newClass { _NAME = "_button" }
-
-function Button.init(self)
-	self.Mode = self.Mode or "button"
-	self.Class = self.Mode or "button"
-	return Text.init(self)
-end
 
 -------------------------------------------------------------------------------
 --	Create demo window:
@@ -30,20 +19,6 @@ local window = ui.Window:new
 	Status = "hide",
 	MaxWidth = ui.HUGE,
 	MaxHeight = ui.HUGE,
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "layout-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "layout-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Children =
 	{
 		Group:new
@@ -62,7 +37,7 @@ local window = ui.Window:new
 		},
 		Group:new
 		{
-			SameSize = true,
+			SameSize = "width",
 			Legend = L.LAYOUT_SAME_SIZES,
 			Children =
 			{
@@ -91,8 +66,8 @@ local window = ui.Window:new
 		{
 			Style = "height: free",
 			Legend = L.LAYOUT_GRID,
-			GridWidth = 3,
-			SameWidth = true,
+			Columns = 3,
+			SameSize = "width",
 			Height = "auto",
 			Children =
 			{

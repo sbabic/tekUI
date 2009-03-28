@@ -1,10 +1,11 @@
 #!/usr/bin/env lua
 
 local ui = require "tek.ui"
-local Group = ui.Group
 local List = require "tek.class.list"
-local Window = ui.Window
+local Button = ui.Button
+local Group = ui.Group
 local Text = ui.Text
+local Window = ui.Window
 
 local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 
@@ -18,20 +19,6 @@ local window = Window:new
 	Id = "alignment-window",
 	Title = L.ALIGNMENT_TITLE,
 	Status = "hide",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "alignment-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "alignment-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Orientation = "vertical",
 	Children =
 	{
@@ -42,19 +29,15 @@ local window = Window:new
 			Legend = L.ALIGN_HORIZONTAL,
 			Children =
 			{
-				Text:new
+				Button:new
 				{
-					Class = "button",
-					Mode = "button",
 					Text = L.BEGIN,
 					Width = "auto",
 					Height = "free",
 					HAlign = "left", -- Style = "horizontal-grid-align: left",
 				},
-				Text:new
+				Button:new
 				{
-					Class = "button",
-					Mode = "button",
 					Text = L.CENTER,
 					Width = "auto",
 					Height = "free",
@@ -68,10 +51,8 @@ local window = Window:new
 					HAlign = "right", -- Style = "horizontal-grid-align: right",
 					Children =
 					{
-						Text:new
+						Button:new
 						{
-							Class = "button",
-							Mode = "button",
 							Text = L.END,
 							Width = "auto",
 							Height = "free"
@@ -86,19 +67,15 @@ local window = Window:new
 			Legend = L.ALIGN_VERTICAL,
 			Children =
 			{
-				Text:new
+				Button:new
 				{
-					Class = "button",
-					Mode = "button",
 					Text = L.BEGIN,
 					Width = "free",
 					VAlign = "top", -- Style = "vertical-grid-align: top",
 					Legend = L.BORDER_CAPTION,
 				},
-				Text:new
+				Button:new
 				{
-					Class = "button",
-					Mode = "button",
 					Text = L.CENTER,
 					Width = "free",
 					VAlign = "center", -- Style = "vertical-grid-align: center",
@@ -110,10 +87,8 @@ local window = Window:new
 					VAlign = "bottom", -- Style = "vertical-grid-align: bottom",
 					Children =
 					{
-						Text:new
+						Button:new
 						{
-							Class = "button",
-							Mode = "button",
 							Text = L.END,
 							Width = "free"
 						}

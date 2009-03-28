@@ -161,20 +161,6 @@ local window = ui.Window:new
 	Title = L.PRESENTATION_TITLE,
 	Orientation = "vertical",
 	Status = "hide",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "presentation-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "presentation-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Children =
 	{
 		SlideScroll

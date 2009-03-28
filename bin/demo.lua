@@ -31,11 +31,16 @@ function loaddemos(app)
 	local demos = { }
 
 	for fname in lfs.readdir(ui.ProgDir) do
-		if fname:match("^demo_.*") then
+		if fname:match("^demo_.*%.lua$") then
 			fname = ui.ProgDir .. "/" .. fname
 			db.info("Loading demo '%s' ...", fname)
 			local success, res = pcall(dofile, fname)
 			if success then
+				local window = res.Window
+				window:addNotify("Status", "show", { ui.NOTIFY_ID,
+					window.Id .. "-button", "setValue", "Selected", true })
+				window:addNotify("Status", "hide", { ui.NOTIFY_ID,
+					window.Id .. "-button", "setValue", "Selected", false })
 				table.insert(demos, res)
 			else
 				db.error("*** Error loading demo '%s'", fname)
@@ -71,16 +76,6 @@ end
 --	Application:
 -------------------------------------------------------------------------------
 
-local QuitNotification =
-{
-	ui.NOTIFY_APPLICATION, ui.NOTIFY_COROUTINE, function(self)
-		if self:easyRequest(false, L.CONFIRM_QUIT_APPLICATION,
-			L.QUIT, L.CANCEL) == 1 then
-			self:setValue("Status", "quit")
-		end
-	end
-}
-
 app = ui.Application:new
 {
 	ProgramName = "tekUI Demo",
@@ -88,7 +83,6 @@ app = ui.Application:new
 	Copyright = "Copyright © 2008, 2009, Schulze-Müller GbR",
 	ApplicationId = APP_ID,
 	VendorDomain = VENDOR,
-	-- ThemeName = "internal",
 	Children =
 	{
 		ui.Window:new
@@ -143,24 +137,6 @@ app = ui.Application:new
 			Id = "about-window",
 			Status = "hide",
 			Title = L.ABOUT_TEKUI,
-			Notifications =
-			{
-				["Status"] =
-				{
-					["opening"] =
-					{
-						{ ui.NOTIFY_ID, "about-mem-refresh", "setValue", "Pressed", false },
-					},
-					["show"] =
-					{
-						{ ui.NOTIFY_ID, "about-button", "setValue", "Selected", true },
-					},
-					["hide"] =
-					{
-						{ ui.NOTIFY_ID, "about-button", "setValue", "Selected", false }
-					}
-				}
-			},
 			Children =
 			{
 				ui.Text:new { Text = L.ABOUT_TEKUI, Style = "font: ui-large" },
@@ -286,7 +262,7 @@ app = ui.Application:new
 										ui.Group:new
 										{
 											Legend = L.LUA_VIRTUAL_MACHINE,
-											GridWidth = 2,
+											Columns = 2,
 											Children =
 											{
 												ui.Text:new
@@ -309,7 +285,7 @@ app = ui.Application:new
 										ui.Group:new
 										{
 											Legend = L.DEBUGGING,
-											GridWidth = 2,
+											Columns = 2,
 											Children =
 											{
 												ui.Text:new
@@ -332,19 +308,11 @@ app = ui.Application:new
 														Text = tostring(db.level),
 														Style = "font: ui-small;",
 													},
-													Notifications =
-													{
-														["Value"] =
-														{
-															[ui.NOTIFY_CHANGE] =
-															{
-																{ ui.NOTIFY_ID, "about-system-debuglevel", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" },
-																{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self, value)
-																	db.level = math.floor(value)
-																end, ui.NOTIFY_VALUE }
-															}
-														}
-													}
+													onSetValue = function(self, value)
+														ui.ScrollBar.onSetValue(self, value)
+														db.level = math.floor(self.Value)
+														self.Application:getElementById("about-system-debuglevel"):setValue("Text", db.level)
+													end,
 												},
 												ui.Text:new
 												{
@@ -360,37 +328,21 @@ app = ui.Application:new
 														{
 															Selected = ui.DEBUG,
 															Text = L.SLOW_RENDERING,
-															Notifications =
-															{
-																["Selected"] =
-																{
-																	[ui.NOTIFY_CHANGE] =
-																	{
-																		{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self, value)
-																			ui.DEBUG = value
-																			ui.Drawable.enableDebug(value)
-																		end, ui.NOTIFY_VALUE }
-																	}
-																}
-															}
+															onSelect = function(self, selected)
+																ui.CheckMark.onSelect(self, selected)
+																ui.DEBUG = selected
+																ui.Drawable.enableDebug(selected)
+															end,
 														},
-														ui.Text:new
+														ui.Button:new
 														{
-															Mode = "button",
-															Class = "button",
 															Text = L.DEBUG_CONSOLE,
-															Notifications =
-															{
-																["Pressed"] =
-																{
-																	[false] =
-																	{
-																		{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self)
-																			db.console()
-																		end }
-																	}
-																}
-															}
+															onPress = function(self, pressed)
+																if pressed == false then
+																	db.console()
+																end
+																ui.Button.onPress(self, pressed)
+															end
 														}
 													}
 												}
@@ -402,23 +354,17 @@ app = ui.Application:new
 						}
 					}
 				},
-				ui.Text:new
+				ui.Button:new
 				{
 					Focus = true,
-					Mode = "button",
-					Class = "button",
 					Text = L.OKAY,
 					Style = "width: fill",
-					Notifications =
-					{
-						["Pressed"] =
-						{
-							[false] =
-							{
-								{ ui.NOTIFY_WINDOW, "setValue", "Status", "hide" }
-							}
-						}
-					}
+					onPress = function(self, pressed)
+						if pressed == false then
+							self.Window:setValue("Status", "hide")
+						end
+						ui.Button.onPress(self, pressed)
+					end,
 				}
 			}
 		},
@@ -465,6 +411,35 @@ app = ui.Application:new
 								ui.Spacer:new { },
 								ui.MenuItem:new
 								{
+									Text = L.OPEN_ALL,
+									Shortcut = "Ctrl+a",
+									onPress = function(self, pressed)
+										if pressed == false then
+											local group = self.Application:getElementById("demo-group")
+											for _, c in ipairs(group.Children) do
+												c:setValue("Selected", true)
+											end
+										end
+										ui.MenuItem.onPress(self, pressed)
+									end
+								},
+								ui.MenuItem:new
+								{
+									Text = L.CLOSE_ALL,
+									Shortcut = "Ctrl+n",
+									onPress = function(self, pressed)
+										if pressed == false then
+											local group = self.Application:getElementById("demo-group")
+											for _, c in ipairs(group.Children) do
+												c:setValue("Selected", false)
+											end
+										end
+										ui.MenuItem.onPress(self, pressed)
+									end
+								},
+								ui.Spacer:new { },
+								ui.MenuItem:new
+								{
 									Text = L.MENU_QUIT,
 									Shortcut = "Ctrl+Q",
 									Notifications =
@@ -473,7 +448,12 @@ app = ui.Application:new
 										{
 											[false] =
 											{
-												QuitNotification
+												{ ui.NOTIFY_APPLICATION, ui.NOTIFY_COROUTINE, function(self)
+													if self:easyRequest(false, L.CONFIRM_QUIT_APPLICATION,
+														L.QUIT, L.CANCEL) == 1 then
+														self:setValue("Status", "quit")
+													end
+												end }
 											}
 										}
 									}
@@ -514,53 +494,7 @@ app = ui.Application:new
 											Orientation = "vertical",
 										}
 									}
-								},
--- 								ui.Group:new
--- 								{
--- 									Children =
--- 									{
--- 										ui.Text:new
--- 										{
--- 											Text = L.OPEN_ALL,
--- 											Mode = "button",
--- 											Class = "button",
--- 											Notifications =
--- 											{
--- 												["Pressed"] =
--- 												{
--- 													[false] =
--- 													{
--- 														{ ui.NOTIFY_ID, "demo-group", ui.NOTIFY_FUNCTION, function(self)
--- 															for _, c in ipairs(self.Children) do
--- 																c:setValue("Selected", true)
--- 															end
--- 														end }
--- 													}
--- 												}
--- 											}
--- 										},
--- 										ui.Text:new
--- 										{
--- 											Text = L.CLOSE_ALL,
--- 											Mode = "button",
--- 											Class = "button",
--- 											Notifications =
--- 											{
--- 												["Pressed"] =
--- 												{
--- 													[false] =
--- 													{
--- 														{ ui.NOTIFY_ID, "demo-group", ui.NOTIFY_FUNCTION, function(self)
--- 															for _, c in ipairs(self.Children) do
--- 																c:setValue("Selected", false)
--- 															end
--- 														end }
--- 													}
--- 												}
--- 											}
--- 										}
--- 									}
--- 								}
+								}
 							}
 						},
 						ui.Handle:new { },

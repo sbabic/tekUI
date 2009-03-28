@@ -51,7 +51,7 @@
 --			The line number of the ListGadget's cursor; this value may
 --			be {{0}}, in which case the cursor is invisible. Changing
 --			this value will invoke the ListGadget:onSetCursor() method.
---		- {{FontSpec [IG]}} (string)
+--		- {{Font [IG]}} (string)
 --			Font specifier for determining the font used for list entries.
 --			See [[#tek.ui.class.text : Text]] for details on its format.
 --		- {{HeaderGroup [IG]}} ([[#tek.ui.class.group : Group]])
@@ -138,7 +138,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 13.8"
+_VERSION = "ListGadget 14.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -174,8 +174,8 @@ function ListGadget.init(self)
 	self.CursorObject = false
 	self.CursorLine = self.CursorLine or 0
 	self.FHeight = false
-	self.Font = false
-	self.FontSpec = self.FontSpec or false
+	self.FontHandle = false
+	self.Font = self.Font or false
 	self.FWidth = false
 	self.HeaderGroup = self.HeaderGroup or false
 	self.Margin = ui.NULLOFFS -- fixed
@@ -254,8 +254,8 @@ end
 function ListGadget:show(display, drawable)
 	if Text.show(self, display, drawable) then
 		self.CursorObject:show(display, drawable)
-		self.Font = display:openFont(self.FontSpec)
-		self.FWidth, self.FHeight = Display:getTextSize(self.Font, "x")
+		self.FontHandle = display:openFont(self.Font)
+		self.FWidth, self.FHeight = Display:getTextSize(self.FontHandle, "x")
 		self.ColumnPadding = self.ColumnPadding or self.FWidth
 		self:prepare(false)
 		return true
@@ -269,8 +269,8 @@ end
 function ListGadget:hide()
 	self.CursorObject:hide()
 	if self.Display then
-		self.Display:closeFont(self.Font)
-		self.Font = false
+		self.Display:closeFont(self.FontHandle)
+		self.FontHandle = false
 	end
 	Text.hide(self)
 end
@@ -323,7 +323,8 @@ function ListGadget:getLineOnScreen(lnr)
 				local v2 = c.CanvasTop
 				local v3 = v1 + r3 - r1
 				local v4 = v2 + r4 - r2
-				return overlap(v1, v2, v3, v4, 0, l[4], c.CanvasWidth - 1, l[5])
+				return overlap(v1, v2, v3, v4, 0, l[4], c.CanvasWidth - 1,
+					l[5])
 			end
 		end
 	end
@@ -473,7 +474,7 @@ function ListGadget:prepare(damage)
 	if lo and self.Display then
 
 		local b1, b2, b3, b4 = self.CursorObject:getBorder()
-		local f = self.Font
+		local f = self.FontHandle
 		local cw = { }
 		self.ColumnWidths = cw
 		local cp = self.ColumnPositions
@@ -589,7 +590,7 @@ function ListGadget:draw()
 	if dr then
 		-- repaint intra-area damagerects:
 		local d = self.Drawable
-		d:setFont(self.Font)
+		d:setFont(self.FontHandle)
 
 		local pens = d.Pens
 		local fpen = pens[self.FGPen]

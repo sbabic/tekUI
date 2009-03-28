@@ -43,28 +43,13 @@ local window = ui.Window:new
 	Status = "hide",
 	Height = "free",
 	Width = "free",
-	Notifications =
-	{
-		["Status"] =
-		{
-			["show"] =
-			{
-				{ ui.NOTIFY_ID, "choices-window-button", "setValue", "Selected", true }
-			},
-			["hide"] =
-			{
-				{ ui.NOTIFY_ID, "choices-window-button", "setValue", "Selected", false }
-			}
-		}
-	},
 	Children =
 	{
-
 		Group:new
 		{
 			Width = "fill",
-			GridHeight = 5,
-			SameWidth = true,
+			Rows = 5,
+			SameSize = "width",
 			Orientation = "vertical",
 			Legend = L.CHOICES_ORDER_BEVERAGES,
 			Children =
@@ -231,7 +216,6 @@ local window = ui.Window:new
 				AutoWidth = true,
 				Child = ui.FloatText:new
 				{
-					LatchOn = "bottom",
 					Id = "text-window",
 				}
 			}

@@ -11,7 +11,6 @@ app = ui.Application:new
 {
 	ApplicationId = APP_ID,
 	VendorDomain = VENDOR,
--- 	ThemeName = "internal",
 	Children =
 	{
 		ui.Window:new
@@ -22,8 +21,8 @@ app = ui.Application:new
 			{
 				ui.Group:new
 				{
-					GridWidth = 2,
-					SameHeight = true,
+					Columns = 2,
+					SameSize = "height",
 					Children =
 					{
 						ui.Text:new
@@ -77,39 +76,35 @@ app = ui.Application:new
 						},
 					}
 				},
-				ui.Text:new
+				ui.Button:new
 				{
 					Text = L.CHOOSE_FILE,
-					Class = "button",
-					Mode = "button",
 					Width = "auto",
 					HAlign = "right",
-					Notifications =
-					{
-						["Pressed"] =
-						{
-							[false] =
-							{
-								{ ui.NOTIFY_APPLICATION, ui.NOTIFY_COROUTINE, function(self)
-									local pathfield = self:getElementById("pathfield")
-									local filefield = self:getElementById("filefield")
-									local statusfield = self:getElementById("statusfield")
-									local status, path, select = self:requestFile
-									{
-										Path = pathfield.Text,
-										SelectMode = self:getElementById("multiselect").Selected and
-											"multi" or "single"
-									}
-									statusfield:setValue("Text", status)
-									if status == "selected" then
-										pathfield:setValue("Text", path)
-										self:getElementById("filefield"):setValue("Text",
-											table.concat(select, ", "))
-									end
-								end }
-							}
-						}
-					}
+
+					onPress = function(self, pressed)
+						if pressed == false then
+							local app = self.Application
+							app:addCoroutine(function()
+								local pathfield = app:getElementById("pathfield")
+								local filefield = app:getElementById("filefield")
+								local statusfield = app:getElementById("statusfield")
+								local status, path, select = app:requestFile
+								{
+									Path = pathfield.Text,
+									SelectMode = app:getElementById("multiselect").Selected and
+										"multi" or "single"
+								}
+								statusfield:setValue("Text", status)
+								if status == "selected" then
+									pathfield:setValue("Text", path)
+									app:getElementById("filefield"):setValue("Text",
+										table.concat(select, ", "))
+								end
+							end)
+						end
+						self:getClass().onPress(self, pressed)
+					end,
 				}
 			}
 		}

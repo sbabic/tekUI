@@ -30,7 +30,7 @@
 --		- {{Modal [IG]}} (boolean)
 --			Instructs all other windows to deny input while this window is
 --			open.
---		- {{MouseX [SG]}}, {{MouseY [SG]}} (number)
+--		- {{MouseX [G]}}, {{MouseY [G]}} (number)
 --			The current screen coordinates of the pointing device.
 --		- {{Status [ISG]}} (string)
 --			Status of the Window, can be:
@@ -92,7 +92,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 11.0"
+_VERSION = "Window 11.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -362,7 +362,7 @@ end
 --	{{Status}} has changed.
 -------------------------------------------------------------------------------
 
-function Window:onChangeStatus(showhide, oldvalue)
+function Window:onChangeStatus(showhide)
 	if showhide == "show" then
 		self.Status = "hide"
 		self:showWindow()

@@ -9,7 +9,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 1.4"
+_VERSION = "DefaultBorder 1.5"
 
 local PEN_SHINE = ui.PEN_BORDERSHINE
 local PEN_SHADOW = ui.PEN_BORDERSHADOW
@@ -108,6 +108,9 @@ function DefaultBorder:show(display, drawable)
 	p[12] = p[12] or 0
 	p[13] = p[13] or PEN_BORDERLEGEND
 
+	-- p[14]...p[17]: temp rect
+	-- p[18]...p[21]: temp border
+
 	if self.Legend then
 		self.LegendFont = display:openFont(self.LegendFontName)
 		self.LegendWidth, self.LegendHeight =
@@ -130,51 +133,52 @@ function DefaultBorder:getBorder()
 	return b[1], b[2] + (self.LegendHeight or 0), b[3], b[4]
 end
 
-function DefaultBorder.drawBorderRect(d, r1, r2, r3, r4, a1, a2, a3, a4,
-	b1, b2, b3, b4, p1, p2, p3, p4)
-	local s1, s2, s3, s4 = r1, r2, r3, r4
+local function drawBorderRect(d, p, b1, b2, b3, b4, p1, p2, p3, p4)
 	if b1 > 0 then
-		d:fillRect(r1 - b1, r2, r1 - 1, r4, p1)
-		s1 = s1 - b1
-		a1 = a1 - b1
+		d:fillRect(p[14] - b1, p[15], p[14] - 1, p[17], p1)
 	end
 	if b2 > 0 then
-		d:fillRect(r1 - b1, r2 - b2, r3 + b3, r2 - 1, p2)
-		s2 = s2 - b2
-		a2 = a2 - b2
+		d:fillRect(p[14] - b1, p[15] - b2, p[16] + b3, p[15] - 1, p2)
 	end
 	if b3 > 0 then
-		d:fillRect(r3 + 1, r2, r3 + b3, r4, p3)
-		s3 = s3 + b3
-		a3 = a3 - b3
+		d:fillRect(p[16] + 1, p[15], p[16] + b3, p[17], p3)
 	end
 	if b4 > 0 then
-		d:fillRect(r1 - b1, r4 + 1, r3 + b3, r4 + b4, p4)
-		s4 = s4 + b4
-		a4 = a4 - b4
+		d:fillRect(p[14] - b1, p[17] + 1, p[16] + b3, p[17] + b4, p4)
+		p[17] = p[17] + b4
+		p[21] = p[21] - b4
 	end
-	return s1, s2, s3, s4, a1, a2, a3, a4
+	p[14] = p[14] - b1
+	p[18] = p[18] - b1
+	p[15] = p[15] - b2
+	p[19] = p[19] - b2
+	p[16] = p[16] + b3
+	p[20] = p[20] - b3
+-- 	p[17] = p[17] + b4
+-- 	p[21] = p[21] - b4
 end
 
 function DefaultBorder:draw()
-
 	local p = self.Params
 	local e = self.Parent
 	local d = e.Drawable
 	local pens = d.Pens
-	local b1, b2, b3, b4 = unpack(self.Border)
-	local r1, r2, r3, r4 = unpack(self.Rect)
+	local rw = p[11]
 
-	local gb = pens[e:getElement("group").Background]
+	p[14], p[15], p[16], p[17] = unpack(self.Rect)
+	p[18], p[19], p[20], p[21] = unpack(self.Border)
+
+	local x = e:getElement("group").Background
+	local gb = pens[x] or x
 
 	local tw = self.LegendWidth
 	if tw then
 		local th = self.LegendHeight
-		local w = r3 - r1 + 1
-		local tx = r1 + max(floor((w - tw) / 2), 0)
-		local y0 = r2 - th - b2
+		local w = p[16] - p[14] + 1
+		local tx = p[14] + max(floor((w - tw) / 2), 0)
+		local y0 = p[15] - th - p[19]
 		d:setFont(self.LegendFont)
-		d:pushClipRect(r1 - b1, y0, r3 + b3, r2 - b2 - 1)
+		d:pushClipRect(p[14] - p[18], y0, p[16] + p[20], p[15] - p[19] - 1)
 		d:drawText(tx, y0, self.Legend, pens[p[13]], gb)
 		d:popClipRect()
 	end
@@ -182,49 +186,35 @@ function DefaultBorder:draw()
 	local i = e.Selected and 5 or 1
 
 	-- thickness of outer borders:
-	local t = p[11] + p[12]
+	local t = rw + p[12]
 
 	local bs = e.Selected and self.BorderStyleActive or self.BorderStyle
 
-	local d1, d2, d3, d4 = b1 - t, b2 - t, b3 - t, b4 - t
+	local p1, p2, p3, p4 = pens[p[i]], pens[p[i + 1]], pens[p[i + 2]],
+		pens[p[i + 3]]
+
+	local d1 = max(p[18] - t, 0)
+	local d2 = max(p[19] - t, 0)
+	local d3 = max(p[20] - t, 0)
+	local d4 = max(p[21] - t, 0)
 
 	if bs == "ridge" or bs == "groove" then
 		local e1, e2, e3, e4 =
 			floor(d1 / 2), floor(d2 / 2), floor(d3 / 2), floor(d4 / 2)
-		r1, r2, r3, r4, b1, b2, b3, b4 = drawBorderRect(d, r1, r2, r3, r4,
-			b1, b2, b3, b4,
-			e1, e2, e3, e4,
-			pens[p[i]], pens[p[i+1]], pens[p[i+2]], pens[p[i+3]])
-		r1, r2, r3, r4, b1, b2, b3, b4 = drawBorderRect(d, r1, r2, r3, r4,
-			b1, b2, b3, b4,
-			d1 - e1, d2 - e2, d3 - e3, d4 - e4,
-			pens[p[i+2]], pens[p[i+3]], pens[p[i]], pens[p[i+1]])
+		drawBorderRect(d, p, e1, e2, e3, e4, p1, p2, p3, p4)
+		drawBorderRect(d, p, d1 - e1, d2 - e2, d3 - e3, d4 - e4,
+			p3, p4, p1, p2)
 	else
-		r1, r2, r3, r4, b1, b2, b3, b4 =
-			drawBorderRect(d, r1, r2, r3, r4, b1, b2, b3, b4,
-			d1, d2, d3, d4,
-			pens[p[i]], pens[p[i+1]], pens[p[i+2]], pens[p[i+3]])
+		drawBorderRect(d, p, d1, d2, d3, d4, p1, p2, p3, p4)
 	end
 
 	local pen = pens[p[9]]
-	r1, r2, r3, r4, b1, b2, b3, b4 = drawBorderRect(d,
-		r1, r2, r3, r4, b1, b2, b3, b4,
-		min(b1, p[11]),
-		min(b2, p[11]),
-		min(b3, p[11]),
-		min(b4, p[11]),
+	drawBorderRect(d, p,
+		min(p[18], rw), min(p[19], rw), min(p[20], rw), min(p[21], rw),
 		pen, pen, pen, pen)
 
-	if e.Focus then
-		pen = pens[p[10]]
-	else
-		pen = gb
-	end
-
-	drawBorderRect(d, r1, r2, r3, r4, b1, b2, b3, b4,
-		b1, b2, b3, b4,
-		pen, pen, pen, pen)
-
+	pen = e.Focus and pens[p[10]] or gb
+	drawBorderRect(d, p, p[18], p[19], p[20], p[21], pen, pen, pen, pen)
 end
 
 function DefaultBorder:getBorderRegion()

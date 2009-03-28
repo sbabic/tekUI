@@ -67,7 +67,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 6.0"
+_VERSION = "PopItem 7.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -90,7 +90,7 @@ local PopItem = _M
 
 function PopItem.init(self)
 	self.Children = self.Children or false
-	self.EraseBackground = true
+	self.EraseBG = true
 	self.Image = self.Image or false
 	self.ImageRect = self.ImageRect or false
 	self.PopupBase = false

@@ -40,15 +40,15 @@
 															<blockquote>
 																<ul>
 																	<li>
-																		<a href="#tek.ui.class.canvas">Canvas</a> 
-																	</li>
-																	<li>
 																		<a href="#tek.ui.class.floattext">FloatText</a> 
 																	</li>
 																	<li>
 																		<a href="#tek.ui.class.frame">Frame</a> 
 																		<blockquote>
 																			<ul>
+																				<li>
+																					<a href="#tek.ui.class.canvas">Canvas</a> 
+																				</li>
 																				<li>
 																					<a href="#tek.ui.class.gadget">Gadget</a> 
 																					<blockquote>
@@ -105,6 +105,9 @@
 																								<a href="#tek.ui.class.text">Text</a> 
 																								<blockquote>
 																									<ul>
+																										<li>
+																											<a href="#tek.ui.class.button">Button</a> 
+																										</li>
 																										<li>
 																											<a href="#tek.ui.class.checkmark">CheckMark</a> 
 																											<blockquote>
@@ -419,7 +422,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v9.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v9.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -624,7 +627,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v13.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -691,7 +694,7 @@
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>ThemeName &#091;IG&#093;</code> 
+							<code>Theme &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
 									Name of a theme, which usually maps to an equally named
@@ -956,7 +959,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v5.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v6.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -993,7 +996,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>SelectedEntry &#091;ISG&#093;</code> (number)
+							<code>SelectedLine &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
 									Number of the selected entry, or 0 if none is selected. Changing
@@ -1008,7 +1011,7 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#PopList:onSelectEntry"><code>PopList:onSelectEntry()</code></a> - Handler for the <code>SelectedEntry</code> 
+							<a href="#PopList:onSelectEntry"><code>PopList:onSelectEntry()</code></a> - Handler for the <code>SelectedLine</code> 
 							attribute
 						</li>
 						<li style="list-style-type: none">
@@ -1046,7 +1049,7 @@ message = function(object, message)
 		<div class="node"><h3><a name="PopList:onSelectEntry" id="PopList:onSelectEntry"><code>PopList:onSelectEntry(line)</code></a></h3>
 			<p>
 				This method is invoked when the
-				<code>SelectedEntry</code> attribute is set.
+				<code>SelectedLine</code> attribute is set.
 			</p>
 			<hr />
 		</div>
@@ -1245,7 +1248,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v4.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v4.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1538,7 +1541,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1633,7 +1636,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v6.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v7.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1667,7 +1670,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>FontSpec &#091;IG&#093;</code> (string)
+							<code>Font &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Font specifier; see <a href="#tek.ui.class.text">Text</a> for a
@@ -1748,13 +1751,6 @@ message = function(object, message)
 						</li>
 					</ul>
 				</blockquote>
-			</div>
-			<div class="definition"><dfn>TODO</dfn>
-				<blockquote>
-					<p>
-						Should inherit from Gadget to support borders
-					</p>
-				</blockquote>
 				<hr />
 			</div>
 		</div>
@@ -1814,7 +1810,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v4.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v5.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2041,7 +2037,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v12.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v13.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2067,7 +2063,7 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>FontSpec &#091;IG&#093;</code> (string)
+							<code>Font &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									A font specification in the form
@@ -2257,7 +2253,7 @@ message = function(object, message)
 </pre>
 			<p>
 				More undocumented fields may follow at higher indices. <code>font</code> is taken
-				from opening the font specified in the object's <code>FontSpec</code> attribute,
+				from opening the font specified in the object's <code>Font</code> attribute,
 				which also determines <code>font-height</code> and is used for calculating the
 				<code>text-width</code> (in pixels). The alignment parameters are taken from the
 				object's <code>TextHAlign</code> and <code>TextVAlign</code> attributes, respectively.
@@ -2326,7 +2322,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v6.17)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v7.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2362,7 +2358,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>ForceInteger &#091;IG&#093;</code> (boolean)
+							<code>Integer &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, integer steps are enforced. By default, the
@@ -2484,6 +2480,32 @@ message = function(object, message)
 				<code>Range</code> attribute has changed.
 			</p>
 			<hr />
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.0)</a></h2>
+			<div class="definition"><dfn>LINEAGE</dfn>
+				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> :
+						<a href="#tek.class">Class</a> /
+						<a href="#tek.class.object">Object</a> /
+						<a href="#tek.ui.class.element">Element</a> /
+						<a href="#tek.ui.class.area">Area</a> /
+						<a href="#tek.ui.class.frame">Frame</a> /
+						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.gadget">Text</a> /
+						Button
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						This gadget implements a Text with 'button' Mode (behavior)
+						and 'button' Class (appearance).
+					</p>
+				</blockquote>
+				<hr />
+			</div>
 		</div>
 		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v1.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
@@ -2643,7 +2665,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.14)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.16)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2691,7 +2713,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v14.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v15.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2714,7 +2736,7 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>BGPen &#091;G&#093;</code> (userdata)
+							<code>BGPen &#091;IG&#093;</code> (userdata)
 							<blockquote>
 								<p>
 									A colored pen for painting the background of the element
@@ -2739,7 +2761,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>EraseBackground &#091;IG&#093;</code> (boolean)
+							<code>EraseBG &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>false</strong>, the element's background is painted by the Area
@@ -3642,7 +3664,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3760,7 +3782,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v6.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3883,7 +3905,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v10.9)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v11.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3892,6 +3914,7 @@ message = function(object, message)
 						<a href="#tek.class.object">Object</a> /
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
+						<a href="#tek.ui.class.area">Frame</a> /
 						Canvas
 					</p>
 				</blockquote>
@@ -4085,7 +4108,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v15.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v17.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4112,14 +4135,6 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>Children &#091;G&#093;</code> (table)
-							<blockquote>
-								<p>
-									Array of child objects
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
 							<code>Children &#091;IG&#093;</code> (table)
 							<blockquote>
 								<p>
@@ -4128,26 +4143,18 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
+							<code>Columns &#091;IG&#093;</code> (number)
+							<blockquote>
+								<p>
+									Grid width, in number of elements &#091;Default: 1, not a grid&#093;
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>FreeRegion &#091;G&#093;</code> (<a href="#tek.lib.region">Region</a>)
 							<blockquote>
 								<p>
 									Region inside the group that is not covered by child elements
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>GridHeight &#091;IG&#093;</code> (number)
-							<blockquote>
-								<p>
-									Grid height, in number of elements. &#091;Default: 1, not a grid&#093;
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>GridWidth &#091;IG&#093;</code> (number)
-							<blockquote>
-								<p>
-									Grid width, in number of elements &#091;Default: 1, not a grid&#093;
 								</p>
 							</blockquote>
 						</li>
@@ -4173,28 +4180,21 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>SameHeight &#091;IG&#093;</code> (boolean)
+							<code>Rows &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Indicates that the same height should be reserved for all
-									elements in the group &#091;Default: <strong>false</strong>&#093;
+									Grid height, in number of elements. &#091;Default: 1, not a grid&#093;
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>SameWidth &#091;IG&#093;</code> (boolean)
+							<code>SameSize &#091;IG&#093;</code> (boolean/string)
 							<blockquote>
 								<p>
-									Indicates that the same width should be reserved for all
-									elements in the group &#091;Default: <strong>false</strong>&#093;
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>SameSize &#091;IG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									A shortcut for <code>SameWidth</code> and <code>SameHeight</code> 
+									<strong>true</strong> indicates that the same width and height should
+									be reserved for all elements in the group; <code>&quot;width&quot;</code> 
+									and <code>&quot;height&quot;</code> specify that only the same width or
+									height should be reserved, respectively. Default: <strong>false</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -4282,7 +4282,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v7.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v8.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4309,6 +4309,15 @@ message = function(object, message)
 			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<code>Integer &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									If <strong>true</strong>, integer steps are enforced. By default, the
+									slider moves continuously.
+								</p>
+							</blockquote>
+						</li>
 						<li style="list-style-type: none">
 							<code>Max &#091;ISG&#093;</code> (number)
 							<blockquote>
@@ -4420,7 +4429,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v13.8)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v14.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4528,7 +4537,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>FontSpec &#091;IG&#093;</code> (string)
+							<code>Font &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Font specifier for determining the font used for list entries.
@@ -4796,7 +4805,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v8.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4823,7 +4832,7 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>Enter &#091;ISG&#093;</code> (string)
+							<code>Enter &#091;SG&#093;</code> (string)
 							<blockquote>
 								<p>
 									The text that is being entered (by pressing the Return key) into
@@ -5000,7 +5009,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v11.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5062,7 +5071,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>MouseX &#091;SG&#093;</code>, <code>MouseY &#091;SG&#093;</code> (number)
+							<code>MouseX &#091;G&#093;</code>, <code>MouseY &#091;G&#093;</code> (number)
 							<blockquote>
 								<p>
 									The current screen coordinates of the pointing device.
@@ -5521,7 +5530,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">Layout (v3.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">Layout (v3.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7435,7 +7444,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Mon Mar 16 03:26:14 2009
+			Document generated on Sat Mar 28 22:40:57 2009
 		</p>
 	</div>
 	</body>

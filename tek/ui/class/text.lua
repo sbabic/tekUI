@@ -18,7 +18,7 @@
 --		This gadget implements text rendering.
 --
 --	ATTRIBUTES::
---		- {{FontSpec [IG]}} (string)
+--		- {{Font [IG]}} (string)
 --			A font specification in the form
 --					"[fontname1,fontname2,...][:][size]"
 --			Font names, if specified, will be probed in the order of their
@@ -98,7 +98,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 12.3"
+_VERSION = "Text 13.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -114,7 +114,7 @@ local Text = _M
 
 function Text.init(self)
 	self.FGPenDisabled2 = self.FGPenDisabled2 or false
-	self.FontSpec = self.FontSpec or false
+	self.Font = self.Font or false
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
 	self.Mode = self.Mode or "inert"
@@ -135,7 +135,7 @@ function Text:getProperties(p, pclass)
 		self.FGPenDisabled2 = self.FGPenDisabled2 or
 			self:getProperty(p, "disabled", "color2")
 	end
-	self.FontSpec = self.FontSpec or self:getProperty(p, pclass, "font")
+	self.Font = self.Font or self:getProperty(p, pclass, "font")
 	self.TextHAlign = self.TextHAlign or
 		self:getProperty(p, pclass, "text-align")
 	self.TextVAlign = self.TextVAlign or
@@ -346,7 +346,7 @@ end
 --			  [5]=margin-left, [6]=margin-right, [7]=margin-top,
 --			  [8]=margin-bottom, [9]=font-height, [10]=text-width }
 --	More undocumented fields may follow at higher indices. {{font}} is taken
---	from opening the font specified in the object's {{FontSpec}} attribute,
+--	from opening the font specified in the object's {{Font}} attribute,
 --	which also determines {{font-height}} and is used for calculating the
 --	{{text-width}} (in pixels). The alignment parameters are taken from the
 --	object's {{TextHAlign}} and {{TextVAlign}} attributes, respectively.
@@ -359,7 +359,7 @@ function Text:makeTextRecords(text)
 		local tr = { }
 		self.TextRecords = tr
 		local y, nl = 0, 0
-		local font = d:openFont(self.FontSpec)
+		local font = d:openFont(self.Font)
 		for line in (text .. "\n"):gmatch("([^\n]*)\n") do
 			local r = self:addTextRecord(line, font, self.TextHAlign,
 				self.TextVAlign, 0, y, 0, 0)
