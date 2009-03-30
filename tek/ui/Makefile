@@ -14,10 +14,11 @@ CLASSES = \
 	class/popupwindow.lua class/radiobutton.lua class/scrollbar.lua \
 	class/scrollgroup.lua class/slider.lua class/spacer.lua \
 	class/pagegroup.lua class/text.lua class/textinput.lua class/theme.lua \
-	class/vectorimage.lua class/window.lua
+	class/vectorimage.lua class/window.lua class/button.lua
 BORDERS = border/default.lua
 HOOKS = hook/ripple.lua
-STYLES = style/internal.css style/monochrome.css
+STYLES = style/internal.css style/monochrome.css style/tutorial.css \
+	style/industrial.css
 FONTS = font/Vera.ttf font/VeraMono.ttf
 CURSORS = cursor/cursor-green.png
 CATALOGS1 = locale/schulze-mueller.de/tekui-demo/en \

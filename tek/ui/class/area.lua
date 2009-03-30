@@ -15,8 +15,8 @@
 --		This class implements an outer margin, layouting and drawing.
 --
 --	ATTRIBUTES::
---		- {{BGPen [IG]}} (userdata)
---			A colored pen for painting the background of the element
+--		- {{BGPen [IG]}} (number)
+--			A pen number for painting the background of the element
 --		- {{DamageRegion [G]}} ([[#tek.lib.region : Region]])
 --			see {{TrackDamage}}
 --		- {{Disabled [ISG]}} (boolean)
@@ -42,7 +42,7 @@
 --				- "fill" - Completely fills up the height that other elements
 --				in the same group have left, but does not claim more.
 --			Note: Normally, "fill" is useful only once per group.
---		- {{Hilite [ISG]}} (boolean)
+--		- {{Hilite [SG]}} (boolean)
 --			If '''true''', the element is in highlighted state. This
 --			attribute is handled by the [[#tek.ui.class.gadget : Gadget]]
 --			class.
@@ -67,8 +67,8 @@
 --			is handled by the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{TrackDamage [IG]}} (boolean)
 --			If '''true''', the element gathers intra-area damages in a
---			Region named {{DamageRegion}}, which can be used by class writers
---			for implementing minimally invasive redrawing. [Default:
+--			Region named {{DamageRegion}}, which can be used by class
+--			implementors for minimally invasive repainting [Default:
 --			'''false''', the element is redrawn in its entirety.)
 --		- {{VAlign [IG]}} ("top", "center", "bottom")
 --			Vertical alignment of the element in its group [default: "top"]
@@ -151,7 +151,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 15.1"
+_VERSION = "Area 15.2"
 local Area = _M
 
 -------------------------------------------------------------------------------

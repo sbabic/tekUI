@@ -186,10 +186,12 @@ local window = ui.Window:new
 									Min = 0,
 									Max = 0x10000,
 									Range = 0x14000,
+									Style = "border-width: 0; background-color: dark; margin: 0";
 								},
 								ui.Boing:new
 								{
 									Id = "the-boing",
+									Style = "border-width: 0; margin: 0",
 									onSetYPos = function(self, ypos)
 										local s = self.Application:getElementById("boing-slider")
 										s:setValue("Value", ypos)
@@ -204,6 +206,7 @@ local window = ui.Window:new
 									Min = 0,
 									Max = 0x10000,
 									Range = 0x14000,
+									Style = "border-width: 0; background-color: dark; margin: 0";
 								}
 							}
 						},

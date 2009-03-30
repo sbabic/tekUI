@@ -84,7 +84,7 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 11.0"
+_VERSION = "Canvas 11.1"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -105,8 +105,8 @@ function Canvas.init(self)
 	self.CanvasLeft = self.CanvasLeft or 0
 	self.CanvasTop = self.CanvasTop or 0
 	self.CanvasWidth = self.CanvasWidth or 0
-	self.Child = self.Child or self.ChildArea
 	self.ChildArea = self.ChildArea or Area:new { Margin = ui.NULLOFFS }
+	self.Child = self.Child or self.ChildArea
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
 	self.TempMsg = { }

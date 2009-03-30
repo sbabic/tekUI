@@ -627,7 +627,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v13.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -654,7 +654,7 @@
 								<p>
 									Name of the application, normally used as an unique identifier
 									in combination with the <code>VendorDomain</code> attribute. Default is
-									&quot;unknown&quot;.
+									<code>&quot;unknown&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -662,7 +662,7 @@
 							<code>Author &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
-									Name of the application's author(s)
+									Names of the application's authors. Default: <code>&quot;unknown&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -670,7 +670,8 @@
 							<code>Copyright &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
-									Copyright notice applying to the application
+									Copyright notice applying to the application, default
+									<code>&quot;unknown&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -679,7 +680,8 @@
 							<blockquote>
 								<p>
 									Name of the application, as displayed to the user. This is
-									also the fallback for the <code>Title</code> attribute.
+									also the fallback for the <code>Title</code> attribute in windows.
+									If unset, the default will be <code>&quot;unknown&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -687,9 +689,9 @@
 							<code>Status &#091;G&#093;</code> 
 							<blockquote>
 								<p>
-									Status of the application, can be &quot;connected&quot;, &quot;connecting&quot;,
-									&quot;disconnected&quot;, &quot;disconnecting&quot;, &quot;initializing&quot;, &quot;error&quot;,
-									&quot;running&quot;.
+									Status of the application, can be <code>&quot;connected&quot;</code>,
+									<code>&quot;connecting&quot;</code>, <code>&quot;disconnected&quot;</code>, <code>&quot;disconnecting&quot;</code>,
+									<code>&quot;initializing&quot;</code>, <code>&quot;error&quot;</code>, <code>&quot;running&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -699,30 +701,21 @@
 								<p>
 									Name of a theme, which usually maps to an equally named
 									style sheet file (with the extension &quot;.css&quot;) under
-									<code>tek/ui/style/</code>.
+									<code>tek/ui/style/</code>. Default: <code>&quot;desktop&quot;</code> 
 									Themes with reserved meaning are:
 								</p>
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;internal&quot;: Uses the hardcoded internal style properties
+											<code>&quot;internal&quot;</code>: Uses the hardcoded internal style properties
 											and does not try to load a style sheet file.
 										</li>
 										<li style="list-style-type: none">
-											&quot;desktop&quot;: Tries to import the desktop's color scheme
-											(besides trying to load a style sheet named &quot;desktop.css&quot;).
+											<code>&quot;desktop&quot;</code>: Tries to import the desktop's color scheme,
+											besides trying to load a style sheet named <code>&quot;desktop.css&quot;</code>.
 										</li>
 									</ul>
 								</blockquote>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Title &#091;IG&#093;</code> 
-							<blockquote>
-								<p>
-									Title of the application, which will also be inherited by windows;
-									if unspecified, <code>ProgramName</code> will be used.
-								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
@@ -731,8 +724,8 @@
 								<p>
 									An uniquely identifying domain name of the vendor, organization
 									or author manufacturing the application, preferrably without
-									domain parts like &quot;www.&quot;, if they are nonsignificant for
-									identification. Default is &quot;unknown&quot;.
+									domain parts like <code>&quot;www.&quot;</code> if they are insignificant for
+									identification. Default is <code>&quot;unknown&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -741,7 +734,7 @@
 							<blockquote>
 								<p>
 									Name of the vendor or organization responsible for producing
-									the application, as displayed to the user.
+									the application, as displayed to the user. Default <code>&quot;unknown&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -754,7 +747,7 @@
 						The <code>VendorDomain</code> and <code>ApplicationId</code> attributes are
 						UTF-8 encoded strings, so any international character sequence is
 						valid for them. Anyhow, it is recommended to avoid too adventurous
-						symbolism, as its end up in a hardly decipherable, UTF8- plus
+						symbolism, as its end up in a hardly decipherable, UTF-8 plus
 						URL-encoded form in the file system, e.g. for loading catalog files
 						under <code>tek/ui/locale/&lt;vendordomain&gt;/&lt;applicationid&gt;</code>.
 					</p>
@@ -1541,7 +1534,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1573,7 +1566,8 @@ message = function(object, message)
 							<blockquote>
 								<p>
 									An array of strings containing captions for each page in
-									the group.
+									the group. If <strong>false</strong>, no page captions will be displayed.
+									&#091;Default: <strong>false</strong>&#093;
 								</p>
 							</blockquote>
 						</li>
@@ -2037,7 +2031,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v13.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v13.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2665,7 +2659,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.16)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.17)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2713,7 +2707,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v15.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v15.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2736,10 +2730,10 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>BGPen &#091;IG&#093;</code> (userdata)
+							<code>BGPen &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									A colored pen for painting the background of the element
+									A pen number for painting the background of the element
 								</p>
 							</blockquote>
 						</li>
@@ -2819,7 +2813,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Hilite &#091;ISG&#093;</code> (boolean)
+							<code>Hilite &#091;SG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element is in highlighted state. This
@@ -2894,8 +2888,8 @@ message = function(object, message)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element gathers intra-area damages in a
-									Region named <code>DamageRegion</code>, which can be used by class writers
-									for implementing minimally invasive redrawing. &#091;Default:
+									Region named <code>DamageRegion</code>, which can be used by class
+									implementors for minimally invasive repainting &#091;Default:
 									<strong>false</strong>, the element is redrawn in its entirety.)
 								</p>
 							</blockquote>
@@ -3905,7 +3899,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v11.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5009,7 +5003,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v11.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v11.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7107,7 +7101,7 @@ method(object, arg1, ...)
 		</p>
 		<hr />
 	</div>
-	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v15.0)</a></h2>
+	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v16.0)</a></h2>
 		<div class="definition"><dfn>OVERVIEW</dfn>
 			<blockquote>
 				<p>
@@ -7144,6 +7138,9 @@ ui.Application:new { ...
 					</li>
 					<li style="list-style-type: none">
 						<a href="#ui:resolveKeyCode"><code>ui.resolveKeyCode()</code></a> - Convert keycode into keys and qualifiers
+					</li>
+					<li style="list-style-type: none">
+						<a href="#ui:testFlag"><code>ui.testFlag()</code></a> - Test a bit flag in a flags field
 					</li>
 				</ul>
 			</blockquote>
@@ -7321,6 +7318,12 @@ ui.Application:new { ...
 		</p>
 		<hr />
 	</div>
+	<div class="node"><h3><a name="ui:testFlag" id="ui:testFlag"><code>testFlag(flag, field)</code></a></h3>
+		<p>
+			Test a bit flag in a flags field
+		</p>
+		<hr />
+	</div>
 	<div class="node"><h2><a name="tek.class" id="tek.class">Class (v6.2)</a></h2>
 		<div class="definition"><dfn>LINEAGE</dfn>
 			<blockquote>
@@ -7444,7 +7447,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Sat Mar 28 22:40:57 2009
+			Document generated on Mon Mar 30 10:54:41 2009
 		</p>
 	</div>
 	</body>

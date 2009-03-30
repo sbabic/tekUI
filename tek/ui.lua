@@ -21,6 +21,7 @@
 --		- ui.loadClass() - Load a named class
 --		- ui.loadStyleSheet() - Load and parse a style sheet file
 --		- ui.resolveKeyCode() - Convert keycode into keys and qualifiers
+--		- ui.testFlag() - Test a bit flag in a flags field
 --
 --	CONSTANTS::
 --		- {{NOTIFY_ALWAYS}} - see [[Object][#tek.class.object]]
@@ -59,6 +60,7 @@ local Object = require "tek.class.object"
 local arg = arg
 local assert = assert
 local error = error
+local floor = math.floor
 local getenv = os.getenv
 local getmetatable = getmetatable
 local insert = table.insert
@@ -75,7 +77,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 15.0"
+_VERSION = "tekUI 16.0"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -686,6 +688,14 @@ function extractKeyCode(s, m)
 	m = m or "_"
 	s = s:match("^[^" .. m .. "]*" .. m .. "(.)")
 	return s and s:lower() or false
+end
+
+-------------------------------------------------------------------------------
+--	testFlag(flag, field): Test a bit flag in a flags field
+-------------------------------------------------------------------------------
+
+function testFlag(flag, mask)
+	return floor(flag % (mask + mask) / mask) ~= 0
 end
 
 -------------------------------------------------------------------------------

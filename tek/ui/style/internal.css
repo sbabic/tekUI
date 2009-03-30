@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.12
+**	Version: 1.13
 */
 
 /*
@@ -297,6 +297,12 @@ tek.ui.class.window {
 	padding-left: 2;
 }
 
+.page-container {
+	border-width: 0 2 2 2;
+	margin: 0 2 2 2;
+	padding: 2;
+}
+
 .scrollbar-arrowup {
 	margin-bottom: 0;
 	border-width: 3;
@@ -324,12 +330,6 @@ tek.ui.class.window {
 _listview-headitem {
 	background-color: active;
 	padding: 0;
-}
-
-_page-container {
-	border-width: 0 2 2 2;
-	margin: 0 2 2 2;
-	padding: 2;
 }
 
 _scrollbar-arrow {

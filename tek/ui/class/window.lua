@@ -88,11 +88,12 @@ local min = math.min
 local pairs = pairs
 local remove = table.remove
 local sort = table.sort
+local testflag = ui.testFlag
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 11.1"
+_VERSION = "Window 11.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -258,10 +259,6 @@ end
 --	it on to the next handler in the window's chain.
 -------------------------------------------------------------------------------
 
-local function testflag(flags, mask)
-	return floor(flags % (mask + mask) / mask) ~= 0
-end
-
 function Window:addInputHandler(msgtype, object, func)
 	local hnd = { object, func }
 	for _, mask in ipairs(MSGTYPES) do
@@ -400,7 +397,7 @@ end
 function Window:openWindow()
 	if self.Status ~= "show" then
 		local m1, m2, m3, m4, x, y, w, h = self:getWindowDimensions()
-		if self.Drawable:open(self, self.Title or self.Application.Title,
+		if self.Drawable:open(self, self.Title or self.Application.ProgramName,
 			w, h, m1, m2, m3, m4, x, y, self.Center, self.FullScreen) then
 			local wm = self.WindowMinMax
 			wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
@@ -680,7 +677,7 @@ function Window:addLayoutGroup(group, markdamage)
 			record[2] = markdamage
 		end
 	else
-		db.warn("Attempt to relayout non-group: %s", group:getClassName())
+		db.info("Attempt to relayout non-group: %s", group:getClassName())
 	end
 end
 

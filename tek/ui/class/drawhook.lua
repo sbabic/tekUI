@@ -1,6 +1,5 @@
 
 local Element = require "tek.ui.class.element"
-local assert = assert
 
 module("tek.ui.class.drawhook", tek.ui.class.element)
 _VERSION = "DrawHook 1.0"

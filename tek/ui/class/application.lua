@@ -17,44 +17,43 @@
 --		- {{ApplicationId [IG]}}
 --			Name of the application, normally used as an unique identifier
 --			in combination with the {{VendorDomain}} attribute. Default is
---			"unknown".
+--			{{"unknown"}}.
 --		- {{Author [IG]}}
---			Name of the application's author(s)
+--			Names of the application's authors. Default: {{"unknown"}}
 --		- {{Copyright [IG]}}
---			Copyright notice applying to the application
+--			Copyright notice applying to the application, default
+--			{{"unknown"}}
 --		- {{ProgramName [IG]}}
 --			Name of the application, as displayed to the user. This is
---			also the fallback for the {{Title}} attribute.
+--			also the fallback for the {{Title}} attribute in windows.
+--			If unset, the default will be {{"unknown"}}.
 --		- {{Status [G]}}
---			Status of the application, can be "connected", "connecting",
---			"disconnected", "disconnecting", "initializing", "error",
---			"running".
+--			Status of the application, can be {{"connected"}},
+--			{{"connecting"}}, {{"disconnected"}}, {{"disconnecting"}},
+--			{{"initializing"}}, {{"error"}}, {{"running"}}.
 --		- {{Theme [IG]}}
 --			Name of a theme, which usually maps to an equally named
 --			style sheet file (with the extension ".css") under
---			{{tek/ui/style/}}.
+--			{{tek/ui/style/}}. Default: {{"desktop"}}
 --			Themes with reserved meaning are:
---				- "internal": Uses the hardcoded internal style properties
+--				- {{"internal"}}: Uses the hardcoded internal style properties
 --				and does not try to load a style sheet file.
---				- "desktop": Tries to import the desktop's color scheme
---				(besides trying to load a style sheet named "desktop.css").
---		- {{Title [IG]}}
---			Title of the application, which will also be inherited by windows;
---			if unspecified, {{ProgramName}} will be used.
+--				- {{"desktop"}}: Tries to import the desktop's color scheme,
+--				besides trying to load a style sheet named {{"desktop.css"}}.
 --		- {{VendorDomain [IG]}}
 --			An uniquely identifying domain name of the vendor, organization
 --			or author manufacturing the application, preferrably without
---			domain parts like "www.", if they are nonsignificant for
---			identification. Default is "unknown".
+--			domain parts like {{"www."}} if they are insignificant for
+--			identification. Default is {{"unknown"}}.
 --		- {{VendorName [IG]}}
 --			Name of the vendor or organization responsible for producing
---			the application, as displayed to the user.
+--			the application, as displayed to the user. Default {{"unknown"}}.
 --
 --	NOTES::
 --		The {{VendorDomain}} and {{ApplicationId}} attributes are
 --		UTF-8 encoded strings, so any international character sequence is
 --		valid for them. Anyhow, it is recommended to avoid too adventurous
---		symbolism, as its end up in a hardly decipherable, UTF8- plus
+--		symbolism, as its end up in a hardly decipherable, UTF-8 plus
 --		URL-encoded form in the file system, e.g. for loading catalog files
 --		under {{tek/ui/locale/<vendordomain>/<applicationid>}}.
 --
@@ -97,14 +96,16 @@ local insert = table.insert
 local ipairs = ipairs
 local max = math.max
 local min = math.min
-local pairs = pairs
 local remove = table.remove
 local select = select
+local testflag = ui.testFlag
 local traceback = debug.traceback
 local unpack = unpack
 
+local MSG_USER = ui.MSG_USER
+
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 13.1"
+_VERSION = "Application 14.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -126,7 +127,7 @@ function Application.new(class, self)
 		[ui.MSG_MOUSEBUTTON] = self.passMsgNoModal,
 		[ui.MSG_INTERVAL] = self.passMsgInterval,
 		[ui.MSG_KEYUP] = self.passMsgNoModal,
-		[ui.MSG_USER] = self.passMsg,
+		[MSG_USER] = self.passMsg,
 	}
 	-- Check linkage of members and connect them recursively:
 	if self:connect() then
@@ -142,24 +143,24 @@ function Application.new(class, self)
 	return self
 end
 
+-------------------------------------------------------------------------------
+--	init: overrides
+-------------------------------------------------------------------------------
+
 function Application.init(self)
 	self.Application = self
 	self.ApplicationId = self.ApplicationId or "unknown"
-	self.Author = self.Author or false
-	self.Copyright = self.Copyright or false
+	self.Author = self.Author or "unknown"
+	self.Copyright = self.Copyright or "unknown"
 	self.Coroutines = { }
 	self.Display = false
 	self.ElementById = { }
-	self.InputHandlers =
-	{
-		[ui.MSG_USER] = { },
-	}
+	self.InputHandlers = { [MSG_USER] = { } }
 	self.ModalWindows = { } -- stack of
 	self.MsgDispatch = false
 	self.OpenWindows = { }
-	self.ProgramName = self.ProgramName or self.Title or false
+	self.ProgramName = self.ProgramName or self.Title or "unknown"
 	self.Status = "initializing"
-	self.Title = self.Title or self.ProgramName or false
 	self.Theme = self.Theme or "desktop"
 	self.VendorName = self.VendorName or "unknown"
 	self.VendorDomain = self.VendorDomain or "unknown"
@@ -297,7 +298,7 @@ end
 -------------------------------------------------------------------------------
 
 function Application:cleanup()
-	assert(self.Status == "connected")
+	-- assert(self.Status == "connected")
 	self.Status = "disconnecting"
 	for _, child in ipairs(self.Children) do
 		child:cleanup()
@@ -311,7 +312,7 @@ end
 
 function Application:show(display)
 	self.Display = display
-	self:addInputHandler(ui.MSG_USER, self, self.handleInput)
+	self:addInputHandler(MSG_USER, self, self.handleInput)
 	for _, w in ipairs(self.Children) do
 		w:show(display)
 	end
@@ -326,8 +327,8 @@ function Application:hide()
 	for _, w in ipairs(self.Children) do
 		w:hide()
 	end
-	self:remInputHandler(ui.MSG_USER, self, self.handleInput)
-	self.Display = nil
+	self:remInputHandler(MSG_USER, self, self.handleInput)
+	self.Display = false
 end
 
 -------------------------------------------------------------------------------
@@ -439,6 +440,7 @@ function Application:passMsgRefresh(msg)
 		refresh[9] = msg[9]
 		refresh[10] = msg[10]
 	else
+		-- bundle damage rect:
 		refresh[7] = min(refresh[7], msg[7])
 		refresh[8] = min(refresh[8], msg[8])
 		refresh[9] = max(refresh[9], msg[9])
@@ -799,11 +801,7 @@ end
 --	See also Window:addInputHandler() for more information.
 -------------------------------------------------------------------------------
 
-local MSGTYPES = { ui.MSG_USER }
-
-local function testflag(flags, mask)
-	return floor(flags % (mask + mask) / mask) ~= 0
-end
+local MSGTYPES = { MSG_USER }
 
 function Application:addInputHandler(msgtype, object, func)
 	local hnd = { object, func }
@@ -858,7 +856,7 @@ end
 
 local MsgHandlers =
 {
-	[ui.MSG_USER] = function(self, msg)
+	[MSG_USER] = function(self, msg)
 		return msg
 	end
 }

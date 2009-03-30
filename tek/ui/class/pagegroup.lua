@@ -22,7 +22,8 @@
 --	ATTRIBUTES::
 --		- {{PageCaptions [IG]}} (table)
 --			An array of strings containing captions for each page in
---			the group.
+--			the group. If '''false''', no page captions will be displayed.
+--			[Default: '''false''']
 --		- {{PageNumber [ISG]}} (number)
 --			Number of the page that is initially selected. [Default: 1]
 --			Setting this attribute invokes the PageGroup:onSetPageNumber()
@@ -59,7 +60,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.3"
+_VERSION = "PageGroup 9.4"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -235,26 +236,30 @@ end
 --	changeTab:
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:changeTab(pagebuttons, newtabn)
-	pagebuttons[self.PageNumber + 1]:setValue("Selected", false)
-	self.PageNumber = newtabn
-	self.PageElement:hide()
-	self.PageElement = self.Children[newtabn]
-	if self.Display then
-		if self.PageElement:show(self.Display, self.Drawable) then
-			local m = self.MarginAndBorder
-			self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
-			local r = self.Rect
-			local m = self.MarginAndBorder
-			self:relayout(self, r[1] - m[1], r[2] - m[2], r[3] + m[3],
-				r[4] + m[4])
-			self.PageElement:rethinkLayout(2)
-		else
-			db.error("failed to show element: %s",
-				self.PageElement:getClassName())
+function PageContainerGroup:changeTab(pagebuttons, tabnr)
+	if self.Children[tabnr] then
+		if pagebuttons and pagebuttons[self.PageNumber + 1] then
+			pagebuttons[self.PageNumber + 1]:setValue("Selected", false)
 		end
-	else
-		db.error("pagegroup not connected to display")
+		self.PageNumber = tabnr
+		self.PageElement:hide()
+		self.PageElement = self.Children[tabnr]
+		if self.Display then
+			if self.PageElement:show(self.Display, self.Drawable) then
+				local m = self.MarginAndBorder
+				self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
+				local r = self.Rect
+				local m = self.MarginAndBorder
+				self:relayout(self, r[1] - m[1], r[2] - m[2], r[3] + m[3],
+					r[4] + m[4])
+				self.PageElement:rethinkLayout(2)
+			else
+				db.error("failed to show element: %s",
+					self.PageElement:getClassName())
+			end
+		else
+			db.error("pagegroup not connected to display")
+		end
 	end
 end
 
@@ -280,85 +285,98 @@ function PageGroup.new(class, self)
 	{
 		Children = children,
 		PageNumber = pagenumber,
-		PageElement = pageelement
+		PageElement = pageelement,
 	}
 
-	self.PageCaptions = self.PageCaptions or { }
+	self.PageCaptions = self.PageCaptions or false
 
-	local pagebuttons =
-	{
-		ui.Frame:new
+	local pagebuttons = false
+
+	if self.PageCaptions then
+
+		pagegroup.Class = "page-container"
+
+		pagebuttons =
 		{
-			Class = "page-button-fill",
-			Style = "border-left-width: 0",
-			MinWidth = 3,
-			MaxWidth = 3,
-			Width = 3,
-			Height = "fill",
+			ui.Frame:new
+			{
+				Class = "page-button-fill",
+				Style = "border-left-width: 0",
+				MinWidth = 3,
+				MaxWidth = 3,
+				Width = 3,
+				Height = "fill",
+			}
 		}
-	}
 
-	if #children == 0 then
-		insert(pagebuttons, ui.Text:new
-		{
-			Class = "page-button",
-			Mode = "inert",
-			Width = "auto",
-		})
-	else
-		for i, c in ipairs(children) do
-			local pc = self.PageCaptions[i]
-			if type(pc) == "table" then
-				-- element
-			else
-				local text = pc or tostring(i)
-				pc = ui.Text:new
-				{
-					Class = "page-button",
-					Mode = "touch",
-					Width = "auto",
-					Text = text,
-					Notifications =
-					{
-						["Pressed"] =
+		if #children == 0 then
+			insert(pagebuttons, ui.Text:new
+			{
+				Class = "page-button",
+				Mode = "inert",
+				Width = "auto",
+			})
+		else
+			if self.PageCaptions then
+				for i, c in ipairs(children) do
+					local pc = self.PageCaptions[i]
+					if type(pc) == "table" then
+						-- element
+					else
+						local text = pc or tostring(i)
+						pc = ui.Text:new
 						{
-							[true] =
+							Class = "page-button",
+							Mode = "touch",
+							Width = "auto",
+							Text = text,
+							Notifications =
 							{
-								{ self, "setValue", "PageNumber", i },
+								["Pressed"] =
+								{
+									[true] =
+									{
+										{ self, "setValue", "PageNumber", i },
+									}
+								}
 							}
 						}
-					}
-				}
+					end
+					insert(pagebuttons, pc)
+				end
 			end
-			insert(pagebuttons, pc)
 		end
-	end
 
-	insert(pagebuttons, ui.Frame:new
-	{
-		Class = "page-button-fill",
-		Height = "fill",
-	})
+		insert(pagebuttons, ui.Frame:new
+		{
+			Class = "page-button-fill",
+			Height = "fill",
+		})
 
-	if pagebuttons[pagenumber + 1] then
-		pagebuttons[pagenumber + 1]:setValue("Selected", true)
+		if pagebuttons[pagenumber + 1] then
+			pagebuttons[pagenumber + 1]:setValue("Selected", true)
+		end
+
+		self.Children =
+		{
+			Group:new
+			{
+				Class = "page-button-group",
+				Width = "fill",
+				MaxHeight = 0,
+				Children = pagebuttons,
+			},
+			pagegroup
+		}
+	else
+		self.Children =
+		{
+			pagegroup
+		}
 	end
 
 	self.TabButtons = pagebuttons
-
 	self.Orientation = "vertical"
-
-	self.Children =
-	{
-		Group:new
-		{
-			Class = "page-button-group",
-			Width = "fill",
-			MaxHeight = 0,
-			Children = pagebuttons,
-		},
-		pagegroup
-	}
 
 	return Group.new(class, self)
 end
@@ -389,11 +407,13 @@ end
 function PageGroup:onSetPageNumber(val)
 	local n = tonumber(val)
 	local b = self.TabButtons
-	if n >= 1 and n <= #b - 2 then
-		self.TabButtons[n + 1]:setValue("Selected", true)
+	if b then
+		if b[n + 1] then
+			b[n + 1]:setValue("Selected", true)
+		end
 		self.Children[2]:changeTab(self.TabButtons, n)
 	else
-		db.warn("invalid page number: %s", val)
+		self.Children[1]:changeTab(self.TabButtons, n)
 	end
 end
 

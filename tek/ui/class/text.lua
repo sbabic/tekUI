@@ -98,7 +98,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 13.0"
+_VERSION = "Text 13.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -239,7 +239,7 @@ function Text:askMinMax(m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
---	draw: overrides
+--	layout: overrides
 -------------------------------------------------------------------------------
 
 local function aligntext(align, opkey, x0, w1, w0)
@@ -251,6 +251,31 @@ local function aligntext(align, opkey, x0, w1, w0)
 	return x0
 end
 
+function Text:layout(x0, y0, x1, y1, markdamage)
+	local res = Gadget.layout(self, x0, y0, x1, y1, markdamage)
+	local r = self.Rect
+	local p = self.Padding
+	local w0, h0 = self:getTextSize()
+	local w = r[3] - r[1] + 1 - p[3] - p[1]
+	local h = r[4] - r[2] + 1 - p[4] - p[2]
+	local x0 = aligntext(self.TextHAlign, "right", r[1] + p[1], w, w0)
+	local y0 = aligntext(self.TextVAlign, "bottom", r[2] + p[2], h, h0)
+	for _, tr in ipairs(self.TextRecords) do
+		local x = x0 + tr[5]
+		local y = y0 + tr[6]
+		local w = w0 - tr[7] - tr[5]
+		local h = h0 - tr[8] - tr[6]
+		local tw, th = tr[9], tr[10]
+		tr[15] = aligntext(tr[3], "right", x, w, tw)
+		tr[16] = aligntext(tr[4], "bottom", y, h, th)
+	end
+	return res
+end
+
+-------------------------------------------------------------------------------
+--	draw: overrides
+-------------------------------------------------------------------------------
+
 function Text:draw()
 	Gadget.draw(self)
 	local d = self.Drawable
@@ -258,21 +283,8 @@ function Text:draw()
 	local p = self.Padding
 	d:pushClipRect(r[1] + p[1], r[2] + p[2], r[3] - p[3], r[4] - p[4])
 	local fp = d.Pens[self.Foreground]
-	local x0 = r[1] + p[1]
-	local y0 = r[2] + p[2]
-	local w0, h0 = self:getTextSize()
-	local w = r[3] - r[1] + 1 - p[3] - p[1]
-	local h = r[4] - r[2] + 1 - p[4] - p[2]
-	x0 = aligntext(self.TextHAlign, "right", x0, w, w0)
-	y0 = aligntext(self.TextVAlign, "bottom", y0, h, h0)
 	for _, tr in ipairs(self.TextRecords) do
-		local x = x0 + tr[5]
-		local y = y0 + tr[6]
-		local w = w0 - tr[7] - tr[5]
-		local h = h0 - tr[8] - tr[6]
-		local tw, th = tr[9], tr[10]
-		x = aligntext(tr[3], "right", x, w, tw)
-		y = aligntext(tr[4], "bottom", y, h, th)
+		local x, y = tr[15], tr[16]
 		d:setFont(tr[2])
 		if self.Disabled then
 			local fp2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
