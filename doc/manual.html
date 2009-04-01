@@ -627,7 +627,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2316,7 +2316,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v7.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3776,7 +3776,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3899,7 +3899,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v11.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4024,7 +4024,10 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Canvas:onSetChild"><code>Canvas:onSetChild()</code></a> - Handler called when Child is set
+							<a href="#Canvas:onSetChild"><code>Canvas:onSetChild()</code></a> - Handler called when <code>Child</code> is set
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Canvas:markChildDamage"><code>Canvas:markChildDamage()</code></a> - Damage a child area where it is visible
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Canvas:updateUnusedRegion"><code>Canvas:updateUnusedRegion()</code></a> - Update region not covered by Child
@@ -4092,6 +4095,13 @@ message = function(object, message)
 			<p>
 				Updates the <code>UnusedRegion</code> attribute, which
 				contains the Canvas' area which isn't covered by its <code>Child</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Canvas:markChildDamage" id="Canvas:markChildDamage"><code>markChildDamage(r1, r2, r3, r4)</code></a></h3>
+			<p>
+				Damages the specified region in the
+				child area where it overlaps with the visible part of the canvas.
 			</p>
 			<hr />
 		</div>
@@ -4423,7 +4433,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v14.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v15.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5003,7 +5013,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v11.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v11.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7447,7 +7457,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Wed Apr  1 12:14:23 2009
+			Document generated on Thu Apr  2 01:16:07 2009
 		</p>
 	</div>
 	</body>

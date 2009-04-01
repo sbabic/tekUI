@@ -105,7 +105,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 14.0"
+_VERSION = "Application 14.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -186,7 +186,7 @@ function Application:connect(parent)
 		for _, child in ipairs(c) do
 			if child:checkDescend(Group) then
 				-- descend into group:
-				if not connect(child, self) then
+				if not Application.connect(child, self) then
 					return false
 				end
 			else

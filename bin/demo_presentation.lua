@@ -22,34 +22,7 @@ function ScrollText.new(class, self)
 	for i = 1, self.BufLines do
 		self.LineBuffer[i] = ""
 	end
-	self.Slides =
-	{
-		{
-			"» Welcome to tekUI, the",
-			"scriptable GUI toolkit",
-			"for embedded applications",
-			"and kiosk systems.",
-		},
-		{
-			"» This demonstration",
-			"is written in Lua, tekUI's",
-			"scripting language.",
-		},
-		{
-			"» The GUI runs managed",
-			"in a virtual machine and",
-			"cannot crash the device,",
-			"even if it is without a MMU.",
-		},
-		{
-			"» GUI code is compact,",
-			"easy to learn, program,",
-			"maintain and extend.",
-			"",
-			"» C/C++ or Java",
-			"knowledge is not required.",
-		},
-	}
+	self.Slides = self.Slides or { { } }
 	self.CurrentSlide = 1
 	self.UpDown = 1
 	self.NextDelay = 0
@@ -120,11 +93,41 @@ function ScrollText:updateInterval(msg)
 	return msg
 end
 
+-------------------------------------------------------------------------------
+
 local Presenter = ScrollText:new
 {
 	Style = "font: :40; background-color: shadow; color: shine",
 -- 	Class = "text-slide",
 	Preformatted = true,
+	Slides =
+	{
+		{
+			"» Welcome to tekUI, the",
+			"scriptable GUI toolkit",
+			"for embedded applications",
+			"and kiosk systems.",
+		},
+		{
+			"» This demonstration",
+			"is written in Lua, tekUI's",
+			"scripting language.",
+		},
+		{
+			"» The GUI runs managed",
+			"in a virtual machine and",
+			"cannot crash the device,",
+			"even if it is without a MMU.",
+		},
+		{
+			"» GUI code is compact,",
+			"easy to learn, program,",
+			"maintain and extend.",
+			"",
+			"» C/C++ or Java",
+			"knowledge is not required.",
+		},
+	}
 }
 
 local SlideScroll = ui.ScrollGroup:new
@@ -161,10 +164,7 @@ local window = ui.Window:new
 	Title = L.PRESENTATION_TITLE,
 	Orientation = "vertical",
 	Status = "hide",
-	Children =
-	{
-		SlideScroll
-	}
+	Children = { SlideScroll }
 }
 
 -------------------------------------------------------------------------------

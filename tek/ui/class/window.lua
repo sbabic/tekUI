@@ -93,7 +93,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 11.2"
+_VERSION = "Window 11.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -724,32 +724,26 @@ function Window:update()
 			-- might be added while we process them
 
 			while #self.LayoutGroup > 0 do
-				-- list could be modified, need copy:
-				local lg = { unpack(self.LayoutGroup) }
+				local lg = self.LayoutGroup
 				self.LayoutGroup = { }
-				while #lg > 0 do
-					local record = remove(lg, 1)
+				for _, record in ipairs(lg) do
 					local group = record[1]
 					local markdamage = record[2]
 					group:calcWeights()
-					local m = group.MarginAndBorder
 					local r1, r2, r3, r4 = group:getRectangle()
-
 					if r1 then
+						local m = group.MarginAndBorder
 						self:relayout(group, r1 - m[1], r2 - m[2],
 							r3 + m[3], r4 + m[4])
 					else
-						db.warn("%s : layout not available",
+						db.info("%s : layout not available",
 							group:getClassName())
 					end
-
 					if markdamage == 1 then
 						group.Redraw = true
 					elseif markdamage == 2 then
 						group:markDamage(r1, r2, r3, r4)
 					end
-
-					lg[group] = nil
 					self:handleCopies()
 				end
 			end

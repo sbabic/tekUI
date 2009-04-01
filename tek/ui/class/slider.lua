@@ -71,7 +71,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 7.0"
+_VERSION = "Slider 7.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -355,7 +355,10 @@ local function updateslider(self)
 		if x0 then
 			local _, changed = win:relayout(self.Child, x0, y0, x1, y1)
 			if changed then
-				self.Child.Redraw = true
+				if self.Redraw then
+					-- also redraw child if we're slated for redraw already:
+					self.Child.Redraw = true
+				end
 				self.Redraw = true
 			end
 		end

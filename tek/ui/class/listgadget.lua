@@ -138,7 +138,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 14.0"
+_VERSION = "ListGadget 15.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -180,6 +180,7 @@ function ListGadget.init(self)
 	self.HeaderGroup = self.HeaderGroup or false
 	self.Margin = ui.NULLOFFS -- fixed
 	self.Mode = "button"
+	self.LineHeight = false
 	self.ListObject = self.ListObject or List:new()
 	self.NumColumns = 1
 	self.NumSelectedLines = 0
@@ -256,6 +257,8 @@ function ListGadget:show(display, drawable)
 		self.CursorObject:show(display, drawable)
 		self.FontHandle = display:openFont(self.Font)
 		self.FWidth, self.FHeight = Display:getTextSize(self.FontHandle, "x")
+		local _, b2, _, b4 = self.CursorObject:getBorder()
+		self.LineHeight = self.FHeight + b2 + b4
 		self.ColumnPadding = self.ColumnPadding or self.FWidth
 		self:prepare(false)
 		return true
@@ -481,6 +484,7 @@ function ListGadget:prepare(damage)
 		local nc = 0
 		local y = 0
 		local hg = self.HeaderGroup
+		local lh = self.LineHeight
 
 		-- initialize column widths with head item sizes:
 		if hg then
@@ -493,14 +497,12 @@ function ListGadget:prepare(damage)
 			local l = lo:getItem(lnr)
 			local columns = l[1]
 			nc = max(nc, #columns)
-			local h, w = 0
 			for i, t in ipairs(columns) do
-				w, h = Display:getTextSize(f, columns[i])
+				local w = Display:getTextSize(f, columns[i])
 				cw[i] = max(cw[i] or 0, w)
 			end
-			h = h + b2 + b4
-			l[4], l[5] = y, y + h - 1
-			y = y + h
+			l[4], l[5] = y, y + lh - 1
+			y = y + lh
 		end
 
 		-- TODO: it's nonsense to depend on 'damage' here,
@@ -609,10 +611,11 @@ function ListGadget:draw()
 		local cl = self.CursorLine
 		local cp = self.ColumnPositions
 		local nc = #cp
+		local lh = self.LineHeight
 
 		for _, r1, r2, r3, r4 in dr:getRects() do
 			d:pushClipRect(r1, r2, r3, r4)
-			for lnr = 1, lo:getN() do
+			for lnr = floor(r2 / lh) + 1, min(lo:getN(), floor(r4 / lh) + 1) do
 				local bpen = bpens[(lnr - 1) % 2]
 				local l = lo:getItem(lnr)
 				-- overlap between damage and line:
@@ -684,8 +687,7 @@ function ListGadget:layout(r1, r2, r3, r4, markdamage)
 		res = true
 	end
 	if markdamage then
-		self.DamageRegion =
-			Region.new(0, 0, self.Canvas.CanvasWidth - 1, ch - 1)
+		self.Canvas:markChildDamage(0, 0, self.Canvas.CanvasWidth - 1, ch - 1)
 	end
 	return res
 end
@@ -790,18 +792,16 @@ function ListGadget:moveLine(lnr, follow)
 			if y0 and y1 then
 				self:markDamage(0, y0, x1, y1)
 				if y1 < ca.CanvasTop then
-					y = y0
 					if follow then
-						ca:setValue("CanvasTop", y)
+						ca:setValue("CanvasTop", y0)
 					end
 				else
 					local _, r2, _, r4 = ca:getRectangle()
 					if r2 then
 						local vh = r4 - r2 + 1 - (y1 - y0 + 1)
 						if y0 > ca.CanvasTop + vh then
-							y = y0 - vh
 							if follow then
-								ca:setValue("CanvasTop", y)
+								ca:setValue("CanvasTop", y0 - vh)
 							end
 						end
 					end
@@ -905,6 +905,7 @@ function ListGadget:handleInput(msg)
 	if win then
 		if self == win.FocusElement then
 			local key = msg[3]
+			local qual = msg[6]
 			local lo = self.ListObject
 			local numl = lo:getN()
 			local lnr = self.CursorLine

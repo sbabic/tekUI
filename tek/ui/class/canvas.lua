@@ -47,7 +47,8 @@
 --			Vertical scroll step (used for mousewheel)
 --
 --	IMPLEMENTS::
---		- Canvas:onSetChild() - Handler called when Child is set
+--		- Canvas:onSetChild() - Handler called when {{Child}} is set
+--		- Canvas:markChildDamage() - Damage a child area where it is visible
 --		- Canvas:updateUnusedRegion() - Update region not covered by Child
 --
 --	OVERRIDES::
@@ -84,7 +85,7 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 11.1"
+_VERSION = "Canvas 12.0"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -365,6 +366,23 @@ function Canvas:markDamage(r1, r2, r3, r4)
 		local sx = self.CanvasLeft - r[1]
 		local sy = self.CanvasTop - r[2]
 		self.Child:markDamage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	markChildDamage(r1, r2, r3, r4): Damages the specified region in the
+--	child area where it overlaps with the visible part of the canvas.
+-------------------------------------------------------------------------------
+
+function Canvas:markChildDamage(r1, r2, r3, r4)
+	local r = self.Rect
+	local x = self.CanvasLeft
+	local y = self.CanvasTop
+	local w = min(self.CanvasWidth, r[3] - r[1] + 1)
+	local h = min(self.CanvasHeight, r[4] - r[2] + 1)
+	r1, r2, r3, r4 = overlap(r1, r2, r3, r4, x, y, x + w - 1, y + h - 1)
+	if r1 then
+		self.Child:markDamage(r1, r2, r3, r4)
 	end
 end
 

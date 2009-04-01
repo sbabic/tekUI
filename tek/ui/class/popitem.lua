@@ -67,7 +67,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 7.0"
+_VERSION = "PopItem 7.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -413,7 +413,7 @@ function PopItem:connectPopItems(app, window)
 			self:addNotify("Selected", true, NOTIFY_ONSELECT)
 			self:addNotify("Selected", false, NOTIFY_ONUNSELECT)
 			for _, child in ipairs(c) do
-				connectPopItems(child, app, window)
+				PopItem.connectPopItems(child, app, window)
 			end
 		else
 			if self.Shortcut then
@@ -437,7 +437,7 @@ function PopItem:disconnectPopItems(window)
 		local c = self:getElement("children")
 		if c then
 			for _, child in ipairs(c) do
-				disconnectPopItems(child, window)
+				PopItem.disconnectPopItems(child, window)
 			end
 			self:remNotify("Selected", false, NOTIFY_ONUNSELECT)
 			self:remNotify("Selected", true, NOTIFY_ONSELECT)
