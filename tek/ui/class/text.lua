@@ -98,7 +98,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 13.1"
+_VERSION = "Text 14.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -251,24 +251,30 @@ local function aligntext(align, opkey, x0, w1, w0)
 	return x0
 end
 
+function Text:layoutText()
+	local r1, r2, r3, r4 = self:getRectangle()
+	if r1 then
+		local p = self.Padding
+		local w0, h0 = self:getTextSize()
+		local w = r3 - r1 + 1 - p[3] - p[1]
+		local h = r4 - r2 + 1 - p[4] - p[2]
+		local x0 = aligntext(self.TextHAlign, "right", r1 + p[1], w, w0)
+		local y0 = aligntext(self.TextVAlign, "bottom", r2 + p[2], h, h0)
+		for _, tr in ipairs(self.TextRecords) do
+			local x = x0 + tr[5]
+			local y = y0 + tr[6]
+			local w = w0 - tr[7] - tr[5]
+			local h = h0 - tr[8] - tr[6]
+			local tw, th = tr[9], tr[10]
+			tr[15] = aligntext(tr[3], "right", x, w, tw)
+			tr[16] = aligntext(tr[4], "bottom", y, h, th)
+		end
+	end
+end
+
 function Text:layout(x0, y0, x1, y1, markdamage)
 	local res = Gadget.layout(self, x0, y0, x1, y1, markdamage)
-	local r = self.Rect
-	local p = self.Padding
-	local w0, h0 = self:getTextSize()
-	local w = r[3] - r[1] + 1 - p[3] - p[1]
-	local h = r[4] - r[2] + 1 - p[4] - p[2]
-	local x0 = aligntext(self.TextHAlign, "right", r[1] + p[1], w, w0)
-	local y0 = aligntext(self.TextVAlign, "bottom", r[2] + p[2], h, h0)
-	for _, tr in ipairs(self.TextRecords) do
-		local x = x0 + tr[5]
-		local y = y0 + tr[6]
-		local w = w0 - tr[7] - tr[5]
-		local h = h0 - tr[8] - tr[6]
-		local tw, th = tr[9], tr[10]
-		tr[15] = aligntext(tr[3], "right", x, w, tw)
-		tr[16] = aligntext(tr[4], "bottom", y, h, th)
-	end
+	self:layoutText()
 	return res
 end
 
@@ -347,6 +353,7 @@ end
 function Text:setTextRecord(pos, ...)
 	local record, keycode = self:newTextRecord(...)
 	self.TextRecords[pos] = record
+	self:layoutText()
 	return record, keycode
 end
 

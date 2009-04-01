@@ -33,7 +33,6 @@ static const luaL_Reg libfuncs[] =
 {
 	{ "open", tek_lib_visual_open },
 	{ "close", tek_lib_visual_close },
-	{ "wait", tek_lib_visual_wait },
 	{ "sleep", tek_lib_visual_sleep },
 	{ "openfont", tek_lib_visual_openfont },
 	{ "closefont", tek_lib_visual_closefont },

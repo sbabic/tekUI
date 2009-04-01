@@ -543,7 +543,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	TUINT sig;
 	fd_set rset;
 	struct TVRequest *req;
-	char buf[1];
+	char buf[256];
 	struct timeval tv;
 
 	/* interval time: 1/50s: */
@@ -598,15 +598,21 @@ LOCAL void x11_taskfunc(struct TTask *task)
 		/* wait for display, signal fd and timeout: */
 		if (select(inst->x11_fd_max, &rset, NULL, NULL, &tv) > 0)
 		{
-			/* consume one signal: */
+			int nbytes;
+
+			/* consume signal: */
 			if (FD_ISSET(inst->x11_fd_sigpipe_read, &rset))
-				read(inst->x11_fd_sigpipe_read, buf, 1);
+			{
+				ioctl(inst->x11_fd_sigpipe_read, FIONREAD, &nbytes);
+				if (nbytes > 0)
+					read(inst->x11_fd_sigpipe_read, buf,
+						TMIN(sizeof(buf), (size_t) nbytes));
+			}
 
 			#if defined(ENABLE_STDIN)
 			/* stdin line reader: */
 			if (fd_in >= 0 && FD_ISSET(fd_in, &rset))
 			{
-				int nbytes;
 				if (ioctl(fd_in, FIONREAD, &nbytes) == 0)
 				{
 					if (nbytes == 0)
