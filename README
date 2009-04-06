@@ -19,8 +19,11 @@
  - 3. [[#buildinstall : Building and installing]]
   - 3.1. [[#requirements : Requirements]]
   - 3.2. [[#buildenv : Adjusting the build environment]]
+   - 3.2.1 [[#notefbsd : FreeBSD notes]]
+   - 3.2.2 [[#notenanox : Nano-X notes]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
+  - 3.5. [[#envvariables : Environment variables]]
 
  - 4. [[#usersguide : tekUI user's guide]]
   - 4.1. [[#helloworld : Hello, World!]]
@@ -69,9 +72,10 @@ differently. See [[copyright][copyright.html]].
 
 TekUI is in alpha stage of development. It is available for the
 Linux, Windows, and FreeBSD platforms. Display drivers are available
-for X11, Windows, and DirectFB. See also [[TODO][todo.html]] for a
-list of known bugs and missing features, and [[#requirements]] for a
-list of required packages.
+for X11, Windows, DirectFB. In the SDK version, there is also a
+display driver for Nano-X available. See also [[TODO][todo.html]] for
+a list of known bugs and missing features, and [[#requirements]] for
+a list of required packages.
 
 ==( development :  1.3. Development model )==
 
@@ -202,7 +206,8 @@ The C library isolates from the host and provides a few
 performance-critical routines. Rendering and input handling are
 isolated in the form of display drivers, which allow for easy
 exchangeability. Display drivers currently supported are for X11,
-Windows and [[DirectFB][http://www.directfb.org/]].
+Windows, [[DirectFB][http://www.directfb.org/]], and
+[[Nano-X][http://www.microwindows.org/]].
 
 Aside from the display driver interface, the C library features
 OS-like facilities such as portable threads and a timer device.
@@ -250,6 +255,7 @@ this writing) are given below:
  * freetype-2.3.5 (for the x11 and directfb drivers)
  * DirectFB-0.9.25.1 (for the directfb driver)
  * MingW (for the Windows platform)
+ * microwindows-0.90 (for the Nano-X driver)
 
 LibXft and fontconfig are needed for building the x11 driver, but
 tekUI falls back to the core X11 API if they are unavailable at
@@ -279,9 +285,21 @@ which is located in the {{config}} file on the topmost directory
 level. Supported build tools are {{gmake}} (common under Linux) and
 {{pmake}} (common under FreeBSD).
 
-'''FreeBSD note''': You need a Lua binary which is linked with the
-{{-pthread}} option, as tekUI is using multithreaded code in shared
-libraries, which are dynamically loaded by the interpreter.
+===( notefbsd : 3.2.1. FreeBSD notes )===
+
+You need a Lua binary which is linked with the {{-pthread}} option,
+as tekUI is using multithreaded code in shared libraries, which are
+dynamically loaded by the interpreter.
+
+===( notenanox : 3.2.2. Nano-X notes )===
+
+The Nano-X driver is only available in the commercial SDK. You will
+almost certainly have to adjust the {{config}} file. Due to some
+limitations in Nano-X, tekUI applications make only sense running
+fullscreen without the window manager. For more information, see also
+{{tek/ui/style/nanox.css}}. Example running a demo:
+
+  # nano-X & THEME=nanox FULLSCREEN=true bin/demo_custom.lua
 
 ==( building : 3.3. Building )==
 
@@ -319,6 +337,13 @@ to adjust these paths in the {{config}} file. The installation is
 conveniently invoked with
 
   # sudo make install
+
+==( envvariables : 3.5. Environment variables )==
+
+ * {{FULLSCREEN}} - {{"true"}} to force opening an application in
+ full screen mode
+ * {{THEME}} - Name of a theme corresponding to a style sheet file in
+ {{tek/ui/style/}}
 
 ---------------------------------------------------------------------
 
