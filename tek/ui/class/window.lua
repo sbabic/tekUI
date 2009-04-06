@@ -93,7 +93,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 11.3"
+_VERSION = "Window 11.5"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -130,7 +130,7 @@ function Window.init(self)
 	self.DblClickTimeout = self.DblClickTimeout or DEF_DBLCLICKTIMELIMIT
 	self.DblClickJitter = self.DblClickJitter or DEF_DBLCLICKJITTER
 	self.FocusElement = false
-	self.FullScreen = self.FullScreen or false
+	self.FullScreen = self.FullScreen or ui.FullScreen == "true"
 	self.HiliteElement = false
 	-- Active hold tick counter - number of ticks left to next hold event:
 	self.HoldTickActive = 0
@@ -384,7 +384,7 @@ function Window:getWindowDimensions()
 	w = type(w) == "number" and max(w, m1)
 	h = type(h) == "number" and max(h, m2)
 	m3 = (m3 and m3 > 0 and m3 < HUGE) and m3
-	m4 = (m4 and m4 > 0 and m4 < HUGE) and m4
+	m4 = self.FullScreen and ui.HUGE or (m4 and m4 > 0 and m4 < HUGE) and m4
 	w = w or self.MaxWidth == 0 and m1 or w
 	h = h or self.MaxHeight == 0 and m2 or h
 	return m1, m2, m3, m4, x, y, w, h

@@ -105,7 +105,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 14.1"
+_VERSION = "Application 14.2"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -161,7 +161,7 @@ function Application.init(self)
 	self.OpenWindows = { }
 	self.ProgramName = self.ProgramName or self.Title or "unknown"
 	self.Status = "initializing"
-	self.Theme = self.Theme or "desktop"
+	self.Theme = self.Theme or ui.ThemeName or "desktop"
 	self.VendorName = self.VendorName or "unknown"
 	self.VendorDomain = self.VendorDomain or "unknown"
 	self.Properties = { ui.Theme.getStyleSheet("internal") }

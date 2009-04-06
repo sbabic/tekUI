@@ -3,13 +3,11 @@
 
 === General ===
 
- * Bitmap graphics
  * Clipboard support
  * Context menus
  * Bubble help
  * FloatText styling options
  * Confinement of popup elements to the visible screen
- * The TextInput gadget is quite unsatisfactory
 
 === Known bugs ===
 

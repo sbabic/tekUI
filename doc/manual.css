@@ -27,6 +27,10 @@ a:link:active, a:visited:active {
 	color: #f00;
 }
 
+p a:link, p a:visited {
+	text-decoration: underline;
+}
+
 hr {
 	border: 0;
 	height: 1px;

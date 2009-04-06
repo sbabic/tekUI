@@ -509,7 +509,7 @@ end
 -------------------------------------------------------------------------------
 
 local template =
-"-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S,-e=EMPTY/S,-n=NAME/F"
+"-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S,-e=EMPTY/S,--header/K,-n=NAME/F"
 local args = Args.read(template, arg)
 
 if not args or args["-h"] then
@@ -521,6 +521,7 @@ if not args or args["-h"] then
 	print("  -i=IINDENT/N/K indent character code in input [default 9]")
 	print("  -p=PLAIN/S     generate formatted plain text instead of HTML")
 	print("  -e=EMPTY/S     also show empty (undocumented) modules in index")
+	print("  --header/K     read a header from the specified file")
 	print("  -n=NAME/F      document name (rest of commandline will be used)")
 	print("If a path is specified, it is scanned for files with the extension")
 	print(".lua. From these files, a HTML document is generated containing a")
@@ -535,9 +536,15 @@ else
 	local state = { from = args["-f"], plain = args["-p"],
 		docname = args["-n"], showempty = args["-e"] }
 
+	state.textdoc = ""
+
+	if args["--header"] then
+		state.textdoc = io.open(args["--header"]):read("*a")
+	end
+
 	if args["-f"] and fs.stat(args["-f"], "mode") == "file" then
 		-- read existing text file with markup:
-		state.textdoc = io.open(args["-f"]):read("*a")
+		state.textdoc = state.textdoc .. io.open(args["-f"]):read("*a")
 	else
 		-- scan filesystem:
 		processtree(state)

@@ -33,7 +33,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 1.6"
+_VERSION = "PopupWindow 1.7"
 
 local PopupWindow = _M
 
@@ -49,7 +49,9 @@ function PopupWindow.init(self)
 	self.Margin = self.Margin or ui.NULLOFFS
 	self.MaxWidth = self.MaxWidth or 0
 	self.MaxHeight = self.MaxHeight or 0
-	return Window.init(self)
+	self = Window.init(self)
+	self.FullScreen = false
+	return self
 end
 
 -------------------------------------------------------------------------------

@@ -457,7 +457,7 @@ LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req)
 	tri[2].y = (TINT16) array[5];
 
 	XFillPolygon(mod->x11_Display, v->window, v->gc, tri, 3,
-		Nonconvex, CoordModeOrigin);
+		Convex, CoordModeOrigin);
 
 	for (i = 3; i < num; i++)
 	{
@@ -472,7 +472,7 @@ LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req)
 			setfgpen(mod, v, penarray[i]);
 
 		XFillPolygon(mod->x11_Display, v->window, v->gc, tri, 3,
-			Nonconvex, CoordModeOrigin);
+			Convex, CoordModeOrigin);
 	}
 }
 
@@ -504,7 +504,7 @@ LOCAL void x11_drawfan(X11DISPLAY *mod, struct TVRequest *req)
 	tri[2].y = (TINT16) array[5];
 
 	XFillPolygon(mod->x11_Display, v->window, v->gc, tri, 3,
-		Nonconvex, CoordModeOrigin);
+		Convex, CoordModeOrigin);
 
 	for (i = 3; i < num; i++)
 	{
@@ -517,7 +517,7 @@ LOCAL void x11_drawfan(X11DISPLAY *mod, struct TVRequest *req)
 			setfgpen(mod, v, penarray[i]);
 
 		XFillPolygon(mod->x11_Display, v->window, v->gc, tri, 3,
-			Nonconvex, CoordModeOrigin);
+			Convex, CoordModeOrigin);
 	}
 }
 

@@ -77,7 +77,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 16.0"
+_VERSION = "tekUI 17.1"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -92,6 +92,12 @@ end
 -- Modified package path to find modules in the local program directory:
 LocalPath = ProgDir and ProgDir .. "?.lua;" .. OldPath or OldPath
 LocalCPath = ProgDir and ProgDir .. "?.so;" .. OldCPath or OldCPath
+
+-- Name of the Default Theme:
+ThemeName = getenv("THEME") or false
+-- Open in fullscreen mode by default?:
+FullScreen = getenv("FULLSCREEN")
+FullScreen = FullScreen and FullScreen:lower() or false
 
 -------------------------------------------------------------------------------
 --	class = loadClass(domain, classname):
