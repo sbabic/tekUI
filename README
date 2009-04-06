@@ -72,10 +72,9 @@ differently. See [[copyright][copyright.html]].
 
 TekUI is in alpha stage of development. It is available for the
 Linux, Windows, and FreeBSD platforms. Display drivers are available
-for X11, Windows, DirectFB. In the SDK version, there is also a
-display driver for Nano-X available. See also [[TODO][todo.html]] for
-a list of known bugs and missing features, and [[#requirements]] for
-a list of required packages.
+for X11, Windows, DirectFB, and Nano-X. See also [[TODO][todo.html]]
+for a list of known bugs and missing features, and [[#requirements]]
+for a list of required packages.
 
 ==( development :  1.3. Development model )==
 
@@ -207,7 +206,7 @@ performance-critical routines. Rendering and input handling are
 isolated in the form of display drivers, which allow for easy
 exchangeability. Display drivers currently supported are for X11,
 Windows, [[DirectFB][http://www.directfb.org/]], and
-[[Nano-X][http://www.microwindows.org/]].
+[[Nano-X][http://www.nano-x.org/]].
 
 Aside from the display driver interface, the C library features
 OS-like facilities such as portable threads and a timer device.
@@ -255,7 +254,7 @@ this writing) are given below:
  * freetype-2.3.5 (for the x11 and directfb drivers)
  * DirectFB-0.9.25.1 (for the directfb driver)
  * MingW (for the Windows platform)
- * microwindows-0.90 (for the Nano-X driver)
+ * microwindows-0.91 (for the Nano-X driver)
 
 LibXft and fontconfig are needed for building the x11 driver, but
 tekUI falls back to the core X11 API if they are unavailable at
@@ -293,11 +292,11 @@ dynamically loaded by the interpreter.
 
 ===( notenanox : 3.2.2. Nano-X notes )===
 
-The Nano-X driver is only available in the commercial SDK. You will
-almost certainly have to adjust the {{config}} file. Due to some
-limitations in Nano-X, tekUI applications make only sense running
-fullscreen without the window manager. For more information, see also
-{{tek/ui/style/nanox.css}}. Example running a demo:
+The Nano-X driver is available as part of the commercial SDK. You
+will almost certainly have to adjust the {{config}} file. Due to some
+limitations in Nano-X, tekUI applications will probably make sense
+only when running in fullscreen mode without a window manager. See
+also {{tek/ui/style/nanox.css}} for more information. Example:
 
   # nano-X & THEME=nanox FULLSCREEN=true bin/demo_custom.lua
 
@@ -314,9 +313,9 @@ The regular build procedure is invoked with
 ==( installation : 3.4. Installation )==
 
 A system-wide installation of tekUI is not strictly required (in so
-far as the X11 and Windows drivers are concerned. The DirectFB
+far as the majority of display drivers is concerned. The DirectFB
 driver, in contrast, looks up fonts and cursors globally and must be
-installed anyway).
+installed in any case).
 
 Once tekUI is built, it can be worked with and developed against, as
 long as you stay in the top-level directory of the distribution; all
