@@ -247,9 +247,7 @@ typedef struct
 
 	TUINT8 x11_utf8buffer[X11_UTF8_BUFSIZE];
 
-	#if defined(NOCURSOR)
 	Cursor x11_NullCursor;
-	#endif
 
 	TTAGITEM *x11_InitTags;
 	struct TMsgPort *x11_IMsgPort;

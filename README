@@ -339,6 +339,8 @@ conveniently invoked with
 
 ==( envvariables : 3.5. Environment variables )==
 
+ * {{NOCURSOR}} - {{"true"}} to disable the mouse pointer over a
+ tekUI application
  * {{FULLSCREEN}} - {{"true"}} to force opening an application in
  full screen mode
  * {{THEME}} - Name of a theme corresponding to a style sheet file in

@@ -94,12 +94,13 @@ static const luaL_Reg fontmethods[] =
 **	args.MinHeight - minimum height of the window
 **	args.MaxWidth - maximum width of the window
 **	args.MaxHeight - maximum height of the window
+**	args.BlankCursor - blank cursor
 */
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_open(lua_State *L)
 {
-	TTAGITEM tags[17], *tp = tags;
+	TTAGITEM tags[18], *tp = tags;
 	TEKVisual *visbase, *vis;
 
 	vis = lua_newuserdata(L, sizeof(TEKVisual));
@@ -237,6 +238,12 @@ tek_lib_visual_open(lua_State *L)
 	lua_getfield(L, 1, "EventMask");
 	if (lua_isnumber(L, -1))
 		tp++->tti_Value = (TTAG) lua_tointeger(L, -1);
+	lua_pop(L, 1);
+
+	tp->tti_Tag = TVisual_BlankCursor;
+	lua_getfield(L, 1, "BlankCursor");
+	if (lua_isboolean(L, -1))
+		tp++->tti_Value = (TTAG) lua_toboolean(L, -1);
 	lua_pop(L, 1);
 
 	tp->tti_Tag = TVisual_Display;
