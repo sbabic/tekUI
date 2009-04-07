@@ -287,7 +287,6 @@ static TBOOL getprops(X11DISPLAY *inst)
 
 /*****************************************************************************/
 
-#if defined(NOCURSOR)
 static void x11_createnullcursor(X11DISPLAY *mod)
 {
 	Pixmap cursormask;
@@ -305,10 +304,9 @@ static void x11_createnullcursor(X11DISPLAY *mod)
 	dummycolour.flags = 04;
 	mod->x11_NullCursor = XCreatePixmapCursor(display, cursormask, cursormask,
 		&dummycolour, &dummycolour, 0, 0);
-	XFreePixmap(display,cursormask);
-	XFreeGC(display,gc);
+	XFreePixmap(display, cursormask);
+	XFreeGC(display, gc);
 }
-#endif
 
 /*****************************************************************************/
 
@@ -374,9 +372,7 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		inst->x11_fm.deffont = x11_hostopenfont(inst, ftags);
 		if (inst->x11_fm.deffont == TNULL) break;
 
-		#if defined(NOCURSOR)
 		x11_createnullcursor(inst);
-		#endif
 
 		inst->x11_IMsgPort = (struct TMsgPort *) TGetTag(inst->x11_InitTags,
 			TVisual_IMsgPort, TNULL);

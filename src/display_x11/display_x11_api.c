@@ -139,13 +139,11 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		swa.event_mask = x11_seteventmask(mod, v,
 			(TUINT) TGetTag(tags, TVisual_EventMask, 0));
 
-		#if defined(NOCURSOR)
-		if (getenv("NOCURSOR"))
+		if (TGetTag(tags, TVisual_BlankCursor, TFALSE))
 		{
 			swa.cursor = mod->x11_NullCursor;
 			swa_mask |= CWCursor;
 		}
-		#endif
 
 		v->window = XCreateWindow(mod->x11_Display,
 			RootWindow(mod->x11_Display, mod->x11_Screen),

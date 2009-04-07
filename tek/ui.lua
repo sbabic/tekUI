@@ -77,7 +77,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 17.1"
+_VERSION = "tekUI 17.2"
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -97,7 +97,9 @@ LocalCPath = ProgDir and ProgDir .. "?.so;" .. OldCPath or OldCPath
 ThemeName = getenv("THEME") or false
 -- Open in fullscreen mode by default?:
 FullScreen = getenv("FULLSCREEN")
-FullScreen = FullScreen and FullScreen:lower() or false
+FullScreen = FullScreen or false
+-- No mouse pointer:
+NoCursor = getenv("NOCURSOR") == "true"
 
 -------------------------------------------------------------------------------
 --	class = loadClass(domain, classname):

@@ -21,6 +21,7 @@
 #include "display_x11_mod.h"
 
 /*****************************************************************************/
+
 static TBOOL hostopenfont(X11DISPLAY *mod, struct FontNode *fn,
 	struct fnt_attr *fattr);
 #if defined(ENABLE_XFT)
