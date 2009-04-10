@@ -77,7 +77,11 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 17.2"
+_VERSION = "tekUI 18.0"
+
+-------------------------------------------------------------------------------
+--	Initialization of globals:
+-------------------------------------------------------------------------------
 
 -- Old package path:
 local OldPath = package and package.path or ""
@@ -86,7 +90,7 @@ local OldCPath = package and package.cpath or ""
 -- Get executable path and name:
 if arg and arg[0] then
 	local p = package and package.config:sub(1, 1) or "/"
-	ProgDir, ProgName = arg[0]:match("^(.-" .. p .. "?)([^" .. p .. "]*)$")
+	ProgDir, ProgName = arg[0]:match(("^(.-%s?)([^%s]*)$"):format(p, p))
 end
 
 -- Modified package path to find modules in the local program directory:
@@ -100,6 +104,8 @@ FullScreen = getenv("FULLSCREEN")
 FullScreen = FullScreen or false
 -- No mouse pointer:
 NoCursor = getenv("NOCURSOR") == "true"
+-- Standard shortcut marker:
+ShortcutMark = "_"
 
 -------------------------------------------------------------------------------
 --	class = loadClass(domain, classname):

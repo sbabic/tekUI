@@ -67,7 +67,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 7.1"
+_VERSION = "PopItem 7.2"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -106,6 +106,7 @@ function PopItem.init(self)
 		self.Mode = "button"
 	end
 	self.Shortcut = self.Shortcut or false
+	self.ShortcutMark = self.ShortcutMark or ui.ShortcutMark
 	return Text.init(self)
 end
 

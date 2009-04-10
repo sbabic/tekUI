@@ -105,7 +105,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 14.2"
+_VERSION = "Application 14.3"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -571,10 +571,10 @@ end
 
 -------------------------------------------------------------------------------
 --	Application:addCoroutine(function, arg1, ...): Adds a new coroutine to
---	the application's list of serviced coroutines. The new coroutine is not
---	immediately started, but at a later time during the application's
---	update procedure. This gives the application an opportunity to service
---	all pending messages and updates before the coroutine is actually started.
+--	the application. The new coroutine is not started immediately, but
+--	scheduled for later execution during the application's update procedure.
+--	This gives the application an opportunity to service all pending messages
+--	and updates before the coroutine is actually started.
 -------------------------------------------------------------------------------
 
 function Application:addCoroutine(func, ...)
@@ -640,8 +640,11 @@ end
 --		- {{Center}} - Boolean, whether requester should be opened centered
 --		- {{Height}} - Height of the requester window
 --		- {{Lister}} - External lister to operate on
+--		- {{Location}} - Initial contents of the requester's location field
 --		- {{Path}} - The initial path
 --		- {{SelectMode}} - "multi" or "single" [default "single"]
+--		- {{SelectText}} - Text to display on the selection button
+--		[default "open"]
 --		- {{Title}} - Window title [default "Select file or directory..."]
 --		- {{Width}} - Width of the requester window
 --	The first return value is a string reading either "selected" or
@@ -663,6 +666,8 @@ function Application:requestFile(args)
 		Path = args.Path or "/",
 		Kind = "requester",
 		SelectMode = args.SelectMode or "single",
+		Location = args.Location,
+		SelectText = args.SelectText
 	}
 
 	local window = Window:new
@@ -750,7 +755,7 @@ function Application:easyRequest(title, text, ...)
 		Orientation = "vertical",
 		Children =
 		{
-			ui.Text:new { Width = "fill", Text = text },
+			ui.Text:new { Class = "message", Width = "fill", Text = text },
 			ui.Group:new { Width = "fill", SameSize = true,
 				Children = buttons }
 		}

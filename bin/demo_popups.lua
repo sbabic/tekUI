@@ -30,7 +30,7 @@ local window = Window:new
 			{
 				MenuItem:new
 				{
-					Text = "_File",
+					Text = "File",
 					Children =
 					{
 						MenuItem:new { Text = "New" },
@@ -141,65 +141,65 @@ local window = Window:new
 							{
 								PopItem:new
 								{
-									Text = "Normal Popups",
+									Text = "_Normal Popups",
 									Width = "auto",
 									-- these children are not connected initially:
 									Children =
 									{
 										PopItem:new
 										{
-											Text = "Button Style",
+											Text = "_Button Style",
 											Children =
 											{
 												PopItem:new
 												{
-													Text = "English",
+													Text = "_English",
 													Children =
 													{
-														PopItem:new { Text = "One" },
-														PopItem:new { Text = "Two" },
-														PopItem:new { Text = "Three" },
-														PopItem:new { Text = "Four" },
+														PopItem:new { Text = "_One" },
+														PopItem:new { Text = "_Two" },
+														PopItem:new { Text = "Th_ree" },
+														PopItem:new { Text = "_Four" },
 													}
 												},
 												PopItem:new
 												{
-													Text = "Español",
+													Text = "Es_pañol",
 													Children =
 													{
-														PopItem:new { Text = "Uno" },
-														PopItem:new { Text = "Dos" },
-														PopItem:new { Text = "Tres" },
-														PopItem:new { Text = "Cuatro" },
+														PopItem:new { Text = "_Uno" },
+														PopItem:new { Text = "_Dos" },
+														PopItem:new { Text = "_Tres" },
+														PopItem:new { Text = "_Cuatro" },
 													}
 												}
 											}
 										},
 										MenuItem:new
 										{
-											Text = "Menu Style",
+											Text = "_Menu Style",
 											Children =
 											{
 												MenuItem:new
 												{
-													Text = "Français",
+													Text = "_Français",
 													Children =
 													{
-														MenuItem:new { Text = "Un" },
-														MenuItem:new { Text = "Deux" },
-														MenuItem:new { Text = "Trois" },
-														MenuItem:new { Text = "Quatre" },
+														MenuItem:new { Text = "_Un" },
+														MenuItem:new { Text = "_Deux" },
+														MenuItem:new { Text = "_Trois" },
+														MenuItem:new { Text = "_Quatre" },
 													}
 												},
 												MenuItem:new
 												{
-													Text = "Deutsch",
+													Text = "_Deutsch",
 													Children =
 													{
-														MenuItem:new { Text = "Eins" },
-														MenuItem:new { Text = "Zwei" },
-														MenuItem:new { Text = "Drei" },
-														MenuItem:new { Text = "Vier" },
+														MenuItem:new { Text = "_Eins" },
+														MenuItem:new { Text = "_Zwei" },
+														MenuItem:new { Text = "_Drei" },
+														MenuItem:new { Text = "_Vier" },
 													}
 												},
 												MenuItem:new
@@ -219,7 +219,7 @@ local window = Window:new
 								},
 								PopItem:new
 								{
-									Text = "Special Popups",
+									Text = "_Special Popups",
 									Width = "auto",
 									Children =
 									{
@@ -232,7 +232,7 @@ local window = Window:new
 								ui.PopList:new
 								{
 									Id = "euro-combo",
-									Text = "Combo Box",
+									Text = "_Combo Box",
 									KeepMinWidth = true,
 									Width = "fill",
 									ListObject = List:new

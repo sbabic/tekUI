@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.13
+**	Version: 1.14
 */
 
 /*
@@ -262,6 +262,10 @@ tek.ui.class.window {
 	background-color: background;
 	width: fill;
 	height: auto;
+}
+
+.message {
+	padding: 12;
 }
 
 .page-button {

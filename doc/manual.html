@@ -422,7 +422,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v9.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -516,6 +516,14 @@
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
+							<code>SelectText &#091;IG&#093;</code> (String)
+							<blockquote>
+								<p>
+									Text to display on the selection button. Default: <code>&quot;Open&quot;</code>.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>Status &#091;G&#093;</code> (string)
 							<blockquote>
 								<p>
@@ -564,6 +572,12 @@
 				</blockquote>
 				<hr />
 			</div>
+		</div>
+		<div class="node"><h3><a name="DirList:getCurrentDir" id="DirList:getCurrentDir"><code>cdir = getCurrentDir()</code></a></h3>
+			<p>
+				Get current directory
+			</p>
+			<hr />
 		</div>
 		<div class="node"><h3><a name="DirList:getDirectoryIterator" id="DirList:getDirectoryIterator"><code>iterator = getDirectoryIterator(path)</code></a></h3>
 			<p>
@@ -627,7 +641,7 @@
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -833,10 +847,10 @@
 		<div class="node"><h3><a name="Application:addCoroutine" id="Application:addCoroutine"><code>Application:addCoroutine(function, arg1, ...)</code></a></h3>
 			<p>
 				Adds a new coroutine to
-				the application's list of serviced coroutines. The new coroutine is not
-				immediately started, but at a later time during the application's
-				update procedure. This gives the application an opportunity to service
-				all pending messages and updates before the coroutine is actually started.
+				the application. The new coroutine is not started immediately, but
+				scheduled for later execution during the application's update procedure.
+				This gives the application an opportunity to service all pending messages
+				and updates before the coroutine is actually started.
 			</p>
 			<hr />
 		</div>
@@ -871,10 +885,17 @@
 						<code>Lister</code> - External lister to operate on
 					</li>
 					<li style="list-style-type: none">
+						<code>Location</code> - Initial contents of the requester's location field
+					</li>
+					<li style="list-style-type: none">
 						<code>Path</code> - The initial path
 					</li>
 					<li style="list-style-type: none">
 						<code>SelectMode</code> - &quot;multi&quot; or &quot;single&quot; &#091;default &quot;single&quot;&#093;
+					</li>
+					<li style="list-style-type: none">
+						<code>SelectText</code> - Text to display on the selection button
+						&#091;default &quot;open&quot;&#093;
 					</li>
 					<li style="list-style-type: none">
 						<code>Title</code> - Window title &#091;default &quot;Select file or directory...&quot;&#093;
@@ -1053,7 +1074,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1534,7 +1555,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1804,7 +1825,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v5.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v5.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2031,7 +2052,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v14.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v14.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2122,12 +2143,12 @@ message = function(object, message)
 							<code>ShortcutMark &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									The initiatory character for keyboard shortcuts in the Text, used
-									during initial text setup. The first character following the marker
-									will be used as the gadget's <code>KeyCode</code> attribute (see also
+									The initiatory character for keyboard shortcuts in <code>Text</code>, used
+									during text setup. The first character following the marker
+									will be used as the element's <code>KeyCode</code> (see also
 									<a href="#tek.ui.class.gadget">Gadget</a>). By setting this attribute
-									to <strong>false</strong>, the text is left unmodified and no attempts are
-									made for extracting a keyboard shortcut. &#091;Default: &quot;_&quot;&#093;
+									to an empty string (<code>&quot;&quot;</code>), the text is left unmodified and no
+									shortcut is extracted. &#091;Default: <code>&quot;&quot;</code>&#093;
 								</p>
 							</blockquote>
 						</li>
@@ -2475,7 +2496,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2494,9 +2515,28 @@ message = function(object, message)
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This gadget implements a Text with 'button' Mode (behavior)
-						and 'button' Class (appearance).
+						The Button class implements a Text with 'button' Mode (behavior)
+						and 'button' Class (appearance). In addition to that, it enables
+						the initialization of a possible keyboard shortcut from a special
+						initiatory character (by default an underscore) preceding a letter
+						in the element's <code>Text</code> attribute.
 					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>NOTES</dfn>
+				<blockquote>
+					<p>
+						This class adds redundancy, because it differs from the Text
+						class only in that it specifies a few attributes differently in
+						its <code>new()</code> method. To avoid this overhead, use the Text class
+						directly, or create a &quot;Button factory&quot; like this:
+					</p>
+<pre>
+function newButton(text)
+  return ui.Text:new { Mode = &quot;button&quot;, Class = &quot;button&quot;,
+    Text = text, ShortcutMark = ui.ShortcutMark }
+end
+</pre>
 				</blockquote>
 				<hr />
 			</div>
@@ -2659,7 +2699,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.17)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.18)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3776,7 +3816,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4809,7 +4849,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v8.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v8.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4982,7 +5022,8 @@ message = function(object, message)
 		</div>
 		<div class="node"><h3><a name="TextInput:setCursor" id="TextInput:setCursor"><code>self:setCursor(pos)</code></a></h3>
 			<p>
-				Set cursor position, absolute
+				Set absolute cursor position. If <code>pos</code> is
+				<code>&quot;eol&quot;</code>, the cursor is positioned to the end of the string.
 			</p>
 			<hr />
 		</div>
@@ -5002,6 +5043,9 @@ message = function(object, message)
 			<p>
 				Perform add character
 			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="TextInput:arethinkLayout" id="TextInput:arethinkLayout"><code>a rethinkLayout()</code></a></h3>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="TextInput:onEnter" id="TextInput:onEnter"><code>onEnter(text)</code></a></h3>
@@ -7111,7 +7155,7 @@ method(object, arg1, ...)
 		</p>
 		<hr />
 	</div>
-	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v17.2)</a></h2>
+	<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v18.0)</a></h2>
 		<div class="definition"><dfn>OVERVIEW</dfn>
 			<blockquote>
 				<p>
@@ -7457,7 +7501,7 @@ Class.checkDescend(Button, Area)
 </pre>
 		<hr />
 		<p>
-			Document generated on Tue Apr  7 18:18:11 2009
+			Document generated on Fri Apr 10 23:49:19 2009
 		</p>
 	</div>
 	</body>

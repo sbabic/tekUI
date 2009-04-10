@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.17"
+_VERSION = "Theme 6.18"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -284,6 +284,10 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["height"] = "auto",
 	},
 
+	[".message"] = {
+		["padding"] = 12,
+	},
+	
 	[".page-button"] = {
 		["border-style"] = "inset",
 		["border-width"] = "2 0 2 2",

@@ -73,10 +73,11 @@ local char = string.char
 local floor = math.floor
 local min = math.min
 local max = math.max
+local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 8.1"
+_VERSION = "TextInput 8.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -102,7 +103,6 @@ function TextInput.init(self)
 	self.FHeight = false
 	self.FWidth = false
 	self.Mode = "touch"
-	self.ShortcutMark = false
 	self.TabEnter = self.TabEnter or false
 	self.Text = self.Text or ""
 	self.TextBuffer = UTF8String:new(self.Text)
@@ -284,7 +284,7 @@ function TextInput:clickMouse(x, y)
 			tc = floor((tr[3] - tr[1]) / fw) + 1
 		end
 	end
-	self:setCursor(tc)
+	self:setCursor(tc + self.TextOffset)
 	self.BlinkTick = 0
 	self.BlinkState = 0
 end
@@ -350,16 +350,9 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:moveCursorLeft()
-	self.TextCursor = self.TextCursor - 1
-	if self.TextCursor < 0 then
-		self.TextCursor = 0
-		if self.TextOffset > 0 then
-			self.TextOffset = self.TextOffset - 1
-		else
-			return false
-		end
-	end
-	return true
+	local c = self:getCursor()
+	self:setCursor(c - 1)
+	return self:getCursor() ~= c
 end
 
 -------------------------------------------------------------------------------
@@ -367,16 +360,9 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:moveCursorRight()
-	self.TextCursor = self.TextCursor + 1
-	if self.TextCursor >= self.TextWidth then
-		self.TextCursor = self.TextWidth - 1
-		if self.TextOffset < self.TextBuffer:len() - self.TextWidth + 1 then
-			self.TextOffset = self.TextOffset + 1
-		else
-			return false
-		end
-	end
-	return true
+	local c = self:getCursor()
+	self:setCursor(c + 1)
+	return self:getCursor() ~= c
 end
 
 -------------------------------------------------------------------------------
@@ -416,22 +402,28 @@ function TextInput:getCursor()
 end
 
 -------------------------------------------------------------------------------
---	self:setCursor(pos): Set cursor position, absolute
+--	self:setCursor(pos): Set absolute cursor position. If {{pos}} is
+--	{{"eol"}}, the cursor is positioned to the end of the string.
 -------------------------------------------------------------------------------
 
-function TextInput:setCursor(tc)
-	local to = self.TextOffset
-	local tw = self.TextWidth
-	if tw then
+function TextInput:setCursor(pos)
+	local w = self.TextWidth
+	if w then
 		local len = self.TextBuffer:len()
-		if tc >= tw + to then
-			to = to + (tc - tw + 1)
-			to = min(to, len - 1)
-			tc = tw - 1
+		if pos == "eol" then
+			pos = len
+		elseif type(pos) ~= "number" then
+			pos = 0
+		else
+			pos = max(0, min(len, pos))
 		end
-		tc = min(tc, len - to)
-		self.TextOffset = to
-		self.TextCursor = tc
+		local o = self.TextOffset
+		local c = self.TextCursor
+		while o > 0 and (pos < o or pos > o + w or w + o > len + 1) do
+			o = o - 1
+		end
+		self.TextOffset = o
+		self.TextCursor = pos - o
 	end
 end
 
@@ -526,10 +518,9 @@ function TextInput:handleInput(msg)
 				-- something changed:
 				self.BlinkTick = 0
 				self.BlinkState = 0
-
-				-- self.Text = t:get() -- make the updated text available
+				-- make the updated text available:
 				self:setValue("Text", self.TextBuffer:get())
-
+				-- swallow event:
 				return false
 			end
 		elseif msg[2] == ui.MSG_KEYUP then
@@ -541,15 +532,15 @@ function TextInput:handleInput(msg)
 end
 
 -------------------------------------------------------------------------------
---	onSetText: overrides
+--	onSetText: overrides. Do not pass the control back to Text, as it performs
+--	a rethinkLayout():
 -------------------------------------------------------------------------------
 
 function TextInput:onSetText(text)
-	-- intercept notification and do not pass the control back
-	-- to Text, as it performs a rethinkLayout() on text changes
+	local pos = self:getCursor()
 	self:makeTextRecords(text)
 	self.TextBuffer = UTF8String:new(text)
-	self.TextOffset = 0 -- TODO
+	self:setCursor(pos)
 	self.Redraw = true
 end
 

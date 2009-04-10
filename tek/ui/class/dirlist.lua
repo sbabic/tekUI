@@ -36,6 +36,8 @@
 --			Mode of selection:
 --				- "single" - allows selections of one entry at a time
 --				- "multi" - allows selections of multiple entries
+--		- {{SelectText [IG]}} (String)
+--			Text to display on the selection button. Default: {{"Open"}}.
 --		- {{Status [G]}} (string)
 --			Status of the lister:
 --				- "running" - the lister is currently being shown
@@ -69,9 +71,18 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 9.6"
+_VERSION = "DirList 10.0"
 
 local DirList = _M
+
+-------------------------------------------------------------------------------
+--	cdir = getCurrentDir(): Get current directory
+-------------------------------------------------------------------------------
+
+function DirList:getCurrentDir()
+	local success, path = pcall(lfs.currentdir)
+	return success and path
+end
 
 -------------------------------------------------------------------------------
 --	iterator = getDirectoryIterator(path): Returns an iterator function for
@@ -144,7 +155,9 @@ function DirList.new(class, self)
 
 	self.ScanMode = false
 	self.DirList = false
+	
 	self.SelectMode = self.SelectMode or false
+	self.SelectText = self.SelectText or L.OPEN
 
 	self.PathField = TextInput:new
 	{
@@ -219,7 +232,7 @@ function DirList.new(class, self)
 
 	self.OpenGadget = Button:new
 	{
-		Text = L.OPEN,
+		Text = self.SelectText,
 		Width = "fill",
 		Height = "fill",
 	}
@@ -231,6 +244,10 @@ function DirList.new(class, self)
 			for line in pairs(list.SelectedLines) do
 				local entry = list:getItem(line)
 				insert(sel, entry[1][1])
+			end
+			-- if nothing selected, use the text in the location field:
+			if #sel == 0 and self.LocationField.Text ~= "" then
+				insert(sel, self.LocationField.Text)
 			end
 			self:setValue("Status", "selected")
 		end })
@@ -407,7 +424,16 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:scanDir(path)
+	
 	local app = self.Application
+	
+	self.Path = path
+	if path == "" then
+		path = self:getCurrentDir()
+		self.Path = path
+		self.PathField:setValue("Enter", path)
+	end
+	
 	local diri = self:getDirectoryIterator(path)
 
 	app:addCoroutine(function()
@@ -417,7 +443,6 @@ function DirList:scanDir(path)
 		self.ScanMode = "scanning"
 
 		local obj = self.ListGadget
-		path = path == "" and "." or path
 		obj:setValue("CursorLine", 0)
 		obj:setList(List:new())
 
@@ -475,9 +500,6 @@ function DirList:showDirectory(path)
 	path = path or self.Path
 	self.Path = path
 	local pathfield = self.PathField
-	local locationfield = self.LocationField
-	locationfield:setValue("Text", "")
--- 	pathfield:setValue("Text", path)
 	pathfield:setValue("Enter", path)
 end
 
@@ -506,8 +528,9 @@ function DirList:clickList()
 	local list = self.ListGadget
 	local locationfield = self.LocationField
 	local entry = list:getItem(list.CursorLine)
-	if entry then
-		locationfield:setValue("Text", entry[1][1])
+	entry = entry and entry[1][1]
+	if entry and self:getFileStat(self.Path, entry, "mode") == "file" then
+		locationfield:setValue("Text", entry)
 	end
 end
 

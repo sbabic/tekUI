@@ -41,7 +41,7 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 5.0"
+_VERSION = "MenuItem 5.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -78,6 +78,7 @@ function MenuItem.init(self)
 	else
 		self.Mode = "button"
 	end
+	self.ShortcutMark = self.ShortcutMark or ui.ShortcutMark
 	self.TextHAlign = "left"
 	return PopItem.init(self)
 end

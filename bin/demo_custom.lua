@@ -11,15 +11,17 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 --	Keybutton class:
 -------------------------------------------------------------------------------
 
-local KeyButton = ui.Button:newClass { _NAME = "_keybutton" }
+local KeyButton = ui.Text:newClass { _NAME = "_keybutton" }
 
 function KeyButton.init(self)
 	self.KeyString = self.KeyString or self.Text
 	self.KeyCode = self.KeyCode or self.KeyString:byte()
 	assert(self.KeyCode)
 	assert(self.Group)
-	self.Width = "fill"
-	return ui.Button.init(self)
+	self.Width = self.Width or "fill"
+	self.Mode = self.Mode or "button"
+	self.Class = self.Class or "button"
+	return ui.Text.init(self)
 end
 
 function KeyButton:onPress(pressed)

@@ -31,6 +31,7 @@ app = ui.Application:new
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
+							ShortcutMark = ui.ShortcutMark,
 						},
 						ui.TextInput:new
 						{
@@ -44,6 +45,7 @@ app = ui.Application:new
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
+							ShortcutMark = ui.ShortcutMark,
 						},
 						ui.TextInput:new
 						{
@@ -55,6 +57,7 @@ app = ui.Application:new
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
+							ShortcutMark = ui.ShortcutMark,
 						},
 						ui.Text:new
 						{
@@ -67,6 +70,7 @@ app = ui.Application:new
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
+							ShortcutMark = ui.ShortcutMark,
 						},
 						ui.CheckMark:new
 						{

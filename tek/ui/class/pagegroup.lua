@@ -60,7 +60,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.4"
+_VERSION = "PageGroup 9.5"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -330,6 +330,7 @@ function PageGroup.new(class, self)
 							Mode = "touch",
 							Width = "auto",
 							Text = text,
+							ShortcutMark = ui.ShortcutMark,
 							Notifications =
 							{
 								["Pressed"] =

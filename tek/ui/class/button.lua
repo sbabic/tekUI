@@ -16,8 +16,22 @@
 --		Button
 --
 --	OVERVIEW::
---		This gadget implements a Text with 'button' Mode (behavior)
---		and 'button' Class (appearance).
+--		The Button class implements a Text with 'button' Mode (behavior)
+--		and 'button' Class (appearance). In addition to that, it enables
+--		the initialization of a possible keyboard shortcut from a special
+--		initiatory character (by default an underscore) preceding a letter
+--		in the element's {{Text}} attribute.
+--
+--	NOTES::
+--		This class adds redundancy, because it differs from the Text
+--		class only in that it specifies a few attributes differently in
+--		its {{new()}} method. To avoid this overhead, use the Text class
+--		directly, or create a "Button factory" like this:
+--
+--				function newButton(text)
+--				  return ui.Text:new { Mode = "button", Class = "button",
+--				    Text = text, ShortcutMark = ui.ShortcutMark }
+--				end
 --
 -------------------------------------------------------------------------------
 
@@ -25,7 +39,7 @@ local ui = require "tek.ui"
 local Text = ui.Text
 
 module("tek.ui.class.button", tek.ui.class.text)
-_VERSION = "Button 1.0"
+_VERSION = "Button 1.1"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -36,5 +50,6 @@ local Button = _M
 function Button.init(self)
 	self.Mode = self.Mode or "button"
 	self.Class = self.Class or "button"
+	self.ShortcutMark = self.ShortcutMark or ui.ShortcutMark
 	return Text.init(self)
 end
