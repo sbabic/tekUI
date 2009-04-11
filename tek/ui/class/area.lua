@@ -4,14 +4,12 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
---		[[#tek.ui.class.element : Element]] /
---		Area
+--		[[#tek.ui.class.element : Element]] / Area
 --
---	OVERVIEW::
 --		This class implements an outer margin, layouting and drawing.
 --
 --	ATTRIBUTES::
@@ -111,6 +109,7 @@
 --		- Area:askMinMax() - Queries element's minimum and maximum dimensions
 --		- Area:checkFocus() - Checks if the element can receive the focus
 --		- Area:draw() - Paints the element
+--		- Area:erase() - Erase the element's background
 --		- Area:getElement() - Returns an element's neighbours
 --		- Area:getElementByXY() - Checks if the element covers a coordinate
 --		- Area:getRectangle() - Returns the element's layouted coordinates
@@ -201,8 +200,7 @@ function Area.init(self)
 end
 
 -------------------------------------------------------------------------------
---	getProperties(props, [pseudoclass]): This function is called to obtain
---	properties for the given {{pseudoclass}}.
+--	getProperties: overrides
 -------------------------------------------------------------------------------
 
 function Area:getProperties(p, pclass)
@@ -339,7 +337,7 @@ end
 --	passed from a child class, before passing them on to its super class.
 --	{{minw}}, {{minh}} are cumulative of the minimal size of the element,
 --	while {{maxw}}, {{maxw}} collect the size the element is allowed to
---	expand to. Use {{ui.HUGE}} to indicate a 'huge' spatial extent.
+--	expand to. Use {{ui.HUGE}} to indicate a practically unlimited size.
 -------------------------------------------------------------------------------
 
 function Area:askMinMax(m1, m2, m3, m4)

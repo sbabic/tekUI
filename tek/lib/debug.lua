@@ -24,16 +24,16 @@
 --			db.out = io.open("logfile", "w")
 --
 --	FUNCTIONS::
---		- debug.console() - Enter debug console
---		- debug.dump() - Dump a table recursively
---		- debug.error() - Print a text in the {{ERROR}} debug level
---		- debug.execute() - Execute a function in the specified debug level
---		- debug.fail() - Print a text in the {{FAIL}} debug level
---		- debug.info() - Print a text in the {{INFO}} debug level
---		- debug.print() - Print a text in the specified debug level
---		- debug.stacktrace() - Print a stacktrace in the specified debug level
---		- debug.trace() - Print a text in the {{TRACE}} debug level
---		- debug.warn() - Print a text in the {{WARN}} debug level
+--		- debug.console() - Enters the debug console
+--		- debug.dump() - Dumps a table recursively
+--		- debug.error() - Prints a text in the {{ERROR}} debug level
+--		- debug.execute() - Executes a function in the specified debug level
+--		- debug.fail() - Prints a text in the {{FAIL}} debug level
+--		- debug.info() - Prints a text in the {{INFO}} debug level
+--		- debug.print() - Prints a text in the specified debug level
+--		- debug.stacktrace() - Prints a stacktrace in the specified debug level
+--		- debug.trace() - Prints a text in the {{TRACE}} debug level
+--		- debug.warn() - Prints a text in the {{WARN}} debug level
 --
 -------------------------------------------------------------------------------
 

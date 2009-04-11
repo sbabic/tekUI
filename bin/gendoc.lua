@@ -23,6 +23,7 @@
 --	[end of a comment block]
 --
 
+local db = require "tek.lib.debug"
 local Markup = require "tek.class.markup"
 local Args = require "tek.lib.args"
 
@@ -30,6 +31,9 @@ local concat = table.concat
 local insert = table.insert
 local remove = table.remove
 local sort = table.sort
+
+local RULE = "-------------------------------------------------------------------------------"
+local PAGE = "==============================================================================="
 
 -------------------------------------------------------------------------------
 --	aquire a filesystem abstraction:
@@ -150,6 +154,7 @@ function processfile(state, fname)
 	local ret, docfunc, args
 	local parser = 0 -- 0 = normal, 1 = finddoc, 2 = funcdoc
 
+	local blocks = { }
 	local block
 	local function addblock(text, ...)
 		insert(block, text:format(...))
@@ -195,7 +200,7 @@ function processfile(state, fname)
 					docfunc = docfunc:match("[^.:]+[.:]([^.:]+)") or docfunc
 					block = { }
 					parser = 2
-					addblock(("-"):rep(79) .. "\n\n")
+					addblock(RULE .. "\n\n")
 					addblock("==={ %s : %s }===\n\n",
 						(shortname or classname or fname) .. ":" .. docfunc,
 							title)
@@ -215,7 +220,15 @@ function processfile(state, fname)
 				if line:match("^%-%-%-%-%-%-%-%-") then
 					block = trimblock(block)
 					insert(block, 1, "\n")
-					insert(documentation, concat(block))
+					block = concat(block)
+					if docfunc then
+						-- this is a function, collect for sorting:
+						insert(blocks, docfunc)
+						blocks[docfunc] = block
+					else
+						-- other documentation is dumped in natural order:
+						insert(documentation, block)
+					end
 					parser = 0
 					break
 				end
@@ -279,6 +292,12 @@ function processfile(state, fname)
 		Version = version,
 	}
 
+	-- sort functions alphabetically, add at end:
+	sort(blocks)
+	for _, funcname in ipairs(blocks) do
+		insert(documentation, blocks[funcname])
+	end
+	
 	if classname then
 		local doc
 		if #documentation > 0 then
@@ -286,9 +305,12 @@ function processfile(state, fname)
 				("\n==( %s : %s %s )==\n"):format(classname,
 					shortname, version and ("(v" .. version .. ")") or "",
 						classname))
-			insert(documentation, 1, "\n" .. ("-"):rep(79) .. "\n")
+			insert(documentation, 1, "\n" .. PAGE .. "\n")
 			doc = concat(documentation)
-			insert(state.documentation, doc)
+			
+			insert(state.documents, classname:lower())
+			state.documents[classname:lower()] = doc
+			
 			record.Documentation = doc
 		end
 
@@ -304,9 +326,12 @@ function processfile(state, fname)
 			insert(documentation, 1,
 				("\n==( %s %s )==\n"):format(fname, version and ("(v" ..
 					version .. ")") or ""))
-			insert(documentation, 1, "\n" .. ("-"):rep(79) .. "\n")
+			insert(documentation, 1, "\n" .. RULE .. "\n")
 			local doc = concat(documentation)
-			insert(state.documentation, doc)
+			
+			insert(state.documents, fname:lower())
+			state.documents[fname:lower()] = doc
+			
 			record.Documentation = doc
 			insert(state.miscindex, record)
 		end
@@ -385,6 +410,7 @@ function processtree(state)
 	state.basecandidates = state.basecandidates or { }
 	state.documentation = { }
 	state.miscindex = state.miscindex or { }
+	state.documents = { }
 
 	state.showtree = true
 
@@ -402,7 +428,7 @@ function processtree(state)
 		-- Class index:
 
 		state.classdiagram = { }
-		insert(state.classdiagram, ("-"):rep(79) .. "\n")
+		insert(state.classdiagram, RULE .. "\n")
 		insert(state.classdiagram, "==( Class Overview )==\n")
 
 		for key, val in pairs(state.index) do
@@ -478,7 +504,13 @@ function processtree(state)
 			concat(state.classdiagram, "\n") .. "\n")
 	end
 
-	insert(state.documentation, "\n" .. ("-"):rep(79) .. "\n\n")
+	-- sort document nodes alphabetically:
+	sort(state.documents)
+	for _, docname in ipairs(state.documents) do
+		insert(state.documentation, state.documents[docname])
+	end
+
+	insert(state.documentation, "\n" .. RULE .. "\n\n")
 	insert(state.documentation, "Document generated on " .. os.date() .. "\n")
 
 	if state.docname then

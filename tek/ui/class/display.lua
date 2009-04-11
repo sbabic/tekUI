@@ -191,8 +191,9 @@ function Display.new(class, self)
 end
 
 -------------------------------------------------------------------------------
---	allocPens(visual, pentable): Allocate a Display's colors and return them
---	in the supplied table.
+--	allocPens(visual, pentable): Allocates the colors managed by the
+--	Display from the specified {{visual}}, and places the resulting
+--	pens in {{pentable}}.
 -------------------------------------------------------------------------------
 
 local function matchrgb(col, def)
@@ -216,12 +217,6 @@ local function matchrgb(col, def)
 		col = def
 	end
 end
-
--------------------------------------------------------------------------------
---	allocPens(visual, pentable): Allocates the colors managed by the Display
---	from the specified visual, and places the resulting pens in the specified
---	table.
--------------------------------------------------------------------------------
 
 function Display:allocPens(visual, pentable)
 	for i, color in ipairs(ColorDefaults) do

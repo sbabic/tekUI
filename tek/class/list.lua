@@ -6,8 +6,7 @@
 --
 --	LINEAGE::
 --		[[#ClassOverview]] :
---		[[#tek.class : Class]] /
---		List
+--		[[#tek.class : Class]] / List
 --
 --	OVERVIEW::
 --		This class implements a list container.
@@ -15,10 +14,9 @@
 --	IMPLEMENTS::
 --		- List:addItem() - Adds an item to the list
 --		- List:changeItem() - Replaces an item in the list
---		- List:checkPosition() - Verify position in the list
 --		- List:clear() - Removes all items from the list
---		- List:getN() - Returns the number of items in the list
 --		- List:getItem() - Returns the item at the specified position
+--		- List:getN() - Returns the number of items in the list
 --		- List:remItem() - Removes an item from the list
 --
 --	OVERRIDES::
@@ -33,11 +31,11 @@ local min = math.min
 local remove = table.remove
 
 module("tek.class.list", tek.class)
-_VERSION = "List 2.0"
+_VERSION = "List 3.0"
 local List = _M
 
 -------------------------------------------------------------------------------
---	Class implementation:
+--	new: overrides
 -------------------------------------------------------------------------------
 
 function List.new(class, self)
@@ -81,7 +79,7 @@ function List:addItem(entry, lnr)
 end
 
 -------------------------------------------------------------------------------
---	item = List:remItem(pos): Removes an item at the specified position
+--	entry = List:remItem(pos): Removes an item at the specified position
 --	in the list. The item is returned to the caller.
 -------------------------------------------------------------------------------
 
@@ -93,8 +91,7 @@ end
 
 -------------------------------------------------------------------------------
 --	success = List:changeItem(entry, pos): Changes the item at the specified
---	position in the list. Returns a boolean indicating whether there was an
---	item changed.
+--	position in the list. Returns '''true''' if an item was changed.
 -------------------------------------------------------------------------------
 
 function List:changeItem(entry, pos)
@@ -103,29 +100,6 @@ function List:changeItem(entry, pos)
 		self.Items[lnr] = entry
 		return true
 	end
-end
-
--------------------------------------------------------------------------------
---	success[, position] = checkPosition(position[, null_valid]) -
---	Verifies that the given position is a valid index in the list; if the
---	optional {{null_valid}} is specified, {{0}} is considered a valid index.
---	If position is past (or before) the valid range, the last (respectively
---	the first) valid index is returned as well.
--------------------------------------------------------------------------------
-
-function List:checkPosition(lnr, null_valid)
-	if lnr == nil then
-		return false
-	elseif lnr == 0 then
-		return null_valid or false, 0
-	end
-	local numl = self:getN()
-	if lnr < 1 then
-		return false, 1
-	elseif lnr > numl then
-		return false, numl
-	end
-	return true, lnr
 end
 
 -------------------------------------------------------------------------------

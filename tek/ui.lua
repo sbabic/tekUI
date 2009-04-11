@@ -15,13 +15,15 @@
 --				ui.Application:new { ...
 --
 --	FUNCTIONS::
---		- ui.createHook() - Create a hook object
---		- ui.extractKeyCode() - Extract keycode from a string
---		- ui.getLocale() - Get a locale catalog
---		- ui.loadClass() - Load a named class
---		- ui.loadStyleSheet() - Load and parse a style sheet file
---		- ui.resolveKeyCode() - Convert keycode into keys and qualifiers
---		- ui.testFlag() - Test a bit flag in a flags field
+--		- ui.createHook() - Creates a hook object
+--		- ui.extractKeyCode() - Extracts a keycode from a string
+--		- ui.getLocale() - Gets a locale catalog
+--		- ui.loadClass() - Loads a named class
+--		- ui.loadStyleSheet() - Loads and parse a style sheet file
+--		- ui.loadTable() - Tries to load a table from standard paths
+--		- ui.resolveKeyCode() - Converts a keycode into keys and qualifiers
+--		- ui.sourceTable() - Loads a file as a Lua source, returning a table
+--		- ui.testFlag() - Tests a bit in a flags field
 --
 --	CONSTANTS::
 --		- {{NOTIFY_ALWAYS}} - see [[Object][#tek.class.object]]
@@ -52,6 +54,7 @@
 --		- {{MSG_MOUSEBUTTON}} - Mousebutton pressed/released
 --		- {{MSG_INTERVAL}} - Timer interval message (default: 50Hz)
 --		- {{MSG_KEYUP}} - Key released
+--		- {{MSG_USER}} - User message
 --
 -------------------------------------------------------------------------------
 
@@ -245,7 +248,7 @@ end
 --	the various possible locations as defined by {{ui.LocalPath}}, to
 --	interprete is as Lua source, and to return its contents as keys and
 --	values of a table. If unsuccessful, returns '''nil''' followed by an
---	erro message.
+--	error message.
 -------------------------------------------------------------------------------
 
 function loadTable(fname)
@@ -650,8 +653,8 @@ KeyAliases =
 }
 
 -------------------------------------------------------------------------------
---	key, quals = resolveKeyCode: resolves a combined keycode specifier (e.g.
---	"Ctrl+Shift+Q" into a key string and a table of qualifier codes.
+--	key, quals = resolveKeyCode(code): Resolves a combined keycode specifier
+--	(e.g. {{"Ctrl+Shift+Q"}}) into a key string and a table of qualifier codes.
 -------------------------------------------------------------------------------
 
 local function addqual(key, quals, s)
@@ -730,7 +733,6 @@ NOTIFY_FORMAT = Object.NOTIFY_FORMAT
 NOTIFY_SELF = Object.NOTIFY_SELF
 NOTIFY_OLDVALUE = Object.NOTIFY_OLDVALUE
 NOTIFY_FUNCTION = Object.NOTIFY_FUNCTION
-NOTIFY_GETFIELD = Object.NOTIFY_GETFIELD
 NOTIFY_WINDOW = Element.NOTIFY_WINDOW
 NOTIFY_APPLICATION = Element.NOTIFY_APPLICATION
 NOTIFY_ID = Element.NOTIFY_ID

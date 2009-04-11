@@ -6,20 +6,22 @@
 --
 --	LINEAGE::
 --		[[#ClassOverview]] :
---		[[#tek.class : Class]] /
---		Markup
+--		[[#tek.class : Class]] / Markup
 --
 --	OVERVIEW::
---		This class impelements a parser for producing feature-rich
---		XHTML 1.0 from plain text with special formattings.
+--		This class implements a markup parser and converter for producing
+--		feature-rich XHTML 1.0 from plain text with special formattings.
 --
---	FUNCTIONS::
---	- Markup:new()
---	- Markup:run()
+--	IMPLEMENTS::
+--		- Markup.new()
+--		- Markup:run()
+--
+-------------------------------------------------------------------------------
+
 --
 --	FORMAT DESCRIPTION::
 --
---	=== Block ===
+--	==== Block ====
 --
 --	Text of a consistent indentation level running uninterrupted by empty
 --	lines is combined into ''blocks''. Lines in blocks can break at any
@@ -30,7 +32,7 @@
 --		This is another
 --		block.
 --
---	=== Indentation ===
+--	==== Indentation ====
 --
 --	The ''indentation depth'' is measured in the consecutive number of
 --	''indentation characters'' (tabs or spaces, which may depend on
@@ -45,7 +47,7 @@
 --			This is a third
 --			block.
 --
---	=== Preformatted ===
+--	==== Preformatted ====
 --
 --	For blocks of code and other kinds of ''preformatted text'' use an
 --	indentation that is ''two levels deeper'' than the current level,
@@ -57,7 +59,7 @@
 --
 --	Back to normal
 --
---	=== Code ===
+--	==== Code ====
 --
 --	Inlined ''code'' is marked up between double braces. It may occur at
 --	any position in a line, but it must be the same line in which the
@@ -65,7 +67,7 @@
 --
 --	This is {{code_markup}} in running text.
 --
---	=== Lists ===
+--	==== Lists ====
 --
 --	There are two types of items in ''lists''; ''soft'' and ''bulleted''
 --	items. They are recognized by their initiatory character (dash or
@@ -98,7 +100,7 @@
 --	list, it would be concatenated with the last item, as empty lines are
 --	not sufficient to break out from a list.
 --
---	=== Links ===
+--	==== Links ====
 --
 --	Links are enclosed in double squared brackets, according to the
 --	template {{[[description][link target]]}}, where {{[description]}}
@@ -116,7 +118,7 @@
 --		* [[You know what cool is][http://www.foo.bar/]] -
 --		External link with alternate description
 --
---	=== Tables ===
+--	==== Tables ====
 --
 --	Lines running uninterrupted with at least one cell separator in each
 --	of them automatically form a table. The cell separator is a double
@@ -129,7 +131,7 @@
 --	are present. Note, by the way, that cell separators do not
 --	necessarily have to be aligned exactly below each other.
 --
---	=== Headings ===
+--	==== Headings ====
 --
 --	Headings occupy an entire line. They are enclosed by at least one
 --	equal sign and a whitspace on each side; the more equal signs, the
@@ -141,17 +143,23 @@
 --
 --		=== Heading 3 ===
 --
---	=== Rules ===
+--	==== Rules ====
 --
---	A minimum of four dashes is interpreted as a horizontal rule. Rules
---	may occur at arbitrary indentation levels, but otherwise they must
---	occupy the whole line:
+--	A minimum of four dashes (or equal signs) is interpreted as a horizontal
+--	rule. Rules may occur at arbitrary indentation levels, but otherwise they
+--	must occupy the whole line:
 --
 --		before the rule
 --		----------------------------------------------
 --		after the rule
 --
---	=== Emphasis ===
+--	A rule comprised of equal signs will be of the "page-break" class; it is
+--	up to a browser (or downstream parser) to visualize this in a useful way.
+--
+--		a rule indicating a page break:
+--		==============================================
+--
+--	==== Emphasis ====
 --
 --	An emphasized portion of text may occur at any position in a line,
 --	but the opening and the closing of the markup must occur in the same
@@ -165,7 +173,7 @@
 --		- '''strong emphasis'''
 --		- ''''very strong emphasis''''
 --
---	=== Nodes ===
+--	==== Nodes ====
 --
 --	The possible templates for nodes are
 --		- {{==( link target )==}}
@@ -197,7 +205,6 @@
 --	if you need blanks or punctuation or if in doubt use the alternate
 --	text notation.
 --
--------------------------------------------------------------------------------
 
 local Class = require "tek.class"
 
@@ -214,7 +221,7 @@ local ipairs = ipairs
 
 module("tek.class.markup", tek.class)
 
-_VERSION = "Markup 2.7"
+_VERSION = "Markup 3.0"
 local Markup = _M
 
 -------------------------------------------------------------------------------
@@ -538,6 +545,10 @@ function Markup:rule()
 	return '<hr />'
 end
 
+function Markup:pagebreak()
+	return '<hr class="page-break" />'
+end
+
 function Markup:pre()
 	return '<pre>', '</pre>'
 end
@@ -591,7 +602,7 @@ function Markup:document()
 end
 
 -------------------------------------------------------------------------------
---	run: Runs the parser
+--	run(): This function starts the conversion.
 -------------------------------------------------------------------------------
 
 function Markup:run()
@@ -860,6 +871,12 @@ function Markup:run()
 					pop()
 					return ""
 				end)
+				line = line:gsub("^%s*(%=%=%=%=+)%s*$", function(s)
+					popwhile("block", "list", "item")
+					push("pagebreak")
+					pop()
+					return ""
+				end)
 			end
 
 		end
@@ -1104,35 +1121,34 @@ end
 -------------------------------------------------------------------------------
 --
 --	parser = Markup:new(args): Creates a new markup parser. {{args}} can be a
---	table of initial attributes that constitute its behavior. Fields supported
---	are:
+--	table of initial arguments that constitute its behavior. Supported fields
+--	in {{args}} are:
 --
---	args.indentchar || character recognized for indentation, default {{"\t"}}
---	args.input      || filehandle or string, default {{io.stdin}}
---	args.rdfunc     || line reader, by default reads using {{args.input:lines}}
---	args.wrfunc     || writer func, by default {{io.stdout.write}}
---	args.docname    || name of document, default {{"Manual"}}
---	args.features   || string of feature codes, default {{"hespcadlint"}}
+--	{{indentchar}} || Character recognized for indentation, default {{"\t"}}
+--	{{input}}      || Filehandle or string, default {{io.stdin}}
+--	{{rdfunc}}     || Line reader, by default reads using {{args.input:lines}}
+--	{{wrfunc}}     || Writer func, by default {{io.stdout.write}}
+--	{{docname}}    || Name of document, default {{"Manual"}}
+--	{{features}}   || Feature codes, default {{"hespcadlint"}}
 --
 --	The parser supports the following features, which can be combined into
 --	a string and passed to the constructor in {{args.features}}:
 --
---	Code || Description        || rough HTML equivalent
---	h	   || Heading            || <h1>, <h2>, ...
---	e    || Emphasis           || <strong>
---	s    || Separator          || <hr>
---	p    || Preformatted block || <pre>
---	c    || Code               || <code>
---	a    || Anchor, link       || <a href="...">
---	d    || Definition         || <dfn>
---	l    || List               || <ul>, <li>
---	i    || Image              || <img>
---	n    || Node header        || <a name="...">
---	t    || Table              || <table>
---	f    || Function           || (undocumented, internal use only)
+--	Code   || Description        || rough HTML equivalent
+--	{{h}}  || Heading            || {{<h1>}}, {{<h2>}}, ...
+--	{{e}}  || Emphasis           || {{<strong>}}
+--	{{s}}  || Separator          || {{<hr>}}
+--	{{p}}  || Preformatted block || {{<pre>}}
+--	{{c}}  || Code               || {{<code>}}
+--	{{a}}  || Anchor, link       || {{<a href="...">}}
+--	{{d}}  || Definition         || {{<dfn>}}
+--	{{l}}  || List               || {{<ul>}}, {{<li>}}
+--	{{i}}  || Image              || {{<img>}}
+--	{{n}}  || Node header        || {{<a name="...">}}
+--	{{t}}  || Table              || {{<table>}}
+--	{{f}}  || Function           || (undocumented, internal use only)
 --
---	After creation of the parser object, conversion starts by calling the
---	method Markup:run().
+--	After creation of the parser, conversion starts by calling Markup:run().
 --
 -------------------------------------------------------------------------------
 

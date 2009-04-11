@@ -34,12 +34,13 @@
 --		- {{Theme [IG]}}
 --			Name of a theme, which usually maps to an equally named
 --			style sheet file (with the extension ".css") under
---			{{tek/ui/style/}}. Default: {{"desktop"}}
+--			{{tek/ui/style/}}.
 --			Themes with reserved meaning are:
 --				- {{"internal"}}: Uses the hardcoded internal style properties
 --				and does not try to load a style sheet file.
 --				- {{"desktop"}}: Tries to import the desktop's color scheme,
 --				besides trying to load a style sheet named {{"desktop.css"}}.
+--			Default: {{"desktop"}}
 --		- {{VendorDomain [IG]}}
 --			An uniquely identifying domain name of the vendor, organization
 --			or author manufacturing the application, preferrably without
@@ -59,14 +60,15 @@
 --
 --	IMPLEMENTS::
 --		- Application:addCoroutine() - adds a coroutine to the application
---		- Application:addInputHandler() - add input handler to the application
+--		- Application:addInputHandler() - adds input handler to the application
 --		- Application:connect() - connects children recursively
 --		- Application:easyRequest() - opens a message box
 --		- Application:getElementById() - returns an element by Id
---		- Application:remInputHandler() - remove input handler from application
+--		- Application:getLocale() - returns a locale for the application
+--		- Application:remInputHandler() - removes a registered input handler
+--		- Application:requestFile() - opens a file requester
 --		- Application:run() - runs the application
 --		- Application:suspend() - suspends the caller's coroutine
---		- Application:requestFile() - opens a file requester
 --
 --	OVERRIDES::
 --		- Family:addMember()
@@ -252,13 +254,13 @@ function Application:remElement(e)
 end
 
 -------------------------------------------------------------------------------
--- 	element = Application:getElementById(): Returns the element that was
---	registered with the Application under its unique {{Id}}. Returns
---	'''nil''' if the Id was not found.
+-- 	element = Application:getElementById(id): Returns the element that was
+--	registered with the Application under its unique {{id}}. Returns
+--	'''nil''' if the id was not found.
 -------------------------------------------------------------------------------
 
-function Application:getElementById(Id)
-	return self.ElementById[Id]
+function Application:getElementById(id)
+	return self.ElementById[id]
 end
 
 -------------------------------------------------------------------------------
@@ -775,7 +777,7 @@ function Application:easyRequest(title, text, ...)
 end
 
 -------------------------------------------------------------------------------
---	getElement(mode) - equivalent to Area:getElement(), see there
+--	getElement: see Area:getElement()
 -------------------------------------------------------------------------------
 
 function Application:getElement(mode)
@@ -842,7 +844,7 @@ function Application:remInputHandler(msgtype, object, func)
 end
 
 -------------------------------------------------------------------------------
---	passMsg(msg): See Area:passMsg().
+--	passMsg: See Area:passMsg()
 -------------------------------------------------------------------------------
 
 function Application:passMsg(msg)

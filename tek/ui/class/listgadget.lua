@@ -138,7 +138,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 15.0"
+_VERSION = "ListGadget 15.1"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -737,7 +737,7 @@ function ListGadget:onSelectLine(lnr, oldlnr)
 	if lo then
 		local m = self.SelectMode
 		if m == "single" and oldlnr ~= lnr then
-			local oe = lo:checkPosition(oldlnr) and lo:getItem(oldlnr)
+			local oe = lo:getItem(oldlnr)
 			if oe then
 				oe[3] = false
 				if self.SelectedLines[oldlnr] then
@@ -748,7 +748,7 @@ function ListGadget:onSelectLine(lnr, oldlnr)
 			end
 		end
 		if m == "single" or m == "multi" then
-			local ne = lo:checkPosition(lnr) and lo:getItem(lnr)
+			local ne = lo:getItem(lnr)
 			if ne then
 				ne[3] = not ne[3]
 				if ne[3] then

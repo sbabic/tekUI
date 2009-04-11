@@ -167,7 +167,8 @@ local function readstring(data)
 end
 
 -------------------------------------------------------------------------------
---	UTF8String:set(s): Reset string object to a new UTF-8 encoded string
+--	UTF8String:set(s): Initialize the string object with a new, UTF-8 encoded
+--	regular string.
 -------------------------------------------------------------------------------
 
 function UTF8String:set(s)
@@ -267,8 +268,7 @@ end
 
 -------------------------------------------------------------------------------
 --	substring = UTF8String:sub(i[, j]): Returns an UTF-8 encoded substring.
---	The semantics are the same as for
---	[[string.sub][http://www.lua.org/manual/5.1/manual.html#pdf-string.sub]].
+--	The semantics are the same as for {{string.sub()}}.
 -------------------------------------------------------------------------------
 
 function UTF8String:sub(p0, p1)
@@ -300,9 +300,8 @@ function UTF8String:erase(p0, p1)
 end
 
 -------------------------------------------------------------------------------
---	UTF8String.char(...): Equivalent to
---	[[string.char][http://www.lua.org/manual/5.1/manual.html#pdf-string.char]],
---	except for that it accepts character codes in the Unicode range.
+--	UTF8String.char(...): Equivalent to {{string.char()}}, except for that it
+--	accepts character codes in the Unicode range.
 -------------------------------------------------------------------------------
 
 function UTF8String.char(...)
@@ -314,9 +313,8 @@ function UTF8String.char(...)
 end
 
 -------------------------------------------------------------------------------
---	UTF8String:byte(i[, j]): Equivalent to
---	[[string.byte][http://www.lua.org/manual/5.1/manual.html#pdf-string.byte]],
---	except for that it may return characters in the Unicode range.
+--	UTF8String:byte(i[, j]): Equivalent to {{string.byte()}}, except for that
+--	it may return characters in the Unicode range.
 -------------------------------------------------------------------------------
 
 function UTF8String:byte(p0, p1)

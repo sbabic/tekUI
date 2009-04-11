@@ -5,8 +5,7 @@
 --	See copyright notice in COPYRIGHT
 --
 --	LINEAGE::
---		[[#ClassOverview]] :
---		Class
+--		[[#ClassOverview]] : Class
 --
 --	OVERVIEW::
 --		This module implements inheritance and the creation of objects
@@ -16,7 +15,7 @@
 --		- Class:checkDescend() - Checks if an object descends from a class
 --		- Class:getClass() - Returns the class of an object, or the super
 --		class of a class
---		- Class:getClassName() - Returns class name of an object or class
+--		- Class:getClassName() - Returns the class name of an object or class
 --		- Class:getSuper() - Returns the super class of an object or class
 --		- Class.new() - Creates and returns a new object
 --		- Class.newClass() - Creates a child class from a super class
@@ -93,8 +92,8 @@ else
 -------------------------------------------------------------------------------
 --	object = Class.new(class[, object]):
 --	Creates and returns a new object of the given {{class}}. Optionally,
---	it just prepares the specified table {{object}} for inheritance and
---	attaches the class methods and data.
+--	it just prepares the specified {{object}} (a table) for inheritance and
+--	attaches the {{class}}' methods and data.
 -------------------------------------------------------------------------------
 
 	function Class.new(class, self)
@@ -103,8 +102,8 @@ else
 
 -------------------------------------------------------------------------------
 --	class = object:getClass():
---	This function returns the class of the specified object. If applied to
---	a class instead of an object, it returns its super class, e.g.:
+--	This function returns the class of an {{object}}. If applied to a
+--	class instead of an object, it returns its super class, e.g.:
 --			superclass = Class.getClass(class)
 -------------------------------------------------------------------------------
 
@@ -122,9 +121,9 @@ else
 	end
 
 -------------------------------------------------------------------------------
---	object:getSuper(): Gets the super class of an object (or class).
---	For example, this is how a call to method can be forwarded to its
---	super class:
+--	object:getSuper(): Gets the super class of an object or class.
+--	For example, to forward a call to a {{method}} to its super class,
+--	without knowing its class:
 --			self:getSuper().method(self, ...)
 -------------------------------------------------------------------------------
 
@@ -137,12 +136,11 @@ end
 -------------------------------------------------------------------------------
 --	class = Class.newClass(superclass[, class]):
 --	Derives a new class from the specified {{superclass}}. Optionally,
---	an existing class table can be used. In this case, if a {{_NAME}}
---	attribute exists in the class table, it will be used. Otherwise, or if
---	a new class is being created, {{class._NAME}} will be composed from
---	{{superclass._NAME}} and an unique identifier. The same functionality
---	can be achieved by calling a class like a function, so these invocations
---	are equivalent:
+--	an existing {{class}} (a table) can be specified. If a {{_NAME}} field
+--	exists in this class, it will be used. Otherwise, or if a new class is
+--	created, {{class._NAME}} will be composed from {{superclass._NAME}} and
+--	an unique identifier. The same functionality can be achieved by calling
+--	a class like a function, so the following invocations are equivalent:
 --			class = Class.newClass(superclass)
 --			class = superclass()
 --	The second notation allows a super class to be passed as the second
@@ -161,7 +159,8 @@ end
 
 -------------------------------------------------------------------------------
 --	name = object:getClassName(): This function returns the {{_NAME}}
---	attribute of the specified class or object's class.
+--	attribute of the {{object}}'s class. It is also possible to apply this
+--	function to a class instead of an object.
 -------------------------------------------------------------------------------
 
 function Class:getClassName()

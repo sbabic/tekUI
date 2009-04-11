@@ -8,7 +8,7 @@
 --		This library implements an argument parser.
 --
 --	FORMAT DESCRIPTION::
---		A string is parsed into an array of arguments, according to a format
+--		A string is parsed into an array of arguments according to a format
 --		template. Arguments in the template are separated by commas. Each
 --		argument in the template consists of a keyword, optionally followed by
 --		one or more aliases delimited by equal signs, and an optional set of
@@ -142,7 +142,7 @@ end
 --	arguments can be successfully matched against the template (see
 --	[[#tek.lib.args]] for details), the result will be a table of parsed
 --	arguments, indexed by both keywords and numerical order in which they
---	appear in {{template}}), and the second argument will be set to the
+--	appear in {{template}}, and the second argument will be set to the
 --	number of arguments in the template. If the arguments cannot be matched
 --	against the template, the result will be '''nil''' followed by an error
 --	message.

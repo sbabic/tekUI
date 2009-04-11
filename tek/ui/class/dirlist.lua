@@ -45,9 +45,15 @@
 --				- "cancelled" - the lister has been cancelled by the user
 --
 --	IMPLEMENTS::
---		- DirList:showDirectory() - Reads and shows a directory
---		- DirList:goParent() - Goes to the parent of the current directory
 --		- DirList:abortScan() - Abort scanning
+--		- DirList:getCurrentDir() - Get current directory
+--		- DirList:getDirectoryIterator() - Get an iterator an a directory
+--		- DirList:getFileStat() - Examine file entry
+--		- DirList:goParent() - Goes to the parent of the current directory
+--		- DirList:showDirectory() - Reads and shows a directory
+--		- DirList:scanEntry() - Scan a single entry in a directory
+--		- DirList:showDirectory() - Start scanning and display a directory
+--		- DirList:splitPath() - Split a filename
 --
 --	OVERRIDES::
 --		- Class.new()
