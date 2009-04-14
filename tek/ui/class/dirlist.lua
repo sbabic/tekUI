@@ -65,19 +65,19 @@ local _, lfs = pcall(require, "lfs")
 local ui = require "tek.ui"
 local List = require "tek.class.list"
 
-local Button = ui.Button
 local Group = ui.Group
 local ListGadget = ui.ListGadget
 local Text = ui.Text
 local TextInput = ui.TextInput
 
 local insert = table.insert
+local ipairs = ipairs
 local pairs = pairs
 local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 10.0"
+_VERSION = "DirList 10.2"
 
 local DirList = _M
 
@@ -121,7 +121,7 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:getFileStat(path, name, attr, idx)
-	return lfs.attributes(path .. "/" .. name, attr)
+	return lfs.attributes(path .. ui.PathSeparator .. name, attr)
 end
 
 -------------------------------------------------------------------------------
@@ -131,10 +131,22 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:splitPath(path)
+	local p = ui.PathSeparator
 	local part
-	path, part = (path .. "/"):match("^(/?.-)/*([^/]*)/+$")
-	path = path:gsub("//*", "/")
+	path, part = (path..p):match("^("..p.."?.-)"..p.."*([^"..p.."]*)"..p.."+$")
+	path = path:gsub(p..p.."*", p)
 	return path, part
+end
+
+-------------------------------------------------------------------------------
+--	newButton:
+-------------------------------------------------------------------------------
+
+local function newButton(obj)
+	obj.Mode = "button"
+	obj.Class = "button"
+	obj.ShortcutMark = ui.ShortcutMark
+	return Text:new(obj)
 end
 
 -------------------------------------------------------------------------------
@@ -164,18 +176,20 @@ function DirList.new(class, self)
 	
 	self.SelectMode = self.SelectMode or false
 	self.SelectText = self.SelectText or L.OPEN
+	
+	self.Preselect = self.Preselect or self.Location or false
 
 	self.PathField = TextInput:new
 	{
-		KeyCode = "d",
 		Text = self.Path,
+		KeyCode = "d",
 		Height = "fill",
 	}
 
 	self.PathField:addNotify("Enter", ui.NOTIFY_ALWAYS,
 		{ self, "scanDir", ui.NOTIFY_VALUE })
 
-	self.ParentButton = Button:new
+	self.ParentButton = newButton
 	{
 		Text = L.PARENT,
 		Width = "auto",
@@ -187,15 +201,15 @@ function DirList.new(class, self)
 
 	self.LocationField = TextInput:new
 	{
-		KeyCode = "f",
 		Text = self.Location,
+		KeyCode = "f",
 		Height = "fill",
 	}
 
 	self.LocationField:addNotify("Enter", ui.NOTIFY_ALWAYS,
 		{ self, "setFileEntry", ui.NOTIFY_VALUE })
 
-	self.ReloadButton = Button:new
+	self.ReloadButton = newButton
 	{
 		Text = L.RELOAD,
 		Width = "auto",
@@ -233,10 +247,10 @@ function DirList.new(class, self)
 		{
 			AutoWidth = false,
 			Child = self.ListGadget
-		},
+		}
 	}
 
-	self.OpenGadget = Button:new
+	self.OpenGadget = newButton
 	{
 		Text = self.SelectText,
 		Width = "fill",
@@ -258,7 +272,7 @@ function DirList.new(class, self)
 			self:setValue("Status", "selected")
 		end })
 
-	self.CancelGadget = Button:new
+	self.CancelGadget = newButton
 	{
 		Text = L.CANCEL,
 		Width = "fill",
@@ -268,7 +282,6 @@ function DirList.new(class, self)
 		{ self, ui.NOTIFY_FUNCTION, function(self)
 			self:setValue("Status", "cancelled")
 		end })
-
 
 	self.DirectoryCaption = Text:new
 	{
@@ -363,9 +376,13 @@ function DirList.new(class, self)
 
 	self:addNotify("Path", ui.NOTIFY_ALWAYS,
 		{ self.PathField, "setValue", "Enter", ui.NOTIFY_VALUE })
-
+	
 	return self
 end
+
+-------------------------------------------------------------------------------
+--	showStats:
+-------------------------------------------------------------------------------
 
 function DirList:showStats(selected, total)
 	local list = self.ListGadget
@@ -468,7 +485,9 @@ function DirList:scanDir(path)
 						return
 					end
 				end
+				
 				n = n + 1
+				
 				insert(list, { self:scanEntry(path, name, n) })
 			end
 
@@ -477,15 +496,22 @@ function DirList:scanDir(path)
 			self:showStats(0, n)
 			app:suspend()
 
-			for i = 1, #list do
-				obj:addItem(list[i], nil, true)
+			local selectline = 1
+			local preselect = self.Preselect
+			for lnr, entry in ipairs(list) do
+				if preselect and entry[1][1] == preselect then
+					selectline = lnr
+				end
+				obj:addItem(entry, nil, true)
 			end
+			self.Preselect = false
 
-			obj:prepare(true)
-			obj:setValue("CursorLine", 1)
+			obj:repaint()
+			obj:setValue("CursorLine", selectline)
 			obj:setValue("Focus", true)
 			self:showStats()
 			self:finishScanDir(path)
+		
 		end
 
 		self.ScanMode = false
@@ -493,6 +519,10 @@ function DirList:scanDir(path)
 	end)
 
 end
+
+-------------------------------------------------------------------------------
+--	finishScanDir:
+-------------------------------------------------------------------------------
 
 function DirList:finishScanDir(path)
 end
@@ -518,17 +548,26 @@ function DirList:goParent()
 	self:showDirectory(self:splitPath(self.PathField.Text))
 end
 
+-------------------------------------------------------------------------------
+--	setFileEntry:
+-------------------------------------------------------------------------------
+
 function DirList:setFileEntry(entry)
 	local list = self.ListGadget
 	local pathfield = self.PathField
-	local path = pathfield.Text:match("(.*[^/])/?$") or ""
-	local fullpath = pathfield.Text .. "/" .. entry
-	fullpath = fullpath:gsub("//*", "/")
+	local p = ui.PathSeparator
+	local path = pathfield.Text:match("(.*[^"..p.."])"..p.."?$") or ""
+	local fullpath = pathfield.Text .. p .. entry
+	fullpath = fullpath:gsub(p..p.."*", p)
 	if self:getFileStat(path, entry, "mode") == "directory" then
 		self:showDirectory(fullpath)
 		return true -- is directory
 	end
 end
+
+-------------------------------------------------------------------------------
+--	clickList:
+-------------------------------------------------------------------------------
 
 function DirList:clickList()
 	local list = self.ListGadget
@@ -539,6 +578,10 @@ function DirList:clickList()
 		locationfield:setValue("Text", entry)
 	end
 end
+
+-------------------------------------------------------------------------------
+--	dblClickList:
+-------------------------------------------------------------------------------
 
 function DirList:dblClickList()
 	local list = self.ListGadget
@@ -552,6 +595,10 @@ function DirList:dblClickList()
 		end
 	end
 end
+
+-------------------------------------------------------------------------------
+--	reload:
+-------------------------------------------------------------------------------
 
 function DirList:reload()
 	self:scanDir(self.PathField.Text)

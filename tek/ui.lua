@@ -75,12 +75,13 @@ local pairs = pairs
 local pcall = pcall
 local remove = table.remove
 local require = require
+local setfenv = setfenv
 local setmetatable = setmetatable
 local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 18.0"
+_VERSION = "tekUI 18.1"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -90,9 +91,12 @@ _VERSION = "tekUI 18.0"
 local OldPath = package and package.path or ""
 local OldCPath = package and package.cpath or ""
 
+-- Path Separator:
+local p = package and package.config:sub(1, 1) or "/"
+PathSeparator = p
+
 -- Get executable path and name:
 if arg and arg[0] then
-	local p = package and package.config:sub(1, 1) or "/"
 	ProgDir, ProgName = arg[0]:match(("^(.-%s?)([^%s]*)$"):format(p, p))
 end
 

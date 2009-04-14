@@ -82,7 +82,7 @@
 --		- ListGadget:addItem() - Adds an item to the list
 --		- ListGadget:changeItem() - Overwrite item in the list
 --		- ListGadget:changeSelection() - Changes selection of the list
---		- ListGadget:clear() -  Removes all items from the list
+--		- ListGadget:clear() - Removes all items from the list
 --		- ListGadget:damageLine() - Marks line for repainting
 --		- ListGadget:getItem() - Returns the item at the specified line
 --		- ListGadget:getN() - Returns the number of entries in the list
@@ -765,6 +765,12 @@ function ListGadget:onSelectLine(lnr, oldlnr)
 		end
 	end
 end
+
+-------------------------------------------------------------------------------
+--	ListGadget:moveLine(lnr[, follow]): Moves the list cursor to the
+--	specified line; if the optional boolean {{follow}} is '''true''',
+--	the visible part of the list follows the cursor.
+-------------------------------------------------------------------------------
 
 function ListGadget:moveLine(lnr, follow)
 	local lo = self.ListObject

@@ -61,6 +61,7 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
 local Area = ui.Area
@@ -77,7 +78,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 8.2"
+_VERSION = "TextInput 8.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -100,14 +101,14 @@ function TextInput.init(self)
 	self.Enter = false
 	self.EnterNext = self.EnterNext or false
 	self.FGPenCursor = false
-	self.FHeight = false
-	self.FWidth = false
+	self.FontHeight = false
+	self.FontWidth = false
 	self.Mode = "touch"
 	self.TabEnter = self.TabEnter or false
 	self.Text = self.Text or ""
 	self.TextBuffer = UTF8String:new(self.Text)
 	-- cursor position in characters:
-	self.TextCursor = self.TextCursor or self.TextBuffer:len() + 1
+	self.TextCursor = self.TextCursor or self.TextBuffer:len()
 	-- character offset in displayed text:
 	self.TextOffset = false
 	-- rectangle of text:
@@ -151,7 +152,7 @@ end
 
 function TextInput:show(display, drawable)
 	if Text.show(self, display, drawable) then
-		self.FWidth, self.FHeight =
+		self.FontWidth, self.FontHeight =
 			Display:getTextSize(self.TextRecords[1][2], " ")
 		self.TextRect = { }
 		self.TextOffset = 0
@@ -166,6 +167,7 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:hide()
+	self:setEditing(false)
 	Text.hide(self)
 	self.TextOffset = 0
 	self.TextCursor = 0
@@ -177,7 +179,7 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:askMinMax(m1, m2, m3, m4)
-	local w, h = self.FWidth * 2, self.FHeight -- +1 char for cursor
+	local w, h = self.FontWidth * 2, self.FontHeight -- +1 char for cursor
 	m1 = m1 + w + 1 -- +1 for disabled state
 	m2 = m2 + h + 1
 	m3 = m3 + w + 1
@@ -186,75 +188,82 @@ function TextInput:askMinMax(m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
+--	layoutText:
+-------------------------------------------------------------------------------
+
+function TextInput:layoutText()
+	local r1, r2, r3, r4 = self:getRectangle()
+	if r1 then
+		
+		self:setCursor(self:getCursor())
+		
+		local p = self.Padding
+		local r = self.Rect
+		local w = r[3] - r[1] + 1 - p[1] - p[3]
+		local h = r[4] - r[2] + 1 - p[2] - p[4]
+		local fw, fh = self.FontWidth, self.FontHeight
+		
+		local len = self.TextBuffer:len()
+		local tw = floor(w / fw)
+		local to = self.TextOffset
+		local tc = self.TextCursor
+		
+		self.TextWidth = tw
+		
+		-- visible width in pixels:
+		tw = tw * fw
+	
+		-- visible text rect, left aligned:
+		local tr = self.TextRect
+		tr[1] = r[1] + p[1] -- centered: + (w - tw) / 2
+		tr[2] = r[2] + p[2] + floor((h - fh) / 2)
+		tr[3] = tr[1] + tw - 1
+		tr[4] = tr[2] + fh - 1
+	
+	end
+	
+end
+
+-------------------------------------------------------------------------------
+--	layout: overrides
+-------------------------------------------------------------------------------
+
+function TextInput:layout(x0, y0, x1, y1, markdamage)
+	if Gadget.layout(self, x0, y0, x1, y1, markdamage) then
+		self:layoutText()
+		return true
+	end
+end
+
+-------------------------------------------------------------------------------
 --	draw: overrides
 -------------------------------------------------------------------------------
 
 function TextInput:draw()
 
-	local r = self.Rect
 	local d = self.Drawable
 	local pens = d.Pens
-
 	local tr = self.TextRect
 	local to = self.TextOffset
 	local tc = self.TextCursor
+	local fw = self.FontWidth
+	local x, y = tr[1], tr[2]
+	local tw = self.TextWidth
 
 	local text = self.TextRecords[1]
 	d:setFont(text[2])
-
-	local fw, fh = self.FWidth, self.FHeight
-	local p = self.Padding
-	local w = r[3] - r[1] + 1 - p[1] - p[3]
-	local h = r[4] - r[2] + 1 - p[2] - p[4]
-
-	-- total len of text, in characters:
-	local len = self.TextBuffer:len()
-
-	-- max. visible width in characters:
-	local tw = floor(w / fw)
-
-	if tc >= tw then
-		to = to + (tc - tw + 1)
-		tc = tw - 1
-	end
-	tc = min(tc, len - to)
-
-	self.TextWidth = tw
-	self.TextOffset = to
-	self.TextCursor = tc
-
-	-- total len of text, including space required for cursor:
-	local clen = len
-	if to + tc >= len then
-		clen = clen + 1
-	end
-
-	-- actual visible TextWidth (including cursor) in characters:
-	local twc = min(tw, clen)
-
-	-- actual visible TextWidth in pixels:
-	tw = twc * fw
-
-	-- the visible text:
-	text = self.TextBuffer:sub(to + 1, to + twc)
-
-	-- visible text rect, left aligned:
-	tr[1] = r[1] + p[1] -- centered: + (w - tw) / 2
-	tr[2] = r[2] + p[2] + floor((h - fh) / 2)
-	tr[3] = tr[1] + tw - 1
-	tr[4] = tr[2] + fh - 1
-
-	local x, y = tr[1], tr[2]
-
-	local tpen = pens[self.Foreground]
+	text = self.TextBuffer:sub(to + 1, to + tw)
 
 	self:erase()
-
+	
 	if self.Disabled then
-		local tpen2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
-		d:drawText(x + 1, y + 1, text, tpen2)
+		d:drawText(x + 1, y + 1, text,
+			d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2])
 	end
-	d:drawText(x, y, text, tpen)
+	
+	local pen = pens[self.Foreground]
+	d:drawText(x, y, text, pen)
+	
 	if not self.Disabled and self.Editing then
 		local s = self.TextBuffer:sub(tc + to + 1, tc + to + 1)
 		s = s == "" and " " or s
@@ -263,7 +272,7 @@ function TextInput:draw()
 				pens[self.FGPenCursor or ui.PEN_CURSORDETAIL],
 				pens[self.BGPenCursor or ui.PEN_CURSOR])
 		else
-			d:drawText(tr[1] + tc * fw, tr[2], s, tpen)
+			d:drawText(tr[1] + tc * fw, tr[2], s, pen)
 		end
 	end
 end
@@ -275,7 +284,7 @@ end
 function TextInput:clickMouse(x, y)
 	local tr, tc = self.TextRect, self.TextCursor
 	if tr then
-		local fw = self.FWidth
+		local fw = self.FontWidth
 		if x >= tr[1] and x <= tr[3] and y >= tr[2] and y <= tr[4] then
 			tc = floor((x - tr[1]) / fw)
 		elseif x < tr[1] then
@@ -409,6 +418,7 @@ end
 function TextInput:setCursor(pos)
 	local w = self.TextWidth
 	if w then
+		
 		local len = self.TextBuffer:len()
 		if pos == "eol" then
 			pos = len
@@ -417,13 +427,22 @@ function TextInput:setCursor(pos)
 		else
 			pos = max(0, min(len, pos))
 		end
+		
 		local o = self.TextOffset
 		local c = self.TextCursor
+		
 		while o > 0 and (pos < o or pos > o + w or w + o > len + 1) do
 			o = o - 1
 		end
+		
+		c = pos - o
+		while c >= w do
+			o = o + 1
+			c = pos - o
+		end
+		
 		self.TextOffset = o
-		self.TextCursor = pos - o
+		self.TextCursor = c
 	end
 end
 
@@ -537,10 +556,9 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:onSetText(text)
-	local pos = self:getCursor()
 	self:makeTextRecords(text)
 	self.TextBuffer = UTF8String:new(text)
-	self:setCursor(pos)
+	self:layoutText()
 	self.Redraw = true
 end
 
@@ -553,4 +571,5 @@ end
 
 function TextInput:onEnter(text)
 	self:setValue("Text", text)
+	self:setCursor("eol")
 end

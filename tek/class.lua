@@ -35,11 +35,11 @@ local PROXY = true
 local DEBUG = true
 
 module "tek.class"
-_VERSION = "Class 6.2"
+_VERSION = "Class 6.3"
 
 local Class = _M
 
-Class.__index = _M
+Class.__index = Class
 
 if PROXY then
 
@@ -73,12 +73,12 @@ if PROXY then
 	end
 
 	function Class:getClass()
-		mt = getmetatable(self)
+		local mt = getmetatable(self)
 		return mt.__class or mt
 	end
 
 	function Class:setClass(class)
-		mt = getmetatable(self)
+		local mt = getmetatable(self)
 		mt.__class = class
 		setmetatable(mt, class)
 	end
@@ -189,5 +189,5 @@ end
 --	make Class and its descendants functors:
 -------------------------------------------------------------------------------
 
-__call = Class.newClass
-setmetatable(_M, { __call = newClass })
+__call = newClass
+setmetatable(Class, { __call = newClass })

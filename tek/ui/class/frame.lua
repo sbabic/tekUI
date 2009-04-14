@@ -98,7 +98,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 6.1"
+_VERSION = "Frame 6.2"
 
 local Frame = _M
 
@@ -154,13 +154,18 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:show(display, drawable)
-	if self.Focus then
-		self:onFocus(self.Focus)
-	end
 	if self.BorderObject then
 		self.BorderObject:show(display, drawable)
 	end
-	return Area.show(self, display, drawable)
+	if Area.show(self, display, drawable) then
+		if self.Focus then
+			self:setValue("Focus", true, true)
+		end
+		return true
+	end
+	if self.BorderObject then
+		self.BorderObject:hide()
+	end
 end
 
 -------------------------------------------------------------------------------

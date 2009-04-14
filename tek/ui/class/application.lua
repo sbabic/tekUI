@@ -107,7 +107,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 14.3"
+_VERSION = "Application 14.4"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -734,6 +734,7 @@ function Application:easyRequest(title, text, ...)
 		{
 			Class = "button",
 			Mode = "button",
+			ShortcutMark = ui.ShortcutMark,
 			Text = select(i, ...),
 			onPress = function(self, pressed)
 				if pressed == false then

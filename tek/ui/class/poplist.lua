@@ -58,7 +58,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 6.1"
+_VERSION = "PopList 6.2"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -152,7 +152,7 @@ function PopList.new(class, self)
 	{
 		ScrollGroup:new
 		{
-			VSliderMode = "auto",
+			-- VSliderMode = "auto",
 			Child = Canvas:new
 			{
 				Class = "poplist-canvas",

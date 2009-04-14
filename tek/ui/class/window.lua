@@ -93,7 +93,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 11.5"
+_VERSION = "Window 11.6"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -225,13 +225,15 @@ end
 function Window:show(display)
 	assert(not self.Drawable)
 	self.Drawable = Drawable:new { Display = display }
+	-- window input handlers must be added before children can
+	-- register themselves during show():
+	self:addInputHandler(0x171f, self, self.handleInput)
 	if Group.show(self, display, self.Drawable) then
-		-- window input handlers:
-		self:addInputHandler(0x171f, self, self.handleInput)
 		-- notification handlers:
 		self:addNotify("Status", ui.NOTIFY_CHANGE, NOTIFY_STATUS)
 		return true
 	end
+	self:remInputHandler(0x171f, self, self.handleInput)
 end
 
 -------------------------------------------------------------------------------

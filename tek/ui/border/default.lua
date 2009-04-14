@@ -9,7 +9,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 1.5"
+_VERSION = "DefaultBorder 1.6"
 
 local PEN_SHINE = ui.PEN_BORDERSHINE
 local PEN_SHADOW = ui.PEN_BORDERSHADOW
@@ -57,7 +57,7 @@ function DefaultBorder:getProperties(props, pclass)
 	p[11] = p[11] or e:getProperty(props, pclass, "border-rim-width")
 	p[12] = p[12] or e:getProperty(props, pclass, "border-focus-width")
 	p[13] = p[13] or e:getProperty(props, pclass, "border-legend-color")
-	return Border.getProperties(self, p, class)
+	return Border.getProperties(self, p, pclass)
 end
 
 function DefaultBorder:show(display, drawable)

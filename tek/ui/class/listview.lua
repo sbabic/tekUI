@@ -49,7 +49,7 @@ local ipairs = ipairs
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 4.7"
+_VERSION = "ListView 4.8"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -79,17 +79,19 @@ local LVScrollGroup = ScrollGroup:newClass { _NAME = "_lvscrollgroup" }
 function LVScrollGroup:onSetCanvasHeight(h)
 	ScrollGroup.onSetCanvasHeight(self, h)
 	local c = self.Child
-	local r = c.Rect
-	local sh = r[4] - r[2] + 1
-	local en = self.VSliderGroupMode == "on" or
-		self.VSliderGroupMode == "auto" and (sh < h)
-	if en ~= self.VSliderGroupEnabled then
-		if en then
-			self.ExternalGroup:addMember(self.VSliderGroup, 2)
-		else
-			self.ExternalGroup:remMember(self.VSliderGroup, 2)
+	local _, r2, _, r4 = c:getRectangle()
+	if r2 then
+		local sh = r4 - r2 + 1
+		local en = self.VSliderGroupMode == "on" or
+			self.VSliderGroupMode == "auto" and (sh < h)
+		if en ~= self.VSliderGroupEnabled then
+			if en then
+				self.ExternalGroup:addMember(self.VSliderGroup, 2)
+			else
+				self.ExternalGroup:remMember(self.VSliderGroup, 2)
+			end
+			self.VSliderGroupEnabled = en
 		end
-		self.VSliderGroupEnabled = en
 	end
 end
 

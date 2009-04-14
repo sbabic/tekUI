@@ -67,7 +67,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.6"
+_VERSION = "ScrollGroup 9.7"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -82,6 +82,10 @@ function ScrollGroup.new(class, self)
 		{ self, "onSetCanvasLeft", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
 	self.NotifyTop =
 		{ self, "onSetCanvasTop", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
+	self.NotifyWidth =
+		{ self, "onSetCanvasWidth", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
+	self.NotifyHeight =
+		{ self, "onSetCanvasHeight", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
 
 	self.CopyAreaList = { }
 	self.Orientation = "vertical"
@@ -162,6 +166,8 @@ function ScrollGroup:setup(app, window)
 	local c = self.Child
 	c:addNotify("CanvasLeft", ui.NOTIFY_CHANGE, self.NotifyLeft, 1)
 	c:addNotify("CanvasTop", ui.NOTIFY_CHANGE, self.NotifyTop, 1)
+	c:addNotify("CanvasWidth", ui.NOTIFY_CHANGE, self.NotifyWidth, 1)
+	c:addNotify("CanvasHeight", ui.NOTIFY_CHANGE, self.NotifyHeight, 1)
 	if self.HSliderGroup then
 		self.HSliderGroup.Slider:addNotify("Value", ui.NOTIFY_CHANGE,
 			self.HSliderNotify)
@@ -186,6 +192,8 @@ function ScrollGroup:cleanup()
 			self.HSliderNotify)
 	end
 	local c = self.Child
+	c:remNotify("CanvasHeight", ui.NOTIFY_CHANGE, self.NotifyHeight)
+	c:remNotify("CanvasWidth", ui.NOTIFY_CHANGE, self.NotifyWidth)
 	c:remNotify("CanvasTop", ui.NOTIFY_CHANGE, self.NotifyTop)
 	c:remNotify("CanvasLeft", ui.NOTIFY_CHANGE, self.NotifyLeft)
 	Group.cleanup(self)
@@ -231,15 +239,17 @@ end
 
 function ScrollGroup:onSetCanvasWidth(w)
 	local c = self.Child
-	local r = c.Rect
-	local sw = r[3] - r[1] + 1
-	self.Child:setValue("CanvasWidth", w)
-	self:enableHSlider(self.HSliderMode == "on"
-		or self.HSliderMode == "auto" and (sw < w))
-	local g = self.HSliderGroup
-	if g then
-		g.Slider:setValue("Range", w)
-		g.Slider:setValue("Max", w - sw)
+	local r1, _, r3 = c:getRectangle()
+	if r1 then
+		local sw = r3 - r1 + 1
+		self.Child:setValue("CanvasWidth", w)
+		self:enableHSlider(self.HSliderMode == "on"
+			or self.HSliderMode == "auto" and (sw < w))
+		local g = self.HSliderGroup
+		if g then
+			g.Slider:setValue("Range", w)
+			g.Slider:setValue("Max", w - sw)
+		end
 	end
 end
 
@@ -249,15 +259,17 @@ end
 
 function ScrollGroup:onSetCanvasHeight(h)
 	local c = self.Child
-	local r = c.Rect
-	local sh = r[4] - r[2] + 1
-	self.Child:setValue("CanvasHeight", h)
-	self:enableVSlider(self.VSliderMode == "on"
-		or self.VSliderMode == "auto" and (sh < h))
-	local g = self.VSliderGroup
-	if g then
-		g.Slider:setValue("Range", h)
-		g.Slider:setValue("Max", h - sh)
+	local _, r2, _, r4 = c:getRectangle()
+	if r2 then
+		local sh = r4 - r2 + 1
+		self.Child:setValue("CanvasHeight", h)
+		self:enableVSlider(self.VSliderMode == "on"
+			or self.VSliderMode == "auto" and (sh < h))
+		local g = self.VSliderGroup
+		if g then
+			g.Slider:setValue("Range", h)
+			g.Slider:setValue("Max", h - sh)
+		end
 	end
 end
 

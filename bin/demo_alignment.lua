@@ -72,7 +72,6 @@ local window = Window:new
 					Text = L.BEGIN,
 					Width = "free",
 					VAlign = "top", -- Style = "vertical-grid-align: top",
-					Legend = L.BORDER_CAPTION,
 				},
 				Button:new
 				{

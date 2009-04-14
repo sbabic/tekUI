@@ -60,7 +60,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.5"
+_VERSION = "PageGroup 9.6"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -286,6 +286,8 @@ function PageGroup.new(class, self)
 		Children = children,
 		PageNumber = pagenumber,
 		PageElement = pageelement,
+		Width = self.Width,
+		Height = self.Height,
 	}
 
 	self.PageCaptions = self.PageCaptions or false
