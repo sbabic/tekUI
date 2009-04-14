@@ -98,7 +98,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 14.1"
+_VERSION = "Text 14.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -317,7 +317,7 @@ end
 
 function Text:newTextRecord(line, font, halign, valign, m1, m2, m3, m4)
 	font = type(font) ~= "string" and font or self.Display:openFont(font)
-	local keycode
+	local keycode, _
 	local r = { line, font, halign or "center", valign or "center",
 		m1 or 0, m2 or 0, m3 or 0, m4 or 0 }
 	local sc = self.ShortcutMark
