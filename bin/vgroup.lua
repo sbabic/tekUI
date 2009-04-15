@@ -9,6 +9,7 @@ ui.Application:new
 		ui.Window:new
 		{
 			Title = "Groups Demo",
+			HideOnEscape = true,
 			Children =
 			{
 				ui.ScrollGroup:new

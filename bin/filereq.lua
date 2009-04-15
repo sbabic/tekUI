@@ -17,6 +17,7 @@ app = ui.Application:new
 		{
 			Title = L.FILE_REQUEST,
 			Orientation = "vertical",
+			HideOnEscape = true,
 			Children =
 			{
 				ui.Group:new
@@ -31,7 +32,7 @@ app = ui.Application:new
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
-							ShortcutMark = ui.ShortcutMark,
+							KeyCode = true,
 						},
 						ui.TextInput:new
 						{
@@ -45,7 +46,7 @@ app = ui.Application:new
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
-							ShortcutMark = ui.ShortcutMark,
+							KeyCode = true,
 						},
 						ui.TextInput:new
 						{
@@ -57,7 +58,7 @@ app = ui.Application:new
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
-							ShortcutMark = ui.ShortcutMark,
+							KeyCode = true,
 						},
 						ui.Text:new
 						{
@@ -70,7 +71,7 @@ app = ui.Application:new
 							Width = "auto",
 							Class = "caption",
 							HAlign = "right",
-							ShortcutMark = ui.ShortcutMark,
+							KeyCode = true,
 						},
 						ui.CheckMark:new
 						{

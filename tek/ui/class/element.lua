@@ -40,6 +40,7 @@
 --		- Element:connect() - Connects the element to a parent element
 --		- Element:decodeProperties() - Decodes the element's style attributes
 --		- Element:disconnect() - Disconnects the element from its parent
+--		- Element:getId() - Shortcut for self.Application:getElementById()
 --		- Element:getProperties() - Retrieves an element's style properties
 --		- Element:getProperty() - Retrieves a single style property
 --		- Element:setup() - Links the element to its environment
@@ -57,7 +58,7 @@ local insert = table.insert
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 10.1"
+_VERSION = "Element 11.0"
 local Element = _M
 
 -------------------------------------------------------------------------------
@@ -272,3 +273,14 @@ end
 
 function Element:getProperties(p, pclass)
 end
+
+-------------------------------------------------------------------------------
+--	Element:getId(id): Gets the element with the specified id, under which it
+--	was previously registered with the Application. See
+--	Application:getElementById(), for which this function is a shortcut.
+-------------------------------------------------------------------------------
+
+function Element:getId(id)
+	return self.Application:getElementById(id)
+end
+

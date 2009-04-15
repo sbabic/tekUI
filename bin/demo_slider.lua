@@ -18,6 +18,7 @@ local window = ui.Window:new
 	Title = L.SLIDER_TITLE,
 	Status = "hide",
 	Orientation = "vertical",
+	HideOnEscape = true,
 	Children =
 	{
 		Group:new

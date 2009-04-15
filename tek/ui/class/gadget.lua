@@ -54,12 +54,14 @@
 --		- {{Hover [SG]}} (boolean)
 --			Signifies a change of the Gadget being hovered by the pointing
 --			device. Invokes Gadget:onHover().
---		- {{KeyCode [IG]}} (string)
---			If set, the keyboard equivalent that can be used to activate the
---			element while it is shown [default: '''false''']. See also
---			[[#tek.ui.class.popitem : PopItem]] for a discussion of
---			denoting qualifiers, which applies to the {{KeyCode}} attribute
---			as well.
+--		- {{KeyCode [IG]}} (string or boolean)
+--			If set, a keyboard equivalent for activating the element. See also
+--			[[#tek.ui.class.popitem : PopItem]] for a discussion of denoting
+--			keyboard qualifiers. The [[#tek.ui.class.text : Text]] class allows
+--			this attribute to be set to '''true''', in which case the element's
+--			{{Text}} will be examined during setup for an initiatory character
+--			(by default an underscore), and if found, the {{KeyCode}} attribute
+--			will be replaced by the character following this marker.
 --		- {{Mode [IG]}} (string)
 --			Interaction mode of the Gadget; can be
 --			- "inert": The element does not react to input,

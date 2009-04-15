@@ -20,6 +20,7 @@ local window = Window:new
 	Title = L.ALIGNMENT_TITLE,
 	Status = "hide",
 	Orientation = "vertical",
+	HideOnEscape = true,
 	Children =
 	{
 		Group:new

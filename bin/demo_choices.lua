@@ -43,6 +43,7 @@ local window = ui.Window:new
 	Status = "hide",
 	Height = "free",
 	Width = "free",
+	HideOnEscape = true,
 	Children =
 	{
 		Group:new

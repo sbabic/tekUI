@@ -164,6 +164,7 @@ local window = ui.Window:new
 	Title = L.PRESENTATION_TITLE,
 	Orientation = "vertical",
 	Status = "hide",
+	HideOnEscape = true,
 	Children = { SlideScroll }
 }
 

@@ -25,6 +25,9 @@
 --			Instructs the Window to open borderless and in full screen mode;
 --			this however may be in conflict with the {{MaxWidth}},
 --			{{MinWidth}} attributes, which have precedence in this case.
+--		- {{HideOnEscape [IG]}} (boolean)
+--			Instructs the window that, when the Escape key is pressed, it
+--			should invoke the {{onHide()}} method. Default: '''false'''
 --		- {{Left [IG]}} (number)
 --			The window's left offset on the display
 --		- {{Modal [IG]}} (boolean)
@@ -53,6 +56,7 @@
 --		- Window:addInterval() - Adds an interval timer to the window
 --		- Window:clickElement() - Simulates a click on an element
 --		- Window:onChangeStatus() - Handler for {{Status}}
+--		- Window:onHide() - Handler called when the window is closed
 --		- Window:remInputHandler() - Removes an input handler from the window
 --		- Window:remInterval() - Removes interval timer to the window
 --		- Window:setActiveElement() - Sets the window's active element
@@ -93,7 +97,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 11.6"
+_VERSION = "Window 12.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -131,6 +135,7 @@ function Window.init(self)
 	self.DblClickJitter = self.DblClickJitter or DEF_DBLCLICKJITTER
 	self.FocusElement = false
 	self.FullScreen = self.FullScreen or ui.FullScreen == "true"
+	self.HideOnEscape = self.HideOnEscape or false
 	self.HiliteElement = false
 	-- Active hold tick counter - number of ticks left to next hold event:
 	self.HoldTickActive = 0
@@ -507,7 +512,7 @@ end
 local MsgHandlers =
 {
 	[ui.MSG_CLOSE] = function(self, msg)
-		self:setValue("Status", "hide")
+		self:onHide()
 		return msg
 	end,
 	[ui.MSG_FOCUS] = function(self, msg)
@@ -569,8 +574,8 @@ local MsgHandlers =
 			local pr = self.PopupRootWindow
 			if pr then
 				pr.ActivePopup:endPopup()
-			else
-				self:setValue("Status", "hide")
+			elseif self.HideOnEscape then
+				self:onHide()
 			end
 			return
 		elseif key == 9 then -- tab key:
@@ -598,7 +603,7 @@ local MsgHandlers =
 		local s = self:getShortcutElements(msg[7], msg[6])
 		if s then
 			for _, e in ipairs(s) do
-				if not e.Disabled and e.ShortcutMark then
+				if not e.Disabled and e.KeyCode then
 					self:setHiliteElement(e)
 					self:setFocusElement(e)
 					self:setActiveElement(e)
@@ -627,7 +632,7 @@ local MsgHandlers =
 		local s = self:getShortcutElements(msg[7], msg[6])
 		if s then
 			for _, e in ipairs(s) do
-				if not e.Disabled and e.ShortcutMark then
+				if not e.Disabled and e.KeyCode then
 					self:setActiveElement()
 				end
 			end
@@ -1036,4 +1041,16 @@ function Window:clickElement(e)
 	self:setActiveElement(e)
 	self:setActiveElement()
 	self:setHiliteElement(he)
+end
+
+-------------------------------------------------------------------------------
+--	Window:onHide(): This handler is invoked when the window's close button
+--	is clicked (or the Escape key was pressed and the {{HideOnEscape}} flag
+--	was enabled). The standard behavior is to hide the window by setting
+--	the {{Status}} field to {{"hide"}}. Subsequently, if the last window is
+--	closed, the application is closed down.
+-------------------------------------------------------------------------------
+
+function Window:onHide()
+	self:setValue("Status", "hide")
 end

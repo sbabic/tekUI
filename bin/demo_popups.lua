@@ -20,6 +20,7 @@ local window = Window:new
 	Id = "popups-window",
 	Title = L.POPUPS_TITLE,
 	Status = "hide",
+	HideOnEscape = true,
 	Children =
 	{
 		Orientation = "vertical",

@@ -9,6 +9,7 @@ ui.Application:new
 		ui.Window:new
 		{
 			Title = "Hello",
+			HideOnEscape = true,
 			Children =
 			{
 				ui.Button:new

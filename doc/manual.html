@@ -1722,7 +1722,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2625,7 +2625,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2663,7 +2663,7 @@ message = function(object, message)
 <pre>
 function newButton(text)
   return ui.Text:new { Mode = &quot;button&quot;, Class = &quot;button&quot;,
-    Text = text, ShortcutMark = ui.ShortcutMark }
+    Text = text, KeyCode = true }
 end
 </pre>
 				</blockquote>
@@ -2883,7 +2883,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2939,7 +2939,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v10.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v10.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3571,7 +3571,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v11.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3668,6 +3668,9 @@ end
 							<a href="#Element:disconnect"><code>Element:disconnect()</code></a> - Disconnects the element from its parent
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Element:getId"><code>Element:getId()</code></a> - Shortcut for <a href="#self:Application:getElementById"><code>self.Application:getElementById()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> - Retrieves an element's style properties
 						</li>
 						<li style="list-style-type: none">
@@ -3719,6 +3722,14 @@ end
 			<p>
 				Disconnects the formerly connected element
 				from its parent.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Element:getId" id="Element:getId"><code>Element:getId(id)</code></a></h3>
+			<p>
+				Gets the element with the specified id, under which it
+				was previously registered with the Application. See
+				<a href="#Application:getElementById"><code>Application:getElementById()</code></a>, for which this function is a shortcut.
 			</p>
 			<hr />
 		</div>
@@ -4285,14 +4296,16 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>KeyCode &#091;IG&#093;</code> (string)
+							<code>KeyCode &#091;IG&#093;</code> (string or boolean)
 							<blockquote>
 								<p>
-									If set, the keyboard equivalent that can be used to activate the
-									element while it is shown &#091;default: <strong>false</strong>&#093;. See also
-									<a href="#tek.ui.class.popitem">PopItem</a> for a discussion of
-									denoting qualifiers, which applies to the <code>KeyCode</code> attribute
-									as well.
+									If set, a keyboard equivalent for activating the element. See also
+									<a href="#tek.ui.class.popitem">PopItem</a> for a discussion of denoting
+									keyboard qualifiers. The <a href="#tek.ui.class.text">Text</a> class allows
+									this attribute to be set to <strong>true</strong>, in which case the element's
+									<code>Text</code> will be examined during setup for an initiatory character
+									(by default an underscore), and if found, the <code>KeyCode</code> attribute
+									will be replaced by the character following this marker.
 								</p>
 							</blockquote>
 						</li>
@@ -5237,7 +5250,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v5.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v5.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5451,7 +5464,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5547,7 +5560,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6313,7 +6326,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v14.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v14.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6397,19 +6410,6 @@ end
 									After the initial size calculation, keep the minimal width of
 									the element and do not rethink the layout in regard to a
 									possible new minimal width (e.g. resulting from a newly set text).
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>ShortcutMark &#091;IG&#093;</code> (string)
-							<blockquote>
-								<p>
-									The initiatory character for keyboard shortcuts in <code>Text</code>, used
-									during text setup. The first character following the marker
-									will be used as the element's <code>KeyCode</code> (see also
-									<a href="#tek.ui.class.gadget">Gadget</a>). By setting this attribute
-									to an empty string (<code>&quot;&quot;</code>), the text is left unmodified and no
-									shortcut is extracted. &#091;Default: <code>&quot;&quot;</code>&#093;
 								</p>
 							</blockquote>
 						</li>
@@ -6799,7 +6799,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v11.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6840,6 +6840,15 @@ end
 									Instructs the Window to open borderless and in full screen mode;
 									this however may be in conflict with the <code>MaxWidth</code>,
 									<code>MinWidth</code> attributes, which have precedence in this case.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>HideOnEscape &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Instructs the window that, when the Escape key is pressed, it
+									should invoke the <code>onHide()</code> method. Default: <strong>false</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -6934,6 +6943,9 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Window:onChangeStatus"><code>Window:onChangeStatus()</code></a> - Handler for <code>Status</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Window:onHide"><code>Window:onHide()</code></a> - Handler called when the window is closed
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Window:remInputHandler"><code>Window:remInputHandler()</code></a> - Removes an input handler from the window
@@ -7038,6 +7050,16 @@ message = function(object, message)
 			<p>
 				This method is invoked when the Window's
 				<code>Status</code> has changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Window:onHide" id="Window:onHide"><code>Window:onHide()</code></a></h3>
+			<p>
+				This handler is invoked when the window's close button
+				is clicked (or the Escape key was pressed and the <code>HideOnEscape</code> flag
+				was enabled). The standard behavior is to hide the window by setting
+				the <code>Status</code> field to <code>&quot;hide&quot;</code>. Subsequently, if the last window is
+				closed, the application is closed down.
 			</p>
 			<hr />
 		</div>
@@ -7158,7 +7180,7 @@ message = function(object, message)
 			</p>
 			<hr />
 			<p>
-				Document generated on Tue Apr 14 10:45:38 2009
+				Document generated on Wed Apr 15 14:53:25 2009
 			</p>
 		</div>
 	</body>

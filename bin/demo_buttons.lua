@@ -18,6 +18,7 @@ local window = ui.Window:new
 	Title = L.BUTTONS_TITLE,
 	Orientation = "vertical",
 	Status = "hide",
+	HideOnEscape = true,
 	Children =
 	{
 		Group:new

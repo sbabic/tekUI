@@ -16,6 +16,7 @@ local window = Window:new
 	Id = "list-window",
 	Title = L.LIST_TITLE,
 	Status = "hide",
+	HideOnEscape = true,
 	Children =
 	{
 		ui.ScrollGroup:new

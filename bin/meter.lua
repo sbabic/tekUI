@@ -16,6 +16,7 @@ ui.Application:new
 		{
 			Title = "stdin Meter",
 			Orientation = "vertical",
+			HideOnEscape = true,
 			Children =
 			{
 				ui.Text:new { Text = "stdin Meter" },

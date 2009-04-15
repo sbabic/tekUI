@@ -231,6 +231,7 @@ local window = ui.Window:new
 	Title = L.CUSTOMCLASS_TITLE,
 	Status = "hide",
 	Orientation = "vertical",
+	HideOnEscape = true,
 	Children =
 	{
 		Group:new

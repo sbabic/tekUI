@@ -77,7 +77,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 10.2"
+_VERSION = "DirList 10.3"
 
 local DirList = _M
 
@@ -145,7 +145,7 @@ end
 local function newButton(obj)
 	obj.Mode = "button"
 	obj.Class = "button"
-	obj.ShortcutMark = ui.ShortcutMark
+	obj.KeyCode = true
 	return Text:new(obj)
 end
 

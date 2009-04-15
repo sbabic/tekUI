@@ -8,6 +8,7 @@ ui.Application:new
 	{
 		ui.Window:new
 		{
+			HideOnEscape = true,
 			Columns = 2,
 			Children =
 			{

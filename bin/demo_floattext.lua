@@ -16,6 +16,7 @@ local window = ui.Window:new
 	Width = "free",
 	Height = "free",
 	Orientation = "vertical",
+	HideOnEscape = true,
 	Children =
 	{
 		ui.Group:new

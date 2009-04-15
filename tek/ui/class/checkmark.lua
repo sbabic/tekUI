@@ -40,7 +40,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.5"
+_VERSION = "CheckMark 3.7"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -118,9 +118,9 @@ function CheckMark.init(self)
 	self.ImageHeight = false
 	self.ImageMinHeight = self.ImageMinHeight or DEF_IMAGEMINHEIGHT
 	self.ImageWidth = false
+	self.KeyCode = self.KeyCode or true
 	self.Mode = self.Mode or "toggle"
 	self.OldSelected = false
-	self.ShortcutMark = self.ShortcutMark or ui.ShortcutMark
 	return Text.init(self)
 end
 

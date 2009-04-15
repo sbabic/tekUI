@@ -16,6 +16,7 @@ local window = ui.Window:new
 	Title = L.BORDERS_TITLE,
 	Status = "hide",
 	Height = "auto",
+	HideOnEscape = true,
 	Children =
 	{
 		Group:new

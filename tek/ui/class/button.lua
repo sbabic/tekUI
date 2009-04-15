@@ -29,7 +29,7 @@
 --		use the Text class directly, or create a ''Button factory'' like this:
 --				function newButton(text)
 --				  return ui.Text:new { Mode = "button", Class = "button",
---				    Text = text, ShortcutMark = ui.ShortcutMark }
+--				    Text = text, KeyCode = true }
 --				end
 --
 -------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ local ui = require "tek.ui"
 local Text = ui.Text
 
 module("tek.ui.class.button", tek.ui.class.text)
-_VERSION = "Button 1.1"
+_VERSION = "Button 1.2"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -49,6 +49,6 @@ local Button = _M
 function Button.init(self)
 	self.Mode = self.Mode or "button"
 	self.Class = self.Class or "button"
-	self.ShortcutMark = self.ShortcutMark or ui.ShortcutMark
+	self.KeyCode = self.KeyCode or true
 	return Text.init(self)
 end

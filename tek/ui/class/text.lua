@@ -42,13 +42,6 @@
 --			After the initial size calculation, keep the minimal width of
 --			the element and do not rethink the layout in regard to a
 --			possible new minimal width (e.g. resulting from a newly set text).
---		- {{ShortcutMark [IG]}} (string)
---			The initiatory character for keyboard shortcuts in {{Text}}, used
---			during text setup. The first character following the marker
---			will be used as the element's {{KeyCode}} (see also
---			[[#tek.ui.class.gadget : Gadget]]). By setting this attribute
---			to an empty string ({{""}}), the text is left unmodified and no
---			shortcut is extracted. [Default: {{""}}]
 --		- {{Text [ISG]}} (string)
 --			The text that will be displayed on the element; it may span
 --			multiple lines (see also Text:makeTextRecords()). Setting this
@@ -98,7 +91,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 14.2"
+_VERSION = "Text 14.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -118,7 +111,6 @@ function Text.init(self)
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
 	self.Mode = self.Mode or "inert"
-	self.ShortcutMark = self.ShortcutMark or ""
 	self.Text = self.Text or ""
 	self.TextHAlign = self.TextHAlign or false
 	self.TextRecords = self.TextRecords or false
@@ -150,12 +142,10 @@ end
 function Text:setup(app, window)
 	self.TextHAlign = self.TextHAlign or "center"
 	self.TextVAlign = self.TextVAlign or "center"
-	local sc = self.ShortcutMark
-	if sc ~= "" and not self.KeyCode then
+	if self.KeyCode == true then
+		local sc = ui.ShortcutMark
 		local keycode = self.Text:match("^[^" .. sc .. "]*" .. sc .. "(.)")
-		if keycode then
-			self.KeyCode = "IgnoreCase+" .. keycode
-		end
+		self.KeyCode = keycode and "IgnoreCase+" .. keycode or false
 	end
 	Gadget.setup(self, app, window)
 	self:addNotify("Text", ui.NOTIFY_CHANGE, NOTIFY_SETTEXT)
@@ -320,8 +310,8 @@ function Text:newTextRecord(line, font, halign, valign, m1, m2, m3, m4)
 	local keycode, _
 	local r = { line, font, halign or "center", valign or "center",
 		m1 or 0, m2 or 0, m3 or 0, m4 or 0 }
-	local sc = self.ShortcutMark
-	if sc ~= "" then
+	if self.KeyCode then
+		local sc = ui.ShortcutMark
 		local a, b = line:match("([^" .. sc .. "]*)" .. sc ..
 			"?([^" .. sc .. "]*)")
 		if b ~= "" then

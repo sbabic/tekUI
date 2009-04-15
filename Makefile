@@ -29,8 +29,9 @@ clean:
 help: default-help
 	@echo "Extra build targets for this Makefile:"
 	@echo "-------------------------------------------------------------------------------"
-	@echo "docs .................... (re-)generate documentation"
 	@echo "distclean ............... remove all temporary files and directories"
+	@echo "docs .................... (re-)generate documentation"
+	@echo "kdiff ................... diffview of recent changes (using kdiff3)"
 	@echo "==============================================================================="
 
 distclean: clean

@@ -107,7 +107,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 14.4"
+_VERSION = "Application 14.5"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -679,7 +679,8 @@ function Application:requestFile(args)
 		Width = args.Width or 400,
 		Height = args.Height or 500,
 		Center = args.Center or true,
-		Children = { dirlist }
+		Children = { dirlist },
+		HideOnEscape = true
 	}
 
 	Application.connect(window)
@@ -734,7 +735,7 @@ function Application:easyRequest(title, text, ...)
 		{
 			Class = "button",
 			Mode = "button",
-			ShortcutMark = ui.ShortcutMark,
+			KeyCode = true,
 			Text = select(i, ...),
 			onPress = function(self, pressed)
 				if pressed == false then
@@ -756,6 +757,7 @@ function Application:easyRequest(title, text, ...)
 		Modal = true,
 		Center = true,
 		Orientation = "vertical",
+		HideOnEscape = true,
 		Children =
 		{
 			ui.Text:new { Class = "message", Width = "fill", Text = text },

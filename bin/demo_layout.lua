@@ -19,6 +19,7 @@ local window = ui.Window:new
 	Status = "hide",
 	MaxWidth = ui.HUGE,
 	MaxHeight = ui.HUGE,
+	HideOnEscape = true,
 	Children =
 	{
 		Group:new

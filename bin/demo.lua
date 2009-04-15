@@ -88,6 +88,7 @@ app = ui.Application:new
 		ui.Window:new
 		{
 			Style = "width: 400; height: 500",
+			HideOnEscape = true,
 
 			UserData =
 			{
@@ -96,7 +97,7 @@ app = ui.Application:new
 				MinMem = false,
 				MaxMem = false,
 			},
-
+			
 			updateInterval = function(self, msg)
 				local data = self.UserData
 				data.MemRefreshTickCount = data.MemRefreshTickCount - 1
@@ -128,7 +129,7 @@ app = ui.Application:new
 			end,
 
 			hide = function(self)
-				self:remInputHandler(ui.MSG_INTERVAL, self, self.handlerInterval)
+				self:remInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 				ui.Window.hide(self)
 			end,
 
@@ -370,6 +371,19 @@ app = ui.Application:new
 		},
 		ui.Window:new
 		{
+			Id = "window-main",
+			HideOnEscape = true,
+			
+			onHide = function(self)
+				local app = self.Application
+				app:addCoroutine(function()
+					if app:easyRequest(false, L.CONFIRM_QUIT_APPLICATION,
+						L.QUIT, L.CANCEL) == 1 then
+						ui.Window.onHide(self)
+					end
+				end)
+			end,
+		
 			Orientation = "vertical",
 			Notifications =
 			{
@@ -442,21 +456,12 @@ app = ui.Application:new
 								{
 									Text = L.MENU_QUIT,
 									Shortcut = "Ctrl+Q",
-									Notifications =
-									{
-										["Pressed"] =
-										{
-											[false] =
-											{
-												{ ui.NOTIFY_APPLICATION, ui.NOTIFY_COROUTINE, function(self)
-													if self:easyRequest(false, L.CONFIRM_QUIT_APPLICATION,
-														L.QUIT, L.CANCEL) == 1 then
-														self:setValue("Status", "quit")
-													end
-												end }
-											}
-										}
-									}
+									onPress = function(self, pressed)
+										if pressed == false then
+											self:getId("window-main"):onHide()
+										end
+										ui.MenuItem.onPress(self, pressed)
+									end,
 								}
 							}
 						}
