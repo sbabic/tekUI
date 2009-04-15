@@ -39,7 +39,7 @@ local ipairs = ipairs
 -- local pi = math.pi
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 2.5"
+_VERSION = "RadioButton 2.6"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -110,29 +110,23 @@ local points3 = { 1,14,15,16,17,18,19,20,21,22,23,24,25,14 }
 
 local RadioImage1 = VectorImage:new
 {
-	ImageData =
+	Coords = coords,
+	Primitives =
 	{
-		Coords = coords,
-		Primitives =
-		{
-			{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
-			{ 0x2000, 14, Points = points3, Pen = ui.PEN_BACKGROUND },
-			{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
-		}
+		{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
+		{ 0x2000, 14, Points = points3, Pen = ui.PEN_BACKGROUND },
+		{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
 	}
 }
 
 local RadioImage2 = VectorImage:new
 {
-	ImageData =
-	{
-		Coords = coords,
-		Primitives = {
-			{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
-			{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
-			{ 0x2000, 14, Points = points3, Pen = ui.PEN_BACKGROUND },
-			{ 0x2000, 12, Points = points2, Pen = ui.PEN_DETAIL },
-		}
+	Coords = coords,
+	Primitives = {
+		{ 0x1000, 16, Points = points11, Pen = ui.PEN_BORDERSHADOW },
+		{ 0x1000, 12, Points = points12, Pen = ui.PEN_BORDERSHINE },
+		{ 0x2000, 14, Points = points3, Pen = ui.PEN_BACKGROUND },
+		{ 0x2000, 12, Points = points2, Pen = ui.PEN_DETAIL },
 	}
 }
 

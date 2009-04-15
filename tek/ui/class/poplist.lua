@@ -58,7 +58,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 6.2"
+_VERSION = "PopList 6.3"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -68,11 +68,8 @@ local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_DETAIL } }
 
 local ArrowImage = VectorImage:new
 {
-	ImageData =
-	{
-		Coords = { 0x2000,0xa000, 0xe000,0xa000, 0x8000,0x4000 },
-		Primitives = prims,
-	}
+	Coords = { 0x2000,0xa000, 0xe000,0xa000, 0x8000,0x4000 },
+	Primitives = prims,
 }
 
 local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectEntry", ui.NOTIFY_VALUE }

@@ -456,10 +456,6 @@ tek_lib_visual_text(lua_State *L)
 **				...
 **			}
 **		},
-**
-**		MinMax = { mm1, mm2, mm3, mm4, },
-**		Rect = { r1, r2, r3, r4},
-**		PenTable = ...,
 **	},
 **
 ** Format Codes:
@@ -520,19 +516,16 @@ tek_lib_visual_drawimage(lua_State *L)
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
 	TTAGITEM tags[2];
 
+	/* Imagedata: */
 	luaL_checktype(L, 2, LUA_TTABLE);
+	/* Pentable: */
+	luaL_checktype(L, 7, LUA_TTABLE);
 
-	/* get rect */
-	lua_getfield(L, 2, "Rect");
-	luaL_checktype(L, -1, LUA_TTABLE);
+	rect[0] = luaL_checkinteger(L, 3);
+	rect[1] = luaL_checkinteger(L, 4);
+	rect[2] = luaL_checkinteger(L, 5);
+	rect[3] = luaL_checkinteger(L, 6);
 
-	/* s: rect */
-	for (i = 0; i < 4; i++)
-	{
-		/* get s:rect[i+1] */
-		rect[i] = igetnumber(L, -1, i+1);
-	}
-	lua_pop(L, 1);
 	/* s: */
 
 	scalex = rect[2] - rect[0];
@@ -613,8 +606,7 @@ tek_lib_visual_drawimage(lua_State *L)
 		{
 			TEKPen *pen;
 
-			lua_getfield(L, 2, "PenTable");
-			luaL_checktype(L, -1, LUA_TTABLE);
+			lua_pushvalue(L, 7);
 			/* s: pentab, primitives[i+1], primitives, coords */
 
 			if ((fmtcode & 0xf) == 0x1)

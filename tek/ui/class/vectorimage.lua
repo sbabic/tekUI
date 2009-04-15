@@ -8,25 +8,21 @@
 --	Implements vector graphics rendering
 --
 
+local Class = require "tek.class"
 module("tek.ui.class.vectorimage", tek.class)
-_VERSION = "VectorImage 1.1"
-
--------------------------------------------------------------------------------
---	Class implementation:
--------------------------------------------------------------------------------
-
+_VERSION = "VectorImage 2.0"
 local VectorImage = _M
 
-function VectorImage:draw(drawable, rect)
-	VectorImage.render(drawable, rect, self.ImageData)
+function VectorImage.new(class, self)
+	-- Background painted completely?
+	self.Transparent = self.Transparent or false
+	return Class.new(class, self)
 end
 
--------------------------------------------------------------------------------
---	Static methods:
--------------------------------------------------------------------------------
+function VectorImage:draw(d, r1, r2, r3, r4)
+	d:drawImage(self, r1, r2, r3, r4, d.Pens)
+end
 
-function VectorImage.render(drawable, rect, data)
- 	data.PenTable = drawable.Pens
-	data.Rect = rect
-	drawable:drawImage(data) -- TODO: pass PenTable, Rect
+function VectorImage:askWidthHeight(w, h)
+	return w, h
 end

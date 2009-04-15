@@ -38,9 +38,10 @@ local VectorImage = ui.VectorImage
 local floor = math.floor
 local ipairs = ipairs
 local max = math.max
+local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.7"
+_VERSION = "CheckMark 3.8"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -71,30 +72,24 @@ local points3 = { 8,10,14,12 }
 
 local CheckImage1 = VectorImage:new
 {
-	ImageData =
+	Coords = coords,
+	Primitives =
 	{
-		Coords = coords,
-		Primitives =
-		{
-			{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
-			{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
-			{ 0x1000, 4, Points = points3, Pen = ui.PEN_BACKGROUND },
-		}
+		{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
+		{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
+		{ 0x1000, 4, Points = points3, Pen = ui.PEN_BACKGROUND },
 	}
 }
 
 local CheckImage2 = VectorImage:new
 {
-	ImageData =
+	Coords = coords,
+	Primitives =
 	{
-		Coords = coords,
-		Primitives =
-		{
-			{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
-			{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
-			{ 0x1000, 4, Points = points3, Pen = ui.PEN_BACKGROUND },
-			{ 0x2000, 6, Points = points1, Pen = ui.PEN_DETAIL },
-		}
+		{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
+		{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
+		{ 0x1000, 4, Points = points3, Pen = ui.PEN_BACKGROUND },
+		{ 0x2000, 6, Points = points1, Pen = ui.PEN_DETAIL },
 	}
 }
 
@@ -184,7 +179,7 @@ function CheckMark:draw()
 	Text.draw(self)
 	local img = self.Selected and self.AltImage or self.Image
 	if img then
-		img:draw(self.Drawable, self.ImageRect)
+		img:draw(self.Drawable, unpack(self.ImageRect))
 	end
 end
 

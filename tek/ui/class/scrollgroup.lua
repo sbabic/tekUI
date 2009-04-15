@@ -54,7 +54,6 @@
 local ui = require "tek.ui"
 local Region = require "tek.lib.region"
 local Group = ui.Group
-local Image = ui.Image
 local ScrollBar = ui.ScrollBar
 local floor = math.floor
 local insert = table.insert
@@ -67,7 +66,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.7"
+_VERSION = "ScrollGroup 9.8"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:

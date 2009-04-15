@@ -65,9 +65,10 @@ local Text = ui.Text
 local floor = math.floor
 local ipairs = ipairs
 local max = math.max
+local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 7.3"
+_VERSION = "PopItem 7.4"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -225,8 +226,8 @@ function PopItem:draw()
 		d:pushClipRect(r[1], r[2], ir[1], r[4])
 		Text.draw(self)
 		d:popClipRect()
-		i.ImageData.Primitives[1].Pen = self.Foreground
-		i:draw(d, self.ImageRect)
+		i.Primitives[1].Pen = self.Foreground
+		i:draw(d, unpack(self.ImageRect))
 	else
 		Text.draw(self)
 	end

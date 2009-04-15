@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.18"
+_VERSION = "Theme 6.19"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -335,24 +335,28 @@ local DEF_STYLESHEET = ui.prepareProperties
 
 	[".scrollbar-arrowup"] =
 	{
+		["padding"] = 1,
 		["margin-bottom"] = 0,
 		["border-width"] = 3,
 	},
 
 	[".scrollbar-arrowdown"] =
 	{
+		["padding"] = 1,
 		["margin-top"] = 0,
 		["border-width"] = 3,
 	},
 
 	[".scrollbar-arrowleft"] =
 	{
+		["padding"] = 1,
 		["margin-right"] = 0,
 		["border-width"] = 3,
 	},
 
 	[".scrollbar-arrowright"] =
 	{
+		["padding"] = 1,
 		["margin-left"] = 0,
 		["border-width"] = 3,
 	},

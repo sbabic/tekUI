@@ -53,8 +53,8 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Image = ui.Image
 local Group = ui.Group
+local ImageGadget = ui.ImageGadget
 local Slider = ui.Slider
 local VectorImage = ui.VectorImage
 
@@ -62,7 +62,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 8.0"
+_VERSION = "ScrollBar 8.1"
 
 local ScrollBar = _M
 
@@ -70,7 +70,6 @@ local ScrollBar = _M
 --	Data:
 -------------------------------------------------------------------------------
 
-local ARROWIMAGEMARGIN = { 1, 1, 1, 1 }
 local ARROWBORDER1_HORIZ = { 1, 1, 0, 1 }
 local ARROWBORDER2_HORIZ = { 0, 1, 1, 1 }
 local ARROWBORDER1_VERT = { 1, 1, 1, 0 }
@@ -80,18 +79,22 @@ local coordx = { 0,0, 10,10, 10,-10 }
 local coordy = { 0,0, 10,10, -10,10 }
 local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_DETAIL } }
 
-local ArrowUpImage = VectorImage:new { ImageData = {
+local ArrowUpImage = VectorImage:new {
 	Coords = { 0x1000,0x4000, 0xf000,0x4000, 0x8000,0xc000 },
-	Primitives = prims } }
-local ArrowDownImage = VectorImage:new { ImageData = {
+	Transparent = true,
+	Primitives = prims }
+local ArrowDownImage = VectorImage:new {
 	Coords = { 0x1000,0xc000, 0xf000,0xc000, 0x8000,0x4000 },
-	Primitives = prims } }
-local ArrowLeftImage = VectorImage:new { ImageData = {
+	Transparent = true,
+	Primitives = prims }
+local ArrowLeftImage = VectorImage:new {
 	Coords = { 0xc000,0x1000, 0xc000,0xf000, 0x4000,0x8000 },
-	Primitives = prims } }
-local ArrowRightImage = VectorImage:new { ImageData = {
+	Transparent = true,
+	Primitives = prims }
+local ArrowRightImage = VectorImage:new {
 	Coords = { 0x4000,0x1000, 0x4000,0xf000, 0xc000,0x8000 },
-	Primitives = prims } }
+	Transparent = true,
+	Primitives = prims }
 
 local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
 local NOTIFY_MIN = { ui.NOTIFY_SELF, "onSetMin", ui.NOTIFY_VALUE }
@@ -102,35 +105,34 @@ local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 --	ArrowButton:
 -------------------------------------------------------------------------------
 
-local ArrowButton = Image:newClass { _NAME = "_scrollbar-arrow" }
+local ArrowButton = ImageGadget:newClass { _NAME = "_scrollbar-arrow" }
 
 function ArrowButton.init(self)
 	self.Width = "fill"
 	self.Height = "fill"
 	self.Mode = "button"
-	self.ImageMargin = ARROWIMAGEMARGIN
 	self.Increase = self.Increase or 1
-	return Image.init(self)
+	return ImageGadget.init(self)
 end
 
 function ArrowButton:draw()
 	-- TODO: static data modified (ugly):
 	prims[1].Pen = self.Foreground
-	Image.draw(self)
+	ImageGadget.draw(self)
 end
 
 function ArrowButton:onPress(pressed)
 	if pressed then
 		self.Slider:increase(self.Increase)
 	end
-	Image.onPress(self, pressed)
+	ImageGadget.onPress(self, pressed)
 end
 
 function ArrowButton:onHold(hold)
 	if hold then
 		self.Slider:increase(self.Increase)
 	end
-	Image.onHold(self, hold)
+	ImageGadget.onHold(self, hold)
 end
 
 -------------------------------------------------------------------------------
