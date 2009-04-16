@@ -11,7 +11,7 @@
 local tonumber = tonumber
 local Class = require "tek.class"
 module("tek.ui.class.bitmapimage", tek.class)
-_VERSION = "BitmapImage 1.0"
+_VERSION = "BitmapImage 1.1"
 local BitmapImage = _M
 
 function BitmapImage.new(class, self)
@@ -26,7 +26,7 @@ end
 function BitmapImage:askWidthHeight(w, h)
 	local iw, ih = self.Image:match("^P6\n(%d+) (%d+)\n")
 	if not iw then
-		iw, ih = img:match("^P6\n#[^\n]*\n(%d+) (%d+)\n")
+		iw, ih = self.Image:match("^P6\n#[^\n]*\n(%d+) (%d+)\n")
 	end
 	if iw and ih then
 		iw = tonumber(iw)
