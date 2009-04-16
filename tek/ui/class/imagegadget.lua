@@ -17,11 +17,11 @@ local Region = require "tek.lib.region"
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
 _VERSION = "ImageGadget 2.0"
 
-local ImageGadget = _M
-
 -------------------------------------------------------------------------------
 -- Class implementation:
 -------------------------------------------------------------------------------
+
+local ImageGadget = _M
 
 function ImageGadget.new(class, self)
 	self.HAlign = self.HAlign or "center"

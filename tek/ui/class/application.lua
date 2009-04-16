@@ -107,7 +107,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 14.5"
+_VERSION = "Application 14.6"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -746,7 +746,7 @@ function Application:easyRequest(title, text, ...)
 			end
 		}
 		if i == numb then
-			button.Focus = true
+			button.InitialFocus = true
 		end
 		insert(buttons, button)
 	end

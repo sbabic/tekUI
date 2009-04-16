@@ -357,7 +357,7 @@ app = ui.Application:new
 				},
 				ui.Button:new
 				{
-					Focus = true,
+					InitialFocus = true,
 					Text = L.OKAY,
 					Style = "width: fill",
 					onPress = function(self, pressed)

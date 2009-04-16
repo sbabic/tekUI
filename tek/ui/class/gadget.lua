@@ -45,6 +45,10 @@
 --			getting disabled, it loses its focus, too.
 --		- {{FGPen [IG]}} (userdata)
 --			A colored pen for rendering the foreground of the element
+--		- {{InitialFocus [IG]}} (boolean)
+--			Specifies that the element should receive the focus initially.
+--			If '''true''', the element will notify {{Focus=true}} to itself
+--			upon invocation of the {{show()}} method. Default: '''false'''
 --		- {{Hilite [SG]}} (boolean)
 --			Signifies a change of the Gadget's highligting state. Invokes
 --			Gadget:onHilite().
@@ -115,7 +119,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 10.6"
+_VERSION = "Gadget 11.0"
 
 local Gadget = _M
 
@@ -137,24 +141,25 @@ local NOTIFY_FOCUS = { ui.NOTIFY_SELF, "onFocus", ui.NOTIFY_VALUE }
 -------------------------------------------------------------------------------
 
 function Gadget.init(self)
-	self.BGPenDisabled = self.BGPenDisabled or false
-	self.BGPenSelected = self.BGPenSelected or false
-	self.BGPenHilite = self.BGPenHilite or false
-	self.BGPenFocus = self.BGPenFocus or false
-	self.FGPenDisabled = self.FGPenDisabled or false
-	self.FGPenSelected = self.FGPenSelected or false
-	self.FGPenHilite = self.FGPenHilite or false
-	self.FGPenFocus = self.FGPenFocus or false
 	self.Active = false
+	self.BGPenDisabled = self.BGPenDisabled or false
+	self.BGPenFocus = self.BGPenFocus or false
+	self.BGPenHilite = self.BGPenHilite or false
+	self.BGPenSelected = self.BGPenSelected or false
 	self.DblClick = false
+	self.EffectHook = false
+	self.EffectName = self.EffectName or false
 	self.FGPen = self.FGPen or false
+	self.FGPenDisabled = self.FGPenDisabled or false
+	self.FGPenFocus = self.FGPenFocus or false
+	self.FGPenHilite = self.FGPenHilite or false
+	self.FGPenSelected = self.FGPenSelected or false
 	self.Foreground = false
 	self.Hold = false
 	self.Hover = false
+	self.InitialFocus = self.InitialFocus or false
 	self.KeyCode = self.KeyCode or false
 	self.Mode = self.Mode or "inert"
-	self.EffectName = self.EffectName or false
-	self.EffectHook = false
 	self.Pressed = false
 	return Frame.init(self)
 end
@@ -227,12 +232,16 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:show(display, drawable)
-	if self.KeyCode and self.Mode ~= "inert" then
+	local interactive = self.Mode ~= "inert"
+	if interactive and self.KeyCode then
 		self.Window:addKeyShortcut(self.KeyCode, self)
 	end
 	if Frame.show(self, display, drawable) then
 		if self.EffectHook then
 			self.EffectHook:show()
+		end
+		if interactive and self.InitialFocus then
+			self:setValue("Focus", true)
 		end
 		return true
 	end
