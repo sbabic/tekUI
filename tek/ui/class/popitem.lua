@@ -68,7 +68,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 7.4"
+_VERSION = "PopItem 7.5"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -98,7 +98,7 @@ function PopItem.init(self)
 	self.PopupWindow = false
 	self.DelayedBeginPopup = false
 	self.DelayedEndPopup = false
-	self.KeyCode = self.KeyCode or true
+	self.KeyCode = self.KeyCode == nil and true or self.KeyCode
 	self.ShiftX = false
 	self.ShiftY = false
 	if self.Children then

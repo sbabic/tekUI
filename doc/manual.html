@@ -1152,7 +1152,7 @@ SOURCE=-s/A/M,DEST=-d/A/K
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v4.1)</a></h2>
+		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v4.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<p>
 					Debug library - implements debug output and debug levels:
@@ -1722,7 +1722,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v14.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2625,7 +2625,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2883,7 +2883,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.8)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.9)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3832,7 +3832,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v7.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v7.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4814,7 +4814,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v15.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v15.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5260,7 +5260,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v5.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v5.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5570,7 +5570,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v7.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6141,7 +6141,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v7.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v8.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6167,6 +6167,15 @@ end
 			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<code>AutoFocus &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									If <strong>true</strong>, the slider reacts on keyboard shortcuts instantly
+									for moving the knob; if <strong>false</strong>, it must be selected first.
+								</p>
+							</blockquote>
+						</li>
 						<li style="list-style-type: none">
 							<code>Child &#091;IG&#093;</code> (<a href="#tek.ui.class.gadget">Gadget</a>)
 							<blockquote>
@@ -6297,6 +6306,13 @@ end
 			<p>
 				This handler is invoked when the Slider's
 				<code>Range</code> attribute has changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Slider:setCapture" id="Slider:setCapture"><code>setCapture(onoff)</code></a></h3>
+			<p>
+				Sets the element's capture mode. If captured,
+				keyboard shortcuts can be used to adjust the slider's knob.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -6809,7 +6825,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v13.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6844,12 +6860,32 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
+							<code>DblClickJitter &#091;IG&#093;</code> (number)
+							<blockquote>
+								<p>
+									Maximum sum of squared pixel differences (dx&#178; + dy&#178;) between
+									mouse positions to be tolerated as a double click. The default
+									is 70. Large touchscreens require much larger values, e.g. 3000.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>DblClickTimeout &#091;IG&#093;</code> (number)
+							<blockquote>
+								<p>
+									Maximum number of microseconds between events to be recognized
+									as a double click. Default: 32000. Use a larger value for
+									touchscreens.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>FullScreen &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Instructs the Window to open borderless and in full screen mode;
-									this however may be in conflict with the <code>MaxWidth</code>,
-									<code>MinWidth</code> attributes, which have precedence in this case.
+									Instructs the Window to open borderless and in full screen mode.
+									(This however may be in conflict with the <code>MaxWidth</code>,
+									<code>MinWidth</code> attributes.)
 								</p>
 							</blockquote>
 						</li>
@@ -6857,8 +6893,8 @@ end
 							<code>HideOnEscape &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Instructs the window that, when the Escape key is pressed, it
-									should invoke the <code>onHide()</code> method. Default: <strong>false</strong> 
+									Instructs the window that it should invoke the <code>onHide()</code> 
+									method when the Escape key is pressed. Default: <strong>false</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -6866,7 +6902,7 @@ end
 							<code>Left &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									The window's left offset on the display
+									The window's left offset in pixels on the display
 								</p>
 							</blockquote>
 						</li>
@@ -6874,7 +6910,7 @@ end
 							<code>Modal &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Instructs all other windows to deny input while this window is
+									Instructs all other windows to reject input while this window is
 									open.
 								</p>
 							</blockquote>
@@ -6896,21 +6932,21 @@ end
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;initializing&quot; - The window has not yet been initialized.
+											<code>&quot;initializing&quot;</code> - The window is initializing
 										</li>
 										<li style="list-style-type: none">
-											&quot;hide&quot; - The window is hidden; if you initialize the
-											attribute with this value, the Window will be created in
-											hidden state.
+											<code>&quot;hide&quot;</code> - The window is hidden or about to be hidden;
+											if you initialize the attribute with this value, the Window
+											will be created in hidden state.
 										</li>
 										<li style="list-style-type: none">
-											&quot;opening&quot; - The window is about to open.
+											<code>&quot;opening&quot;</code> - The window is about to open.
 										</li>
 										<li style="list-style-type: none">
-											&quot;show&quot; - The window is shown.
+											<code>&quot;show&quot;</code> - The window is open.
 										</li>
 										<li style="list-style-type: none">
-											&quot;closing&quot; - The Window is about to hide.
+											<code>&quot;closing&quot;</code> - The Window is about to hide.
 										</li>
 									</ul>
 								</blockquote>
@@ -6932,7 +6968,7 @@ end
 							<code>Top &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									The window's top offset on the display
+									The window's top offset in pixels on the display
 								</p>
 							</blockquote>
 						</li>
@@ -6949,19 +6985,22 @@ end
 							<a href="#Window:addInterval"><code>Window:addInterval()</code></a> - Adds an interval timer to the window
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Window:checkDblClickTime"><code>Window:checkDblClickTime()</code></a> - Checks a time for a doubleclick event
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Window:clickElement"><code>Window:clickElement()</code></a> - Simulates a click on an element
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Window:onChangeStatus"><code>Window:onChangeStatus()</code></a> - Handler for <code>Status</code> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Window:onHide"><code>Window:onHide()</code></a> - Handler called when the window is closed
+							<a href="#Window:onHide"><code>Window:onHide()</code></a> - Handler for when the window is about to be closed
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Window:remInputHandler"><code>Window:remInputHandler()</code></a> - Removes an input handler from the window
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Window:remInterval"><code>Window:remInterval()</code></a> - Removes interval timer to the window
+							<a href="#Window:remInterval"><code>Window:remInterval()</code></a> - Removes an interval timer from the window
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Window:setActiveElement"><code>Window:setActiveElement()</code></a> - Sets the window's active element
@@ -7010,12 +7049,12 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Window:addInputHandler" id="Window:addInputHandler"><code>Window:addInputHandler(msgtype, object, func)</code></a></h3>
+		<div class="node"><h3><a name="Window:addInputHandler" id="Window:addInputHandler"><code>Window:addInputHandler(msgtype, object, function)</code></a></h3>
 			<p>
 				Adds an <code>object</code> and
-				<code>function</code> to the window's chain of handlers for input of the specified
-				type. Multiple input types can be handled by one handler by logically
-				or'ing message types. The input handlers are invoked as follows:
+				a <code>function</code> to the window's chain of handlers for input of the
+				specified type. Multiple input types can be handled by one handler by
+				logically or'ing message types. Input handlers are invoked as follows:
 			</p>
 <pre>
 message = function(object, message)
@@ -7041,18 +7080,18 @@ message = function(object, message)
 			<p>
 				Check if the two
 				given times (first a, second b) are within the doubleclick interval.
-				Each time is specified in seconds (s) and microseconds (u). Returns
-				<strong>true</strong> if the two times are indicative of a double click.
+				Each time is specified in seconds (<code>s</code>) and microseconds (<code>u</code>).
+				Returns <strong>true</strong> if the two times are indicative of a double click.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Window:clickElement" id="Window:clickElement"><code>Window:clickElement(element)</code></a></h3>
 			<p>
-				This function performs a &quot;click&quot; on the
-				specified <code>element</code>; if <code>element</code> is a string, it will be looked up
+				This function performs a simulated click on
+				the specified <code>element</code>; if <code>element</code> is a string, it will be looked up
 				using <a href="#Application:getElementById"><code>Application:getElementById()</code></a>. This function is actually a shorthand
 				for <a href="#Window:setHiliteElement"><code>Window:setHiliteElement()</code></a>, followed by <a href="#Window:setActiveElement"><code>Window:setActiveElement()</code></a> twice
-				(once to enable, once to disable it).
+				(first to enable, then to disable it).
 			</p>
 			<hr />
 		</div>
@@ -7066,10 +7105,10 @@ message = function(object, message)
 		<div class="node"><h3><a name="Window:onHide" id="Window:onHide"><code>Window:onHide()</code></a></h3>
 			<p>
 				This handler is invoked when the window's close button
-				is clicked (or the Escape key was pressed and the <code>HideOnEscape</code> flag
-				was enabled). The standard behavior is to hide the window by setting
-				the <code>Status</code> field to <code>&quot;hide&quot;</code>. Subsequently, if the last window is
-				closed, the application is closed down.
+				is clicked (or the Escape key is pressed and the <code>HideOnEscape</code> flag
+				is set). The standard behavior is to hide the window by setting the
+				<code>Status</code> field to <code>&quot;hide&quot;</code>. When the last window is closed, the
+				application is closed down.
 			</p>
 			<hr />
 		</div>
@@ -7083,43 +7122,43 @@ message = function(object, message)
 		</div>
 		<div class="node"><h3><a name="Window:remInterval" id="Window:remInterval"><code>Window:remInterval()</code></a></h3>
 			<p>
-				Stops producing interval messages when called by
-				the last client who requested a interval timer using <a href="#Window:addInterval"><code>Window:addInterval()</code></a>.
+				Decreases the use counter for interval messages and
+				stops sending interval messages to the window when called by the last
+				client that has previously requested an interval timer using
+				<a href="#Window:addInterval"><code>Window:addInterval()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setActiveElement" id="Window:setActiveElement"><code>Window:setActiveElement(element[, notify])</code></a></h3>
+		<div class="node"><h3><a name="Window:setActiveElement" id="Window:setActiveElement"><code>Window:setActiveElement(element)</code></a></h3>
 			<p>
-				Sets/unsets the element
-				which is activated (or 'in use'). If <code>notify</code> is <strong>false</strong>, the
-				value is set, but no notification is triggered.
+				Sets/unsets the element which is
+				currently active (or 'in use'). If <code>element</code> is <strong>nil</strong>, the currently
+				active element will be deactivated.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setDblClickElement" id="Window:setDblClickElement"><code>Window:setDblClickElement(element[, notify])</code></a></h3>
+		<div class="node"><h3><a name="Window:setDblClickElement" id="Window:setDblClickElement"><code>Window:setDblClickElement(element)</code></a></h3>
 			<p>
-				Sets/unsets the element
-				which is candidate for doubleclick detection. If the element is set twice
-				in a sufficiently short period of time, and the pointing device did not
-				move too much since the first time, the doubleclick is triggered by
+				Sets/unsets the element which is
+				candidate for double click detection. If the element is set twice in a
+				sufficiently short period of time and the pointing device did not move
+				too much since the first event, the double click is triggered by
 				notifying the <code>DblClick</code> attribute in the element. See also
 				<a href="#tek.ui.class.gadget">Gadget</a> for further information.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setFocusElement" id="Window:setFocusElement"><code>Window:setFocusElement(element[, notify])</code></a></h3>
+		<div class="node"><h3><a name="Window:setFocusElement" id="Window:setFocusElement"><code>Window:setFocusElement(element)</code></a></h3>
 			<p>
-				Sets/unsets the element
-				which is marked for receiving input. If <code>notify</code> is <strong>false</strong>, the
-				value is set, but no notification is triggered.
+				Sets/unsets the element which is marked
+				for receiving the keyboard input.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setHiliteElement" id="Window:setHiliteElement"><code>Window:setHiliteElement(element[, notify])</code></a></h3>
+		<div class="node"><h3><a name="Window:setHiliteElement" id="Window:setHiliteElement"><code>Window:setHiliteElement(element)</code></a></h3>
 			<p>
-				Sets/unsets the element
-				which is being hovered by the mouse pointer. If <code>notify</code> is <strong>false</strong>,
-				the value is set, but no notification is triggered.
+				Sets/unsets the element which is being
+				hovered by the mouse pointer.
 			</p>
 			<hr />
 		</div>
@@ -7151,10 +7190,10 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Layout:layout"><code>Layout:layout()</code></a> - Layout group
+							<a href="#Layout:layout"><code>Layout:layout()</code></a> - Layouts the group
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Layout:askMinMax"><code>Layout:askMinMax()</code></a> - Calculate group's minimum and maximum
+							<a href="#Layout:askMinMax"><code>Layout:askMinMax()</code></a> - Queries the group's minimum and maximum
 							dimensions
 						</li>
 					</ul>
@@ -7175,7 +7214,7 @@ message = function(object, message)
 			<p>
 				This method queries the specified <a href="#tek.ui.class.group">Group</a> for
 				its size requirements, which will subsequently invoke
-				<a href="#Area:askMinMax">child:askMinMax()</a> for all its children.
+				<a href="#Area:askMinMax">child:askMinMax()</a> on all of its children.
 			</p>
 			<hr />
 		</div>
@@ -7183,14 +7222,14 @@ message = function(object, message)
 			<p>
 				Layouts the <a href="#tek.ui.class.group">Group</a> into the specified
 				rectangle and calculates the sizes and positions of all of its
-				children. The optional <code>markdamage</code> argument is passed to subsequent
+				children. The optional boolean <code>markdamage</code> is passed to subsequent
 				invocations of <a href="#Area:layout">child:layout()</a>. This function will
 				also call the <a href="#Area:punch">punch()</a> method on each child for
-				subtracting its new outline from the group's <code>FreeRegion</code>.
+				subtracting their new outlines from the group's <code>FreeRegion</code>.
 			</p>
 			<hr />
 			<p>
-				Document generated on Fri Apr 17 18:19:38 2009
+				Document generated on Sat Apr 18 16:04:41 2009
 			</p>
 		</div>
 	</body>

@@ -21,44 +21,53 @@
 --	ATTRIBUTES::
 --		- {{Center [IG]}} (boolean)
 --			Instructs the Window to open centered on the Display.
+--		- {{DblClickJitter [IG]}} (number)
+--			Maximum sum of squared pixel differences (dx² + dy²) between
+--			mouse positions to be tolerated as a double click. The default
+--			is 70. Large touchscreens require much larger values, e.g. 3000.
+--		- {{DblClickTimeout [IG]}} (number)
+--			Maximum number of microseconds between events to be recognized
+--			as a double click. Default: 32000. Use a larger value for
+--			touchscreens.
 --		- {{FullScreen [IG]}} (boolean)
---			Instructs the Window to open borderless and in full screen mode;
---			this however may be in conflict with the {{MaxWidth}},
---			{{MinWidth}} attributes, which have precedence in this case.
+--			Instructs the Window to open borderless and in full screen mode.
+--			(This however may be in conflict with the {{MaxWidth}},
+--			{{MinWidth}} attributes.)
 --		- {{HideOnEscape [IG]}} (boolean)
---			Instructs the window that, when the Escape key is pressed, it
---			should invoke the {{onHide()}} method. Default: '''false'''
+--			Instructs the window that it should invoke the {{onHide()}}
+--			method when the Escape key is pressed. Default: '''false'''
 --		- {{Left [IG]}} (number)
---			The window's left offset on the display
+--			The window's left offset in pixels on the display
 --		- {{Modal [IG]}} (boolean)
---			Instructs all other windows to deny input while this window is
+--			Instructs all other windows to reject input while this window is
 --			open.
 --		- {{MouseX [G]}}, {{MouseY [G]}} (number)
 --			The current screen coordinates of the pointing device.
 --		- {{Status [ISG]}} (string)
 --			Status of the Window, can be:
---				- "initializing" - The window has not yet been initialized.
---				- "hide" - The window is hidden; if you initialize the
---				attribute with this value, the Window will be created in
---				hidden state.
---				- "opening" - The window is about to open.
---				- "show" - The window is shown.
---				- "closing" - The Window is about to hide.
+--				- {{"initializing"}} - The window is initializing
+--				- {{"hide"}} - The window is hidden or about to be hidden;
+--				if you initialize the attribute with this value, the Window
+--				will be created in hidden state.
+--				- {{"opening"}} - The window is about to open.
+--				- {{"show"}} - The window is open.
+--				- {{"closing"}} - The Window is about to hide.
 --			Changing this attribute invokes the Window:onChangeStatus()
 --			method.
 --		- {{Title [IG]}} (string)
 --			The window's title.
 --		- {{Top [IG]}} (number)
---			The window's top offset on the display
+--			The window's top offset in pixels on the display
 --
 --	IMPLEMENTS::
 --		- Window:addInputHandler() - Adds an input handler to the window
 --		- Window:addInterval() - Adds an interval timer to the window
+--		- Window:checkDblClickTime() - Checks a time for a doubleclick event
 --		- Window:clickElement() - Simulates a click on an element
 --		- Window:onChangeStatus() - Handler for {{Status}}
---		- Window:onHide() - Handler called when the window is closed
+--		- Window:onHide() - Handler for when the window is about to be closed
 --		- Window:remInputHandler() - Removes an input handler from the window
---		- Window:remInterval() - Removes interval timer to the window
+--		- Window:remInterval() - Removes an interval timer from the window
 --		- Window:setActiveElement() - Sets the window's active element
 --		- Window:setDblClickElement() - Sets the window's doubleclick element
 --		- Window:setFocusElement() - Sets the window's focused element
@@ -97,7 +106,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 12.0"
+_VERSION = "Window 13.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -257,10 +266,10 @@ function Window:hide()
 end
 
 -------------------------------------------------------------------------------
---	Window:addInputHandler(msgtype, object, func): Adds an {{object}} and
---	{{function}} to the window's chain of handlers for input of the specified
---	type. Multiple input types can be handled by one handler by logically
---	or'ing message types. The input handlers are invoked as follows:
+--	Window:addInputHandler(msgtype, object, function): Adds an {{object}} and
+--	a {{function}} to the window's chain of handlers for input of the
+--	specified type. Multiple input types can be handled by one handler by
+--	logically or'ing message types. Input handlers are invoked as follows:
 --			message = function(object, message)
 --	The handler is expected to return the message, which will in turn pass
 --	it on to the next handler in the window's chain.
@@ -325,8 +334,10 @@ function Window:addInterval()
 end
 
 -------------------------------------------------------------------------------
---	Window:remInterval(): Stops producing interval messages when called by
---	the last client who requested a interval timer using Window:addInterval().
+--	Window:remInterval(): Decreases the use counter for interval messages and
+--	stops sending interval messages to the window when called by the last
+--	client that has previously requested an interval timer using
+--	Window:addInterval().
 -------------------------------------------------------------------------------
 
 function Window:remInterval()
@@ -782,61 +793,59 @@ function Window:layout(_, _, _, _, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	Window:setHiliteElement(element[, notify]): Sets/unsets the element
---	which is being hovered by the mouse pointer. If {{notify}} is '''false''',
---	the value is set, but no notification is triggered.
+--	Window:setHiliteElement(element): Sets/unsets the element which is being
+--	hovered by the mouse pointer.
 -------------------------------------------------------------------------------
 
-function Window:setHiliteElement(e, notify)
+function Window:setHiliteElement(e)
 	local he = self.HiliteElement
 	if e ~= he then
 		if he then
-			he:setValue("Hover", false, notify)
+			he:setValue("Hover", false)
 		end
 		self.HiliteElement = e or false
 		if e and not e.Disabled then
-			e:setValue("Hover", true, notify)
+			e:setValue("Hover", true)
 		end
 	end
 end
 
 -------------------------------------------------------------------------------
---	Window:setFocusElement(element[, notify]): Sets/unsets the element
---	which is marked for receiving input. If {{notify}} is '''false''', the
---	value is set, but no notification is triggered.
+--	Window:setFocusElement(element): Sets/unsets the element which is marked
+--	for receiving the keyboard input.
 -------------------------------------------------------------------------------
 
-function Window:setFocusElement(e, notify)
+function Window:setFocusElement(e)
 	local fe = self.FocusElement
 	if e ~= fe then
 		if fe then
-			fe:setValue("Focus", false, notify)
+			fe:setValue("Focus", false)
 		end
 		self.FocusElement = e or false
 		if e then
-			e:setValue("Focus", true, notify)
+			e:setValue("Focus", true)
 		end
 	end
 end
 
 -------------------------------------------------------------------------------
---	Window:setActiveElement(element[, notify]): Sets/unsets the element
---	which is activated (or 'in use'). If {{notify}} is '''false''', the
---	value is set, but no notification is triggered.
+--	Window:setActiveElement(element): Sets/unsets the element which is
+--	currently active (or 'in use'). If {{element}} is '''nil''', the currently
+--	active element will be deactivated.
 -------------------------------------------------------------------------------
 
-function Window:setActiveElement(e, notify)
+function Window:setActiveElement(e)
 	local se = self.ActiveElement
 	if e ~= se then
 		if se then
 			self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
-			se:setValue("Active", false, notify)
+			se:setValue("Active", false)
 		end
 		self.ActiveElement = e or false
 		if e then
 			self.HoldTickActive = self.HoldTickInitFirst
 			self.HoldTickActiveInit = self.HoldTickInitFirst
-			e:setValue("Active", true, notify)
+			e:setValue("Active", true)
 			self:addInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 		end
 	end
@@ -864,8 +873,8 @@ end
 -------------------------------------------------------------------------------
 --	dblclick = Window:checkDblClickTime(as, au, bs, bu): Check if the two
 --	given times (first a, second b) are within the doubleclick interval.
---	Each time is specified in seconds (s) and microseconds (u). Returns
---	'''true''' if the two times are indicative of a double click.
+--	Each time is specified in seconds ({{s}}) and microseconds ({{u}}).
+--	Returns '''true''' if the two times are indicative of a double click.
 -------------------------------------------------------------------------------
 
 local function subtime(as, au, bs, bu)
@@ -881,19 +890,19 @@ function Window:checkDblClickTime(as, au, bs, bu)
 end
 
 -------------------------------------------------------------------------------
---	Window:setDblClickElement(element[, notify]): Sets/unsets the element
---	which is candidate for doubleclick detection. If the element is set twice
---	in a sufficiently short period of time, and the pointing device did not
---	move too much since the first time, the doubleclick is triggered by
+--	Window:setDblClickElement(element): Sets/unsets the element which is
+--	candidate for double click detection. If the element is set twice in a
+--	sufficiently short period of time and the pointing device did not move
+--	too much since the first event, the double click is triggered by
 --	notifying the {{DblClick}} attribute in the element. See also
 --	[[#tek.ui.class.gadget : Gadget]] for further information.
 -------------------------------------------------------------------------------
 
-function Window:setDblClickElement(e, notify)
+function Window:setDblClickElement(e)
 	local di = self.DblClickCheckInfo
 	local de = self.DblClickElement
 	if de then
-		de:setValue("DblClick", false, notify)
+		de:setValue("DblClick", false)
 		self.DblClickElement = false
 	end
 	if e and self.Display then
@@ -905,7 +914,7 @@ function Window:setDblClickElement(e, notify)
 			if self:checkDblClickTime(di[2], di[3], ts, tu) and
 				d1 * d1 + d2 * d2 < self.DblClickJitter then
 				self.DblClickElement = e
-				de:setValue("DblClick", true, notify)
+				de:setValue("DblClick", true)
 			end
 		end
 		di[1] = e or false
@@ -1024,11 +1033,11 @@ function Window:getShortcutElements(key, qual)
 end
 
 -------------------------------------------------------------------------------
---	Window:clickElement(element): This function performs a "click" on the
---	specified {{element}}; if {{element}} is a string, it will be looked up
+--	Window:clickElement(element): This function performs a simulated click on
+--	the specified {{element}}; if {{element}} is a string, it will be looked up
 --	using Application:getElementById(). This function is actually a shorthand
 --	for Window:setHiliteElement(), followed by Window:setActiveElement() twice
---	(once to enable, once to disable it).
+--	(first to enable, then to disable it).
 -------------------------------------------------------------------------------
 
 function Window:clickElement(e)
@@ -1045,10 +1054,10 @@ end
 
 -------------------------------------------------------------------------------
 --	Window:onHide(): This handler is invoked when the window's close button
---	is clicked (or the Escape key was pressed and the {{HideOnEscape}} flag
---	was enabled). The standard behavior is to hide the window by setting
---	the {{Status}} field to {{"hide"}}. Subsequently, if the last window is
---	closed, the application is closed down.
+--	is clicked (or the Escape key is pressed and the {{HideOnEscape}} flag
+--	is set). The standard behavior is to hide the window by setting the 
+--	{{Status}} field to {{"hide"}}. When the last window is closed, the
+--	application is closed down.
 -------------------------------------------------------------------------------
 
 function Window:onHide()

@@ -41,7 +41,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.8"
+_VERSION = "CheckMark 3.9"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -113,7 +113,7 @@ function CheckMark.init(self)
 	self.ImageHeight = false
 	self.ImageMinHeight = self.ImageMinHeight or DEF_IMAGEMINHEIGHT
 	self.ImageWidth = false
-	self.KeyCode = self.KeyCode or true
+	self.KeyCode = self.KeyCode == nil and true or self.KeyCode
 	self.Mode = self.Mode or "toggle"
 	self.OldSelected = false
 	return Text.init(self)

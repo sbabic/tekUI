@@ -41,7 +41,7 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 5.3"
+_VERSION = "MenuItem 5.4"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -69,7 +69,6 @@ function MenuItem.new(class, self)
 end
 
 function MenuItem.init(self)
-	self.KeyCode = self.KeyCode or true
 	self.MaxHeight = self.MaxHeight or 0
 	if self.Children then
 		self.Mode = "toggle"

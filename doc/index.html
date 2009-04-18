@@ -138,7 +138,7 @@
 		<div class="node"><h1><a name="about" id="about">1. About tekUI</a></h1>
 			<p>
 				tekUI is a small, freestanding and portable graphical user interface
-				(GUI) toolkit written in Lua and C. It was initially developed for
+				(GUI) toolkit written in Lua and C. It was developed initially for
 				the X Window System and can serve as a general-purpose GUI library
 				for desktop applications.
 			</p>
@@ -170,11 +170,11 @@
 		</div>
 		<div class="node"><h2><a name="status" id="status">1.2. Status, requirements</a></h2>
 			<p>
-				TekUI is in alpha stage of development. It is available for the
+				TekUI is in early stage of development. It is available for the
 				Linux, Windows, and FreeBSD platforms. Display drivers are available
 				for X11, Windows, DirectFB, and Nano-X. See also <a href="todo.html">TODO</a> 
 				for a list of known bugs and missing features, and <a href="#requirements">requirements</a> 
-				for a list of required packages.
+				for a list of the required packages.
 			</p>
 		</div>
 		<div class="node"><h2><a name="development" id="development">1.3. Development model</a></h2>
@@ -182,16 +182,16 @@
 				If you find this software useful, you have probably arranged to fit
 				it to a certain device or application &#8211; submit your additions and we
 				will check them for inclusion to the public source code repository.
-				Regular developers are also welcome.
+				Regular developers are welcome also.
 			</p>
 		</div>
 		<div class="node"><h2><a name="support" id="support">1.4. Support and services</a></h2>
 			<p>
 				Vendors of commercial products can help advance the development by
-				assigning projects based on tekUI. Support and services for the
-				integration of tekUI as well as special versions, new display
-				drivers, custom classes etc. are available from the authors &#8211; see
-				below.
+				assigning projects based on tekUI, or license our commercial SDK.
+				Support and services for the integration of tekUI as well as special
+				versions, new display drivers, custom classes etc. are available
+				from the authors &#8211; see below.
 			</p>
 		</div>
 		<div class="node"><h2><a name="authors" id="authors">1.5. Authors and contact</a></h2>
@@ -229,12 +229,12 @@
 				</ul>
 			</blockquote>
 			<p>
-				Company website:
+				Product website:
 			</p>
 			<blockquote>
 				<ul>
 					<li style="list-style-type: none">
-						<a href="http://www.schulze-mueller.de/">http://www.schulze-mueller.de/</a> 
+						<a href="http://www.schulze-mueller.de/products/">http://www.schulze-mueller.de/products/</a> 
 					</li>
 				</ul>
 			</blockquote>
@@ -249,9 +249,8 @@
 				fast and resource-friendly, despite its script-heavy nature. Among
 				the benefits for developers are its transparency and modularity; in
 				particular, custom interface elements can be created with little
-				effort. Note, however, that the programming interfaces are nowhere
-				complete and fully stable yet, so be prepared for structural and API
-				changes.
+				effort. Note, however, that the programming interfaces are not fully
+				stable yet, so be prepared for structural and API changes.
 			</p>
 		</div>
 		<div class="node"><h2><a name="features" id="features">2.1. Selected features</a></h2>
@@ -267,7 +266,7 @@
 						Full Unicode (UTF-8) support
 					</li>
 					<li>
-						Allows for multi-windowed and fullscreen applications
+						Allows for multi-windowed, tabbed and fullscreen applications
 					</li>
 					<li>
 						Fully incremental refresh logic, backbuffers are not required
@@ -277,12 +276,12 @@
 						coroutines
 					</li>
 					<li>
-						Supplied with a documentation system supporting tekUI's object
-						model
-					</li>
-					<li>
 						Works with stock (double precision), single precision and
 						integer versions of the Lua VM
+					</li>
+					<li>
+						Supplied with a documentation system supporting tekUI's object
+						model
 					</li>
 				</ul>
 			</blockquote>
@@ -297,7 +296,7 @@
 						Checkmark
 					</li>
 					<li>
-						Directory lister (file chooser included)
+						Directory lister (file requester included)
 					</li>
 					<li>
 						Floating text
@@ -312,7 +311,7 @@
 						Handle, for group balancing
 					</li>
 					<li>
-						Image gadget (only vector images at the moment)
+						Images
 					</li>
 					<li>
 						List, also multi-column and multi-selection
@@ -349,16 +348,15 @@
 				The only language currently supported for writing applications in is
 				Lua, and application programmers will have to use existing Lua
 				modules or create their own C bindings for communicating with their
-				host. (Fortunately, creating C bindings is an easy and
-				well-documented task in Lua, and the tekUI package contains numerous
-				examples.)
+				host. Creating C bindings is an easy and well-documented task in Lua,
+				and the tekUI package contains numerous examples.
 			</p>
 			<p>
-				Our next development target is to fold the tekUI framework into a
+				The next development goal is to fold the tekUI framework into a
 				freestanding C library, which enables applications to create
 				asynchronous GUI objects, communicating with their main program
-				using an application-level protocol. From this, we envision the
-				following benefits:
+				using an application-level protocol. From this, we the following
+				benefits are envisioned:
 			</p>
 			<blockquote>
 				<ul>
@@ -380,7 +378,7 @@
 			<p>
 				Lua would continue to act as the toolkit's internal scripting
 				language, which can be used for complex interconnections
-				between GUI elements as well as simple application tasks.
+				between GUI elements as well as many application tasks.
 			</p>
 		</div>
 		<div class="node"><h2><a name="themes" id="themes">2.4. Themes</a></h2>
@@ -388,8 +386,8 @@
 				The only admission to a more common appearance is that tekUI tries to
 				import the color scheme found in a GTK+ configuration file. It can be
 				conveniently created in the KDE configuration panel; thus, if you are
-				using KDE and check the appropriate option, KDE, GTK+ and tekUI
-				applications can all share the same color scheme.
+				using KDE and check the appropriate option, KDE, GTK+ and tekUI can
+				all share the same color scheme.
 			</p>
 			<p>
 				The current default theme tries to be as conservative and minimal as
@@ -407,17 +405,17 @@
 			<p>
 				The C library isolates from the host and provides a few
 				performance-critical routines. Rendering and input handling are
-				isolated in the form of display drivers, which allow for easy
+				provided in the form of display drivers, which allow for easy
 				exchangeability. Display drivers currently supported are for X11,
 				Windows, <a href="http://www.directfb.org/">DirectFB</a>, and
 				<a href="http://www.nano-x.org/">Nano-X</a>.
 			</p>
 			<p>
 				Aside from the display driver interface, the C library features
-				OS-like facilities such as portable threads and a timer device.
-				Depending on your application and its kind of deployment, it can be
-				extended with more input drivers, a virtual filesystem, file format
-				codecs, etc.
+				OS-like facilities such as portable threads, a timer device and
+				virtual filesystem interfaces. Depending on your application and
+				its kind of deployment, it can be extended with more input drivers,
+				file format codecs, etc.
 			</p>
 		</div>
 		<div class="node"><h2><a name="objectjmodel" id="objectjmodel">2.6. Lua, C and object model</a></h2>
@@ -429,8 +427,8 @@
 			</p>
 			<p>
 				Most user interface elements are currently implemented in Lua, which
-				is beneficial for fast prototyping of custom classes and styles, and
-				generally in early stages of development.
+				is beneficial for fast prototyping of custom classes and styles, for
+				heavy customization, and generally in early stages of development.
 			</p>
 		</div>
 		<div class="node"><h2><a name="documentation" id="documentation">2.7. Documentation system</a></h2>
@@ -460,22 +458,22 @@
 			<blockquote>
 				<ul>
 					<li>
-						Lua-5.1.x
+						&gt;=Lua-5.1.2
 					</li>
 					<li>
-						libX11-1.1.3 (for the x11 driver)
+						&gt;=libX11-1.1.3 (for the x11 driver)
 					</li>
 					<li>
-						libXft-2.1.12 (for the x11 driver)
+						&gt;=libXft-2.1.12 (for the x11 driver)
 					</li>
 					<li>
-						fontconfig-2.5.0 (for the x11 driver)
+						&gt;=fontconfig-2.5.0 (for the x11 driver)
 					</li>
 					<li>
-						freetype-2.3.5 (for the x11 and directfb drivers)
+						&gt;=freetype-2.3.5 (for the x11 and directfb drivers)
 					</li>
 					<li>
-						DirectFB-0.9.25.1 (for the directfb driver)
+						&gt;=DirectFB-0.9.25.1 (for the directfb driver)
 					</li>
 					<li>
 						MingW (for the Windows platform)
@@ -488,15 +486,15 @@
 			<p>
 				LibXft and fontconfig are needed for building the x11 driver, but
 				tekUI falls back to the core X11 API if they are unavailable at
-				runtime. Additionally, for the documentation system and the
+				runtime. In addition to that, for the documentation system and the
 				<a href="manual.html#tek.ui.class.dirlist">DirList</a> class to work, an
 				installation of the
 				<a href="http://www.keplerproject.org/luafilesystem/">LuaFileSystem</a> 
-				package is needed.
+				package is recommended.
 			</p>
 			<p>
 				<strong>Linux note</strong>: By popular request, these are the names of packages
-				required to compile and run tekUI on Ubuntu Linux 8.04: <code>lua5.1</code>,
+				required to compile and run tekUI on Ubuntu Linux: <code>lua5.1</code>,
 				<code>liblua5.1-0-dev</code>, <code>liblua5.1-filesystem0</code>, <code>libfreetype6-dev</code>,
 				<code>libxft-dev</code>, <code>libxext-dev</code>.
 			</p>
@@ -515,7 +513,7 @@
 						Windows 2000, Wine
 					</li>
 					<li>
-						FreeBSD 7.0 (see annotations below)
+						FreeBSD 7.0 (special precautions needed, see annotations below)
 					</li>
 					<li>
 						Gentoo Linux x86/2008.0, amd64/2007.0, ppc/2007.0
@@ -540,7 +538,7 @@
 			<p>
 				The Nano-X driver is available as part of the commercial SDK. You
 				will almost certainly have to adjust the <code>config</code> file. Due to some
-				limitations in Nano-X, tekUI applications will probably make sense
+				limitations of Nano-X, tekUI applications will probably make sense
 				only when running in fullscreen mode without a window manager. See
 				also <code>tek/ui/style/nanox.css</code> for more information. Example:
 			</p>
@@ -661,7 +659,7 @@ ui.Application:new
 				time, it will be loaded from <code>tek/ui/class/</code> in the file system.
 			</p>
 			<p>
-				Note that there is no button class in tekUI: a button is just a Text
+				Note that a button class is not needed: a button is just a Text
 				element behaving like a button with a frame giving it the appearance
 				of a button. (We will later explain how you can write a button class
 				yourself, to save you some typing.) Also note that by placing an
@@ -670,8 +668,8 @@ ui.Application:new
 				element.
 			</p>
 			<p>
-				To quit, press the window's close button or the Escape key &#8211; closing
-				the <a href="manual.html#tek.ui.class.application">Application</a>'s last
+				To quit, click the window's close button. Closing the
+				<a href="manual.html#tek.ui.class.application">Application</a>'s last
 				open window will cause the <code>run</code> method to return to its caller.
 			</p>
 		</div>
@@ -679,11 +677,11 @@ ui.Application:new
 			<p>
 				There are different ways for reacting to presses on the &quot;Hello,
 				World&quot; button. The simplest method is to just place an <code>onPress</code> 
-				function into the Text object, which will overwrite the
-				notification handler reacting on setting the <code>Pressed</code> 
-				variable. This variable is set to <strong>true</strong> when a
-				<a href="manual.html#tek.ui.class.gadget">Gadget</a> is getting activated,
-				and to <strong>false</strong> when it is getting released:
+				function into the Text object, which will overwrite the handler
+				reacting on setting the <code>Pressed</code> variable. This variable is set
+				to <strong>true</strong> when a <a href="manual.html#tek.ui.class.gadget">Gadget</a> 
+				is hit with the left mouse button, and to <strong>false</strong> when it is
+				getting released:
 			</p>
 <pre>
 #/usr/bin/env lua
@@ -716,12 +714,11 @@ ui.Application:new
 </pre>
 			<p>
 				When overwriting a method like <code>onPress</code>, also forward the call to
-				the original implementation of the same method; in the example above,
-				this is accomplished by the last line in the <code>onPress</code> function.
+				the original implementation of the same method.
 			</p>
 			<p>
 				A different, more elobarate way is to equip the element with a
-				notification handler, which would look like this:
+				notification handler yourself, which may look like this:
 			</p>
 <pre>
 ...
@@ -750,11 +747,11 @@ ui.Text:new
 ...
 </pre>
 			<p>
-				Even though notification handlers can be written in the same
-				expression as the rest of the application, this is not always
-				recommendable, as the deep levels of indentation are easily
-				getting in the way of clarity. Notification handlers are commonly
-				added using the <code>addNotify()</code> method, as shown in the next
+				Even though notification handlers can be initialized statically
+				(i.e. written in the same expression as the rest of the application),
+				this is not always recommendable, as the deep levels of indentation
+				are easily getting in the way of clarity. Notification handlers are
+				commonly added using the <code>addNotify()</code> method, as shown in the next
 				example:
 			</p>
 <pre>
@@ -779,9 +776,8 @@ app:addMember(win)
 app:run()
 </pre>
 			<p>
-				see also
-				<a href="manual.html#Object:addNotify">Object:addNotify</a> for details on
-				notification handlers, and the
+				See also <a href="manual.html#Object:addNotify">Object:addNotify</a> for
+				all the hairy details on notification handlers, and the
 				<a href="manual.html#tek.ui.class.gadget">Gadget</a> class for some of the
 				possible actions to react on.
 			</p>
@@ -796,34 +792,37 @@ app:run()
 			<blockquote>
 				<ul>
 					<li>
-						Global classes are written as separate sources, located in the
-						system-wide installation path under <code>tek/ui/class</code> and set up
+						Global classes are written as separate source files, located in
+						the system-wide installation path under <code>tek/ui/class</code> and set up
 						using a procedure as described in the <a href="#classsetup">class setup</a> 
 						section.
 					</li>
 					<li>
 						Application classes are created in the same way, but they are
-						located in the application's local program directory (also under
-						<code>tek/ui/class</code>).
+						located in <code>tek/ui/class</code>) relative to the application's local
+						program directory.
 					</li>
 					<li>
 						Another scope is inside the source code of an existing application
-						or module. We might call this the 'ad-hoc' style, as new classes are
-						often created out of a spontaneous need.
+						or module. We call this the <em>ad-hoc</em> style, because we are in a
+						scripting environment and new classes are often created out of a
+						spontaneous need.
 					</li>
 				</ul>
 			</blockquote>
 			<p>
-				For the ad-hoc style, it is not necessary to create a new source
-				file. For example, to derive a button class from the Text class:
+				For the <em>ad-hoc</em> style, it is not necessary to create a new module.
+				For example, to derive a button class from the Text class, write
+				whereever you see fit:
 			</p>
 <pre>
 local Button = ui.Text:newClass { _NAME = &quot;_button&quot; }
 </pre>
 			<p>
-				By convention, ad-hoc classes may be named arbitrarily, but their
+				By convention, <em>ad-hoc</em> classes may be named arbitrarily, but their
 				names should be prefixed with an underscore to distinguish them
-				from global classes.
+				from global classes. (You can even do without a _NAME, as tekUI will
+				create one for you in this case.)
 			</p>
 			<p>
 				From this point, the new class can be extended, e.g. for
@@ -898,7 +897,7 @@ local DEBUG = true
 				assign a distinct meaning to <strong>nil</strong> for a class member &#8211; you will
 				have to use <strong>false</strong> instead, or find another arrangement. This
 				convention of not using <strong>nil</strong> for class variables is found
-				throughout the whole of the tekUI framework.
+				throughout the whole tekUI framework.
 			</p>
 			<p>
 				Once your application is tested and ready for deployment, you can
@@ -1000,8 +999,8 @@ ret1, ret2, ... = function(arg1, arg2, ...): ...
 			<p>
 				Functions inside classes will automatically receive a symbolic name
 				as their class prefix (from assigning the module table <code>_M</code> to a
-				local variable, see <a href="#classsetup">Class setup</a>). Consecutively,
-				they can be cross-referenced using the following notations:
+				local variable, see <a href="#classsetup">Class setup</a>). Hereinafter, they
+				can be cross-referenced using the following notations:
 			</p>
 <pre>
 Class:function()

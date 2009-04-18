@@ -63,7 +63,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 7.1"
+_VERSION = "FloatText 7.2"
 
 local FloatText = _M
 
@@ -90,7 +90,7 @@ function FloatText.init(self)
 	self.Preformatted = self.Preformatted or false
 	self.Reposition = false
 	self.Text = self.Text or ""
-	self.TrackDamage = self.TrackDamage or true
+	self.TrackDamage = self.TrackDamage == nil and true or self.TrackDamage
 	self.UnusedRegion = false
 	self.WidthsCache = false
 	self.WordSpacing = false

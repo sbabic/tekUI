@@ -50,7 +50,7 @@ local type = type
 local unpack = unpack
 
 module "tek.lib.debug"
-_VERSION = "Debug 4.1"
+_VERSION = "Debug 4.2"
 
 -- symbolic:
 
@@ -62,7 +62,7 @@ FAIL = 20
 
 -- global defaults:
 
-level = WARN
+level = ERROR
 out = stderr
 wrout = function(...) out:write(...) end
 

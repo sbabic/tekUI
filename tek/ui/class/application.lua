@@ -107,7 +107,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 14.6"
+_VERSION = "Application 14.7"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -678,7 +678,7 @@ function Application:requestFile(args)
 		Modal = true,
 		Width = args.Width or 400,
 		Height = args.Height or 500,
-		Center = args.Center or true,
+		Center = args.Center == nil and true or args.Center,
 		Children = { dirlist },
 		HideOnEscape = true
 	}

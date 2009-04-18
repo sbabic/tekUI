@@ -19,6 +19,9 @@
 --		This class implements a slider for adjusting a numerical value.
 --
 --	ATTRIBUTES::
+--		- {{AutoFocus [IG]}} (boolean)
+--			If '''true''', the slider reacts on keyboard shortcuts instantly
+--			for moving the knob; if '''false''', it must be selected first.
 --		- {{Child [IG]}} ([[#tek.ui.class.gadget : Gadget]])
 --			A gadget for being used as the slider's knob. By default,
 --			an internal knob gadget is used.
@@ -71,7 +74,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 7.1"
+_VERSION = "Slider 8.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -86,6 +89,8 @@ local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 local Slider = _M
 
 function Slider.init(self)
+	self.AutoFocus = self.AutoFocus == nil and true or self.AutoFocus
+	self.Captured = false
 	self.ClickDirection = false
 	self.Integer = self.Integer or false
 	self.HoldXY = { }
@@ -157,6 +162,7 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:hide()
+	self:setCapture(false)
 	self.Child:hide()
 	Numeric.hide(self)
 	return true
@@ -452,6 +458,10 @@ end
 
 function Slider:handleInput(msg)
 	if msg[2] == ui.MSG_KEYDOWN then
+		if msg[3] == 13 and self.Captured and not self.AutoFocus then
+			self:setCapture(false)
+			return false
+		end
 		if self.Orientation == "horizontal" then
 			if msg[3] == 0xf010 then -- left
 				self:decrease()
@@ -478,10 +488,36 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:onFocus(focused)
-	if focused then
-		self.Window:addInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
-	else
-		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
+	if self.AutoFocus then
+		self:setCapture(focused)
+	elseif not focused then
+		self:setCapture(false)
 	end
 	Numeric.onFocus(self, focused)
+end
+
+-------------------------------------------------------------------------------
+--	onSelect: overrides
+-------------------------------------------------------------------------------
+
+function Slider:onSelect(selected)
+	if selected and not self.AutoFocus then
+		-- enter captured mode:
+		self:setCapture(true)
+	end
+	Numeric.onSelect(self, selected)
+end
+
+-------------------------------------------------------------------------------
+--	setCapture(onoff): Sets the element's capture mode. If captured,
+--	keyboard shortcuts can be used to adjust the slider's knob.
+-------------------------------------------------------------------------------
+
+function Slider:setCapture(onoff)
+	if onoff and not self.Captured then
+		self.Window:addInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
+	elseif not onoff and self.Captured then
+		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
+	end
+	self.Captured = onoff
 end
