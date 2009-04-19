@@ -106,7 +106,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 13.0"
+_VERSION = "Window 14.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -138,6 +138,7 @@ function Window.init(self)
 	self.CanvasStack = { }
 	self.Center = self.Center or false
 	self.CopyArea = { }
+	self.CopyObjects = { }
 	self.DblClickElement = false
 	self.DblClickCheckInfo = { } -- check_element, sec, usec, mousex, mousey
 	self.DblClickTimeout = self.DblClickTimeout or DEF_DBLCLICKTIMELIMIT
@@ -700,41 +701,44 @@ function Window:addLayoutGroup(group, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	update:
+--	refresh: overrides
 -------------------------------------------------------------------------------
 
 local function sortcopies(a, b) return a[1] > b[1] end
 
-function Window:handleCopies()
+function Window:refresh()
+	-- handle copies:
 	local ca = self.CopyArea
-	if ca then
-		local t = { }
-		for key, e in pairs(ca) do
-			local dx, dy, region = e[1], e[2], e[3]
-			local dir = (dx == 0 and dy or dx) > 0 and 1 or -1
-			for _, r1, r2, r3, r4 in region:getRects() do
-				insert(t, { (dx == 0 and r2 or r1) * dir,
-					dx, dy, r1, r2, r3, r4 })
-			end
-			ca[key] = nil
+	local t = { }
+	for key, e in pairs(ca) do
+		local dx, dy, region = e[1], e[2], e[3]
+		local dir = (dx == 0 and dy or dx) > 0 and 1 or -1
+		for _, r1, r2, r3, r4 in region:getRects() do
+			insert(t, { (dx == 0 and r2 or r1) * dir,
+				dx, dy, r1, r2, r3, r4 })
 		end
-		sort(t, sortcopies)
-		local d = self.Drawable
-		for _, r in ipairs(t) do
-			local t = { }
-			d:copyArea(r[4], r[5], r[6], r[7], r[4] + r[2], r[5] + r[3], t)
-			for i = 1, #t, 4 do
-				self:markDamage(t[i], t[i + 1], t[i + 2], t[i + 3])
-			end
+		ca[key] = nil
+	end
+	sort(t, sortcopies)
+	local d = self.Drawable
+	for _, r in ipairs(t) do
+		local t = { }
+		d:copyArea(r[4], r[5], r[6], r[7], r[4] + r[2], r[5] + r[3], t)
+		for i = 1, #t, 4 do
+			self:markDamage(t[i], t[i + 1], t[i + 2], t[i + 3])
 		end
 	end
+	self.CopyObjects = { }
+	Group.refresh(self)
 end
+
+-------------------------------------------------------------------------------
+--	update:
+-------------------------------------------------------------------------------
 
 function Window:update()
 
 	if self.Status == "show" then
-
-		self:handleCopies()
 
 		if #self.LayoutGroup > 0 then
 
@@ -762,7 +766,6 @@ function Window:update()
 					elseif markdamage == 2 then
 						group:markDamage(r1, r2, r3, r4)
 					end
-					self:handleCopies()
 				end
 			end
 
@@ -774,7 +777,6 @@ function Window:update()
 
 		end
 
-		-- refresh everything that is damaged:
 		self:refresh()
 
 	end

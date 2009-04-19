@@ -98,7 +98,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 6.2"
+_VERSION = "Frame 6.3"
 
 local Frame = _M
 
@@ -216,17 +216,21 @@ function Frame:markDamage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
---	layout: overrides - additionally maintains a border region
+--	layout: overrides. Additionally maintains a border region.
 -------------------------------------------------------------------------------
 
 function Frame:layout(r1, r2, r3, r4, markdamage)
-	local res = Area.layout(self, r1, r2, r3, r4, markdamage)
-	if res and self.BorderObject then
+	local changed, border_ok = Area.layout(self, r1, r2, r3, r4, markdamage)
+	if changed and self.BorderObject then
 		-- getBorderRegion() implies layout():
 		self.BorderRegion = self.BorderObject:getBorderRegion()
-		self.RedrawBorder = markdamage ~= false
+		-- using the border_ok hack, we avoid redrawing the border when the
+		-- object was just copied:
+		if not border_ok and markdamage ~= false then
+			self.RedrawBorder = true
+		end
 	end
-	return res
+	return changed
 end
 
 -------------------------------------------------------------------------------

@@ -150,7 +150,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 15.3"
+_VERSION = "Area 16.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -371,67 +371,85 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	x1 = x1 - m[3]
 	y1 = y1 - m[4]
 
-	if r[1] ~= x0 or r[2] ~= y0 or r[3] ~= x1 or r[4] ~= y1 then
-
-		-- shift, size:
-		local dx, dy, dw, dh
-		if r[1] then
-			dx, dy = x0 - r[1], y0 - r[2]
-			dw, dh = x1 - x0 - r[3] + r[1], y1 - y0 - r[4] + r[2]
-		end
-
-		-- cannot refresh by copy if element is shifted:
-		local sx, sy = self.Drawable:getShift()
-
-		if dx and sx == 0 and sy == 0 and ((dx == 0) ~= (dy == 0)) and
-			((dw == 0 and dh == 0) or self.TrackDamage) then
-			-- can refresh this element by shifting:
-
-			local s1, s2, s3, s4 = overlap(r[1] - m[1], r[2] - m[2],
-				r[3] + m[3], r[4] + m[4], x0 - dx - m[1], y0 - dy - m[2],
-				x1 - dx + m[3], y1 - dy + m[4])
-			if s1 then
-				local key = ("%d:%d"):format(dx, dy)
-				-- local key = dx == 0 and dy or dx
-				local ca = self.Window.CopyArea
-				if ca[key] then
-					ca[key][3]:orRect(s1, s2, s3, s4)
-				else
-					ca[key] = { dx, dy, Region.new(s1, s2, s3, s4) }
-				end
-			end
-
-			if dw > 0 or dh > 0 then
-				-- grow + move:
-				if self.TrackDamage then
-					self.DamageRegion = Region.new(x0, y0, x1, y1)
-					self.DamageRegion:subRect(r[1] + dx, r[2] + dy, r[3] + dx,
-						r[4] + dy)
-				end
-				self.Redraw = true
-			end
-
-		else
-			-- something changed:
-			if self.TrackDamage then
-				self.DamageRegion = Region.new(x0, y0, x1, y1)
-				-- avoid damages from resizing the area without moving it:
-				if dx == 0 and dy == 0 then
-					self.DamageRegion:subRect(r[1], r[2], r[3], r[4])
-				end
-			end
-			if markdamage ~= false then
-				self.Redraw = true
-			end
-		end
-		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
-		return true
-
-	else
-		-- nothing changed:
+	local r1, r2, r3, r4 = unpack(r)
+	if r1 == x0 and r2 == y0 and r3 == x1 and r4 == y1 then
+		-- nothing changed, no damage:
 		self.DamageRegion = false
+		return
 	end
 
+	r[1], r[2], r[3], r[4] = x0, y0, x1, y1
+	markdamage = markdamage ~= false
+
+	if not r1 then
+		-- this is the first layout:
+		self.Redraw = self.Redraw or markdamage
+		return true
+	end
+
+	-- delta shift, delta size:
+	local dx = x0 - r1
+	local dy = y0 - r2
+	local dw = x1 - x0 - r3 + r1
+	local dh = y1 - y0 - r4 + r2
+	
+	-- get element transposition:
+	local sx, sy = self.Drawable:getShift()
+	local win = self.Window
+	
+	local samesize = dw == 0 and dh == 0
+	local validmove = (dx == 0) ~= (dy == 0) and sx == 0 and sy == 0
+	-- and ((dx == 0 or sx == 0) and (dy == 0 or sy == 0))
+	
+	-- refresh element by copying if:
+	-- * element is not transposed
+	-- * shifting occurs only on one axis
+	-- * size is unchanged OR TrackDamage enabled
+	-- * object is not already slated for copying
+	
+	if validmove and (samesize or self.TrackDamage)
+		and not win.CopyObjects[self] then
+		
+		win.CopyObjects[self] = true
+
+		-- get source rect, incl. border:
+		local s1 = x0 - dx - m[1]
+		local s2 = y0 - dy - m[2]
+		local s3 = x1 - dx + m[3]
+		local s4 = y1 - dy + m[4]
+
+		-- get sortable key for delta:
+		local key = ("%d:%d"):format(dx, dy)
+		
+		local ca = win.CopyArea[key]
+		if ca then
+			ca[3]:orRect(s1, s2, s3, s4)
+		else
+			win.CopyArea[key] = { dx, dy, Region.new(s1, s2, s3, s4) }
+		end
+	
+		if samesize then
+			-- something changed, no Redraw. second value: border_ok hack
+			return true, true
+		end
+	
+		r1 = r1 + dx
+		r2 = r2 + dy
+		r3 = r3 + dx
+		r4 = r4 + dy
+	end
+	
+	if x0 == r1 and y0 == r2 then
+		-- did not move, size changed:
+		if markdamage and self.TrackDamage then
+			-- if damage is to be marked and damage can be tracked:
+			self.DamageRegion = Region.new(x0, y0, x1, y1)
+			self.DamageRegion:subRect(r1, r2, r3, r4)
+		end
+	end
+	
+	self.Redraw = self.Redraw or markdamage -- mark damaged if desired
+	return true
 end
 
 -------------------------------------------------------------------------------
