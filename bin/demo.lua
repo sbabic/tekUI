@@ -379,7 +379,7 @@ app = ui.Application:new
 				app:addCoroutine(function()
 					if app:easyRequest(false, L.CONFIRM_QUIT_APPLICATION,
 						L.QUIT, L.CANCEL) == 1 then
-						ui.Window.onHide(self)
+						self.Application:quit()
 					end
 				end)
 			end,

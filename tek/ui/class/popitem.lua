@@ -68,7 +68,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 7.5"
+_VERSION = "PopItem 8.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -80,8 +80,16 @@ local DEF_POPUPFADEOUTDELAY = 10
 local NOTIFY_SUBMENU = { ui.NOTIFY_SELF, "submenu", ui.NOTIFY_VALUE }
 local NOTIFY_ONSELECT = { ui.NOTIFY_SELF, "selectPopup" }
 local NOTIFY_ONUNSELECT = { ui.NOTIFY_SELF, "unselectPopup" }
-local NOTIFY_ONRELEASE = { ui.NOTIFY_SELF, "onPress", false }
-local NOTIFY_ONRELEASEITEM = { ui.NOTIFY_SELF, "setValue", "Pressed", false }
+
+local NOTIFY_PRESSED = { ui.NOTIFY_SELF, "onPress", ui.NOTIFY_VALUE }
+local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, 
+	function(self, active, oldactive)
+		if active == false and oldactive == false then
+			self:setValue("Pressed", false)
+			self.Window:finishPopup()
+		end
+		self:onActivate(active)
+	end, ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -328,7 +336,6 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:unselectPopup()
-	db.trace("unselectpopup: %s", self:getClassName())
 	if self.PopupWindow then
 		self:endPopup()
 		self.Window:setActiveElement()
@@ -423,8 +430,8 @@ function PopItem:connectPopItems(app, window)
 			end
 			self.Application = app
 			self.Window = window
-			self:addNotify("Active", false, NOTIFY_ONRELEASEITEM)
-			self:addNotify("Pressed", false, NOTIFY_ONRELEASE)
+			self:addNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
+			self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
 		end
 	end
 end
@@ -448,8 +455,8 @@ function PopItem:disconnectPopItems(window)
 			if self.Shortcut then
 				window:remKeyShortcut(self.Shortcut, self)
 			end
-			self:remNotify("Pressed", false, NOTIFY_ONRELEASE)
-			self:remNotify("Active", false, NOTIFY_ONRELEASEITEM)
+			self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
+			self:remNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
 		end
 	end
 end

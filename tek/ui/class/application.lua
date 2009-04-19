@@ -65,6 +65,7 @@
 --		- Application:easyRequest() - opens a message box
 --		- Application:getElementById() - returns an element by Id
 --		- Application:getLocale() - returns a locale for the application
+--		- Application:quit() - Quits the application
 --		- Application:remInputHandler() - removes a registered input handler
 --		- Application:requestFile() - opens a file requester
 --		- Application:run() - runs the application
@@ -107,7 +108,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 14.7"
+_VERSION = "Application 15.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -396,6 +397,14 @@ function Application:hideWindow(window)
 			window:hideWindow()
 		end
 	end
+end
+
+-------------------------------------------------------------------------------
+--	quit(): Quits the application.
+-------------------------------------------------------------------------------
+
+function Application:quit()
+	self:hideWindow()
 end
 
 -------------------------------------------------------------------------------
