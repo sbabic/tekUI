@@ -17,6 +17,8 @@ CLASSES = \
 	class/vectorimage.lua class/window.lua
 BORDERS = border/default.lua
 HOOKS = hook/ripple.lua
+IMAGES = image/arrowdown.lua image/arrowleft.lua image/arrowright.lua \
+	image/arrowup.lua image/check.lua image/file.lua image/radio.lua
 STYLES = style/internal.css style/monochrome.css style/tutorial.css \
 	style/industrial.css
 FONTS = font/Vera.ttf font/VeraMono.ttf
@@ -45,6 +47,7 @@ install:
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/layout
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/border
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/hook
+	$(INSTALL) -d $(LUA_SHARE)/tek/ui/image
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/class
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/font
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/cursor
@@ -55,6 +58,7 @@ install:
 	$(INSTALL) $(CLASSES) $(LUA_SHARE)/tek/ui/class
 	$(INSTALL) $(BORDERS) $(LUA_SHARE)/tek/ui/border
 	$(INSTALL) $(HOOKS) $(LUA_SHARE)/tek/ui/hook
+	$(INSTALL) $(IMAGES) $(LUA_SHARE)/tek/ui/image
 	$(INSTALL) $(FONTS) $(LUA_SHARE)/tek/ui/font
 	$(INSTALL) $(CURSORS) $(LUA_SHARE)/tek/ui/cursor
 	$(INSTALL) $(STYLES) $(LUA_SHARE)/tek/ui/style
