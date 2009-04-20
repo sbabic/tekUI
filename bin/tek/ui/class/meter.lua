@@ -19,7 +19,7 @@ local sin = math.sin
 local tonumber = tonumber
 
 module("tek.ui.class.meter", tek.ui.class.frame)
-_VERSION = "Meter 1.0"
+_VERSION = "Meter 1.1"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -50,7 +50,7 @@ end
 
 function Meter:draw()
 	local d = self.Drawable
-	local p0, p1 = d.Pens[ui.PEN_DARK], d.Pens[ui.PEN_LIGHT]
+	local p0, p1 = d.Pens[ui.PEN_DARK], d.Pens[ui.PEN_SHINE]
 	local r = self.Rect
 	local width = r[3] - r[1] + 1
 	local height = r[4] - r[2] + 1

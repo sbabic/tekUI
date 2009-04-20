@@ -2,6 +2,8 @@
 **	tek/ui/style/industrial.css - Example stylesheet
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
+**
+**	Version: 1.0
 */
 
 tek.ui.class.display {
@@ -29,7 +31,7 @@ tek.ui.class.display {
   rgb-half-shine: #fff;
   rgb-half-shadow: #0055ac;
   rgb-shadow: #fff;
-  rgb-light: #fff;
+  rgb-outline: #000;
   rgb-fill: #ff8900;
   rgb-menu: #0055ac;
   rgb-menu-detail: #fff;

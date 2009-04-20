@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.19"
+_VERSION = "Theme 6.20"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -449,6 +449,7 @@ local function importGTKConfig(def_s)
 								d["rgb-border-shadow"] = fmtrgb(r, g, b, 0.65)
 								d["rgb-half-shine"] = fmtrgb(r, g, b, 1.25)
 								d["rgb-half-shadow"] = fmtrgb(r, g, b, 0.65)
+								d["rgb-outline"] = c
 							elseif color == "bg[INSENSITIVE]" then
 								d["rgb-disabled"] = c
 							elseif color == "bg[ACTIVE]" then
@@ -507,8 +508,6 @@ local function importGTKConfig(def_s)
 						"group")
 					setclass(s, "tek.ui.class.display", "rgb-border-rim",
 						"#000")
-					setclass(s, "tek.ui.class.display", "rgb-border-light",
-						"#fff")
 					setclass(s, ".page-button:hover", "background-color",
 						"hover")
 					setclass(s, ".page-button:focus", "background-color",

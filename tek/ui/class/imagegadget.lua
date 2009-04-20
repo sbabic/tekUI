@@ -15,7 +15,7 @@ local unpack = unpack
 local Region = require "tek.lib.region"
 
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 2.0"
+_VERSION = "ImageGadget 2.1"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -114,5 +114,6 @@ function ImageGadget:draw()
 		end
 	end
 	local x, y, iw, ih = unpack(self.ImageData)
-	self.Image:draw(d, x, y, x + iw - 1, y + ih - 1)
+	self.Image:draw(d, x, y, x + iw - 1, y + ih - 1, 
+		self.Disabled and d.Pens[self.Foreground])
 end

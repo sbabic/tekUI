@@ -138,7 +138,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 15.2"
+_VERSION = "ListGadget 15.3"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ function ListGadget.init(self)
 	self.SelectedLine = self.SelectedLine or 0
 	-- selection modes ("none", "single", "multi"):
 	self.SelectMode = self.SelectMode or "single"
-	self.TrackDamage = self.TrackDamage == nil and true or self.TrackDamage
+	self.TrackDamage = true
 	return Text.init(self)
 end
 

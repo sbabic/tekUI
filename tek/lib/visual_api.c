@@ -503,6 +503,20 @@ getpen(lua_State *L, TINT index)
 	return pen;
 }
 
+static void *luaLi_checkudata (lua_State *L, int ud, const char *tname) {
+  void *p = lua_touserdata(L, ud);
+  if (p != NULL) {  /* value is a userdata? */
+    if (lua_getmetatable(L, ud)) {  /* does it have a metatable? */
+      lua_getfield(L, LUA_REGISTRYINDEX, tname);  /* get correct metatable */
+      if (lua_rawequal(L, -1, -2)) {  /* does it have the correct mt? */
+        lua_pop(L, 2);  /* remove both metatables */
+        return p;
+      }
+    }
+  }
+  return NULL;
+}
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_drawimage(lua_State *L)
 {
@@ -515,7 +529,8 @@ tek_lib_visual_drawimage(lua_State *L)
 	TEKVisual *vis = checkvisptr(L, 1);
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
 	TTAGITEM tags[2];
-
+	TEKPen *pen_override = luaLi_checkudata(L, 8, TEK_LIB_VISUALPEN_CLASSNAME);
+	
 	/* Imagedata: */
 	luaL_checktype(L, 2, LUA_TTABLE);
 	/* Pentable: */
@@ -609,12 +624,18 @@ tek_lib_visual_drawimage(lua_State *L)
 			lua_pushvalue(L, 7);
 			/* s: pentab, primitives[i+1], primitives, coords */
 
-			if ((fmtcode & 0xf) == 0x1)
+			if (pen_override)
+			{
+				tags[0].tti_Tag = TVisual_Pen;
+				tags[0].tti_Value = (TTAG) pen_override->pen_Pen;
+				tags[1].tti_Tag = TTAG_DONE;
+			}
+			else if ((fmtcode & 0xf) == 1)
 			{
 				/* pens */
 
 				lua_getfield(L, -2, "Pens");
-				luaL_checktype(L, -1, LUA_TTABLE);
+				/*luaL_checktype(L, -1, LUA_TTABLE);*/
 				/* s: primitives[i+1].pens, pentab, primitives[i+1], primitives, coords */
 				for (j = 0; j < nump; j++)
 				{

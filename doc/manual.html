@@ -1483,7 +1483,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v18.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v19.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1505,6 +1505,9 @@ ui.Application:new { ...
 					<ul>
 						<li style="list-style-type: none">
 							<a href="#ui:createHook"><code>ui.createHook()</code></a> - Creates a hook object
+						</li>
+						<li style="list-style-type: none">
+							<a href="#ui:createImage"><code>ui.createImage()</code></a> - Creates an image object
 						</li>
 						<li style="list-style-type: none">
 							<a href="#ui:extractKeyCode"><code>ui.extractKeyCode()</code></a> - Extracts a keycode from a string
@@ -1630,6 +1633,14 @@ ui.Application:new { ...
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="ui:createImage" id="ui:createImage"><code>imgobject = createImage(name, ...)</code></a></h3>
+			<p>
+				Creates an image of a named class,
+				corresponding to classes found in <code>tek/ui/image</code>. Additional arguments
+				are passed to <code>imageclass:new()</code>.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="ui:extractKeyCode" id="ui:extractKeyCode"><code>extractKeyCode(string[, shortcutmark])</code></a></h3>
 			<p>
 				Extract a shortcut character
@@ -1672,6 +1683,9 @@ ui.Application:new { ...
 					</li>
 					<li style="list-style-type: none">
 						&quot;hook&quot; - drawing hooks
+					</li>
+					<li style="list-style-type: none">
+						&quot;image&quot; - images
 					</li>
 				</ul>
 			</blockquote>
@@ -2892,7 +2906,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.9)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.10)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3185,7 +3199,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v9.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3270,7 +3284,7 @@ end
 							<code>rgb-shine</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-light</code> 
+							<code>rgb-outline</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-background</code> 
@@ -4823,7 +4837,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v15.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v15.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5845,7 +5859,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v2.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v2.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5885,7 +5899,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v8.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v8.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6786,7 +6800,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.19)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.20)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7238,7 +7252,7 @@ message = function(object, message)
 			</p>
 			<hr />
 			<p>
-				Document generated on Sun Apr 19 16:48:21 2009
+				Document generated on Mon Apr 20 16:27:06 2009
 			</p>
 		</div>
 	</body>

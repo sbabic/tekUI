@@ -39,7 +39,7 @@ local window = ui.Window:new
 							CanvasHeight = 500,
 							Child = ui.FloatText:new
 							{
-								Style = "font: ui-fixed; background-color: dark; color: light;",
+								Style = "font: ui-fixed; background-color: dark; color: shine;",
 								Preformatted = true,
 								Text = [[
 

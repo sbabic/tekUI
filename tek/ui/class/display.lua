@@ -35,7 +35,7 @@
 --		- {{rgb-half-shadow}}
 --		- {{rgb-half-shine}}
 --		- {{rgb-shine}}
---		- {{rgb-light}}
+--		- {{rgb-outline}}
 --		- {{rgb-background}}
 --		- {{rgb-fill}}
 --		- {{rgb-active}}
@@ -82,7 +82,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 9.0"
+_VERSION = "Display 10.0"
 
 -------------------------------------------------------------------------------
 --	Class data and constants:
@@ -126,7 +126,7 @@ local ColorDefaults =
 {
 	{ "background", DEF_RGB_BACK },
 	{ "dark", DEF_RGB_DETAIL },
-	{ "light", DEF_RGB_SHINE },
+	{ "outline", DEF_RGB_SHINE },
 	{ "fill", DEF_RGB_FILL },
 	{ "active", DEF_RGB_HALFSHADOW },
 	{ "focus", DEF_RGB_BACK },

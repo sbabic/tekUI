@@ -62,39 +62,18 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 8.1"
+_VERSION = "ScrollBar 8.2"
 
 local ScrollBar = _M
 
 -------------------------------------------------------------------------------
---	Data:
+--	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local ARROWBORDER1_HORIZ = { 1, 1, 0, 1 }
-local ARROWBORDER2_HORIZ = { 0, 1, 1, 1 }
-local ARROWBORDER1_VERT = { 1, 1, 1, 0 }
-local ARROWBORDER2_VERT = { 1, 0, 1, 0 }
-
-local coordx = { 0,0, 10,10, 10,-10 }
-local coordy = { 0,0, 10,10, -10,10 }
-local prims = { { 0x1000, 3, Points = { 1, 2, 3 }, Pen = ui.PEN_DETAIL } }
-
-local ArrowUpImage = VectorImage:new {
-	Coords = { 0x1000,0x4000, 0xf000,0x4000, 0x8000,0xc000 },
-	Transparent = true,
-	Primitives = prims }
-local ArrowDownImage = VectorImage:new {
-	Coords = { 0x1000,0xc000, 0xf000,0xc000, 0x8000,0x4000 },
-	Transparent = true,
-	Primitives = prims }
-local ArrowLeftImage = VectorImage:new {
-	Coords = { 0xc000,0x1000, 0xc000,0xf000, 0x4000,0x8000 },
-	Transparent = true,
-	Primitives = prims }
-local ArrowRightImage = VectorImage:new {
-	Coords = { 0x4000,0x1000, 0x4000,0xf000, 0xc000,0x8000 },
-	Transparent = true,
-	Primitives = prims }
+local ArrowUpImage = ui.createImage("arrowup")
+local ArrowDownImage = ui.createImage("arrowdown")
+local ArrowLeftImage = ui.createImage("arrowleft")
+local ArrowRightImage = ui.createImage("arrowright")
 
 local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
 local NOTIFY_MIN = { ui.NOTIFY_SELF, "onSetMin", ui.NOTIFY_VALUE }
@@ -113,12 +92,6 @@ function ArrowButton.init(self)
 	self.Mode = "button"
 	self.Increase = self.Increase or 1
 	return ImageGadget.init(self)
-end
-
-function ArrowButton:draw()
-	-- TODO: static data modified (ugly):
-	prims[1].Pen = self.Foreground
-	ImageGadget.draw(self)
 end
 
 function ArrowButton:onPress(pressed)

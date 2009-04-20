@@ -3,6 +3,8 @@
 **	tek/ui/style/tutorial.css - Example stylesheet
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
+**
+**	Version: 1.0
 */
 
 tek.ui.class.display {
@@ -16,6 +18,11 @@ tek.ui.class.display {
 
 tek.ui.class.checkmark {
 	border-width: 0;
+}
+
+tek.ui.class.listgadget {
+	border-focus-width: 0;
+	border-width: 5;
 }
 
 tek.ui.class.gauge {

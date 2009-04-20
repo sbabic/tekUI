@@ -16,6 +16,7 @@
 --
 --	FUNCTIONS::
 --		- ui.createHook() - Creates a hook object
+--		- ui.createImage() - Creates an image object
 --		- ui.extractKeyCode() - Extracts a keycode from a string
 --		- ui.getLocale() - Gets a locale catalog
 --		- ui.loadClass() - Loads a named class
@@ -81,7 +82,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 18.1"
+_VERSION = "tekUI 19.0"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -124,6 +125,7 @@ ShortcutMark = "_"
 --		- "border" - border classes
 --		- "layout" - classes used for layouting a group
 --		- "hook" - drawing hooks
+--		- "image" - images
 -------------------------------------------------------------------------------
 
 local function loadProtected(name)
@@ -140,6 +142,7 @@ local LoaderPaths =
 	["border"] = "tek.ui.border.",
 	["layout"] = "tek.ui.layout.",
 	["hook"] = "tek.ui.hook.",
+	["image"] = "tek.ui.image.",
 }
 
 function loadClass(domain, name, pat, loader)
@@ -160,6 +163,19 @@ function loadClass(domain, name, pat, loader)
 		end
 	end
 	return false
+end
+
+-------------------------------------------------------------------------------
+--	imgobject = createImage(name, ...): Creates an image of a named class,
+--	corresponding to classes found in {{tek/ui/image}}. Additional arguments
+--	are passed to {{imageclass:new()}}.
+-------------------------------------------------------------------------------
+
+function createImage(name, ...)
+	local class = loadClass("image", name)
+	if class then
+		return class:new(...)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -727,7 +743,9 @@ DEBUG = false
 HUGE = 1000000
 NULLOFFS = { 0, 0, 0, 0 }
 
--- Notification placeholders:
+-------------------------------------------------------------------------------
+--	Placeholders for notifications:
+-------------------------------------------------------------------------------
 
 NOTIFY_ALWAYS = Object.NOTIFY_ALWAYS
 NOTIFY_CHANGE = Object.NOTIFY_CHANGE
@@ -742,46 +760,51 @@ NOTIFY_APPLICATION = Element.NOTIFY_APPLICATION
 NOTIFY_ID = Element.NOTIFY_ID
 NOTIFY_COROUTINE = Element.NOTIFY_COROUTINE
 
--- Symbolic colors:
+-------------------------------------------------------------------------------
+--	Symbolic colors help to maintain adaptibility to themes, even if a color
+--	scheme is inverted, i.e. usually bright colors become dark and vice versa.
+-------------------------------------------------------------------------------
 
-PEN_PARENTGROUP = 0 -- pseudo color: use the group's background color
-PEN_BACKGROUND = 1
-PEN_DARK = 2
-PEN_LIGHT = 3
-PEN_FILL = 4
-PEN_ACTIVE = 5
-PEN_FOCUS = 6
-PEN_HOVER = 7
-PEN_DISABLED = 8
-PEN_DETAIL = 9
-PEN_ACTIVEDETAIL = 10
-PEN_FOCUSDETAIL = 11
-PEN_HOVERDETAIL = 12
-PEN_DISABLEDDETAIL = 13
-PEN_DISABLEDDETAIL2 = 14
-PEN_BORDERSHINE = 15
-PEN_BORDERSHADOW = 16
-PEN_BORDERRIM = 17
-PEN_BORDERFOCUS = 18
-PEN_BORDERLEGEND = 19
-PEN_MENU = 20
-PEN_MENUDETAIL = 21
-PEN_MENUACTIVE = 22
-PEN_MENUACTIVEDETAIL = 23
-PEN_LIST = 24
-PEN_LIST2 = 25
-PEN_LISTDETAIL = 26
-PEN_LISTACTIVE = 27
-PEN_LISTACTIVEDETAIL = 28
-PEN_CURSOR = 29
-PEN_CURSORDETAIL = 30
-PEN_GROUP = 31
-PEN_SHADOW = 32
-PEN_SHINE = 33
-PEN_HALFSHADOW = 34
-PEN_HALFSHINE = 35
+PEN_PARENTGROUP = 0       -- pseudo color: use the group's background color
+PEN_BACKGROUND = 1        -- background standard
+PEN_DARK = 2              -- darkest color (literally); usually black
+PEN_OUTLINE = 3           -- complements PEN_DETAIL
+PEN_FILL = 4              -- color for filling elements, e.g. gauges
+PEN_ACTIVE = 5            -- background in active state
+PEN_FOCUS = 6             -- background in focused state
+PEN_HOVER = 7             -- background in hovered state
+PEN_DISABLED = 8          -- background in disabled state
+PEN_DETAIL = 9            -- color for text or icon details
+PEN_ACTIVEDETAIL = 10     -- color for active text or icon details
+PEN_FOCUSDETAIL = 11      -- color for focused text or icon details
+PEN_HOVERDETAIL = 12      -- color for text or icon details being hovered
+PEN_DISABLEDDETAIL = 13   -- color for disabled text or icon details
+PEN_DISABLEDDETAIL2 = 14  -- alt. color for disabled text or icon details
+PEN_BORDERSHINE = 15      -- shining borders
+PEN_BORDERSHADOW = 16     -- borders in the shadow
+PEN_BORDERRIM = 17        -- border to seperate and to enhance contrast
+PEN_BORDERFOCUS = 18      -- border focus color
+PEN_BORDERLEGEND = 19     -- border legend text color
+PEN_MENU = 20             -- menu background color
+PEN_MENUDETAIL = 21       -- menu text and icon details
+PEN_MENUACTIVE = 22       -- active menu background
+PEN_MENUACTIVEDETAIL = 23 -- active menu text and icon details
+PEN_LIST = 24             -- list background
+PEN_LIST2 = 25            -- alt. list background
+PEN_LISTDETAIL = 26       -- list text and icon details
+PEN_LISTACTIVE = 27       -- active list entry background
+PEN_LISTACTIVEDETAIL = 28 -- active list entry text and icon details
+PEN_CURSOR = 29           -- cursor background color
+PEN_CURSORDETAIL = 30     -- cursor detail color
+PEN_GROUP = 31            -- color of group background
+PEN_SHADOW = 32           -- a color not quite as dark as PEN_DARK
+PEN_SHINE = 33            -- bright color
+PEN_HALFSHADOW = 34       -- brighter than PEN_SHADOW
+PEN_HALFSHINE = 35        -- brighter than PEN_HALFSHADOW
 
--- Message types:
+-------------------------------------------------------------------------------
+--	Message types:
+-------------------------------------------------------------------------------
 
 MSG_CLOSE       = 0x0001
 MSG_FOCUS       = 0x0002
