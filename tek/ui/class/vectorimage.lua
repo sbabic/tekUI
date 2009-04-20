@@ -5,12 +5,12 @@
 --	See copyright notice in COPYRIGHT
 --
 --	OVERVIEW::
---	Implements vector graphics images and rendering
+--		Implements vector graphics images and rendering
 --
 
 local Class = require "tek.class"
 module("tek.ui.class.vectorimage", tek.class)
-_VERSION = "VectorImage 3.0"
+_VERSION = "VectorImage 4.0"
 local VectorImage = _M
 
 function VectorImage.new(class, self)
@@ -19,7 +19,7 @@ function VectorImage.new(class, self)
 end
 
 function VectorImage:draw(d, r1, r2, r3, r4, pen_override)
-	d:drawImage(self, r1, r2, r3, r4, d.Pens, pen_override)
+	d:drawImage(self, r1, r2, r3, r4, pen_override or d.Pens)
 end
 
 function VectorImage:askWidthHeight(w, h)

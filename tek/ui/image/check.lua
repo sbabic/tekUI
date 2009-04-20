@@ -28,23 +28,23 @@ local points3 = { 8,10,14,12 }
 
 local primitives1 =
 {
-	{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
-	{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
-	{ 0x1000, 4, Points = points3, Pen = ui.PEN_BACKGROUND },
+	{ 0x1000, 6, points21, ui.PEN_BORDERSHADOW },
+	{ 0x1000, 6, points22, ui.PEN_BORDERSHINE },
+	{ 0x1000, 4, points3, ui.PEN_BACKGROUND },
 }
 
 local primitives2 =
 {
-	{ 0x1000, 6, Points = points21, Pen = ui.PEN_BORDERSHADOW },
-	{ 0x1000, 6, Points = points22, Pen = ui.PEN_BORDERSHINE },
-	{ 0x1000, 4, Points = points3, Pen = ui.PEN_BACKGROUND },
-	{ 0x2000, 6, Points = points1, Pen = ui.PEN_DETAIL },
+	{ 0x1000, 6, points21, ui.PEN_BORDERSHADOW },
+	{ 0x1000, 6, points22, ui.PEN_BORDERSHINE },
+	{ 0x1000, 4, points3, ui.PEN_BACKGROUND },
+	{ 0x2000, 6, points1, ui.PEN_DETAIL },
 }
 
 function new(class, num)
 	return VectorImage.new(class, {
-		Coords = coords,
-		Primitives = num == 2 and primitives2 or primitives1,
-		Transparent = true
+		coords,
+		num == 2 and primitives2 or primitives1,
+		true
 	})
 end

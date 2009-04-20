@@ -73,7 +73,7 @@ local window = ui.Window:new
 					Width = "free",
 					Height = "free",
 					Image = ui.BitmapImage:new { 
-						Image = io.open(ui.ProgDir .. "/graphics/locale.ppm"):read("*a") 
+						io.open(ui.ProgDir .. "/graphics/locale.ppm"):read("*a") 
 					},
 				},
 				ui.ImageGadget:new
@@ -82,7 +82,7 @@ local window = ui.Window:new
 					Height = "free",
 					Style = "background-color: shine;",
 					Image = ui.BitmapImage:new { 
-						Image = io.open(ui.ProgDir .. "/graphics/world.ppm"):read("*a") 
+						io.open(ui.ProgDir .. "/graphics/world.ppm"):read("*a") 
 					},
 				}
 			}

@@ -39,8 +39,10 @@ typedef struct
 
 typedef struct TEKVisual
 {
-	/* Visualbase: */
+	/* Visual module base: */
 	TAPTR vis_Base;
+	/* VisBase: */
+	struct TEKVisual *vis_VisBase;
 	/* Execbase: */
 	struct TExecBase *vis_ExecBase;
 	/* Reference to base (stored in metatable): */
@@ -75,6 +77,8 @@ typedef struct TEKVisual
 
 	struct TMsgPort *vis_CmdRPort;
 	struct TMsgPort *vis_IMsgPort;
+	
+	TINT *vis_DrawBuffer;
 
 } TEKVisual;
 

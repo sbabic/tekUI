@@ -23,16 +23,12 @@ local coords =
 
 local primitives =
 {
-	{ 0x1000, 10, Points = { 1,2,3,4,5,6,7,8,9,10 }, Pen = ui.PEN_DETAIL },
-	{ 0x1000, 10, Points = { 1,2,12,11,14,10,13,9,12,1 }, Pen = ui.PEN_DETAIL },
-	{ 0x2000, 6, Points = { 11,2,4,6,8,10 }, Pen = ui.PEN_OUTLINE },
-	{ 0x2000, 3, Points = { 12,13,14 }, Pen = ui.PEN_OUTLINE },
+	{ 0x1000, 10, { 1,2,3,4,5,6,7,8,9,10 }, ui.PEN_DETAIL },
+	{ 0x1000, 10, { 1,2,12,11,14,10,13,9,12,1 }, ui.PEN_DETAIL },
+	{ 0x2000, 6, { 11,2,4,6,8,10 }, ui.PEN_OUTLINE },
+	{ 0x2000, 3, { 12,13,14 }, ui.PEN_OUTLINE },
 }
 
 function new(class, num)
-	return VectorImage.new(class, {
-		Coords = coords,
-		Primitives = primitives,
-		Transparent = true
-	})
+	return VectorImage.new(class, { coords, primitives, true })
 end

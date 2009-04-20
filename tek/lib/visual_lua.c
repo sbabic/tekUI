@@ -130,6 +130,7 @@ tek_lib_visual_open(lua_State *L)
 		return 0;
 	}
 
+	vis->vis_VisBase = visbase;
 	vis->vis_Base = visbase->vis_Base;
 	vis->vis_ExecBase = visbase->vis_ExecBase;
 	vis->vis_Font = visbase->vis_Font;
@@ -359,6 +360,8 @@ tek_lib_visual_close(lua_State *L)
 		/* collected visual base; remove TEKlib module: */
 		TRemModules((struct TModInitNode *) &im_visual, 0);
 		TDBPRINTF(TDB_INFO,("visual module removed\n"));
+		
+		TFree(vis->vis_DrawBuffer);
 	}
 
 	return 0;
@@ -404,6 +407,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	vis->vis_Visual = TNULL;
 	vis->vis_refBase = -1;
 	vis->vis_isBase = TTRUE;
+	vis->vis_DrawBuffer = TNULL;
 
 	/* register base: */
 	lua_pushvalue(L, -1);

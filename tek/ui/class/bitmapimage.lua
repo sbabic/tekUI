@@ -5,28 +5,29 @@
 --	See copyright notice in COPYRIGHT
 --
 --	OVERVIEW::
---	Implements bitmap rendering
+--		Implements bitmap rendering
 --
 
 local tonumber = tonumber
 local Class = require "tek.class"
 module("tek.ui.class.bitmapimage", tek.class)
-_VERSION = "BitmapImage 1.1"
+_VERSION = "BitmapImage 2.0"
 local BitmapImage = _M
 
 function BitmapImage.new(class, self)
-	self.Transparent = self.Transparent or false
+	self[1] = self[1] or false -- image data
+	self[3] = self[3] or false -- transparent
 	return Class.new(class, self)
 end
 
 function BitmapImage:draw(d, r1, r2, r3, r4)
-	d:drawPPM(self.Image, r1, r2, r3, r4)
+	d:drawPPM(self[1], r1, r2, r3, r4)
 end
 
 function BitmapImage:askWidthHeight(w, h)
-	local iw, ih = self.Image:match("^P6\n(%d+) (%d+)\n")
+	local iw, ih = self[1]:match("^P6\n(%d+) (%d+)\n")
 	if not iw then
-		iw, ih = self.Image:match("^P6\n#[^\n]*\n(%d+) (%d+)\n")
+		iw, ih = self[1]:match("^P6\n#[^\n]*\n(%d+) (%d+)\n")
 	end
 	if iw and ih then
 		iw = tonumber(iw)

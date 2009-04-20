@@ -15,7 +15,7 @@ local unpack = unpack
 local Region = require "tek.lib.region"
 
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 2.1"
+_VERSION = "ImageGadget 3.0"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -78,7 +78,7 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 		local ih = self.ImageHeight or h
 		if iw ~= w or ih ~= h then
 			self.Region = Region.new(x, y, r[3], r[4])
-		elseif self.Image.Transparent then
+		elseif self.Image[3] then -- transparent?
 			self.Region = Region.new(x, y, r[3], r[4])
 		else
 			self.Region = false
@@ -90,7 +90,7 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 				x = x + floor((w - iw) / 2)
 				y = y + floor((h - ih) / 2)
 			end
-			if not self.Image.Transparent then
+			if not self.Image[3] then -- transparent?
 				self.Region:subRect(x, y, x + iw - 1, y + ih - 1)
 			end
 		end

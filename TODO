@@ -8,8 +8,4 @@
  * Bubble help
  * FloatText styling options
  * Confinement of popup elements to the visible screen
-
-=== Known bugs ===
-
- * potential memory leak in visual.drawimage
  * Antialiased fonts unsupported under X11 with Composite Extension

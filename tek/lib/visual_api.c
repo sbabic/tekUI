@@ -376,12 +376,15 @@ tek_lib_visual_frect(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
 	TINT x1 = luaL_checkinteger(L, 4) + sx;
 	TINT y1 = luaL_checkinteger(L, 5) + sy;
+	TEKPen *pen;
 
 	if (x0 > x1 || y0 > y1)
 		return 0;
-	TEKPen *pen = checkpenptr(L, 6);
+	
+	pen = checkpenptr(L, 6);
 	TVisualFRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
 		pen->pen_Pen);
+
 	return 0;
 }
 
@@ -430,277 +433,144 @@ tek_lib_visual_text(lua_State *L)
 
 /*****************************************************************************/
 /*
-** Layout of data table (L[2])
-** ----------------------------
-**	data =
+**	drawimage(visual, image, r1, r2, r3, r4, pentab, override_pen)
+**
+**	Layout of image data structure:
+**
 **	{
-**		Coords =
-**		{
-**			x1, y1,
-**			x2, y2,
+**		[1] = { x0, y0, x1, y1, ... }, -- coordinates (x/y)
+**		[2] = {  -- primitives
+**			{ [1]=fmtcode, [2]=numpts, [3]={ indices }, [4]=pen_or_pentable },
 **			...
-**		},
+**		}
+**		[3] = boolean -- is_transparent
+**	}
 **
-**		Primitives =
-**		{
-**			{
-**				format code,
-**				number of points,
-**				Points = { index1, index2, index3 },
-**				Pen = pentable_index,
-**					OR
-**				Pens = { pentable_index0, pentable_index1, ... }
-**			},
-**
-**			{
-**				...
-**			}
-**		},
-**	},
-**
-** Format Codes:
-** ---------------
-** 0x1000 Strip
-** 0x2000 Fan
-** 0x4000 Triangle
-**
-** 0x0000 pen
-** 0x0001 pens
-** 0x0002 color
-** 0x0004 colors
-**
+**	format codes:
+**		0x1000 - strip
+**		0x2000 - fan
 */
-
-#define u_ld(b) ({ int __i = 0, __j = b; while (__j >>= 1) __i++; __i; })
-
-static lua_Number
-igetnumber(lua_State *L, TINT index, TINT n)
-{
-	lua_Number result;
-	lua_rawgeti(L, index, n);
-	result = luaL_checknumber(L, -1);
-	lua_pop(L, 1);
-	return result;
-}
-
-static lua_Integer
-igetinteger(lua_State *L, TINT index, TINT n)
-{
-	lua_Integer result;
-	lua_rawgeti(L, index, n);
-	result = luaL_checkinteger(L, -1);
-	lua_pop(L, 1);
-	return result;
-}
-
-static TEKPen*
-getpen(lua_State *L, TINT index)
-{
-	TEKPen *pen;
-	lua_rawget(L, index);
-	pen = checkpenptr(L, -1);
-	lua_pop(L, 1);
-	return pen;
-}
-
-static void *luaLi_checkudata (lua_State *L, int ud, const char *tname) {
-  void *p = lua_touserdata(L, ud);
-  if (p != NULL) {  /* value is a userdata? */
-    if (lua_getmetatable(L, ud)) {  /* does it have a metatable? */
-      lua_getfield(L, LUA_REGISTRYINDEX, tname);  /* get correct metatable */
-      if (lua_rawequal(L, -1, -2)) {  /* does it have the correct mt? */
-        lua_pop(L, 2);  /* remove both metatables */
-        return p;
-      }
-    }
-  }
-  return NULL;
-}
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_drawimage(lua_State *L)
 {
-	TINT pidx;
-	TINT i, j;
-	TINT fmtcode;
-	TINT primcount, nump;
-	lua_Number rect[4];
-	lua_Number scalex, scaley;
+	TEKPen *pen_override = TNULL;
 	TEKVisual *vis = checkvisptr(L, 1);
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
+	lua_Integer rect[4], scalex, scaley;
+	size_t primcount, i, j;
 	TTAGITEM tags[2];
-	TEKPen *pen_override = luaLi_checkudata(L, 8, TEK_LIB_VISUALPEN_CLASSNAME);
+	tags[1].tti_Tag = TTAG_DONE;
 	
-	/* Imagedata: */
-	luaL_checktype(L, 2, LUA_TTABLE);
-	/* Pentable: */
-	luaL_checktype(L, 7, LUA_TTABLE);
-
+	if (lua_type(L, 7) != LUA_TTABLE)
+		pen_override = luaL_checkudata(L, 7, TEK_LIB_VISUALPEN_CLASSNAME);
+	
 	rect[0] = luaL_checkinteger(L, 3);
 	rect[1] = luaL_checkinteger(L, 4);
 	rect[2] = luaL_checkinteger(L, 5);
 	rect[3] = luaL_checkinteger(L, 6);
-
-	/* s: */
-
 	scalex = rect[2] - rect[0];
 	scaley = rect[1] - rect[3];
-
-	/* get coordinates */
-	lua_getfield(L, 2, "Coords");
-	luaL_checktype(L, -1, LUA_TTABLE);
-
+	
+	lua_rawgeti(L, 2, 1);
 	/* s: coords */
-	lua_getfield(L, 2, "Primitives");
-	luaL_checktype(L, -1, LUA_TTABLE);
-
-	/* s: primitives, coords */
+	lua_rawgeti(L, 2, 2);
+	/* s: coords, primitives */
 	primcount = lua_objlen(L, -1);
 
 	for (i = 0; i < primcount; i++)
 	{
-		lua_rawgeti(L, -1, i+1);
-		/* s: primitives[i+1], primitives, coords */
-
-		/* get format code */
-		fmtcode = igetinteger(L, -1, 1);
-
-		/* get number of points */
-		nump = igetinteger(L, -1, 2);
-
-		/* (re-)allocate memory for points and pens */
-		if (vis->vis_Drawdata.nump < nump)
+		lua_Integer nump, fmt;
+		size_t bufsize;
+		void *buf;
+		TINT *coord;
+		TINT *pentab;
+		
+		lua_rawgeti(L, -1, i + 1);
+		/* s: coords, primitives, prim[i] */
+		lua_rawgeti(L, -1, 1);
+		/* s: coords, primitives, prim[i], fmtcode */
+		fmt = luaL_checkinteger(L, -1);
+		lua_rawgeti(L, -2, 2);
+		/* s: coords, primitives, prim[i], fmtcode, nump */
+		nump = luaL_checkinteger(L, -1);
+		
+		bufsize = sizeof(TINT) * 3 * nump;
+		buf = vis->vis_VisBase->vis_DrawBuffer;
+		if (buf && TGetSize(buf) < bufsize)
 		{
-			TINT newsize = 1<<(u_ld((nump*2))+1);
-
-			if (vis->vis_Drawdata.points)
-				TFree(vis->vis_Drawdata.points);
-			if (vis->vis_Drawdata.pens)
-				TFree(vis->vis_Drawdata.pens);
-
-			vis->vis_Drawdata.points = TAlloc(TNULL, newsize*sizeof(TINT));
-			vis->vis_Drawdata.pens = TAlloc(TNULL, (newsize>>1)*sizeof(TVPEN));
-			vis->vis_Drawdata.nump = newsize>>1;
+			TFree(buf);
+			buf = TNULL;
 		}
-
-		if (!vis->vis_Drawdata.points || !vis->vis_Drawdata.pens)
+		if (buf == TNULL)
+			buf = TAlloc(TNULL, bufsize);
+		vis->vis_VisBase->vis_DrawBuffer = buf;
+		if (buf == TNULL)
 		{
-			lua_pop(L, 1);
-			/* s: primitives, points */
-			break;
+			lua_pushstring(L, "out of memory");
+			lua_error(L);
 		}
-
-		/* get indices */
-		lua_getfield(L, -1, "Points");
-		luaL_checktype(L, -1, LUA_TTABLE);
-
-		/* s: primitives[i+1].points, primitives[i+1], primitives, coords */
-		for (j = 0; j < nump; j++)
-		{
-			TINT px, py;
-
-			/* get s:primitives[i+1].points[j+1] */
-			pidx = igetinteger(L, -1, j+1);
-
-			/* get s:points[pidx*2-1] */
-			px = igetnumber(L, -4, pidx*2-1);
-
-			/* get s:points[pidx*2] */
-			py = igetnumber(L, -4, pidx*2);
-
-			vis->vis_Drawdata.points[j*2] = rect[0] + sx +
-			 	(px * scalex + 0x7fff) / 0x10000;
-			vis->vis_Drawdata.points[j*2+1] = rect[3] + sy +
-			 	(py * scaley + 0x7fff) / 0x10000;
-		}
-		lua_pop(L, 1);
-		/* s: primitives[i+1], primitives, coords */
-
-		/* get pens/colors */
-		if ((fmtcode & 0xf) < 0x2)
-		{
-			TEKPen *pen;
-
-			lua_pushvalue(L, 7);
-			/* s: pentab, primitives[i+1], primitives, coords */
-
-			if (pen_override)
-			{
-				tags[0].tti_Tag = TVisual_Pen;
-				tags[0].tti_Value = (TTAG) pen_override->pen_Pen;
-				tags[1].tti_Tag = TTAG_DONE;
-			}
-			else if ((fmtcode & 0xf) == 1)
-			{
-				/* pens */
-
-				lua_getfield(L, -2, "Pens");
-				/*luaL_checktype(L, -1, LUA_TTABLE);*/
-				/* s: primitives[i+1].pens, pentab, primitives[i+1], primitives, coords */
-				for (j = 0; j < nump; j++)
-				{
-					lua_rawgeti(L, -1, j+1);
-					/* s: primitives[i+1].pens[j+1], primitives[i+1].pens,
-					      pentab, primitives[i+1], primitives, coords */
-
-					/* get s:pentab[primitives[i+1].pens[j+1]] */
-					pen = getpen(L, -3);
-
-					vis->vis_Drawdata.pens[j] = pen->pen_Pen;
-				}
-
-				lua_pop(L, 1);
-				/* s: pentab, primitives[i+1], primitives, coords */
-
-				tags[0].tti_Tag = TVisual_PenArray;
-				tags[0].tti_Value = (TTAG) vis->vis_Drawdata.pens;
-				tags[1].tti_Tag = TTAG_DONE;
-			}
-			else
-			{
-				/* pen */
-
-				lua_getfield(L, -2, "Pen");
-				/* s: primitives[i+1].pen, pentab, primitives[i+1], primitives, coords */
-
-				/* get s: pentab[primitives[i+1].pen] */
-				pen = getpen(L, -2);
-
-				tags[0].tti_Tag = TVisual_Pen;
-				tags[0].tti_Value = (TTAG) pen->pen_Pen;
-				tags[1].tti_Tag = TTAG_DONE;
-			}
-
-			lua_pop(L, 1);
-			/* s: primitives[i+1], primitives, coords */
-		}
+		coord = buf;
+		
+		lua_rawgeti(L, -3, 3);
+		/* s: coords, primitives, prim[i], fmtcode, nump, indices */
+		lua_rawgeti(L, -4, 4);
+		/* s: coords, primitives, prim[i], fmtcode, nump, indices, pt */
+		
+		pentab = lua_type(L, -1) == LUA_TTABLE ? coord + 2 * nump : TNULL;
+		if (pentab)
+			tags[0].tti_Tag = TVisual_PenArray;
 		else
 		{
-			/* color / colors */
-
+			tags[0].tti_Tag = TVisual_Pen;
+			if (pen_override)
+				tags[0].tti_Value = pen_override->pen_Pen;
+			else
+			{
+				lua_Integer pnr = lua_tonumber(L, -1);
+				lua_rawgeti(L, 7, pnr);
+				tags[0].tti_Value = ((TEKPen *) checkpenptr(L, -1))->pen_Pen;
+				lua_pop(L, 1);
+			}
 		}
-
-		lua_pop(L, 1);
-		/* s: primitives, coords */
-
-		switch ((fmtcode & 0xf000))
+		
+		for (j = 0; j < (size_t) nump; ++j)
 		{
-			case 0x1000: /* Strip */
-			case 0x4000: /* Triangle */
-				TVisualDrawStrip(vis->vis_Visual, vis->vis_Drawdata.points, nump, tags);
+			lua_Integer idx;
+			lua_rawgeti(L, -2, j + 1);
+			idx = lua_tointeger(L, -1);
+			lua_rawgeti(L, -8, idx * 2 - 1);
+			lua_rawgeti(L, -9, idx * 2);
+			/* index, x, y */
+			coord[j * 2] = rect[0] + sx + 
+				(lua_tointeger(L, -2) * scalex + 0x7fff) / 0x10000;
+			coord[j * 2 + 1] = rect[3] + sy +
+				(lua_tointeger(L, -1) * scaley + 0x7fff) / 0x10000;
+			if (pentab)
+			{
+				lua_rawgeti(L, -7, idx + 1);
+				pentab[j] = ((TEKPen *) checkpenptr(L, -1))->pen_Pen;
+				lua_pop(L, 4);
+			}
+			else
+				lua_pop(L, 3);
+		}
+		
+		switch (fmt & 0xf000)
+		{
+			case 0x1000:
+			case 0x4000:
+				TVisualDrawStrip(vis->vis_Visual, coord, nump, tags);
 				break;
-			case 0x2000: /* Fan */
-				TVisualDrawFan(vis->vis_Visual, vis->vis_Drawdata.points, nump, tags);
-				break;
-			default:
+			case 0x2000:
+				TVisualDrawFan(vis->vis_Visual, coord, nump, tags);
 				break;
 		}
-
-	} /* end for i < primcount */
-
+		
+		lua_pop(L, 5);
+	}
+	
 	lua_pop(L, 2);
-	/* s: */
-
 	return 0;
 }
 
