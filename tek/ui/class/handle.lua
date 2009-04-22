@@ -39,7 +39,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.gadget)
-_VERSION = "Handle 3.2"
+_VERSION = "Handle 3.3"
 
 local Handle = _M
 
@@ -48,6 +48,7 @@ local Handle = _M
 -------------------------------------------------------------------------------
 
 function Handle.init(self)
+	self.AutoPosition = self.AutoPosition ~= nil and self.AutoPosition or false
 	self.Mode = self.Mode or "button"
 	self.MoveMinMax = { }
 	self.Move0 = false

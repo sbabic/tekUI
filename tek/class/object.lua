@@ -168,8 +168,7 @@ end
 --	Object:addNotify(attr, val, dest[, pos]):
 --	Adds a notification to an object. {{attr}} is the name of an attribute to
 --	react on setting its value. {{val}} is the value that triggers the
---	notification. Alternatively, the following placeholders for {{val}}
---	are supported:
+--	notification. The following placeholders for {{val}} are supported:
 --		* {{ui.NOTIFY_ALWAYS}} - to react on any value
 --		* {{ui.NOTIFY_CHANGE}} - to react on any value, but only if it is
 --		different from its prior value
@@ -177,14 +176,13 @@ end
 --	occurs; it has the general form:
 --			{ object, method, arg1, ... }
 --	{{object}} denotes the target of the notification, i.e. the {{self}}
---	that will be passed to the invoked {{method}} as its first argument.
---	Possible placeholders for {{object}} are {{ui.NOTIFY_SELF}},
---	{{ui.NOTIFY_WINDOW}}, {{ui.NOTIFY_APPLICATION}} (see below).
---	{{method}} can be either a string denoting the name of a function in the
---	addressed object, or a function value itself. For passing a function
---	value, however, it must be preceded by the {{ui.NOTIFY_FUNCTION}}
---	placeholder.
---	The following placeholders are supported:
+--	that will be passed to the {{method}} as its first argument.
+--	{{ui.NOTIFY_SELF}} is a placeholder for the object causing the
+--	notification. (See below for the additional placeholders {{ui.NOTIFY_ID}},
+--	{{ui.NOTIFY_WINDOW}}, and {{ui.NOTIFY_APPLICATION}}). {{method}} can be
+--	either a string denoting the name of a function in the addressed object,
+--	or {{ui.NOTIFY_FUNCTION}} followed by a function value. The following
+--	placeholders are supported in the [[Object][#tek.ui.class.object]] class:
 --		* {{ui.NOTIFY_SELF}} - the object causing the notification
 --		* {{ui.NOTIFY_VALUE}} - the value causing the notification
 --		* {{ui.NOTIFY_TOGGLE}} - the logical negation of the value
@@ -192,25 +190,23 @@ end
 --		* {{ui.NOTIFY_FORMAT}} - taking the next argument as a format string
 --		for formatting the value
 --		* {{ui.NOTIFY_FUNCTION}} - to pass a function in the next argument
---	If the value is set in a child of the [[Element][#tek.ui.class.element]]
---	class, the following additional placeholders are supported:
+--	The following additional placeholders are supported if the notification is
+--	triggered in a child of the [[Element][#tek.ui.class.element]] class:
 --		* {{ui.NOTIFY_ID}} - to address the [[Element][#tek.ui.class.element]]
 --		with the Id given in the next argument
 --		* {{ui.NOTIFY_WINDOW}} - to address the
 --		[[Window][#tek.ui.class.window]] the object is connected to
 --		* {{ui.NOTIFY_APPLICATION}} - to address the
 --		[[Application][#tek.ui.class.application]] the object is connected to
---		* {{ui.NOTIFY_COROUTINE}} - to pass the next argument as a function,
---		which will be launched by the
+--		* {{ui.NOTIFY_COROUTINE}} - like {{ui.NOTIFY_FUNCTION}}, but the
+--		function will be launched by the
 --		[[Application][#tek.ui.class.application]] as a coroutine. See also
 --		Application:addCoroutine() for further details.
---
 --	In any case, the {{method}} will be invoked as follows:
 --			method(object, arg1, ...)
 --	The optional {{pos}} argument allows for insertion at the specified
 --	position in the list of notifications. By default, notifications are
 --	added at the end, and the only reasonable value for {{pos}} is {{1}}.
---
 --	If the destination object or addressed method cannot be determined,
 --	nothing else besides setting the attribute will happen.
 --	Notifications should be removed using Object:remNotify() when they are

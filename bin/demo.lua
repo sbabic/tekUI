@@ -489,6 +489,7 @@ app = ui.Application:new
 									VSliderMode = "auto",
 									Child = ui.Canvas:new
 									{
+										AutoPosition = true,
 										KeepMinWidth = true,
 										AutoWidth = true,
 										AutoHeight = true,

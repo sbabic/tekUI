@@ -13,6 +13,12 @@
 --		This class implements an outer margin, layouting and drawing.
 --
 --	ATTRIBUTES::
+--		- {{AutoPosition [IG]}} (boolean)
+--			When the element receives the focus, this flag instructs it to
+--			position itself automatically into the visible area of any Canvas
+--			that may contain it. An affected Canvas must have the
+--			{{AutoPosition}} attribute enabled to take effect, too, but unlike
+--			the Area class, the Canvas class disables it by default.
 --		- {{BGPen [IG]}} (number)
 --			A pen number for painting the background of the element
 --		- {{DamageRegion [G]}} ([[#tek.lib.region : Region]])
@@ -110,6 +116,7 @@
 --		- Area:checkFocus() - Checks if the element can receive the focus
 --		- Area:draw() - Paints the element
 --		- Area:erase() - Erase the element's background
+--		- Area:focusRectangle() - Make the element fully visible in a Canvas
 --		- Area:getElement() - Returns an element's neighbours
 --		- Area:getElementByXY() - Checks if the element covers a coordinate
 --		- Area:getRectangle() - Returns the element's layouted coordinates
@@ -150,7 +157,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 16.0"
+_VERSION = "Area 17.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -173,6 +180,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area.init(self)
+	self.AutoPosition = self.AutoPosition == nil and true or self.AutoPosition
 	self.Background = false
 	self.BGPen = self.BGPen or false
 	self.DamageRegion = false
@@ -675,4 +683,29 @@ function Area:getRectangle()
 	end
 	db.info("Layout not available")
 	return false
+end
+
+-------------------------------------------------------------------------------
+--	Area:focusRectangle([x0, y0, x1, y1]): Tries to shift any Canvas
+--	containing the element into a position that makes the element fully
+--	visible. Optionally, a rectangle can be specified that is to be made
+--	visible.
+-------------------------------------------------------------------------------
+
+function Area:focusRectangle(r1, r2, r3, r4)
+	if not r1 then
+		r1, r2, r3, r4 = self:getRectangle()
+		if not r1 then
+			return
+		end
+		local m = self.MarginAndBorder
+		r1 = r1 - m[1]
+		r2 = r2 - m[2]
+		r3 = r3 + m[3]
+		r4 = r4 + m[4]
+	end
+	local parent = self:getElement("parent")
+	if parent then
+		parent:focusRectangle(r1, r2, r3, r4)
+	end
 end

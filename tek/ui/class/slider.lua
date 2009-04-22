@@ -20,26 +20,28 @@
 --
 --	ATTRIBUTES::
 --		- {{AutoFocus [IG]}} (boolean)
---			If '''true''', the slider reacts on keyboard shortcuts instantly
---			for moving the knob; if '''false''', it must be selected first.
+--			If '''true''' and the slider is receiving the focus, it reacts
+--			on keyboard shortcuts instantly; otherwise, it must be selected
+--			first (and deselected afterwards). Default: '''false'''
 --		- {{Child [IG]}} ([[#tek.ui.class.gadget : Gadget]])
---			A gadget for being used as the slider's knob. By default,
---			an internal knob gadget is used.
+--			A Gadget object for being used as the slider's knob. By default,
+--			a knob gadget of the style class {{"knob"}} is created internally.
 --		- {{Integer [IG]}} (boolean)
 --			If '''true''', integer steps are enforced. By default, the
---			slider moves continuously.
---		- {{Orientation [IG]}} (string)
---			Orientation of the slider, which can be "horizontal" or
---			"vertical". [Default: "horizontal"]
---		- {{Range [ISG]}} (number)
---			The range of the slider, i.e. the size it represents. Setting
---			this value invokes the Slider:onSetRange() method.
+--			slider knob moves continuously.
 --		- {{Kind [IG]}} (string)
 --			Kind of the slider:
---				- "scrollbar" - for scrollbars
---				- "number" - for adjusting numbers
---				- "normal" - unspecified
---			Default: "normal"
+--				- {{"scrollbar"}} - for scrollbars. Sets the additional
+--				style class {{"knob-scrollbar"}}.
+--				- {{"number"}} - for adjusting numbers. Sets the additional
+--				style class {{"knob-number"}}.
+--			Default: '''false''', the kind is unspecified.
+--		- {{Orientation [IG]}} (string)
+--			Orientation of the slider, which can be {{"horizontal"}} or
+--			{{"vertical"}}. Default: {{"horizontal"}}
+--		- {{Range [ISG]}} (number)
+--			The size of the slider, i.e. the range that it represents.
+--			Setting this value invokes the Slider:onSetRange() method.
 --
 --	IMPLEMENTS::
 --		- Slider:onSetRange() - Handler for the {{Range}} attribute
@@ -74,7 +76,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 8.0"
+_VERSION = "Slider 8.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -89,20 +91,21 @@ local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 local Slider = _M
 
 function Slider.init(self)
-	self.AutoFocus = self.AutoFocus == nil and true or self.AutoFocus
-	self.Captured = false
-	self.ClickDirection = false
+	self.AutoPosition = self.AutoPosition ~= nil and self.AutoPosition or false
+	self.AutoFocus = self.AutoFocus ~= nil and self.AutoFocus or false
 	self.Integer = self.Integer or false
-	self.HoldXY = { }
-	self.Mode = "button"
-	self.Move0 = false
-	self.Orientation = self.Orientation or "horizontal"
-	self.Pos0 = 0
-	self.Range = self.Range or false
 	self.Kind = self.Kind or false
+	self.Orientation = self.Orientation or "horizontal"
+	self.Range = self.Range or false
+	self.Captured = false
 	self.Child = self.Child or Gadget:new {
 		Class = "knob knob-" .. (self.Kind or "normal")
 	}
+	self.ClickDirection = false
+	self.HoldXY = { }
+	self.Mode = "button"
+	self.Move0 = false
+	self.Pos0 = 0
 	self = Numeric.init(self)
 	self.Range = max(self.Max, self.Range or self.Max)
 	return self
@@ -462,22 +465,16 @@ function Slider:handleInput(msg)
 			self:setCapture(false)
 			return false
 		end
-		if self.Orientation == "horizontal" then
-			if msg[3] == 0xf010 then -- left
-				self:decrease()
-				return false
-			elseif msg[3] == 0xf011 then -- right
-				self:increase()
-				return false
-			end
-		else
-			if msg[3] == 0xf012 then -- up
-				self:decrease()
-				return false
-			elseif msg[3] == 0xf013 then -- down
-				self:increase()
-				return false
-			end
+		local na = not self.AutoFocus
+		local h = self.Orientation == "horizontal"
+		if msg[3] == 0xf010 and (na or h) or 
+			msg[3] == 0xf012 and (na or not h) then
+			self:decrease()
+			return false
+		elseif msg[3] == 0xf011 and (na or h) or
+			msg[3] == 0xf013 and (na or not h) then
+			self:increase()
+			return false
 		end
 	end
 	return msg
@@ -509,7 +506,7 @@ function Slider:onSelect(selected)
 end
 
 -------------------------------------------------------------------------------
---	setCapture(onoff): Sets the element's capture mode. If captured,
+--	setCapture: [internal] Sets the element's capture mode. If captured,
 --	keyboard shortcuts can be used to adjust the slider's knob.
 -------------------------------------------------------------------------------
 
@@ -520,4 +517,17 @@ function Slider:setCapture(onoff)
 		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
 	end
 	self.Captured = onoff
+	self:setState()
 end
+
+-------------------------------------------------------------------------------
+--	setState: overrides
+-------------------------------------------------------------------------------
+
+function Slider:setState(bg, fg)
+	if not bg and self.Captured then
+		bg = self.BGPenSelected
+	end
+	Gadget.setState(self, bg)
+end
+

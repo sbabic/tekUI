@@ -16,48 +16,47 @@
 --		Window
 --
 --	OVERVIEW::
---		This class implements a window on the Display.
+--		This class implements a [[#tek.ui.class.group : Group]] which is
+--		rooted in a window on the [[#tek.ui.class.display : Display]].
 --
 --	ATTRIBUTES::
 --		- {{Center [IG]}} (boolean)
---			Instructs the Window to open centered on the Display.
+--			Instructs the Window to open centered.
 --		- {{DblClickJitter [IG]}} (number)
 --			Maximum sum of squared pixel differences (dx² + dy²) between
---			mouse positions to be tolerated as a double click. The default
---			is 70. Large touchscreens require much larger values, e.g. 3000.
+--			mouse positions to be tolerated for a double click.
+--			The default is 70. Large touchscreens require a much larger value.
 --		- {{DblClickTimeout [IG]}} (number)
---			Maximum number of microseconds between events to be recognized
---			as a double click. Default: 32000. Use a larger value for
+--			Maximum number of microseconds between events to be recognized as
+--			a double click. Default: 32000. Use a larger value for
 --			touchscreens.
 --		- {{FullScreen [IG]}} (boolean)
 --			Instructs the Window to open borderless and in full screen mode.
---			(This however may be in conflict with the {{MaxWidth}},
---			{{MinWidth}} attributes.)
 --		- {{HideOnEscape [IG]}} (boolean)
---			Instructs the window that it should invoke the {{onHide()}}
---			method when the Escape key is pressed. Default: '''false'''
+--			Instructs the window to invoke the Window:onHide() method
+--			when the Escape key is pressed. Default: '''false'''
 --		- {{Left [IG]}} (number)
---			The window's left offset in pixels on the display
+--			The window's left offset on the display, in pixels
 --		- {{Modal [IG]}} (boolean)
 --			Instructs all other windows to reject input while this window is
 --			open.
 --		- {{MouseX [G]}}, {{MouseY [G]}} (number)
 --			The current screen coordinates of the pointing device.
 --		- {{Status [ISG]}} (string)
---			Status of the Window, can be:
+--			Status of the Window, which can be:
 --				- {{"initializing"}} - The window is initializing
---				- {{"hide"}} - The window is hidden or about to be hidden;
---				if you initialize the attribute with this value, the Window
---				will be created in hidden state.
+--				- {{"hide"}} - The window is hidden or about to hide;
+--				if you initialize the Window with this value, it will be
+--				created in hidden state.
 --				- {{"opening"}} - The window is about to open.
---				- {{"show"}} - The window is open.
+--				- {{"show"}} - The window is shown.
 --				- {{"closing"}} - The Window is about to hide.
 --			Changing this attribute invokes the Window:onChangeStatus()
 --			method.
 --		- {{Title [IG]}} (string)
---			The window's title.
+--			The window's title
 --		- {{Top [IG]}} (number)
---			The window's top offset in pixels on the display
+--			The window's top offset on the display, in pixels
 --
 --	IMPLEMENTS::
 --		- Window:addInputHandler() - Adds an input handler to the window

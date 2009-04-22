@@ -21,6 +21,7 @@ ui.Application:new
 					VSliderMode = "on",
 					Child = ui.Canvas:new
 					{
+						AutoPosition = true,
 						MaxWidth = 500,
 						MaxHeight = 500,
 						CanvasWidth = 500,
@@ -42,6 +43,7 @@ ui.Application:new
 									VSliderMode = "on",
 									Child = ui.Canvas:new
 									{
+										AutoPosition = true,
 										CanvasWidth = 500,
 										CanvasHeight = 500,
 										Child = ui.Group:new
@@ -61,6 +63,7 @@ ui.Application:new
 													VSliderMode = "on",
 													Child = ui.Canvas:new
 													{
+														AutoPosition = true,
 														CanvasWidth = 500,
 														CanvasHeight = 500,
 														Child = ui.Group:new

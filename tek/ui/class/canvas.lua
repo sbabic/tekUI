@@ -19,6 +19,8 @@
 --		by the [[#tek.ui.class.scrollgroup : ScrollGroup]] class.
 --
 --	ATTRIBUTES::
+--		- {{AutoPosition [IG]}} (boolean)
+--			See [[#tek.ui.class.area : Area]]
 --		- {{AutoHeight [IG]}} (boolean)
 --			The height of the canvas is automatically adapted to the height
 --			the canvas is layouted into. [Default: '''false''']
@@ -57,6 +59,7 @@
 --		- Element:connect()
 --		- Element:disconnect()
 --		- Area:draw()
+--		- Area:focusRectangle()
 --		- Area:getElement()
 --		- Area:getElementByXY()
 --		- Area:hide()
@@ -85,7 +88,7 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 12.0"
+_VERSION = "Canvas 12.1"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -100,6 +103,7 @@ local NOTIFY_CHILD = { ui.NOTIFY_SELF, "onSetChild", ui.NOTIFY_VALUE,
 -------------------------------------------------------------------------------
 
 function Canvas.init(self)
+	self.AutoPosition = self.AutoPosition ~= nil and self.AutoPosition or false
 	self.AutoHeight = self.AutoHeight or false
 	self.AutoWidth = self.AutoWidth or false
 	self.CanvasHeight = self.CanvasHeight or 0
@@ -485,5 +489,58 @@ function Canvas:onSetChild(child, oldchild)
 		if child:connect(self) then
 			self:rethinkLayout(2)
 		end
+	end
+end
+
+-------------------------------------------------------------------------------
+--	focusRect - overrides
+-------------------------------------------------------------------------------
+
+function Canvas:focusRectangle(x0, y0, x1, y1)
+	
+	local r = self.Rect
+	local vw = r[3] - r[1]
+	local vh = r[4] - r[2]
+	local vx0 = self.CanvasLeft
+	local vy0 = self.CanvasTop
+	local vx1 = vx0 + vw
+	local vy1 = vy0 + vh
+		
+	if x0 and self.AutoPosition then
+		local n1, n2, n3, n4 = overlap(x0, y0, x1, y1, vx0, vy0, vx1, vy1)
+		if n1 == x0 and n2 == y0 and n3 == x1 and n4 == y1 then
+			return
+		end
+		
+		if y1 > vy1 then
+			vy1 = y1
+			vy0 = vy1 - vh
+		end	
+		if y0 < vy0 then
+			vy0 = y0
+			vy1 = vy0 + vh
+		end
+		if x1 > vx1 then
+			vx1 = x1
+			vx0 = vx1 - vw
+		end	
+		if x0 < vx0 then
+			vx0 = x0
+			vx1 = vx0 + vw
+		end
+		
+		self:setValue("CanvasLeft", vx0)
+		self:setValue("CanvasTop", vy0)
+		
+		vx0 = x0
+		vy0 = y0
+		vx1 = x1
+		vy1 = y1
+	end
+		
+	local parent = self:getElement("parent")
+	if parent then
+		parent:focusRectangle(r[1] + vx0, r[2] + vy0, r[3] + vx1,
+			r[4] + vy1)
 	end
 end

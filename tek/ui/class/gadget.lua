@@ -119,7 +119,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 11.0"
+_VERSION = "Gadget 11.1"
 
 local Gadget = _M
 
@@ -487,6 +487,9 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:onFocus(focused)
+	if focused and self.AutoPosition then
+		self:focusRectangle()
+	end
 	self.Window:setFocusElement(focused and self)
 	self.RedrawBorder = true
 	self:setState()

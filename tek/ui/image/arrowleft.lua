@@ -1,3 +1,12 @@
+-------------------------------------------------------------------------------
+--
+--	tek.ui.image.arrowleft
+--	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+--	See copyright notice in COPYRIGHT
+--
+--	Version 1.0
+--
+-------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
 local VectorImage = ui.VectorImage

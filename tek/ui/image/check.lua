@@ -1,3 +1,12 @@
+-------------------------------------------------------------------------------
+--
+--	tek.ui.image.check
+--	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+--	See copyright notice in COPYRIGHT
+--
+--	Version 1.0
+--
+-------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
 local VectorImage = ui.VectorImage
@@ -11,14 +20,15 @@ local coords =
 	0x8000, 0x5555,
 	0xeaaa, 0xc000,
 	0xd555, 0xd555,
-	0x1555, 0xeaaa,
+	0x0000, 0xffff,
 	0x2aaa, 0xd555,
-	0xeaaa, 0xeaaa,
+	0xffff, 0xffff,
 	0xd555, 0xd555,
-	0xeaaa, 0x1555,
+	0xffff, 0x0000,
 	0xd555, 0x2aaa,
-	0x1555, 0x1555,
+	0x0000, 0x0000,
 	0x2aaa, 0x2aaa,
+	
 }
 
 local points1 = { 1,2,3,4,5,6 }
