@@ -82,7 +82,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 19.0"
+_VERSION = "tekUI 19.1"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -183,11 +183,13 @@ end
 --	class of the given {{domain}} and {{classname}}, instantiates it
 --	(optionally passing it {{object}} for initialization), connects it to
 --	the specified {{parent}} element, and initializes it using its
---	{{setup()}} method. Refer also to loadClass() for further details.
+--	{{setup()}} method. If {{name}} is the pre-defined name {{"none"}},
+--	this function returns '''false'''. Refer also to loadClass() for
+--	further details.
 -------------------------------------------------------------------------------
 
 function createHook(domain, name, parent, object)
-	local child = loadClass(domain, name)
+	local child = name ~= "none" and loadClass(domain, name)
 	if child then
 		local app = parent.Application
 		child = child:new(object or { })

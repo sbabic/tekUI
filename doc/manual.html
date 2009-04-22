@@ -1479,7 +1479,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v19.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1625,7 +1625,9 @@ ui.Application:new { ...
 				class of the given <code>domain</code> and <code>classname</code>, instantiates it
 				(optionally passing it <code>object</code> for initialization), connects it to
 				the specified <code>parent</code> element, and initializes it using its
-				<code>setup()</code> method. Refer also to <a href="#loadClass"><code>loadClass()</code></a> for further details.
+				<code>setup()</code> method. If <code>name</code> is the pre-defined name <code>&quot;none&quot;</code>,
+				this function returns <strong>false</strong>. Refer also to <a href="#loadClass"><code>loadClass()</code></a> for
+				further details.
 			</p>
 			<hr />
 		</div>
@@ -7275,7 +7277,7 @@ message = function(object, message)
 			</p>
 			<hr />
 			<p>
-				Document generated on Wed Apr 22 02:05:29 2009
+				Document generated on Wed Apr 22 02:45:00 2009
 			</p>
 		</div>
 	</body>
