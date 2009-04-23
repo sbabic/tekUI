@@ -50,7 +50,7 @@ local type = type
 local unpack = unpack
 
 module "tek.lib.debug"
-_VERSION = "Debug 4.2"
+_VERSION = "Debug 4.3"
 
 -- symbolic:
 

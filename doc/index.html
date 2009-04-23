@@ -45,19 +45,22 @@
 								2.1. <a href="#features">Selected features</a> 
 							</li>
 							<li style="list-style-type: none">
-								2.2. <a href="#plans">Plans for development and deployment</a> 
+								2.2. <a href="#uielements">Supported user interface elements</a> 
 							</li>
 							<li style="list-style-type: none">
-								2.3. <a href="#themes">Themes</a> 
+								2.3. <a href="#plans">Development and deployment</a> 
 							</li>
 							<li style="list-style-type: none">
-								2.4. <a href="#clibrary">C library</a> 
+								2.4. <a href="#themes">Themes</a> 
 							</li>
 							<li style="list-style-type: none">
-								2.5. <a href="#objectmodel">Lua, C and object model</a> 
+								2.5. <a href="#clibrary">C library</a> 
 							</li>
 							<li style="list-style-type: none">
-								2.6. <a href="#documentation">Documentation system</a> 
+								2.6. <a href="#objectmodel">Lua, C and object model</a> 
+							</li>
+							<li style="list-style-type: none">
+								2.7. <a href="#documentation">Documentation system</a> 
 							</li>
 						</ul>
 					</blockquote>
@@ -343,7 +346,7 @@
 				</ul>
 			</blockquote>
 		</div>
-		<div class="node"><h2><a name="plans" id="plans">2.3. Plans for development and deployment</a></h2>
+		<div class="node"><h2><a name="plans" id="plans">2.3. Development and deployment</a></h2>
 			<p>
 				The only language currently supported for writing applications in is
 				Lua, and application programmers will have to use existing Lua
@@ -626,7 +629,6 @@
 				The GUI version of the &quot;Hello, World!&quot; program:
 			</p>
 <pre>
-#/usr/bin/env lua
 ui = require &quot;tek.ui&quot;
 ui.Application:new
 {
@@ -639,7 +641,7 @@ ui.Application:new
       {
         ui.Text:new
         {
-          Text = &quot;_Hello, World!&quot;,
+          Text = &quot;Hello, World!&quot;,
           Class = &quot;button&quot;,
           Mode = &quot;button&quot;,
         },
@@ -662,10 +664,7 @@ ui.Application:new
 				Note that a button class is not needed: a button is just a Text
 				element behaving like a button with a frame giving it the appearance
 				of a button. (We will later explain how you can write a button class
-				yourself, to save you some typing.) Also note that by placing an
-				underscore in front of a letter in its caption, we are creating a
-				keyboard shortcut for the <a href="manual.html#tek.ui.class.text">Text</a> 
-				element.
+				yourself, to save you some typing.)
 			</p>
 			<p>
 				To quit, click the window's close button. Closing the
@@ -684,7 +683,6 @@ ui.Application:new
 				getting released:
 			</p>
 <pre>
-#/usr/bin/env lua
 ui = require &quot;tek.ui&quot;
 ui.Application:new
 {
@@ -697,7 +695,7 @@ ui.Application:new
       {
         ui.Text:new
         {
-          Text = &quot;_Hello, World!&quot;,
+          Text = &quot;Hello, World!&quot;,
           Class = &quot;button&quot;,
           Mode = &quot;button&quot;,
           onPress = function(self, pressed)
@@ -755,11 +753,11 @@ ui.Text:new
 				example:
 			</p>
 <pre>
-#/usr/bin/env lua
 ui = require &quot;tek.ui&quot;
 app = ui.Application:new()
-win = ui.Window:new { Title = &quot;Hello&quot; }
+win = ui.Window:new { Title = &quot;Hello&quot;, HideOnEscape = true }
 text = ui.Text:new {
+  KeyCode = true,
   Text = &quot;_Hello, World!&quot;,
   Class = &quot;button&quot;,
   Mode = &quot;button&quot;
@@ -771,10 +769,16 @@ text:addNotify(&quot;Pressed&quot;, false, {
     print &quot;Hello, World!&quot;
   end
 })
-win:addMember(text)
 app:addMember(win)
+win:addMember(text)
 app:run()
 </pre>
+			<p>
+				In this example we have also set the <code>HideOnEscape</code> flag for the
+				application to quit on pressing the Escape key, and the <code>KeyCode</code> 
+				attribute, so that by placing an underscore in front of a letter in
+				its caption, a shortcut for the element is created automatically.
+			</p>
 			<p>
 				See also <a href="manual.html#Object:addNotify">Object:addNotify</a> for
 				all the hairy details on notification handlers, and the

@@ -252,11 +252,6 @@ static TBOOL orrect(TAPTR exec, struct TList *list, TINT s[4])
 
 static int lib_new(lua_State *L)
 {
-	TINT x0 = luaL_checkinteger(L, 1);
-	TINT y0 = luaL_checkinteger(L, 2);
-	TINT x1 = luaL_checkinteger(L, 3);
-	TINT y1 = luaL_checkinteger(L, 4);
-
 	struct Region *region = lua_newuserdata(L, sizeof(struct Region));
 	/* s: udata */
 
@@ -275,9 +270,18 @@ static int lib_new(lua_State *L)
 	lua_setmetatable(L, -2);
 	/* s: udata */
 
-	if (insertrect(region->rg_ExecBase, &region->rg_List,
-		x0, y0, x1, y1) == TFALSE)
-		luaL_error(L, "out of memory");
+	if (lua_gettop(L) == 5)
+	{
+		TINT x0 = luaL_checkinteger(L, 1);
+		TINT y0 = luaL_checkinteger(L, 2);
+		TINT x1 = luaL_checkinteger(L, 3);
+		TINT y1 = luaL_checkinteger(L, 4);
+		if (insertrect(region->rg_ExecBase, &region->rg_List,
+			x0, y0, x1, y1) == TFALSE)
+			luaL_error(L, "out of memory");
+	}
+	else if (lua_gettop(L) != 1)
+		luaL_error(L, "wrong number of arguments");
 
 	return 1;
 }

@@ -22,14 +22,14 @@
 --			the position of the mouse pointer is being verified (which is also
 --			reflected by the {{Hover}} attribute). When the {{Active}} state
 --			changes, the Gadget's behavior depends on its {{Mode}} attribute:
---				* in "button" mode, the {{Selected}} attribute is set to
+--				* in {{"button"}} mode, the {{Selected}} attribute is set to
 --				the value of the {{Hover}} attribute. The {{Pressed}} attribute
 --				is set to the value of the {{Active}} attribute, if it caused a
 --				change of the {{Selected}} state.
---				* in "toggle" mode, the {{Selected}} attribute of the
+--				* in {{"toggle"}} mode, the {{Selected}} attribute of the
 --				Gadget is logically toggled, and the {{Pressed}} attribute is
 --				set to '''true'''.
---				* in "touch" mode, the {{Selected}} and {{Pressed}}
+--				* in {{"touch"}} mode, the {{Selected}} and {{Pressed}}
 --				attributes are set to '''true''', if the Gadget wasn't selected
 --				already.
 --			Changing this attribute invokes the Gadget:onActivate() method.

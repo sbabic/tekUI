@@ -87,11 +87,12 @@ local floor = math.floor
 local insert = table.insert
 local ipairs = ipairs
 local max = math.max
+local min = math.min
 local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 14.4"
+_VERSION = "Text 15.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -183,22 +184,29 @@ function Text:hide()
 end
 
 -------------------------------------------------------------------------------
---	width, height = getTextSize([textrecord]): This function calculates the
---	total space occupied by the object's text records. Optionally, the user
---	can pass a table of text records which are to be evaluated.
+--	width, height = getTextSize([textrecord]): This function calculates
+--	the total space occupied by the object's text records. Optionally, the
+--	user can pass a table of text records which are to be evaluated.
 -------------------------------------------------------------------------------
 
 function Text:getTextSize(tr)
 	tr = tr or self.TextRecords
 	local totw, toth = 0, 0
+	local x, y
 	if tr then
 		for _, tr in ipairs(tr) do
 			local tw, th = tr[9], tr[10]
 			totw = max(totw, tw + tr[5] + tr[7])
 			toth = max(toth, th + tr[6] + tr[8])
+			if tr[15] then
+				x = min(x or 1000000, tr[15])
+			end
+			if tr[16] then
+				y = min(y or 1000000, tr[16])
+			end
 		end
 	end
-	return totw, toth
+	return totw, toth, x, y
 end
 
 -------------------------------------------------------------------------------

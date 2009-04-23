@@ -10,11 +10,12 @@
 
  - 2. [[#overview : Technical overview]]
   - 2.1. [[#features : Selected features]]
-  - 2.2. [[#plans : Plans for development and deployment]]
-  - 2.3. [[#themes : Themes]]
-  - 2.4. [[#clibrary : C library]]
-  - 2.5. [[#objectmodel : Lua, C and object model]]
-  - 2.6. [[#documentation : Documentation system]]
+  - 2.2. [[#uielements : Supported user interface elements]]
+  - 2.3. [[#plans : Development and deployment]]
+  - 2.4. [[#themes : Themes]]
+  - 2.5. [[#clibrary : C library]]
+  - 2.6. [[#objectmodel : Lua, C and object model]]
+  - 2.7. [[#documentation : Documentation system]]
 
  - 3. [[#buildinstall : Building and installing]]
   - 3.1. [[#requirements : Requirements]]
@@ -154,7 +155,7 @@ stable yet, so be prepared for structural and API changes.
  * Text gadget (and label), also multi-line
  * Text input (single line)
 
-==( plans : 2.3. Plans for development and deployment )==
+==( plans : 2.3. Development and deployment )==
 
 The only language currently supported for writing applications in is
 Lua, and application programmers will have to use existing Lua
@@ -352,7 +353,6 @@ conveniently invoked with
 
 The GUI version of the "Hello, World!" program:
 
-  #/usr/bin/env lua
   ui = require "tek.ui"
   ui.Application:new
   {
@@ -365,7 +365,7 @@ The GUI version of the "Hello, World!" program:
         {
           ui.Text:new
           {
-            Text = "_Hello, World!",
+            Text = "Hello, World!",
             Class = "button",
             Mode = "button",
           },
@@ -386,10 +386,7 @@ time, it will be loaded from {{tek/ui/class/}} in the file system.
 Note that a button class is not needed: a button is just a Text
 element behaving like a button with a frame giving it the appearance
 of a button. (We will later explain how you can write a button class
-yourself, to save you some typing.) Also note that by placing an
-underscore in front of a letter in its caption, we are creating a
-keyboard shortcut for the [[manual.html#tek.ui.class.text : Text]]
-element.
+yourself, to save you some typing.)
 
 To quit, click the window's close button. Closing the
 [[manual.html#tek.ui.class.application : Application]]'s last
@@ -405,7 +402,6 @@ to '''true''' when a [[manual.html#tek.ui.class.gadget : Gadget]]
 is hit with the left mouse button, and to '''false''' when it is 
 getting released:
 
-  #/usr/bin/env lua
   ui = require "tek.ui"
   ui.Application:new
   {
@@ -418,7 +414,7 @@ getting released:
         {
           ui.Text:new
           {
-            Text = "_Hello, World!",
+            Text = "Hello, World!",
             Class = "button",
             Mode = "button",
             onPress = function(self, pressed)
@@ -471,11 +467,11 @@ are easily getting in the way of clarity. Notification handlers are
 commonly added using the {{addNotify()}} method, as shown in the next
 example:
 
-  #/usr/bin/env lua
   ui = require "tek.ui"
   app = ui.Application:new()
-  win = ui.Window:new { Title = "Hello" }
+  win = ui.Window:new { Title = "Hello", HideOnEscape = true }
   text = ui.Text:new {
+    KeyCode = true,
     Text = "_Hello, World!",
     Class = "button",
     Mode = "button"
@@ -487,9 +483,14 @@ example:
       print "Hello, World!"
     end
   })
-  win:addMember(text)
   app:addMember(win)
+  win:addMember(text)
   app:run()
+
+In this example we have also set the {{HideOnEscape}} flag for the
+application to quit on pressing the Escape key, and the {{KeyCode}}
+attribute, so that by placing an underscore in front of a letter in
+its caption, a shortcut for the element is created automatically.
 
 See also [[Object:addNotify][manual.html#Object:addNotify]] for
 all the hairy details on notification handlers, and the
