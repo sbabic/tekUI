@@ -31,7 +31,7 @@ local min = math.min
 local remove = table.remove
 
 module("tek.class.list", tek.class)
-_VERSION = "List 3.0"
+_VERSION = "List 3.1"
 local List = _M
 
 -------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ end
 --	position in the list. Returns '''true''' if an item was changed.
 -------------------------------------------------------------------------------
 
-function List:changeItem(entry, pos)
+function List:changeItem(entry, lnr)
 	local numl = self:getN()
 	if lnr > 0 and lnr <= numl then
 		self.Items[lnr] = entry

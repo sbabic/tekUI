@@ -108,7 +108,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 15.0"
+_VERSION = "Application 15.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -156,7 +156,7 @@ function Application.init(self)
 	self.Author = self.Author or "unknown"
 	self.Copyright = self.Copyright or "unknown"
 	self.Coroutines = { }
-	self.Display = false
+	self.Display = self.Display or false
 	self.ElementById = { }
 	self.InputHandlers = { [MSG_USER] = { } }
 	self.ModalWindows = { } -- stack of

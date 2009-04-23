@@ -13,7 +13,7 @@
 --	10 || ERROR || something went wrong, e.g. resource unavailable
 --	20 || FAIL  || something went wrong that can't be coped with
 --
---	The default debug level is 10 {{ERROR}}. To set the debug level
+--	The default debug level is 5 {{WARN}}. To set the debug level
 --	globally, e.g.:
 --			db = require "tek.lib.debug"
 --			db.level = db.INFO
@@ -62,7 +62,7 @@ FAIL = 20
 
 -- global defaults:
 
-level = ERROR
+level = WARN
 out = stderr
 wrout = function(...) out:write(...) end
 

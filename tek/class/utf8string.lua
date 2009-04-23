@@ -40,9 +40,10 @@ local schar = string.char
 local select = select
 local tostring = tostring
 local type = type
+local unpack = unpack
 
 module("tek.class.utf8string", tek.class)
-_VERSION = "UTF8String 2.0"
+_VERSION = "UTF8String 2.1"
 
 local UTF8String = _M
 
@@ -191,7 +192,7 @@ end
 -------------------------------------------------------------------------------
 
 function UTF8String.new(class, s)
-	return Class.new(class, set({ }, s))
+	return Class.new(class, class.set({ }, s))
 end
 
 -------------------------------------------------------------------------------
@@ -216,11 +217,15 @@ function UTF8String:insert(s, pos)
 	self[1] = false
 end
 
-function __tostring(self)
+-------------------------------------------------------------------------------
+--	string = UTF8String:get(): Return the string in UTF-8 encoded form.
+-------------------------------------------------------------------------------
+
+function UTF8String:get()
 	if not self[1] then
 		local t = { }
 		for i, c in ipairs(self[2]) do
-			tinsert(t, char(c))
+			tinsert(t, self.char(c))
 		end
 		self[1] = concat(t)
 	end
@@ -228,17 +233,17 @@ function __tostring(self)
 end
 
 -------------------------------------------------------------------------------
---	string = UTF8String:get(): Return the string in UTF-8 encoded form.
+--	these metamethods work only in non-proxied mode:
 -------------------------------------------------------------------------------
 
-get = __tostring
-
-function __concat(self, s)
-	if type(self) == "string" then
-		return self .. tostring(s)
-	end
-	return __tostring(self) .. tostring(s)
-end
+-- UTF8String.__tostring = UTF8String.get
+-- 
+-- function UTF8String:__concat(s)
+-- 	if type(self) == "string" then
+-- 		return self .. tostring(s)
+-- 	end
+-- 	return self:get() .. tostring(s)
+-- end
 
 -------------------------------------------------------------------------------
 --	len = UTF8String:len(): Return the length of the string, in characters.
@@ -277,7 +282,7 @@ function UTF8String:sub(p0, p1)
 	if p0 then
 		local tb = self[2]
 		for i = p0, p1 do
-			tinsert(t, char(tb[i]))
+			tinsert(t, self.char(tb[i]))
 		end
 	end
 	return concat(t)

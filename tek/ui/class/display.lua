@@ -65,6 +65,10 @@
 --		- {{rgb-group}}
 --		- {{rgb-cursor}}
 --		- {{rgb-cursor-detail}}
+--		- {{rgb-user1}}
+--		- {{rgb-user2}}
+--		- {{rgb-user3}}
+--		- {{rgb-user4}}
 --
 --	OVERRIDES::
 --		- Class.new()
@@ -82,7 +86,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 10.0"
+_VERSION = "Display 11.0"
 
 -------------------------------------------------------------------------------
 --	Class data and constants:
@@ -159,6 +163,10 @@ local ColorDefaults =
 	{ "shine", DEF_RGB_SHINE },
 	{ "half-shadow", DEF_RGB_HALFSHADOW },
 	{ "half-shine", DEF_RGB_HALFSHINE },
+	{ "user1", DEF_RGB_DETAIL },
+	{ "user2", DEF_RGB_DETAIL },
+	{ "user3", DEF_RGB_DETAIL },
+	{ "user4", DEF_RGB_DETAIL },
 }
 
 local FontDefaults =
