@@ -33,7 +33,7 @@ local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 1.7"
+_VERSION = "PopupWindow 1.8"
 
 local PopupWindow = _M
 
@@ -66,7 +66,8 @@ function PopupWindow:show(display)
 			local maxw = 0
 			for _, e in ipairs(self.Children) do
 				if e:checkDescend(miclass) then
-					maxw = max(maxw, e:getTextSize())
+					local w = e:getTextSize()
+					maxw = max(maxw, w)
 				end
 			end
 			for _, e in ipairs(self.Children) do
