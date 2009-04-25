@@ -157,7 +157,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 17.0"
+_VERSION = "Area 17.1"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -221,10 +221,10 @@ function Area:getProperties(p, pclass)
 	self.Height = self.Height or self:getProperty(p, pclass, "height")
 
 	local m = self.Margin
-	m[1] = m[1] or tonumber(self:getProperty(p, pclass, "margin-left"))
-	m[2] = m[2] or tonumber(self:getProperty(p, pclass, "margin-top"))
-	m[3] = m[3] or tonumber(self:getProperty(p, pclass, "margin-right"))
-	m[4] = m[4] or tonumber(self:getProperty(p, pclass, "margin-bottom"))
+	m[1] = m[1] or self:getNumProperty(p, pclass, "margin-left")
+	m[2] = m[2] or self:getNumProperty(p, pclass, "margin-top")
+	m[3] = m[3] or self:getNumProperty(p, pclass, "margin-right")
+	m[4] = m[4] or self:getNumProperty(p, pclass, "margin-bottom")
 
 	self.MaxHeight = self.MaxHeight or
 		self:getProperty(p, pclass, "max-height")
@@ -234,10 +234,10 @@ function Area:getProperties(p, pclass)
 	self.MinWidth = self.MinWidth or self:getProperty(p, pclass, "min-width")
 
 	local q = self.Padding
-	q[1] = q[1] or tonumber(self:getProperty(p, pclass, "padding-left"))
-	q[2] = q[2] or tonumber(self:getProperty(p, pclass, "padding-top"))
-	q[3] = q[3] or tonumber(self:getProperty(p, pclass, "padding-right"))
-	q[4] = q[4] or tonumber(self:getProperty(p, pclass, "padding-bottom"))
+	q[1] = q[1] or self:getNumProperty(p, pclass, "padding-left")
+	q[2] = q[2] or self:getNumProperty(p, pclass, "padding-top")
+	q[3] = q[3] or self:getNumProperty(p, pclass, "padding-right")
+	q[4] = q[4] or self:getNumProperty(p, pclass, "padding-bottom")
 
 	Element.getProperties(self, p, pclass)
 end

@@ -47,10 +47,11 @@ local remove = table.remove
 local min = math.min
 local max = math.max
 local overlap = Region.overlapCoords
+local setmetatable = setmetatable
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 12.2"
+_VERSION = "Drawable 12.4"
 
 DEBUG_DELAY = 3
 
@@ -64,7 +65,7 @@ function Drawable.init(self)
 	assert(self.Display)
 	self.Interval = false
 	self.Visual = false
-	self.Pens = { }
+	self.Pens = false
 	self.Left = false
 	self.Top = false
 	self.Width = false
@@ -111,7 +112,27 @@ function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
 		}
 		self.DebugPen1 = self.Visual:allocpen(255, 255, 0)
 		self.DebugPen2 = self.Visual:allocpen(0, 0, 0)
-		self.Display:allocPens(self.Visual, self.Pens)
+		
+		self.Pens = { }
+		
+		-- Attach metatable for late pen allocation:
+		setmetatable(self.Pens, {
+			__index = function(tab, key)
+				local pen = self.Visual:allocpen(
+					self.Display:colorNameToRGB(key, "#ff00ff"))
+				tab[key] = pen
+				return pen
+			end
+		})
+		
+		-- Allocate standard pens:
+		for i = 1, ui.PEN_NUMBER do
+			local name, r, g, b = self.Display:getPaletteEntry(i)
+			local pen = self.Visual:allocpen(r, g, b)
+			self.Pens[name] = pen
+			self.Pens[i] = pen
+		end
+		
 		return true
 	end
 end
@@ -121,6 +142,7 @@ function Drawable:close()
 		self:getAttrs()
 		self.Visual:close()
 		self.Visual = false
+		self.Pens = false
 		return true
 	end
 end

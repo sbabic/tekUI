@@ -142,9 +142,10 @@ end
 --	Application:
 -------------------------------------------------------------------------------
 
-print "This example visualizes sets of 256 16bit numbers, coming in via stdin."
-print "The X11 driver supports the conversion of stdin into input messages of"
-print "the required MSG_USER type. Invoke this example as follows:"
+print "This example can additionally visualize sets of 16bit numbers coming"
+print "in via stdin. The X11 driver supports the conversion of textual lines"
+print "from stdin to input messages of the required type, MSG_USER. To see"
+print "the extra curve, run this example as follows:"
 print "# bin/gendata.lua | bin/meter.lua"
 
 ui.Application:new

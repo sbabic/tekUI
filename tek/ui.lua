@@ -82,7 +82,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 20.0"
+_VERSION = "tekUI 20.1"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -803,11 +803,12 @@ PEN_SHADOW = 32           -- a color not quite as dark as PEN_DARK
 PEN_SHINE = 33            -- bright color
 PEN_HALFSHADOW = 34       -- brighter than PEN_SHADOW
 PEN_HALFSHINE = 35        -- brighter than PEN_HALFSHADOW
+PEN_USER1 = 36            -- user color 1
+PEN_USER2 = 37            -- user color 2
+PEN_USER3 = 38            -- user color 3
+PEN_USER4 = 39            -- user color 3
 
-PEN_USER1 = 36
-PEN_USER2 = 37
-PEN_USER3 = 38
-PEN_USER4 = 39
+PEN_NUMBER = 39           -- number of pens
 
 -------------------------------------------------------------------------------
 --	Message types:

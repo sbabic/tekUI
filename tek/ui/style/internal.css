@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.15
+**	Version: 1.16
 */
 
 /*
@@ -27,6 +27,10 @@ tek.ui.class.checkmark {
 	vertical-align: center;
 	vertical-grid-align: center;
 	background-color: parent-group;
+}
+
+tek.ui.class.checkmark:hover {
+	background-color: hover;
 }
 
 tek.ui.class.floattext {

@@ -14,14 +14,16 @@
 --		This class manages a display.
 --
 --	IMPLEMENTS::
---		- Display:closeFont() - Close font
---		- Display:getFontAttrs() - Get font attributes
---		- Display:getTime() - Get system time
---		- Display:openFont() - Open a named font
---		- Display:openVisual() - Open a visual
---		- Display:sleep() - Sleep for a period of time
---		- Display:getTextSize() - Get size of text rendered with a given font
---		- Display:wait() - Wait for a list of visuals
+--		- Display:closeFont() - Closes font
+--		- Display:colorNameToRGB() - Converts a symbolic color name to RGB
+--		- Display:getFontAttrs() - Gets font attributes
+--		- Display:getPaletteEntry() - Gets an entry from the symbolic palette
+--		- Display:getTime() - Gets system time
+--		- Display:openFont() - Opens a named font
+--		- Display:openVisual() - Opens a visual
+--		- Display:sleep() - Sleeps for a period of time
+--		- Display:getTextSize() - Gets size of text rendered with a given font
+--		- Display:wait() - Waits for visuals
 --
 --	STYLE PROPERTIES::
 --		- {{font}}
@@ -86,7 +88,9 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 11.0"
+_VERSION = "Display 12.0"
+
+local Display = _M
 
 -------------------------------------------------------------------------------
 --	Class data and constants:
@@ -186,8 +190,6 @@ FontDefaults[""] = FontDefaults["ui-main"]
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-local Display = _M
-
 function Display.new(class, self)
 	self = self or { }
 	self.RGBTab = { }
@@ -199,12 +201,12 @@ function Display.new(class, self)
 end
 
 -------------------------------------------------------------------------------
---	allocPens(visual, pentable): Allocates the colors managed by the
---	Display from the specified {{visual}}, and places the resulting
---	pens in {{pentable}}.
+--	r, g, b = colorNameToRGB(colspec, defcolspec): Converts a color
+--	specification to RGB. If {{colspec}} is not a valid color, {{defcolspec}}
+--	is used as a fallback.
 -------------------------------------------------------------------------------
 
-local function matchrgb(col, def)
+function Display:colorNameToRGB(col, def)
 	for i = 1, 2 do
 		local r, g, b = col:match("%#(%x%x)(%x%x)(%x%x)")
 		if r then
@@ -221,17 +223,25 @@ local function matchrgb(col, def)
 			b = b * 16 + b
 			return r, g, b
 		end
-		db.warn("'%s' : invalid RGB specification", col)
 		col = def
+		if not col then
+			return
+		end
+		-- retry with default color
 	end
 end
 
-function Display:allocPens(visual, pentable)
-	for i, color in ipairs(ColorDefaults) do
+-------------------------------------------------------------------------------
+--	name, r, g, b = getPaletteEntry(i): Gets the name and red, green, blue
+--	components of a color in the Display's symbolic color palette.
+-------------------------------------------------------------------------------
+
+function Display:getPaletteEntry(i)
+	local color = ColorDefaults[i]
+	if color then
 		local name, defrgb = color[1], color[2]
 		local rgb = self.RGBTab[i] or defrgb
-		pentable[i] = visual:allocpen(matchrgb(rgb, defrgb))
-		pentable[name] = pentable[i]
+		return name, self:colorNameToRGB(rgb, defrgb)
 	end
 end
 

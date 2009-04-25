@@ -41,6 +41,7 @@
 --		- Element:decodeProperties() - Decodes the element's style attributes
 --		- Element:disconnect() - Disconnects the element from its parent
 --		- Element:getId() - Shortcut for self.Application:getElementById()
+--		- Element:getNumProperty() - Retrieves a numerical style property
 --		- Element:getProperties() - Retrieves an element's style properties
 --		- Element:getProperty() - Retrieves a single style property
 --		- Element:setup() - Links the element to its environment
@@ -55,10 +56,11 @@ local ui = require "tek.ui"
 local Object = require "tek.class.object"
 local assert = assert
 local insert = table.insert
+local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 11.0"
+_VERSION = "Element 12.0"
 local Element = _M
 
 -------------------------------------------------------------------------------
@@ -194,10 +196,6 @@ local function getpropfmt(props, attr, fmt, ...)
 	return props[key] and props[key][attr]
 end
 
-local function getprop(props, attr, key)
-	return props[key] and props[key][attr]
-end
-
 function Element:getProperty(props, pclass, attr)
 
 	if pclass == true then
@@ -216,7 +214,9 @@ function Element:getProperty(props, pclass, attr)
 				getpropfmt(props, attr, "%s#%s", classname, id) or
 				getpropfmt(props, attr, "#%s:%s", id, pclass) or
 				getpropfmt(props, attr, "#%s", id)
-			if val then return val end
+			if val then 
+				return val 
+			end
 		end
 		if styleclass then
 			for class in styleclass:gmatch("%S+") do
@@ -225,37 +225,57 @@ function Element:getProperty(props, pclass, attr)
 					getpropfmt(props, attr, "%s.%s", classname, class) or
 					getpropfmt(props, attr, ".%s:%s", class, pclass) or
 					getpropfmt(props, attr, ".%s", class)
-				if val then return val end
+				if val then 
+					return val
+				end
 			end
 		end
 		local class = self:getClass()
 		while class ~= Element do
-			val = getpropfmt(props, attr, "%s:%s", class._NAME, pclass)
-				or getprop(props, attr, class._NAME)
-			if val then return val end
+			local n = class._NAME
+			val = getpropfmt(props, attr, "%s:%s", n, pclass)
+				or props[n] and props[n][attr]
+			if val then
+				return val
+			end
 			class = class:getSuper()
 		end
 	else
 		if id then
 			val = getpropfmt(props, attr, "%s#%s", classname, id) or
 				getpropfmt(props, attr, "#%s", id)
-			if val then return val end
+			if val then
+				return val
+			end
 		end
 		if styleclass then
 			for class in styleclass:gmatch("%S+") do
 				val = getpropfmt(props, attr, "%s.%s", classname, class) or
 					getpropfmt(props, attr, ".%s", class)
-				if val then return val end
+				if val then
+					return val
+				end
 			end
 		end
 		local class = self:getClass()
 		while class ~= Element do
-			val = getprop(props, attr, class._NAME)
-			if val then return val end
+			local n = props[class._NAME]
+			if n and n[attr] then
+				return n[attr]
+			end
 			class = class:getSuper()
 		end
 	end
 	return false
+end
+
+-------------------------------------------------------------------------------
+--	value = Element:getNumProperty(properties, pseudoclass, attribute): Gets a
+--	property and converts it to a number value. See also Element:getProperty().
+-------------------------------------------------------------------------------
+
+function Element:getNumProperty(props, pclass, attr)
+	return tonumber(self:getProperty(props, pclass, attr))
 end
 
 -------------------------------------------------------------------------------

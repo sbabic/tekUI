@@ -94,11 +94,10 @@ local floor = math.floor
 local min = math.min
 local max = math.max
 local newRegion = Region.new
-local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 6.3"
+_VERSION = "Frame 6.4"
 
 local Frame = _M
 
@@ -125,10 +124,10 @@ end
 
 function Frame:getProperties(p, pclass)
 	local b = self.Border
-	b[1] = b[1] or tonumber(self:getProperty(p, pclass, "border-left-width"))
-	b[2] = b[2] or tonumber(self:getProperty(p, pclass, "border-top-width"))
-	b[3] = b[3] or tonumber(self:getProperty(p, pclass, "border-right-width"))
-	b[4] = b[4] or tonumber(self:getProperty(p, pclass, "border-bottom-width"))
+	b[1] = b[1] or self:getNumProperty(p, pclass, "border-left-width")
+	b[2] = b[2] or self:getNumProperty(p, pclass, "border-top-width")
+	b[3] = b[3] or self:getNumProperty(p, pclass, "border-right-width")
+	b[4] = b[4] or self:getNumProperty(p, pclass, "border-bottom-width")
 	self.BorderClass = self.BorderClass or self:getProperty(p, pclass,
 		"border-class")
 	Area.getProperties(self, p, pclass)

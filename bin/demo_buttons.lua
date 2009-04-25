@@ -88,9 +88,9 @@ local window = ui.Window:new
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: dark; color: shine" },
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: shadow; color: shine" },
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: half-shadow; color: shine" },
-						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: background; color: detail" },
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: half-shine; color: dark" },
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: shine; color: dark" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: #aa0000; color: #ffff00" },
 					}
 				},
 				Group:new

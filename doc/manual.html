@@ -1479,7 +1479,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v20.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v20.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2069,7 +2069,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v17.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v17.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2939,7 +2939,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.10)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.11)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3232,7 +3232,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3254,28 +3254,34 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Display:closeFont"><code>Display:closeFont()</code></a> - Close font
+							<a href="#Display:closeFont"><code>Display:closeFont()</code></a> - Closes font
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:getFontAttrs"><code>Display:getFontAttrs()</code></a> - Get font attributes
+							<a href="#Display:colorNameToRGB"><code>Display:colorNameToRGB()</code></a> - Converts a symbolic color name to RGB
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:getTime"><code>Display:getTime()</code></a> - Get system time
+							<a href="#Display:getFontAttrs"><code>Display:getFontAttrs()</code></a> - Gets font attributes
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:openFont"><code>Display:openFont()</code></a> - Open a named font
+							<a href="#Display:getPaletteEntry"><code>Display:getPaletteEntry()</code></a> - Gets an entry from the symbolic palette
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:openVisual"><code>Display:openVisual()</code></a> - Open a visual
+							<a href="#Display:getTime"><code>Display:getTime()</code></a> - Gets system time
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:sleep"><code>Display:sleep()</code></a> - Sleep for a period of time
+							<a href="#Display:openFont"><code>Display:openFont()</code></a> - Opens a named font
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:getTextSize"><code>Display:getTextSize()</code></a> - Get size of text rendered with a given font
+							<a href="#Display:openVisual"><code>Display:openVisual()</code></a> - Opens a visual
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:wait"><code>Display:wait()</code></a> - Wait for a list of visuals
+							<a href="#Display:sleep"><code>Display:sleep()</code></a> - Sleeps for a period of time
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Display:getTextSize"><code>Display:getTextSize()</code></a> - Gets size of text rendered with a given font
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Display:wait"><code>Display:wait()</code></a> - Waits for visuals
 						</li>
 					</ul>
 				</blockquote>
@@ -3432,17 +3438,17 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Display:allocPens" id="Display:allocPens"><code>allocPens(visual, pentable)</code></a></h3>
-			<p>
-				Allocates the colors managed by the
-				Display from the specified <code>visual</code>, and places the resulting
-				pens in <code>pentable</code>.
-			</p>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="Display:closeFont" id="Display:closeFont"><code>Display:closeFont(font)</code></a></h3>
 			<p>
 				Closes the specified font
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Display:colorNameToRGB" id="Display:colorNameToRGB"><code>r, g, b = colorNameToRGB(colspec, defcolspec)</code></a></h3>
+			<p>
+				Converts a color
+				specification to RGB. If <code>colspec</code> is not a valid color, <code>defcolspec</code> 
+				is used as a fallback.
 			</p>
 			<hr />
 		</div>
@@ -3450,6 +3456,13 @@ end
 			<p>
 				Returns the font attributes height,
 				underline position and underline thickness.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Display:getPaletteEntry" id="Display:getPaletteEntry"><code>name, r, g, b = getPaletteEntry(i)</code></a></h3>
+			<p>
+				Gets the name and red, green, blue
+				components of a color in the Display's symbolic color palette.
 			</p>
 			<hr />
 		</div>
@@ -3468,7 +3481,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v12.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v12.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3639,7 +3652,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3739,6 +3752,9 @@ end
 							<a href="#Element:getId"><code>Element:getId()</code></a> - Shortcut for <a href="#self:Application:getElementById"><code>self.Application:getElementById()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Element:getNumProperty"><code>Element:getNumProperty()</code></a> - Retrieves a numerical style property
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> - Retrieves an element's style properties
 						</li>
 						<li style="list-style-type: none">
@@ -3798,6 +3814,13 @@ end
 				Gets the element with the specified id, under which it
 				was previously registered with the Application. See
 				<a href="#Application:getElementById"><code>Application:getElementById()</code></a>, for which this function is a shortcut.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Element:getNumProperty" id="Element:getNumProperty"><code>value = Element:getNumProperty(properties, pseudoclass, attribute)</code></a></h3>
+			<p>
+				Gets a
+				property and converts it to a number value. See also <a href="#Element:getProperty"><code>Element:getProperty()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -4032,7 +4055,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v6.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v6.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4882,7 +4905,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v15.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v15.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6838,7 +6861,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.20)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.21)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7289,7 +7312,7 @@ message = function(object, message)
 			</p>
 			<hr />
 			<p>
-				Document generated on Fri Apr 24 01:26:13 2009
+				Document generated on Sat Apr 25 13:02:42 2009
 			</p>
 		</div>
 	</body>

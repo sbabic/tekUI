@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.20"
+_VERSION = "Theme 6.21"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -48,6 +48,10 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["vertical-align"] = "center",
 		["vertical-grid-align"] = "center",
 		["background-color"] = "parent-group",
+	},
+	
+	["tek.ui.class.checkmark:hover"] = {
+		["background-color"] = "hover",
 	},
 
 	["tek.ui.class.floattext"] = {
@@ -443,7 +447,7 @@ local function importGTKConfig(def_s)
 							found = true
 							if color == "bg[NORMAL]" then
 								d["rgb-background"] = fmtrgb(r, g, b, 0.91)
-								d["rgb-group"] = fmtrgb(r, g, b, 0.98)
+								d["rgb-group"] = fmtrgb(r, g, b, 0.985)
 								d["rgb-shadow"] = fmtrgb(r, g, b, 0.45)
 								d["rgb-border-shine"] = fmtrgb(r, g, b, 1.25)
 								d["rgb-border-shadow"] = fmtrgb(r, g, b, 0.65)
@@ -455,7 +459,7 @@ local function importGTKConfig(def_s)
 							elseif color == "bg[ACTIVE]" then
 								d["rgb-active"] = c
 							elseif color == "bg[PRELIGHT]" then
-								d["rgb-hover"] = c
+								d["rgb-hover"] = fmtrgb(r, g, b, 1.03)
 								d["rgb-focus"] = c
 							elseif color == "bg[SELECTED]" then
 								d["rgb-fill"] = c

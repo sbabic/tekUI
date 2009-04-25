@@ -41,7 +41,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.10"
+_VERSION = "CheckMark 3.11"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -145,6 +145,10 @@ end
 -------------------------------------------------------------------------------
 
 function CheckMark:setState(bg, fg)
+	if not bg and self.Hilite then
+		-- in checkmarks, Hilite has precedence over Selected:
+		bg = self.BGPenHilite
+	end
 	if self.Selected ~= self.OldSelected then
 		self.OldSelected = self.Selected
 		self.Redraw = true
