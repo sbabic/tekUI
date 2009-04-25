@@ -65,16 +65,18 @@ See below for a more detailed technical [[#overview]].
 
 TekUI is free software under the same license as Lua itself: It can
 be used for both academic and commercial purposes at no cost, it
-qualifies as Open Source software and its license is compatible with
-the GPL. The SDK contains additional components which may be licensed
-differently. See [[copyright][copyright.html]].
+qualifies as Open Source software, and its license is compatible with
+the GPL. Note: The commercial SDK contains additional components
+which may be licensed differently.
+See [[copyright][copyright.html]].
 
 ==( status : 1.2. Status, requirements )==
 
 TekUI is in early stage of development. It is available for the
 Linux, Windows, and FreeBSD platforms. Display drivers are available
 for X11, Windows, DirectFB, and Nano-X. See also [[TODO][todo.html]]
-for a list of known bugs and missing features, and [[#requirements]]
+for a list of known bugs and missing features, and 
+[[#requirements]]
 for a list of the required packages.
 
 ==( development : 1.3. Development model )==
@@ -95,8 +97,8 @@ from the authors – see below.
 ==( authors : 1.5. Authors and contact )==
 
 Authors:
- - Timm S. Müller <tmueller@schulze-mueller.de>
- - Franciska Schulze <fschulze@schulze-mueller.de>
+ - Timm S. Müller <tmueller at schulze-mueller.de>
+ - Franciska Schulze <fschulze at schulze-mueller.de>
 
 Project website:
  - http://tekui.teklib.org/
@@ -105,7 +107,7 @@ Mailing list:
  - http://lists.neoscientists.org/mailman/listinfo/tekui-devel
 
 Product website:
- - http://www.schulze-mueller.de/products/
+ - http://www.schulze-mueller.de/products.html
 
 ---------------------------------------------------------------------
 
@@ -166,7 +168,7 @@ and the tekUI package contains numerous examples.
 The next development goal is to fold the tekUI framework into a
 freestanding C library, which enables applications to create
 asynchronous GUI objects, communicating with their main program
-using an application-level protocol. From this, we the following
+using an application-level protocol. From this, the following
 benefits are envisioned:
 
  * GUIs integrate smoothly even into I/O-burdened applications
