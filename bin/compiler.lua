@@ -3,10 +3,7 @@
 --
 --	compiler.lua - Lua compiler and module linker
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
---
---	(C) Copyright 2009, Schulze & Mueller GbR
---	For use by the licensee only, unauthorized redistribution is
---	prohibited.
+--	See copyright notice in COPYRIGHT
 --
 --	Compiler based on luac.lua by
 --	Luiz Henrique de Figueiredo <lhf@tecgraf.puc-rio.br>
