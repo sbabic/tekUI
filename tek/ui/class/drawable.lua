@@ -14,19 +14,19 @@
 --		This class implements a graphical context which can be painted on.
 --
 --	IMPLEMENTS::
---		- Drawable:fillRect() - Draws a filled rectangle
---		- Drawable:drawRect() - Draws an unfilled rectangle
---		- Drawable:drawText() - Renders text
+--		- Drawable:copyArea() - Copies an area
 --		- Drawable:drawLine() - Draws a line
 --		- Drawable:drawPlot() - Draws a point
---		- Drawable:setFont() - Sets a font
---		- Drawable:getTextSize() - Determines the width and height of text
+--		- Drawable:drawRect() - Draws an unfilled rectangle
+--		- Drawable:drawText() - Renders text
+--		- Drawable:fillRect() - Draws a filled rectangle
 --		- Drawable:getMsg() - Gets the next pending input message
---		- Drawable:pushClipRect() - Push a new cliprect on the drawable
---		- Drawable:popClipRect() - Pop the topmost cliprect
---		- Drawable:setShift() - Add coordinate displacement
---		- Drawable:getShift() - Get current displacement
---		- Drawable:copyArea() - Copy area
+--		- Drawable:getShift() - Gets the current coordinate displacement
+--		- Drawable:getTextSize() - Determines the width and height of text
+--		- Drawable:popClipRect() - Pops the topmost cliprect from the drawable
+--		- Drawable:pushClipRect() - Pushes a new cliprect on the drawable
+--		- Drawable:setFont() - Sets a font
+--		- Drawable:setShift() - Adds a coordinate displacement
 --
 --	OVERRIDES::
 --		- Object.init()
@@ -325,7 +325,7 @@ function Drawable:copyArea(x0, y0, x1, y1, dx, dy, t)
 end
 
 -------------------------------------------------------------------------------
---	Drawable:setInterval(onoff): Enable or disabled interval messages.
+--	setInterval(onoff) - Enables or disables interval messages.
 -------------------------------------------------------------------------------
 
 function Drawable:setInterval(onoff)

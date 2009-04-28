@@ -581,11 +581,12 @@ function Application:run()
 end
 
 -------------------------------------------------------------------------------
---	Application:addCoroutine(function, arg1, ...): Adds a new coroutine to
---	the application. The new coroutine is not started immediately, but
---	scheduled for later execution during the application's update procedure.
---	This gives the application an opportunity to service all pending messages
---	and updates before the coroutine is actually started.
+--	Application:addCoroutine(function, arg1, ...): Adds the specified function
+--	and arguments to the application as a new coroutine, and returns to the
+--	caller. The new coroutine is not started immediately, but scheduled for
+--	later execution during the application's update procedure. This gives the
+--	application an opportunity to service all pending messages and updates
+--	before the coroutine is actually started.
 -------------------------------------------------------------------------------
 
 function Application:addCoroutine(func, ...)
@@ -650,17 +651,17 @@ end
 --	the {{args}} table are:
 --		- {{Center}} - Boolean, whether requester should be opened centered
 --		- {{Height}} - Height of the requester window
---		- {{Lister}} - External lister to operate on
+--		- {{Lister}} - External lister object to operate on
 --		- {{Location}} - Initial contents of the requester's location field
 --		- {{Path}} - The initial path
---		- {{SelectMode}} - "multi" or "single" [default "single"]
---		- {{SelectText}} - Text to display on the selection button
---		[default "open"]
---		- {{Title}} - Window title [default "Select file or directory..."]
+--		- {{SelectMode}} - {{"multi"}} or {{"single"}} [default {{"single"}}]
+--		- {{SelectText}} - Text to show on the select button
+--		[default {{"open"}}]
+--		- {{Title}} - Window title [default {{"Select file or directory..."}}]
 --		- {{Width}} - Width of the requester window
---	The first return value is a string reading either "selected" or
---	"cancelled". If the status is "selected", the second return value is
---	the path where the requester was left, and the third value is a table
+--	The first return value is a string reading either {{"selected"}} or
+--	{{"cancelled"}}. If the status is {{"selected"}}, the second return value
+--	is the path where the requester was left, and the third value is a table
 --	of the items that were selected.
 --	Note: The caller of this function must be running in a coroutine
 --	(see Application:addCoroutine()).
@@ -720,14 +721,14 @@ end
 
 -------------------------------------------------------------------------------
 --	selected = Application:easyRequest(title, text, buttontext1[, ...]):
---	Show requester. {{title}} will be displayed as the window title; if this
---	argument is '''false''', the application's {{ProgramName}} will be used
---	for the title. {{text}} (which may contain line breaks) will be used as
---	the requester's body. Buttons are ordered from left to right. The first
---	button has the number 1. If the window is closed using the Escape key
---	or close button, the return value will be {{false}}.
---	Note: The caller of this function must be running in a coroutine
---	(see Application:addCoroutine()).
+--	This function shows a message box or requester. {{title}} will be
+--	displayed as the window title; if this argument is '''false''', the
+--	application's {{ProgramName}} will be used for the title. {{text}}
+--	(which may contain line breaks) will be used as the requester's body.
+--	Buttons are ordered from left to right. The first button has the number 1.
+--	If the window is closed using the Escape key or close button, the return
+--	value will be {{false}}. Note: The caller of this function must be
+--	running in a coroutine (see Application:addCoroutine()).
 -------------------------------------------------------------------------------
 
 function Application:easyRequest(title, text, ...)

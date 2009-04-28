@@ -97,7 +97,7 @@ end
 
 local Presenter = ScrollText:new
 {
-	Style = "font: :40; background-color: shadow; color: shine",
+	Style = "font: ui-huge:40; background-color: shadow; color: shine",
 -- 	Class = "text-slide",
 	Preformatted = true,
 	Slides =

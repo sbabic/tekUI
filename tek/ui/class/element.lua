@@ -20,7 +20,9 @@
 --			this attribute is set in the Element:setup() method.
 --		- {{Class [IG]}} (string)
 --			The name of the element's style class, which can be referenced
---			in a style sheet, or '''false'''.
+--			in a style sheet, or '''false'''. Multiple classes can be
+--			specified if they are separated with spaces, e.g.
+--			{{"button knob warn"}}.
 --		- {{Id [IG]}} (string)
 --			An unique Id identifying the element, or '''false'''. If present,
 --			this Id will be registered with the Application during
@@ -30,7 +32,8 @@
 --			is set in the Element:connect() method.
 --		- {{Style [IG]}} (string)
 --			Direct style formattings of the element, overriding class-wide
---			formattings in a style sheet, or '''false'''
+--			formattings in a style sheet, or '''false'''. Example:
+--			{{"background-color: #880000; color: #ffff00"}}
 --		- {{Window [G]}} ([[#tek.ui.class.window : Window]])
 --			The window the element is registered with, or '''false'''. This
 --			attribute is set when the Element:setup() method is called.

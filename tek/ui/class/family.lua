@@ -11,7 +11,7 @@
 --		Family
 --
 --	OVERVIEW::
---		This class implements a container for child object.
+--		This class implements a container for child objects.
 --
 --	ATTRIBUTES::
 --		- {{Children [IG]}} (table)
@@ -44,7 +44,7 @@ function Family.init(self)
 end
 
 -------------------------------------------------------------------------------
---	success = addMember(child[, pos]): Invokes the specified child's
+--	success = addMember(child[, pos]): Invokes the {{child}}'s
 --	[[connect()][#Element:connect]] method to check for its ability to
 --	integrate into the family, and if successful, inserts it into the
 --	family's list of children. Optionally, the child is inserted into the

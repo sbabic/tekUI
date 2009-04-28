@@ -88,7 +88,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 12.0"
+_VERSION = "Display 12.1"
 
 local Display = _M
 
@@ -128,7 +128,7 @@ local DEF_SMALLFONT = "sans-serif,helvetica,arial,Vera:12"
 local DEF_MENUFONT  = "sans-serif,helvetica,arial,Vera:14"
 local DEF_FIXEDFONT = "monospace,fixed,courier new,VeraMono:14"
 local DEF_LARGEFONT = "sans-serif,helvetica,arial,Vera:18"
-local DEF_HUGEFONT  = "sans-serif,helvetica,arial,Vera:24"
+local DEF_HUGEFONT  = "sans-serif,utopia,arial,Vera:24"
 
 local ColorDefaults =
 {

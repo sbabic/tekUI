@@ -34,13 +34,13 @@ local window = ui.Window:new
 			Style = "height: fill",
 			Children =
 			{
-				CheckMark:new { Text = "10", Style = "font: :10" },
-				CheckMark:new { Text = "15", Style = "font: :15" },
-				CheckMark:new { Text = "18", Style = "font: :18" },
-				CheckMark:new { Text = "24", Style = "font: :24" },
-				CheckMark:new { Text = "32", Style = "font: :32" },
-				CheckMark:new { Text = "36", Style = "font: :36", Selected = true },
-				CheckMark:new { Text = "44", Style = "font: :44" },
+				CheckMark:new { Text = "10", Style = "font: ui-huge:10" },
+				CheckMark:new { Text = "14", Style = "font: ui-huge:14" },
+				CheckMark:new { Text = "18", Style = "font: ui-huge:18" },
+				CheckMark:new { Text = "24", Style = "font: ui-huge:24", Selected = true },
+				CheckMark:new { Text = "32", Style = "font: ui-huge:32" },
+				CheckMark:new { Text = "40", Style = "font: ui-huge:40" },
+				CheckMark:new { Text = "48", Style = "font: ui-huge:48" },
 			}
 		},
 		Group:new
@@ -50,13 +50,13 @@ local window = ui.Window:new
 			Style = "height: fill",
 			Children =
 			{
-				RadioButton:new { Text = "10", Style = "font: :10" },
-				RadioButton:new { Text = "15", Style = "font: :15" },
-				RadioButton:new { Text = "18", Style = "font: :18" },
-				RadioButton:new { Text = "24", Style = "font: :24", Selected = true },
-				RadioButton:new { Text = "32", Style = "font: :32" },
-				RadioButton:new { Text = "36", Style = "font: :36" },
-				RadioButton:new { Text = "44", Style = "font: :44" },
+				RadioButton:new { Text = "10", Style = "font: ui-huge:10" },
+				RadioButton:new { Text = "14", Style = "font: ui-huge:14" },
+				RadioButton:new { Text = "18", Style = "font: ui-huge:18" },
+				RadioButton:new { Text = "24", Style = "font: ui-huge:24", Selected = true },
+				RadioButton:new { Text = "32", Style = "font: ui-huge:32" },
+				RadioButton:new { Text = "40", Style = "font: ui-huge:40" },
+				RadioButton:new { Text = "48", Style = "font: ui-huge:48" },
 			}
 		},
 		Group:new
@@ -73,7 +73,7 @@ local window = ui.Window:new
 					Width = "free",
 					Height = "free",
 					Image = ui.BitmapImage:new { 
-						io.open(ui.ProgDir .. "/graphics/locale.ppm"):read("*a") 
+						io.open(ui.ProgDir .. "/graphics/locale.ppm", "rb"):read("*a") 
 					},
 				},
 				ui.ImageGadget:new
@@ -82,7 +82,7 @@ local window = ui.Window:new
 					Height = "free",
 					Style = "background-color: shine;",
 					Image = ui.BitmapImage:new { 
-						io.open(ui.ProgDir .. "/graphics/world.ppm"):read("*a") 
+						io.open(ui.ProgDir .. "/graphics/world.ppm", "rb"):read("*a") 
 					},
 				}
 			}

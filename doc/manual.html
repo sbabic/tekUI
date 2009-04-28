@@ -898,31 +898,31 @@ method(object, arg1, ...)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:byte"><code>UTF8String:byte()</code></a> - Return Unicode character codes
+							<a href="#UTF8String:byte"><code>UTF8String:byte()</code></a> - Returns Unicode character codes
 						</li>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:char"><code>UTF8String.char()</code></a> - Return UTF8-encoded character sequences
+							<a href="#UTF8String:char"><code>UTF8String.char()</code></a> - Returns UTF8-encoded character sequences
 						</li>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:erase"><code>UTF8String:erase()</code></a> - Remove substring
+							<a href="#UTF8String:erase"><code>UTF8String:erase()</code></a> - Removes substring
 						</li>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:get"><code>UTF8String:get()</code></a> - Return the string in UTF-8-encoded form
+							<a href="#UTF8String:get"><code>UTF8String:get()</code></a> - Returns the string in UTF-8 encoded form
 						</li>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:insert"><code>UTF8String:insert()</code></a> - Insert a string at a position
+							<a href="#UTF8String:insert"><code>UTF8String:insert()</code></a> - Inserts a string at a given position
 						</li>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:len"><code>UTF8String:len()</code></a> - Return the length in characters
+							<a href="#UTF8String:len"><code>UTF8String:len()</code></a> - Returns the length in characters
 						</li>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:overwrite"><code>UTF8String:overwrite()</code></a> - Overwrite string
+							<a href="#UTF8String:overwrite"><code>UTF8String:overwrite()</code></a> - Overwrites string
 						</li>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:set"><code>UTF8String:set()</code></a> - Set a string
+							<a href="#UTF8String:set"><code>UTF8String:set()</code></a> - Sets a string
 						</li>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:sub"><code>UTF8String:sub()</code></a> - Return substring of a string
+							<a href="#UTF8String:sub"><code>UTF8String:sub()</code></a> - Returns a substring of a string
 						</li>
 					</ul>
 				</blockquote>
@@ -931,7 +931,7 @@ method(object, arg1, ...)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#UTF8String:new"><code>UTF8String.new()</code></a> - create an UTF-8 string object from a string
+							<a href="#UTF8String:new"><code>UTF8String.new()</code></a> - Creates an UTF-8 string object from a string
 						</li>
 					</ul>
 				</blockquote>
@@ -954,20 +954,21 @@ method(object, arg1, ...)
 		</div>
 		<div class="node"><h3><a name="UTF8String:erase" id="UTF8String:erase"><code>UTF8String:erase(i[, j])</code></a></h3>
 			<p>
-				Erase the characters at the positions from <code>i</code> 
-				to <code>j</code>. The semantics for the range are the same as for <a href="#UTF8String:sub"><code>UTF8String:sub()</code></a>.
+				Erases the characters at the positions from
+				<code>i</code> to <code>j</code>. The semantics for the range are the same as for
+				<a href="#UTF8String:sub"><code>UTF8String:sub()</code></a>.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="UTF8String:get" id="UTF8String:get"><code>string = UTF8String:get()</code></a></h3>
 			<p>
-				Return the string in UTF-8 encoded form.
+				Returns the string in UTF-8 encoded form.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="UTF8String:insert" id="UTF8String:insert"><code>UTF8String:insert(string[, position])</code></a></h3>
 			<p>
-				Insert the UTF-8 encoded string
+				Inserts the UTF-8 encoded string
 				at the specified <code>position</code> to the string object. If <code>position</code> is
 				absent, the string is added to the end.
 			</p>
@@ -975,28 +976,28 @@ method(object, arg1, ...)
 		</div>
 		<div class="node"><h3><a name="UTF8String:len" id="UTF8String:len"><code>len = UTF8String:len()</code></a></h3>
 			<p>
-				Return the length of the string, in characters.
+				Returns the length of the string, in characters.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="UTF8String:new" id="UTF8String:new"><code>object = UTF8String.new(class, string)</code></a></h3>
 			<p>
-				Create an UTF-8 string object
-				from an (already UTF-8 encoded) regular string.
+				Creates a string object from an
+				(already UTF-8 encoded) regular string.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="UTF8String:overwrite" id="UTF8String:overwrite"><code>UTF8String:overwrite(s[, pos])</code></a></h3>
 			<p>
-				Overwrite the UTF8 string with the
-				specified (also UTF-8 encoded) string, starting a the given position.
+				Overwrites the string object with the
+				specified (already UTF-8 encoded) string, starting a the given position.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="UTF8String:set" id="UTF8String:set"><code>UTF8String:set(s)</code></a></h3>
 			<p>
-				Initialize the string object with a new, UTF-8 encoded
-				regular string.
+				Initializes the string object with a new, UTF-8 encoded
+				string.
 			</p>
 			<hr />
 		</div>
@@ -1924,11 +1925,12 @@ ui.Application:new { ...
 		</div>
 		<div class="node"><h3><a name="Application:addCoroutine" id="Application:addCoroutine"><code>Application:addCoroutine(function, arg1, ...)</code></a></h3>
 			<p>
-				Adds a new coroutine to
-				the application. The new coroutine is not started immediately, but
-				scheduled for later execution during the application's update procedure.
-				This gives the application an opportunity to service all pending messages
-				and updates before the coroutine is actually started.
+				Adds the specified function
+				and arguments to the application as a new coroutine, and returns to the
+				caller. The new coroutine is not started immediately, but scheduled for
+				later execution during the application's update procedure. This gives the
+				application an opportunity to service all pending messages and updates
+				before the coroutine is actually started.
 			</p>
 			<hr />
 		</div>
@@ -1960,14 +1962,14 @@ message = function(object, message)
 		</div>
 		<div class="node"><h3><a name="Application:easyRequest" id="Application:easyRequest"><code>selected = Application:easyRequest(title, text, buttontext1[, ...])</code></a></h3>
 			<p>
-				Show requester. <code>title</code> will be displayed as the window title; if this
-				argument is <strong>false</strong>, the application's <code>ProgramName</code> will be used
-				for the title. <code>text</code> (which may contain line breaks) will be used as
-				the requester's body. Buttons are ordered from left to right. The first
-				button has the number 1. If the window is closed using the Escape key
-				or close button, the return value will be <code>false</code>.
-				Note: The caller of this function must be running in a coroutine
-				(see <a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a>).
+				This function shows a message box or requester. <code>title</code> will be
+				displayed as the window title; if this argument is <strong>false</strong>, the
+				application's <code>ProgramName</code> will be used for the title. <code>text</code> 
+				(which may contain line breaks) will be used as the requester's body.
+				Buttons are ordered from left to right. The first button has the number 1.
+				If the window is closed using the Escape key or close button, the return
+				value will be <code>false</code>. Note: The caller of this function must be
+				running in a coroutine (see <a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a>).
 			</p>
 			<hr />
 		</div>
@@ -2014,7 +2016,7 @@ message = function(object, message)
 						<code>Height</code> - Height of the requester window
 					</li>
 					<li style="list-style-type: none">
-						<code>Lister</code> - External lister to operate on
+						<code>Lister</code> - External lister object to operate on
 					</li>
 					<li style="list-style-type: none">
 						<code>Location</code> - Initial contents of the requester's location field
@@ -2023,14 +2025,14 @@ message = function(object, message)
 						<code>Path</code> - The initial path
 					</li>
 					<li style="list-style-type: none">
-						<code>SelectMode</code> - &quot;multi&quot; or &quot;single&quot; &#091;default &quot;single&quot;&#093;
+						<code>SelectMode</code> - <code>&quot;multi&quot;</code> or <code>&quot;single&quot;</code> &#091;default <code>&quot;single&quot;</code>&#093;
 					</li>
 					<li style="list-style-type: none">
-						<code>SelectText</code> - Text to display on the selection button
-						&#091;default &quot;open&quot;&#093;
+						<code>SelectText</code> - Text to show on the select button
+						&#091;default <code>&quot;open&quot;</code>&#093;
 					</li>
 					<li style="list-style-type: none">
-						<code>Title</code> - Window title &#091;default &quot;Select file or directory...&quot;&#093;
+						<code>Title</code> - Window title &#091;default <code>&quot;Select file or directory...&quot;</code>&#093;
 					</li>
 					<li style="list-style-type: none">
 						<code>Width</code> - Width of the requester window
@@ -2038,9 +2040,9 @@ message = function(object, message)
 				</ul>
 			</blockquote>
 			<p>
-				The first return value is a string reading either &quot;selected&quot; or
-				&quot;cancelled&quot;. If the status is &quot;selected&quot;, the second return value is
-				the path where the requester was left, and the third value is a table
+				The first return value is a string reading either <code>&quot;selected&quot;</code> or
+				<code>&quot;cancelled&quot;</code>. If the status is <code>&quot;selected&quot;</code>, the second return value
+				is the path where the requester was left, and the third value is a table
 				of the items that were selected.
 				Note: The caller of this function must be running in a coroutine
 				(see <a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a>).
@@ -2701,7 +2703,7 @@ message = function(object, message)
 				<blockquote>
 					<p>
 						This class adds redundancy, because it differs from the
-						<a href="#tek.ui.class.gadget">Text</a> class only in that it specifies a few
+						<a href="#tek.ui.class.text">Text</a> class only in that it specifies a few
 						attributes differently in its <code>new()</code> method. To avoid this overhead,
 						use the Text class directly, or create a <em>Button factory</em> like this:
 					</p>
@@ -3232,7 +3234,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v12.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3503,13 +3505,7 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Drawable:fillRect"><code>Drawable:fillRect()</code></a> - Draws a filled rectangle
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:drawRect"><code>Drawable:drawRect()</code></a> - Draws an unfilled rectangle
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:drawText"><code>Drawable:drawText()</code></a> - Renders text
+							<a href="#Drawable:copyArea"><code>Drawable:copyArea()</code></a> - Copies an area
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:drawLine"><code>Drawable:drawLine()</code></a> - Draws a line
@@ -3518,28 +3514,34 @@ end
 							<a href="#Drawable:drawPlot"><code>Drawable:drawPlot()</code></a> - Draws a point
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:setFont"><code>Drawable:setFont()</code></a> - Sets a font
+							<a href="#Drawable:drawRect"><code>Drawable:drawRect()</code></a> - Draws an unfilled rectangle
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:getTextSize"><code>Drawable:getTextSize()</code></a> - Determines the width and height of text
+							<a href="#Drawable:drawText"><code>Drawable:drawText()</code></a> - Renders text
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Drawable:fillRect"><code>Drawable:fillRect()</code></a> - Draws a filled rectangle
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:getMsg"><code>Drawable:getMsg()</code></a> - Gets the next pending input message
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:pushClipRect"><code>Drawable:pushClipRect()</code></a> - Push a new cliprect on the drawable
+							<a href="#Drawable:getShift"><code>Drawable:getShift()</code></a> - Gets the current coordinate displacement
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:popClipRect"><code>Drawable:popClipRect()</code></a> - Pop the topmost cliprect
+							<a href="#Drawable:getTextSize"><code>Drawable:getTextSize()</code></a> - Determines the width and height of text
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:setShift"><code>Drawable:setShift()</code></a> - Add coordinate displacement
+							<a href="#Drawable:popClipRect"><code>Drawable:popClipRect()</code></a> - Pops the topmost cliprect from the drawable
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:getShift"><code>Drawable:getShift()</code></a> - Get current displacement
+							<a href="#Drawable:pushClipRect"><code>Drawable:pushClipRect()</code></a> - Pushes a new cliprect on the drawable
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:copyArea"><code>Drawable:copyArea()</code></a> - Copy area
+							<a href="#Drawable:setFont"><code>Drawable:setFont()</code></a> - Sets a font
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Drawable:setShift"><code>Drawable:setShift()</code></a> - Adds a coordinate displacement
 						</li>
 					</ul>
 				</blockquote>
@@ -3639,12 +3641,6 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:setInterval" id="Drawable:setInterval"><code>Drawable:setInterval(onoff)</code></a></h3>
-			<p>
-				Enable or disabled interval messages.
-			</p>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="Drawable:setShift" id="Drawable:setShift"><code>Drawable:setShift(deltax, deltay)</code></a></h3>
 			<p>
 				Add a delta to the Drawable's
@@ -3689,7 +3685,9 @@ end
 							<blockquote>
 								<p>
 									The name of the element's style class, which can be referenced
-									in a style sheet, or <strong>false</strong>.
+									in a style sheet, or <strong>false</strong>. Multiple classes can be
+									specified if they are separated with spaces, e.g.
+									<code>&quot;button knob warn&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -3717,7 +3715,8 @@ end
 							<blockquote>
 								<p>
 									Direct style formattings of the element, overriding class-wide
-									formattings in a style sheet, or <strong>false</strong> 
+									formattings in a style sheet, or <strong>false</strong>. Example:
+									<code>&quot;background-color: #880000; color: #ffff00&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -3873,7 +3872,7 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This class implements a container for child object.
+						This class implements a container for child objects.
 					</p>
 				</blockquote>
 			</div>
@@ -3907,7 +3906,7 @@ end
 		</div>
 		<div class="node"><h3><a name="Family:addMember" id="Family:addMember"><code>success = addMember(child[, pos])</code></a></h3>
 			<p>
-				Invokes the specified child's
+				Invokes the <code>child</code>'s
 				<a href="#Element:connect">connect()</a> method to check for its ability to
 				integrate into the family, and if successful, inserts it into the
 				family's list of children. Optionally, the child is inserted into the
@@ -6875,7 +6874,7 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Theme:getStyleSheet"><code>Theme.getStyleSheet()</code></a> - get a style sheet for a named theme
+							<a href="#Theme:getStyleSheet"><code>Theme.getStyleSheet()</code></a> - Gets a style sheet for a named theme
 						</li>
 					</ul>
 				</blockquote>
@@ -6890,22 +6889,22 @@ end
 			<blockquote>
 				<ul>
 					<li style="list-style-type: none">
-						&quot;empty&quot; - returns an empty style sheet
+						<code>&quot;empty&quot;</code> - returns an empty style sheet
 					</li>
 					<li style="list-style-type: none">
-						&quot;internal&quot; - the hardcoded internal style sheet
+						<code>&quot;internal&quot;</code> - the hardcoded internal style sheet
 					</li>
 					<li style="list-style-type: none">
-						&quot;desktop&quot; - The &quot;desktop&quot; external style sheet (or hardcoded
-						internal style sheet if unavailable), overlaying the user's
-						desktop colors (if available)
+						<code>&quot;desktop&quot;</code> - The &quot;desktop&quot; external style sheet (or hardcoded
+						internal style sheet if a desktop style sheet file is unavailable),
+						overlaying the user's desktop colors (if that is possible)
 					</li>
 				</ul>
 			</blockquote>
 			<p>
-				Any other theme name will cause this function to try to load an
-				equally named style sheet, falling back to the hardcoded internal
-				style sheet if unavailable. The default for <code>themename</code> is &quot;default&quot;.
+				Any other theme name will cause this function to try to load an equally
+				named style sheet, falling back to the hardcoded internal style sheet if
+				unavailable. The default for <code>themename</code> is <code>&quot;default&quot;</code>.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -7312,7 +7311,7 @@ message = function(object, message)
 			</p>
 			<hr />
 			<p>
-				Document generated on Sat Apr 25 13:02:42 2009
+				Document generated on Tue Apr 28 11:41:55 2009
 			</p>
 		</div>
 	</body>

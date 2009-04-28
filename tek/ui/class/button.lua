@@ -24,7 +24,7 @@
 --
 --	NOTES::
 --		This class adds redundancy, because it differs from the
---		[[#tek.ui.class.gadget : Text]] class only in that it specifies a few
+--		[[#tek.ui.class.text : Text]] class only in that it specifies a few
 --		attributes differently in its {{new()}} method. To avoid this overhead,
 --		use the Text class directly, or create a ''Button factory'' like this:
 --				function newButton(text)

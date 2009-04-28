@@ -22,6 +22,7 @@
   - 3.2. [[#buildenv : Adjusting the build environment]]
    - 3.2.1 [[#notefbsd : FreeBSD notes]]
    - 3.2.2 [[#notenanox : Nano-X notes]]
+   - 3.2.3 [[#notex11 : X11 notes]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
@@ -300,6 +301,18 @@ only when running in fullscreen mode without a window manager. See
 also {{tek/ui/style/nanox.css}} for more information. Example:
 
   # nano-X & THEME=nanox FULLSCREEN=true bin/demo_custom.lua
+
+===( notex11 : 3.2.3. X11 notes )===
+
+In case of problems with texts and labels, try removing
+{{-DENABLE_XFT}} from {{X11_DEFS}} in the config file. Some versions
+of X11 are known to not support the Composite extension and
+antialiased fonts using Xft at the same time, and we tried to work
+around this problem by falling back to the core X11 API if the
+Composite extension was detected. Recent tests indicate that this
+has been corrected in later versions of X11, and so we removed our
+workaround. Unfortunately, we got reports of other, possibly
+unrelated problems with Xft in the meantime.
 
 ==( building : 3.3. Building )==
 

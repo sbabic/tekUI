@@ -165,7 +165,7 @@ function FileButton.init(self)
 	self.Height = "fill"
 	self.Width = "fill"
 	self.MinWidth = 15
-	self.MinHeight = 15
+	self.MinHeight = 18
 	self.Style = "padding: 2"
 	return ui.ImageGadget.init(self)
 end
@@ -380,7 +380,7 @@ end
 
 -------------------------------------------------------------------------------
 
-app = ui.Application:new
+ui.Application:new
 {
 	ApplicationId = APP_ID,
 	VendorDomain = VENDOR,

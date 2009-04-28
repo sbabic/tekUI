@@ -80,9 +80,11 @@ initlibxft(X11DISPLAY *mod)
 {
 	#if defined(ENABLE_XFT)
 
+	#if 0
 	int major, minor, first;
-	if (XQueryExtension(mod->x11_Display, "Composite", &major, &minor, &first))
-		return TFALSE;
+ 	if (XQueryExtension(mod->x11_Display, "Composite", &major, &minor, &first))
+ 		return TFALSE;
+ 	#endif
 	if (mod->x11_Depth > 24)
 		return TFALSE;
 

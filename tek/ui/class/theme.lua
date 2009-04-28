@@ -10,7 +10,7 @@
 --		Theme
 --
 --	IMPLEMENTS::
---		- Theme.getStyleSheet() - get a style sheet for a named theme
+--		- Theme.getStyleSheet() - Gets a style sheet for a named theme
 --
 -------------------------------------------------------------------------------
 
@@ -527,14 +527,14 @@ end
 -------------------------------------------------------------------------------
 --	stylesheet = Theme.getStyleSheet([themename]): Returns a style sheet for a
 --	named theme. Theme names currently defined are:
---		- "empty" - returns an empty style sheet
---		- "internal" - the hardcoded internal style sheet
---		- "desktop" - The "desktop" external style sheet (or hardcoded
---		internal style sheet if unavailable), overlaying the user's
---		desktop colors (if available)
---	Any other theme name will cause this function to try to load an
---	equally named style sheet, falling back to the hardcoded internal
---	style sheet if unavailable. The default for {{themename}} is "default".
+--		- {{"empty"}} - returns an empty style sheet
+--		- {{"internal"}} - the hardcoded internal style sheet
+--		- {{"desktop"}} - The "desktop" external style sheet (or hardcoded
+--		internal style sheet if a desktop style sheet file is unavailable),
+--		overlaying the user's desktop colors (if that is possible)
+--	Any other theme name will cause this function to try to load an equally
+--	named style sheet, falling back to the hardcoded internal style sheet if
+--	unavailable. The default for {{themename}} is {{"default"}}.
 -------------------------------------------------------------------------------
 
 local function copyprops(dest, source)

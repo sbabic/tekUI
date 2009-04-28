@@ -82,6 +82,9 @@
 										<li style="list-style-type: none">
 											3.2.2 <a href="#notenanox">Nano-X notes</a> 
 										</li>
+										<li style="list-style-type: none">
+											3.2.3 <a href="#notex11">X11 notes</a> 
+										</li>
 									</ul>
 								</blockquote>
 							</li>
@@ -550,6 +553,19 @@
 <pre>
 # nano-X &amp; THEME=nanox FULLSCREEN=true bin/demo_custom.lua
 </pre>
+		</div>
+		<div class="node"><h3><a name="notex11" id="notex11">3.2.3. X11 notes</a></h3>
+			<p>
+				In case of problems with texts and labels, try removing
+				<code>-DENABLE_XFT</code> from <code>X11_DEFS</code> in the config file. Some versions
+				of X11 are known to not support the Composite extension and
+				antialiased fonts using Xft at the same time, and we tried to work
+				around this problem by falling back to the core X11 API if the
+				Composite extension was detected. Recent tests indicate that this
+				has been corrected in later versions of X11, and so we removed our
+				workaround. Unfortunately, we got reports of other, possibly
+				unrelated problems with Xft in the meantime.
+			</p>
 		</div>
 		<div class="node"><h2><a name="building" id="building">3.3. Building</a></h2>
 			<p>

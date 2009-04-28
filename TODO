@@ -8,4 +8,3 @@
  * Bubble help
  * FloatText styling options
  * Confinement of popup elements to the visible screen
- * Antialiased fonts unsupported under X11 with Composite Extension

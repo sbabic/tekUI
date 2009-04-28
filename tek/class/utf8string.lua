@@ -13,18 +13,18 @@
 --		This class supports the manipulation of UTF-8 encoded strings.
 --
 --	IMPLEMENTS::
---		- UTF8String:byte() - Return Unicode character codes
---		- UTF8String.char() - Return UTF8-encoded character sequences
---		- UTF8String:erase() - Remove substring
---		- UTF8String:get() - Return the string in UTF-8-encoded form
---		- UTF8String:insert() - Insert a string at a position
---		- UTF8String:len() - Return the length in characters
---		- UTF8String:overwrite() - Overwrite string
---		- UTF8String:set() - Set a string
---		- UTF8String:sub() - Return substring of a string
+--		- UTF8String:byte() - Returns Unicode character codes
+--		- UTF8String.char() - Returns UTF8-encoded character sequences
+--		- UTF8String:erase() - Removes substring
+--		- UTF8String:get() - Returns the string in UTF-8 encoded form
+--		- UTF8String:insert() - Inserts a string at a given position
+--		- UTF8String:len() - Returns the length in characters
+--		- UTF8String:overwrite() - Overwrites string
+--		- UTF8String:set() - Sets a string
+--		- UTF8String:sub() - Returns a substring of a string
 --
 --	OVERRIDES::
---		- UTF8String.new() - create an UTF-8 string object from a string
+--		- UTF8String.new() - Creates an UTF-8 string object from a string
 --
 -------------------------------------------------------------------------------
 
@@ -168,8 +168,8 @@ local function readstring(data)
 end
 
 -------------------------------------------------------------------------------
---	UTF8String:set(s): Initialize the string object with a new, UTF-8 encoded
---	regular string.
+--	UTF8String:set(s): Initializes the string object with a new, UTF-8 encoded
+--	string.
 -------------------------------------------------------------------------------
 
 function UTF8String:set(s)
@@ -187,8 +187,8 @@ function UTF8String:set(s)
 end
 
 -------------------------------------------------------------------------------
---	object = UTF8String.new(class, string): Create an UTF-8 string object
---	from an (already UTF-8 encoded) regular string.
+--	object = UTF8String.new(class, string): Creates a string object from an
+--	(already UTF-8 encoded) regular string.
 -------------------------------------------------------------------------------
 
 function UTF8String.new(class, s)
@@ -196,7 +196,7 @@ function UTF8String.new(class, s)
 end
 
 -------------------------------------------------------------------------------
---	UTF8String:insert(string[, position]): Insert the UTF-8 encoded string
+--	UTF8String:insert(string[, position]): Inserts the UTF-8 encoded string
 --	at the specified {{position}} to the string object. If {{position}} is
 --	absent, the string is added to the end.
 -------------------------------------------------------------------------------
@@ -218,7 +218,7 @@ function UTF8String:insert(s, pos)
 end
 
 -------------------------------------------------------------------------------
---	string = UTF8String:get(): Return the string in UTF-8 encoded form.
+--	string = UTF8String:get(): Returns the string in UTF-8 encoded form.
 -------------------------------------------------------------------------------
 
 function UTF8String:get()
@@ -246,7 +246,7 @@ end
 -- end
 
 -------------------------------------------------------------------------------
---	len = UTF8String:len(): Return the length of the string, in characters.
+--	len = UTF8String:len(): Returns the length of the string, in characters.
 -------------------------------------------------------------------------------
 
 function len(self)
@@ -289,8 +289,9 @@ function UTF8String:sub(p0, p1)
 end
 
 -------------------------------------------------------------------------------
---	UTF8String:erase(i[, j]): Erase the characters at the positions from {{i}}
---	to {{j}}. The semantics for the range are the same as for UTF8String:sub().
+--	UTF8String:erase(i[, j]): Erases the characters at the positions from
+--	{{i}} to {{j}}. The semantics for the range are the same as for
+--	UTF8String:sub().
 -------------------------------------------------------------------------------
 
 function UTF8String:erase(p0, p1)
@@ -335,8 +336,8 @@ function UTF8String:byte(p0, p1)
 end
 
 -------------------------------------------------------------------------------
---	UTF8String:overwrite(s[, pos]): Overwrite the UTF8 string with the
---	specified (also UTF-8 encoded) string, starting a the given position.
+--	UTF8String:overwrite(s[, pos]): Overwrites the string object with the
+--	specified (already UTF-8 encoded) string, starting a the given position.
 -------------------------------------------------------------------------------
 
 function UTF8String:overwrite(s, pos)

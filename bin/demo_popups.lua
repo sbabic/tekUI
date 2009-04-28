@@ -308,7 +308,7 @@ local window = Window:new
 											Height = "free",
 											Width = "free",
 											Text = "",
-											Style = "font: :48",
+											Style = "font: ui-huge:48",
 											Id = "popup-show",
 										},
 										ui.Group:new
