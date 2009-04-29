@@ -80,6 +80,7 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local assert = assert
+local floor = math.floor
 local ipairs = ipairs
 local pairs = pairs
 local type = type
@@ -88,7 +89,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 12.1"
+_VERSION = "Display 13.0"
 
 local Display = _M
 
@@ -185,19 +186,39 @@ local FontDefaults =
 }
 FontDefaults[""] = FontDefaults["ui-main"]
 
-
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
 
 function Display.new(class, self)
 	self = self or { }
+	self.AspectX = self.AspectX or 1
+	self.AspectY = self.AspectY or 1
 	self.RGBTab = { }
 	self.PenTab = { }
 	self.ColorNames = { }
 	self.FontTab = self.FontTab or { }
 	self.FontCache = { }
 	return Element.new(class, self)
+end
+
+-------------------------------------------------------------------------------
+--	w, h = fitMinAspect(w, h, iw, ih[, evenodd]) - Fit to size, considering
+--	the display's aspect ratio. If the optional {{evenodd}} is {{0}}, even
+--	numbers are returned, if it is {{1}}, odd numbers are returned.
+-------------------------------------------------------------------------------
+
+function Display:fitMinAspect(w, h, iw, ih, round)
+	local ax, ay = self.AspectX, self.AspectY
+	if w * ih * ay / (ax * iw) > h then
+		w = h * ax * iw / (ay * ih)
+	else
+		h = w * ih * ay / (ax * iw)
+	end
+	if round then
+		return floor(w / 2) * 2 + round, floor(h / 2) * 2 + round
+	end
+	return floor(w), floor(h)
 end
 
 -------------------------------------------------------------------------------

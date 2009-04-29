@@ -381,9 +381,49 @@ tek_lib_visual_frect(lua_State *L)
 	if (x0 > x1 || y0 > y1)
 		return 0;
 	
-	pen = checkpenptr(L, 6);
-	TVisualFRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
-		pen->pen_Pen);
+	if (lua_type(L, 6) == LUA_TSTRING)
+	{
+		size_t srclen;
+		const char *srcbuf = luaL_checklstring(L, 6, &srclen);
+		int tw, h, maxv;
+	
+		if (sscanf(srcbuf, "P6\n%d %d\n%d\n", &tw, &h, &maxv) == 3 ||
+			sscanf(srcbuf, "P6\n#%*80[^\n]\n%d %d\n%d\n", &tw, &h, &maxv) == 3)
+		{
+			if (maxv > 0 && maxv < 256)
+			{
+				TINT w = x1 - x0 + 1;
+				TUINT *buf;
+				srcbuf += srclen - 3 * tw * h;
+				buf = TExecAlloc(vis->vis_ExecBase, TNULL, w * h * sizeof(TUINT));
+				if (buf)
+				{
+					TUINT8 r, g, b;
+					int x, y;
+					for (y = 0; y < h; ++y)
+					{
+						TUINT *bp = buf + y * w;
+						for (x = 0; x < w; ++x)
+						{
+							r = *srcbuf++;
+							g = *srcbuf++;
+							b = *srcbuf++;
+							*bp++ = (r << 16) | (g << 8) | b;
+						}
+						srcbuf += (tw - w) * 3;
+					}
+					TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, w, h, w, TNULL);
+					TExecFree(vis->vis_ExecBase, buf);
+				}
+			}
+		}
+	}
+	else
+	{
+		pen = checkpenptr(L, 6);
+		TVisualFRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
+			pen->pen_Pen);
+	}
 
 	return 0;
 }
@@ -543,9 +583,9 @@ tek_lib_visual_drawimage(lua_State *L)
 			lua_rawgeti(L, -9, idx * 2);
 			/* index, x, y */
 			coord[j * 2] = rect[0] + sx + 
-				(lua_tointeger(L, -2) * scalex + 0x7fff) / 0x10000;
+				(lua_tointeger(L, -2) * scalex) / 0x10000;
 			coord[j * 2 + 1] = rect[3] + sy +
-				(lua_tointeger(L, -1) * scaley + 0x7fff) / 0x10000;
+				(lua_tointeger(L, -1) * scaley) / 0x10000;
 			if (pentab)
 			{
 				lua_rawgeti(L, -7, idx + 1);

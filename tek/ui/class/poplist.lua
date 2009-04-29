@@ -58,7 +58,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 6.4"
+_VERSION = "PopList 6.5"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -66,7 +66,7 @@ _VERSION = "PopList 6.4"
 
 local ArrowImage = VectorImage:new
 {
-	{ 0x3000,0xa000, 0xe000,0xa000, 0x8000,0x4000 },
+	{ 0x2000,0xa000, 0xe000,0xa000, 0x8000,0x4000 },
 	{ { 0x1000, 3, { 1, 2, 3 }, ui.PEN_MENUDETAIL } },
 	true
 }

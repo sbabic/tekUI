@@ -165,7 +165,9 @@ function FileButton.init(self)
 	self.Height = "fill"
 	self.Width = "fill"
 	self.MinWidth = 15
-	self.MinHeight = 18
+	self.MinHeight = 17
+	self.ImageAspectX = 5
+	self.ImageAspectY = 7
 	self.Style = "padding: 2"
 	return ui.ImageGadget.init(self)
 end
@@ -566,7 +568,6 @@ ui.Application:new
 						}
 					}
 				},
-			
 			
 				ui.Group:new
 				{

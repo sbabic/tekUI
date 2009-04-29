@@ -39,19 +39,20 @@ local Object = require "tek.class.object"
 local Region = require "tek.lib.region"
 
 local assert = assert
-local ipairs = ipairs
-local pairs = pairs
-local unpack = unpack
 local insert = table.insert
-local remove = table.remove
-local min = math.min
+local ipairs = ipairs
 local max = math.max
+local min = math.min
 local overlap = Region.overlapCoords
+local pairs = pairs
+local remove = table.remove
 local setmetatable = setmetatable
+local type = type
+local unpack = unpack
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 12.4"
+_VERSION = "Drawable 13.0"
 
 DEBUG_DELAY = 3
 
@@ -70,8 +71,6 @@ function Drawable.init(self)
 	self.Top = false
 	self.Width = false
 	self.Height = false
-	self.AspectX = 1
-	self.AspectY = 1
 	self.ShiftX = 0
 	self.ShiftY = 0
 	self.ClipStack = { }
@@ -118,10 +117,15 @@ function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
 		-- Attach metatable for late pen allocation:
 		setmetatable(self.Pens, {
 			__index = function(tab, key)
-				local pen = self.Visual:allocpen(
-					self.Display:colorNameToRGB(key, "#ff00ff"))
-				tab[key] = pen
-				return pen
+				if key:sub(1, 1) == "#" then
+					-- we assume a string representing a color number:
+					local pen = self.Visual:allocpen(
+						self.Display:colorNameToRGB(key, "#ff00ff"))
+					tab[key] = pen
+					return pen
+				end
+				-- otherwise we assume the key is a bitmap; return it:
+				return key
 			end
 		})
 		

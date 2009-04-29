@@ -15,7 +15,7 @@ local unpack = unpack
 local Region = require "tek.lib.region"
 
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 3.0"
+_VERSION = "ImageGadget 4.0"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -26,6 +26,8 @@ local ImageGadget = _M
 function ImageGadget.new(class, self)
 	self.HAlign = self.HAlign or "center"
 	self.Image = self.Image or false
+	self.ImageAspectX = self.ImageAspectX or 1
+	self.ImageAspectY = self.ImageAspectY or 1
 	self.ImageData = { } -- layouted x, y, width, height
 	self.ImageWidth = self.ImageWidth or false
 	self.ImageHeight = self.ImageHeight or false
@@ -42,8 +44,26 @@ end
 
 function ImageGadget:askMinMax(m1, m2, m3, m4)
 	local d = self.ImageData
-	local iw = self.ImageWidth or 0
-	local ih = self.ImageHeight or 0
+	
+	local mw = self.MinWidth
+	local mh = self.MinHeight
+	local iw = self.ImageWidth
+	local ih = self.ImageHeight
+	local ax = self.ImageAspectX
+	local ay = self.ImageAspectY
+	
+	if iw then
+		iw = max(iw, mw)
+	else
+		iw = floor((ih or mh) * ax / ay)
+	end
+	
+	if ih then
+		ih = max(ih, mh)
+	else
+		ih = floor((iw or mw) * ay / ax)
+	end
+	
 	return Gadget.askMinMax(self, m1 + iw, m2 + ih, m3 + iw, m4 + ih)
 end
 
@@ -74,8 +94,17 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 		local w = r[3] - x - p[1] - p[3] + 1
 		local h = r[4] - y - p[2] - p[4] + 1
 		local id = self.ImageData
-		local iw = self.ImageWidth or w
-		local ih = self.ImageHeight or h
+		local iw, ih
+		
+		if self.ImageWidth then
+			-- given size:
+			iw, ih = self.ImageWidth, self.ImageHeight
+		else
+			-- can stretch:
+			iw, ih = self.Display:fitMinAspect(w, h, self.ImageAspectX,
+				self.ImageAspectY)
+		end
+		
 		if iw ~= w or ih ~= h then
 			self.Region = Region.new(x, y, r[3], r[4])
 		elseif self.Image[3] then -- transparent?
@@ -94,7 +123,7 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 				self.Region:subRect(x, y, x + iw - 1, y + ih - 1)
 			end
 		end
-		id[1], id[2], id[3], id[4] = x, y, w, h
+		id[1], id[2], id[3], id[4] = x, y, iw, ih
 		return true
 	end
 end

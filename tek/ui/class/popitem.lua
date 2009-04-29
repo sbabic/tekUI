@@ -68,7 +68,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 8.1"
+_VERSION = "PopItem 8.2"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -179,10 +179,11 @@ function PopItem:askMinMax(m1, m2, m3, m4)
 		local p = self.Padding
 		local m = self.MarginAndBorder
 		local d = self.Drawable
-		local ih = n2 - m2 - p[2] - p[4] - m[2] - m[4]
-		local iw = ih * d.AspectX / d.AspectY -- image width
+		local iw = n1 - m1 - p[3] - p[1] - m[3] - m[1] + 1
+		local ih = n2 - m2 - p[4] - p[2] - m[4] - m[2] + 1
+		iw, ih = self.Display:fitMinAspect(iw, ih, 1, 1)
 		n1 = n1 + iw
-		n3 = n3 + iw
+		n3 = n3 + ih
 	end
 	return n1, n2, n3, n4
 end
@@ -196,9 +197,9 @@ function PopItem:layout(x0, y0, x1, y1, markdamage)
 		if self.Image then
 			local r = self.Rect
 			local p = self.Padding
+			local iw = r[3] - r[1] - p[3] - p[1] + 1
 			local ih = r[4] - r[2] - p[4] - p[2] + 1
-			local d = self.Drawable
-			local iw = ih * d.AspectX / d.AspectY
+			iw, ih = self.Display:fitMinAspect(iw, ih, 1, 1, 0)
 			-- use half the padding that was granted for the right edge:
 			local x = r[3] - floor(p[3] / 2) - iw
 			local y = r[2] + p[2]
@@ -234,7 +235,7 @@ function PopItem:draw()
 		d:pushClipRect(r[1], r[2], ir[1], r[4])
 		Text.draw(self)
 		d:popClipRect()
-		local x0, y0, x1, y1 = unpack(self.ImageRect)
+		local x0, y0, x1, y1 = unpack(ir)
 		i:draw(d, x0, y0, x1, y1, d.Pens[self.Foreground])
 	else
 		Text.draw(self)
