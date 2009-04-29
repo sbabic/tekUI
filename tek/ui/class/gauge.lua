@@ -45,7 +45,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 4.4"
+_VERSION = "Gauge 4.5"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -147,7 +147,8 @@ function Gauge:getKnobRect()
 			x1 = min(x1, x0 + floor((self.Value - self.Min) * w / r) + km[1])
 		else
 			local h = y1 - y0 - km[2] + 1
-			y1 = min(y1, y0 + floor((self.Value - self.Min) * h / r) + km[2])
+			y0 = max(y0, 
+				y1 - floor((self.Value - self.Min) * h / r) - km[2])
 		end
 		return x0 - m[1], y0 - m[2], x1 + m[3], y1 + m[4]
 	end
