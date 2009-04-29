@@ -68,7 +68,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 8.2"
+_VERSION = "PopItem 8.3"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -178,10 +178,9 @@ function PopItem:askMinMax(m1, m2, m3, m4)
 	if self.Image then
 		local p = self.Padding
 		local m = self.MarginAndBorder
-		local d = self.Drawable
 		local iw = n1 - m1 - p[3] - p[1] - m[3] - m[1] + 1
 		local ih = n2 - m2 - p[4] - p[2] - m[4] - m[2] + 1
-		iw, ih = self.Display:fitMinAspect(iw, ih, 1, 1)
+		iw, ih = self.Display:fitMinAspect(iw, ih, 1, 1, 0)
 		n1 = n1 + iw
 		n3 = n3 + ih
 	end

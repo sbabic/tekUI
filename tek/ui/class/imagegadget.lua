@@ -15,7 +15,7 @@ local unpack = unpack
 local Region = require "tek.lib.region"
 
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 4.0"
+_VERSION = "ImageGadget 4.1"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -102,7 +102,7 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 		else
 			-- can stretch:
 			iw, ih = self.Display:fitMinAspect(w, h, self.ImageAspectX,
-				self.ImageAspectY)
+				self.ImageAspectY, 0)
 		end
 		
 		if iw ~= w or ih ~= h then
