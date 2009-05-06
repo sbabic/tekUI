@@ -69,6 +69,7 @@ local Area = ui.Area
 local Region = require "tek.lib.region"
 local Family = ui.Family
 local Gadget = ui.Gadget
+local overlap = Region.overlapCoords
 
 local assert = assert
 local floor = math.floor
@@ -77,7 +78,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 17.1"
+_VERSION = "Group 17.4"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -94,6 +95,7 @@ function Group.init(self)
 	self.Orientation = self.Orientation or "horizontal"
 	self.SameSize = self.SameSize or false
 	self.Weights = self.Weights or { }
+	-- self.TrackDamage = self.TrackDamage ~= nil and self.TrackDamage or true
 	return Gadget.init(self)
 end
 
@@ -251,7 +253,24 @@ end
 
 function Group:markDamage(r1, r2, r3, r4)
 	Gadget.markDamage(self, r1, r2, r3, r4)
-	self.Redraw = self.Redraw or self.FreeRegion:checkOverlap(r1, r2, r3, r4)
+	local f = self.FreeRegion
+	if f and f:checkOverlap(r1, r2, r3, r4) then
+		if self.TrackDamage then
+			-- mark damage where it overlaps with freeregion:
+			local d = self.DamageRegion
+			if not d then
+				d = Region.new()
+				self.DamageRegion = d
+			end
+			for _, f1, f2, f3, f4 in f:getRects() do
+				f1, f2, f3, f4 = overlap(f1, f2, f3, f4, r1, r2, r3, r4)
+				if f1 then
+					d:orRect(f1, f2, f3, f4)
+				end
+			end
+		end
+		self.Redraw = true
+	end
 	for _, c in ipairs(self.Children) do
 		c:markDamage(r1, r2, r3, r4)
 	end
@@ -264,9 +283,19 @@ end
 function Group:draw()
 	local d = self.Drawable
 	local f = self.FreeRegion
-	local p = d.Pens[self.Background]
-	for _, r1, r2, r3, r4 in f:getRects() do
-		d:fillRect(r1, r2, r3, r4, p)
+	local dr = self.DamageRegion
+	local p, tx, ty = self:getBackground()
+	if dr then
+		-- repaint where damageregion and freeregion overlap:
+		dr:andRegion(f)
+		for _, r1, r2, r3, r4 in dr:getRects() do
+			d:fillRect(r1, r2, r3, r4, p, tx, ty)
+		end
+	else
+		-- repaint freeregion:
+		for _, r1, r2, r3, r4 in f:getRects() do
+			d:fillRect(r1, r2, r3, r4, p, tx, ty)
+		end
 	end
 end
 
@@ -310,11 +339,15 @@ end
 
 function Group:layout(r1, r2, r3, r4, markdamage)
 	local res = Gadget.layout(self, r1, r2, r3, r4, markdamage)
-	-- layout and update free region:
-	local f = Region.new(r1, r2, r3, r4)
-	self.FreeRegion = f
+	-- layout contents, update freeregion:
+	self.FreeRegion = Region.new(r1, r2, r3, r4)
 	self.Layout:layout(self, r1, r2, r3, r4, markdamage)
-	f:subRegion(self.BorderRegion)
+	self.FreeRegion:subRegion(self.BorderRegion)
+	if res then
+		-- resized groups must be repainted
+		self.DamageRegion = false
+		self.Redraw = true
+	end
 	return res
 end
 

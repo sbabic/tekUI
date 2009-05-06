@@ -4,13 +4,13 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	Version 1.0
+--	Version 1.2
 --
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local VectorImage = ui.VectorImage
-module("tek.ui.image.radio", tek.ui.class.vectorimage)
+local Image = ui.Image
+module("tek.ui.image.radio", tek.ui.class.image)
 
 local coords =
 {
@@ -91,9 +91,6 @@ local primitives2 =
 }
 
 function new(class, num)
-	return VectorImage.new(class, {
-		coords, 
-		num == 2 and primitives2 or primitives1,
-		true
-	})
+	return Image.new(class, { coords, false, false, true,
+		num == 2 and primitives2 or primitives1 })
 end

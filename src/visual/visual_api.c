@@ -462,7 +462,7 @@ EXPORT void vis_drawtags(struct TVisualBase *inst, TTAGITEM *tags)
 /*****************************************************************************/
 
 EXPORT void vis_text(struct TVisualBase *inst, TINT x, TINT y, TSTRPTR t,
-	TUINT l, TVPEN fg, TVPEN bg)
+	TUINT l, TVPEN fg)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_TEXT,
 		inst->vis_Display, TNULL);
@@ -470,7 +470,6 @@ EXPORT void vis_text(struct TVisualBase *inst, TINT x, TINT y, TSTRPTR t,
 	req->tvr_Op.Text.X = x;
 	req->tvr_Op.Text.Y = y;
 	req->tvr_Op.Text.FgPen = fg;
-	req->tvr_Op.Text.BgPen = bg;
 	req->tvr_Op.Text.Text = t;
 	req->tvr_Op.Text.Length = l;
 	visi_dosync(inst, req);

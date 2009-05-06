@@ -36,22 +36,20 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local PopItem = ui.PopItem
-local VectorImage = ui.VectorImage
 local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 5.6"
+_VERSION = "MenuItem 5.8"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
 -------------------------------------------------------------------------------
 
-local ArrowImage = VectorImage:new
+local ArrowImage = ui.Image:new
 {
-	{ 0x7000,0x4000, 0x7000,0xc000, 0xb000,0x8000 },
+	{ 0x7000,0x4000, 0x7000,0xc000, 0xb000,0x8000 }, false, false, true,
 	{ { 0x1000, 3, { 1, 2, 3 }, ui.PEN_MENUDETAIL } },
-	true
 }
 
 -------------------------------------------------------------------------------

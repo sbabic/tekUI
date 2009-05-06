@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<title>tekUI Changelog</title>
+		<link rel="stylesheet" href="manual.css" />
+	</head>
+	<body>
+		<h2>
+			tekUI Changelog
+		</h2>
+		<h3>
+			0.8d:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					<a href="manual.html#Application:quit"><code>Application:quit()</code></a> added, can now be passed an initial Display
+				</li>
+				<li>
+					Area, Canvas, Gadget: Added AutoPosition feature
+				</li>
+				<li>
+					<a href="manual.html#CheckMark:setState"><code>CheckMark:setState()</code></a>: Hilite has now precedence over Selected
+				</li>
+				<li>
+					CheckMark, RadioButton, ScrollBar: Now using external images
+				</li>
+				<li>
+					Compiler: added
+				</li>
+				<li>
+					Debug: Default level reset to WARN (this time also reflected in the documentation)
+				</li>
+				<li>
+					Display: added colors user1 ... user4, <a href="manual.html#colorNameToRGB"><code>colorNameToRGB()</code></a>, <a href="manual.html#getPaletteEntry"><code>getPaletteEntry()</code></a>, removed <a href="manual.html#allocPens"><code>allocPens()</code></a> 
+				</li>
+				<li>
+					Drawable: now supports on-demand allocation of custom colors
+				</li>
+				<li>
+					Element: Added <a href="manual.html#getNumProperty"><code>getNumProperty()</code></a>, slightly optimized
+				</li>
+				<li>
+					<a href="manual.html#List:changeItem"><code>List:changeItem()</code></a> was using a global instead of an argument, corrected
+				</li>
+				<li>
+					Installation procedure corrected
+				</li>
+				<li>
+					Meter class and example rewritten
+				</li>
+				<li>
+					Minor corrections and improvements in the documentation
+				</li>
+				<li>
+					PopItems: corrected notification handler for Active, fixing long-standing double-activation bug
+				</li>
+				<li>
+					<a href="manual.html#Region:new"><code>Region.new()</code></a> can now cope with an empty initial rectangle
+				</li>
+				<li>
+					Slider: AutoFocus is now false by default, improved keyboard usage
+				</li>
+				<li>
+					Theme, internal stylesheet: minor corrections
+				</li>
+				<li>
+					<a href="manual.html#Text:getTextSize"><code>Text:getTextSize()</code></a> now also returns the layouted x/y, if present
+				</li>
+				<li>
+					UI: Added image class loader and <a href="manual.html#createImage"><code>createImage()</code></a>, added PEN_NUMBER, PEN_USER1 through PEN_USER4, <a href="manual.html#createHook"><code>createHook()</code></a> now returns false on the predefined name &quot;none&quot;
+				</li>
+				<li>
+					UI, Display, Theme: PEN_LIGHT removed, added PEN_OUTLINE
+				</li>
+				<li>
+					UTF8String: <a href="manual.html#set"><code>set()</code></a> and <a href="manual.html#char"><code>char()</code></a> can now be overridden, removed __<a href="manual.html#tostring"><code>tostring()</code></a> and __<a href="manual.html#concat"><code>concat()</code></a>, <a href="manual.html#unpack"><code>unpack()</code></a> was not known in <a href="manual.html#byte"><code>byte()</code></a> 
+				</li>
+				<li>
+					VectorImage, BitmapImage: data fields are now indexed numerically
+				</li>
+				<li>
+					Visual API: <a href="manual.html#drawImage"><code>drawImage()</code></a> data structure changed, implementation simplified and several problems rectified
+				</li>
+				<li>
+					<a href="manual.html#Visual:drawImage"><code>Visual:drawImage()</code></a>, ImageGadget, <a href="manual.html#VectorImage:draw"><code>VectorImage:draw()</code></a> now supports an override_pen argument for rendering an image monochromatically
+				</li>
+			</ul>
+		</blockquote>
+		<h3>
+			0.8c:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					README: Improved, updated
+				</li>
+				<li>
+					Debug: verbosity set to ERROR
+				</li>
+				<li>
+					Application: <a href="manual.html#requestFile"><code>requestFile()</code></a> arg.Center can now be set to false
+				</li>
+				<li>
+					Area: <a href="manual.html#layout"><code>layout()</code></a> simplified, should handle more blitting cases
+				</li>
+				<li>
+					Button, CheckMark, MenuItem, PopItem: keycode can now be set to false
+				</li>
+				<li>
+					FloatText, ListGadget: TrackDamage can now be set to false
+				</li>
+				<li>
+					Frame: border repaints can now be avoided if an element was blitted
+				</li>
+				<li>
+					<a href="manual.html#Text:onSetText"><code>Text:onSetText()</code></a> causes a less destructive repaint if KeepMinWidth is enabled
+				</li>
+				<li>
+					Window: blits and updates are now implemented in the overriden <a href="manual.html#refresh"><code>refresh()</code></a> method and synchronized, removed notify option in <a href="manual.html#SetHiliteElement"><code>SetHiliteElement()</code></a>, <a href="manual.html#setFocusElement"><code>setFocusElement()</code></a>, <a href="manual.html#setActiveElement"><code>setActiveElement()</code></a>, <a href="manual.html#setDblClickElement"><code>setDblClickElement()</code></a>, improved documentation
+				</li>
+			</ul>
+		</blockquote>
+		<h3>
+			0.8b:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					CHANGES added
+				</li>
+			</ul>
+		</blockquote>
+	</body>
+</html>

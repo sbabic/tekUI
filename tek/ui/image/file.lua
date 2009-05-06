@@ -4,13 +4,13 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	Version 1.1
+--	Version 1.3
 --
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local VectorImage = ui.VectorImage
-module("tek.ui.image.file", tek.ui.class.vectorimage)
+local Image = ui.Image
+module("tek.ui.image.file", tek.ui.class.image)
 
 local coords =
 {
@@ -39,5 +39,5 @@ local primitives =
 }
 
 function new(class, num)
-	return VectorImage.new(class, { coords, primitives, true })
+	return Image.new(class, { coords, false, false, true, primitives })
 end

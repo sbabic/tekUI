@@ -56,13 +56,12 @@ local ui = require "tek.ui"
 local Group = ui.Group
 local ImageGadget = ui.ImageGadget
 local Slider = ui.Slider
-local VectorImage = ui.VectorImage
 
 local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 8.2"
+_VERSION = "ScrollBar 8.5"
 
 local ScrollBar = _M
 
@@ -70,10 +69,10 @@ local ScrollBar = _M
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local ArrowUpImage = ui.createImage("arrowup")
-local ArrowDownImage = ui.createImage("arrowdown")
-local ArrowLeftImage = ui.createImage("arrowleft")
-local ArrowRightImage = ui.createImage("arrowright")
+local ArrowUpImage = ui.getStockImage("arrowup")
+local ArrowDownImage = ui.getStockImage("arrowdown")
+local ArrowLeftImage = ui.getStockImage("arrowleft")
+local ArrowRightImage = ui.getStockImage("arrowright")
 
 local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
 local NOTIFY_MIN = { ui.NOTIFY_SELF, "onSetMin", ui.NOTIFY_VALUE }
@@ -259,10 +258,10 @@ function ScrollBar:setup(app, window)
 		self.Height = self.Height or "auto"
 	end
 
-	self:addNotify("Value", ui.NOTIFY_CHANGE, NOTIFY_VALUE, 1)
-	self:addNotify("Min", ui.NOTIFY_CHANGE, NOTIFY_MIN, 1)
-	self:addNotify("Max", ui.NOTIFY_CHANGE, NOTIFY_MAX, 1)
-	self:addNotify("Range", ui.NOTIFY_CHANGE, NOTIFY_RANGE, 1)
+	self:addNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE, 1)
+	self:addNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN, 1)
+	self:addNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX, 1)
+	self:addNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE, 1)
 end
 
 -------------------------------------------------------------------------------
@@ -270,10 +269,10 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollBar:cleanup()
-	self:remNotify("Range", ui.NOTIFY_CHANGE, NOTIFY_RANGE)
-	self:remNotify("Max", ui.NOTIFY_CHANGE, NOTIFY_MAX)
-	self:remNotify("Min", ui.NOTIFY_CHANGE, NOTIFY_MIN)
-	self:remNotify("Value", ui.NOTIFY_CHANGE, NOTIFY_VALUE)
+	self:remNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE)
+	self:remNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX)
+	self:remNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN)
+	self:remNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE)
 	Group.cleanup(self)
 end
 

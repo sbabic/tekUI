@@ -29,18 +29,17 @@
 
 local ui = require "tek.ui"
 local CheckMark = ui.CheckMark
-local VectorImage = ui.VectorImage
 local ipairs = ipairs
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 2.7"
+_VERSION = "RadioButton 2.9"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local RadioImage1 = ui.createImage("radio")
-local RadioImage2 = ui.createImage("radio", 2)
+local RadioImage1 = ui.getStockImage("radio")
+local RadioImage2 = ui.getStockImage("radio", 2)
 
 -------------------------------------------------------------------------------
 --	Class implementation:

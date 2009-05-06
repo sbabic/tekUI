@@ -16,10 +16,11 @@
 --
 --	FUNCTIONS::
 --		- ui.createHook() - Creates a hook object
---		- ui.createImage() - Creates an image object
+--		- ui.getStockImage() - Gets a stock image object
 --		- ui.extractKeyCode() - Extracts a keycode from a string
 --		- ui.getLocale() - Gets a locale catalog
 --		- ui.loadClass() - Loads a named class
+--		- ui.loadImage() - Loads an image (possibly from an image cache)
 --		- ui.loadStyleSheet() - Loads and parse a style sheet file
 --		- ui.loadTable() - Tries to load a table from standard paths
 --		- ui.resolveKeyCode() - Converts a keycode into keys and qualifiers
@@ -28,7 +29,6 @@
 --
 --	CONSTANTS::
 --		- {{NOTIFY_ALWAYS}} - see [[Object][#tek.class.object]]
---		- {{NOTIFY_CHANGE}} - see [[Object][#tek.class.object]]
 --		- {{NOTIFY_VALUE}} - see [[Object][#tek.class.object]]
 --		- {{NOTIFY_TOGGLE}} - see [[Object][#tek.class.object]]
 --		- {{NOTIFY_FORMAT}} - see [[Object][#tek.class.object]]
@@ -82,7 +82,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 20.1"
+_VERSION = "tekUI 22.0"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -166,15 +166,28 @@ function loadClass(domain, name, pat, loader)
 end
 
 -------------------------------------------------------------------------------
---	imgobject = createImage(name, ...): Creates an image of a named class,
+--	imgobject = getStockImage(name, ...): Creates an image of a named class,
 --	corresponding to classes found in {{tek/ui/image}}. Additional arguments
 --	are passed to {{imageclass:new()}}.
 -------------------------------------------------------------------------------
 
-function createImage(name, ...)
+function getStockImage(name, ...)
 	local class = loadClass("image", name)
 	if class then
 		return class:new(...)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	imgobject = loadImage(name): Loads an image from a file or retrieves
+--	it from the image cache. Note that currently only the PPM file format is
+--	recognized.
+-------------------------------------------------------------------------------
+
+function loadImage(fname)
+	local img, w, h, trans = Display.getPixmap(fname)
+	if img then
+		return Image:new { img, w, h, trans }
 	end
 end
 
@@ -527,6 +540,10 @@ local matchkeys =
 	{
 		{ "^parent%-group$", function(p, k) p[k] = 0 end }
 	},
+	["background-image"] =
+	{
+		{ "^url%b()", function(p, k, r, a) p[r] = a end, "background-color" }
+	},
 	["border-width"] =
 	{
 		{ "^%s*(%d+)%s*$", adddirkeys1, "border-%s-width" },
@@ -750,7 +767,6 @@ NULLOFFS = { 0, 0, 0, 0 }
 -------------------------------------------------------------------------------
 
 NOTIFY_ALWAYS = Object.NOTIFY_ALWAYS
-NOTIFY_CHANGE = Object.NOTIFY_CHANGE
 NOTIFY_VALUE = Object.NOTIFY_VALUE
 NOTIFY_TOGGLE = Object.NOTIFY_TOGGLE
 NOTIFY_FORMAT = Object.NOTIFY_FORMAT

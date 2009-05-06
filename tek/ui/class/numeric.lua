@@ -62,7 +62,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.numeric", tek.ui.class.gadget)
-_VERSION = "Numeric 1.4"
+_VERSION = "Numeric 1.5"
 
 -------------------------------------------------------------------------------
 -- Data:
@@ -94,9 +94,9 @@ end
 
 function Numeric:setup(app, window)
 	Gadget.setup(self, app, window)
-	self:addNotify("Value", ui.NOTIFY_CHANGE, NOTIFY_VALUE, 1)
-	self:addNotify("Min", ui.NOTIFY_CHANGE, NOTIFY_MIN, 1)
-	self:addNotify("Max", ui.NOTIFY_CHANGE, NOTIFY_MAX, 1)
+	self:addNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE, 1)
+	self:addNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN, 1)
+	self:addNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX, 1)
 end
 
 -------------------------------------------------------------------------------
@@ -104,9 +104,9 @@ end
 -------------------------------------------------------------------------------
 
 function Numeric:cleanup()
-	self:remNotify("Max", ui.NOTIFY_CHANGE, NOTIFY_MAX)
-	self:remNotify("Min", ui.NOTIFY_CHANGE, NOTIFY_MIN)
-	self:remNotify("Value", ui.NOTIFY_CHANGE, NOTIFY_VALUE)
+	self:remNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX)
+	self:remNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN)
+	self:remNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE)
 	Gadget.cleanup(self)
 end
 

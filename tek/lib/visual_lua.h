@@ -93,6 +93,13 @@ typedef struct
 
 typedef struct
 {
+	TUINT *pxm_Data;
+	TUINT pxm_Width, pxm_Height;
+	TEKVisual *pxm_VisualBase;
+} TEKPixmap;
+
+typedef struct
+{
 	/* Visualbase: */
 	TEKVisual *font_VisBase;
 	/* Font object: */
@@ -108,12 +115,11 @@ typedef struct
 
 /*****************************************************************************/
 
-#define TExecBase vis->vis_ExecBase
-
 #define TEK_LIB_VISUAL_BASECLASSNAME "tek.lib.visual.base*"
 #define TEK_LIB_VISUAL_CLASSNAME "tek.lib.visual*"
 #define TEK_LIB_VISUALPEN_CLASSNAME "tek.lib.visual.pen*"
 #define TEK_LIB_VISUALFONT_CLASSNAME "tek.lib.visual.font*"
+#define TEK_LIB_VISUALPIXMAP_CLASSNAME "tek.lib.visual.pixmap*"
 
 /*****************************************************************************/
 
@@ -137,6 +143,7 @@ LOCAL LUACFUNC TINT tek_lib_visual_line(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_plot(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_text(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_drawimage(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_drawpixmap(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getattrs(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_setattrs(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_textsize_visual(lua_State *L);
@@ -148,5 +155,7 @@ LOCAL LUACFUNC TINT tek_lib_visual_setshift(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_drawrgb(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getfontattrs(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_drawppm(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_createpixmap(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_freepixmap(lua_State *L);
 
 #endif

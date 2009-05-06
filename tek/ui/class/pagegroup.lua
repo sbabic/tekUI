@@ -60,7 +60,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.7"
+_VERSION = "PageGroup 9.8"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -390,7 +390,7 @@ end
 
 function PageGroup:setup(app, window)
 	Group.setup(self, app, window)
-	self:addNotify("PageNumber", ui.NOTIFY_CHANGE, NOTIFY_PAGENUMBER)
+	self:addNotify("PageNumber", ui.NOTIFY_ALWAYS, NOTIFY_PAGENUMBER)
 end
 
 -------------------------------------------------------------------------------
@@ -398,7 +398,7 @@ end
 -------------------------------------------------------------------------------
 
 function PageGroup:cleanup()
-	self:remNotify("PageNumber", ui.NOTIFY_CHANGE, NOTIFY_PAGENUMBER)
+	self:remNotify("PageNumber", ui.NOTIFY_ALWAYS, NOTIFY_PAGENUMBER)
 	Group.cleanup(self)
 end
 

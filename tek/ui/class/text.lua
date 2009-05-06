@@ -92,7 +92,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 15.0"
+_VERSION = "Text 15.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -149,7 +149,7 @@ function Text:setup(app, window)
 		self.KeyCode = keycode and "IgnoreCase+" .. keycode or false
 	end
 	Gadget.setup(self, app, window)
-	self:addNotify("Text", ui.NOTIFY_CHANGE, NOTIFY_SETTEXT)
+	self:addNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_SETTEXT)
 end
 
 -------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ end
 -------------------------------------------------------------------------------
 
 function Text:cleanup()
-	self:remNotify("Text", ui.NOTIFY_CHANGE, NOTIFY_SETTEXT)
+	self:remNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_SETTEXT)
 	Gadget.cleanup(self)
 end
 
@@ -292,14 +292,14 @@ function Text:draw()
 		d:setFont(tr[2])
 		if self.Disabled then
 			local fp2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
-			d:drawText(x + 2, y + 2, tr[1], fp2)
+			d:drawText(x + 2, y + 2, x + tr[9] + 1, y + tr[10] + 1, tr[1], fp2)
 			if tr[11] then
 				-- draw underline:
 				d:fillRect(x + tr[11] + 2, y + tr[12] + 2,
 					x + tr[11] + tr[13] + 1, y + tr[12] + tr[14] + 1, fp2)
 			end
 		end
-		d:drawText(x + 1, y + 1, tr[1], fp)
+		d:drawText(x + 1, y + 1, x + tr[9], y + tr[10], tr[1], fp)
 		if tr[11] then
 			-- draw underline:
 			d:fillRect(x + tr[11] + 1, y + tr[12] + 1,

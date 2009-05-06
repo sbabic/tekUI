@@ -63,7 +63,7 @@
 --		- Application:addInputHandler() - adds input handler to the application
 --		- Application:connect() - connects children recursively
 --		- Application:easyRequest() - opens a message box
---		- Application:getElementById() - returns an element by Id
+--		- Application:getById() - returns an element by Id
 --		- Application:getLocale() - returns a locale for the application
 --		- Application:quit() - Quits the application
 --		- Application:remInputHandler() - removes a registered input handler
@@ -108,7 +108,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 15.1"
+_VERSION = "Application 16.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -255,12 +255,12 @@ function Application:remElement(e)
 end
 
 -------------------------------------------------------------------------------
--- 	element = Application:getElementById(id): Returns the element that was
+-- 	element = Application:getById(id): Returns the element that was
 --	registered with the Application under its unique {{id}}. Returns
 --	'''nil''' if the id was not found.
 -------------------------------------------------------------------------------
 
-function Application:getElementById(id)
+function Application:getById(id)
 	return self.ElementById[id]
 end
 

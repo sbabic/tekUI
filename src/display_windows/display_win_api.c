@@ -155,6 +155,8 @@ static TBOOL fb_initwindow(TAPTR task)
 
 		TUnlock(mod->fbd_Lock);
 
+		SetBkMode(win->fbv_HDC, TRANSPARENT);
+		
 		ShowWindow(win->fbv_HWnd, SW_SHOWNORMAL);
 		UpdateWindow(win->fbv_HWnd);
 
@@ -175,7 +177,7 @@ static TBOOL fb_initwindow(TAPTR task)
 			imsg->timsg_Height = win->fbv_Height;
 			fb_sendimsg(mod, win, imsg);
 		}
-
+		
 		return TTRUE;
 	}
 
@@ -877,21 +879,9 @@ fb_drawtext(WINDISPLAY *mod, struct TVRequest *req)
 	TUINT x = req->tvr_Op.Text.X;
 	TUINT y = req->tvr_Op.Text.Y;
 	struct FBPen *fgpen = (struct FBPen *) req->tvr_Op.Text.FgPen;
-	struct FBPen *bgpen = (struct FBPen *) req->tvr_Op.Text.BgPen;
 	TSTRPTR latin = fb_utf8tolatin(mod, text, len, &len);
-
 	SetTextColor(win->fbv_HDC, fgpen->col);
-	if ((TINTPTR) bgpen != TVPEN_UNDEFINED)
-	{
-		SetBkColor(win->fbv_HDC, bgpen->col);
-		SetBkMode(win->fbv_HDC, OPAQUE);
-		ExtTextOut(win->fbv_HDC, x, y, ETO_OPAQUE, NULL, latin, len, NULL);
-	}
-	else
-	{
-		SetBkMode(win->fbv_HDC, TRANSPARENT);
-		TextOut(win->fbv_HDC, x, y, latin, len);
-	}
+	TextOut(win->fbv_HDC, x, y, latin, len);
 	win->fbv_Dirty = TTRUE;
 }
 

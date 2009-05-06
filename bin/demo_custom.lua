@@ -116,7 +116,7 @@ function NetworkInput.init(self)
 end
 
 function NetworkInput:onSelect(selected)
-	local e = self.Application:getElementById(self.ActivateId)
+	local e = self.Application:getById(self.ActivateId)
 	if e then
 		if selected then
 			e:setValue("Element", self)
@@ -130,7 +130,7 @@ end
 
 function NetworkInput:onDisable(disabled)
 	if disabled then
-		local e = self.Application:getElementById(self.ActivateId)
+		local e = self.Application:getById(self.ActivateId)
 		if e then
 			e:setValue("Disabled", true)
 		end
@@ -248,12 +248,12 @@ local window = ui.Window:new
 					{
 						ui.CheckMark:new { Text = L.CUSTOMCLASS_DHCP, Selected = true,
 							onSelect = function(self, selected)
-								self.Application:getElementById("input-address"):setValue("Disabled", selected)
-								self.Application:getElementById("input-netmask"):setValue("Disabled", selected)
-								self.Application:getElementById("input-gateway"):setValue("Disabled", selected)
-								self.Application:getElementById("input-dns"):setValue("Disabled", selected)
+								self.Application:getById("input-address"):setValue("Disabled", selected)
+								self.Application:getById("input-netmask"):setValue("Disabled", selected)
+								self.Application:getById("input-gateway"):setValue("Disabled", selected)
+								self.Application:getById("input-dns"):setValue("Disabled", selected)
 								if not selected then
-									self.Window:clickElement(self.Application:getElementById("input-address"))
+									self.Window:clickElement(self.Application:getById("input-address"))
 								end
 								ui.CheckMark.onSelect(self, selected)
 							end,
@@ -269,9 +269,9 @@ local window = ui.Window:new
 									onEnter = function(self, text)
 										local a, b, c = text:match("^(%d+)%.(%d+)%.(%d+)%.%d+$")
 										local mask = c and tonumber(c) ~= 0 and "255.255.0.0" or "255.255.255.0"
-										self.Application:getElementById("input-netmask"):setValue("Text", mask)
-										self.Application:getElementById("input-gateway"):setValue("Text", ("%d.%d.0.0"):format(a, b))
-										self.Application:getElementById("input-dns"):setValue("Text", ("%d.%d.0.0"):format(a, b))
+										self.Application:getById("input-netmask"):setValue("Text", mask)
+										self.Application:getById("input-gateway"):setValue("Text", ("%d.%d.0.0"):format(a, b))
+										self.Application:getById("input-dns"):setValue("Text", ("%d.%d.0.0"):format(a, b))
 										NetworkInput.onEnter(self, text)
 									end,
 								},

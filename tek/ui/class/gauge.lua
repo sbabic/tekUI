@@ -45,7 +45,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 4.5"
+_VERSION = "Gauge 4.6"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -208,9 +208,9 @@ function Gauge:draw()
 	local r = c.Rect
 	local c1, c2, c3, c4 = c:getBorder()
 	bg:subRect(r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4)
-	local bgpen = d.Pens[self.Background]
+	local bgpen, tx, ty = self:getBackground()
 	for _, r1, r2, r3, r4 in bg:getRects() do
-		d:fillRect(r1, r2, r3, r4, bgpen)
+		d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
 	end
 end
 

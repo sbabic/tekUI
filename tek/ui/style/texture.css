@@ -1,0 +1,67 @@
+
+tek.ui.class.checkmark {
+	background-color: parent-group;
+}
+
+tek.ui.class.floattext {
+	color: shine;
+	background-color: url(bin/graphics/steel.ppm);
+}
+
+tek.ui.class.group {
+	background-image: url(bin/graphics/heated.ppm);
+}
+
+tek.ui.class.imagegadget {
+	background-image: url(bin/graphics/alloy.ppm);
+}
+
+tek.ui.class.menuitem {
+	background-image: url(bin/graphics/brushed2.ppm);
+}
+tek.ui.class.menuitem:active {
+	background-color: menu-active;
+}
+tek.ui.class.menuitem:hover {
+	background-color: menu-active;
+}
+tek.ui.class.menuitem:focus {
+	background-color: menu-active;
+}
+
+tek.ui.class.popupwindow {
+	background-image: url(bin/graphics/brushed2.ppm);
+}
+
+tek.ui.class.slider {
+	background-image: url(bin/graphics/steel.ppm);
+}
+
+tek.ui.class.text {
+	background-image: url(bin/graphics/alloy.ppm);
+}
+
+.caption {
+	background-image: url(bin/graphics/heated.ppm);
+}
+
+.gauge-fill {
+	background-image: url(bin/graphics/steel.ppm);
+}
+
+.knob {
+	background-image: url(bin/graphics/alloy.ppm);
+}
+
+.menubar {
+	background-image: url(bin/graphics/brushed2.ppm);
+}
+
+.page-button {
+	background-image: url(bin/graphics/heated.ppm);
+	background-position: fixed;
+}
+
+.page-button:active {
+	border-bottom-color: url(bin/graphics/heated.ppm);
+}

@@ -79,17 +79,17 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local assert = assert
 local floor = math.floor
 local ipairs = ipairs
+local open = io.open
 local pairs = pairs
-local type = type
 local tonumber = tonumber
+local unpack = unpack
 local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 13.0"
+_VERSION = "Display 16.1"
 
 local Display = _M
 
@@ -186,6 +186,8 @@ local FontDefaults =
 }
 FontDefaults[""] = FontDefaults["ui-main"]
 
+local PixmapCache = { }
+
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
@@ -200,6 +202,51 @@ function Display.new(class, self)
 	self.FontTab = self.FontTab or { }
 	self.FontCache = { }
 	return Element.new(class, self)
+end
+
+-------------------------------------------------------------------------------
+--	image, width, height, transparency = Display.createPixmap(picture):
+--	Creates a pixmap object from data in a picture file format. Currently
+--	only the PPM file format is recognized.
+-------------------------------------------------------------------------------
+
+Display.createPixmap = Visual.createpixmap
+
+-------------------------------------------------------------------------------
+--	image, width, height, transparency = Display.loadPixmap(filename): Creates
+--	a pixmap object from an image file in the file system. Currently only the
+--	PPM file format is recognized.
+-------------------------------------------------------------------------------
+
+function Display.loadPixmap(fname)
+	local f = open(fname, "rb")
+	if f then
+		local img, w, h, trans = createPixmap(f:read("*a"))
+		f:close()
+		if img then
+			return img, w, h, trans
+		end
+	end
+	db.warn("loading '%s' failed", fname)
+	return false
+end
+
+-------------------------------------------------------------------------------
+--	image, width, height, transparency = Display.getPixmap(fname): Gets a
+--	pixmap object, either by loading it from the filesystem or by retrieving
+--	it from the cache.
+-------------------------------------------------------------------------------
+
+function Display.getPixmap(fname)
+	if PixmapCache[fname] then
+		db.info("got cache copy for '%s'", fname)
+		return unpack(PixmapCache[fname])
+	end
+	local pm, w, h, trans = loadPixmap(fname)
+	if pm then
+		PixmapCache[fname] = { pm, w, h, trans }
+	end
+	return pm, w, h, trans
 end
 
 -------------------------------------------------------------------------------

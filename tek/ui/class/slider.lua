@@ -76,7 +76,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 8.2"
+_VERSION = "Slider 8.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -136,7 +136,7 @@ end
 
 function Slider:setup(app, window)
 	Numeric.setup(self, app, window)
-	self:addNotify("Range", ui.NOTIFY_CHANGE, NOTIFY_RANGE, 1)
+	self:addNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE, 1)
 	self.Child:setup(app, window)
 end
 
@@ -146,7 +146,7 @@ end
 
 function Slider:cleanup()
 	self.Child:cleanup()
-	self:remNotify("Range", ui.NOTIFY_CHANGE, NOTIFY_RANGE)
+	self:remNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE)
 	Numeric.cleanup(self)
 end
 
@@ -273,9 +273,9 @@ function Slider:draw()
 	r = c.Rect
 	local c1, c2, c3, c4 = c:getBorder()
 	bg:subRect(r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4)
-	local bgpen = d.Pens[self.Background]
+	local bgpen, tx, ty = self:getBackground()
 	for _, r1, r2, r3, r4 in bg:getRects() do
-		d:fillRect(r1, r2, r3, r4, bgpen)
+		d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
 	end
 end
 

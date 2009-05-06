@@ -58,7 +58,7 @@ local type = type
 local unpack = unpack
 
 module("tek.class.object", tek.class)
-_VERSION = "Object 9.0"
+_VERSION = "Object 10.0"
 local Object = _M
 
 -------------------------------------------------------------------------------
@@ -67,8 +67,6 @@ local Object = _M
 
 -- denotes that any value causes an object to be notified:
 NOTIFY_ALWAYS = { }
--- denotes that any change of a value causes an object to be notified:
-NOTIFY_CHANGE = { }
 -- denotes insertion of the object itself:
 NOTIFY_SELF = function(a, n, i) insert(a, a[-1]) return 1 end
 -- denotes insertion of the value that triggered the notification:
@@ -107,9 +105,8 @@ end
 --	Object:setValue(key, value[, notify]): Sets an {{object}}'s {{key}} to
 --	the specified {{value}}, and, if {{notify}} is not '''false''', triggers
 --	notifications that were previously registered with the object. If
---	{{value}} is '''nil''', the key's present value is reset. To enforce
---	notifications that were supposed to react only on changes (registered
---	with the {{ui.NOTIFY_CHANGE}} placeholder), set {{notify}} to '''true'''.
+--	{{value}} is '''nil''', the key's present value is reset. To enforce a
+--	notification regardless of its value, set {{notify}} to '''true'''.
 --	For details on registering notifications, see Object:addNotify().
 -------------------------------------------------------------------------------
 
@@ -141,7 +138,7 @@ local function doNotify(self, n, key, oldval)
 			end
 			n[0] = false
 		-- else
-		-- 	db.warn("dropping cyclic notification")
+		--	db.warn("dropping cyclic notification")
 		end
 	end
 end
@@ -155,10 +152,9 @@ function Object:setValue(key, val, notify)
 	if n and notify ~= false then
 		if val ~= oldval or notify then
 			self[key] = val
-			doNotify(self, n[NOTIFY_CHANGE], key, oldval)
+			doNotify(self, n[NOTIFY_ALWAYS], key, oldval)
+			doNotify(self, n[val], key, oldval)
 		end
-		doNotify(self, n[val], key, oldval)
-		doNotify(self, n[NOTIFY_ALWAYS], key, oldval)
 	else
 		self[key] = val
 	end
@@ -168,10 +164,8 @@ end
 --	Object:addNotify(attr, val, dest[, pos]):
 --	Adds a notification to an object. {{attr}} is the name of an attribute to
 --	react on setting its value. {{val}} is the value that triggers the
---	notification. The following placeholders for {{val}} are supported:
---		* {{ui.NOTIFY_ALWAYS}} - to react on any value
---		* {{ui.NOTIFY_CHANGE}} - to react on any value, but only if it is
---		different from its prior value
+--	notification. The {{ui.NOTIFY_ALWAYS}} placeholder is supported for
+--	reacting on any change of the value.
 --	{{dest}} is a table describing the action to take when the notification
 --	occurs; it has the general form:
 --			{ object, method, arg1, ... }

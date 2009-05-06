@@ -204,11 +204,11 @@ local window = ui.Window:new
 					{
 						["Value"] =
 						{
-							[ui.NOTIFY_CHANGE] =
+							[ui.NOTIFY_ALWAYS] =
 							{
 								{
 									ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function(self, val)
-										local e = self.Application:getElementById("dyn-border-button")
+										local e = self.Application:getById("dyn-border-button")
 										local b = e.Border
 										b[1], b[2], b[3], b[4] = val, val, val, val
 										e:rethinkLayout(1)

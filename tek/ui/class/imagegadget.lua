@@ -15,7 +15,7 @@ local unpack = unpack
 local Region = require "tek.lib.region"
 
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 4.1"
+_VERSION = "ImageGadget 4.3"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -72,13 +72,15 @@ end
 -------------------------------------------------------------------------------
 
 function ImageGadget:setImage(img)
-	self.Image = img
 	self.Redraw = true
-	local iw, ih = img:askWidthHeight(false, false)
-	if iw ~= self.ImageWidth or ih ~= self.ImageHeight then
-		self.ImageWidth = iw
-		self.ImageHeight = ih
-		self:rethinkLayout()
+	self.Image = img
+	if img then
+		local iw, ih = img:askWidthHeight(false, false)
+		if iw ~= self.ImageWidth or ih ~= self.ImageHeight then
+			self.ImageWidth = iw
+			self.ImageHeight = ih
+			self:rethinkLayout()
+		end
 	end
 end
 
@@ -91,8 +93,10 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 		local r = self.Rect
 		local p = self.Padding
 		local x, y = r[1], r[2]
-		local w = r[3] - x - p[1] - p[3] + 1
-		local h = r[4] - y - p[2] - p[4] + 1
+		local rw = r[3] - x + 1
+		local rh = r[4] - y + 1
+		local w = rw - p[1] - p[3]
+		local h = rh - p[2] - p[4]
 		local id = self.ImageData
 		local iw, ih
 		
@@ -105,21 +109,21 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 				self.ImageAspectY, 0)
 		end
 		
-		if iw ~= w or ih ~= h then
+		if iw ~= rw or ih ~= rh then
 			self.Region = Region.new(x, y, r[3], r[4])
-		elseif self.Image[3] then -- transparent?
+		elseif self.Image[4] then -- transparent?
 			self.Region = Region.new(x, y, r[3], r[4])
 		else
 			self.Region = false
 		end
 		x = x + p[1]
 		y = y + p[2]
-		if iw ~= w or ih ~= h then
+		if iw ~= rw or ih ~= rh then
 			if self.HAlign == "center" then
 				x = x + floor((w - iw) / 2)
 				y = y + floor((h - ih) / 2)
 			end
-			if not self.Image[3] then -- transparent?
+			if self.Image and not self.Image[4] then -- transparent?
 				self.Region:subRect(x, y, x + iw - 1, y + ih - 1)
 			end
 		end
@@ -136,13 +140,16 @@ function ImageGadget:draw()
 	Gadget.draw(self)
 	local d = self.Drawable
 	local R = self.Region
+	local img = self.Image
 	if R then
-		local bgpen = d.Pens[self.Background]
+		local bgpen, tx, ty = self:getBackground()
 		for _, r1, r2, r3, r4 in R:getRects() do
-			d:fillRect(r1, r2, r3, r4, bgpen)
+			d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
 		end
 	end
-	local x, y, iw, ih = unpack(self.ImageData)
-	self.Image:draw(d, x, y, x + iw - 1, y + ih - 1, 
-		self.Disabled and d.Pens[self.Foreground])
+	if img then
+		local x, y, iw, ih = unpack(self.ImageData)
+		img:draw(d, x, y, x + iw - 1, y + ih - 1, 
+			self.Disabled and d.Pens[self.Foreground])
+	end
 end

@@ -13,20 +13,22 @@
 --		Frame
 --
 --	OVERVIEW::
---		This class implements an element's borders. The "default" border
---		class (which is selected by default) handles up to three sub borders:
---			* The 'main' border is the innermost of the sub borders. It is
---			used to render the border style, which can currently be "inset",
---			"outset", "ridge", "groove", or "solid".
+--		This class implements an element's borders. The {{"default"}} border
+--		class handles up to three sub borders:
+--			* The 'main' border is the innermost of the three sub borders.
+--			It is used to render the primary border style, which can be
+--			{{"inset"}}, {{"outset"}}, {{"ridge"}}, {{"groove"}}, or
+--			{{"solid"}}. This border has priority over the other two.
 --			* The 'rim' border seperates the two other borders and
---			may give the border composition a more contrastful look.
---			* The 'focus' border, in addition to the element's focus
---			highlighting style, can be used to visualize that the element
+--			may give the composition a more contrastful look. This border has
+--			the lowest priority.
+--			* The 'focus' border (in addition to the element's focus
+--			highlighting style) can be used to visualize that the element
 --			is currently receiving the input. This border is designed as
 --			the outermost of the three sub borders. When the element is
---			in unfocused state, this border should appear in the same color
---			as the surrounding group, making it indistinguishable from the
---			background.
+--			in unfocused state, this border often appears in the same color
+--			as the surrounding group, which makes it indistinguishable from
+--			the background.
 --		Border classes (which are organized as plug-ins) do not need to
 --		implement all sub borders; in fact, their properties are all
 --		internally handled by the "default" border class, and more (and other)
@@ -97,7 +99,7 @@ local newRegion = Region.new
 local unpack = unpack
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 6.4"
+_VERSION = "Frame 6.5"
 
 local Frame = _M
 
@@ -259,8 +261,8 @@ function Frame:refresh()
 	Area.refresh(self)
 	if self.RedrawBorder then
 		self:drawBorder()
+		self.RedrawBorder = false
 	end
-	self.RedrawBorder = false
 end
 
 -------------------------------------------------------------------------------

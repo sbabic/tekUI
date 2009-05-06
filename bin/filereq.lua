@@ -91,19 +91,19 @@ app = ui.Application:new
 						if pressed == false then
 							local app = self.Application
 							app:addCoroutine(function()
-								local pathfield = app:getElementById("pathfield")
-								local filefield = app:getElementById("filefield")
-								local statusfield = app:getElementById("statusfield")
+								local pathfield = app:getById("pathfield")
+								local filefield = app:getById("filefield")
+								local statusfield = app:getById("statusfield")
 								local status, path, select = app:requestFile
 								{
 									Path = pathfield.Text,
-									SelectMode = app:getElementById("multiselect").Selected and
+									SelectMode = app:getById("multiselect").Selected and
 										"multi" or "single"
 								}
 								statusfield:setValue("Text", status)
 								if status == "selected" then
 									pathfield:setValue("Text", path)
-									app:getElementById("filefield"):setValue("Text",
+									app:getById("filefield"):setValue("Text",
 										table.concat(select, ", "))
 								end
 							end)

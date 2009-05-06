@@ -8,8 +8,11 @@
 	</head>
 	<body>
 		<h1>
-			tekUI open source GUI toolkit
+			tekUI GUI Toolkit
 		</h1>
+		<p>
+			Version 0.8e
+		</p>
 		<h2>
 			Table of contents
 		</h2>
@@ -42,13 +45,13 @@
 					<blockquote>
 						<ul>
 							<li style="list-style-type: none">
-								2.1. <a href="#features">Selected features</a> 
+								2.1. <a href="#features">General features</a> 
 							</li>
 							<li style="list-style-type: none">
 								2.2. <a href="#uielements">Supported user interface elements</a> 
 							</li>
 							<li style="list-style-type: none">
-								2.3. <a href="#plans">Development and deployment</a> 
+								2.3. <a href="#deployment">Deployment</a> 
 							</li>
 							<li style="list-style-type: none">
 								2.4. <a href="#themes">Themes</a> 
@@ -61,6 +64,9 @@
 							</li>
 							<li style="list-style-type: none">
 								2.7. <a href="#documentation">Documentation system</a> 
+							</li>
+							<li style="list-style-type: none">
+								2.8. <a href="#embedded">Notes on uses in embedded systems</a> 
 							</li>
 						</ul>
 					</blockquote>
@@ -80,10 +86,10 @@
 											3.2.1 <a href="#notefbsd">FreeBSD notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.2 <a href="#notenanox">Nano-X notes</a> 
+											3.2.2 <a href="#notex11">X11 notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.3 <a href="#notex11">X11 notes</a> 
+											3.2.3 <a href="#notenanox">Nano-X notes</a> 
 										</li>
 									</ul>
 								</blockquote>
@@ -101,7 +107,7 @@
 					</blockquote>
 				</li>
 				<li style="list-style-type: none">
-					4. <a href="#usersguide">tekUI user's guide</a> 
+					4. <a href="#usersguide">User's Guide</a> 
 					<blockquote>
 						<ul>
 							<li style="list-style-type: none">
@@ -117,7 +123,7 @@
 					</blockquote>
 				</li>
 				<li style="list-style-type: none">
-					5. <a href="#developersguide">tekUI developer's guide</a> 
+					5. <a href="#developersguide">Developer's Guide</a> 
 					<blockquote>
 						<ul>
 							<li style="list-style-type: none">
@@ -136,7 +142,10 @@
 					</blockquote>
 				</li>
 				<li style="list-style-type: none">
-					6. <a href="manual.html">tekUI reference manual</a> 
+					6. <a href="manual.html">Class Reference Manual</a> 
+				</li>
+				<li style="list-style-type: none">
+					7. <a href="changes.html">Changelog</a> 
 				</li>
 			</ul>
 		</blockquote>
@@ -157,8 +166,8 @@
 			<p>
 				Being mostly written in the
 				<a href="http://www.lua.org/">Lua scripting language</a>, it is easily
-				extensible with new user interface elements, which can later be
-				rewritten in C. The creation of new styles and themes and fitting the
+				extensible with new user interface elements, which can be rewritten
+				in C later. The creation of new styles and themes and fitting the
 				software to a new device are equally simple.
 			</p>
 			<p>
@@ -170,8 +179,8 @@
 				TekUI is free software under the same license as Lua itself: It can
 				be used for both academic and commercial purposes at no cost, it
 				qualifies as Open Source software, and its license is compatible with
-				the GPL. Note: The commercial SDK contains additional components
-				which may be licensed differently.
+				the GPL. Note: The commercially supported version contains additional
+				components which may be licensed differently.
 				See <a href="copyright.html">copyright</a>.
 			</p>
 		</div>
@@ -196,10 +205,10 @@
 		<div class="node"><h2><a name="support" id="support">1.4. Support and services</a></h2>
 			<p>
 				Vendors of commercial products can help advance the development by
-				assigning projects based on tekUI, or license our commercial SDK.
-				Support and services for the integration of tekUI as well as special
-				versions, new display drivers, custom classes etc. are available
-				from the authors &#8211; see below.
+				assigning projects based on tekUI, or license our commercially
+				supported version. Support and services for the integration of
+				tekUI as well as special versions, new display drivers, custom
+				classes etc. are available from the authors &#8211; see below.
 			</p>
 		</div>
 		<div class="node"><h2><a name="authors" id="authors">1.5. Authors and contact</a></h2>
@@ -217,7 +226,7 @@
 				</ul>
 			</blockquote>
 			<p>
-				Project website:
+				Open source project website:
 			</p>
 			<blockquote>
 				<ul>
@@ -227,7 +236,7 @@
 				</ul>
 			</blockquote>
 			<p>
-				Mailing list:
+				Public mailing list:
 			</p>
 			<blockquote>
 				<ul>
@@ -237,7 +246,7 @@
 				</ul>
 			</blockquote>
 			<p>
-				Product website:
+				Commercial product website:
 			</p>
 			<blockquote>
 				<ul>
@@ -261,17 +270,20 @@
 				stable yet, so be prepared for structural and API changes.
 			</p>
 		</div>
-		<div class="node"><h2><a name="features" id="features">2.1. Selected features</a></h2>
+		<div class="node"><h2><a name="features" id="features">2.1. General features</a></h2>
 			<blockquote>
 				<ul>
 					<li>
-						Automatic layouting and scalability, themes
+						Automatic layouting and scalability
 					</li>
 					<li>
 						Font-sensitivity, support for antialiased fonts
 					</li>
 					<li>
 						Full Unicode (UTF-8) support
+					</li>
+					<li>
+						Themes, cascading style sheets (CSS) support
 					</li>
 					<li>
 						Allows for multi-windowed, tabbed and fullscreen applications
@@ -351,7 +363,7 @@
 				</ul>
 			</blockquote>
 		</div>
-		<div class="node"><h2><a name="plans" id="plans">2.3. Development and deployment</a></h2>
+		<div class="node"><h2><a name="deployment" id="deployment">2.3. Deployment</a></h2>
 			<p>
 				The only language currently supported for writing applications in is
 				Lua, and application programmers will have to use existing Lua
@@ -426,7 +438,7 @@
 				file format codecs, etc.
 			</p>
 		</div>
-		<div class="node"><h2><a name="objectjmodel" id="objectjmodel">2.6. Lua, C and object model</a></h2>
+		<div class="node"><h2><a name="objectmodel" id="objectmodel">2.6. Lua, C and object model</a></h2>
 			<p>
 				Regardless whether classes are written in Lua or C, they share a
 				common, single-inheritance object model, which is determined by the
@@ -453,6 +465,24 @@
 				Note that you need
 				<a href="http://www.keplerproject.org/luafilesystem/">LuaFileSystem</a> for
 				the document generator to process the file system hierarchy.
+			</p>
+		</div>
+		<div class="node"><h2><a name="embedded" id="embedded">2.8. Notes on uses in embedded systems</a></h2>
+			<p>
+				Complete solutions based on tekUI are well in the reach of 512kB of
+				ROM/Flash: A typical application and the modules that it requires,
+				if compiled to Lua bytecode, can fit into 256kB. Add to that approx.
+				128kB for the C modules and another 128kB for the Lua virtual
+				machine.
+			</p>
+			<p>
+				The generic, unmodified version of tekUI has been deployed on PPC and
+				ARM based microcontrollers with clock rates as low as 200MHz, while
+				maintaining good reactivity and a pleasant look &amp; feel. Lower clock
+				rates are workable with some adaptations, namely by disabling
+				expensive features like style sheet support, porting certain classes
+				to C, using display drivers which are more tightly connected to the
+				hardware, etc.
 			</p>
 			<hr />
 		</div>
@@ -542,19 +572,7 @@
 				dynamically loaded by the interpreter.
 			</p>
 		</div>
-		<div class="node"><h3><a name="notenanox" id="notenanox">3.2.2. Nano-X notes</a></h3>
-			<p>
-				The Nano-X driver is available as part of the commercial SDK. You
-				will almost certainly have to adjust the <code>config</code> file. Due to some
-				limitations of Nano-X, tekUI applications will probably make sense
-				only when running in fullscreen mode without a window manager. See
-				also <code>tek/ui/style/nanox.css</code> for more information. Example:
-			</p>
-<pre>
-# nano-X &amp; THEME=nanox FULLSCREEN=true bin/demo_custom.lua
-</pre>
-		</div>
-		<div class="node"><h3><a name="notex11" id="notex11">3.2.3. X11 notes</a></h3>
+		<div class="node"><h3><a name="notex11" id="notex11">3.2.2. X11 notes</a></h3>
 			<p>
 				In case of problems with texts and labels, try removing
 				<code>-DENABLE_XFT</code> from <code>X11_DEFS</code> in the config file. Some versions
@@ -566,6 +584,19 @@
 				workaround. Unfortunately, we got reports of other, possibly
 				unrelated problems with Xft in the meantime.
 			</p>
+		</div>
+		<div class="node"><h3><a name="notenanox" id="notenanox">3.2.3. Nano-X notes</a></h3>
+			<p>
+				The Nano-X driver is available as part of the commercially supported
+				version. You will almost certainly have to adjust the <code>config</code> 
+				file. Due to some limitations of Nano-X, tekUI applications will
+				probably make sense only when running in fullscreen mode without a
+				window manager. See also <code>tek/ui/style/nanox.css</code> for more
+				information. Example:
+			</p>
+<pre>
+# nano-X &amp; THEME=nanox FULLSCREEN=true bin/demo_custom.lua
+</pre>
 		</div>
 		<div class="node"><h2><a name="building" id="building">3.3. Building</a></h2>
 			<p>
@@ -640,7 +671,7 @@
 			</blockquote>
 			<hr />
 		</div>
-		<div class="node"><h1><a name="usersguide" id="usersguide">4. tekUI user's guide</a></h1>
+		<div class="node"><h1><a name="usersguide" id="usersguide">4. User's Guide</a></h1>
 		</div>
 		<div class="node"><h2><a name="helloworld" id="helloworld">4.1. Hello, World!</a></h2>
 			<p>
@@ -693,7 +724,7 @@ ui.Application:new
 		<div class="node"><h2><a name="reactingoninput" id="reactingoninput">4.2. Reacting on input</a></h2>
 			<p>
 				There are different ways for reacting to presses on the &quot;Hello,
-				World&quot; button. The simplest method is to just place an <code>onPress</code> 
+				World&quot; button. The simplest method is to place an <code>onPress</code> 
 				function into the Text object, which will overwrite the handler
 				reacting on setting the <code>Pressed</code> variable. This variable is set
 				to <strong>true</strong> when a <a href="manual.html#tek.ui.class.gadget">Gadget</a> 
@@ -733,8 +764,11 @@ ui.Application:new
 				the original implementation of the same method.
 			</p>
 			<p>
-				A different, more elobarate way is to equip the element with a
-				notification handler yourself, which may look like this:
+				For regular applications, it is normally sufficient to stick to
+				overwriting the available handlers as in the previous example. But
+				the underlying mechanism to register a notification handler can be
+				interesting as well, especially if you plan on creating new GUI
+				classes yourself:
 			</p>
 <pre>
 ...
@@ -766,9 +800,9 @@ ui.Text:new
 				Even though notification handlers can be initialized statically
 				(i.e. written in the same expression as the rest of the application),
 				this is not always recommendable, as the deep levels of indentation
-				are easily getting in the way of clarity. Notification handlers are
-				commonly added using the <code>addNotify()</code> method, as shown in the next
-				example:
+				are getting in the way of clarity. Notification handlers are more
+				commonly added using the <code>addNotify()</code> method, as shown in the
+				next example:
 			</p>
 <pre>
 ui = require &quot;tek.ui&quot;
@@ -792,10 +826,10 @@ win:addMember(text)
 app:run()
 </pre>
 			<p>
-				In this example we have also set the <code>HideOnEscape</code> flag for the
-				application to quit on pressing the Escape key, and the <code>KeyCode</code> 
-				attribute, so that by placing an underscore in front of a letter in
-				its caption, a shortcut for the element is created automatically.
+				In this example we have also set the <code>HideOnEscape</code> attribute for
+				the application to quit on pressing the Escape key, and the
+				<code>KeyCode</code> attribute, so that a shortcut for the element is created
+				by placing an underscore in front of a letter in its caption.
 			</p>
 			<p>
 				See also <a href="manual.html#Object:addNotify">Object:addNotify</a> for
@@ -821,30 +855,30 @@ app:run()
 					</li>
 					<li>
 						Application classes are created in the same way, but they are
-						located in <code>tek/ui/class</code>) relative to the application's local
+						located in <code>tek/ui/class</code> relative to the application's local
 						program directory.
 					</li>
 					<li>
-						Another scope is inside the source code of an existing application
-						or module. We call this the <em>ad-hoc</em> style, because we are in a
-						scripting environment and new classes are often created out of a
-						spontaneous need.
+						Another scope is inside a running application or module. We call
+						this the <em>ad-hoc</em> style, because new classes are often created
+						out of a spontaneous need.
 					</li>
 				</ul>
 			</blockquote>
 			<p>
-				For the <em>ad-hoc</em> style, it is not necessary to create a new module.
-				For example, to derive a button class from the Text class, write
-				whereever you see fit:
+				For the <em>ad-hoc</em> style, it is not necessary to create a new source
+				file or module. For example, a Button class can be derived from the
+				Text class whereever you see fit:
 			</p>
 <pre>
 local Button = ui.Text:newClass { _NAME = &quot;_button&quot; }
 </pre>
 			<p>
-				By convention, <em>ad-hoc</em> classes may be named arbitrarily, but their
-				names should be prefixed with an underscore to distinguish them
-				from global classes. (You can even do without a _NAME, as tekUI will
-				create one for you in this case.)
+				<em>ad-hoc</em> classes may be named arbitrarily, but their names should
+				be prefixed with an underscore to distinguish them from global
+				classes. You can even do without a name, as tekUI will create one
+				for you if necessary (but you will find it difficult to reference
+				such a class in a style sheet).
 			</p>
 			<p>
 				From this point, the new class can be extended, e.g. for
@@ -854,6 +888,7 @@ local Button = ui.Text:newClass { _NAME = &quot;_button&quot; }
 function Button.init(self)
   self.Class = &quot;button&quot;
   self.Mode = self.Mode or &quot;button&quot;
+  self.KeyCode = true
   return ui.Text.init(self)
 end
 </pre>
@@ -865,7 +900,7 @@ end
 				Finally, a new object from our new class can be created:
 			</p>
 <pre>
-button = Button:new { Text = &quot;Hello, World!&quot; }
+button = Button:new { Text = &quot;_Hello, World!&quot; }
 </pre>
 			<p>
 				Also refer to the <a href="manual.html#tek.class">Class reference</a> and
@@ -873,7 +908,7 @@ button = Button:new { Text = &quot;Hello, World!&quot; }
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h1><a name="developersguide" id="developersguide">5. tekUI developer's guide</a></h1>
+		<div class="node"><h1><a name="developersguide" id="developersguide">5. Developer's Guide</a></h1>
 		</div>
 		<div class="node"><h2><a name="debug" id="debug">5.1. Debug library</a></h2>
 			<p>
@@ -905,7 +940,7 @@ local DEBUG = true
 			<p>
 				The <code>PROXY</code> option allows for intercepting read/write accesses to
 				objects, which will be harnessed by the <code>DEBUG</code> option for tracking
-				accesses to uninitialized class members; so whenever a <strong>nil</strong> 
+				accesses to uninitialized class members. So whenever a <strong>nil</strong> 
 				value is read from or written to an object, this causes <code>tek.class</code> 
 				to bail out with an error and a meaningful message.
 			</p>
@@ -917,9 +952,9 @@ local DEBUG = true
 				end up in a fluff of variables of limited scope and significance,
 				getting initialized at random places. This also means that you cannot
 				assign a distinct meaning to <strong>nil</strong> for a class member &#8211; you will
-				have to use <strong>false</strong> instead, or find another arrangement. This
+				have to use <strong>false</strong> instead, or find another arrangement. (This
 				convention of not using <strong>nil</strong> for class variables is found
-				throughout the whole tekUI framework.
+				throughout the whole tekUI framework.)
 			</p>
 			<p>
 				Once your application is tested and ready for deployment, you can

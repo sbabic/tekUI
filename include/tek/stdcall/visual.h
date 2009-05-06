@@ -71,8 +71,8 @@
 #define TVisualPlot(visual,x,y,pen) \
 	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TVPEN))(visual))[-29]))(visual,x,y,pen)
 
-#define TVisualText(visual,x,y,text,len,fg,bg) \
-	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TSTRPTR,TINT,TVPEN,TVPEN))(visual))[-30]))(visual,x,y,text,len,fg,bg)
+#define TVisualText(visual,x,y,text,len,fg) \
+	(*(((TMODCALL void(**)(TAPTR,TINT,TINT,TSTRPTR,TINT,TVPEN))(visual))[-30]))(visual,x,y,text,len,fg)
 
 #define TVisualDrawStrip(visual,array,num,tags) \
 	(*(((TMODCALL void(**)(TAPTR,TINT *,TINT,TTAGITEM *))(visual))[-31]))(visual,array,num,tags)

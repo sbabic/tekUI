@@ -51,24 +51,22 @@ local ListGadget = ui.ListGadget
 local PopItem = ui.PopItem
 local ScrollGroup = ui.ScrollGroup
 local Text = ui.Text
-local VectorImage = ui.VectorImage
 
 local assert = assert
 local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 6.5"
+_VERSION = "PopList 6.8"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
 -------------------------------------------------------------------------------
 
-local ArrowImage = VectorImage:new
+local ArrowImage = ui.Image:new
 {
-	{ 0x2000,0xa000, 0xe000,0xa000, 0x8000,0x4000 },
+	{ 0x2000,0xa000, 0xe000,0xa000, 0x8000,0x4000 }, false, false, true,
 	{ { 0x1000, 3, { 1, 2, 3 }, ui.PEN_MENUDETAIL } },
-	true
 }
 
 local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectEntry", ui.NOTIFY_VALUE }
@@ -164,11 +162,11 @@ end
 
 function PopList:setup(app, window)
 	PopItem.setup(self, app, window)
-	self:addNotify("SelectedLine", ui.NOTIFY_CHANGE, NOTIFY_SELECT)
+	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
 end
 
 function PopList:cleanup()
-	self:remNotify("SelectedLine", ui.NOTIFY_CHANGE, NOTIFY_SELECT)
+	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
 	PopItem.cleanup(self)
 end
 

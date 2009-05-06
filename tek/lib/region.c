@@ -553,7 +553,7 @@ static int region_checkoverlap(lua_State *L)
 			return 1;
 		}
 	}
-	lua_pushboolean(L, 1);
+	lua_pushboolean(L, 0);
 	return 1;
 }
 

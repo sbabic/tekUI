@@ -52,7 +52,7 @@ local unpack = unpack
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 13.0"
+_VERSION = "Drawable 14.2"
 
 DEBUG_DELAY = 3
 
@@ -109,7 +109,7 @@ function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
 				ui.MSG_ALL - ui.MSG_INTERVAL,
 			BlankCursor = ui.NoCursor,
 		}
-		self.DebugPen1 = self.Visual:allocpen(255, 255, 0)
+		self.DebugPen1 = self.Visual:allocpen(128, 255, 0)
 		self.DebugPen2 = self.Visual:allocpen(0, 0, 0)
 		
 		self.Pens = { }
@@ -124,15 +124,25 @@ function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
 					tab[key] = pen
 					return pen
 				end
-				-- otherwise we assume the key is a bitmap; return it:
-				return key
+				local pm
+				if key:match("^url%b()") then
+					local fname = key:match("^url%(([^()]+)%)")
+					if fname then
+						pm = self.Display.getPixmap(fname)
+					end
+				end
+				pm = pm or tab[ui.PEN_BACKGROUND]
+				tab[key] = pm
+				return pm
 			end
 		})
 		
 		-- Allocate standard pens:
 		for i = 1, ui.PEN_NUMBER do
 			local name, r, g, b = self.Display:getPaletteEntry(i)
-			local pen = self.Visual:allocpen(r, g, b)
+			local key = ("#%02x%02x%02x"):format(r, g, b)
+			local pen = self.Pens[key]
+			self.Pens[key] = pen
 			self.Pens[name] = pen
 			self.Pens[i] = pen
 		end
@@ -173,7 +183,7 @@ end
 --	specified, the background under the text is filled in this color.
 -------------------------------------------------------------------------------
 
-function Drawable:drawText_normal(...)
+function Drawable:drawText(...)
 	self.Visual:text(...)
 end
 
@@ -185,8 +195,8 @@ function Drawable:drawRGB(...)
 	self.Visual:drawrgb(...)
 end
 
-function Drawable:drawPPM(...)
-	self.Visual:drawppm(...)
+function Drawable:drawPixmap(...)
+	self.Visual:drawpixmap(...)
 end
 
 -------------------------------------------------------------------------------
@@ -249,24 +259,27 @@ end
 -------------------------------------------------------------------------------
 
 function Drawable:pushClipRect(x0, y0, x1, y1)
-	local cr = self.ClipRect
-	local sx = self.ShiftX
-	local sy = self.ShiftY
-	x0 = x0 + sx
-	y0 = y0 + sy
-	x1 = x1 + sx
-	y1 = y1 + sy
-	local r = remove(self.RectPool) or { }
-	r[1], r[2], r[3], r[4] = x0, y0, x1, y1
-	insert(self.ClipStack, r)
-	if cr[1] then
-		x0, y0, x1, y1 = overlap(x0, y0, x1, y1, cr[1], cr[2], cr[3], cr[4])
-		if not x0 then
-			x0, y0, x1, y1 = -1, -1, -1, -1
+	local v = self.Visual
+	if v then
+		local cr = self.ClipRect
+		local sx = self.ShiftX
+		local sy = self.ShiftY
+		x0 = x0 + sx
+		y0 = y0 + sy
+		x1 = x1 + sx
+		y1 = y1 + sy
+		local r = remove(self.RectPool) or { }
+		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
+		insert(self.ClipStack, r)
+		if cr[1] then
+			x0, y0, x1, y1 = overlap(x0, y0, x1, y1, cr[1], cr[2], cr[3], cr[4])
+			if not x0 then
+				x0, y0, x1, y1 = -1, -1, -1, -1
+			end
 		end
+		cr[1], cr[2], cr[3], cr[4] = x0, y0, x1, y1
+		v:setcliprect(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
 	end
-	cr[1], cr[2], cr[3], cr[4] = x0, y0, x1, y1
-	self.Visual:setcliprect(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
 end
 
 -------------------------------------------------------------------------------
@@ -274,25 +287,28 @@ end
 -------------------------------------------------------------------------------
 
 function Drawable:popClipRect()
-	local cs = self.ClipStack
-	local cr = self.ClipRect
-	insert(self.RectPool, remove(cs))
-	local x0, y0, x1, y1
-	if #cs > 0 then
-		x0, y0, x1, y1 = 0, 0, HUGE, HUGE
-		for i = 1, #cs do
-			x0, y0, x1, y1 = overlap(x0, y0, x1, y1, unpack(cs[i]))
-			if not x0 then
-				x0, y0, x1, y1 = -1, -1, -1, -1
-				break
+	local v = self.Visual
+	if v then
+		local cs = self.ClipStack
+		local cr = self.ClipRect
+		insert(self.RectPool, remove(cs))
+		local x0, y0, x1, y1
+		if #cs > 0 then
+			x0, y0, x1, y1 = 0, 0, HUGE, HUGE
+			for i = 1, #cs do
+				x0, y0, x1, y1 = overlap(x0, y0, x1, y1, unpack(cs[i]))
+				if not x0 then
+					x0, y0, x1, y1 = -1, -1, -1, -1
+					break
+				end
 			end
 		end
-	end
-	cr[1], cr[2], cr[3], cr[4] = x0, y0, x1, y1
-	if x0 then
-		self.Visual:setcliprect(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
-	else
-		self.Visual:unsetcliprect()
+		cr[1], cr[2], cr[3], cr[4] = x0, y0, x1, y1
+		if x0 then
+			v:setcliprect(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
+		else
+			v:unsetcliprect()
+		end
 	end
 end
 
@@ -302,9 +318,12 @@ end
 -------------------------------------------------------------------------------
 
 function Drawable:setShift(dx, dy)
-	self.ShiftX = self.ShiftX + dx
-	self.ShiftY = self.ShiftY + dy
-	return self.Visual:setshift(dx, dy)
+	local v = self.Visual
+	if v then
+		self.ShiftX = self.ShiftX + dx
+		self.ShiftY = self.ShiftY + dy
+		v:setshift(dx, dy)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -350,61 +369,50 @@ end
 -------------------------------------------------------------------------------
 
 function Drawable:fillRect_debug(...)
-	local x0, y0, x1, y1, p = ...
+	local x0, y0, x1, y1 = ...
 	self.Visual:frect(x0, y0, x1, y1, self.DebugPen1)
 	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:frect(x0, y0, x1, y1, self.DebugPen2)
 	self.Display:sleep(DEBUG_DELAY)
-	self.Visual:frect(x0, y0, x1, y1, p)
+	self.Visual:frect(...)
 end
 
 function Drawable:drawRect_debug(...)
-	local x0, y0, x1, y1, p = ...
+	local x0, y0, x1, y1 = ...
 	self.Visual:rect(x0, y0, x1, y1, self.DebugPen1)
 	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:rect(x0, y0, x1, y1, self.DebugPen2)
 	self.Display:sleep(DEBUG_DELAY)
-	self.Visual:rect(x0, y0, x1, y1, p)
+	self.Visual:rect(...)
 end
 
 function Drawable:drawLine_debug(...)
-	local x0, y0, x1, y1, p = ...
+	local x0, y0, x1, y1 = ...
 	self.Visual:line(x0, y0, x1, y1, self.DebugPen1)
 	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:line(x0, y0, x1, y1, self.DebugPen2)
 	self.Display:sleep(DEBUG_DELAY)
-	self.Visual:line(x0, y0, x1, y1, p)
+	self.Visual:line(...)
 end
 
 function Drawable:drawPlot_debug(...)
-	local x0, y0, p = ...
+	local x0, y0 = ...
 	self.Visual:plot(x0, y0, self.DebugPen1)
 	self.Display:sleep(DEBUG_DELAY)
 	self.Visual:plot(x0, y0, self.DebugPen2)
 	self.Display:sleep(DEBUG_DELAY)
-	self.Visual:plot(x0, y0, p)
-end
-
-function Drawable:drawText_debug(...)
-	local x0, y0, text, p1, p2 = ...
-	self.Visual:text(x0, y0, text, self.DebugPen1, p2 and self.DebugPen2)
-	self.Display:sleep(DEBUG_DELAY)
-	self.Visual:text(x0, y0, text, self.DebugPen2, p2 and self.DebugPen1)
-	self.Display:sleep(DEBUG_DELAY)
-	self.Visual:text(x0, y0, text, p1, p2)
+	self.Visual:plot(...)
 end
 
 function Drawable.enableDebug(enabled)
 	if enabled then
 		fillRect = fillRect_debug
 		drawRect = drawRect_debug
-		drawText = drawText_debug
 		drawLine = drawLine_debug
 		drawPlot = drawPlot_debug
 	else
 		fillRect = fillRect_normal
 		drawRect = drawRect_normal
-		drawText = drawText_normal
 		drawLine = drawLine_normal
 		drawPlot = drawPlot_normal
 	end

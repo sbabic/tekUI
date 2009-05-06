@@ -40,6 +40,8 @@ static const luaL_Reg libfuncs[] =
 	{ "gettime", tek_lib_visual_gettime },
 	{ "wait", tek_lib_visual_wait },
 	{ "getmsg", tek_lib_visual_getmsg },
+	{ "createpixmap", tek_lib_visual_createpixmap },
+	{ "freepixmap", tek_lib_visual_freepixmap },
 	{ TNULL, TNULL }
 };
 
@@ -66,7 +68,7 @@ static const luaL_Reg classmethods[] =
 	{ "unsetcliprect", tek_lib_visual_unsetcliprect },
 	{ "setshift", tek_lib_visual_setshift },
 	{ "drawrgb", tek_lib_visual_drawrgb },
-	{ "drawppm", tek_lib_visual_drawppm },
+	{ "drawpixmap", tek_lib_visual_drawpixmap },
 	{ "getuserdata", tek_lib_visual_getuserdata },
 	{ TNULL, TNULL }
 };
@@ -76,6 +78,12 @@ static const luaL_Reg fontmethods[] =
 	{ "__gc", tek_lib_visual_closefont },
 	{ "getattrs", tek_lib_visual_getfontattrs },
 	{ "close", tek_lib_visual_closefont },
+	{ TNULL, TNULL }
+};
+
+static const luaL_Reg pixmapmethods[] =
+{
+	{ "__gc", tek_lib_visual_freepixmap },
 	{ TNULL, TNULL }
 };
 
@@ -282,6 +290,7 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_close(lua_State *L)
 {
 	TEKVisual *vis = luaL_checkudata(L, 1, TEK_LIB_VISUAL_CLASSNAME);
+	struct TExecBase *TExecBase = vis->vis_ExecBase;
 
 	TDBPRINTF(TDB_TRACE,("visual %08x closing\n", vis));
 
@@ -372,7 +381,7 @@ tek_lib_visual_close(lua_State *L)
 TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 {
 	TEKVisual *vis;
-	TAPTR exec;
+	struct TExecBase *TExecBase;
 
 	/* require "tek.lib.display.x11": */
 	lua_getglobal(L, "require");
@@ -391,7 +400,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: displaytab, exectab */
 	lua_getfield(L, -1, "base");
 	/* s: displaytab, exectab, execbase */
-	exec = *(TAPTR *) lua_touserdata(L, -1);
+	TExecBase = *(TAPTR *) lua_touserdata(L, -1);
 
 	/* register functions: */
 	luaL_register(L, "tek.lib.visual", libfuncs);
@@ -403,7 +412,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: displaytab, exectab, execbase, vistab, visbase */
 
 	vis->vis_Base = TNULL;
-	vis->vis_ExecBase = exec;
+	vis->vis_ExecBase = TExecBase;
 	vis->vis_Visual = TNULL;
 	vis->vis_refBase = -1;
 	vis->vis_isBase = TTRUE;
@@ -436,6 +445,16 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta */
  	lua_pop(L, 6);
 
+	/* prepare pixmap metatable and store reference in metatable: */
+	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
+	/* s: meta */
+	lua_pushvalue(L, -1);
+	/* s: meta, meta */
+	lua_setfield(L, -2, "__index");
+	/* s: meta */
+	luaL_register(L, NULL, pixmapmethods);
+	lua_pop(L, 1);
+	
 	/* prepare font metatable and store reference in metatable: */
 	luaL_newmetatable(L, TEK_LIB_VISUALFONT_CLASSNAME);
 	/* s: fontmeta */
@@ -455,12 +474,12 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 		TTAGITEM dtags[3];
 
 		/* Open the Visual module: */
-		vis->vis_Base = TExecOpenModule(exec, "visual", 0, TNULL);
+		vis->vis_Base = TOpenModule("visual", 0, TNULL);
 		if (vis->vis_Base == TNULL) break;
 
-		vis->vis_CmdRPort = TExecCreatePort(exec, TNULL);
+		vis->vis_CmdRPort = TCreatePort(TNULL);
 		if (vis->vis_CmdRPort == TNULL) break;
-		vis->vis_IMsgPort = TExecCreatePort(exec, TNULL);
+		vis->vis_IMsgPort = TCreatePort(TNULL);
 		if (vis->vis_IMsgPort == TNULL) break;
 
 		/* Open a display: */

@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.21"
+_VERSION = "Theme 6.22"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -36,12 +36,14 @@ local DEF_STYLESHEET = ui.prepareProperties
 	--
 
 	["tek.ui.class.area"] = {
+		["background-position"] = "scroll",
 		["margin"] = 1,
 	},
 
 	["tek.ui.class.checkmark"] = {
 		["padding"] = 1,
 		["margin"] = 0,
+		["background-position"] = "fixed",
 		["border-width"] = 1,
 		["border-focus-width"] = 1,
 		["text-align"] = "left",
@@ -106,6 +108,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 	["tek.ui.class.group"] = {
 		["margin"] = 0,
 		["background-color"] = "group",
+		["background-position"] = "fixed",
 		["border-width"] = 0,
 		["border-focus-width"] = 0,
 	},
@@ -145,6 +148,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 	},
 
 	["tek.ui.class.menuitem"] = {
+		["background-position"] = "fixed",
 		["font"] = "ui-menu",
 		["border-width"] = 0,
 		["margin"] = 0,
@@ -166,7 +170,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["color"] = "menu-active-detail",
 	},
 
-	["tek.ui.class.menuitem:popup-root"] = {
+	["tek.ui.class.menuitem.popup-root"] = {
 		["margin"] = 2,
 		["width"] = "auto",
 	},
@@ -248,6 +252,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 	[".caption"] = {
 		["border-width"] = 0,
 		["background-color"] = "parent-group",
+		["background-position"] = "fixed",
 		["text-align"] = "center",
 		["vertical-align"] = "center",
 		["horizontal-grid-align"] = "center",

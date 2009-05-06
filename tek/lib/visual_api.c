@@ -10,9 +10,34 @@ static TAPTR checkinstptr(lua_State *L, int n, const char *classname)
 
 #define getvisptr(L, n) luaL_checkudata(L, n, TEK_LIB_VISUAL_CLASSNAME)
 #define getpenptr(L, n) luaL_checkudata(L, n, TEK_LIB_VISUALPEN_CLASSNAME)
+#define getpixmapptr(L, n) luaL_checkudata(L, n, TEK_LIB_VISUALPIXMAP_CLASSNAME)
 #define checkvisptr(L, n) checkinstptr(L, n, TEK_LIB_VISUAL_CLASSNAME)
 #define checkpenptr(L, n) checkinstptr(L, n, TEK_LIB_VISUALPEN_CLASSNAME)
 #define checkfontptr(L, n) checkinstptr(L, n, TEK_LIB_VISUALFONT_CLASSNAME)
+#define checkpixmapptr(L, n) checkinstptr(L, n, TEK_LIB_VISUALPIXMAP_CLASSNAME)
+
+/*****************************************************************************/
+
+static void *luaLi_checkudata(lua_State *L, int ud, const char *tname)
+{
+	void *p = lua_touserdata(L, ud);
+	if (p != NULL) 
+	{
+		if (lua_getmetatable(L, ud)) 
+		{
+			lua_getfield(L, LUA_REGISTRYINDEX, tname);
+			if (lua_rawequal(L, -1, -2))
+			{
+				lua_pop(L, 2);
+				return p;
+			}
+			lua_pop(L, 1);
+		}
+		lua_pop(L, 1);
+	}
+	/* not an error: */
+	return NULL;
+}
 
 /*****************************************************************************/
 
@@ -20,8 +45,10 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_wait(lua_State *L)
 {
 	TEKVisual *vis;
+	struct TExecBase *TExecBase;
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
+	TExecBase = vis->vis_ExecBase;
 	TWait(TGetPortSignal(vis->vis_IMsgPort));
 	lua_pop(L, 1);
 	return 0;
@@ -35,10 +62,12 @@ tek_lib_visual_wait(lua_State *L)
 LOCAL LUACFUNC TINT
 tek_lib_visual_sleep(lua_State *L)
 {
+	struct TExecBase *TExecBase;
 	TEKVisual *vis;
 	TTIME dt;
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
+	TExecBase = vis->vis_ExecBase;
 	dt.tdt_Int64 = luaL_checknumber(L, 1) * 1000;
 	TWaitTime(&dt, 0);
 	lua_pop(L, 1);
@@ -50,10 +79,12 @@ tek_lib_visual_sleep(lua_State *L)
 LOCAL LUACFUNC TINT
 tek_lib_visual_gettime(lua_State *L)
 {
+	struct TExecBase *TExecBase;
 	TEKVisual *vis;
 	TTIME dt;
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
+	TExecBase = vis->vis_ExecBase;
 	TGetSystemTime(&dt);
 	lua_remove(L, -3);
 	lua_pushinteger(L, dt.tdt_Int64 / 1000000);
@@ -141,7 +172,7 @@ tek_lib_visual_openfont(lua_State *L)
 LOCAL LUACFUNC TINT
 tek_lib_visual_closefont(lua_State *L)
 {
-	TEKFont *font = luaL_checkudata(L, 1, TEK_LIB_VISUALFONT_CLASSNAME);
+	TEKFont *font = checkfontptr(L, 1);
 	if (font->font_Font)
 	{
 		TVisualCloseFont(font->font_VisBase, font->font_Font);
@@ -213,11 +244,13 @@ tek_lib_visual_clearinput(lua_State *L)
 LOCAL LUACFUNC TINT
 tek_lib_visual_getmsg(lua_State *L)
 {
+	struct TExecBase *TExecBase;
 	TEKVisual *vis;
 	TIMSG *imsg;
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	/* s: visbase */
 	vis = lua_touserdata(L, -1);
+	TExecBase = vis->vis_ExecBase;
 	imsg = (TIMSG *) TGetMsg(vis->vis_IMsgPort);
 	if (imsg)
 	{
@@ -313,6 +346,84 @@ tek_lib_visual_getmsg(lua_State *L)
 /*****************************************************************************/
 
 LOCAL LUACFUNC TINT
+tek_lib_visual_createpixmap(lua_State *L)
+{
+	size_t ppmlen;
+	TEKVisual *vis;
+	struct TExecBase *TExecBase;
+	const char *ppm = luaL_checklstring(L, 1, &ppmlen);
+	const char *srcbuf;
+	int tw, th, maxv;
+	TUINT *buf;
+	TEKPixmap *bm;
+	TUINT8 r, g, b;
+	int x, y;
+	
+	if (!((sscanf(ppm, "P6\n%d %d\n%d\n", &tw, &th, &maxv) == 3 ||
+		sscanf(ppm, "P6\n#%*80[^\n]\n%d %d\n%d\n", &tw, &th, &maxv) == 3) &&
+		maxv > 0 && maxv < 256))
+	{
+		/*luaL_argerror(L, 2, "invalid bitmap");*/
+		lua_pushnil(L);
+		lua_pushstring(L, "Invalid format");
+		return 2;
+	}
+	
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
+	vis = lua_touserdata(L, -1);
+	lua_pop(L, 1);
+	TExecBase = vis->vis_ExecBase;
+	
+	bm = lua_newuserdata(L, sizeof(TEKPixmap));
+	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
+	lua_setmetatable(L, -2);
+	
+	srcbuf = ppm + ppmlen - 3 * tw * th;
+	buf = TAlloc(TNULL, tw * th * sizeof(TUINT));
+	if (buf == TNULL)
+	{
+		lua_pushstring(L, "out of memory");
+		lua_error(L);
+	}
+	
+	bm->pxm_Data = buf;
+	bm->pxm_Width = tw;
+	bm->pxm_Height = th;
+	bm->pxm_VisualBase = vis;
+	
+	for (y = 0; y < th; ++y)
+	{
+		for (x = 0; x < tw; ++x)
+		{
+			r = *srcbuf++;
+			g = *srcbuf++;
+			b = *srcbuf++;
+			*buf++ = (r << 16) | (g << 8) | b;
+		}
+	}
+	
+	lua_pushinteger(L, tw);
+	lua_pushinteger(L, th);
+	return 3;
+}
+
+LOCAL LUACFUNC TINT
+tek_lib_visual_freepixmap(lua_State *L)
+{
+	TEKPixmap *bm = getpixmapptr(L, 1);
+	if (bm->pxm_Data)
+	{
+		TEKVisual *vis = bm->pxm_VisualBase;
+		struct TExecBase *TExecBase = vis->vis_ExecBase;
+		TFree(bm->pxm_Data);
+		bm->pxm_Data = TNULL;
+	}
+	return 0;
+}
+
+/*****************************************************************************/
+
+LOCAL LUACFUNC TINT
 tek_lib_visual_allocpen(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
@@ -367,6 +478,47 @@ tek_lib_visual_rect(lua_State *L)
 	return 0;
 }
 
+static void
+tek_lib_visual_frectpixmap(lua_State *L, TEKVisual *vis, TEKPixmap *pm,
+	TINT x0, TINT y0, TINT w, TINT h, TINT ox, TINT oy)
+{
+	TINT tw = pm->pxm_Width;
+	TINT th = pm->pxm_Height;
+	TUINT *buf = pm->pxm_Data;
+	TINT th0, yo;
+	TINT y = y0;
+	
+	yo = (y0 - oy) % th;
+	if (yo < 0) yo += th;
+	th0 = th - yo;
+	
+	while (h > 0)
+	{
+		int tw0;
+		int x = x0;
+		int ww = w;
+		int dh = TMIN(h, th0);
+		int xo = (x0 - ox) % tw;
+		if (xo < 0) xo += tw;
+		tw0 = tw - xo;
+		
+		while (ww > 0)
+		{
+			int dw = TMIN(ww, tw0);
+			TVisualDrawBuffer(vis->vis_Visual, x, y, 
+				buf + xo + yo * tw, dw, dh, tw, TNULL);
+			ww -= dw;
+			x += dw;
+			tw0 = tw;
+			xo = 0;
+		}
+		h -= dh;
+		y += dh;
+		th0 = th;
+		yo = 0;
+	}
+}
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_frect(lua_State *L)
 {
@@ -376,55 +528,24 @@ tek_lib_visual_frect(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
 	TINT x1 = luaL_checkinteger(L, 4) + sx;
 	TINT y1 = luaL_checkinteger(L, 5) + sy;
+	TINT w = x1 - x0 + 1;
+	TINT h = y1 - y0 + 1;
 	TEKPen *pen;
-
+	TEKPixmap *pm;
+	
 	if (x0 > x1 || y0 > y1)
 		return 0;
-	
-	if (lua_type(L, 6) == LUA_TSTRING)
-	{
-		size_t srclen;
-		const char *srcbuf = luaL_checklstring(L, 6, &srclen);
-		int tw, h, maxv;
-	
-		if (sscanf(srcbuf, "P6\n%d %d\n%d\n", &tw, &h, &maxv) == 3 ||
-			sscanf(srcbuf, "P6\n#%*80[^\n]\n%d %d\n%d\n", &tw, &h, &maxv) == 3)
-		{
-			if (maxv > 0 && maxv < 256)
-			{
-				TINT w = x1 - x0 + 1;
-				TUINT *buf;
-				srcbuf += srclen - 3 * tw * h;
-				buf = TExecAlloc(vis->vis_ExecBase, TNULL, w * h * sizeof(TUINT));
-				if (buf)
-				{
-					TUINT8 r, g, b;
-					int x, y;
-					for (y = 0; y < h; ++y)
-					{
-						TUINT *bp = buf + y * w;
-						for (x = 0; x < w; ++x)
-						{
-							r = *srcbuf++;
-							g = *srcbuf++;
-							b = *srcbuf++;
-							*bp++ = (r << 16) | (g << 8) | b;
-						}
-						srcbuf += (tw - w) * 3;
-					}
-					TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, w, h, w, TNULL);
-					TExecFree(vis->vis_ExecBase, buf);
-				}
-			}
-		}
-	}
-	else
-	{
-		pen = checkpenptr(L, 6);
-		TVisualFRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
-			pen->pen_Pen);
-	}
 
+	if ((pen = luaLi_checkudata(L, 6, TEK_LIB_VISUALPEN_CLASSNAME)))
+	{
+		TVisualFRect(vis->vis_Visual, x0, y0, w, h, pen->pen_Pen);
+	}
+	else if ((pm = luaLi_checkudata(L, 6, TEK_LIB_VISUALPIXMAP_CLASSNAME)))
+	{
+		TINT ox = luaL_optinteger(L, 7, 0) + sx;
+		TINT oy = luaL_optinteger(L, 8, 0) + sy;
+		tek_lib_visual_frectpixmap(L, vis, pm, x0, y0, w, h, ox, oy);
+	}
 	return 0;
 }
 
@@ -461,13 +582,27 @@ tek_lib_visual_text(lua_State *L)
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
 	TINT x0 = luaL_checkinteger(L, 2) + sx;
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
+		TINT x1 = luaL_checkinteger(L, 4) + sx;
+		TINT y1 = luaL_checkinteger(L, 5) + sy;
 	size_t tlen;
-	TSTRPTR text = (TSTRPTR) luaL_checklstring(L, 4, &tlen);
-	TEKPen *fpen = checkpenptr(L, 5);
-	TVPEN bpen = TVPEN_UNDEFINED;
-	if (lua_isuserdata(L, 6))
-		bpen = ((TEKPen *) checkpenptr(L, 6))->pen_Pen;
-	TVisualText(vis->vis_Visual, x0, y0, text, tlen, fpen->pen_Pen, bpen);
+	TSTRPTR text = (TSTRPTR) luaL_checklstring(L, 6, &tlen);
+	TEKPen *fpen = checkpenptr(L, 7);
+	TEKPixmap *pm;
+	TEKPen *p;
+	
+	if ((pm = luaLi_checkudata(L, 8, TEK_LIB_VISUALPIXMAP_CLASSNAME)))
+	{
+		TINT ox = luaL_optinteger(L, 9, 0) + sx;
+		TINT oy = luaL_optinteger(L, 10, 0) + sy;
+		tek_lib_visual_frectpixmap(L, vis, pm, x0, y0,
+			x1 - x0 + 1, y1 - y0 + 1, ox, oy);
+	}
+	else if ((p = luaLi_checkudata(L, 8, TEK_LIB_VISUALPEN_CLASSNAME)))
+		TVisualFRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
+			p->pen_Pen);
+	
+	TVisualText(vis->vis_Visual, x0, y0, text, tlen, fpen->pen_Pen);
+		
 	return 0;
 }
 
@@ -475,15 +610,15 @@ tek_lib_visual_text(lua_State *L)
 /*
 **	drawimage(visual, image, r1, r2, r3, r4, pentab, override_pen)
 **
-**	Layout of image data structure:
+**	Layout of vector image data structure:
 **
 **	{
 **		[1] = { x0, y0, x1, y1, ... }, -- coordinates (x/y)
-**		[2] = {  -- primitives
+**		[4] = boolean -- is_transparent
+**		[5] = {  -- primitives
 **			{ [1]=fmtcode, [2]=numpts, [3]={ indices }, [4]=pen_or_pentable },
 **			...
 **		}
-**		[3] = boolean -- is_transparent
 **	}
 **
 **	format codes:
@@ -496,6 +631,7 @@ tek_lib_visual_drawimage(lua_State *L)
 {
 	TEKPen *pen_override = TNULL;
 	TEKVisual *vis = checkvisptr(L, 1);
+	struct TExecBase *TExecBase = vis->vis_ExecBase;
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
 	lua_Integer rect[4], scalex, scaley;
 	size_t primcount, i, j;
@@ -503,7 +639,7 @@ tek_lib_visual_drawimage(lua_State *L)
 	tags[1].tti_Tag = TTAG_DONE;
 	
 	if (lua_type(L, 7) != LUA_TTABLE)
-		pen_override = luaL_checkudata(L, 7, TEK_LIB_VISUALPEN_CLASSNAME);
+		pen_override = checkpenptr(L, 7);
 	
 	rect[0] = luaL_checkinteger(L, 3);
 	rect[1] = luaL_checkinteger(L, 4);
@@ -514,7 +650,7 @@ tek_lib_visual_drawimage(lua_State *L)
 	
 	lua_rawgeti(L, 2, 1);
 	/* s: coords */
-	lua_rawgeti(L, 2, 2);
+	lua_rawgeti(L, 2, 5);
 	/* s: coords, primitives */
 	primcount = lua_objlen(L, -1);
 
@@ -769,11 +905,12 @@ tek_lib_visual_setfont(lua_State *L)
 static TTAG hookfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	TEKVisual *vis = hook->thk_Data;
+	struct TExecBase *TExecBase = vis->vis_ExecBase;
 	TINT *rect = (TINT *) msg;
 	TINT *newbuf = vis->vis_RectBuffer ?
-		TExecRealloc(vis->vis_ExecBase, vis->vis_RectBuffer,
+		TRealloc(vis->vis_RectBuffer,
 			(vis->vis_RectBufferNum + 4) * sizeof(TINT)) :
-		TExecAlloc(vis->vis_ExecBase, TNULL, sizeof(TINT) * 4);
+		TAlloc(TNULL, sizeof(TINT) * 4);
 
 	if (newbuf)
 	{
@@ -794,8 +931,8 @@ tek_lib_visual_copyarea(lua_State *L)
 {
 	TTAGITEM tags[2], *tp = TNULL;
 	struct THook hook;
-
 	TEKVisual *vis = checkvisptr(L, 1);
+	struct TExecBase *TExecBase = vis->vis_ExecBase;
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
 	TINT x = luaL_checkinteger(L, 2) + sx;
 	TINT y = luaL_checkinteger(L, 3) + sy;
@@ -825,7 +962,7 @@ tek_lib_visual_copyarea(lua_State *L)
 			lua_pushinteger(L, vis->vis_RectBuffer[i]);
 			lua_rawseti(L, 8, i + 1);
 		}
-		TExecFree(vis->vis_ExecBase, vis->vis_RectBuffer);
+		TFree(vis->vis_RectBuffer);
 		vis->vis_RectBuffer = TNULL;
 	}
 
@@ -878,6 +1015,7 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_drawrgb(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
+	struct TExecBase *TExecBase = vis->vis_ExecBase;
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
 	TINT x0 = luaL_checkinteger(L, 2) + sx;
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
@@ -891,7 +1029,7 @@ tek_lib_visual_drawrgb(lua_State *L)
 
 	luaL_checktype(L, 4, LUA_TTABLE);
 
-	buf = TExecAlloc(vis->vis_ExecBase, TNULL, bw * bh * sizeof(TUINT));
+	buf = TAlloc(TNULL, bw * bh * sizeof(TUINT));
 	if (buf)
 	{
 		TUINT rgb;
@@ -913,14 +1051,14 @@ tek_lib_visual_drawrgb(lua_State *L)
 
 			for (yy = 0; yy < ph - 1; ++yy)
 			{
-				TExecCopyMem(vis->vis_ExecBase, lp, p, bw * sizeof(TUINT));
+				TCopyMem(lp, p, bw * sizeof(TUINT));
 				p += bw;
 			}
 		}
 
 		TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, bw, bh, bw, TNULL);
 
-		TExecFree(vis->vis_ExecBase, buf);
+		TFree(buf);
 	}
 
 	return 0;
@@ -928,43 +1066,21 @@ tek_lib_visual_drawrgb(lua_State *L)
 
 /*****************************************************************************/
 /*
-**	drawppm(visual, ppm, x0, y0)
+**	drawpixmap(visual, image, x0, y0, x1, y1)
 */
 
 LOCAL LUACFUNC TINT
-tek_lib_visual_drawppm(lua_State *L)
+tek_lib_visual_drawpixmap(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	size_t srclen;
-	const char *srcbuf = luaL_checklstring(L, 2, &srclen);
-	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
-	TINT x0 = luaL_checkinteger(L, 3) + sx;
-	TINT y0 = luaL_checkinteger(L, 4) + sy;
-	int w, h, maxv;
-
-	if (sscanf(srcbuf, "P6\n%d %d\n%d\n", &w, &h, &maxv) == 3 ||
-		sscanf(srcbuf, "P6\n#%*80[^\n]\n%d %d\n%d\n", &w, &h, &maxv) == 3)
-	{
-		if (maxv > 0 && maxv < 256)
-		{
-			TUINT *buf;
-			srcbuf += srclen - 3 * w * h;
-			buf = TExecAlloc(vis->vis_ExecBase, TNULL, w * h * sizeof(TUINT));
-			if (buf)
-			{
-				TUINT8 r, g, b;
-				int i;
-				for (i = 0; i < w * h; ++i)
-				{
-					r = *srcbuf++;
-					g = *srcbuf++;
-					b = *srcbuf++;
-					buf[i] = (r << 16) | (g << 8) | b;
-				}
-				TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, w, h, w, TNULL);
-				TExecFree(vis->vis_ExecBase, buf);
-			}
-		}
-	}
+	TEKPixmap *img = checkpixmapptr(L, 2);
+	TINT sx = vis->vis_ShiftX;
+	TINT sy = vis->vis_ShiftY;
+	TINT x0 = luaL_checkinteger(L, 3);
+	TINT y0 = luaL_checkinteger(L, 4);
+	TINT w = luaL_optinteger(L, 5, x0 + img->pxm_Width - 1) - x0 + 1;
+	TINT h = luaL_optinteger(L, 6, y0 + img->pxm_Height - 1) - y0 + 1;
+	TVisualDrawBuffer(vis->vis_Visual, x0 + sx, y0 + sy, img->pxm_Data,
+		w, h, img->pxm_Width, TNULL);
 	return 0;
 }

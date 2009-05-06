@@ -28,7 +28,7 @@ function Coefficient.new(class, self)
 			Integer = true,
 			onSetValue = function(self, val)
 				Slider.onSetValue(self, val)
-				local p = self.Application:getElementById("the-plasma")
+				local p = self.Application:getById("the-plasma")
 				p:setValue(group.Key1, self.Value)
 			end,
 		},
@@ -43,7 +43,7 @@ function Coefficient.new(class, self)
 			Integer = true,
 			onSetValue = function(self, val)
 				Slider.onSetValue(self, val)
-				local p = self.Application:getElementById("the-plasma")
+				local p = self.Application:getById("the-plasma")
 				p:setValue(group.Key2, self.Value)
 			end,
 		},
@@ -109,7 +109,7 @@ local window = ui.Window:new
 											{
 												["Value"] =
 												{
-													[ui.NOTIFY_CHANGE] =
+													[ui.NOTIFY_ALWAYS] =
 													{
 														{ ui.NOTIFY_ID, "the-tunnel", "setSpeed", ui.NOTIFY_VALUE },
 													}
@@ -134,7 +134,7 @@ local window = ui.Window:new
 											{
 												["Value"] =
 												{
-													[ui.NOTIFY_CHANGE] =
+													[ui.NOTIFY_ALWAYS] =
 													{
 														{ ui.NOTIFY_ID, "the-tunnel", "setViewZ", ui.NOTIFY_VALUE },
 													}
@@ -158,7 +158,7 @@ local window = ui.Window:new
 											{
 												["Value"] =
 												{
-													[ui.NOTIFY_CHANGE] =
+													[ui.NOTIFY_ALWAYS] =
 													{
 														{ ui.NOTIFY_ID, "the-tunnel", "setNumSeg", ui.NOTIFY_VALUE },
 													}
@@ -194,9 +194,9 @@ local window = ui.Window:new
 									Id = "the-boing",
 									Style = "border-width: 0; margin: 0",
 									onSetYPos = function(self, ypos)
-										local s = self.Application:getElementById("boing-slider")
+										local s = self.Application:getById("boing-slider")
 										s:setValue("Value", ypos)
-										local s = self.Application:getElementById("boing-slider2")
+										local s = self.Application:getById("boing-slider2")
 										s:setValue("Value", ypos)
 									end,
 								},

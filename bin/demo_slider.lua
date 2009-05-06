@@ -43,7 +43,7 @@ local window = ui.Window:new
 					{
 						["Value"] =
 						{
-							[ui.NOTIFY_CHANGE] =
+							[ui.NOTIFY_ALWAYS] =
 							{
 								{ ui.NOTIFY_ID, "slider-text-1", "setValue", "Text", ui.NOTIFY_FORMAT, "%2.2f" },
 								{ ui.NOTIFY_ID, "slider-slider-2", "setValue", "Value", ui.NOTIFY_VALUE },
@@ -76,7 +76,7 @@ local window = ui.Window:new
 					{
 						["Value"] =
 						{
-							[ui.NOTIFY_CHANGE] =
+							[ui.NOTIFY_ALWAYS] =
 							{
 								{ ui.NOTIFY_ID, "slider-text-2", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" },
 								{ ui.NOTIFY_ID, "slider-slider-1", "setValue", "Value", ui.NOTIFY_VALUE },
@@ -109,7 +109,7 @@ local window = ui.Window:new
 					{
 						["Value"] =
 						{
-							[ui.NOTIFY_CHANGE] =
+							[ui.NOTIFY_ALWAYS] =
 							{
 								{ ui.NOTIFY_ID, "slider-text-3", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" },
 								{ ui.NOTIFY_ID, "slider-slider-1", "setValue", "Range", ui.NOTIFY_VALUE },

@@ -126,7 +126,7 @@ EXPORT void vis_line(struct TVisualBase *mod, TINT x1, TINT y1, TINT x2,
 	TINT y2, TVPEN pen);
 EXPORT void vis_plot(struct TVisualBase *mod, TINT x, TINT y, TVPEN pen);
 EXPORT void vis_text(struct TVisualBase *mod, TINT x, TINT y, TSTRPTR t,
-	TUINT l, TVPEN fg, TVPEN bg);
+	TUINT l, TVPEN fg);
 
 EXPORT void vis_drawstrip(struct TVisualBase *mod, TINT *array, TINT num,
 	TTAGITEM *tags);

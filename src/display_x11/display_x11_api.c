@@ -743,56 +743,25 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 	TINT len = req->tvr_Op.Text.Length;
 	TUINT x = req->tvr_Op.Text.X;
 	TUINT y = req->tvr_Op.Text.Y;
-
 	struct X11Pen *fgpen = (struct X11Pen *) req->tvr_Op.Text.FgPen;
-	struct X11Pen *bgpen = (struct X11Pen *) req->tvr_Op.Text.BgPen;
-
 	setfgpen(mod, v, (TVPEN) fgpen);
 
-	if ((TVPEN) bgpen == TVPEN_UNDEFINED)
+	#if defined(ENABLE_XFT)
+	if (mod->x11_use_xft)
 	{
-		#if defined(ENABLE_XFT)
-		if (mod->x11_use_xft)
-		{
-			XftFont *f = ((struct FontNode *) v->curfont)->xftfont;
-			(*mod->x11_xftiface.XftDrawStringUtf8)(v->draw, &fgpen->xftcolor,
-				f, x, y + f->ascent, (FcChar8 *)text, len);
-		}
-		else
-		#endif
-		{
-			TSTRPTR latin = x11_utf8tolatin(mod, text, len, &len);
-			if (latin)
-			{
-				XFontStruct *f = ((struct FontNode *) v->curfont)->font;
-				XDrawString(mod->x11_Display, v->window, v->gc,
-					x, y + f->ascent, (char *) latin, len);
-			}
-		}
+		XftFont *f = ((struct FontNode *) v->curfont)->xftfont;
+		(*mod->x11_xftiface.XftDrawStringUtf8)(v->draw, &fgpen->xftcolor,
+			f, x, y + f->ascent, (FcChar8 *)text, len);
 	}
 	else
+	#endif
 	{
-		#if defined(ENABLE_XFT)
-		if (mod->x11_use_xft)
+		TSTRPTR latin = x11_utf8tolatin(mod, text, len, &len);
+		if (latin)
 		{
-			XftFont *f = ((struct FontNode *) v->curfont)->xftfont;
-			TINT w = x11_hosttextsize(mod, v->curfont, text, len);
-			(*mod->x11_xftiface.XftDrawRect)(v->draw, &bgpen->xftcolor,
-							x, y, w, f->height + 1);
-			(*mod->x11_xftiface.XftDrawStringUtf8)(v->draw, &fgpen->xftcolor,
-				f, x, y + f->ascent, (FcChar8 *)text, len);
-		}
-		else
-		#endif
-		{
-			TSTRPTR latin = x11_utf8tolatin(mod, text, len, &len);
-			if (latin)
-			{
-				XFontStruct *f = ((struct FontNode *) v->curfont)->font;
-				setbgpen(mod, v, (TVPEN) bgpen);
-				XDrawImageString(mod->x11_Display, v->window, v->gc,
-					x, y + f->ascent, (char *) latin, len);
-			}
+			XFontStruct *f = ((struct FontNode *) v->curfont)->font;
+			XDrawString(mod->x11_Display, v->window, v->gc,
+				x, y + f->ascent, (char *) latin, len);
 		}
 	}
 }

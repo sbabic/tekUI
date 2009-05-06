@@ -119,7 +119,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 11.1"
+_VERSION = "Gadget 11.3"
 
 local Gadget = _M
 
@@ -160,6 +160,7 @@ function Gadget.init(self)
 	self.InitialFocus = self.InitialFocus or false
 	self.KeyCode = self.KeyCode or false
 	self.Mode = self.Mode or "inert"
+	self.OldActive = false
 	self.Pressed = false
 	return Frame.init(self)
 end
@@ -197,14 +198,14 @@ end
 function Gadget:setup(app, window)
 	Frame.setup(self, app, window)
 	-- add notifications:
-	self:addNotify("Disabled", ui.NOTIFY_CHANGE, NOTIFY_DISABLED)
-	self:addNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_HILITE)
-	self:addNotify("Selected", ui.NOTIFY_CHANGE, NOTIFY_SELECTED)
-	self:addNotify("Hover", ui.NOTIFY_CHANGE, NOTIFY_HOVER)
-	self:addNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
+	self:addNotify("Disabled", ui.NOTIFY_ALWAYS, NOTIFY_DISABLED)
+	self:addNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_HILITE)
+	self:addNotify("Selected", ui.NOTIFY_ALWAYS, NOTIFY_SELECTED)
+	self:addNotify("Hover", ui.NOTIFY_ALWAYS, NOTIFY_HOVER)
+	self:addNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
 	self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
 	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
-	self:addNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
+	self:addNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
 	-- create effect hook:
 	self.EffectHook = ui.createHook("hook", self.EffectName, self,
 		{ Style = self.Style })
@@ -216,14 +217,14 @@ end
 
 function Gadget:cleanup()
 	self.EffectHook = false
-	self:remNotify("Focus", ui.NOTIFY_CHANGE, NOTIFY_FOCUS)
+	self:remNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
 	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-	self:remNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
-	self:remNotify("Hover", ui.NOTIFY_CHANGE, NOTIFY_HOVER)
-	self:remNotify("Selected", ui.NOTIFY_CHANGE, NOTIFY_SELECTED)
-	self:remNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_HILITE)
-	self:remNotify("Disabled", ui.NOTIFY_CHANGE, NOTIFY_DISABLED)
+	self:remNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
+	self:remNotify("Hover", ui.NOTIFY_ALWAYS, NOTIFY_HOVER)
+	self:remNotify("Selected", ui.NOTIFY_ALWAYS, NOTIFY_SELECTED)
+	self:remNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_HILITE)
+	self:remNotify("Disabled", ui.NOTIFY_ALWAYS, NOTIFY_DISABLED)
 	Frame.cleanup(self)
 end
 
@@ -308,32 +309,44 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:onActivate(active)
+
+	-- released over a popup which was entered with the button held?
+	local win = self.Window
+	local collapse = active == false and self.OldActive == false
+		and win and win.PopupRootWindow
+	self.OldActive = active
+
 	local mode, selected, dblclick = self.Mode, self.Selected
 	if mode == "toggle" then
-		if active then
+		if active or collapse then
 			self:setValue("Selected", not selected)
-			self:setValue("Pressed", true)
+			self:setValue("Pressed", true, true)
 			dblclick = self
 		end
 	elseif mode == "touch" then
-		if active and not selected then
+		if (active and not selected) or collapse then
 			self:setValue("Selected", true)
-			self:setValue("Pressed", true)
+			self:setValue("Pressed", true, true)
 			dblclick = self
 		end
 	elseif mode == "button" then
 		self:setValue("Selected", active and self.Hover)
-		if not selected ~= not active then
-			self:setValue("Pressed", active)
+		if (not selected ~= not active) or collapse then
+			self:setValue("Pressed", active, true)
 			dblclick = active and self
 		end
 	end
-	if dblclick ~= nil then
-		local win = self.Window
-		if win then
-			win:setDblClickElement(dblclick)
-		end
+	
+	win = self.Window
+	
+	if dblclick ~= nil and win then
+		win:setDblClickElement(dblclick)
 	end
+		
+	if collapse and win then
+		win:finishPopup()
+	end
+	
 	self:setState()
 end
 

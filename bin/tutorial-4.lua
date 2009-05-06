@@ -18,7 +18,7 @@ ui.Application:new
 					Width = "auto",
 
 					onPress = function(self, pressed)
-						local button = self.Application:getElementById("output")
+						local button = self.Application:getById("output")
 						if pressed == true then
 							button:setValue("Text", "world")
 						else

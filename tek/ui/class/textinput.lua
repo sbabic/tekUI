@@ -25,10 +25,10 @@
 --			the TextInput:onEnter() method.
 --		- {{EnterNext [IG]}} (boolean)
 --			Indicates that by pressing the Return key, the focus should advance
---			to the next element that can receive the input.
+--			to the next element that can receive input.
 --		- {{TabEnter [IG]}} (boolean)
---			Indicates that leaving the element by pressing the Tab key
---			should set the {{Enter}} attribute and invoke the respective handler.
+--			Indicates that leaving the element by pressing the Tab key should
+--			set the {{Enter}} attribute and invoke the respective handler.
 --
 --	STYLE PROPERTIES::
 --		- {{cursor-background-color}}
@@ -78,7 +78,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 8.3"
+_VERSION = "TextInput 8.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -219,9 +219,7 @@ function TextInput:layoutText()
 		tr[2] = r[2] + p[2] + floor((h - fh) / 2)
 		tr[3] = tr[1] + tw - 1
 		tr[4] = tr[2] + fh - 1
-	
 	end
-	
 end
 
 -------------------------------------------------------------------------------
@@ -257,22 +255,26 @@ function TextInput:draw()
 	self:erase()
 	
 	if self.Disabled then
-		d:drawText(x + 1, y + 1, text,
+		d:drawText(x + 1, y + 1, tr[3] + 1, tr[4] + 1, text,
 			d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2])
 	end
 	
 	local pen = pens[self.Foreground]
-	d:drawText(x, y, text, pen)
+	d:drawText(x, y, tr[3], tr[4], text, pen)
 	
 	if not self.Disabled and self.Editing then
 		local s = self.TextBuffer:sub(tc + to + 1, tc + to + 1)
 		s = s == "" and " " or s
 		if self.BlinkState == 1 then
-			d:drawText(tr[1] + tc * fw, tr[2], s,
+			d:drawText(tr[1] + tc * fw, tr[2], 
+				tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
+				s,
 				pens[self.FGPenCursor or ui.PEN_CURSORDETAIL],
 				pens[self.BGPenCursor or ui.PEN_CURSOR])
 		else
-			d:drawText(tr[1] + tc * fw, tr[2], s, pen)
+			d:drawText(tr[1] + tc * fw, tr[2],
+				tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
+				s, pen)
 		end
 	end
 end
@@ -503,7 +505,7 @@ function TextInput:handleInput(msg)
 					(code == 9 or code == 0xf013) then
 					self:setEditing(false)
 					self:setValue("Text", t:get())
-					self:setValue("Enter", t:get())
+					self:setValue("Enter", t:get(), true)
 					return msg -- next handler
 				elseif code == 0xf012 then -- up
 					return msg
@@ -512,7 +514,7 @@ function TextInput:handleInput(msg)
 				elseif code == 13 then
 					self:setEditing(false)
 					self:setValue("Text", t:get())
-					self:setValue("Enter", t:get())
+					self:setValue("Enter", t:get(), true)
 					if self.EnterNext then
 						local w = self.Window
 						local ne = w:getNextElement(self)

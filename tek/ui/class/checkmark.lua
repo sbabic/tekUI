@@ -33,22 +33,20 @@
 
 local ui = require "tek.ui"
 local Text = ui.Text
-local VectorImage = ui.VectorImage
-
 local floor = math.floor
 local ipairs = ipairs
 local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.13"
+_VERSION = "CheckMark 3.15"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local CheckImage1 = ui.createImage("check")
-local CheckImage2 = ui.createImage("check", 2)
+local CheckImage1 = ui.getStockImage("check")
+local CheckImage2 = ui.getStockImage("check", 2)
 
 local DEF_IMAGEMINHEIGHT = 18
 

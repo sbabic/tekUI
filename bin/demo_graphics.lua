@@ -72,18 +72,14 @@ local window = ui.Window:new
 					Class = "button",
 					Width = "free",
 					Height = "free",
-					Image = ui.BitmapImage:new { 
-						io.open(ui.ProgDir .. "/graphics/locale.ppm", "rb"):read("*a") 
-					},
+					Image = ui.loadImage(ui.ProgDir .. "/graphics/locale.ppm")
 				},
 				ui.ImageGadget:new
 				{
 					Width = "free",
 					Height = "free",
 					Style = "background-color: shine;",
-					Image = ui.BitmapImage:new { 
-						io.open(ui.ProgDir .. "/graphics/world.ppm", "rb"):read("*a") 
-					},
+					Image = ui.loadImage(ui.ProgDir .. "/graphics/world.ppm")
 				}
 			}
 		}

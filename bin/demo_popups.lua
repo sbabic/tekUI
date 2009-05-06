@@ -118,7 +118,10 @@ local window = Window:new
 						MenuItem:new { Text = "Select all" },
 						MenuItem:new { Text = "Deselect", Disabled = true },
 						Spacer:new { },
-						ui.CheckMark:new { Text = "Checkmark" }, -- TODO
+						ui.CheckMark:new { Width = "fill", Text = "Checkmark" },
+						Spacer:new { },
+						ui.RadioButton:new { Width = "fill", Text = "One" },
+						ui.RadioButton:new { Width = "fill", Text = "Two" },
 					}
 				}
 			}
@@ -256,8 +259,8 @@ local window = Window:new
 										ui.PopList.onSelect(self, val)
 										local item = self.ListObject:getItem(self.SelectedLine)
 										if item then
--- 											self.Application:getElementById("japan-combo"):setValue("SelectedLine", self.SelectedLine)
-											self.Application:getElementById("popup-show"):setValue("Text", item[1][1])
+-- 											self.Application:getById("japan-combo"):setValue("SelectedLine", self.SelectedLine)
+											self.Application:getById("popup-show"):setValue("Text", item[1][1])
 										end
 									end,
 								},

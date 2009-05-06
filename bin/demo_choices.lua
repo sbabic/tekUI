@@ -13,7 +13,7 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 local VerboseCheckMark = ui.CheckMark:newClass { _NAME = "_vbcheckmark" }
 
 function VerboseCheckMark:onSelect(selected)
-	local tw = self.Application:getElementById("text-window")
+	local tw = self.Application:getById("text-window")
 	local text = selected and L.SELECTED or L.REVOKED
 	text = text .. ": " .. self.Text:gsub("_", "")
 	tw:appendLine(text, true)
@@ -24,7 +24,7 @@ local VerboseRadioButton = ui.RadioButton:newClass { _NAME = "_vbradiobutton" }
 
 function VerboseRadioButton:onSelect(selected)
 	if selected == true then
-		local tw = self.Application:getElementById("text-window")
+		local tw = self.Application:getById("text-window")
 		local text = L.SELECTED .. ": " .. self.Text:gsub("_", "")
 		tw:appendLine(text, true)
 	end
@@ -62,13 +62,13 @@ local window = ui.Window:new
 					Selected = true,
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-hot"):setValue("Selected", true)
-							self.Application:getElementById("drink-hot"):setValue("Disabled", false)
-							self.Application:getElementById("drink-ice"):setValue("Disabled", false)
-							self.Application:getElementById("drink-straw"):setValue("Disabled", false)
-							self.Application:getElementById("drink-shaken"):setValue("Disabled", false)
-							self.Application:getElementById("drink-stirred"):setValue("Selected", false)
-							self.Application:getElementById("drink-stirred"):setValue("Disabled", false)
+							self.Application:getById("drink-hot"):setValue("Selected", true)
+							self.Application:getById("drink-hot"):setValue("Disabled", false)
+							self.Application:getById("drink-ice"):setValue("Disabled", false)
+							self.Application:getById("drink-straw"):setValue("Disabled", false)
+							self.Application:getById("drink-shaken"):setValue("Disabled", false)
+							self.Application:getById("drink-stirred"):setValue("Selected", false)
+							self.Application:getById("drink-stirred"):setValue("Disabled", false)
 						end
 						VerboseRadioButton.onSelect(self, active)
 					end,
@@ -79,12 +79,12 @@ local window = ui.Window:new
 					Id = "drink-juice",
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-hot"):setValue("Selected", false)
-							self.Application:getElementById("drink-hot"):setValue("Disabled", true)
-							self.Application:getElementById("drink-ice"):setValue("Disabled", false)
-							self.Application:getElementById("drink-straw"):setValue("Disabled", false)
-							self.Application:getElementById("drink-shaken"):setValue("Disabled", false)
-							self.Application:getElementById("drink-stirred"):setValue("Disabled", false)
+							self.Application:getById("drink-hot"):setValue("Selected", false)
+							self.Application:getById("drink-hot"):setValue("Disabled", true)
+							self.Application:getById("drink-ice"):setValue("Disabled", false)
+							self.Application:getById("drink-straw"):setValue("Disabled", false)
+							self.Application:getById("drink-shaken"):setValue("Disabled", false)
+							self.Application:getById("drink-stirred"):setValue("Disabled", false)
 						end
 						VerboseRadioButton.onSelect(self, active)
 					end,
@@ -95,15 +95,15 @@ local window = ui.Window:new
 					Id = "drink-lassi",
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-hot"):setValue("Selected", false)
-							self.Application:getElementById("drink-hot"):setValue("Disabled", true)
-							self.Application:getElementById("drink-ice"):setValue("Disabled", false)
-							self.Application:getElementById("drink-straw"):setValue("Disabled", false)
-							self.Application:getElementById("drink-straw"):setValue("Selected", true)
-							self.Application:getElementById("drink-shaken"):setValue("Selected", false)
-							self.Application:getElementById("drink-shaken"):setValue("Disabled", true)
-							self.Application:getElementById("drink-stirred"):setValue("Disabled", true)
-							self.Application:getElementById("drink-stirred"):setValue("Selected", true)
+							self.Application:getById("drink-hot"):setValue("Selected", false)
+							self.Application:getById("drink-hot"):setValue("Disabled", true)
+							self.Application:getById("drink-ice"):setValue("Disabled", false)
+							self.Application:getById("drink-straw"):setValue("Disabled", false)
+							self.Application:getById("drink-straw"):setValue("Selected", true)
+							self.Application:getById("drink-shaken"):setValue("Selected", false)
+							self.Application:getById("drink-shaken"):setValue("Disabled", true)
+							self.Application:getById("drink-stirred"):setValue("Disabled", true)
+							self.Application:getById("drink-stirred"):setValue("Selected", true)
 						end
 						VerboseRadioButton.onSelect(self, active)
 					end,
@@ -114,16 +114,16 @@ local window = ui.Window:new
 					Id = "drink-beer",
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-hot"):setValue("Selected", false)
-							self.Application:getElementById("drink-hot"):setValue("Disabled", true)
-							self.Application:getElementById("drink-ice"):setValue("Selected", false)
-							self.Application:getElementById("drink-ice"):setValue("Disabled", true)
-							self.Application:getElementById("drink-straw"):setValue("Selected", false)
-							self.Application:getElementById("drink-straw"):setValue("Disabled", true)
-							self.Application:getElementById("drink-shaken"):setValue("Selected", false)
-							self.Application:getElementById("drink-shaken"):setValue("Disabled", true)
-							self.Application:getElementById("drink-stirred"):setValue("Selected", false)
-							self.Application:getElementById("drink-stirred"):setValue("Disabled", true)
+							self.Application:getById("drink-hot"):setValue("Selected", false)
+							self.Application:getById("drink-hot"):setValue("Disabled", true)
+							self.Application:getById("drink-ice"):setValue("Selected", false)
+							self.Application:getById("drink-ice"):setValue("Disabled", true)
+							self.Application:getById("drink-straw"):setValue("Selected", false)
+							self.Application:getById("drink-straw"):setValue("Disabled", true)
+							self.Application:getById("drink-shaken"):setValue("Selected", false)
+							self.Application:getById("drink-shaken"):setValue("Disabled", true)
+							self.Application:getById("drink-stirred"):setValue("Selected", false)
+							self.Application:getById("drink-stirred"):setValue("Disabled", true)
 						end
 						VerboseRadioButton.onSelect(self, active)
 					end,
@@ -134,12 +134,12 @@ local window = ui.Window:new
 					Id = "drink-whisky",
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-hot"):setValue("Selected", false)
-							self.Application:getElementById("drink-hot"):setValue("Disabled", true)
-							self.Application:getElementById("drink-ice"):setValue("Disabled", false)
-							self.Application:getElementById("drink-straw"):setValue("Disabled", false)
-							self.Application:getElementById("drink-shaken"):setValue("Disabled", false)
-							self.Application:getElementById("drink-stirred"):setValue("Disabled", false)
+							self.Application:getById("drink-hot"):setValue("Selected", false)
+							self.Application:getById("drink-hot"):setValue("Disabled", true)
+							self.Application:getById("drink-ice"):setValue("Disabled", false)
+							self.Application:getById("drink-straw"):setValue("Disabled", false)
+							self.Application:getById("drink-shaken"):setValue("Disabled", false)
+							self.Application:getById("drink-stirred"):setValue("Disabled", false)
 						end
 						VerboseRadioButton.onSelect(self, active)
 					end,
@@ -151,9 +151,9 @@ local window = ui.Window:new
 					Selected = true,
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-ice"):setValue("Selected", false)
-							self.Application:getElementById("drink-straw"):setValue("Selected", false)
-							self.Application:getElementById("drink-shaken"):setValue("Selected", false)
+							self.Application:getById("drink-ice"):setValue("Selected", false)
+							self.Application:getById("drink-straw"):setValue("Selected", false)
+							self.Application:getById("drink-shaken"):setValue("Selected", false)
 						end
 						VerboseCheckMark.onSelect(self, active)
 					end,
@@ -164,8 +164,8 @@ local window = ui.Window:new
 					Id = "drink-ice",
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-hot"):setValue("Selected", false)
-							self.Application:getElementById("drink-straw"):setValue("Selected", true)
+							self.Application:getById("drink-hot"):setValue("Selected", false)
+							self.Application:getById("drink-straw"):setValue("Selected", true)
 						end
 						VerboseCheckMark.onSelect(self, active)
 					end,
@@ -176,7 +176,7 @@ local window = ui.Window:new
 					Id = "drink-stirred",
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-shaken"):setValue("Selected", false)
+							self.Application:getById("drink-shaken"):setValue("Selected", false)
 						end
 						VerboseCheckMark.onSelect(self, active)
 					end,
@@ -187,9 +187,9 @@ local window = ui.Window:new
 					Id = "drink-shaken",
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-stirred"):setValue("Selected", false)
-							self.Application:getElementById("drink-hot"):setValue("Selected", false)
-							self.Application:getElementById("drink-ice"):setValue("Selected", true)
+							self.Application:getById("drink-stirred"):setValue("Selected", false)
+							self.Application:getById("drink-hot"):setValue("Selected", false)
+							self.Application:getById("drink-ice"):setValue("Selected", true)
 						end
 						VerboseCheckMark.onSelect(self, active)
 					end,
@@ -200,8 +200,8 @@ local window = ui.Window:new
 					Id = "drink-straw",
 					onSelect = function(self, active)
 						if active then
-							self.Application:getElementById("drink-hot"):setValue("Selected", false)
-							self.Application:getElementById("drink-ice"):setValue("Selected", true)
+							self.Application:getById("drink-hot"):setValue("Selected", false)
+							self.Application:getById("drink-ice"):setValue("Selected", true)
 						end
 						VerboseCheckMark.onSelect(self, active)
 					end,

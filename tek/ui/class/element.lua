@@ -43,7 +43,7 @@
 --		- Element:connect() - Connects the element to a parent element
 --		- Element:decodeProperties() - Decodes the element's style attributes
 --		- Element:disconnect() - Disconnects the element from its parent
---		- Element:getId() - Shortcut for self.Application:getElementById()
+--		- Element:getById() - Shortcut for self.Application:getById()
 --		- Element:getNumProperty() - Retrieves a numerical style property
 --		- Element:getProperties() - Retrieves an element's style properties
 --		- Element:getProperty() - Retrieves a single style property
@@ -63,7 +63,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 12.0"
+_VERSION = "Element 13.0"
 local Element = _M
 
 -------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ end
 
 -- inserts an object of the given Id:
 NOTIFY_ID = function(a, n, i)
-	insert(a, a[-1].Application:getElementById(n[i + 1]))
+	insert(a, a[-1].Application:getById(n[i + 1]))
 	return 2
 end
 
@@ -298,12 +298,12 @@ function Element:getProperties(p, pclass)
 end
 
 -------------------------------------------------------------------------------
---	Element:getId(id): Gets the element with the specified id, under which it
---	was previously registered with the Application. See
---	Application:getElementById(), for which this function is a shortcut.
+--	Element:getById(id): Gets the element with the specified id, under which
+--	it was previously registered with the Application. See also
+--	Application:getById().
 -------------------------------------------------------------------------------
 
-function Element:getId(id)
-	return self.Application:getElementById(id)
+function Element:getById(id)
+	return self.Application:getById(id)
 end
 

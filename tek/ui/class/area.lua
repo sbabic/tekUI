@@ -157,7 +157,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 17.1"
+_VERSION = "Area 18.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -182,13 +182,14 @@ end
 function Area.init(self)
 	self.AutoPosition = self.AutoPosition == nil and true or self.AutoPosition
 	self.Background = false
+	self.BackgroundPosition = false
 	self.BGPen = self.BGPen or false
 	self.DamageRegion = false
 	self.Disabled = self.Disabled or false
 	self.Display = false
 	self.Drawable = false
 	self.EraseBG = self.EraseBG or false
-	self.Focus = self.Focus or false
+	self.Focus = false
 	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
 	self.Hilite = false
@@ -212,6 +213,8 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getProperties(p, pclass)
+	self.BackgroundPosition = self.BackgroundPosition or
+		self:getProperty(p, pclass, "background-position")
 	self.BGPen = self.BGPen or self:getProperty(p, pclass, "background-color")
 	self.HAlign = self.HAlign or
 		self:getProperty(p, pclass, "horizontal-grid-align")
@@ -381,8 +384,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 
 	local r1, r2, r3, r4 = unpack(r)
 	if r1 == x0 and r2 == y0 and r3 == x1 and r4 == y1 then
-		-- nothing changed, no damage:
-		self.DamageRegion = false
+		-- nothing changed:
 		return
 	end
 
@@ -450,13 +452,21 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	if x0 == r1 and y0 == r2 then
 		-- did not move, size changed:
 		if markdamage and self.TrackDamage then
-			-- if damage is to be marked and damage can be tracked:
-			self.DamageRegion = Region.new(x0, y0, x1, y1)
-			self.DamageRegion:subRect(r1, r2, r3, r4)
+			-- if damage is to be marked and can be tracked:
+			local r = Region.new(x0, y0, x1, y1)
+			r:subRect(r1, r2, r3, r4)
+			local d = self.DamageRegion
+			if d then
+				for _, r1, r2, r3, r4 in r:getRects() do
+					d:orRect(r1, r2, r3, r4)
+				end
+			else
+				self.DamageRegion = r
+			end
 		end
 	end
 	
-	self.Redraw = self.Redraw or markdamage -- mark damaged if desired
+	self.Redraw = self.Redraw or markdamage -- mark damage (if requested)
 	return true
 end
 
@@ -520,22 +530,36 @@ function Area:draw()
 end
 
 -------------------------------------------------------------------------------
+--	bgpen, tx, ty = Area:getBackground(): Get the element's background
+--	properties. If bgpen happens to be a texture, tx and ty determine the
+--	texture origin relative to the drawable.
+-------------------------------------------------------------------------------
+
+function Area:getBackground()
+	local bgpen = self.Drawable.Pens[self.Background]
+	if self.BackgroundPosition == "scroll" then
+		local r = self.Rect
+		return bgpen, r[1], r[2]
+	end
+	return bgpen
+end	
+
+-------------------------------------------------------------------------------
 --	Area:erase(): Clears the element's background.
 -------------------------------------------------------------------------------
 
 function Area:erase()
 	local d = self.Drawable
-	local bgpen = d.Pens[self.Background]
 	local dr = self.DamageRegion
+	local bgpen, tx, ty = self:getBackground()
 	if dr then
 		-- repaint intra-area damagerects:
 		for _, r1, r2, r3, r4 in dr:getRects() do
-			d:fillRect(r1, r2, r3, r4, bgpen)
+			d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
 		end
-		self.DamageRegion = false
 	else
 		local r = self.Rect
-		d:fillRect(r[1], r[2], r[3], r[4], bgpen)
+		d:fillRect(r[1], r[2], r[3], r[4], bgpen, tx, ty)
 	end
 end
 
@@ -548,6 +572,7 @@ function Area:refresh()
 	if self.Redraw then
 		self:draw()
 		self.Redraw = false
+		self.DamageRegion = false
 	end
 end
 

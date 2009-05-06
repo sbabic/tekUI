@@ -2,18 +2,10 @@
 
 local ui = require "tek.ui"
 
-local RadioImage1 = ui.createImage("radio")
-local RadioImage2 = ui.createImage("radio", 2)
-
-local BitMapImage1 = ui.BitmapImage:new
-{
-	io.open(ui.ProgDir .. "/graphics/world.ppm", "rb"):read("*a"),
-}
-
-local BitMapImage2 = ui.BitmapImage:new
-{
-	io.open(ui.ProgDir .. "/graphics/locale.ppm", "rb"):read("*a"),
-}
+local RadioImage1 = ui.getStockImage("radio")
+local RadioImage2 = ui.getStockImage("radio", 2)
+local BitMapImage1 = ui.loadImage(ui.ProgDir .. "/graphics/world.ppm")
+local BitMapImage2 = ui.loadImage(ui.ProgDir .. "/graphics/locale.ppm")
 
 -------------------------------------------------------------------------------
 --	Main:

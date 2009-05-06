@@ -5,27 +5,68 @@ include $(BASEDIR)/config
 EXTRADEFS += $(LUA_DEFS)
 
 CLASSES = \
-	class/application.lua class/area.lua class/bitmapimage.lua class/border.lua \
-	class/button.lua class/canvas.lua class/checkmark.lua class/dirlist.lua \
-	class/display.lua class/drawable.lua class/drawhook.lua class/element.lua \
-	class/family.lua class/floattext.lua class/frame.lua class/gadget.lua \
-	class/gauge.lua class/group.lua class/handle.lua class/imagegadget.lua \
-	class/listgadget.lua class/listview.lua class/menuitem.lua class/numeric.lua \
-	class/pagegroup.lua class/popitem.lua class/poplist.lua class/popupwindow.lua \
-	class/radiobutton.lua class/scrollbar.lua class/scrollgroup.lua class/slider.lua \
-	class/spacer.lua class/text.lua class/textinput.lua class/theme.lua \
-	class/vectorimage.lua class/window.lua
+	class/application.lua \
+	class/area.lua \
+	class/border.lua \
+	class/button.lua \
+	class/canvas.lua \
+	class/checkmark.lua \
+	class/dirlist.lua \
+	class/display.lua \
+	class/drawable.lua \
+	class/drawhook.lua \
+	class/element.lua \
+	class/family.lua \
+	class/floattext.lua \
+	class/frame.lua \
+	class/gadget.lua \
+	class/gauge.lua \
+	class/group.lua \
+	class/handle.lua \
+	class/image.lua \
+	class/imagegadget.lua \
+	class/listgadget.lua \
+	class/listview.lua \
+	class/menuitem.lua \
+	class/numeric.lua \
+	class/pagegroup.lua \
+	class/popitem.lua \
+	class/poplist.lua \
+	class/popupwindow.lua \
+	class/radiobutton.lua \
+	class/scrollbar.lua \
+	class/scrollgroup.lua \
+	class/slider.lua \
+	class/spacer.lua \
+	class/text.lua \
+	class/textinput.lua \
+	class/theme.lua \
+	class/window.lua
 BORDERS = border/default.lua
 HOOKS = hook/ripple.lua
-IMAGES = image/arrowdown.lua image/arrowleft.lua image/arrowright.lua \
-	image/arrowup.lua image/check.lua image/file.lua image/radio.lua
-STYLES = style/internal.css style/monochrome.css style/tutorial.css \
-	style/industrial.css
-FONTS = font/Vera.ttf font/VeraMono.ttf
+IMAGES = \
+	image/arrowdown.lua \
+	image/arrowleft.lua \
+	image/arrowright.lua \
+	image/arrowup.lua \
+	image/check.lua \
+	image/file.lua \
+	image/radio.lua
+STYLES = \
+	style/internal.css \
+	style/monochrome.css \
+	style/tutorial.css \
+	style/industrial.css \
+	style/desktop.css
+FONTS = \
+	font/Vera.ttf \
+	font/VeraMono.ttf
 CURSORS = cursor/cursor-green.png
-CATALOGS1 = locale/schulze-mueller.de/tekui-demo/en \
+CATALOGS1 = \
+	locale/schulze-mueller.de/tekui-demo/en \
 	locale/schulze-mueller.de/tekui-demo/de
-CATALOGS2 = locale/schulze-mueller.de/dirlist-class/en \
+CATALOGS2 = \
+	locale/schulze-mueller.de/dirlist-class/en \
 	locale/schulze-mueller.de/dirlist-class/de
 
 ###############################################################################

@@ -26,7 +26,7 @@ end
 
 function loaddemos(app)
 
-	local demogroup = app:getElementById("demo-group")
+	local demogroup = app:getById("demo-group")
 
 	local demos = { }
 
@@ -106,12 +106,12 @@ app = ui.Application:new
 					local m = collectgarbage("count")
 					data.MinMem = math.min(data.MinMem or m, m)
 					data.MaxMem = math.max(data.MaxMem or m, m)
-					local mem = self.Application:getElementById("about-mem-used")
+					local mem = self.Application:getById("about-mem-used")
 					if mem then
 						mem:setValue("Text", ("%dk - min: %dk - max: %dk"):format(m,
 							data.MinMem, data.MaxMem))
 					end
-					local gauge = self.Application:getElementById("about-mem-gauge")
+					local gauge = self.Application:getById("about-mem-gauge")
 					if gauge then
 						gauge:setValue("Min", data.MinMem)
 						gauge:setValue("Max", data.MaxMem)
@@ -312,7 +312,7 @@ app = ui.Application:new
 													onSetValue = function(self, value)
 														ui.ScrollBar.onSetValue(self, value)
 														db.level = math.floor(self.Value)
-														self.Application:getElementById("about-system-debuglevel"):setValue("Text", db.level)
+														self.Application:getById("about-system-debuglevel"):setValue("Text", db.level)
 													end,
 												},
 												ui.Text:new
@@ -429,7 +429,7 @@ app = ui.Application:new
 									Shortcut = "Ctrl+a",
 									onPress = function(self, pressed)
 										if pressed == false then
-											local group = self.Application:getElementById("demo-group")
+											local group = self.Application:getById("demo-group")
 											for _, c in ipairs(group.Children) do
 												c:setValue("Selected", true)
 											end
@@ -443,7 +443,7 @@ app = ui.Application:new
 									Shortcut = "Ctrl+n",
 									onPress = function(self, pressed)
 										if pressed == false then
-											local group = self.Application:getElementById("demo-group")
+											local group = self.Application:getById("demo-group")
 											for _, c in ipairs(group.Children) do
 												c:setValue("Selected", false)
 											end
@@ -458,7 +458,7 @@ app = ui.Application:new
 									Shortcut = "Ctrl+Q",
 									onPress = function(self, pressed)
 										if pressed == false then
-											self:getId("window-main"):onHide()
+											self:getById("window-main"):onHide()
 										end
 										ui.MenuItem.onPress(self, pressed)
 									end,

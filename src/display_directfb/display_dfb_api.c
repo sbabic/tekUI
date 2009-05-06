@@ -740,22 +740,12 @@ dfb_drawtext(DFBDISPLAY *mod, struct TVRequest *req)
 	TINT w;
 	TINT h = ((struct FontNode *) v->curfont)->height;
 	struct DFBPen *fgpen = (struct DFBPen *) req->tvr_Op.Text.FgPen;
-	struct DFBPen *bgpen = (struct DFBPen *) req->tvr_Op.Text.BgPen;
 	TINT ascent = ((struct FontNode *) v->curfont)->ascent;
 	IDirectFBFont *f = ((struct FontNode *) v->curfont)->font;
-
 	f->GetStringWidth(f, text, len, &w);
-
-	if ((TVPEN) bgpen != TVPEN_UNDEFINED)
-	{
-		setfgpen(mod, v, (TVPEN) bgpen);
-		v->winsurface->FillRectangle(v->winsurface, x, y, w, h);
-	}
-
-	setbgpen(mod, v, (TVPEN) bgpen);
 	setfgpen(mod, v, (TVPEN) fgpen);
-
-	v->winsurface->DrawString(v->winsurface, text, len, x, y+ascent, DSTF_LEFT);
+	v->winsurface->DrawString(v->winsurface, text, len, x, y + ascent, 
+		DSTF_LEFT);
 }
 
 /*****************************************************************************/

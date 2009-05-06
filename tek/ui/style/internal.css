@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.16
+**	Version: 1.17
 */
 
 /*
@@ -15,12 +15,14 @@
 */
 
 tek.ui.class.area {
+	background-position: scroll;
 	margin: 1;
 }
 
 tek.ui.class.checkmark {
 	padding: 1;
 	margin: 0;
+	background-position: fixed;
 	border-width: 1;
 	border-focus-width: 1;
 	text-align: left;
@@ -85,6 +87,7 @@ tek.ui.class.gauge {
 tek.ui.class.group {
 	margin: 0;
 	background-color: group;
+	background-position: fixed;
 	border-width: 0;
 	border-focus-width: 0;
 }
@@ -124,6 +127,7 @@ tek.ui.class.listgadget:active {
 }
 
 tek.ui.class.menuitem {
+	background-position: fixed;
 	font: ui-menu;
 	border-width: 0;
 	margin: 0;
@@ -145,7 +149,7 @@ tek.ui.class.menuitem:focus {
 	color: menu-active-detail;
 }
 
-tek.ui.class.menuitem:popup-root {
+tek.ui.class.menuitem.popup-root {
 	margin: 2;
 	width: auto;
 }
@@ -228,6 +232,7 @@ tek.ui.class.window {
 .caption {
 	border-width: 0;
 	background-color: parent-group;
+	background-position: fixed;
 	text-align: center;
 	vertical-align: center;
 	horizontal-grid-align: center;

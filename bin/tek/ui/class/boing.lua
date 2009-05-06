@@ -45,12 +45,12 @@ end
 function Boing:setup(app, window)
 	Frame.setup(self, app, window)
 	-- add notifications:
-	self:addNotify("YPos", ui.NOTIFY_CHANGE, NOTIFY_YPOS)
+	self:addNotify("YPos", ui.NOTIFY_ALWAYS, NOTIFY_YPOS)
 end
 
 function Boing:cleanup()
 	-- add notifications:
-	self:remNotify("YPos", ui.NOTIFY_CHANGE, NOTIFY_YPOS)
+	self:remNotify("YPos", ui.NOTIFY_ALWAYS, NOTIFY_YPOS)
 	Frame.cleanup(self)
 end
 

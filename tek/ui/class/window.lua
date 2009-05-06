@@ -105,7 +105,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 14.0"
+_VERSION = "Window 14.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -244,7 +244,7 @@ function Window:show(display)
 	self:addInputHandler(0x171f, self, self.handleInput)
 	if Group.show(self, display, self.Drawable) then
 		-- notification handlers:
-		self:addNotify("Status", ui.NOTIFY_CHANGE, NOTIFY_STATUS)
+		self:addNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
 		return true
 	end
 	self:remInputHandler(0x171f, self, self.handleInput)
@@ -255,7 +255,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:hide()
-	self:remNotify("Status", ui.NOTIFY_CHANGE, NOTIFY_STATUS)
+	self:remNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
 	self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 	self:remInputHandler(0x171f, self, self.handleInput)
 	local d = self.Drawable
@@ -547,7 +547,7 @@ local MsgHandlers =
 	[ui.MSG_MOUSEBUTTON] = function(self, msg)
 		if msg[3] == 1 then -- leftdown:
 			-- send "Pressed" to window:
-			self:setValue("Pressed", true)
+			self:setValue("Pressed", true, true)
 		elseif msg[3] == 2 then -- leftup:
 			local ae = self.ActiveElement
 			local he = self.HoverElement
@@ -563,7 +563,7 @@ local MsgHandlers =
 			self:setMovingElement()
 			self:setActiveElement()
 			-- release window:
-			self:setValue("Pressed", false)
+			self:setValue("Pressed", false, true)
 		end
 		return msg
 	end,
@@ -865,7 +865,7 @@ function Window:handleHold(msg)
 		if self.HoldTickActive == 0 then
 			self.HoldTickActiveInit = self.HoldTickInitRepeat
 			self.HoldTickActive = self.HoldTickInitRepeat
-			ae:setValue("Hold", true)
+			ae:setValue("Hold", true, true)
 		end
 	end
 	return msg
@@ -1036,14 +1036,14 @@ end
 -------------------------------------------------------------------------------
 --	Window:clickElement(element): This function performs a simulated click on
 --	the specified {{element}}; if {{element}} is a string, it will be looked up
---	using Application:getElementById(). This function is actually a shorthand
+--	using Application:getById(). This function is actually a shorthand
 --	for Window:setHiliteElement(), followed by Window:setActiveElement() twice
 --	(first to enable, then to disable it).
 -------------------------------------------------------------------------------
 
 function Window:clickElement(e)
 	if type(e) == "string" then
-		e = self.Application:getElementById(e)
+		e = self.Application:getById(e)
 		assert(e, "Unknown Id")
 	end
 	local he = self.HiliteElement

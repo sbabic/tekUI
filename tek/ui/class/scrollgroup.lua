@@ -66,7 +66,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.8"
+_VERSION = "ScrollGroup 9.9"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -163,16 +163,16 @@ end
 function ScrollGroup:setup(app, window)
 	Group.setup(self, app, window)
 	local c = self.Child
-	c:addNotify("CanvasLeft", ui.NOTIFY_CHANGE, self.NotifyLeft, 1)
-	c:addNotify("CanvasTop", ui.NOTIFY_CHANGE, self.NotifyTop, 1)
-	c:addNotify("CanvasWidth", ui.NOTIFY_CHANGE, self.NotifyWidth, 1)
-	c:addNotify("CanvasHeight", ui.NOTIFY_CHANGE, self.NotifyHeight, 1)
+	c:addNotify("CanvasLeft", ui.NOTIFY_ALWAYS, self.NotifyLeft, 1)
+	c:addNotify("CanvasTop", ui.NOTIFY_ALWAYS, self.NotifyTop, 1)
+	c:addNotify("CanvasWidth", ui.NOTIFY_ALWAYS, self.NotifyWidth, 1)
+	c:addNotify("CanvasHeight", ui.NOTIFY_ALWAYS, self.NotifyHeight, 1)
 	if self.HSliderGroup then
-		self.HSliderGroup.Slider:addNotify("Value", ui.NOTIFY_CHANGE,
+		self.HSliderGroup.Slider:addNotify("Value", ui.NOTIFY_ALWAYS,
 			self.HSliderNotify)
 	end
 	if self.VSliderGroup then
-		self.VSliderGroup.Slider:addNotify("Value", ui.NOTIFY_CHANGE,
+		self.VSliderGroup.Slider:addNotify("Value", ui.NOTIFY_ALWAYS,
 			self.VSliderNotify)
 	end
 end
@@ -183,18 +183,18 @@ end
 
 function ScrollGroup:cleanup()
 	if self.VSliderGroup then
-		self.VSliderGroup.Slider:remNotify("Value", ui.NOTIFY_CHANGE,
+		self.VSliderGroup.Slider:remNotify("Value", ui.NOTIFY_ALWAYS,
 			self.VSliderNotify)
 	end
 	if self.HSliderGroup then
-		self.HSliderGroup.Slider:remNotify("Value", ui.NOTIFY_CHANGE,
+		self.HSliderGroup.Slider:remNotify("Value", ui.NOTIFY_ALWAYS,
 			self.HSliderNotify)
 	end
 	local c = self.Child
-	c:remNotify("CanvasHeight", ui.NOTIFY_CHANGE, self.NotifyHeight)
-	c:remNotify("CanvasWidth", ui.NOTIFY_CHANGE, self.NotifyWidth)
-	c:remNotify("CanvasTop", ui.NOTIFY_CHANGE, self.NotifyTop)
-	c:remNotify("CanvasLeft", ui.NOTIFY_CHANGE, self.NotifyLeft)
+	c:remNotify("CanvasHeight", ui.NOTIFY_ALWAYS, self.NotifyHeight)
+	c:remNotify("CanvasWidth", ui.NOTIFY_ALWAYS, self.NotifyWidth)
+	c:remNotify("CanvasTop", ui.NOTIFY_ALWAYS, self.NotifyTop)
+	c:remNotify("CanvasLeft", ui.NOTIFY_ALWAYS, self.NotifyLeft)
 	Group.cleanup(self)
 end
 

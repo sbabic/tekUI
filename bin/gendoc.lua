@@ -517,8 +517,6 @@ function processtree(state)
 		insert(state.documentation, 1, "\n= " .. state.docname .. " =\n\n")
 	end
 
-	state.textdoc = concat(state.documentation)
-
 end
 
 -------------------------------------------------------------------------------
@@ -533,6 +531,13 @@ function DocMarkup:link(link)
 		-- function links uniformly use colons; replace dots:
 		link = funclink:gsub("%.", ":")
 	end
+	
+	local func = link:match("^(.*)%(%)$")
+	if func and self.refdoc then
+		return ('<a href="%s#%s"><code>'):format(self.refdoc, func), 
+			'</code></a>'
+	end
+	
 	return Markup.link(self, link)
 end
 
@@ -541,7 +546,7 @@ end
 -------------------------------------------------------------------------------
 
 local template =
-"-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S,-e=EMPTY/S,--header/K,-n=NAME/F"
+"-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S,-e=EMPTY/S,--header/K,-r=REFDOC/K,-n=NAME/F"
 local args = Args.read(template, arg)
 
 if not args or args["-h"] then
@@ -554,6 +559,7 @@ if not args or args["-h"] then
 	print("  -p=PLAIN/S     generate formatted plain text instead of HTML")
 	print("  -e=EMPTY/S     also show empty (undocumented) modules in index")
 	print("  --header/K     read a header from the specified file")
+	print("  -r=REFDOC/K    document implicitely referenced by functions")
 	print("  -n=NAME/F      document name (rest of commandline will be used)")
 	print("If a path is specified, it is scanned for files with the extension")
 	print(".lua. From these files, a HTML document is generated containing a")
@@ -580,19 +586,16 @@ else
 	else
 		-- scan filesystem:
 		processtree(state)
+		-- render documentation:
+		state.textdoc = state.textdoc .. concat(state.documentation)
 	end
 
-	-- render documentation:
-	if not state.textdoc then
-		state.textdoc = concat(state.documentation)
-	end
-	if state.textdoc then
-		if state.plain then
-			print(state.textdoc)
-		else
-			DocMarkup:new { input = state.textdoc, docname = args["-n"],
-				indentchar = string.char(args["-i"] or 9) }:run()
-		end
+	if state.plain then
+		print(state.textdoc)
+	else
+		DocMarkup:new { input = state.textdoc, docname = args["-n"],
+			refdoc = args["-r"] or false,
+			indentchar = string.char(args["-i"] or 9) }:run()
 	end
 
 end

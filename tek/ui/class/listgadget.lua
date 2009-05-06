@@ -137,7 +137,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 15.4"
+_VERSION = "ListGadget 15.7"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -225,9 +225,9 @@ end
 function ListGadget:setup(app, window)
 	Text.setup(self, app, window)
 	self:initSelectedLines()
-	self:addNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
+	self:addNotify("CursorLine", ui.NOTIFY_ALWAYS, NOTIFY_CURSOR)
 	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
-	self:addNotify("DblClick", ui.NOTIFY_CHANGE, NOTIFY_DBLCLICK, 1)
+	self:addNotify("DblClick", ui.NOTIFY_ALWAYS, NOTIFY_DBLCLICK, 1)
 	self.CursorObject = ui.createHook("border",
 		self.CursorBorderClass or "default", self,
 			{ Border = self.CursorBorder })
@@ -239,9 +239,9 @@ end
 
 function ListGadget:cleanup()
 	self.CursorObject = false
-	self:remNotify("DblClick", ui.NOTIFY_CHANGE, NOTIFY_DBLCLICK)
+	self:remNotify("DblClick", ui.NOTIFY_ALWAYS, NOTIFY_DBLCLICK)
 	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
-	self:remNotify("CursorLine", ui.NOTIFY_CHANGE, NOTIFY_CURSOR)
+	self:remNotify("CursorLine", ui.NOTIFY_ALWAYS, NOTIFY_CURSOR)
 	self.SelectedLines = false
 	Text.cleanup(self)
 	self.Canvas = false
@@ -589,6 +589,8 @@ function ListGadget:draw()
 	end
 	local dr = self.DamageRegion
 	if dr then
+		local _, tx, ty = self:getBackground()
+
 		-- repaint intra-area damagerects:
 		local d = self.Drawable
 		d:setFont(self.FontHandle)
@@ -622,15 +624,16 @@ function ListGadget:draw()
 					if lnr == cl then
 						-- with cursor:
 						d:fillRect(b1, l[4] + b2, x1 - b3, l[5] - b4,
-							l[3] and cpen or bpen)
+							l[3] and cpen or bpen, tx, ty)
 						for ci = 1, nc do
 							local text = l[1][ci]
 							if text then
 								local cx = cp[ci]
 								d:pushClipRect(b1 + cx, l[4] + b2,
 									b1 + cx + self.ColumnWidths[ci], l[5] - b4)
-								d:drawText(b1 + cx, l[4] + b2, l[1][ci],
-									l[3] and cfpen or fpen)
+								d:drawText(b1 + cx, l[4] + b2,
+									b1 + cx + self.ColumnWidths[ci], l[5] - b4,
+									l[1][ci], l[3] and cfpen or fpen)
 								d:popClipRect()
 							end
 						end
@@ -638,7 +641,8 @@ function ListGadget:draw()
 						cbc:draw(d)
 					else
 						-- without cursor:
-						d:fillRect(0, l[4], x1, l[5], l[3] and cpen or bpen)
+						d:fillRect(0, l[4], x1, l[5], l[3] and cpen or bpen,
+							tx, ty)
 						for ci = 1, nc do
 							local text = l[1][ci]
 							if text then
@@ -650,7 +654,9 @@ function ListGadget:draw()
 										b1 + cx + self.ColumnWidths[ci],
 										l[5] - b4)
 									-- draw text:
-									d:drawText(b1 + cx, l[4] + b2, l[1][ci],
+									d:drawText(b1 + cx, l[4] + b2, 
+										b1 + cx + self.ColumnWidths[ci],
+										l[5] - b4, l[1][ci],
 										l[3] and cfpen or fpen)
 									d:popClipRect()
 								end
@@ -721,7 +727,7 @@ end
 function ListGadget:onDoubleClick(clicked)
 	if clicked == true then
 		if not self.SelectedLines[self.CursorLine] then
-			self:setValue("SelectedLine", self.CursorLine)
+			self:setValue("SelectedLine", self.CursorLine, true)
 		end
 	end
 end
@@ -845,7 +851,7 @@ function ListGadget:changeSelection(mode)
 			for lnr = 1, lo:getN() do
 				local l = lo:getItem(lnr)
 				if l[3] then
-					self:setValue("SelectedLine", lnr)
+					self:setValue("SelectedLine", lnr, true)
 				end
 			end
 		end
@@ -869,7 +875,7 @@ function ListGadget:passMsg(msg)
 							local active = self.SelectedLines[lnr]
 							self:changeSelection("none")
 							if not active then
-								self:setValue("SelectedLine", lnr)
+								self:setValue("SelectedLine", lnr, true)
 							end
 						elseif qual == 1 or qual == 2 then
 							local s, e = self.CursorLine, lnr
@@ -878,14 +884,14 @@ function ListGadget:passMsg(msg)
 							end
 							for i = s, e do
 								if not self:getItem(i)[3] then
-									self:setValue("SelectedLine", i)
+									self:setValue("SelectedLine", i, true)
 								end
 							end
 						else
-							self:setValue("SelectedLine", lnr)
+							self:setValue("SelectedLine", lnr, true)
 						end
 					elseif self.SelectMode == "single" then
-						self:setValue("SelectedLine", lnr)
+						self:setValue("SelectedLine", lnr, true)
 					end
 					self:moveLine(lnr, true)
 				end
@@ -941,9 +947,9 @@ function ListGadget:handleInput(msg)
 					end
 				elseif key == 13 then -- return
 					win:clickElement(self)
-					self:setValue("SelectedLine", self.CursorLine)
+					self:setValue("SelectedLine", self.CursorLine, true)
 				elseif key == 32 then -- space
-					self:setValue("SelectedLine", self.CursorLine)
+					self:setValue("SelectedLine", self.CursorLine, true)
 				end
 			end
 		end

@@ -63,7 +63,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 7.2"
+_VERSION = "FloatText 7.4"
 
 local FloatText = _M
 
@@ -115,7 +115,7 @@ end
 function FloatText:setup(app, window)
 	self.Canvas = self.Parent
 	Area.setup(self, app, window)
-	self:addNotify("Text", ui.NOTIFY_CHANGE, NOTIFY_TEXT)
+	self:addNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_TEXT)
 end
 
 -------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:cleanup()
-	self:remNotify("Text", ui.NOTIFY_CHANGE, NOTIFY_TEXT)
+	self:remNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_TEXT)
 	Area.cleanup(self)
 	self.Canvas = false
 end
@@ -170,8 +170,8 @@ function FloatText:draw()
 
 	local d = self.Drawable
 	local p = d.Pens
-	local bp = p[self.Background]
-
+	local bp, tx, ty = self:getBackground()
+	
 	-- repaint intra-area damagerects:
 	local dr = self.DamageRegion
 	if dr then
@@ -188,11 +188,11 @@ function FloatText:draw()
 				-- overlap between damage and line:
 				if overlap(r1, r2, r3, r4, x0, t[2], x1, t[4]) then
 					-- draw line background:
-					d:fillRect(x0, t[2], x1, t[4], bp)
+					d:fillRect(x0, t[2], x1, t[4], bp, tx, ty)
 					-- overlap between damage and text:
 					if overlap(r1, r2, r3, r4, t[1], t[2], t[3], t[4]) then
 						-- draw text:
-						d:drawText(t[1], t[2], t[5], fp)
+						d:drawText(t[1], t[2], t[3], t[4], t[5], fp)
 					end
 				end
 			end
@@ -204,7 +204,7 @@ function FloatText:draw()
 	local ur = self.UnusedRegion
 	if ur then
 		for _, r1, r2, r3, r4 in ur:getRects() do
-			d:fillRect(r1, r2, r3, r4, bp)
+			d:fillRect(r1, r2, r3, r4, bp, tx, ty)
 		end
 	end
 

@@ -43,10 +43,6 @@
 --				"PageUp", "PageDown", "Pos1", "End", "Print", "Scroll",
 --				and "Pause".
 --
---	STYLE PSEUDO CLASSES::
---		- {{popup-root}} - for the root element in a popup tree
---		- {{popup-children}} - for an element that has children
---
 --	OVERRIDES::
 --		- Element:cleanup()
 --		- Object.init()
@@ -68,7 +64,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 8.3"
+_VERSION = "PopItem 8.6"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -82,14 +78,7 @@ local NOTIFY_ONSELECT = { ui.NOTIFY_SELF, "selectPopup" }
 local NOTIFY_ONUNSELECT = { ui.NOTIFY_SELF, "unselectPopup" }
 
 local NOTIFY_PRESSED = { ui.NOTIFY_SELF, "onPress", ui.NOTIFY_VALUE }
-local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, 
-	function(self, active, oldactive)
-		if active == false and oldactive == false then
-			self:setValue("Pressed", false)
-			self.Window:finishPopup()
-		end
-		self:onActivate(active)
-	end, ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
+local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -120,18 +109,16 @@ function PopItem.init(self)
 end
 
 -------------------------------------------------------------------------------
---	getProperties: overrides
+--	connect: overrides
 -------------------------------------------------------------------------------
 
-function PopItem:getProperties(p, pclass)
-	if not pclass then
-		if not self.PopupBase then
-			Text.getProperties(self, p, "popup-root")
-		elseif self.Children then
-			Text.getProperties(self, p, "popup-children")
-		end
+function PopItem:connect(parent)
+	if not self.PopupBase then
+		self.Class = self.Class or "popup-root"
+	elseif self.Children then
+		self.Class = self.Class or "popup-children"
 	end
-	Text.getProperties(self, p, pclass)
+	return Text.connect(self, parent)
 end
 
 -------------------------------------------------------------------------------
@@ -277,12 +264,9 @@ function PopItem:beginPopup()
 	-- prepare children for being used in a popup window:
 	for _, c in ipairs(self.Children) do
 		c:init()
-		c.Selected = false
-		c.Focus = false
 		if c:checkDescend(PopItem) then
 			c.PopupBase = self.PopupBase or self
 		end
-		-- c:setState()
 	end
 
 	self.PopupWindow = PopupWindow:new
@@ -309,7 +293,7 @@ function PopItem:beginPopup()
 	self.PopupWindow:setValue("Status", "show")
 
 	self.Window:addNotify("Status", "hide", self.FocusNotification)
-	self.Window:addNotify("WindowFocus", ui.NOTIFY_CHANGE,
+	self.Window:addNotify("WindowFocus", ui.NOTIFY_ALWAYS,
 		self.FocusNotification)
 
 end
@@ -319,10 +303,10 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:endPopup()
-	self:setValue("Selected", false, false) -- must not invoke notification!
+	self:setValue("Selected", false, false)
 	self:setValue("Focus", false)
 	self:setState()
-	self.Window:remNotify("WindowFocus", ui.NOTIFY_CHANGE,
+	self.Window:remNotify("WindowFocus", ui.NOTIFY_ALWAYS,
 		self.FocusNotification)
 	self.Window:remNotify("Status", "hide", self.FocusNotification)
 	self.PopupWindow:setValue("Status", "hide")
@@ -418,7 +402,7 @@ function PopItem:connectPopItems(app, window)
 		db.info("adding %s", self:getClassName())
 		local c = self:getElement("children")
 		if c then
-			self:addNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_SUBMENU)
+			self:addNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_SUBMENU)
 			self:addNotify("Selected", true, NOTIFY_ONSELECT)
 			self:addNotify("Selected", false, NOTIFY_ONUNSELECT)
 			for _, child in ipairs(c) do
@@ -430,7 +414,7 @@ function PopItem:connectPopItems(app, window)
 			end
 			self.Application = app
 			self.Window = window
-			self:addNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
+			self:addNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
 			self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
 		end
 	end
@@ -450,13 +434,13 @@ function PopItem:disconnectPopItems(window)
 			end
 			self:remNotify("Selected", false, NOTIFY_ONUNSELECT)
 			self:remNotify("Selected", true, NOTIFY_ONSELECT)
-			self:remNotify("Hilite", ui.NOTIFY_CHANGE, NOTIFY_SUBMENU)
+			self:remNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_SUBMENU)
 		else
 			if self.Shortcut then
 				window:remKeyShortcut(self.Shortcut, self)
 			end
 			self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-			self:remNotify("Active", ui.NOTIFY_CHANGE, NOTIFY_ACTIVE)
+			self:remNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
 		end
 	end
 end

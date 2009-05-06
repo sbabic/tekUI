@@ -29,7 +29,7 @@ ui.Application:new
 
 					onSetValue = function(self, value)
 						ui.Slider.onSetValue(self, value)
-						local output = self.Application:getElementById("output")
+						local output = self.Application:getById("output")
 						output:setValue("Text", ("%.2f"):format(self.Value))
 					end,
 

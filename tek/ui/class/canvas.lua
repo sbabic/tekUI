@@ -88,7 +88,7 @@ local overlap = Region.overlapCoords
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 12.1"
+_VERSION = "Canvas 12.3"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ end
 function Canvas:setup(app, window)
 	Frame.setup(self, app, window)
 	self.Child:setup(app, window)
-	self:addNotify("Child", ui.NOTIFY_CHANGE, NOTIFY_CHILD)
+	self:addNotify("Child", ui.NOTIFY_ALWAYS, NOTIFY_CHILD)
 end
 
 -------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:cleanup()
-	self:remNotify("Child", ui.NOTIFY_CHANGE, NOTIFY_CHILD)
+	self:remNotify("Child", ui.NOTIFY_ALWAYS, NOTIFY_CHILD)
 	self.Child:cleanup()
 	Frame.cleanup(self)
 end
@@ -334,8 +334,11 @@ function Canvas:draw()
 	local d = self.Drawable
 	local f = self.UnusedRegion
 	local p = d.Pens[self.Child.Background]
+	local r = self.Rect
+	local tx = r[1] - self.CanvasLeft
+	local ty = r[2] - self.CanvasTop
 	for _, r1, r2, r3, r4 in f:getRects() do
-		d:fillRect(r1, r2, r3, r4, p)
+		d:fillRect(r1, r2, r3, r4, p, tx, ty)
 	end
 end
 

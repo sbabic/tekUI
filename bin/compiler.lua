@@ -16,7 +16,7 @@ local List = require "tek.class.list"
 local APP_ID = "lua-compiler"
 local VENDOR = "schulze-mueller.de"
 local PROGNAME = "Lua Compiler"
-local VERSION = "1.0"
+local VERSION = "1.1"
 local AUTHOR = "Timm S. Müller"
 local COPYRIGHT = "© 2008, 2009, Schulze-Müller GbR"
 
@@ -154,12 +154,14 @@ end
 --	FileButton class:
 -------------------------------------------------------------------------------
 
-local fileimage = ui.createImage("file")
+local NOTIFY_OPEN = { ui.NOTIFY_SELF, ui.NOTIFY_COROUTINE, function(self)
+	self:doRequest()
+end }
 
 local FileButton = ui.ImageGadget:newClass()
 
 function FileButton.init(self)
-	self.Image = fileimage
+	self.Image = ui.getStockImage("file")
 	self.Mode = "button"
 	self.Class = "button"
 	self.Height = "fill"
@@ -172,10 +174,23 @@ function FileButton.init(self)
 	return ui.ImageGadget.init(self)
 end
 
+function FileButton:setup(app, win)
+	ui.ImageGadget.setup(self, app, win)
+	self:addNotify("Pressed", false, NOTIFY_OPEN)
+end
+
+function FileButton:cleanup()
+	self:remNotify("Pressed", false, NOTIFY_OPEN)
+	ui.ImageGadget.cleanup(self)
+end
+
+function FileButton:doRequest()
+end
+
 -------------------------------------------------------------------------------
 
 local function addmodule(app, classname, filename)
-	local group = app:getElementById("group-modules")
+	local group = app:getById("group-modules")
 	for i = 1, #group.Children, 3 do
 		local c = group.Children[i]
 		if c.Text == classname then
@@ -191,25 +206,20 @@ local function addmodule(app, classname, filename)
 	}
 	local selectbutton = FileButton:new
 	{
-		onPress = function(self, press)
-			ui.Button.onPress(self, press)
-			if press == false then
-				local app = self.Application
-				app:addCoroutine(function()
-					local path, part = splitpath(filefield.Text)
-					local status, path, select = app:requestFile
-					{
-						Title = "Select Lua module...",
-						Path = path,
-						Location = part
-					}
-					if status == "selected" and select[1] then
-						app.ModulePath = path
-						filefield:setValue("Enter", addpath(path, select[1]))
-					end
-				end)
+		doRequest = function(self)
+			local path, part = splitpath(filefield.Text)
+			local status, path, select = app:requestFile
+			{
+				Title = "Select Lua module...",
+				Path = path,
+				Location = part
+			}
+			if status == "selected" and select[1] then
+				app.Settings.ModulePath = path
+				filefield:setValue("Enter", addpath(path, select[1]))
+				self.Application:setStatus("Module selected.")				
 			end
-		end
+		end,
 	}			
 	local checkmark = ui.CheckMark:new
 	{
@@ -229,9 +239,9 @@ local function addmodule(app, classname, filename)
 	group:addMember(filefield)
 	group:addMember(selectbutton)
 	if #group.Children == 3 then
-		app:getElementById("button-all"):setValue("Disabled", false)
-		app:getElementById("button-none"):setValue("Disabled", false)
-		app:getElementById("button-invert"):setValue("Disabled", false)
+		app:getById("button-all"):setValue("Disabled", false)
+		app:getById("button-none"):setValue("Disabled", false)
+		app:getById("button-invert"):setValue("Disabled", false)
 	end
 	app:selectModules()
 	return 1
@@ -239,7 +249,7 @@ end
 
 local function gui_sample(self)
 	local app = self.Application
-	local filefield = app:getElementById("text-filename")
+	local filefield = app:getById("text-filename")
 	local fname = filefield.Text
 	app:addCoroutine(function()
 		local mods = sample(fname)
@@ -260,11 +270,11 @@ local function gui_compile(self)
 	app:addCoroutine(function()
 		
 		local savemode = -- 1 = binary, 2 == source
-			app:getElementById("popitem-savemode").SelectedLine
+			app:getById("popitem-savemode").SelectedLine
 		local ext = savemode == 1 and ".luac" or ".c"
 		
-		local srcname = app:getElementById("text-filename").Text
-		local outname = app.OutFileName
+		local srcname = app:getById("text-filename").Text
+		local outname = app.Settings.OutFileName
 		if outname == "" then
 			outname = (srcname:match("^(.*)%.lua$") or srcname) .. ext
 		else
@@ -298,7 +308,7 @@ local function gui_compile(self)
 			
 			if success then
 			
-				local group = app:getElementById("group-modules")
+				local group = app:getById("group-modules")
 				local mods = { }
 				local modgroup = group.Children
 				success = true
@@ -332,7 +342,7 @@ local function gui_compile(self)
 							"Compilation failed:\n" .. msg, "_Okay")
 					else
 						local tmpname = outname .. ".tmp"
-						if app:getElementById("check-strip").Selected then
+						if app:getById("check-strip").Selected then
 							local cmd = ('luac -s -o "%s" "%s"'):format(tmpname:gsub("\\", "\\\\"), 
 								outname:gsub("\\", "\\\\"))
 							if os.execute(cmd) == 0 and stat(tmpname, "mode") == "file" then
@@ -375,25 +385,33 @@ local function gui_compile(self)
 			end
 		end
 		
-		app.OutFileName = outname
+		app.Settings.OutFileName = outname
 	
 	end)
 end
 
 -------------------------------------------------------------------------------
 
-ui.Application:new
+local app = ui.Application:new
 {
 	ApplicationId = APP_ID,
 	VendorDomain = VENDOR,
 	
+	Settings =
+	{
+		OutFileName = "",
+		ModulePath = "",
+		TekUIPath = "/work/tekui/dev",
+		LuaPath = "/work/lua-5.1.4",
+	},
+	
 	setStatus = function(self, text, ...)
-		self.Application:getElementById("text-status"):setValue("Text", 
+		self.Application:getById("text-status"):setValue("Text", 
 			text:format(...))
 	end,
 	
 	deleteModules = function(self, mode)
-		local g = self:getElementById("group-modules")
+		local g = self:getById("group-modules")
 		local n, nd = 0, 0
 		if mode == "all" then
 			while #g.Children > 0 do
@@ -414,16 +432,16 @@ ui.Application:new
 			end
 		end
 		if n == 0 then
-			self:getElementById("button-all"):setValue("Disabled", true)
-			self:getElementById("button-none"):setValue("Disabled", true)
-			self:getElementById("button-invert"):setValue("Disabled", true)
+			self:getById("button-all"):setValue("Disabled", true)
+			self:getById("button-none"):setValue("Disabled", true)
+			self:getById("button-invert"):setValue("Disabled", true)
 		end
 		self.Application:selectModules()
 		return nd
 	end,
 	
 	selectModules = function(self, mode)
-		local g = self:getElementById("group-modules")
+		local g = self:getById("group-modules")
 		local n = 0
 		for i = 1, #g.Children, 3 do
 			local c = g.Children[i]
@@ -438,12 +456,9 @@ ui.Application:new
 				n = n + 1
 			end
 		end
-		self.Application:getElementById("button-delete"):setValue("Disabled", n == 0)
+		self.Application:getById("button-delete"):setValue("Disabled", n == 0)
 		return n
 	end,
-
-	OutFileName = "",
-	ModulePath = "",
 
 	Children =
 	{
@@ -522,7 +537,8 @@ ui.Application:new
 				local app = self.Application
 				app:addCoroutine(function()
 					if app:easyRequest("Exit Application",
-						"Are you sure that you quit?",
+						"Do you really want to\n" ..
+						"quit the application?",
 						"_Quit", "_Cancel") == 1 then
 						self.Application:quit()
 					end
@@ -548,7 +564,7 @@ ui.Application:new
 									onPress = function(self, pressed)
 										ui.MenuItem.onPress(self, pressed)
 										if pressed == false then
-											self:getId("window-about"):setValue("Status", "show")
+											self:getById("window-about"):setValue("Status", "show")
 										end
 									end
 								},
@@ -559,7 +575,7 @@ ui.Application:new
 									Shortcut = "Ctrl+Q",
 									onPress = function(self, pressed)
 										if pressed == false then
-											self:getId("window-main"):onHide()
+											self:getById("window-main"):onHide()
 										end
 										ui.MenuItem.onPress(self, pressed)
 									end,
@@ -597,36 +613,31 @@ ui.Application:new
 										ui.TextInput.onEnter(self, text)
 										local notexist = io.open(text) == nil
 										local app = self.Application
-										app:getElementById("button-run"):setValue("Disabled", notexist)
-										app:getElementById("button-compile"):setValue("Disabled", notexist)
+										app:getById("button-run"):setValue("Disabled", notexist)
+										app:getById("button-compile"):setValue("Disabled", notexist)
 									end,
 								},
 								FileButton:new
 								{
 									KeyCode = "l",
-									onPress = function(self, pressed)
-										if pressed == false then
-											local app = self.Application
-											app:addCoroutine(function()
-												local filefield = app:getElementById("text-filename")
-												local path, part = splitpath(filefield.Text)
-												local status, path, select = app:requestFile
-												{
-													Title = "Select Lua source...",
-													Path = path,
-													Location = part
-												}
-												if status == "selected" and select[1] then
-													local newfname = addpath(path, select[1])
-													filefield:setValue("Enter", newfname)
-													app:setStatus("Lua source selected.")
-												else
-													app:setStatus("File selection cancelled.")
-												end
-											end)
+									doRequest = function(self)
+										local app = self.Application
+										local filefield = app:getById("text-filename")
+										local path, part = splitpath(filefield.Text)
+										local status, path, select = app:requestFile
+										{
+											Title = "Select Lua source...",
+											Path = path,
+											Location = part
+										}
+										if status == "selected" and select[1] then
+											local newfname = addpath(path, select[1])
+											filefield:setValue("Enter", newfname)
+											app:setStatus("Lua source selected.")
+										else
+											app:setStatus("File selection cancelled.")
 										end
-										self:getClass().onPress(self, pressed)
-									end
+									end,
 								}
 							}
 						},
@@ -854,4 +865,6 @@ ui.Application:new
 			}
 		}
 	}
-}:run()
+}
+
+app:run()
