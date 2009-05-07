@@ -11,6 +11,112 @@
 			tekUI Changelog
 		</h2>
 		<h3>
+			0.8e:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					Eliminated the use of 'ipairs' in many classes
+				</li>
+				<li>
+					Visual API, Image, ImageGadget, stock images: Changed image table structure, added preliminary support for bitmap pens in <a href="manual.html#frect"><code>frect()</code></a>, removed futile attemps in rounding from <a href="manual.html#drawimage"><code>drawimage()</code></a> 
+				</li>
+				<li>
+					UI: Renamed <a href="manual.html#createImage"><code>createImage()</code></a> to <a href="manual.html#getStockImage"><code>getStockImage()</code></a>, added <a href="manual.html#loadImage"><code>loadImage()</code></a>, &quot;background-image&quot; handled, simplified match patterns in property preparation
+				</li>
+				<li>
+					UI, Object: NOTIFY_ALWAYS now behaves like former NOTIFY_CHANGE, NOTIFY_CHANGE has been removed
+				</li>
+				<li>
+					Visual, Visual/Lua binding, display drivers: <a href="manual.html#TVisualText"><code>TVisualText()</code></a> no longer supports a background pen
+				</li>
+				<li>
+					Nano-X Display driver: drawbuffer now fully supported
+				</li>
+				<li>
+					Visual/Lua binding: <a href="manual.html#drawtext"><code>drawtext()</code></a> now requires the complete text bounding box, supports background pixmaps and an additional x/y argument for the texture origin, <a href="manual.html#frect"><code>frect()</code></a> now supports an additional x/y argument pair for the texture origin
+				</li>
+				<li>
+					Default border: Group and element origins are now considered for texture origins
+				</li>
+				<li>
+					Area: Added BackgroundPosition attribute, &quot;background-position&quot; style property, <a href="manual.html#getBackground"><code>getBackground()</code></a> function, <a href="manual.html#erase"><code>erase()</code></a> now handles texture origins, <a href="manual.html#init"><code>init()</code></a> now resets Focus, DamageRegion is or'ed to (no longer overwritten during layout) and no longer reset in <a href="manual.html#erase"><code>erase()</code></a> but in <a href="manual.html#refresh"><code>refresh()</code></a> 
+				</li>
+				<li>
+					Area, Canvas, FloatText, Gauge, Group, ImageGadget, ListGadget, Slider: <a href="manual.html#erase"><code>erase()</code></a> and <a href="manual.html#draw"><code>draw()</code></a> now consider texture origin
+				</li>
+				<li>
+					Display: Added AspectX, AspectY, added <a href="manual.html#fitMinAspect"><code>fitMinAspect()</code></a>, added pixmap cache, <a href="manual.html#createPixmap"><code>createPixmap()</code></a>, <a href="manual.html#loadPixmap"><code>loadPixmap()</code></a>, <a href="manual.html#getPixmap"><code>getPixmap()</code></a>, &quot;ui-huge&quot; font default is now &quot;Utopia&quot;, which is scalable and common under X11 even without Xft support
+				</li>
+				<li>
+					Drawable: Removed AspectX, AspectY, added support for color allocation by accessing Pens with an &quot;#rrggbb&quot; key, added texture loader reacting on url(...) keys, RGB colors are now cached with an unique identifier to avoid double allocation, some sanity checks added
+				</li>
+				<li>
+					ImageGadget: Some layouting problems fixed, added several checks for presence of an image, now supports ImageAspectX, ImageAspectY
+				</li>
+				<li>
+					PopItem: removed &quot;popup-root&quot; and &quot;popup-children&quot; pseudo classes, these are now predefined classes and set during <a href="manual.html#connect"><code>connect()</code></a> if no other Class is specified
+				</li>
+				<li>
+					Element, <a href="manual.html#Application:getElementById"><code>Application:getElementById()</code></a>, <a href="manual.html#getId"><code>getId()</code></a> unified and renamed to <a href="manual.html#getById"><code>getById()</code></a> 
+				</li>
+				<li>
+					Visual API: Added pixmap objects, <a href="manual.html#createpixmap"><code>createpixmap()</code></a>, <a href="manual.html#freepixmap"><code>freepixmap()</code></a>, renamed <a href="manual.html#drawppm"><code>drawppm()</code></a> to <a href="manual.html#drawpixmap"><code>drawpixmap()</code></a>, <a href="manual.html#frect"><code>frect()</code></a> now supports rendering a pixmap with a texture origin
+				</li>
+				<li>
+					Merged BitmapImage and VectorImage class to Image
+				</li>
+				<li>
+					Gadget: <a href="manual.html#onActivate"><code>onActivate()</code></a> now implements collapsing of popups, removed the same functionality from PopItem - CheckMark, RadioButtons etc. are now functional in popups
+				</li>
+				<li>
+					<a href="manual.html#Group:markDamage"><code>Group:markDamage()</code></a> checks for presence of a FreeRegion now, <a href="manual.html#markDamage"><code>markDamage()</code></a> and <a href="manual.html#layout"><code>layout()</code></a> are now better prepared for tracking intra-area damages
+				</li>
+				<li>
+					PopItem: no longer resets Selected and Focus when opening
+				</li>
+				<li>
+					Region: <a href="manual.html#checkoverlap"><code>checkoverlap()</code></a> always returned true, corrected
+				</li>
+				<li>
+					CHANGES, VERSION: added
+				</li>
+				<li>
+					Documentation improved
+				</li>
+				<li>
+					Gendoc: Added support for the --header option in class tree documentations
+				</li>
+				<li>
+					Theme, internal stylesheet: Added background-position attributes
+				</li>
+				<li>
+					Installation: BitmapImage, VectorImage classes removed, Image class, desktop.css, texture.css added
+				</li>
+				<li>
+					Gauges with vertical orientation are now running from bottom to top
+				</li>
+				<li>
+					Minor corrections in image layouting procedures and image data
+				</li>
+				<li>
+					CheckMark, PopItem: Improved image size calculation
+				</li>
+				<li>
+					MenuItem, PopList, Arrow Images: Corrected distorted coordinates
+				</li>
+				<li>
+					X11 Display: Removed a kludge that disabled Xft font rendering when the composite extension was detected
+				</li>
+				<li>
+					Theme, Family, Element, Drawable, Button, Application, UTF8String: Minor corrections in the documentation
+				</li>
+				<li>
+					Demos: Images were incompletely read under Windows and appeared scrambled, corrected, improved border demo, changed some font attributes
+				</li>
+			</ul>
+		</blockquote>
+		<h3>
 			0.8d:
 		</h3>
 		<blockquote>
