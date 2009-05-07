@@ -96,7 +96,6 @@ local costatus = coroutine.status
 local coyield = coroutine.yield
 local floor = math.floor
 local insert = table.insert
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local remove = table.remove
@@ -108,7 +107,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 16.0"
+_VERSION = "Application 16.2"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -186,7 +185,8 @@ end
 function Application:connect(parent)
 	local c = self:getElement("children")
 	if c then
-		for _, child in ipairs(c) do
+		for i = 1, #c do
+			local child = c[i]
 			if child:checkDescend(Group) then
 				-- descend into group:
 				if not Application.connect(child, self) then
@@ -270,13 +270,16 @@ end
 
 function Application:decodeProperties(child)
 	local app = self.Application
-	for _, p in ipairs(self.Properties) do
+	local props = self.Properties
+	for i = 1, #props do
+		local p = props[i]
 		self.Display:decodeProperties(p)
 		if child then
 			child:decodeProperties(p)
 		else
-			for _, child in ipairs(self.Children) do
-				child:decodeProperties(p)
+			local c = self.Children
+			for i = 1, #c do
+				c[i]:decodeProperties(p)
 			end
 		end
 	end
@@ -289,8 +292,9 @@ end
 function Application:setup()
 	if self.Status == "disconnected" then
 		self.Status = "connecting"
-		for _, child in ipairs(self.Children) do
-			child:setup(self, child)
+		local c = self.Children
+		for i = 1, #c do
+			c[i]:setup(self, c[i])
 		end
 		self.Status = "connected"
 	end
@@ -303,8 +307,9 @@ end
 function Application:cleanup()
 	-- assert(self.Status == "connected")
 	self.Status = "disconnecting"
-	for _, child in ipairs(self.Children) do
-		child:cleanup()
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:cleanup()
 	end
 	self.Status = "disconnected"
 end
@@ -316,8 +321,9 @@ end
 function Application:show(display)
 	self.Display = display
 	self:addInputHandler(MSG_USER, self, self.handleInput)
-	for _, w in ipairs(self.Children) do
-		w:show(display)
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:show(display)
 	end
 	return true
 end
@@ -327,8 +333,9 @@ end
 -------------------------------------------------------------------------------
 
 function Application:hide()
-	for _, w in ipairs(self.Children) do
-		w:hide()
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:hide()
 	end
 	self:remInputHandler(MSG_USER, self, self.handleInput)
 	self.Display = false
@@ -377,9 +384,10 @@ function Application:showWindow(window)
 	if window then
 		window:showWindow()
 	else
-		for _, window in ipairs(self.Children) do
-			if window.Status ~= "hide" then
-				window:showWindow()
+		local c = self.Children
+		for i = 1, #c do
+			if c[i].Status ~= "hide" then
+				c[i]:showWindow()
 			end
 		end
 	end
@@ -393,8 +401,9 @@ function Application:hideWindow(window)
 	if window then
 		return window:hideWindow()
 	else
-		for _, window in ipairs(self.Children) do
-			window:hideWindow()
+		local c = self.Children
+		for i = 1, #c do
+			c[i]:hideWindow()
 		end
 	end
 end
@@ -515,7 +524,8 @@ function Application:run()
 	while self.Status == "running" and #ow > 0 do
 
 		-- process the geometry-altering newsize messages first:
-		for _, win in ipairs(ow) do
+		for i = 1, #ow do
+			local win = ow[i]
 			if win.NewSizeMsg then
 				win:passMsg(win.NewSizeMsg)
 				win.NewSizeMsg = false
@@ -524,7 +534,8 @@ function Application:run()
 		end
 
 		-- process remaining messages for all open windows:
-		for _, win in ipairs(ow) do
+		for i = 1, #ow do
+			local win = ow[i]
 			-- dispatch user-generated window messages:
 			while win:getMsg(msg) do
 				msgdispatch[msg[2]](self, msg)
@@ -615,7 +626,8 @@ function Application:serviceCoroutines()
 			end
 		end
 	end
-	for _, c in ipairs(crt) do
+	for i = 1, #crt do
+		local c = crt[i]
 		if not c[2] then
 			return false -- a coroutine is running
 		end
@@ -825,7 +837,8 @@ local MSGTYPES = { MSG_USER }
 
 function Application:addInputHandler(msgtype, object, func)
 	local hnd = { object, func }
-	for _, mask in ipairs(MSGTYPES) do
+	for i = 1, #MSGTYPES do
+		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
 		if ih then
 			if testflag(msgtype, mask) then
@@ -841,11 +854,13 @@ end
 -------------------------------------------------------------------------------
 
 function Application:remInputHandler(msgtype, object, func)
-	for _, mask in ipairs(MSGTYPES) do
+	for i = 1, #MSGTYPES do
+		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
 		if ih then
 			if testflag(msgtype, mask) then
-				for i, h in ipairs(ih) do
+				for i = 1, #ih do
+					local h = ih[i]
 					if h[1] == object and h[2] == func then
 						remove(ih, i)
 						break
@@ -861,7 +876,9 @@ end
 -------------------------------------------------------------------------------
 
 function Application:passMsg(msg)
-	for _, hnd in ipairs { unpack(self.InputHandlers[msg[2]]) } do
+	local handlers = { unpack(self.InputHandlers[msg[2]]) }
+	for i = 1, #handlers do
+		local hnd = handlers[i]
 		msg = hnd[2](hnd[1], msg)
 		if not msg then
 			return false

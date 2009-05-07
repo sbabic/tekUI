@@ -57,7 +57,6 @@ local Group = ui.Group
 local ScrollBar = ui.ScrollBar
 local floor = math.floor
 local insert = table.insert
-local ipairs = ipairs
 local min = math.min
 local max = math.max
 local overlap = Region.overlapCoords
@@ -66,7 +65,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.9"
+_VERSION = "ScrollGroup 9.10"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:

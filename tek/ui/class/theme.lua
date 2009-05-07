@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.22"
+_VERSION = "Theme 6.23"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -322,12 +322,14 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["border-width"] = "0 0 2 2",
 		["border-focus-width"] = 0,
 		["background-color"] = "parent-group",
+		["background-position"] = "fixed",
 		["margin"] = 0,
 	},
 
 	[".page-button-group"] = {
 		["margin"] = "4 2 0 0",
 		["padding-left"] = 2,
+		["background-position"] = "fixed",
 	},
 
 	[".page-container"] = {

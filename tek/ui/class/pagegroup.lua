@@ -51,7 +51,6 @@ local Text = ui.Text
 
 local assert = assert
 local insert = table.insert
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local tonumber = tonumber
@@ -60,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.8"
+_VERSION = "PageGroup 9.9"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -320,7 +319,7 @@ function PageGroup.new(class, self)
 			})
 		else
 			if self.PageCaptions then
-				for i, c in ipairs(children) do
+				for i = 1, #children do
 					local pc = self.PageCaptions[i]
 					if type(pc) == "table" then
 						-- element

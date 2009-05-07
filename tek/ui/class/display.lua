@@ -80,7 +80,6 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local floor = math.floor
-local ipairs = ipairs
 local open = io.open
 local pairs = pairs
 local tonumber = tonumber
@@ -89,7 +88,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 16.1"
+_VERSION = "Display 16.2"
 
 local Display = _M
 
@@ -318,7 +317,8 @@ end
 -------------------------------------------------------------------------------
 
 function Display:getProperties(p, pclass)
-	for i, color in ipairs(ColorDefaults) do
+	for i = 1, #ColorDefaults do
+		local color = ColorDefaults[i]
 		self.RGBTab[i] = self.RGBTab[i] or
 			self:getProperty(p, pclass, "rgb-" .. color[1])
 	end

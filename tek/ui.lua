@@ -68,7 +68,6 @@ local floor = math.floor
 local getenv = os.getenv
 local getmetatable = getmetatable
 local insert = table.insert
-local ipairs = ipairs
 local loadstring = loadstring
 local open = io.open
 local package = package
@@ -82,7 +81,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 22.0"
+_VERSION = "tekUI 22.1"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -451,7 +450,7 @@ function loadStyleSheet(fname)
 					mode[1] = "waitclass"
 				else
 					local k, v, r =
-						buf:match("^([%a%d%-]+)%s*%:%s*([^;]+)%s*;(.*)")
+						buf:match("^([%a%d%-]+)%s*%:%s*([^;]-)%s*;(.*)")
 					if k then
 						s[class] = s[class] or { }
 						s[class][k] = v
@@ -546,50 +545,50 @@ local matchkeys =
 	},
 	["border-width"] =
 	{
-		{ "^%s*(%d+)%s*$", adddirkeys1, "border-%s-width" },
-		{ "^%s*(%d+)%s+(%d+)%s*$", adddirkeys2, "border-%s-width" },
-		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys3, "border-%s-width" },
-		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys4,
+		{ "^(%d+)$", adddirkeys1, "border-%s-width" },
+		{ "^(%d+)%s+(%d+)$", adddirkeys2, "border-%s-width" },
+		{ "^(%d+)%s+(%d+)%s+(%d+)$", adddirkeys3, "border-%s-width" },
+		{ "^(%d+)%s+(%d+)%s+(%d+)%s+(%d+)$", adddirkeys4,
 			"border-%s-width" }
 	},
 	["border-color"] =
 	{
-		{ "^%s*(%S+)%s*$", adddirkeys1, "border-%s-color" },
-		{ "^%s*(%S+)%s+(%S+)%s*$", adddirkeys2, "border-%s-color" },
-		{ "^%s*(%S+)%s+(%S+)%s+(%S+)%s*$", adddirkeys3, "border-%s-color" },
-		{ "^%s*(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$", adddirkeys4,
+		{ "^(%S+)$", adddirkeys1, "border-%s-color" },
+		{ "^(%S+)%s+(%S+)$", adddirkeys2, "border-%s-color" },
+		{ "^(%S+)%s+(%S+)%s+(%S+)$", adddirkeys3, "border-%s-color" },
+		{ "^(%S+)%s+(%S+)%s+(%S+)%s+(%S+)$", adddirkeys4,
 			"border-%s-color" }
 	},
-	["border"] = { { "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3 } },
+	["border"] = { { "^(%d+)%s+(%S+)%s+(%S+)$", addborder3 } },
 	["border-top"] =
 	{
-		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "top" }
+		{ "^(%d+)%s+(%S+)%s+(%S+)$", addborder3dir, "top" }
 	},
 	["border-right"] =
 	{
-		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "right" }
+		{ "^(%d+)%s+(%S+)%s+(%S+)$", addborder3dir, "right" }
 	},
 	["border-bottom"] =
 	{
-		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "bottom" }
+		{ "^(%d+)%s+(%S+)%s+(%S+)$", addborder3dir, "bottom" }
 	},
 	["border-left"] =
 	{
-		{ "^%s*(%d+)%s+(%S+)%s+(%S+)%s*$", addborder3dir, "left" }
+		{ "^(%d+)%s+(%S+)%s+(%S+)$", addborder3dir, "left" }
 	},
 	["margin"] =
 	{
-		{ "^%s*(%d+)%s*$", adddirkeys1, "margin-%s" },
-		{ "^%s*(%d+)%s+(%d+)%s*$", adddirkeys2, "margin-%s" },
-		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys3, "margin-%s" },
-		{ "^%s*(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys4, "margin-%s" }
+		{ "^(%d+)$", adddirkeys1, "margin-%s" },
+		{ "^(%d+)%s+(%d+)$", adddirkeys2, "margin-%s" },
+		{ "^(%d+)%s+(%d+)%s+(%d+)$", adddirkeys3, "margin-%s" },
+		{ "^(%d+)%s+(%d+)%s+(%d+)%s+(%d+)$", adddirkeys4, "margin-%s" }
 	},
 	["padding"] =
 	{
-		{ "^(%d+)%s*$", adddirkeys1, "padding-%s" },
-		{ "^(%d+)%s+(%d+)%s*$", adddirkeys2, "padding-%s" },
-		{ "^(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys3, "padding-%s" },
-		{ "^(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s*$", adddirkeys4, "padding-%s" }
+		{ "^(%d+)$", adddirkeys1, "padding-%s" },
+		{ "^(%d+)%s+(%d+)$", adddirkeys2, "padding-%s" },
+		{ "^(%d+)%s+(%d+)%s+(%d+)$", adddirkeys3, "padding-%s" },
+		{ "^(%d+)%s+(%d+)%s+(%d+)%s+(%d+)$", adddirkeys4, "padding-%s" }
 	},
 }
 
@@ -604,7 +603,8 @@ function prepareProperties(props)
 					local replkey = matchkeys[key]
 					if replkey then
 						val = tostring(val)
-						for _, pattern in ipairs(replkey) do
+						for i = 1, #replkey do
+							local pattern = replkey[i]
 							local a, b, c, d = val:match(pattern[1])
 							if a then
 								if pattern[2](props, key, pattern[3],

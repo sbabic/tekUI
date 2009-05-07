@@ -71,13 +71,12 @@ local Text = ui.Text
 local TextInput = ui.TextInput
 
 local insert = table.insert
-local ipairs = ipairs
 local pairs = pairs
 local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 10.3"
+_VERSION = "DirList 10.4"
 
 local DirList = _M
 
@@ -498,7 +497,8 @@ function DirList:scanDir(path)
 
 			local selectline = 1
 			local preselect = self.Preselect
-			for lnr, entry in ipairs(list) do
+			for lnr = 1, #list do
+				local entry = list[lnr]
 				if preselect and entry[1][1] == preselect then
 					selectline = lnr
 				end

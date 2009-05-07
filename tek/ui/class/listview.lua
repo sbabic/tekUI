@@ -44,12 +44,10 @@ local ListGadget = ui.ListGadget
 local ScrollBar = ui.ScrollBar
 local ScrollGroup = ui.ScrollGroup
 local Text = ui.Text
-
-local ipairs = ipairs
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 4.8"
+_VERSION = "ListView 4.9"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -134,8 +132,9 @@ function ListView.new(class, self)
 
 	if self.Headers and not self.HeaderGroup then
 		local c = { }
-		for i, caption in ipairs(self.Headers) do
-			c[i] = HeadItem:new { Text = caption }
+		local headers = self.Headers
+		for i = 1, #headers do
+			c[i] = HeadItem:new { Text = headers[i] }
 		end
 		self.HeaderGroup = Group:new { Width = "fill", Children = c }
 	end

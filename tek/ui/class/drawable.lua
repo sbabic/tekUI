@@ -40,7 +40,6 @@ local Region = require "tek.lib.region"
 
 local assert = assert
 local insert = table.insert
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local overlap = Region.overlapCoords
@@ -52,7 +51,7 @@ local unpack = unpack
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 14.2"
+_VERSION = "Drawable 14.3"
 
 DEBUG_DELAY = 3
 

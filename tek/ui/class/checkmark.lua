@@ -34,12 +34,11 @@
 local ui = require "tek.ui"
 local Text = ui.Text
 local floor = math.floor
-local ipairs = ipairs
 local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.15"
+_VERSION = "CheckMark 3.16"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:

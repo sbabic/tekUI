@@ -94,7 +94,6 @@ local Group = ui.Group
 local assert = assert
 local floor = math.floor
 local insert = table.insert
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local pairs = pairs
@@ -105,7 +104,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 14.2"
+_VERSION = "Window 14.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -277,7 +276,8 @@ end
 
 function Window:addInputHandler(msgtype, object, func)
 	local hnd = { object, func }
-	for _, mask in ipairs(MSGTYPES) do
+	for i = 1, #MSGTYPES do
+		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
 		if ih then
 			if testflag(msgtype, mask) then
@@ -297,12 +297,13 @@ end
 -------------------------------------------------------------------------------
 
 function Window:remInputHandler(msgtype, object, func)
-	assert(msgtype)
-	for _, mask in ipairs(MSGTYPES) do
+	for i = 1, #MSGTYPES do
+		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
 		if ih then
 			if testflag(msgtype, mask) then
-				for i, h in ipairs(ih) do
+				for i = 1, #ih do
+					local h = ih[i]
 					if h[1] == object and h[2] == func then
 						remove(ih, i)
 						if mask == ui.MSG_INTERVAL and #ih == 0 then
@@ -496,7 +497,9 @@ end
 -------------------------------------------------------------------------------
 
 function Window:passMsg(msg)
-	for _, hnd in ipairs { unpack(self.InputHandlers[msg[2]]) } do
+	local handlers = { unpack(self.InputHandlers[msg[2]]) }
+	for i = 1, #handlers do
+		local hnd = handlers[i]
 		msg = hnd[2](hnd[1], msg)
 		if not msg then
 			return false
@@ -613,7 +616,8 @@ local MsgHandlers =
 		db.trace("keydown: %s - qual: %d", msg[7], msg[6])
 		local s = self:getShortcutElements(msg[7], msg[6])
 		if s then
-			for _, e in ipairs(s) do
+			for i = 1, #s do
+				local e = s[i]
 				if not e.Disabled and e.KeyCode then
 					self:setHiliteElement(e)
 					self:setFocusElement(e)
@@ -642,7 +646,8 @@ local MsgHandlers =
 		db.trace("keyup: %s - qual: %d", msg[7], msg[6])
 		local s = self:getShortcutElements(msg[7], msg[6])
 		if s then
-			for _, e in ipairs(s) do
+			for i = 1, #s do
+				local e = s[i]
 				if not e.Disabled and e.KeyCode then
 					self:setActiveElement()
 				end
@@ -720,7 +725,8 @@ function Window:refresh()
 	end
 	sort(t, sortcopies)
 	local d = self.Drawable
-	for _, r in ipairs(t) do
+	for i = 1, #t do
+		local r = t[i]
 		local t = { }
 		d:copyArea(r[4], r[5], r[6], r[7], r[4] + r[2], r[5] + r[3], t)
 		for i = 1, #t, 4 do
@@ -747,7 +753,8 @@ function Window:update()
 			while #self.LayoutGroup > 0 do
 				local lg = self.LayoutGroup
 				self.LayoutGroup = { }
-				for _, record in ipairs(lg) do
+				for i = 1, #lg do
+					local record = lg[i]
 					local group = record[1]
 					local markdamage = record[2]
 					group:calcWeights()
@@ -989,7 +996,8 @@ function Window:addKeyShortcut(keycode, element)
 		keytab = { }
 		self.KeyShortcuts[key] = keytab
 	end
-	for _, qual in ipairs(quals) do
+	for i = 1, #quals do
+		local qual = quals[i]
 		local qualtab = keytab[qual]
 		if not qualtab then
 			qualtab = { }
@@ -1009,10 +1017,12 @@ function Window:remKeyShortcut(keycode, element)
 	db.info("removing shortcut: %s -> %s", key, element:getClassName())
 	local keytab = self.KeyShortcuts[key]
 	if keytab then
-		for _, qual in ipairs(quals) do
+		for i = 1, #quals do
+			local qual = quals[i]
 			local qualtab = keytab[qual]
 			if qualtab then
-				for idx, e in ipairs(qualtab) do
+				for idx = 1, #qualtab do
+					local e = qualtab[idx]
 					if element == e then
 						db.trace("%s : removing qualifier %d", key, qual)
 						remove(qualtab, idx)

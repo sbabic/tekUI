@@ -32,7 +32,6 @@ local Class = require "tek.class"
 local concat = table.concat
 local floor = math.floor
 local tinsert = table.insert
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local remove = table.remove
@@ -43,7 +42,7 @@ local type = type
 local unpack = unpack
 
 module("tek.class.utf8string", tek.class)
-_VERSION = "UTF8String 2.1"
+_VERSION = "UTF8String 2.2"
 
 local UTF8String = _M
 
@@ -224,8 +223,10 @@ end
 function UTF8String:get()
 	if not self[1] then
 		local t = { }
-		for i, c in ipairs(self[2]) do
-			tinsert(t, self.char(c))
+		local s = self[2]
+		local char = self.char
+		for i = 1, #s do
+			tinsert(t, char(s[i]))
 		end
 		self[1] = concat(t)
 	end

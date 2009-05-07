@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.17
+**	Version: 1.18
 */
 
 /*
@@ -302,12 +302,14 @@ tek.ui.class.window {
 	border-width: 0 0 2 2;
 	border-focus-width: 0;
 	background-color: parent-group;
+	background-position: fixed;
 	margin: 0;
 }
 
 .page-button-group {
 	margin: 4 2 0 0;
 	padding-left: 2;
+	background-position: fixed;
 }
 
 .page-container {

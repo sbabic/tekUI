@@ -85,14 +85,13 @@ local Gadget = ui.Gadget
 
 local floor = math.floor
 local insert = table.insert
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 15.2"
+_VERSION = "Text 15.3"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -194,15 +193,16 @@ function Text:getTextSize(tr)
 	local totw, toth = 0, 0
 	local x, y
 	if tr then
-		for _, tr in ipairs(tr) do
-			local tw, th = tr[9], tr[10]
-			totw = max(totw, tw + tr[5] + tr[7])
-			toth = max(toth, th + tr[6] + tr[8])
-			if tr[15] then
-				x = min(x or 1000000, tr[15])
+		for i = 1, #tr do
+			local t = tr[i]
+			local tw, th = t[9], t[10]
+			totw = max(totw, tw + t[5] + t[7])
+			toth = max(toth, th + t[6] + t[8])
+			if t[15] then
+				x = min(x or 1000000, t[15])
 			end
-			if tr[16] then
-				y = min(y or 1000000, tr[16])
+			if t[16] then
+				y = min(y or 1000000, t[16])
 			end
 		end
 	end
@@ -258,14 +258,16 @@ function Text:layoutText()
 		local h = r4 - r2 + 1 - p[4] - p[2]
 		local x0 = aligntext(self.TextHAlign, "right", r1 + p[1], w, w0)
 		local y0 = aligntext(self.TextVAlign, "bottom", r2 + p[2], h, h0)
-		for _, tr in ipairs(self.TextRecords) do
-			local x = x0 + tr[5]
-			local y = y0 + tr[6]
-			local w = w0 - tr[7] - tr[5]
-			local h = h0 - tr[8] - tr[6]
-			local tw, th = tr[9], tr[10]
-			tr[15] = aligntext(tr[3], "right", x, w, tw)
-			tr[16] = aligntext(tr[4], "bottom", y, h, th)
+		local tr = self.TextRecords
+		for i = 1, #tr do
+			local t = tr[i]
+			local x = x0 + t[5]
+			local y = y0 + t[6]
+			local w = w0 - t[7] - t[5]
+			local h = h0 - t[8] - t[6]
+			local tw, th = t[9], t[10]
+			t[15] = aligntext(t[3], "right", x, w, tw)
+			t[16] = aligntext(t[4], "bottom", y, h, th)
 		end
 	end
 end
@@ -287,23 +289,25 @@ function Text:draw()
 	local p = self.Padding
 	d:pushClipRect(r[1] + p[1], r[2] + p[2], r[3] - p[3], r[4] - p[4])
 	local fp = d.Pens[self.Foreground]
-	for _, tr in ipairs(self.TextRecords) do
-		local x, y = tr[15], tr[16]
-		d:setFont(tr[2])
+	local tr = self.TextRecords
+	for i = 1, #tr do
+		local t = tr[i]
+		local x, y = t[15], t[16]
+		d:setFont(t[2])
 		if self.Disabled then
 			local fp2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
-			d:drawText(x + 2, y + 2, x + tr[9] + 1, y + tr[10] + 1, tr[1], fp2)
-			if tr[11] then
+			d:drawText(x + 2, y + 2, x + t[9] + 1, y + t[10] + 1, t[1], fp2)
+			if t[11] then
 				-- draw underline:
-				d:fillRect(x + tr[11] + 2, y + tr[12] + 2,
-					x + tr[11] + tr[13] + 1, y + tr[12] + tr[14] + 1, fp2)
+				d:fillRect(x + t[11] + 2, y + t[12] + 2,
+					x + t[11] + t[13] + 1, y + t[12] + t[14] + 1, fp2)
 			end
 		end
-		d:drawText(x + 1, y + 1, x + tr[9], y + tr[10], tr[1], fp)
-		if tr[11] then
+		d:drawText(x + 1, y + 1, x + t[9], y + t[10], t[1], fp)
+		if t[11] then
 			-- draw underline:
-			d:fillRect(x + tr[11] + 1, y + tr[12] + 1,
-				x + tr[11] + tr[13], y + tr[12] + tr[14], fp)
+			d:fillRect(x + t[11] + 1, y + t[12] + 1,
+				x + t[11] + t[13], y + t[12] + t[14], fp)
 		end
 	end
 	d:popClipRect()

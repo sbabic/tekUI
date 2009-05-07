@@ -73,12 +73,11 @@ local overlap = Region.overlapCoords
 
 local assert = assert
 local floor = math.floor
-local ipairs = ipairs
 local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 17.4"
+_VERSION = "Group 17.5"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -106,8 +105,9 @@ end
 function Group:setup(app, window)
 	Gadget.setup(self, app, window)
 	self:calcWeights()
-	for _, c in ipairs(self.Children) do
-		c:setup(app, window)
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:setup(app, window)
 	end
 end
 
@@ -117,8 +117,9 @@ end
 
 function Group:decodeProperties(p)
 	Gadget.decodeProperties(self, p)
-	for _, c in ipairs(self.Children) do
-		c:decodeProperties(p)
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:decodeProperties(p)
 	end
 end
 
@@ -127,8 +128,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:cleanup()
-	for _, c in ipairs(self.Children) do
-		c:cleanup()
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:cleanup()
 	end
 	Gadget.cleanup(self)
 end
@@ -139,8 +141,9 @@ end
 
 function Group:show(display, drawable)
 	if Gadget.show(self, display, drawable) then
-		for _, c in ipairs(self.Children) do
-			if not c:show(display, drawable) then
+		local c = self.Children
+		for i = 1, #c do
+			if not c[i]:show(display, drawable) then
 				return self:hide()
 			end
 		end
@@ -153,8 +156,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:hide()
-	for _, c in ipairs(self.Children) do
-		c:hide()
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:hide()
 	end
 	Gadget.hide(self)
 end
@@ -271,8 +275,9 @@ function Group:markDamage(r1, r2, r3, r4)
 		end
 		self.Redraw = true
 	end
-	for _, c in ipairs(self.Children) do
-		c:markDamage(r1, r2, r3, r4)
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:markDamage(r1, r2, r3, r4)
 	end
 end
 
@@ -305,8 +310,9 @@ end
 
 function Group:refresh()
 	Gadget.refresh(self)
-	for _, c in ipairs(self.Children) do
-		c:refresh()
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:refresh()
 	end
 end
 
@@ -315,8 +321,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:getElementByXY(x, y)
-	for _, c in ipairs(self.Children) do
-		local ret = c:getElementByXY(x, y)
+	local c = self.Children
+	for i = 1, #c do
+		local ret = c[i]:getElementByXY(x, y)
 		if ret then
 			return ret
 		end
@@ -370,8 +377,9 @@ function Group:relayout(e, r1, r2, r3, r4)
 	if res then
 		return res, changed
 	end
-	for _, c in ipairs(self.Children) do
-		res, changed = c:relayout(e, r1, r2, r3, r4)
+	local c = self.Children
+	for i = 1, #c do
+		res, changed = c[i]:relayout(e, r1, r2, r3, r4)
 		if res then
 			return res, changed
 		end
@@ -383,8 +391,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:passMsg(msg)
-	for _, c in ipairs(self.Children) do
-		msg = c:passMsg(msg)
+	local c = self.Children
+	for i = 1, #c do
+		msg = c[i]:passMsg(msg)
 		if not msg then
 			return false
 		end

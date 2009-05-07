@@ -148,7 +148,6 @@ local Element = ui.Element
 local assert = assert
 local floor = math.floor
 local insert = table.insert
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local overlap = Region.overlapCoords
@@ -157,7 +156,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 18.0"
+_VERSION = "Area 18.2"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -251,26 +250,18 @@ end
 
 function Area:setup(app, win)
 	Element.setup(self, app, win)
-
 	-- consolidation of properties:
-
 	self.Width = tonumber(self.Width) or self.Width
 	self.Height = tonumber(self.Height) or self.Height
-
-	local m = self.Margin
-	m[1], m[2], m[3], m[4] = tonumber(m[1]) or 0, tonumber(m[2]) or 0,
-		tonumber(m[3]) or 0, tonumber(m[4]) or 0
-	local p = self.Padding
-	p[1], p[2], p[3], p[4] = tonumber(p[1]) or 0, tonumber(p[2]) or 0,
-		tonumber(p[3]) or 0, tonumber(p[4]) or 0
-
+	local m, p = self.Margin, self.Padding
+	m[1], m[2], m[3], m[4] = m[1] or 0, m[2] or 0, m[3] or 0, m[4] or 0
+	p[1], p[2], p[3], p[4] = p[1] or 0, p[2] or 0, p[3] or 0, p[4] or 0
 	if not self.MaxHeight or self.MaxHeight == "free" then
 		self.MaxHeight = ui.HUGE
 	end
 	if not self.MaxWidth or self.MaxWidth == "free" then
 		self.MaxWidth = ui.HUGE
 	end
-
 	self.MinHeight = self.MinHeight or 0
 	self.MinWidth = self.MinWidth or 0
 end
@@ -536,12 +527,12 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getBackground()
-	local bgpen = self.Drawable.Pens[self.Background]
-	if self.BackgroundPosition == "scroll" then
+	local tx, ty
+	if self.BackgroundPosition ~= "fixed" then
 		local r = self.Rect
-		return bgpen, r[1], r[2]
+		tx, ty = r[1], r[2]
 	end
-	return bgpen
+	return self.Drawable.Pens[self.Background], tx, ty
 end	
 
 -------------------------------------------------------------------------------
@@ -671,7 +662,8 @@ function Area:getElement(mode)
 	local g = self:getElement("siblings")
 	if g then
 		local n = #g
-		for i, e in ipairs(g) do
+		for i = 1, #g do
+			local e = g[i]
 			if e == self then
 				if mode == "next" then
 					return g[i % n + 1]

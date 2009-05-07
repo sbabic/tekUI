@@ -23,14 +23,12 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local Object = require "tek.class.object"
 local insert = table.insert
-local ipairs = ipairs
 local remove = table.remove
 
 module("tek.ui.class.family", tek.class.object)
-_VERSION = "Family 2.3"
+_VERSION = "Family 2.4"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -69,7 +67,9 @@ end
 -------------------------------------------------------------------------------
 
 function Family:remMember(child)
-	for pos, e in ipairs(self.Children) do
+	local c = self.Children
+	for pos = 1, #c do
+		local e = c[pos]
 		if e == child then
 			child:disconnect(self)
 			remove(self.Children, pos)

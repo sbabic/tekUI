@@ -26,7 +26,40 @@ local window = ui.Window:new
 			Children =
 			{
 				SameSize = true,
-				Columns = 4,
+				Columns = 5,
+				Group:new
+				{
+					Legend = L.BORDER_SOLID,
+					Orientation = "vertical",
+					Children =
+					{
+						Text:new
+						{
+							Style = "border-style:solid; border-width: 2;",
+							Mode = "button",
+						},
+						Text:new
+						{
+							Style = "border-style:solid; border-rim-width: 1; border-focus-width: 1; border-width: 4;",
+							Mode = "button",
+						},
+						Text:new
+						{
+							Style = "border-style:solid; border-rim-width: 1; border-focus-width: 1; border-width: 6;",
+							Mode = "button",
+						},
+						Text:new
+						{
+							Style = "border-style:solid; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
+							Mode = "button",
+						},
+						Text:new
+						{
+							Style = "border-style:solid; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
+							Mode = "button",
+						},
+					}
+				},
 				Group:new
 				{
 					Legend = L.BORDER_INSET,
@@ -35,27 +68,27 @@ local window = ui.Window:new
 					{
 						Text:new
 						{
-							Style = "border-style:inset; border-width: 2;",
+							Style = "border-style:inset; border-rim-width: 1; border-focus-width: 1; border-width: 2;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:inset; border-width: 4;",
+							Style = "border-style:inset; border-rim-width: 1; border-focus-width: 1; border-width: 4;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:inset; border-width: 6;",
+							Style = "border-style:inset; border-rim-width: 1; border-focus-width: 1; border-width: 6;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:inset; border-width: 8;",
+							Style = "border-style:inset; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:inset; border-width: 12;",
+							Style = "border-style:inset; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
 							Mode = "button",
 						},
 					}
@@ -68,27 +101,27 @@ local window = ui.Window:new
 					{
 						Text:new
 						{
-							Style = "border-style:outset; border-width: 2;",
+							Style = "border-style:outset; border-rim-width: 1; border-focus-width: 1; border-width: 2;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:outset; border-width: 4;",
+							Style = "border-style:outset; border-rim-width: 1; border-focus-width: 1; border-width: 4;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:outset; border-width: 6;",
+							Style = "border-style:outset; border-rim-width: 1; border-focus-width: 1; border-width: 6;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:outset; border-width: 8;",
+							Style = "border-style:outset; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:outset; border-width: 12;",
+							Style = "border-style:outset; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
 							Mode = "button",
 						},
 					}
@@ -101,27 +134,27 @@ local window = ui.Window:new
 					{
 						Text:new
 						{
-							Style = "border-style:groove; border-width: 2;",
+							Style = "border-style:groove; border-rim-width: 1; border-focus-width: 1; border-width: 2;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:groove; border-width: 4;",
+							Style = "border-style:groove; border-rim-width: 1; border-focus-width: 1; border-width: 4;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:groove; border-width: 6;",
+							Style = "border-style:groove; border-rim-width: 1; border-focus-width: 1; border-width: 6;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:groove; border-width: 8;",
+							Style = "border-style:groove; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:groove; border-width: 12;",
+							Style = "border-style:groove; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
 							Mode = "button",
 						},
 					}
@@ -134,31 +167,170 @@ local window = ui.Window:new
 					{
 						Text:new
 						{
-							Style = "border-style:ridge; border-width: 2;",
+							Style = "border-style:ridge; border-rim-width: 1; border-focus-width: 1; border-width: 2;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:ridge; border-width: 4;",
+							Style = "border-style:ridge; border-rim-width: 1; border-focus-width: 1; border-width: 4;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:ridge; border-width: 6;",
+							Style = "border-style:ridge; border-rim-width: 1; border-focus-width: 1; border-width: 6;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:ridge; border-width: 8;",
+							Style = "border-style:ridge; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
 							Mode = "button",
 						},
 						Text:new
 						{
-							Style = "border-style:ridge; border-width: 12;",
+							Style = "border-style:ridge; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
 							Mode = "button",
 						},
 					}
 				},
+			}
+		},
+		Group:new
+		{
+			Legend = L.BORDERS_SUB,
+			Columns = 6,
+			Children =
+			{
+				ui.Text:new 
+				{
+					Class = "caption",
+					Width = "fill",
+					TextHAlign = "right",
+				},
+				ui.Text:new 
+				{
+					Class = "caption",
+					Text = "0",
+				},
+				ui.Text:new 
+				{
+					Class = "caption",
+					Text = "1",
+				},
+				ui.Text:new 
+				{
+					Class = "caption",
+					Text = "2",
+				},
+				ui.Text:new 
+				{
+					Class = "caption",
+					Text = "3",
+				},
+				ui.Text:new 
+				{
+					Class = "caption",
+					Text = "5",
+				},
+				
+				ui.Text:new 
+				{
+					Class = "caption",
+					Text = L.BORDER_MAIN,
+					Width = "fill",
+					TextHAlign = "right",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 2; border-rim-width: 1; border-focus-width: 1", 
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1", 
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 4; border-rim-width: 1; border-focus-width: 1",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 5; border-rim-width: 1; border-focus-width: 1",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 7; border-rim-width: 1; border-focus-width: 1",
+				},
+				
+				ui.Text:new 
+				{
+					Class = "caption",
+					Text = L.BORDER_RIM,
+					Width = "fill",
+					TextHAlign = "right",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 2; border-rim-width: 0; border-focus-width: 1", 
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1", 
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 4; border-rim-width: 2; border-focus-width: 1",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 5; border-rim-width: 3; border-focus-width: 1",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 7; border-rim-width: 5; border-focus-width: 1",
+				},
+				
+				ui.Text:new 
+				{
+					Class = "caption",
+					Text = L.BORDER_FOCUS,
+					Width = "fill",
+					TextHAlign = "right",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 2; border-rim-width: 1; border-focus-width: 0", 
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1", 
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 4; border-rim-width: 1; border-focus-width: 2",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 5; border-rim-width: 1; border-focus-width: 3",
+				},
+				ui.Text:new 
+				{
+					Class = "button", Mode = "button", Height = "fill",
+					Style = "border-width: 7; border-rim-width: 1; border-focus-width: 5",
+				},
+			
 			}
 		},
 		Group:new

@@ -56,14 +56,13 @@ local Region = require "tek.lib.region"
 
 local concat = table.concat
 local insert = table.insert
-local ipairs = ipairs
 local max = math.max
 local overlap = Region.overlapCoords
 local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 7.4"
+_VERSION = "FloatText 7.5"
 
 local FloatText = _M
 
@@ -184,7 +183,9 @@ function FloatText:draw()
 		d:setFont(self.FontHandle)
 		for _, r1, r2, r3, r4 in dr:getRects() do
 			d:pushClipRect(r1, r2, r3, r4)
-			for lnr, t in ipairs(self.Lines) do
+			local lines = self.Lines
+			for lnr = 1, #lines do
+				local t = lines[lnr]
 				-- overlap between damage and line:
 				if overlap(r1, r2, r3, r4, x0, t[2], x1, t[4]) then
 					-- draw line background:
