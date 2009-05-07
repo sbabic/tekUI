@@ -4,38 +4,70 @@
 === 0.8e: ===
 
  * Eliminated the use of 'ipairs' in many classes 
- * Visual API, Image, ImageGadget, stock images: Changed image table structure, added preliminary support for bitmap pens in frect(), removed futile attemps in rounding from drawimage()
- * UI: Renamed createImage() to getStockImage(), added loadImage(), "background-image" handled, simplified match patterns in property preparation
- * UI, Object: NOTIFY_ALWAYS now behaves like former NOTIFY_CHANGE, NOTIFY_CHANGE has been removed
- * Visual, Visual/Lua binding, display drivers: TVisualText() no longer supports a background pen 
+ * Visual API, Image, ImageGadget, stock images: Changed image table
+ structure, added preliminary support for bitmap pens in frect(), removed
+ futile attemps in rounding from drawimage()
+ * UI: Renamed createImage() to getStockImage(), added loadImage(),
+ "background-image" handled, simplified match patterns in property
+ preparation
+ * UI, Object: NOTIFY_ALWAYS now behaves like former NOTIFY_CHANGE,
+ NOTIFY_CHANGE has been removed
+ * Visual, Visual/Lua binding, display drivers: TVisualText() no longer
+ supports a background pen 
  * Nano-X Display driver: drawbuffer now fully supported
- * Visual/Lua binding: drawtext() now requires the complete text bounding box, supports background pixmaps and an additional x/y argument for the texture origin, frect() now supports an additional x/y argument pair for the texture origin
- * Default border: Group and element origins are now considered for texture origins
- * Area: Added BackgroundPosition attribute, "background-position" style property, getBackground() function, erase() now handles texture origins, init() now resets Focus, DamageRegion is or'ed to (no longer overwritten during layout) and no longer reset in erase() but in refresh()
- * Area, Canvas, FloatText, Gauge, Group, ImageGadget, ListGadget, Slider: erase() and draw() now consider texture origin
- * Display: Added AspectX, AspectY, added fitMinAspect(), added pixmap cache, createPixmap(), loadPixmap(), getPixmap(), "ui-huge" font default is now "Utopia", which is scalable and common under X11 even without Xft support
- * Drawable: Removed AspectX, AspectY, added support for color allocation by accessing Pens with an "#rrggbb" key, added texture loader reacting on url(...) keys, RGB colors are now cached with an unique identifier to avoid double allocation, some sanity checks added
- * ImageGadget: Some layouting problems fixed, added several checks for presence of an image, now supports ImageAspectX, ImageAspectY
- * PopItem: removed "popup-root" and "popup-children" pseudo classes, these are now predefined classes and set during connect() if no other Class is specified
- * Element, Application:getElementById(), getId() unified and renamed to getById()
- * Visual API: Added pixmap objects, createpixmap(), freepixmap(), renamed drawppm() to drawpixmap(), frect() now supports rendering a pixmap with a texture origin
+ * Visual/Lua binding: drawtext() now requires the complete text bounding
+ box, supports background pixmaps and an additional x/y argument for the
+ texture origin, frect() now supports an additional x/y argument pair for
+ the texture origin
+ * Default border: Group and element origins are now considered for texture
+ origins
+ * Area: Added BackgroundPosition attribute, "background-position" style
+ property, getBackground() function, erase() now handles texture origins,
+ init() now resets Focus, DamageRegion is or'ed to (no longer overwritten
+ during layout) and no longer reset in erase() but in refresh()
+ * Area, Canvas, FloatText, Gauge, Group, ImageGadget, ListGadget, Slider:
+ erase() and draw() now consider texture origin
+ * Display: Added AspectX, AspectY, added fitMinAspect(), added pixmap cache,
+ createPixmap(), loadPixmap(), getPixmap(), "ui-huge" font default is now
+ "Utopia", which is scalable and common under X11 even without Xft support
+ * Drawable: Removed AspectX, AspectY, added support for color allocation by
+ accessing Pens with an "#rrggbb" key, added texture loader reacting on
+ url(...) keys, RGB colors are now cached with an unique identifier to avoid
+ double allocation, some sanity checks added
+ * ImageGadget: Some layouting problems fixed, added several checks for
+ presence of an image, now supports ImageAspectX, ImageAspectY
+ * PopItem: removed "popup-root" and "popup-children" pseudo classes, these
+ are now predefined classes and set during connect() if no other Class is
+ specified
+ * Element, Application:getElementById(), getId() unified and renamed to
+ getById()
+ * Visual API: Added pixmap objects, createpixmap(), freepixmap(), renamed
+ drawppm() to drawpixmap(), frect() now supports rendering a pixmap with a
+ texture origin
  * Merged BitmapImage and VectorImage class to Image
- * Gadget: onActivate() now implements collapsing of popups, removed the same functionality from PopItem - CheckMark, RadioButtons etc. are now functional in popups
- * Group:markDamage() checks for presence of a FreeRegion now, markDamage() and layout() are now better prepared for tracking intra-area damages
+ * Gadget: onActivate() now implements collapsing of popups, removed the same
+ functionality from PopItem - CheckMark, RadioButtons etc. are now functional
+ in popups
+ * Group:markDamage() checks for presence of a FreeRegion now, markDamage()
+ and layout() are now better prepared for tracking intra-area damages
  * PopItem: no longer resets Selected and Focus when opening
  * Region: checkoverlap() always returned true, corrected
  * CHANGES, VERSION: added
  * Documentation improved 
  * Gendoc: Added support for the --header option in class tree documentations
  * Theme, internal stylesheet: Added background-position attributes
- * Installation: BitmapImage, VectorImage classes removed, Image class, desktop.css, texture.css added
+ * Installation: BitmapImage, VectorImage classes removed, Image class,
+ desktop.css, texture.css added
  * Gauges with vertical orientation are now running from bottom to top
  * Minor corrections in image layouting procedures and image data
  * CheckMark, PopItem: Improved image size calculation
  * MenuItem, PopList, Arrow Images: Corrected distorted coordinates
- * X11 Display: Removed a kludge that disabled Xft font rendering when the composite extension was detected
- * Theme, Family, Element, Drawable, Button, Application, UTF8String: Minor corrections in the documentation
- * Demos: Images were incompletely read under Windows and appeared scrambled, corrected, improved border demo, changed some font attributes
+ * X11 Display: Removed a kludge that disabled Xft font rendering when the
+ composite extension was detected
+ * Theme, Family, Element, Drawable, Button, Application, UTF8String: Minor
+ corrections in the documentation
+ * Demos: Images were incompletely read under Windows and appeared scrambled,
+ corrected, improved border demo, changed some font attributes
 
 === 0.8d: ===
 
@@ -44,25 +76,34 @@
  * CheckMark:setState(): Hilite has now precedence over Selected
  * CheckMark, RadioButton, ScrollBar: Now using external images
  * Compiler: added
- * Debug: Default level reset to WARN (this time also reflected in the documentation)
- * Display: added colors user1 ... user4, colorNameToRGB(), getPaletteEntry(), removed allocPens()
+ * Debug: Default level reset to WARN (this time also reflected in the
+ documentation)
+ * Display: added colors user1 ... user4, colorNameToRGB(),
+ getPaletteEntry(), removed allocPens()
  * Drawable: now supports on-demand allocation of custom colors
  * Element: Added getNumProperty(), slightly optimized
  * List:changeItem() was using a global instead of an argument, corrected
  * Installation procedure corrected
  * Meter class and example rewritten
  * Minor corrections and improvements in the documentation
- * PopItems: corrected notification handler for Active, fixing long-standing double-activation bug
+ * PopItems: corrected notification handler for Active, fixing long-standing
+ double-activation bug
  * Region.new() can now cope with an empty initial rectangle
  * Slider: AutoFocus is now false by default, improved keyboard usage
  * Theme, internal stylesheet: minor corrections
  * Text:getTextSize() now also returns the layouted x/y, if present
- * UI: Added image class loader and createImage(), added PEN_NUMBER, PEN_USER1 through PEN_USER4, createHook() now returns false on the predefined name "none"
+ * UI: Added image class loader and createImage(), added PEN_NUMBER,
+ PEN_USER1
+ through PEN_USER4, createHook() now returns false on the predefined name
+ "none"
  * UI, Display, Theme: PEN_LIGHT removed, added PEN_OUTLINE
- * UTF8String: set() and char() can now be overridden, removed __tostring() and __concat(), unpack() was not known in byte()
+ * UTF8String: set() and char() can now be overridden, removed __tostring()
+ and __concat(), unpack() was not known in byte()
  * VectorImage, BitmapImage: data fields are now indexed numerically
- * Visual API: drawImage() data structure changed, implementation simplified and several problems rectified
- * Visual:drawImage(), ImageGadget, VectorImage:draw() now supports an override_pen argument for rendering an image monochromatically
+ * Visual API: drawImage() data structure changed, implementation simplified
+ and several problems rectified
+ * Visual:drawImage(), ImageGadget, VectorImage:draw() now supports an
+ override_pen argument for rendering an image monochromatically
 
 === 0.8c: ===
 
@@ -73,8 +114,12 @@
  * Button, CheckMark, MenuItem, PopItem: keycode can now be set to false
  * FloatText, ListGadget: TrackDamage can now be set to false
  * Frame: border repaints can now be avoided if an element was blitted
- * Text:onSetText() causes a less destructive repaint if KeepMinWidth is enabled
- * Window: blits and updates are now implemented in the overriden refresh() method and synchronized, removed notify option in SetHiliteElement(), setFocusElement(), setActiveElement(), setDblClickElement(), improved documentation
+ * Text:onSetText() causes a less destructive repaint if KeepMinWidth is
+ enabled
+ * Window: blits and updates are now implemented in the overriden refresh()
+ method and synchronized, removed notify option in SetHiliteElement(),
+ setFocusElement(), setActiveElement(), setDblClickElement(), improved
+ documentation
 
 === 0.8b: ===
 
