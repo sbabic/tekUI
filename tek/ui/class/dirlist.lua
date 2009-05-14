@@ -20,40 +20,38 @@
 --
 --	ATTRIBUTES::
 --		- {{Kind [IG]}} (string)
---			The visual appearance or purpose of the lister, which will
+--			The visual appearance (or purpose) of the lister, which will
 --			determine the arrangement of some interface elements:
---				- "requester" - for being used as a standalone file requester
---				- "lister" - for being used as a lister component
---				- "simple" - without accompanying user interface elements
---			The default kind is "lister".
+--				- {{"requester"}} - for a standalone file requester
+--				- {{"lister"}} - for a directory lister component
+--				- {{"simple"}} - without accompanying user interface elements
+--			The default kind is {{"lister"}}.
 --		- {{Location [IG]}} (string)
---			The entry currently selected, may be a file or directory
+--			The currently selected entry, may be a file or directory
 --		- {{Path [IG]}} (string)
 --			Directory in the file system
 --		- {{Selection [G]}} (table)
 --			An array of selected entries
 --		- {{SelectMode [IG]}} (String)
---			Mode of selection:
---				- "single" - allows selections of one entry at a time
---				- "multi" - allows selections of multiple entries
+--			- {{"single"}} - allows selections of one entry at a time
+--			- {{"multi"}} - allows selections of multiple entries
 --		- {{SelectText [IG]}} (String)
 --			Text to display on the selection button. Default: {{"Open"}}.
 --		- {{Status [G]}} (string)
---			Status of the lister:
---				- "running" - the lister is currently being shown
---				- "selected" - the user has selected one or more entries
---				- "cancelled" - the lister has been cancelled by the user
+--			- {{"running"}} - the lister is currently being shown
+--			- {{"selected"}} - the user has selected one or more entries
+--			- {{"cancelled"}} - the lister has been cancelled by the user
 --
 --	IMPLEMENTS::
---		- DirList:abortScan() - Abort scanning
---		- DirList:getCurrentDir() - Get current directory
---		- DirList:getDirectoryIterator() - Get an iterator an a directory
---		- DirList:getFileStat() - Examine file entry
+--		- DirList:abortScan() - Aborts scanning
+--		- DirList:getCurrentDir() - Gets the current directory
+--		- DirList:getDirIterator() - Gets an iterator over a directory
+--		- DirList:getFileStat() - Examines a file entry
 --		- DirList:goParent() - Goes to the parent of the current directory
 --		- DirList:showDirectory() - Reads and shows a directory
---		- DirList:scanEntry() - Scan a single entry in a directory
---		- DirList:showDirectory() - Start scanning and display a directory
---		- DirList:splitPath() - Split a filename
+--		- DirList:scanEntry() - Scans a single entry in a directory
+--		- DirList:showDirectory() - Starts scanning and displays a directory
+--		- DirList:splitPath() - Splits a filename
 --
 --	OVERRIDES::
 --		- Class.new()
@@ -76,7 +74,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 10.4"
+_VERSION = "DirList 11.0"
 
 local DirList = _M
 
@@ -90,12 +88,12 @@ function DirList:getCurrentDir()
 end
 
 -------------------------------------------------------------------------------
---	iterator = getDirectoryIterator(path): Returns an iterator function for
+--	iterator = getDirIterator(path): Returns an iterator function for
 --	traversal of the entries in the given directory. You can override this
 --	function to get an iterator over arbitrary kinds of listings.
 -------------------------------------------------------------------------------
 
-function DirList:getDirectoryIterator(path)
+function DirList:getDirIterator(path)
 	local success, dir = pcall(lfs.dir, path)
 	if success then
 		return function()
@@ -392,7 +390,7 @@ function DirList:showStats(selected, total)
 end
 
 -------------------------------------------------------------------------------
---	DirList:abortScan(): This function aborts the coroutine which is
+--	abortScan(): This function aborts the coroutine which is
 --	currently scanning the directory. The caller of this function must
 --	be running in its own coroutine.
 -------------------------------------------------------------------------------
@@ -406,7 +404,7 @@ function DirList:abortScan()
 end
 
 -------------------------------------------------------------------------------
---	table, type = DirList:scanEntry(path, name, idx): Scans a single entry
+--	table, type = scanEntry(path, name, idx): Scans a single entry
 --	{{name}} in a directory named {{path}}. {{idx}} is the entry number
 --	with which this scanned entry will appear in the directory listing.
 --	{{table}} is an array of strings, containing entries like name, size,
@@ -427,7 +425,7 @@ function DirList:scanEntry(path, name, idx)
 end
 
 -------------------------------------------------------------------------------
---	DirList:sort()
+--	sort()
 -------------------------------------------------------------------------------
 
 local function compareEntries(a, b)
@@ -442,7 +440,7 @@ function DirList:sort(list)
 end
 
 -------------------------------------------------------------------------------
---	DirList:scanDir(path)
+--	scanDir(path)
 -------------------------------------------------------------------------------
 
 function DirList:scanDir(path)
@@ -456,7 +454,7 @@ function DirList:scanDir(path)
 		self.PathField:setValue("Enter", path)
 	end
 	
-	local diri = self:getDirectoryIterator(path)
+	local diri = self:getDirIterator(path)
 
 	app:addCoroutine(function()
 
@@ -521,15 +519,14 @@ function DirList:scanDir(path)
 end
 
 -------------------------------------------------------------------------------
---	finishScanDir:
+--	finishScanDir()
 -------------------------------------------------------------------------------
 
 function DirList:finishScanDir(path)
 end
 
 -------------------------------------------------------------------------------
---	DirList:showDirectory(path): Starts reading and displays the specified
---	directory.
+--	showDirectory(path): Starts reading and displays the specified directory.
 -------------------------------------------------------------------------------
 
 function DirList:showDirectory(path)
@@ -540,8 +537,8 @@ function DirList:showDirectory(path)
 end
 
 -------------------------------------------------------------------------------
---	DirList:goParent(): Starts reading and displays the parent directory
---	of the current directory.
+--	goParent(): Starts reading and displays the parent directory of the
+--	current directory.
 -------------------------------------------------------------------------------
 
 function DirList:goParent()
@@ -549,7 +546,7 @@ function DirList:goParent()
 end
 
 -------------------------------------------------------------------------------
---	setFileEntry:
+--	setFileEntry()
 -------------------------------------------------------------------------------
 
 function DirList:setFileEntry(entry)

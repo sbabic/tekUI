@@ -16,9 +16,10 @@
 --		- {{AutoPosition [IG]}} (boolean)
 --			When the element receives the focus, this flag instructs it to
 --			position itself automatically into the visible area of any Canvas
---			that may contain it. An affected Canvas must have the
---			{{AutoPosition}} attribute enabled to take effect, too, but unlike
---			the Area class, the Canvas class disables it by default.
+--			that may contain it. An affected [[#tek.ui.class.canvas : Canvas]]
+--			must have its {{AutoPosition}} attribute enabled as well for this
+--			option to take effect, but unlike the Area class, the Canvas class
+--			disables it by default.
 --		- {{BGPen [IG]}} (number)
 --			A pen number for painting the background of the element
 --		- {{DamageRegion [G]}} ([[#tek.lib.region : Region]])
@@ -35,17 +36,18 @@
 --			If '''true''', the element has the input focus. This attribute
 --			is handled by the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{HAlign [IG]}} ("left", "center", "right")
---			Horizontal alignment of the element in its group [default:
---			"left"]
---		- {{Height [IG]}} (number, '''false''', or "auto", "fill", "free")
+--			Horizontal alignment of the element in its group
+--		- {{Height [IG]}} (number, '''false''', {{"auto"}}, {{"fill"}}, 
+--		{{"free"}})
 --			Height of the element, in pixels, or
 --				- '''false''' - unspecified; during initialization, the class'
 --				default will be used
---				- "auto" - Reserves the minimal height needed for the element.
---				- "free" - Allows the element's height to grow to any size.
---				- "fill" - Completely fills up the height that other elements
---				in the same group have left, but does not claim more.
---			Note: Normally, "fill" is useful only once per group.
+--				- {{"auto"}} - Reserves the minimal height needed for the
+--				element.
+--				- {{"free"}} - Allows the element's height to grow to any size.
+--				- {{"fill"}} - Completely fills up the height that other
+--				elements in the same group have left, but does not claim more.
+--			Note: Normally, {{"fill"}} is useful only once per group.
 --		- {{Hilite [SG]}} (boolean)
 --			If '''true''', the element is in highlighted state. This
 --			attribute is handled by the [[#tek.ui.class.gadget : Gadget]]
@@ -72,26 +74,29 @@
 --		- {{TrackDamage [IG]}} (boolean)
 --			If '''true''', the element gathers intra-area damages in a
 --			Region named {{DamageRegion}}, which can be used by class
---			implementors for minimally invasive repainting [Default:
---			'''false''', the element is redrawn in its entirety.)
+--			writers for minimally invasive repaints. Default:
+--			'''false''', the element is redrawn in its entirety.
 --		- {{VAlign [IG]}} ("top", "center", "bottom")
---			Vertical alignment of the element in its group [default: "top"]
+--			Vertical alignment of the element in its group
 --		- {{Weight [IG]}} (number)
 --			Determines the weight that is attributed to the element, relative
 --			to its siblings in its group. Note: By recommendation, the weights
 --			in a group should sum up to 0x10000.
---		- {{Width [IG]}} (number, '''false''', or "auto", "fill", "free")
+--		- {{Width [IG]}} (number, '''false''', {{"auto"}}, {{"fill"}},
+--		{{"free"}})
 --			Width of the element, in pixels, or
 --				- '''false''' - unspecified; during initialization, the class'
 --				default will be used
---				- "auto" - Reserves the minimal width needed for the element.
---				- "free" - Allows the element's width to grow to any size.
---				- "fill" - Completely fills up the width that other elements
---				in the same group have left, but does not claim more.
+--				- {{"auto"}} - Reserves the minimal width needed for the
+--				element
+--				- {{"free"}} - Allows the element's width to grow to any size
+--				- {{"fill"}} - Completely fills up the width that other
+--				elements in the same group have left, but does not claim more.
 --			Note: Normally, "fill" is useful only once per group.
 --
 --	STYLE PROPERTIES::
 --		- {{background-color}}
+--		- {{background-position}}
 --		- {{height}}
 --		- {{horizontal-grid-align}}
 --		- {{margin}}
@@ -113,18 +118,25 @@
 --
 --	IMPLEMENTS::
 --		- Area:askMinMax() - Queries element's minimum and maximum dimensions
---		- Area:checkFocus() - Checks if the element can receive the focus
+--		- Area:checkFocus() - Checks if the element can receive the input focus
+--		- Area:checkHover() - Checks if the element can be hovered over
+--		- Area:damage() - Notifies the element of a damage
 --		- Area:draw() - Paints the element
---		- Area:erase() - Erase the element's background
---		- Area:focusRectangle() - Make the element fully visible in a Canvas
---		- Area:getElement() - Returns an element's neighbours
---		- Area:getElementByXY() - Checks if the element covers a coordinate
---		- Area:getRectangle() - Returns the element's layouted coordinates
+--		- Area:erase() - Erases the element's background
+--		- Area:focusRect() - Make the element fully visible
+--		- Area:getBG() - Gets the element's background properties
+--		- Area:getChildren() - Gets the element's children
+--		- Area:getByXY() - Checks if the element covers a coordinate
+--		- Area:getGroup() - Gets the element's group
+--		- Area:getNext() - Gets the element's successor in its group
+--		- Area:getParent() - Gets the element's parent element
+--		- Area:getPrev() - Gets the element's predecessor in its group
+--		- Area:getRect() - Returns the element's layouted coordinates
+--		- Area:getSiblings() - Gets the element's siblings
 --		- Area:hide() - Disconnects the element from a Display and Drawable
 --		- Area:layout() - Layouts the element into a rectangle
---		- Area:markDamage() - Notifies the element of a damage
 --		- Area:passMsg() - Passes an input message to the element
---		- Area:punch() - Subtracts the outline of the element from a
+--		- Area:punch() - [internal] Subtracts the outline of the element from a
 --		[[#tek.lib.region : Region]]
 --		- Area:refresh() - [internal] Repaints the element if necessary
 --		- Area:relayout() - [internal] Relayouts the element if necessary
@@ -141,22 +153,21 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local Region = require "tek.lib.region"
 local ui = require "tek.ui"
 local Element = ui.Element
+local Region = require "tek.lib.region"
 
 local assert = assert
-local floor = math.floor
-local insert = table.insert
+local freeRegion = ui.freeRegion
+local intersect = Region.intersect
 local max = math.max
 local min = math.min
-local overlap = Region.overlapCoords
-local remove = table.remove
+local newRegion = ui.newRegion
 local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 18.2"
+_VERSION = "Area 20.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -179,9 +190,13 @@ end
 -------------------------------------------------------------------------------
 
 function Area.init(self)
-	self.AutoPosition = self.AutoPosition == nil and true or self.AutoPosition
+	local t = self.AutoPosition
+	if t == nil then
+		t = true
+	end
+	self.AutoPosition = t
 	self.Background = false
-	self.BackgroundPosition = false
+	self.BGPosition = false
 	self.BGPen = self.BGPen or false
 	self.DamageRegion = false
 	self.Disabled = self.Disabled or false
@@ -212,7 +227,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getProperties(p, pclass)
-	self.BackgroundPosition = self.BackgroundPosition or
+	self.BGPosition = self.BGPosition or
 		self:getProperty(p, pclass, "background-position")
 	self.BGPen = self.BGPen or self:getProperty(p, pclass, "background-color")
 	self.HAlign = self.HAlign or
@@ -267,7 +282,7 @@ function Area:setup(app, win)
 end
 
 -------------------------------------------------------------------------------
---	success = Area:show(display, drawable): Passes an element the
+--	success = show(display, drawable): Passes an element the
 --	[[#tek.ui.class.display : Display]] and
 --	[[#tek.ui.class.drawable : Drawable]] it will be rendered to. Returns
 --	a boolean indicating success. If you override this method, pass the call
@@ -284,13 +299,13 @@ function Area:show(display, drawable)
 end
 
 -------------------------------------------------------------------------------
---	Area:hide(): Removes the display and drawable from an element.
+--	hide(): Removes the display and drawable from an element.
 --	Override this method to free all display-related resources previously
 --	allocated in Area:show().
 -------------------------------------------------------------------------------
 
 function Area:hide()
-	self.DamageRegion = false
+	self.DamageRegion = freeRegion(self.DamageRegion)
 	self.Display = false
 	self.Drawable = false
 	self.MinMax = { }
@@ -299,7 +314,7 @@ function Area:hide()
 end
 
 -------------------------------------------------------------------------------
---	Area:calcOffsets() [internal] - This function calculates the
+--	calcOffsets() [internal] - This function calculates the
 --	{{MarginAndBorder}} property.
 -------------------------------------------------------------------------------
 
@@ -309,7 +324,7 @@ function Area:calcOffsets()
 end
 
 -------------------------------------------------------------------------------
---	Area:rethinkLayout([damage]): This method causes a relayout of the
+--	rethinkLayout([damage]): This method causes a relayout of the
 --	element and possibly the [[#tek.ui.class.group : Group]] in which it
 --	resides. The optional numeric argument {{damage}} indicates the kind
 --	of damage to apply to the element:
@@ -322,7 +337,7 @@ function Area:rethinkLayout(damage)
 	-- must be on a display and layouted previously:
 	if self.Display and self.Rect[1] then
 		self:calcOffsets()
-		local parent = self:getElement("parent")
+		local parent = self:getGroup(true)
 		self.Window:addLayoutGroup(parent, damage or 1)
 		-- this causes the rethink to bubble up until it reaches the window:
 		parent:rethinkLayout(0)
@@ -333,7 +348,7 @@ function Area:rethinkLayout(damage)
 end
 
 -------------------------------------------------------------------------------
---	minw, minh, maxw, maxh = Area:askMinMax(minw, minh, maxw, maxh): This
+--	minw, minh, maxw, maxh = askMinMax(minw, minh, maxw, maxh): This
 --	method is called during the layouting process for adding the required
 --	spatial extents (width and height) of this class to the min/max values
 --	passed from a child class, before passing them on to its super class.
@@ -357,7 +372,7 @@ function Area:askMinMax(m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
---	changed = Area:layout(x0, y0, x1, y1[, markdamage]): Layouts the element
+--	changed = layout(x0, y0, x1, y1[, markdamage]): Layouts the element
 --	into the specified rectangle. If the element's (or any of its childrens')
 --	coordinates change, returns '''true''' and marks the element as damaged,
 --	unless the optional argument {{markdamage}} is set to '''false'''.
@@ -426,7 +441,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 		if ca then
 			ca[3]:orRect(s1, s2, s3, s4)
 		else
-			win.CopyArea[key] = { dx, dy, Region.new(s1, s2, s3, s4) }
+			win.CopyArea[key] = { dx, dy, newRegion(s1, s2, s3, s4) }
 		end
 	
 		if samesize then
@@ -444,13 +459,11 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 		-- did not move, size changed:
 		if markdamage and self.TrackDamage then
 			-- if damage is to be marked and can be tracked:
-			local r = Region.new(x0, y0, x1, y1)
-			r:subRect(r1, r2, r3, r4)
+			local r = newRegion(x0, y0, x1, y1):subRect(r1, r2, r3, r4)
 			local d = self.DamageRegion
 			if d then
-				for _, r1, r2, r3, r4 in r:getRects() do
-					d:orRect(r1, r2, r3, r4)
-				end
+				r:forEach(d.orRect, d)
+				freeRegion(r)
 			else
 				self.DamageRegion = r
 			end
@@ -462,7 +475,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	found[, changed] = Area:relayout(element, x0, y0, x1, y1) [internal]:
+--	found[, changed] = relayout(element, x0, y0, x1, y1) [internal]:
 --	Traverses the element tree searching for the specified element, and if
 --	this class (or the class of one of its children) is responsible for it,
 --	layouts it to the specified rectangle. Returns '''true''' if the element
@@ -478,7 +491,7 @@ function Area:relayout(e, r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
---	Area:punch(region) [internal]: Subtracts the element from (punching a
+--	punch(region) [internal]: Subtracts the element from (punching a
 --	hole into) the specified Region. This function is called by the layouter.
 -------------------------------------------------------------------------------
 
@@ -487,21 +500,21 @@ function Area:punch(region)
 end
 
 -------------------------------------------------------------------------------
---	Area:markDamage(x0, y0, x1, y1): If the element overlaps with the given
+--	damage(x0, y0, x1, y1): If the element overlaps with the given
 --	rectangle, this function marks it as damaged.
 -------------------------------------------------------------------------------
 
-function Area:markDamage(r1, r2, r3, r4)
+function Area:damage(r1, r2, r3, r4)
 	if self.TrackDamage or not self.Redraw then
-		local s1, s2, s3, s4 = self:getRectangle()
+		local s1, s2, s3, s4 = self:getRect()
 		if s1 then
-			r1, r2, r3, r4 = overlap(r1, r2, r3, r4, s1, s2, s3, s4)
+			r1, r2, r3, r4 = intersect(r1, r2, r3, r4, s1, s2, s3, s4)
 			if r1 then
 				self.Redraw = true
 				if self.DamageRegion then
 					self.DamageRegion:orRect(r1, r2, r3, r4)
 				elseif self.TrackDamage then
-					self.DamageRegion = Region.new(r1, r2, r3, r4)
+					self.DamageRegion = newRegion(r1, r2, r3, r4)
 				end
 			end
 		end
@@ -509,7 +522,7 @@ function Area:markDamage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
---	Area:draw(): Draws the element into the rectangle assigned to it by
+--	draw(): Draws the element into the rectangle assigned to it by
 --	the layouter; the coordinates can be found in the element's {{Rect}}
 --	table. Note: Applications are not allowed to call this function directly.
 -------------------------------------------------------------------------------
@@ -521,14 +534,14 @@ function Area:draw()
 end
 
 -------------------------------------------------------------------------------
---	bgpen, tx, ty = Area:getBackground(): Get the element's background
+--	bgpen, tx, ty = getBG(): Get the element's background
 --	properties. If bgpen happens to be a texture, tx and ty determine the
 --	texture origin relative to the drawable.
 -------------------------------------------------------------------------------
 
-function Area:getBackground()
+function Area:getBG()
 	local tx, ty
-	if self.BackgroundPosition ~= "fixed" then
+	if self.BGPosition ~= "fixed" then
 		local r = self.Rect
 		tx, ty = r[1], r[2]
 	end
@@ -536,18 +549,16 @@ function Area:getBackground()
 end	
 
 -------------------------------------------------------------------------------
---	Area:erase(): Clears the element's background.
+--	erase(): Clears the element's background.
 -------------------------------------------------------------------------------
 
 function Area:erase()
 	local d = self.Drawable
 	local dr = self.DamageRegion
-	local bgpen, tx, ty = self:getBackground()
+	local bgpen, tx, ty = self:getBG()
 	if dr then
 		-- repaint intra-area damagerects:
-		for _, r1, r2, r3, r4 in dr:getRects() do
-			d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
-		end
+		dr:forEach(d.fillRect, d, bgpen, tx, ty)
 	else
 		local r = self.Rect
 		d:fillRect(r[1], r[2], r[3], r[4], bgpen, tx, ty)
@@ -555,30 +566,33 @@ function Area:erase()
 end
 
 -------------------------------------------------------------------------------
---	Area:refresh() [internal]: Redraws the element (and all possible children)
---	if they are marked as damaged.
+--	refresh() [internal]: Redraws the element (and all possible children)
+--	if they are marked as damaged. This function is called in the Window's
+--	update procedure.
 -------------------------------------------------------------------------------
 
 function Area:refresh()
 	if self.Redraw then
 		self:draw()
 		self.Redraw = false
-		self.DamageRegion = false
+		self.DamageRegion = freeRegion(self.DamageRegion)
 	end
 end
 
 -------------------------------------------------------------------------------
---	self = Area:getElementByXY(x, y): Returns {{self}} if the element covers
+--	self = getElementByXY(x, y): Returns {{self}} if the element covers
 --	the specified coordinate.
 -------------------------------------------------------------------------------
 
 function Area:getElementByXY(x, y)
-	local r1, r2, r3, r4 = self:getRectangle()
-	return r1 and x >= r1 and x <= r3 and y >= r2 and y <= r4 and self
+	local r1, r2, r3, r4 = self:getRect()
+	if r1 and x >= r1 and x <= r3 and y >= r2 and y <= r4 then
+		return self
+	end
 end
 
 -------------------------------------------------------------------------------
---	msg = Area:passMsg(msg): This function filters the specified input
+--	msg = passMsg(msg): This function filters the specified input
 --	message. After processing, it is free to return the message unmodified
 --	(thus passing it on to the next message handler), to return a copy that
 --	has certain fields in the message modified, or to 'swallow' the message
@@ -592,7 +606,7 @@ function Area:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	Area:setState(bg): Sets the {{Background}} attribute according to
+--	setState(bg): Sets the {{Background}} attribute according to
 --	the state of the element, and if it changed, slates the element
 --	for repainting.
 -------------------------------------------------------------------------------
@@ -600,7 +614,7 @@ end
 function Area:setState(bg, fg)
 	bg = bg or self.BGPen or ui.PEN_BACKGROUND
 	if bg == ui.PEN_PARENTGROUP then
-		bg = self:getElement("group").Background
+		bg = self:getGroup().Background
 	end
 	if bg ~= self.Background then
 		self.Background = bg
@@ -609,92 +623,123 @@ function Area:setState(bg, fg)
 end
 
 -------------------------------------------------------------------------------
---	can_receive = Area:checkFocus(): Returns '''true''' if this element can
---	receive the input focus. (As an Area is non-interactive, the return value
---	of this class' implementation is always '''false'''.)
+--	can_receive = checkFocus(): Returns '''true''' if this element can
+--	receive the input focus.
 -------------------------------------------------------------------------------
 
 function Area:checkFocus()
-	return false
 end
 
 -------------------------------------------------------------------------------
---	element = Area:getElement(mode): Returns an element's neighbours. This
---	function can be overridden to control a class-specific tab cycle behavior.
---	Possible values for {{mode}} are:
---		- "parent" - returns the elements' parent element.
---		- "children" - returns a table containing the element's children, or
---		'''nil''' if the element has no children.
---		- "siblings" - returns a table containing the element's siblings
---		(including the element itself), or a table containing only the
---		element, if it is not member of a group.
---		- "next" - returns the next element in the group, or '''nil''' if
---		the element has no successors.
---		- "prev" - returns the previous element in the group, or '''nil''' if
---		the element has no predecessors.
---		- "nextorparent" - returns the next element in a group, or, if the
---		element has no successor, the next element in the parent group (and
---		so forth, until it reaches the topmost group).
---		- "prevorparent" - returns the previous element in a group, or, if the
---		element has no predecessor, the next element in the parent group (and
---		so forth, until it reaches the topmost group).
---		- "firstchild" - returns the element's first child, or '''nil''' if
---		the element has no children.
---		- "lastchild" - returns the element's last child, or '''nil''' if
---		the element has no children.
---
---	Note: Tables returned by this function must be treated read-only.
+--	can_hover = checkHover(): Returns '''true''' if this element can
+--	react on being hovered over by the pointing device.
 -------------------------------------------------------------------------------
 
-function Area:getElement(mode)
-	if mode == "parent" then
-		assert(self.Parent)
-		return self.Parent
-	elseif mode == "children" then
-		return -- an area has no children
-	elseif mode == "siblings" then
-		local p = self:getElement("parent")
-		return p and p:getElement("children")
-	elseif mode == "group" then
-		assert(self.Parent)
-		return self.Parent
-	end
-	local g = self:getElement("siblings")
+function Area:checkHover()
+end
+
+-------------------------------------------------------------------------------
+--	element = getNext(): Returns the next element in the group, or, if
+--	the element has no successor, the next element in the parent group (and
+--	so forth, until it reaches the topmost group). Returns '''nil''' if the
+--	element is not currently connected.
+-------------------------------------------------------------------------------
+
+local function findelement(self)
+	local g = self:getSiblings()
 	if g then
 		local n = #g
-		for i = 1, #g do
-			local e = g[i]
-			if e == self then
-				if mode == "next" then
-					return g[i % n + 1]
-				elseif mode == "prev" then
-					return g[(i - 2) % n + 1]
-				elseif mode == "nextorparent" then
-					if i == n then
-						return self:getElement("parent"):
-							getElement("nextorparent")
-					end
-					return g[i % n + 1]
-				elseif mode == "prevorparent" then
-					if i == 1 then
-						return self:getElement("parent"):
-							getElement("prevorparent")
-					end
-					return g[(i - 2) % n + 1]
-				end
-				break
+		for i = 1, n do
+			if g[i] == self then
+				return g, n, i
 			end
 		end
 	end
 end
 
+function Area:getNext()
+	local g, n, i = findelement(self)
+	if g then
+		if i == n then
+			return self:getParent():getNext()
+		end
+		return g[i % n + 1]
+	end
+end
+
 -------------------------------------------------------------------------------
---	x0, y0, x1, y1 = Area:getRectangle(): This function returns the
+--	element = getPrev(): Returns the previous element in the group, or,
+--	if the element has no predecessor, the next element in the parent group
+--	(and so forth, until it reaches the topmost group). Returns '''nil''' if
+--	the element is not currently connected.
+-------------------------------------------------------------------------------
+
+function Area:getPrev()
+	local g, n, i = findelement(self)
+	if g then
+		if i == 1 then
+			return self:getParent():getPrev()
+		end
+		return g[(i - 2) % n + 1]
+	end
+end
+
+-------------------------------------------------------------------------------
+--	element = getGroup(parent): Returns the element's closest group
+--	containing it. If the {{parent}} argument is '''true''', this function
+--	will start looking for the closest group at its parent, otherwise it
+--	returns itself if it is a group. Returns '''nil''' if the element is not
+--	currently connected.
+-------------------------------------------------------------------------------
+
+function Area:getGroup()
+	local p = self:getParent()
+	if p then
+		if p:getGroup() == p then
+			return p
+		end
+		return p:getGroup(true)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	element = getSiblings(): Returns a table containing the element's
+--	siblings (including the element itself). Returns '''nil''' if the element
+--	is not currently connected. Note: The returned table must be treated
+--	read-only. 
+-------------------------------------------------------------------------------
+
+function Area:getSiblings()
+	local p = self:getParent()
+	return p and p:getChildren()
+end
+
+-------------------------------------------------------------------------------
+--	element = getParent(): Returns the element's parent element, or
+--	'''false''' if it currently has no parent.
+-------------------------------------------------------------------------------
+
+function Area:getParent()
+	return self.Parent
+end
+
+-------------------------------------------------------------------------------
+--	element = getChildren(init): Returns a table containing the element's
+--	children, or '''nil''' if this element cannot have children. If the
+--	optional {{init}} argument is '''true''', this signals that this function
+--	is called during initialization or deinitialization.
+-------------------------------------------------------------------------------
+
+function Area:getChildren()
+end
+
+-------------------------------------------------------------------------------
+--	x0, y0, x1, y1 = getRect(): This function returns the
 --	rectangle which the element has been layouted to, or '''false'''
 --	if the element has not been layouted yet.
 -------------------------------------------------------------------------------
 
-function Area:getRectangle()
+function Area:getRect()
 	if self.Display then
 		return unpack(self.Rect)
 	end
@@ -703,15 +748,15 @@ function Area:getRectangle()
 end
 
 -------------------------------------------------------------------------------
---	Area:focusRectangle([x0, y0, x1, y1]): Tries to shift any Canvas
+--	focusRect([x0, y0, x1, y1]): Tries to shift any Canvas
 --	containing the element into a position that makes the element fully
 --	visible. Optionally, a rectangle can be specified that is to be made
 --	visible.
 -------------------------------------------------------------------------------
 
-function Area:focusRectangle(r1, r2, r3, r4)
+function Area:focusRect(r1, r2, r3, r4)
 	if not r1 then
-		r1, r2, r3, r4 = self:getRectangle()
+		r1, r2, r3, r4 = self:getRect()
 		if not r1 then
 			return
 		end
@@ -721,8 +766,8 @@ function Area:focusRectangle(r1, r2, r3, r4)
 		r3 = r3 + m[3]
 		r4 = r4 + m[4]
 	end
-	local parent = self:getElement("parent")
+	local parent = self:getParent()
 	if parent then
-		parent:focusRectangle(r1, r2, r3, r4)
+		parent:focusRect(r1, r2, r3, r4)
 	end
 end

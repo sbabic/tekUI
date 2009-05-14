@@ -16,20 +16,20 @@
 
 /*****************************************************************************/
 
-static const struct TInitModule initmodules[] =
+static const struct TInitModule tek_lib_visual_initmodules[] =
 {
 	{ "visual", tek_init_visual, TNULL, 0 },
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
-static struct TModInitNode im_visual =
+static struct TModInitNode im_visual = /* TODO: const */
 {
 	{ TNULL, TNULL },
-	(struct TInitModule *) initmodules,
+	(struct TInitModule *) tek_lib_visual_initmodules,
 	TNULL,
 };
 
-static const luaL_Reg libfuncs[] =
+static const luaL_Reg tek_lib_visual_funcs[] =
 {
 	{ "open", tek_lib_visual_open },
 	{ "close", tek_lib_visual_close },
@@ -45,7 +45,7 @@ static const luaL_Reg libfuncs[] =
 	{ TNULL, TNULL }
 };
 
-static const luaL_Reg classmethods[] =
+static const luaL_Reg tek_lib_visual_methods[] =
 {
 	{ "__gc", tek_lib_visual_close },
 	{ "setinput", tek_lib_visual_setinput },
@@ -73,7 +73,7 @@ static const luaL_Reg classmethods[] =
 	{ TNULL, TNULL }
 };
 
-static const luaL_Reg fontmethods[] =
+static const luaL_Reg tek_lib_visual_fontmethods[] =
 {
 	{ "__gc", tek_lib_visual_closefont },
 	{ "getattrs", tek_lib_visual_getfontattrs },
@@ -81,7 +81,7 @@ static const luaL_Reg fontmethods[] =
 	{ TNULL, TNULL }
 };
 
-static const luaL_Reg pixmapmethods[] =
+static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 {
 	{ "__gc", tek_lib_visual_freepixmap },
 	{ TNULL, TNULL }
@@ -403,7 +403,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	TExecBase = *(TAPTR *) lua_touserdata(L, -1);
 
 	/* register functions: */
-	luaL_register(L, "tek.lib.visual", libfuncs);
+	luaL_register(L, "tek.lib.visual", tek_lib_visual_funcs);
 	/* s: displaytab, exectab, execbase, vistab */
 
 	/* create userdata: */
@@ -431,7 +431,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta, vismeta */
 	lua_setfield(L, -2, "__index");
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta */
-	luaL_register(L, NULL, classmethods);
+	luaL_register(L, NULL, tek_lib_visual_methods);
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta */
 	lua_setmetatable(L, -2);
 	/* s: displaytab, exectab, execbase, vistab, visbase */
@@ -452,7 +452,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: meta, meta */
 	lua_setfield(L, -2, "__index");
 	/* s: meta */
-	luaL_register(L, NULL, pixmapmethods);
+	luaL_register(L, NULL, tek_lib_visual_pixmapmethods);
 	lua_pop(L, 1);
 	
 	/* prepare font metatable and store reference in metatable: */
@@ -462,7 +462,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: fontmeta, fontmeta */
 	lua_setfield(L, -2, "__index");
 	/* s: fontmeta */
-	luaL_register(L, NULL, fontmethods);
+	luaL_register(L, NULL, tek_lib_visual_fontmethods);
 	lua_pop(L, 1);
 
 	/* Add visual module to TEKlib's internal module list: */

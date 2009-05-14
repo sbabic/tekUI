@@ -15,8 +15,8 @@
 --		Handle
 --
 --	OVERVIEW::
---		Implements a handle to drag around in the group,
---		thus reassigning widths (or heights) to its neighbours elements.
+--		Implements a handle that can be dragged on the axis of the Group's
+--		orientation. It reassigns Weights to its flanking elements.
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
@@ -39,7 +39,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.gadget)
-_VERSION = "Handle 3.3"
+_VERSION = "Handle 3.4"
 
 local Handle = _M
 
@@ -48,10 +48,10 @@ local Handle = _M
 -------------------------------------------------------------------------------
 
 function Handle.init(self)
-	self.AutoPosition = self.AutoPosition ~= nil and self.AutoPosition or false
+	self.AutoPosition = false
 	self.Mode = self.Mode or "button"
-	self.MoveMinMax = { }
 	self.Move0 = false
+	self.MoveMinMax = { }
 	self.Orientation = self.Orientation or 1
 	self.SizeList = false
 	return Gadget.init(self)

@@ -14,29 +14,29 @@
 --		Canvas
 --
 --	OVERVIEW::
---		This class implements a scrollable area acting as a container
---		for a child element. Currently, this class is used exclusively
---		by the [[#tek.ui.class.scrollgroup : ScrollGroup]] class.
+--		This class implements a scrollable area acting as a managing container
+--		for a child element. Currently, this class is used exclusively for
+--		child objects of the [[#tek.ui.class.scrollgroup : ScrollGroup]] class.
 --
 --	ATTRIBUTES::
 --		- {{AutoPosition [IG]}} (boolean)
 --			See [[#tek.ui.class.area : Area]]
 --		- {{AutoHeight [IG]}} (boolean)
 --			The height of the canvas is automatically adapted to the height
---			the canvas is layouted into. [Default: '''false''']
+--			of the region it is layouted into. Default: '''false'''
 --		- {{AutoWidth [IG]}} (boolean)
 --			The width of the canvas is automatically adapted to the width
---			the canvas is layouted into. [Default: '''false''']
+--			of the canvas it is layouted into. Default: '''false'''
 --		- {{CanvasHeight [ISG]}} (number)
---			The height of the canvas (in pixels)
+--			The height of the canvas in pixels
 --		- {{CanvasLeft [ISG]}} (number)
---			Left visible offset of the canvas (in pixels)
+--			Left visible offset of the canvas in pixels
 --		- {{CanvasTop [ISG]}} (number)
---			Top visible offset of the canvas (in pixels)
+--			Top visible offset of the canvas in pixels
 --		- {{CanvasWidth [ISG]}} (number)
---			The width of the canvas (in pixels)
+--			The width of the canvas in pixels
 --		- {{Child [ISG]}} (object)
---			The element being contained by the Canvas for scrolling
+--			The child element being managed by the Canvas
 --		- {{KeepMinHeight [IG]}} (boolean)
 --			Report the minimum height of the Canvas's child object as the
 --			Canvas' minimum display height
@@ -44,28 +44,30 @@
 --			Report the minimum width of the Canvas's child object as the
 --			Canvas' minimum display width
 --		- {{UnusedRegion [G]}} ([[#tek.lib.region : Region]])
---			Region of the Canvas which isn't covered by its {{Child}}
+--			Region of the Canvas which is not covered by its {{Child}}
 --		- {{VScrollStep [IG]}} (number)
---			Vertical scroll step (used for mousewheel)
+--			Vertical scroll step, used e.g. for mouse wheels
 --
 --	IMPLEMENTS::
+--		- Canvas:checkArea() - Gets the canvas shift [internal]
+--		- Canvas:damageChild() - Damage a child object where it is visible
 --		- Canvas:onSetChild() - Handler called when {{Child}} is set
---		- Canvas:markChildDamage() - Damage a child area where it is visible
 --		- Canvas:updateUnusedRegion() - Update region not covered by Child
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Element:connect()
+--		- Area:damage()
+--		- Element:decodeProperties()
 --		- Element:disconnect()
 --		- Area:draw()
---		- Area:focusRectangle()
---		- Area:getElement()
+--		- Area:focusRect()
+--		- Area:getChildren()
 --		- Area:getElementByXY()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
---		- Area:markDamage()
 --		- Area:passMsg()
 --		- Area:refresh()
 --		- Area:relayout()
@@ -84,11 +86,12 @@ local Region = require "tek.lib.region"
 local assert = assert
 local max = math.max
 local min = math.min
-local overlap = Region.overlapCoords
+local intersect = Region.intersect
+local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 12.3"
+_VERSION = "Canvas 14.0"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -103,7 +106,9 @@ local NOTIFY_CHILD = { ui.NOTIFY_SELF, "onSetChild", ui.NOTIFY_VALUE,
 -------------------------------------------------------------------------------
 
 function Canvas.init(self)
-	self.AutoPosition = self.AutoPosition ~= nil and self.AutoPosition or false
+	if self.AutoPosition == nil then
+		self.AutoPosition = false
+	end
 	self.AutoHeight = self.AutoHeight or false
 	self.AutoWidth = self.AutoWidth or false
 	self.CanvasHeight = self.CanvasHeight or 0
@@ -215,6 +220,10 @@ end
 --	layout: overrides
 -------------------------------------------------------------------------------
 
+local function markchilddamage(child, r1, r2, r3, r4, sx, sy)
+	child:damage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
+end
+
 function Canvas:layout(r1, r2, r3, r4, markdamage)
 
 	local sizechanged = false
@@ -270,10 +279,8 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 	if dr and markdamage ~= false then
 		local sx = self.CanvasLeft - r[1]
 		local sy = self.CanvasTop - r[2]
-		for _, r1, r2, r3, r4 in dr:getRects() do
-			-- mark as damage shifted into canvas space:
-			self.Child:markDamage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
-		end
+		-- mark as damage shifted into canvas space:
+		dr:forEach(markchilddamage, self.Child, sx, sy)		
 	end
 
 	if res or sizechanged or not self.UnusedRegion then
@@ -294,12 +301,13 @@ end
 
 function Canvas:updateUnusedRegion()
 	-- determine unused region:
-	local r1, r2, r3, r4 = self:getRectangle()
+	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
-		self.UnusedRegion = Region.new(r1, r2, r3, r4)
+		local ur = reuseRegion(self.UnusedRegion, r1, r2, r3, r4)
+		self.UnusedRegion = ur
 		local o = self.Child.Rect
 		local m = self.Child.MarginAndBorder
-		self.UnusedRegion:subRect(o[1] + r1 - m[1], o[2] + r2 - m[2],
+		ur:subRect(o[1] + r1 - m[1], o[2] + r2 - m[2],
 			o[3] + r1 + m[3], o[4] + r2 + m[4])
 		self.Redraw = true
 	end
@@ -337,9 +345,7 @@ function Canvas:draw()
 	local r = self.Rect
 	local tx = r[1] - self.CanvasLeft
 	local ty = r[2] - self.CanvasTop
-	for _, r1, r2, r3, r4 in f:getRects() do
-		d:fillRect(r1, r2, r3, r4, p, tx, ty)
-	end
+	f:forEach(d.fillRect, d, p, tx, ty)
 end
 
 -------------------------------------------------------------------------------
@@ -360,46 +366,46 @@ function Canvas:refresh()
 end
 
 -------------------------------------------------------------------------------
---	markDamage: overrides
+--	damage: overrides
 -------------------------------------------------------------------------------
 
-function Canvas:markDamage(r1, r2, r3, r4)
-	Frame.markDamage(self, r1, r2, r3, r4)
+function Canvas:damage(r1, r2, r3, r4)
+	Frame.damage(self, r1, r2, r3, r4)
 	-- clip absolute:
 	local r = self.Rect
-	r1, r2, r3, r4 = overlap(r1, r2, r3, r4, r[1], r[2], r[3], r[4])
+	r1, r2, r3, r4 = intersect(r1, r2, r3, r4, r[1], r[2], r[3], r[4])
 	if r1 then
 		-- shift into canvas space:
 		local sx = self.CanvasLeft - r[1]
 		local sy = self.CanvasTop - r[2]
-		self.Child:markDamage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
+		self.Child:damage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
 	end
 end
 
 -------------------------------------------------------------------------------
---	markChildDamage(r1, r2, r3, r4): Damages the specified region in the
+--	damageChild(r1, r2, r3, r4): Damages the specified region in the
 --	child area where it overlaps with the visible part of the canvas.
 -------------------------------------------------------------------------------
 
-function Canvas:markChildDamage(r1, r2, r3, r4)
+function Canvas:damageChild(r1, r2, r3, r4)
 	local r = self.Rect
 	local x = self.CanvasLeft
 	local y = self.CanvasTop
 	local w = min(self.CanvasWidth, r[3] - r[1] + 1)
 	local h = min(self.CanvasHeight, r[4] - r[2] + 1)
-	r1, r2, r3, r4 = overlap(r1, r2, r3, r4, x, y, x + w - 1, y + h - 1)
+	r1, r2, r3, r4 = intersect(r1, r2, r3, r4, x, y, x + w - 1, y + h - 1)
 	if r1 then
-		self.Child:markDamage(r1, r2, r3, r4)
+		self.Child:damage(r1, r2, r3, r4)
 	end
 end
 
 -------------------------------------------------------------------------------
---	checkArea [internal]: checks if x, y are inside our own rectangle,
---	and if so, returns the canvas shift by x and y
+--	sx, sy = checkArea(x, y): Checks if {{x, y}} are inside the element's
+--	rectangle, and if so, returns the canvas shift by x and y [internal]
 -------------------------------------------------------------------------------
 
 function Canvas:checkArea(x, y)
-	local r1, r2, r3, r4 = self:getRectangle()
+	local r1, r2, r3, r4 = self:getRect()
 	if r1 and x >= r1 and x <= r3 and y >= r2 and y <= r4 then
 		return r1 - self.CanvasLeft, r2 - self.CanvasTop
 	end
@@ -458,18 +464,11 @@ function Canvas:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	getElement: overrides
+--	getChildren: overrides
 -------------------------------------------------------------------------------
 
-function Canvas:getElement(mode)
-	if mode == "firstchild" then
-		return self.Child
-	elseif mode == "lastchild" then
-		return self.Child
-	elseif mode == "children" then
-		return { self.Child }
-	end
-	return Frame.getElement(self, mode)
+function Canvas:getChildren()
+	return { self.Child }
 end
 
 -------------------------------------------------------------------------------
@@ -499,7 +498,7 @@ end
 --	focusRect - overrides
 -------------------------------------------------------------------------------
 
-function Canvas:focusRectangle(x0, y0, x1, y1)
+function Canvas:focusRect(x0, y0, x1, y1)
 	
 	local r = self.Rect
 	local vw = r[3] - r[1]
@@ -510,7 +509,7 @@ function Canvas:focusRectangle(x0, y0, x1, y1)
 	local vy1 = vy0 + vh
 		
 	if x0 and self.AutoPosition then
-		local n1, n2, n3, n4 = overlap(x0, y0, x1, y1, vx0, vy0, vx1, vy1)
+		local n1, n2, n3, n4 = intersect(x0, y0, x1, y1, vx0, vy0, vx1, vy1)
 		if n1 == x0 and n2 == y0 and n3 == x1 and n4 == y1 then
 			return
 		end
@@ -541,9 +540,9 @@ function Canvas:focusRectangle(x0, y0, x1, y1)
 		vy1 = y1
 	end
 		
-	local parent = self:getElement("parent")
+	local parent = self:getParent()
 	if parent then
-		parent:focusRectangle(r[1] + vx0, r[2] + vy0, r[3] + vx1,
+		parent:focusRect(r[1] + vx0, r[2] + vy0, r[3] + vx1,
 			r[4] + vy1)
 	end
 end

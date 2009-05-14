@@ -21,8 +21,8 @@ local window = Window:new
 	{
 		ui.ScrollGroup:new
 		{
-			VSliderMode = "on",
-			HSliderMode = "on",
+			VSliderMode = "auto",
+			HSliderMode = "auto",
 			Child = ui.Canvas:new
 			{
 				Child = ui.ListGadget:new

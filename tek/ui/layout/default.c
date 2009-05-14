@@ -38,7 +38,7 @@ static const int INDICES[2][6] =
 **	list = layoutAxis(self, group, free, i1, i3, n, isgrid)
 */
 
-static int lib_layoutaxis(lua_State *L)
+static int layout_layoutaxis(lua_State *L)
 {
 	lua_Number free = lua_tonumber(L, 3);
 	lua_Integer i1 = lua_tointeger(L, 4);
@@ -256,7 +256,7 @@ static int lib_layoutaxis(lua_State *L)
 **	layout(self, group, r1, r2, r3, r4, markdamage)
 */
 
-static int lib_layout(lua_State *L)
+static int layout_layout(lua_State *L)
 {
 	lua_Integer ori, gs1, gs2;
 	lua_getfield(L, 2, "getStructure");
@@ -569,7 +569,7 @@ static int lib_layout(lua_State *L)
 **	m1, m2, m3, m4 = askMinMax(self, group, m1, m2, m3, m4)
 */
 
-static int lib_askMinMax(lua_State *L)
+static int layout_askMinMax(lua_State *L)
 {
 	int m[5] = { 0, 0, 0, 0, 0 };
 	int ori, gw, gh;
@@ -780,7 +780,7 @@ static int lib_askMinMax(lua_State *L)
 
 /*****************************************************************************/
 
-static int lib_new(lua_State *L)
+static int layout_new(lua_State *L)
 {
 	lua_newtable(L);
 	lua_setfield(L, 2, "TempMinMax");
@@ -797,16 +797,16 @@ static int lib_new(lua_State *L)
 
 /*****************************************************************************/
 
-static const luaL_Reg classfuncs[] =
+static const luaL_Reg tek_ui_layout_default_funcs[] =
 {
-	{ "new", lib_new },
-	{ "askMinMax", lib_askMinMax },
-	{ "layoutAxis", lib_layoutaxis },
-	{ "layout", lib_layout },
+	{ "new", layout_new },
+	{ "askMinMax", layout_askMinMax },
+	{ "layoutAxis", layout_layoutaxis },
+	{ "layout", layout_layout },
 	{ NULL, NULL }
 };
 
-int luaopen_tek_ui_layout_default(lua_State *L)
+TMODENTRY int luaopen_tek_ui_layout_default(lua_State *L)
 {
 	lua_getglobal(L, "require");
 	/* s: <require> */
@@ -816,7 +816,7 @@ int luaopen_tek_ui_layout_default(lua_State *L)
 	/* s: superclass */
 	lua_pushvalue(L, -1);
 	/* s: superclass, superclass */
-	luaL_register(L, CLASS_NAME, classfuncs);
+	luaL_register(L, CLASS_NAME, tek_ui_layout_default_funcs);
 	/* s: superclass, superclass, class */
 	lua_call(L, 1, 1);
 	/* s: superclass, class */

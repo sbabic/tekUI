@@ -30,8 +30,8 @@
 --			method.
 --
 --	IMPLEMENTS::
---		- PageGroup:disablePage() - disable/enable a Page
---		- PageGroup:onSetPageNumber() - handler for {{PageNumber}}
+--		- PageGroup:disablePage() - Enables a Page
+--		- PageGroup:onSetPageNumber() - Handler for {{PageNumber}}
 --
 --	OVERRIDES::
 --		- Element:cleanup()
@@ -59,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 9.9"
+_VERSION = "PageGroup 10.0"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -113,14 +113,14 @@ function PageContainerGroup:hide()
 end
 
 -------------------------------------------------------------------------------
---	markDamage: overrides
+--	damage: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:markDamage(r1, r2, r3, r4)
-	Gadget.markDamage(self, r1, r2, r3, r4)
+function PageContainerGroup:damage(r1, r2, r3, r4)
+	Gadget.damage(self, r1, r2, r3, r4)
 	self.Redraw = self.Redraw or self.FreeRegion and
-		self.FreeRegion:checkOverlap(r1, r2, r3, r4)
-	self.PageElement:markDamage(r1, r2, r3, r4)
+		self.FreeRegion:checkIntersect(r1, r2, r3, r4)
+	self.PageElement:damage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
@@ -209,26 +209,44 @@ function PageContainerGroup:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	getElement: overrides
+--	getParent: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:getElement(mode)
-	if mode == "parent" then
-		return self.Parent
-	elseif mode == "nextorparent" then
-		return self.Parent:getElement("nextorparent")
-	elseif mode == "prevorparent" then
-		return self.Parent.Children[1]
-	elseif mode == "children" then
-		if self.Application then
-			return { self.PageElement }
-		else
-			return self.Children
-		end
-	elseif mode == "firstchild" or mode == "lastchild" then
-		return self.PageElement
-	end
-	return self.PageElement:getElement(mode)
+function PageContainerGroup:getParent()
+	return self.Parent
+end
+
+-------------------------------------------------------------------------------
+--	getGroup: overrides
+-------------------------------------------------------------------------------
+
+function PageContainerGroup:getGroup(parent)
+	return parent and self.Parent or self
+end
+
+-------------------------------------------------------------------------------
+--	getNext: overrides
+-------------------------------------------------------------------------------
+
+function PageContainerGroup:getNext()
+	return self:getParent():getNext()
+end
+
+-------------------------------------------------------------------------------
+--	getPrev: overrides
+-------------------------------------------------------------------------------
+
+function PageContainerGroup:getPrev()
+	local c = self:getParent():getChildren()
+	return c and c[1]
+end
+
+-------------------------------------------------------------------------------
+--	getChildren: overrides
+-------------------------------------------------------------------------------
+
+function PageContainerGroup:getChildren(init)
+	return init and self.Children or { self.PageElement }
 end
 
 -------------------------------------------------------------------------------

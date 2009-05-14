@@ -80,8 +80,8 @@ local Numeric = _M
 
 function Numeric.init(self)
 	self = self or { }
-	self.Min = self.Min or 1
 	self.Max = self.Max or 100
+	self.Min = self.Min or 1
 	self.Default = max(self.Min, min(self.Max, self.Default or self.Min))
 	self.Value = max(self.Min, min(self.Max, self.Value or self.Default))
 	self.Step = self.Step or 1
@@ -111,7 +111,7 @@ function Numeric:cleanup()
 end
 
 -------------------------------------------------------------------------------
---	Numeric:increase([delta]): Increase {{Value}} by the specified {{delta}}.
+--	increase([delta]): Increase {{Value}} by the specified {{delta}}.
 --	If {{delta}} is omitted, the {{Step}} attribute is used in its place.
 -------------------------------------------------------------------------------
 
@@ -120,7 +120,7 @@ function Numeric:increase(d)
 end
 
 -------------------------------------------------------------------------------
---	Numeric:decrease([delta]): Decrease {{Value}} by the specified {{delta}}.
+--	decrease([delta]): Decrease {{Value}} by the specified {{delta}}.
 --	If {{delta}} is omitted, the {{Step}} attribute is used in its place.
 -------------------------------------------------------------------------------
 
@@ -129,7 +129,7 @@ function Numeric:decrease(d)
 end
 
 -------------------------------------------------------------------------------
---	Numeric:reset(): Reset {{Value}} to is {{Default}} value.
+--	reset(): Reset {{Value}} to is {{Default}} value.
 -------------------------------------------------------------------------------
 
 function Numeric:reset()

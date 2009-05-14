@@ -60,6 +60,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
+local Region = require "tek.lib.region"
 local Object = require "tek.class.object"
 local arg = arg
 local assert = assert
@@ -73,6 +74,7 @@ local open = io.open
 local package = package
 local pairs = pairs
 local pcall = pcall
+local regionnew = Region.new
 local remove = table.remove
 local require = require
 local setfenv = setfenv
@@ -81,7 +83,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 22.1"
+_VERSION = "tekUI 23.1"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -98,6 +100,9 @@ PathSeparator = p
 -- Get executable path and name:
 if arg and arg[0] then
 	ProgDir, ProgName = arg[0]:match(("^(.-%s?)([^%s]*)$"):format(p, p))
+	if ProgDir == "" then
+		ProgDir = "." .. p
+	end
 end
 
 -- Modified package path to find modules in the local program directory:
@@ -162,6 +167,43 @@ function loadClass(domain, name, pat, loader)
 		end
 	end
 	return false
+end
+
+-------------------------------------------------------------------------------
+--	allocRegion:
+-------------------------------------------------------------------------------
+
+local RegionCache = setmetatable({ }, { __mode = "v" })
+
+function allocRegion()
+	return remove(RegionCache) or regionnew()
+end
+
+-------------------------------------------------------------------------------
+--	freeRegion:
+-------------------------------------------------------------------------------
+
+function freeRegion(r)
+	if r then
+		insert(RegionCache, r)
+	end
+	return false
+end
+
+-------------------------------------------------------------------------------
+--	newRegion:
+-------------------------------------------------------------------------------
+
+function newRegion(...)
+	return allocRegion():setRect(...)
+end
+
+-------------------------------------------------------------------------------
+--	reuseRegion:
+-------------------------------------------------------------------------------
+
+function reuseRegion(r, ...)
+	return (r or allocRegion()):setRect(...)
 end
 
 -------------------------------------------------------------------------------

@@ -21,7 +21,7 @@ end
 app = ui.Application:new
 {
 	ApplicationId = "tekui-demo",
-	VendorDomain = "schulze-mueller.de",
+	Domain = "schulze-mueller.de",
 }
 
 -------------------------------------------------------------------------------

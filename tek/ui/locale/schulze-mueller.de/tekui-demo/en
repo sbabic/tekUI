@@ -11,22 +11,24 @@ ABOUT_SYSTEM = "_System";
 ABOUT_TEKUI = "About tekUI";
 ALIGNMENT_BUTTON = "Alignment";
 ALIGNMENT_DESCRIPTION = [[
-» Certain attributes determine how elements are aligned if they do not fill up the space inside their group.
+» Alignment attributes determine how elements are adjusted if they do not fill up the space inside their group on a given axis.
+
+» The upper group is of a vertical orientation, and the elements have different horizontal alignments.
+
+» The lower group is of a horizontal orientation, and the elements have different vertical alignments.
+
+» The difference may become more apparent when the window is getting resized.
 ]];
 ALIGNMENT_TITLE = "Alignment";
 ALIGN_HORIZONTAL = "Align Horizontal";
 ALIGN_VERTICAL = "Align Vertical";
 ANIMATIONS_BUTTON = "Animations";
 ANIMATIONS_DESCRIPTION = [[
-» tekUI supports an interval timer, which any GUI element can attach itself to.
+» tekUI supports an interval timer, which any GUI element can attach itself to. 
 
 » It provides a stable timer event source, which can be used for animated classes, multimedia controls and smooth animations.
 
 » The timer interval is initiated by the first element that requests it. tekUI is strictly event-driven and consumes zero CPU time when idle.
-
-» Lua's register-based virtual machine is small (less than 100K) and very fast. It is actually faster than most other virtual machines - surpassed e.g. by Java only with JIT execution, which requires a runtime environment 10 to 100 times larger.
-
-» The plasma effect is a class written in pure Lua, running comfortably at 50Hz. Note that Lua and C classes can be interchanged. Performance-critical classes can be ported to C at any point in the development process.
 ]];
 ANIMATIONS_FOCUS = "Focus";
 ANIMATIONS_PARAMETERS = "Parameters";
@@ -38,31 +40,40 @@ ANIMATIONS_TITLE = "Animations";
 AVAILABLE_DEMOS = "Available Demos";
 BEGIN = "Begin";
 BORDERS_BUTTON = "Borders";
+BORDERS_DESCRIPTION = [[
+» The upper part shows the basic border styles: Solid, Inset, Outset, Groove, and Ridge.
+
+» What is commonly referred to as a border is actually a composition of three sub border components: Main, Rim, and Focus.
+]];
 BORDERS_SUB = "Sub Borders";
 BORDERS_TITLE = "Borders";
 BORDER_CAPTION = "Border Caption";
 BORDER_DYNAMIC_THICKNESS = "Dynamic Thickness";
-BORDER_FOCUS = "Focus Border";
+BORDER_FOCUS = "Focus";
 BORDER_GROOVE = "Groove";
 BORDER_INDIVIDUAL_STYLE = "Individual Border Style";
 BORDER_INDIVIDUAL_STYLES = "Individual Styles";
 BORDER_INSET = "Inset";
-BORDER_MAIN = "Main Border";
+BORDER_MAIN = "Main";
 BORDER_OUTSET = "Outset";
 BORDER_RIDGE = "Ridge";
-BORDER_RIM = "Rim Border";
+BORDER_RIM = "Rim";
 BORDER_SOLID = "Solid";
+BORDER_STYLES = "Border Styles";
 BORDER_WATCH = "Watch Border";
+BOTTOM = "Bottom";
 BUTTONS_BUTTON = "Button";
 BUTTONS_CAPTION_STYLE = "Captions";
 BUTTONS_CENTER = "Center";
 BUTTONS_COLORS = "Colors";
 BUTTONS_DESCRIPTION = [[
-» An element's visual class (and other attributes) determine its appearance and behavior.
+» The main determinants of an element's appearance and behavior are its (visual) class and mode.
 
-» Buttons are actually just Text elements with a button 'Mode' (behavioral attribute) and 'Class' (visual attribute).
+» Buttons are just Text elements with a button mode (behavioral attribute) and class (visual attribute).
 
-» More attributes are available e.g. for the colorization and the alignment of a button's text. Also note that different fonts and texts spanning multiple lines are supported.
+» More attributes are available e.g. for colorization and the alignment of a button's text.
+ 
+» Different fonts and texts spanning multiple lines are supported.
 ]];
 BUTTONS_NORMAL_STYLE = "Normal";
 BUTTONS_RIGHT_BOTTOM = "Right\nBottom";
@@ -73,6 +84,9 @@ CANCEL = "_Cancel";
 CENTER = "Center";
 CHOICES_BEER = "_Beer";
 CHOICES_COFFEE = "_Coffee";
+CHOICES_DESCRIPTION = [[
+» This demonstrates the two basic kinds of selection elements: Radio buttons and check marks.
+]];
 CHOICES_DRINKING_STRAW = "_Drinking Straw";
 CHOICES_HOT = "_Hot";
 CHOICES_JUICE = "_Juice";
@@ -90,13 +104,13 @@ COMMENT = "Comment";
 CONFIRM_QUIT_APPLICATION = "Do you really want to quit\nthe application?";
 CUSTOMCLASS_ADDRESS = "Address";
 CUSTOMCLASS_DESCRIPTION = [[
-» Special tasks - like entering valid network numbers using a touchscreen - can be solved with little effort.
+» Special tasks - like entering valid network numbers using a touchscreen - can be solved with custom classes in few lines of script.
 
-» In this example, a 'network' input class was derived from the input class with special behavior for entering IP numbers.
+» In this example, a network input class was derived from the input class with special behavior for entering IP numbers.
 
-» The keypad buttons a descendants of the Text class, inserting their respective keyboard event into the window's message queue.
+» The keypad buttons are descendants of the Text class, inserting their respective keyboard event into the window's message queue. 
 
-» Both problems in this example were solved in a few lines of script using tekUI's 'ad-hoc' class inheritance.
+» The keypad as a whole is a compound class descending from the Group class.
 ]];
 CUSTOMCLASS_DHCP = "Receive automatically (DHCP)";
 CUSTOMCLASS_DNS = "DNS";
@@ -109,23 +123,38 @@ DEBUGGING = "Debugging";
 DEBUG_CONSOLE = "Debug Console";
 DEBUG_LEVEL = "Debug Level";
 DEBUG_OPTIONS = "Debug Options";
+DEMO_TEXT = [[
+» Welcome to the tekUI demo.
+
+» Use the buttons to the left to choose from the available demos, or use the menu to open all demos at once.
+
+» The demos are designed as plug-ins for the demo application, so they do not have to be started as separate processes. But it also possible to start them individually.
+]];
 DISCLAIMER = "Disclaimer";
 DISCLAIMER_TEXT = [[
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.]];
 END = "End";
 FILE_REQUEST = "File Request";
+FLOATTEXT_DESCRIPTION = [[
+» The FloatText class handles both preformatted text and dynamic layouts.
+ 
+» In dynamic layout mode, the text is adaptive to the width of the element.
+]];
 FLOATTEXT_DYNAMIC_LAYOUT = "Dynamic Layout";
 FLOATTEXT_PREFORMATTED = "Preformatted";
 FLOATTEXT_TITLE = "Floattext",
 FLOATTEXT_YOU_CAN_DRAG_THE_BAR = "You can drag the bar between the elements.";
+GARBAGE_COLLECTOR = "Garbage\nCollector";
+GC_PAUSE = "Pause";
+GC_STEPMUL = "Steps";
 GRAPHICS_BITMAPS = "Bitmaps";
 GRAPHICS_CHECKMARKS = "Checkmarks";
 GRAPHICS_DESCRIPTION = [[
 » tekUI has a built-in scalable vector image class, which is used for standard elements like arrows, checkmarks and radio buttons.
 
-» The scaling and colorization of vector graphics is adaptive to the screen palette and the element size. Also, vector graphics are normally more resource-friendly than bitmaps.
+» The scaling and colorization of vector graphics is adaptive to the screen palette and element size. 
 
-» When an application's layout is finalized and a color scheme is decided, bitmap graphics can be used in place of vector graphics and text, which may give the application a slicker appearance.
+» Stock images can be overlayed with bitmaps (or other vector graphics), but vector graphics are normally more resource-friendly than bitmaps.
 ]];
 GRAPHICS_RADIOBUTTONS = "Radio Buttons";
 GRAPHICS_TITLE = "Graphics";
@@ -134,6 +163,13 @@ HELLO = "Hello";
 HELLO_WORLD = "Hello, World!";
 INTERPRETER_VERSION = "Interpreter Version: %s";
 LAYOUT_BALANCING_GROUP = "Balancing Group";
+LAYOUT_DESCRIPTION = [[
+» In the upmost group, the size of each element is determined by the text it contains, while in the second group the size of all elements is determined by the broadest text.
+
+» In a balancing group, handles allow to resize elements individually.
+
+» The two bottommost groups use different weights for their elements, while some elements may be of a fixed size.
+]];
 LAYOUT_DIFFERENT_WEIGHTS = "Different Weights";
 LAYOUT_FIX = "fix";
 LAYOUT_FIXED_VS_FREE = "Fixed vs. Free";
@@ -141,6 +177,14 @@ LAYOUT_GRID = "Grid";
 LAYOUT_RELATIVE_SIZES = "Relative Sizes";
 LAYOUT_SAME_SIZES = "Same Sizes";
 LAYOUT_TITLE = "Layout";
+LEFT = "Left";
+LIST_DESCRIPTION = [[
+» Lists can contain any number of rows and columns. Their widths and heights can be fixed or adaptive.
+
+» Lists can support headings, a cursor, single and multi-line selections.
+
+» Lists can enable arrows and sliders automtically.
+]];
 LIST_TITLE = "Lists";
 LUA_COPYRIGHT_TEXT = [[
 Copyright © 1994-2007 Lua.org, PUC-Rio.
@@ -150,7 +194,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.]];
 LUA_LICENSE = "Lua License";
 LUA_VIRTUAL_MACHINE = "Lua Virtual Machine";
-MEMORY_USAGE = "Memory Usage";
+MEMORY_USAGE = "Memory\nUsage";
 MENU_ABOUT = "_About...";
 MENU_FILE = "_File";
 MENU_QUIT = "_Quit";
@@ -160,20 +204,31 @@ OPEN_ALL = "_Open all";
 OUTPUT = "Output";
 PATH = "_Path";
 POPUPS_DESCRIPTION = [[
-» Popup items and their descendants are recursive and may contain more popups as their children. In fact, popups may contain elements of almost any kind.
+» Popup items are recursive and may contain more popups as their children. In fact, popups may contain elements of almost any kind.
 
-» Menus are just groups of the 'Menubar' class with items of the 'MenuItem' type. Other combinations are valid also. It is possible to have more than one menu per screen, and menus in unusual places and orientations.
+» Menus are just groups of the 'Menubar' class with elements of the 'MenuItem' class. Other combinations are valid also. 
 
-» Carefully designed delays and tolerances for popping up and snapping back help to improve the feel of the application.
+» It is possible to have more than one menu per screen, and menus in unusual places and orientations.
 ]];
 POPUPS_TITLE = "Popups";
+PRESENTATION_DESCRIPTION = [[
+» This 'ad-hoc' class diverts the Floattext class and uses an interval timer for its purpose.
+]];
 PRESENTATION_TITLE = "Presentation";
 PROPERTY = "Property";
 QUIT = "_Quit";
 REVOKED = "Revoked";
+RIGHT = "Right";
 SELECTED = "Selected";
 SLIDER_CONNECTIONS = "Connections";
 SLIDER_CONTINUOUS = "Continuous";
+SLIDER_DESCRIPTION = [[
+» Sliders come in different flavours for adjusting numbers and for scrolling.
+
+» They support a numerical minimum, maximum, default, value, and range, all of whose are adjustable using the notification system.
+
+» By default, sliders move continuously, but they can be forced to an integer step rate. Naturally, this attribute becomes meaningless if an integer version of the Lua VM is used.
+]];
 SLIDER_GAUGE = "Gauge";
 SLIDER_INTEGER_STEP = "Integer Step";
 SLIDER_RANGE = "Range";
@@ -193,4 +248,5 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.]];
 TEKUI_DEMO = "tekUI Demo";
 TEKUI_LICENSE = "tekUI License";
+TOP = "Top";
 VALUE = "Value";

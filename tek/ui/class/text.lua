@@ -25,13 +25,15 @@
 --			occurence in the string; the first font that can be opened will be
 --			used. For the font names, the following placeholders with
 --			predefined meanings are supported:
---				- "__fixed": The default fixed font
---				- "__main": The default main font, e.g. for buttons and menus
---				- "__small": The default small font, e.g. for group captions
---				- "__large": The default 'large' font
---				- "__huge": The default 'huge' font
---			If no font name is specified, the main font will be assumed.
---			The size specification (in pixels) is optional as well, if absent,
+--				- {{"ui-fixed"}}: The default fixed font
+--				- {{"ui-main"}} or {{""}}: The default main font, e.g. for
+--				buttons and menus
+--				- {{"ui-small"}}: The default small font, e.g. for group
+--				captions
+--				- {{"ui-large"}}: The default 'large' font
+--				- {{"ui-huge"}}: The default 'huge' font
+--			If no font name is specified, the main font will be used.
+--			The size specification (in pixels) is optional as well; if absent,
 --			the respective font's default size will be used.
 --		- {{KeepMinHeight [IG]}} (boolean)
 --			After the initial size calculation, keep the minimal height of
@@ -46,14 +48,14 @@
 --			The text that will be displayed on the element; it may span
 --			multiple lines (see also Text:makeTextRecords()). Setting this
 --			attribute invokes the Text:onSetText() method.
---		- {{TextHAlign [IG]}} ("left", "center", "right")
+--		- {{TextHAlign [IG]}} ({{"left"}}, {{"center"}}, {{"right"}})
 --			The text's horizontal alignment, which will be used in
 --			Text:makeTextRecords(). If '''false''' during initialization,
---			the class' default will be used. [Default:  "center"]
---		- {{TextVAlign [IG]}} ("top", "center", "bottom")
+--			the class' default will be used. [Default:  {{"center"}}]
+--		- {{TextVAlign [IG]}} ({{"top"}}, {{"center"}}, {{"bottom"}})
 --			The text's vertical alignment, which will be used in
 --			Text:makeTextRecords(). If '''false''' during initialization, the
---			class' default will be used. [Default: "center"]
+--			class' default will be used. [Default: {{"center"}}]
 --
 --	IMPLEMENTS::
 --		- Text:getTextSize() - Get total size of text records
@@ -91,7 +93,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 15.3"
+_VERSION = "Text 16.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -250,7 +252,7 @@ local function aligntext(align, opkey, x0, w1, w0)
 end
 
 function Text:layoutText()
-	local r1, r2, r3, r4 = self:getRectangle()
+	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
 		local p = self.Padding
 		local w0, h0 = self:getTextSize()

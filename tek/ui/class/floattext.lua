@@ -19,13 +19,15 @@
 --
 --	ATTRIBUTES::
 --		- {{FGPen [IG]}} (userdata)
---			Pen for rendering the text
+--			Pen for rendering the text. This attribute is controllable via the
+--			{{color}} style property.
 --		- {{Font [IG]}} (string)
 --			Font specifier; see [[#tek.ui.class.text : Text]] for a
---			format description
+--			format description. This attribute is controllable via the
+--			{{font}} style property.
 --		- {{Preformatted [IG]}} (boolean)
---			Boolean, indicating that the text is layouted already and should
---			not be layouted to fit the element's width.
+--			Boolean, indicating that the text is already formatted and should
+--			not be reformatted to fit the element's width.
 --		- {{Text [ISG]]}} (string)
 --			The text to be displayed
 --
@@ -34,18 +36,22 @@
 --		- FloatText:onSetText() - Handler called when {{Text}} is changed
 --
 --	STYLE PROPERTIES::
---		- {{color}}
---		- {{font}}
+--		- {{color}} - controls the {{FloatText.FGPen}} attribute
+--		- {{font}} - controls the {{FloatText.Font}} attribute
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
 --		- Element:cleanup()
+--		- Area:damage()
+--		- Area:draw()
+--		- Element:getProperties()
+--		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
---		- Class.new()
 --		- Area:refresh()
 --		- Area:setState()
 --		- Element:setup()
+--		- Area:show()
 --
 -------------------------------------------------------------------------------
 
@@ -57,12 +63,11 @@ local Region = require "tek.lib.region"
 local concat = table.concat
 local insert = table.insert
 local max = math.max
-local overlap = Region.overlapCoords
+local intersect = Region.intersect
 local remove = table.remove
-local unpack = unpack
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 7.5"
+_VERSION = "FloatText 9.0"
 
 local FloatText = _M
 
@@ -80,16 +85,18 @@ function FloatText.init(self)
 	self.Canvas = false
 	self.CanvasHeight = false
 	self.FGPen = self.FGPen or false
-	self.Foreground = false
 	self.FHeight = false
-	self.FontHandle = false
 	self.Font = self.Font or false
+	self.FontHandle = false
+	self.Foreground = false
 	self.FWidth = false
 	self.Lines = false
 	self.Preformatted = self.Preformatted or false
 	self.Reposition = false
 	self.Text = self.Text or ""
-	self.TrackDamage = self.TrackDamage == nil and true or self.TrackDamage
+	if self.TrackDamage == nil then
+		self.TrackDamage = true
+	end
 	self.UnusedRegion = false
 	self.WidthsCache = false
 	self.WordSpacing = false
@@ -102,7 +109,6 @@ end
 
 function FloatText:getProperties(p, pclass)
 	self.FGPen = self.FGPen or self:getProperty(p, pclass, "color")
-		or ui.PEN_LISTDETAIL
 	self.Font = self.Font or self:getProperty(p, pclass, "font")
 	Area.getProperties(self, p, pclass)
 end
@@ -166,11 +172,9 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:draw()
-
 	local d = self.Drawable
 	local p = d.Pens
-	local bp, tx, ty = self:getBackground()
-	
+	local bp, tx, ty = self:getBG()
 	-- repaint intra-area damagerects:
 	local dr = self.DamageRegion
 	if dr then
@@ -178,37 +182,33 @@ function FloatText:draw()
 		local ca = self.Canvas
 		local x0 = ca and ca.CanvasLeft or 0
 		local x1 = ca and x0 + ca.CanvasWidth - 1 or self.Rect[3]
-
 		local fp = p[self.Foreground]
 		d:setFont(self.FontHandle)
-		for _, r1, r2, r3, r4 in dr:getRects() do
-			d:pushClipRect(r1, r2, r3, r4)
-			local lines = self.Lines
-			for lnr = 1, #lines do
-				local t = lines[lnr]
-				-- overlap between damage and line:
-				if overlap(r1, r2, r3, r4, x0, t[2], x1, t[4]) then
-					-- draw line background:
-					d:fillRect(x0, t[2], x1, t[4], bp, tx, ty)
-					-- overlap between damage and text:
-					if overlap(r1, r2, r3, r4, t[1], t[2], t[3], t[4]) then
-						-- draw text:
-						d:drawText(t[1], t[2], t[3], t[4], t[5], fp)
-					end
-				end
-			end
-			d:popClipRect()
-		end
-		self.DamageRegion = false
+		dr:forEach(self.drawPatch, self, d, x0, y0, x1, fp, bp, tx, ty)
 	end
-
 	local ur = self.UnusedRegion
 	if ur then
-		for _, r1, r2, r3, r4 in ur:getRects() do
-			d:fillRect(r1, r2, r3, r4, bp, tx, ty)
+		ur:forEach(d.fillRect, d, bp, tx, ty)
+	end
+end
+
+function FloatText:drawPatch(r1, r2, r3, r4, d, x0, y0, x1, fp, bp, tx, ty)
+	d:pushClipRect(r1, r2, r3, r4)
+	local lines = self.Lines
+	for lnr = 1, #lines do
+		local t = lines[lnr]
+		-- overlap between damage and line:
+		if intersect(r1, r2, r3, r4, x0, t[2], x1, t[4]) then
+			-- draw line background:
+			d:fillRect(x0, t[2], x1, t[4], bp, tx, ty)
+			-- overlap between damage and text:
+			if intersect(r1, r2, r3, r4, t[1], t[2], t[3], t[4]) then
+				-- draw text:
+				d:drawText(t[1], t[2], t[3], t[4], t[5], fp)
+			end
 		end
 	end
-
+	d:popClipRect()
 end
 
 -------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 		r[1] ~= x0 or r[2] ~= y0 or r[3] ~= x1 or r[4] ~= y1 then
 		if self.Canvas then
 			self.Canvas:setValue("CanvasHeight", self.CanvasHeight)
-			if self.Reposition == "bottom" then
+			if self.Reposition == "tail" then
 				self.Canvas:setValue("CanvasTop", self.CanvasHeight)
 			end
 		end
@@ -369,7 +369,7 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:setState(bg, fg)
-	fg = fg or self.FGPen
+	fg = fg or self.FGPen or ui.PEN_LISTDETAIL	
 	if fg ~= self.Foreground then
 		self.Foreground = fg
 		self.Redraw = true
@@ -405,13 +405,13 @@ function FloatText:updateUnusedRegion()
 end
 
 -------------------------------------------------------------------------------
---	appendLine(text[, movebottom]): Append a line of text; if the
---	optional boolean {{movebottom}} is '''true''', the visible area of the
+--	appendLine(text[, movetail]): Append a line of text; if the
+--	optional boolean {{movetail}} is '''true''', the visible area of the
 --	element is moved towards the end of the text.
 -------------------------------------------------------------------------------
 
-function FloatText:appendLine(text, movebottom)
-	self.Reposition = movebottom and "bottom" or false
+function FloatText:appendLine(text, movetail)
+	self.Reposition = movetail and "tail" or false
 	if self.Text == "" then
 		self:setValue("Text", text)
 	else
@@ -420,13 +420,13 @@ function FloatText:appendLine(text, movebottom)
 end
 
 -------------------------------------------------------------------------------
---	markDamage: overrides
+--	damage: overrides
 -------------------------------------------------------------------------------
 
-function FloatText:markDamage(r1, r2, r3, r4)
-	Area.markDamage(self, r1, r2, r3, r4)
+function FloatText:damage(r1, r2, r3, r4)
+	Area.damage(self, r1, r2, r3, r4)
 	if self.UnusedRegion and
-		self.UnusedRegion:checkOverlap(r1, r2, r3, r4) then
+		self.UnusedRegion:checkIntersect(r1, r2, r3, r4) then
 		self.Redraw = true
 	end
 end

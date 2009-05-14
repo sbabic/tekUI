@@ -20,7 +20,7 @@
 --
 --	ATTRIBUTES::
 --		- {{Children [IG]}} (table)
---			A numerically indexed table of the object's children
+--			A table of the object's children
 --		- {{Columns [IG]}} (number)
 --			Grid width, in number of elements [Default: 1, not a grid]
 --		- {{FreeRegion [G]}} ([[#tek.lib.region : Region]])
@@ -39,7 +39,6 @@
 --			height should be reserved, respectively. Default: '''false'''
 --
 --	IMPLEMENTS::
---		- Group:getStructure() - Get group's structural parameters
 --		- {{Group:addMember()}} - See Family:addMember()
 --		- {{Group:remMember()}} - See Family:remMember()
 --
@@ -47,12 +46,11 @@
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Area:draw()
---		- Area:getElement()
 --		- Area:getElementByXY()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
---		- Area:markDamage()
+--		- Area:damage()
 --		- Class.new()
 --		- Area:passMsg()
 --		- Area:punch()
@@ -66,18 +64,19 @@
 
 local ui = require "tek.ui"
 local Area = ui.Area
-local Region = require "tek.lib.region"
 local Family = ui.Family
 local Gadget = ui.Gadget
-local overlap = Region.overlapCoords
-
+local Region = require "tek.lib.region"
+local allocRegion = ui.allocRegion
 local assert = assert
 local floor = math.floor
+local freeRegion = ui.freeRegion
+local intersect = Region.intersect
+local reuseRegion = ui.reuseRegion
 local tonumber = tonumber
-local unpack = unpack
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 17.5"
+_VERSION = "Group 18.1"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -85,16 +84,14 @@ local Group = _M
 -------------------------------------------------------------------------------
 
 function Group.init(self)
-	self = self or { }
 	self.Children = self.Children or { }
-	self.FreeRegion = false
 	self.Columns = self.Columns or false
-	self.Rows = self.Rows or false
+	self.FreeRegion = false
 	self.Layout = self.Layout or ui.loadClass("layout", "default"):new { }
 	self.Orientation = self.Orientation or "horizontal"
+	self.Rows = self.Rows or false
 	self.SameSize = self.SameSize or false
-	self.Weights = self.Weights or { }
-	-- self.TrackDamage = self.TrackDamage ~= nil and self.TrackDamage or true
+	self.Weights = { }
 	return Gadget.init(self)
 end
 
@@ -160,12 +157,13 @@ function Group:hide()
 	for i = 1, #c do
 		c[i]:hide()
 	end
+	self.FreeRegion = freeRegion(self.FreeRegion)
 	Gadget.hide(self)
 end
 
 -------------------------------------------------------------------------------
---	width, height, orientation = Group:getStructure(): get Group's structural
---	parameters.
+--	width, height, orientation = getStructure() - get Group's structural
+--	parameters
 -------------------------------------------------------------------------------
 
 function Group:getStructure()
@@ -252,32 +250,34 @@ function Group:remMember(child)
 end
 
 -------------------------------------------------------------------------------
---	markDamage: overrides
+--	damage: overrides
 -------------------------------------------------------------------------------
 
-function Group:markDamage(r1, r2, r3, r4)
-	Gadget.markDamage(self, r1, r2, r3, r4)
-	local f = self.FreeRegion
-	if f and f:checkOverlap(r1, r2, r3, r4) then
+local function markdamagepatch(d, x0, y0, x1, y1, r1, r2, r3, r4)
+	x0, y0, x1, y1 = intersect(x0, y0, x1, y1, r1, r2, r3, r4)
+	if x0 then
+		d:orRect(x0, y0, x1, y1)
+	end
+end
+
+function Group:damage(r1, r2, r3, r4)
+	Gadget.damage(self, r1, r2, r3, r4)
+	local fr = self.FreeRegion
+	if fr and fr:checkIntersect(r1, r2, r3, r4) then
 		if self.TrackDamage then
 			-- mark damage where it overlaps with freeregion:
-			local d = self.DamageRegion
-			if not d then
-				d = Region.new()
-				self.DamageRegion = d
+			local dr = self.DamageRegion
+			if not dr then
+				dr = allocRegion()
+				self.DamageRegion = dr
 			end
-			for _, f1, f2, f3, f4 in f:getRects() do
-				f1, f2, f3, f4 = overlap(f1, f2, f3, f4, r1, r2, r3, r4)
-				if f1 then
-					d:orRect(f1, f2, f3, f4)
-				end
-			end
+			fr:forEach(markdamagepatch, dr, r1, r2, r3, r4)
 		end
 		self.Redraw = true
 	end
 	local c = self.Children
 	for i = 1, #c do
-		c[i]:markDamage(r1, r2, r3, r4)
+		c[i]:damage(r1, r2, r3, r4)
 	end
 end
 
@@ -289,18 +289,14 @@ function Group:draw()
 	local d = self.Drawable
 	local f = self.FreeRegion
 	local dr = self.DamageRegion
-	local p, tx, ty = self:getBackground()
+	local p, tx, ty = self:getBG()
 	if dr then
 		-- repaint where damageregion and freeregion overlap:
 		dr:andRegion(f)
-		for _, r1, r2, r3, r4 in dr:getRects() do
-			d:fillRect(r1, r2, r3, r4, p, tx, ty)
-		end
+		dr:forEach(d.fillRect, d, p, tx, ty)
 	else
 		-- repaint freeregion:
-		for _, r1, r2, r3, r4 in f:getRects() do
-			d:fillRect(r1, r2, r3, r4, p, tx, ty)
-		end
+		f:forEach(d.fillRect, d, p, tx, ty)
 	end
 end
 
@@ -347,12 +343,13 @@ end
 function Group:layout(r1, r2, r3, r4, markdamage)
 	local res = Gadget.layout(self, r1, r2, r3, r4, markdamage)
 	-- layout contents, update freeregion:
-	self.FreeRegion = Region.new(r1, r2, r3, r4)
+	local fr = reuseRegion(self.FreeRegion, r1, r2, r3, r4)
+	self.FreeRegion = fr
 	self.Layout:layout(self, r1, r2, r3, r4, markdamage)
-	self.FreeRegion:subRegion(self.BorderRegion)
+	fr:subRegion(self.BorderRegion)
 	if res then
 		-- resized groups must be repainted
-		self.DamageRegion = false
+		self.DamageRegion = freeRegion(self.DamageRegion)
 		self.Redraw = true
 	end
 	return res
@@ -402,19 +399,17 @@ function Group:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	getElement: overrides
+--	getGroup: overrides
 -------------------------------------------------------------------------------
 
-function Group:getElement(mode)
-	local c = self.Children
-	if mode == "firstchild" then
-		return c[1]
-	elseif mode == "lastchild" then
-		return c[#c]
-	elseif mode == "children" then
-		return c
-	elseif mode == "group" then
-		return self
-	end
-	return Gadget.getElement(self, mode)
+function Group:getGroup(parent)
+	return parent and Gadget.getGroup(self, parent) or self
+end
+
+-------------------------------------------------------------------------------
+--	getChildren: overrides
+-------------------------------------------------------------------------------
+
+function Group:getChildren()
+	return self.Children
 end

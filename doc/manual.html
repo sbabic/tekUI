@@ -1325,7 +1325,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v4.2)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v7.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<p>
 					This library implements the management of regions, which are collections
@@ -1345,7 +1345,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 							<a href="#Region:checkOverlap"><code>Region:checkOverlap()</code></a> - Checks if a rectangle intersects a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:getRects"><code>Region:getRects()</code></a> - Gets an iterator on rectangles in a region
+							<a href="#Region:forEach"><code>Region:forEach()</code></a> - Calls a function for each rectangle in a region
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:new"><code>Region.new()</code></a> - Creates a new Region
@@ -1357,10 +1357,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 							<a href="#Region:orRegion"><code>Region:orRegion()</code></a> - <em>Or</em>s a region to a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:overlapCoords"><code>Region.overlapCoords()</code></a> - Returns an intersection of two rectangles
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Region:overlapRect"><code>Region:overlapRect()</code></a> - Gets the intersection of a rectangle in a
+							<a href="#Region:intersect"><code>Region.intersect()</code></a> - Returns an intersection of two rectangles
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:setRect"><code>Region:setRect()</code></a> - Resets a region to a single rectangle
@@ -1400,15 +1397,26 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:getRects" id="Region:getRects"><code>region:getRects()</code></a></h3>
+		<div class="node"><h3><a name="Region:forEach" id="Region:forEach"><code>region:forEach(func, obj, ...)</code></a></h3>
 			<p>
-				Gets an iterator on the rectangles in a region.
-				The only valid use is in <strong>for</strong> constructs like this:
+				For each rectangle in a region, calls the
+				specified function according the following scheme:
 			</p>
 <pre>
-for _, x0, y0, x1, y1 in region:getRects() do
-end
+func(obj, x0, y0, x1, y1, ...)
 </pre>
+			<p>
+				Extra arguments are passed through to the function.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:intersect" id="Region:intersect"><code>x0, y0, x1, y1 = Region.intersect(d1, d2, d3, d4, s1, s2, s3, s4)</code></a></h3>
+			<p>
+				Returns the coordinates of a rectangle where a rectangle specified by
+				the coordinates s1, s2, s3, s4 overlaps with the rectangle specified
+				by the coordinates d1, d2, d3, d4. The return value is <strong>nil</strong> if
+				the rectangles do not overlap.
+			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Region:new" id="Region:new"><code>region = Region.new(r1, r2, r3, r4)</code></a></h3>
@@ -1430,32 +1438,14 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:overlapCoords" id="Region:overlapCoords"><code>x0, y0, x1, y1 = Region.overlapCoords(d1, d2, d3, d4, s1, s2, s3, s4)</code></a></h3>
+		<div class="node"><h3><a name="Region:setRect" id="Region:setRect"><code>self = region:setRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
-				Returns the coordinates of a rectangle where a rectangle specified by
-				the coordinates s1, s2, s3, s4 overlaps with the rectangle specified
-				by the coordinates d1, d2, d3, d4. The return value is <strong>nil</strong> if
-				the rectangles do not overlap.
+				Overwrites an existing region
+				with the specified coordinates.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:overlapRect" id="Region:overlapRect"><code>x0, y0, x1, y1 = region:overlapRect(id, x0, y0, x1, y1)</code></a></h3>
-			<p>
-				Returns the
-				coordinates of a rectangle where a rectangle identified by id overlaps
-				with the specified coordinates. The return value is <strong>nil</strong> if the
-				rectangles do not overlap.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Region:setRect" id="Region:setRect"><code>region:setRect(r1, r2, r3, r4)</code></a></h3>
-			<p>
-				Overwrites an existing region with the
-				specified coordinates.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Region:subRect" id="Region:subRect"><code>region:subRect(r1, r2, r3, r4)</code></a></h3>
+		<div class="node"><h3><a name="Region:subRect" id="Region:subRect"><code>self = region:subRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Subtracts a rectangle from a region
 			</p>
@@ -1473,7 +1463,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v22.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v23.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1736,7 +1726,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v16.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v20.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1762,7 +1752,7 @@ ui.Application:new { ...
 							<blockquote>
 								<p>
 									Name of the application, normally used as an unique identifier
-									in combination with the <code>VendorDomain</code> attribute. Default is
+									in combination with the <code>Domain</code> attribute. Default is
 									<code>&quot;unknown&quot;</code>.
 								</p>
 							</blockquote>
@@ -1781,6 +1771,39 @@ ui.Application:new { ...
 								<p>
 									Copyright notice applying to the application, default
 									<code>&quot;unknown&quot;</code> 
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Display &#091;IG&#093;</code> 
+							<blockquote>
+								<p>
+									Initial <a href="#tek.ui.class.display">Display</a>. By default, the
+									application creates a new one during <a href="#Application:new"><code>Application.new()</code></a>.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Domain &#091;IG&#093;</code> 
+							<blockquote>
+								<p>
+									An uniquely identifying domain name of the vendor, organization
+									or author manufacturing the application (preferrably without
+									domain parts like <code>&quot;www.&quot;</code> if they are insignificant for
+									identification). Default is <code>&quot;unknown&quot;</code>.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>GCControl &#091;IG&#093;</code> 
+							<blockquote>
+								<p>
+									The application can perform a garbage collection of the specified
+									type immediately before going to sleep waiting for input. If set
+									to <strong>false</strong>, no garbage collection is initiated. If the value
+									is <strong>true</strong>, the application performs a single garbage collection
+									step. Other values (e.g. <code>&quot;collect&quot;</code>) are passed unmodified to
+									<code>collectgarbage()</code>. Default: <strong>true</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -1831,18 +1854,7 @@ ui.Application:new { ...
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>VendorDomain &#091;IG&#093;</code> 
-							<blockquote>
-								<p>
-									An uniquely identifying domain name of the vendor, organization
-									or author manufacturing the application, preferrably without
-									domain parts like <code>&quot;www.&quot;</code> if they are insignificant for
-									identification. Default is <code>&quot;unknown&quot;</code>.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>VendorName &#091;IG&#093;</code> 
+							<code>Vendor &#091;IG&#093;</code> 
 							<blockquote>
 								<p>
 									Name of the vendor or organization responsible for producing
@@ -1856,12 +1868,12 @@ ui.Application:new { ...
 			<div class="definition"><dfn>NOTES</dfn>
 				<blockquote>
 					<p>
-						The <code>VendorDomain</code> and <code>ApplicationId</code> attributes are
+						The <code>Domain</code> and <code>ApplicationId</code> attributes are
 						UTF-8 encoded strings, so any international character sequence is
 						valid for them. Anyhow, it is recommended to avoid too adventurous
 						symbolism, as its end up in a hardly decipherable, UTF-8 plus
 						URL-encoded form in the file system, e.g. for loading catalog files
-						under <code>tek/ui/locale/&lt;vendordomain&gt;/&lt;applicationid&gt;</code>.
+						under <code>tek/ui/locale/&lt;domain&gt;/&lt;applicationid&gt;</code>.
 					</p>
 				</blockquote>
 			</div>
@@ -1869,37 +1881,43 @@ ui.Application:new { ...
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a> - adds a coroutine to the application
+							<a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a> - Adds a coroutine to the application
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:addInputHandler"><code>Application:addInputHandler()</code></a> - adds input handler to the application
+							<a href="#Application:addInputHandler"><code>Application:addInputHandler()</code></a> - Adds input handler to the application
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:connect"><code>Application:connect()</code></a> - connects children recursively
+							<a href="#Application:connect"><code>Application:connect()</code></a> - Connects children recursively
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:easyRequest"><code>Application:easyRequest()</code></a> - opens a message box
+							<a href="#Application:easyRequest"><code>Application:easyRequest()</code></a> - Opens a message box
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:getById"><code>Application:getById()</code></a> - returns an element by Id
+							<a href="#Application:getById"><code>Application:getById()</code></a> - Returns an element by Id
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:getLocale"><code>Application:getLocale()</code></a> - returns a locale for the application
+							<a href="#Application:getChildren"><code>Application:getChildren()</code></a> - Returns the application's children
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Application:getGroup"><code>Application:getGroup()</code></a> - Returns the application's group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Application:getLocale"><code>Application:getLocale()</code></a> - Returns a locale for the application
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Application:quit"><code>Application:quit()</code></a> - Quits the application
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:remInputHandler"><code>Application:remInputHandler()</code></a> - removes a registered input handler
+							<a href="#Application:remInputHandler"><code>Application:remInputHandler()</code></a> - Removes a registered input handler
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:requestFile"><code>Application:requestFile()</code></a> - opens a file requester
+							<a href="#Application:requestFile"><code>Application:requestFile()</code></a> - Opens a file requester
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:run"><code>Application:run()</code></a> - runs the application
+							<a href="#Application:run"><code>Application:run()</code></a> - Runs the application
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Application:suspend"><code>Application:suspend()</code></a> - suspends the caller's coroutine
+							<a href="#Application:suspend"><code>Application:suspend()</code></a> - Suspends the caller's coroutine
 						</li>
 					</ul>
 				</blockquote>
@@ -1924,7 +1942,7 @@ ui.Application:new { ...
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Application:addCoroutine" id="Application:addCoroutine"><code>Application:addCoroutine(function, arg1, ...)</code></a></h3>
+		<div class="node"><h3><a name="Application:addCoroutine" id="Application:addCoroutine"><code>addCoroutine(function, arg1, ...)</code></a></h3>
 			<p>
 				Adds the specified function
 				and arguments to the application as a new coroutine, and returns to the
@@ -1953,15 +1971,15 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Application:connect" id="Application:connect"><code>Application:connect(parent)</code></a></h3>
+		<div class="node"><h3><a name="Application:connect" id="Application:connect"><code>connect(parent)</code></a></h3>
 			<p>
-				Checks member linkage and connects all
-				children by invoking their <a href="#Element:connect">connect()</a> 
-				methods. Note that unlike <a href="#Element:connect"><code>Element:connect()</code></a>, this function is recursive.
+				Checks member linkage and connects all children by
+				invoking their <a href="#Element:connect">connect()</a> methods. Note that
+				unlike <a href="#Element:connect"><code>Element:connect()</code></a>, this function is recursive.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Application:easyRequest" id="Application:easyRequest"><code>selected = Application:easyRequest(title, text, buttontext1[, ...])</code></a></h3>
+		<div class="node"><h3><a name="Application:easyRequest" id="Application:easyRequest"><code>selected = easyRequest(title, text, buttontext1[, ...])</code></a></h3>
 			<p>
 				This function shows a message box or requester. <code>title</code> will be
 				displayed as the window title; if this argument is <strong>false</strong>, the
@@ -1974,19 +1992,30 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Application:getById" id="Application:getById"><code>element = Application:getById(id)</code></a></h3>
+		<div class="node"><h3><a name="Application:getById" id="Application:getById"><code>element = getById(id)</code></a></h3>
 			<p>
-				Returns the element that was
-				registered with the Application under its unique <code>id</code>. Returns
-				<strong>nil</strong> if the id was not found.
+				Returns the element that was registered with the
+				Application under its unique <code>id</code>. Returns <strong>nil</strong> if the id was not
+				found.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:getChildren" id="Application:getChildren"><code>getChildren()</code></a></h3>
+			<p>
+				See <a href="#Area:getChildren"><code>Area:getChildren()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:getGroup" id="Application:getGroup"><code>getGroup()</code></a></h3>
+			<p>
+				See <a href="#Area:getGroup"><code>Area:getGroup()</code></a>.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Application:getLocale" id="Application:getLocale"><code>getLocale([deflang[, language]])</code></a></h3>
 			<p>
 				Returns a table of locale strings for
-				<code>ApplicationId</code> and <code>VendorDomain</code>. See <a href="#ui:getLocale"><code>ui.getLocale()</code></a> for more
-				information.
+				<code>ApplicationId</code> and <code>Domain</code>. See <a href="#ui:getLocale"><code>ui.getLocale()</code></a> for more information.
 			</p>
 			<hr />
 		</div>
@@ -1996,14 +2025,14 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Application:remInputHandler" id="Application:remInputHandler"><code>Application:remInputHandler(msgtype, object, func)</code></a></h3>
+		<div class="node"><h3><a name="Application:remInputHandler" id="Application:remInputHandler"><code>remInputHandler(msgtype, object, func)</code></a></h3>
 			<p>
-				Removes an input
-				handler that was previously registered with <a href="#Application:addInputHandler"><code>Application:addInputHandler()</code></a>.
+				Removes an input handler that was
+				previously registered with <a href="#Application:addInputHandler"><code>Application:addInputHandler()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Application:requestFile" id="Application:requestFile"><code>status[, path, selection] = Application:requestFile(args)</code></a></h3>
+		<div class="node"><h3><a name="Application:requestFile" id="Application:requestFile"><code>status[, path, selection] = requestFile(args)</code></a></h3>
 			<p>
 				Requests a single or multiple files or directories. Possible keys in
 				the <code>args</code> table are:
@@ -2050,15 +2079,14 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Application:run" id="Application:run"><code>success, status = Application:run()</code></a></h3>
+		<div class="node"><h3><a name="Application:run" id="Application:run"><code>success, status = run()</code></a></h3>
 			<p>
-				Runs the application. Returns when
-				all child windows are closed or when the application's <code>Status</code> is set
-				to &quot;quit&quot;.
+				Runs the application. Returns when all child
+				windows are closed or when the application's <code>Status</code> is set to &quot;quit&quot;.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Application:suspend" id="Application:suspend"><code>Application:suspend([window])</code></a></h3>
+		<div class="node"><h3><a name="Application:suspend" id="Application:suspend"><code>suspend([window])</code></a></h3>
 			<p>
 				Suspends the caller (which must be running
 				in a coroutine) until it is getting rescheduled by the application.
@@ -2072,7 +2100,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v18.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v20.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2095,9 +2123,10 @@ message = function(object, message)
 								<p>
 									When the element receives the focus, this flag instructs it to
 									position itself automatically into the visible area of any Canvas
-									that may contain it. An affected Canvas must have the
-									<code>AutoPosition</code> attribute enabled to take effect, too, but unlike
-									the Area class, the Canvas class disables it by default.
+									that may contain it. An affected <a href="#tek.ui.class.canvas">Canvas</a> 
+									must have its <code>AutoPosition</code> attribute enabled as well for this
+									option to take effect, but unlike the Area class, the Canvas class
+									disables it by default.
 								</p>
 							</blockquote>
 						</li>
@@ -2150,13 +2179,13 @@ message = function(object, message)
 							<code>HAlign &#091;IG&#093;</code> (&quot;left&quot;, &quot;center&quot;, &quot;right&quot;)
 							<blockquote>
 								<p>
-									Horizontal alignment of the element in its group &#091;default:
-									&quot;left&quot;&#093;
+									Horizontal alignment of the element in its group
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Height &#091;IG&#093;</code> (number, <strong>false</strong>, or &quot;auto&quot;, &quot;fill&quot;, &quot;free&quot;)
+							<code>Height &#091;IG&#093;</code> (number, <strong>false</strong>, <code>&quot;auto&quot;</code>, <code>&quot;fill&quot;</code>,
+							<code>&quot;free&quot;</code>)
 							<blockquote>
 								<p>
 									Height of the element, in pixels, or
@@ -2168,19 +2197,20 @@ message = function(object, message)
 											default will be used
 										</li>
 										<li style="list-style-type: none">
-											&quot;auto&quot; - Reserves the minimal height needed for the element.
+											<code>&quot;auto&quot;</code> - Reserves the minimal height needed for the
+											element.
 										</li>
 										<li style="list-style-type: none">
-											&quot;free&quot; - Allows the element's height to grow to any size.
+											<code>&quot;free&quot;</code> - Allows the element's height to grow to any size.
 										</li>
 										<li style="list-style-type: none">
-											&quot;fill&quot; - Completely fills up the height that other elements
-											in the same group have left, but does not claim more.
+											<code>&quot;fill&quot;</code> - Completely fills up the height that other
+											elements in the same group have left, but does not claim more.
 										</li>
 									</ul>
 								</blockquote>
 								<p>
-									Note: Normally, &quot;fill&quot; is useful only once per group.
+									Note: Normally, <code>&quot;fill&quot;</code> is useful only once per group.
 								</p>
 							</blockquote>
 						</li>
@@ -2261,8 +2291,8 @@ message = function(object, message)
 								<p>
 									If <strong>true</strong>, the element gathers intra-area damages in a
 									Region named <code>DamageRegion</code>, which can be used by class
-									implementors for minimally invasive repainting &#091;Default:
-									<strong>false</strong>, the element is redrawn in its entirety.)
+									writers for minimally invasive repaints. Default:
+									<strong>false</strong>, the element is redrawn in its entirety.
 								</p>
 							</blockquote>
 						</li>
@@ -2270,7 +2300,7 @@ message = function(object, message)
 							<code>VAlign &#091;IG&#093;</code> (&quot;top&quot;, &quot;center&quot;, &quot;bottom&quot;)
 							<blockquote>
 								<p>
-									Vertical alignment of the element in its group &#091;default: &quot;top&quot;&#093;
+									Vertical alignment of the element in its group
 								</p>
 							</blockquote>
 						</li>
@@ -2285,7 +2315,8 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Width &#091;IG&#093;</code> (number, <strong>false</strong>, or &quot;auto&quot;, &quot;fill&quot;, &quot;free&quot;)
+							<code>Width &#091;IG&#093;</code> (number, <strong>false</strong>, <code>&quot;auto&quot;</code>, <code>&quot;fill&quot;</code>,
+							<code>&quot;free&quot;</code>)
 							<blockquote>
 								<p>
 									Width of the element, in pixels, or
@@ -2297,14 +2328,15 @@ message = function(object, message)
 											default will be used
 										</li>
 										<li style="list-style-type: none">
-											&quot;auto&quot; - Reserves the minimal width needed for the element.
+											<code>&quot;auto&quot;</code> - Reserves the minimal width needed for the
+											element
 										</li>
 										<li style="list-style-type: none">
-											&quot;free&quot; - Allows the element's width to grow to any size.
+											<code>&quot;free&quot;</code> - Allows the element's width to grow to any size
 										</li>
 										<li style="list-style-type: none">
-											&quot;fill&quot; - Completely fills up the width that other elements
-											in the same group have left, but does not claim more.
+											<code>&quot;fill&quot;</code> - Completely fills up the width that other
+											elements in the same group have left, but does not claim more.
 										</li>
 									</ul>
 								</blockquote>
@@ -2321,6 +2353,9 @@ message = function(object, message)
 					<ul>
 						<li style="list-style-type: none">
 							<code>background-color</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>background-position</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>height</code> 
@@ -2386,25 +2421,49 @@ message = function(object, message)
 							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> - Queries element's minimum and maximum dimensions
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:checkFocus"><code>Area:checkFocus()</code></a> - Checks if the element can receive the focus
+							<a href="#Area:checkFocus"><code>Area:checkFocus()</code></a> - Checks if the element can receive the input focus
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:checkHover"><code>Area:checkHover()</code></a> - Checks if the element can be hovered over
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:damage"><code>Area:damage()</code></a> - Notifies the element of a damage
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:draw"><code>Area:draw()</code></a> - Paints the element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:erase"><code>Area:erase()</code></a> - Erase the element's background
+							<a href="#Area:erase"><code>Area:erase()</code></a> - Erases the element's background
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:focusRectangle"><code>Area:focusRectangle()</code></a> - Make the element fully visible in a Canvas
+							<a href="#Area:focusRect"><code>Area:focusRect()</code></a> - Make the element fully visible
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getElement"><code>Area:getElement()</code></a> - Returns an element's neighbours
+							<a href="#Area:getBG"><code>Area:getBG()</code></a> - Gets the element's background properties
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getElementByXY"><code>Area:getElementByXY()</code></a> - Checks if the element covers a coordinate
+							<a href="#Area:getChildren"><code>Area:getChildren()</code></a> - Gets the element's children
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getRectangle"><code>Area:getRectangle()</code></a> - Returns the element's layouted coordinates
+							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> - Checks if the element covers a coordinate
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getGroup"><code>Area:getGroup()</code></a> - Gets the element's group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getNext"><code>Area:getNext()</code></a> - Gets the element's successor in its group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getParent"><code>Area:getParent()</code></a> - Gets the element's parent element
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getPrev"><code>Area:getPrev()</code></a> - Gets the element's predecessor in its group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getRect"><code>Area:getRect()</code></a> - Returns the element's layouted coordinates
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getSiblings"><code>Area:getSiblings()</code></a> - Gets the element's siblings
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> - Disconnects the element from a Display and Drawable
@@ -2413,13 +2472,10 @@ message = function(object, message)
 							<a href="#Area:layout"><code>Area:layout()</code></a> - Layouts the element into a rectangle
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:markDamage"><code>Area:markDamage()</code></a> - Notifies the element of a damage
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> - Passes an input message to the element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:punch"><code>Area:punch()</code></a> - Subtracts the outline of the element from a
+							<a href="#Area:punch"><code>Area:punch()</code></a> - &#091;internal&#093; Subtracts the outline of the element from a
 							<a href="#tek.lib.region">Region</a> 
 						</li>
 						<li style="list-style-type: none">
@@ -2460,7 +2516,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Area:askMinMax" id="Area:askMinMax"><code>minw, minh, maxw, maxh = Area:askMinMax(minw, minh, maxw, maxh)</code></a></h3>
+		<div class="node"><h3><a name="Area:askMinMax" id="Area:askMinMax"><code>minw, minh, maxw, maxh = askMinMax(minw, minh, maxw, maxh)</code></a></h3>
 			<p>
 				This
 				method is called during the layouting process for adding the required
@@ -2472,15 +2528,28 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:checkFocus" id="Area:checkFocus"><code>can_receive = Area:checkFocus()</code></a></h3>
+		<div class="node"><h3><a name="Area:checkFocus" id="Area:checkFocus"><code>can_receive = checkFocus()</code></a></h3>
 			<p>
 				Returns <strong>true</strong> if this element can
-				receive the input focus. (As an Area is non-interactive, the return value
-				of this class' implementation is always <strong>false</strong>.)
+				receive the input focus.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:draw" id="Area:draw"><code>Area:draw()</code></a></h3>
+		<div class="node"><h3><a name="Area:checkHover" id="Area:checkHover"><code>can_hover = checkHover()</code></a></h3>
+			<p>
+				Returns <strong>true</strong> if this element can
+				react on being hovered over by the pointing device.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:damage" id="Area:damage"><code>damage(x0, y0, x1, y1)</code></a></h3>
+			<p>
+				If the element overlaps with the given
+				rectangle, this function marks it as damaged.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:draw" id="Area:draw"><code>draw()</code></a></h3>
 			<p>
 				Draws the element into the rectangle assigned to it by
 				the layouter; the coordinates can be found in the element's <code>Rect</code> 
@@ -2488,13 +2557,13 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:erase" id="Area:erase"><code>Area:erase()</code></a></h3>
+		<div class="node"><h3><a name="Area:erase" id="Area:erase"><code>erase()</code></a></h3>
 			<p>
 				Clears the element's background.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:focusRectangle" id="Area:focusRectangle"><code>Area:focusRectangle([x0, y0, x1, y1])</code></a></h3>
+		<div class="node"><h3><a name="Area:focusRect" id="Area:focusRect"><code>focusRect([x0, y0, x1, y1])</code></a></h3>
 			<p>
 				Tries to shift any Canvas
 				containing the element into a position that makes the element fully
@@ -2503,7 +2572,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getBackground" id="Area:getBackground"><code>bgpen, tx, ty = Area:getBackground()</code></a></h3>
+		<div class="node"><h3><a name="Area:getBG" id="Area:getBG"><code>bgpen, tx, ty = getBG()</code></a></h3>
 			<p>
 				Get the element's background
 				properties. If bgpen happens to be a texture, tx and ty determine the
@@ -2511,67 +2580,58 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getElement" id="Area:getElement"><code>element = Area:getElement(mode)</code></a></h3>
+		<div class="node"><h3><a name="Area:getChildren" id="Area:getChildren"><code>element = getChildren(init)</code></a></h3>
 			<p>
-				Returns an element's neighbours. This
-				function can be overridden to control a class-specific tab cycle behavior.
-				Possible values for <code>mode</code> are:
-			</p>
-			<blockquote>
-				<ul>
-					<li style="list-style-type: none">
-						&quot;parent&quot; - returns the elements' parent element.
-					</li>
-					<li style="list-style-type: none">
-						&quot;children&quot; - returns a table containing the element's children, or
-						<strong>nil</strong> if the element has no children.
-					</li>
-					<li style="list-style-type: none">
-						&quot;siblings&quot; - returns a table containing the element's siblings
-						(including the element itself), or a table containing only the
-						element, if it is not member of a group.
-					</li>
-					<li style="list-style-type: none">
-						&quot;next&quot; - returns the next element in the group, or <strong>nil</strong> if
-						the element has no successors.
-					</li>
-					<li style="list-style-type: none">
-						&quot;prev&quot; - returns the previous element in the group, or <strong>nil</strong> if
-						the element has no predecessors.
-					</li>
-					<li style="list-style-type: none">
-						&quot;nextorparent&quot; - returns the next element in a group, or, if the
-						element has no successor, the next element in the parent group (and
-						so forth, until it reaches the topmost group).
-					</li>
-					<li style="list-style-type: none">
-						&quot;prevorparent&quot; - returns the previous element in a group, or, if the
-						element has no predecessor, the next element in the parent group (and
-						so forth, until it reaches the topmost group).
-					</li>
-					<li style="list-style-type: none">
-						&quot;firstchild&quot; - returns the element's first child, or <strong>nil</strong> if
-						the element has no children.
-					</li>
-					<li style="list-style-type: none">
-						&quot;lastchild&quot; - returns the element's last child, or <strong>nil</strong> if
-						the element has no children.
-					</li>
-				</ul>
-			</blockquote>
-			<p>
-				Note: Tables returned by this function must be treated read-only.
+				Returns a table containing the element's
+				children, or <strong>nil</strong> if this element cannot have children. If the
+				optional <code>init</code> argument is <strong>true</strong>, this signals that this function
+				is called during initialization or deinitialization.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getElementByXY" id="Area:getElementByXY"><code>self = Area:getElementByXY(x, y)</code></a></h3>
+		<div class="node"><h3><a name="Area:getElementByXY" id="Area:getElementByXY"><code>self = getElementByXY(x, y)</code></a></h3>
 			<p>
 				Returns <code>self</code> if the element covers
 				the specified coordinate.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getRectangle" id="Area:getRectangle"><code>x0, y0, x1, y1 = Area:getRectangle()</code></a></h3>
+		<div class="node"><h3><a name="Area:getGroup" id="Area:getGroup"><code>element = getGroup(parent)</code></a></h3>
+			<p>
+				Returns the element's closest group
+				containing it. If the <code>parent</code> argument is <strong>true</strong>, this function
+				will start looking for the closest group at its parent, otherwise it
+				returns itself if it is a group. Returns <strong>nil</strong> if the element is not
+				currently connected.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getNext" id="Area:getNext"><code>element = getNext()</code></a></h3>
+			<p>
+				Returns the next element in the group, or, if
+				the element has no successor, the next element in the parent group (and
+				so forth, until it reaches the topmost group). Returns <strong>nil</strong> if the
+				element is not currently connected.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getParent" id="Area:getParent"><code>element = getParent()</code></a></h3>
+			<p>
+				Returns the element's parent element, or
+				<strong>false</strong> if it currently has no parent.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getPrev" id="Area:getPrev"><code>element = getPrev()</code></a></h3>
+			<p>
+				Returns the previous element in the group, or,
+				if the element has no predecessor, the next element in the parent group
+				(and so forth, until it reaches the topmost group). Returns <strong>nil</strong> if
+				the element is not currently connected.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getRect" id="Area:getRect"><code>x0, y0, x1, y1 = getRect()</code></a></h3>
 			<p>
 				This function returns the
 				rectangle which the element has been layouted to, or <strong>false</strong> 
@@ -2579,7 +2639,16 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:hide" id="Area:hide"><code>Area:hide()</code></a></h3>
+		<div class="node"><h3><a name="Area:getSiblings" id="Area:getSiblings"><code>element = getSiblings()</code></a></h3>
+			<p>
+				Returns a table containing the element's
+				siblings (including the element itself). Returns <strong>nil</strong> if the element
+				is not currently connected. Note: The returned table must be treated
+				read-only.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:hide" id="Area:hide"><code>hide()</code></a></h3>
 			<p>
 				Removes the display and drawable from an element.
 				Override this method to free all display-related resources previously
@@ -2587,7 +2656,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:layout" id="Area:layout"><code>changed = Area:layout(x0, y0, x1, y1[, markdamage])</code></a></h3>
+		<div class="node"><h3><a name="Area:layout" id="Area:layout"><code>changed = layout(x0, y0, x1, y1[, markdamage])</code></a></h3>
 			<p>
 				Layouts the element
 				into the specified rectangle. If the element's (or any of its childrens')
@@ -2596,14 +2665,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:markDamage" id="Area:markDamage"><code>Area:markDamage(x0, y0, x1, y1)</code></a></h3>
-			<p>
-				If the element overlaps with the given
-				rectangle, this function marks it as damaged.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Area:passMsg" id="Area:passMsg"><code>msg = Area:passMsg(msg)</code></a></h3>
+		<div class="node"><h3><a name="Area:passMsg" id="Area:passMsg"><code>msg = passMsg(msg)</code></a></h3>
 			<p>
 				This function filters the specified input
 				message. After processing, it is free to return the message unmodified
@@ -2615,21 +2677,22 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:punch" id="Area:punch"><code>Area:punch(region) [internal]</code></a></h3>
+		<div class="node"><h3><a name="Area:punch" id="Area:punch"><code>punch(region) [internal]</code></a></h3>
 			<p>
 				Subtracts the element from (punching a
 				hole into) the specified Region. This function is called by the layouter.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:refresh" id="Area:refresh"><code>Area:refresh() [internal]</code></a></h3>
+		<div class="node"><h3><a name="Area:refresh" id="Area:refresh"><code>refresh() [internal]</code></a></h3>
 			<p>
 				Redraws the element (and all possible children)
-				if they are marked as damaged.
+				if they are marked as damaged. This function is called in the Window's
+				update procedure.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:relayout" id="Area:relayout"><code>found[, changed] = Area:relayout(element, x0, y0, x1, y1) [internal]</code></a></h3>
+		<div class="node"><h3><a name="Area:relayout" id="Area:relayout"><code>found[, changed] = relayout(element, x0, y0, x1, y1) [internal]</code></a></h3>
 			<p>
 				Traverses the element tree searching for the specified element, and if
 				this class (or the class of one of its children) is responsible for it,
@@ -2640,7 +2703,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:rethinkLayout" id="Area:rethinkLayout"><code>Area:rethinkLayout([damage])</code></a></h3>
+		<div class="node"><h3><a name="Area:rethinkLayout" id="Area:rethinkLayout"><code>rethinkLayout([damage])</code></a></h3>
 			<p>
 				This method causes a relayout of the
 				element and possibly the <a href="#tek.ui.class.group">Group</a> in which it
@@ -2662,7 +2725,7 @@ message = function(object, message)
 			</blockquote>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:setState" id="Area:setState"><code>Area:setState(bg)</code></a></h3>
+		<div class="node"><h3><a name="Area:setState" id="Area:setState"><code>setState(bg)</code></a></h3>
 			<p>
 				Sets the <code>Background</code> attribute according to
 				the state of the element, and if it changed, slates the element
@@ -2670,7 +2733,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:show" id="Area:show"><code>success = Area:show(display, drawable)</code></a></h3>
+		<div class="node"><h3><a name="Area:show" id="Area:show"><code>success = show(display, drawable)</code></a></h3>
 			<p>
 				Passes an element the
 				<a href="#tek.ui.class.display">Display</a> and
@@ -2681,7 +2744,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2726,7 +2789,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v12.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v14.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2743,9 +2806,9 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This class implements a scrollable area acting as a container
-						for a child element. Currently, this class is used exclusively
-						by the <a href="#tek.ui.class.scrollgroup">ScrollGroup</a> class.
+						This class implements a scrollable area acting as a managing container
+						for a child element. Currently, this class is used exclusively for
+						child objects of the <a href="#tek.ui.class.scrollgroup">ScrollGroup</a> class.
 					</p>
 				</blockquote>
 			</div>
@@ -2765,7 +2828,7 @@ end
 							<blockquote>
 								<p>
 									The height of the canvas is automatically adapted to the height
-									the canvas is layouted into. &#091;Default: <strong>false</strong>&#093;
+									of the region it is layouted into. Default: <strong>false</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -2774,7 +2837,7 @@ end
 							<blockquote>
 								<p>
 									The width of the canvas is automatically adapted to the width
-									the canvas is layouted into. &#091;Default: <strong>false</strong>&#093;
+									of the canvas it is layouted into. Default: <strong>false</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -2782,7 +2845,7 @@ end
 							<code>CanvasHeight &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
-									The height of the canvas (in pixels)
+									The height of the canvas in pixels
 								</p>
 							</blockquote>
 						</li>
@@ -2790,7 +2853,7 @@ end
 							<code>CanvasLeft &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Left visible offset of the canvas (in pixels)
+									Left visible offset of the canvas in pixels
 								</p>
 							</blockquote>
 						</li>
@@ -2798,7 +2861,7 @@ end
 							<code>CanvasTop &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Top visible offset of the canvas (in pixels)
+									Top visible offset of the canvas in pixels
 								</p>
 							</blockquote>
 						</li>
@@ -2806,7 +2869,7 @@ end
 							<code>CanvasWidth &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
-									The width of the canvas (in pixels)
+									The width of the canvas in pixels
 								</p>
 							</blockquote>
 						</li>
@@ -2814,7 +2877,7 @@ end
 							<code>Child &#091;ISG&#093;</code> (object)
 							<blockquote>
 								<p>
-									The element being contained by the Canvas for scrolling
+									The child element being managed by the Canvas
 								</p>
 							</blockquote>
 						</li>
@@ -2840,7 +2903,7 @@ end
 							<code>UnusedRegion &#091;G&#093;</code> (<a href="#tek.lib.region">Region</a>)
 							<blockquote>
 								<p>
-									Region of the Canvas which isn't covered by its <code>Child</code> 
+									Region of the Canvas which is not covered by its <code>Child</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -2848,7 +2911,7 @@ end
 							<code>VScrollStep &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Vertical scroll step (used for mousewheel)
+									Vertical scroll step, used e.g. for mouse wheels
 								</p>
 							</blockquote>
 						</li>
@@ -2859,10 +2922,13 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Canvas:onSetChild"><code>Canvas:onSetChild()</code></a> - Handler called when <code>Child</code> is set
+							<a href="#Canvas:checkArea"><code>Canvas:checkArea()</code></a> - Gets the canvas shift &#091;internal&#093;
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Canvas:markChildDamage"><code>Canvas:markChildDamage()</code></a> - Damage a child area where it is visible
+							<a href="#Canvas:damageChild"><code>Canvas:damageChild()</code></a> - Damage a child object where it is visible
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Canvas:onSetChild"><code>Canvas:onSetChild()</code></a> - Handler called when <code>Child</code> is set
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Canvas:updateUnusedRegion"><code>Canvas:updateUnusedRegion()</code></a> - Update region not covered by Child
@@ -2883,16 +2949,22 @@ end
 							<a href="#Element:connect"><code>Element:connect()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:damage"><code>Area:damage()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:disconnect"><code>Element:disconnect()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:focusRectangle"><code>Area:focusRectangle()</code></a> 
+							<a href="#Area:focusRect"><code>Area:focusRect()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getElement"><code>Area:getElement()</code></a> 
+							<a href="#Area:getChildren"><code>Area:getChildren()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getElementByXY"><code>Area:getElementByXY()</code></a> 
@@ -2905,9 +2977,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:markDamage"><code>Area:markDamage()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
@@ -2929,7 +2998,14 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Canvas:markChildDamage" id="Canvas:markChildDamage"><code>markChildDamage(r1, r2, r3, r4)</code></a></h3>
+		<div class="node"><h3><a name="Canvas:checkArea" id="Canvas:checkArea"><code>sx, sy = checkArea(x, y)</code></a></h3>
+			<p>
+				Checks if <code>x, y</code> are inside the element's
+				rectangle, and if so, returns the canvas shift by x and y &#091;internal&#093;
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Canvas:damageChild" id="Canvas:damageChild"><code>damageChild(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Damages the specified region in the
 				child area where it overlaps with the visible part of the canvas.
@@ -2950,7 +3026,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v3.16)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v4.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2969,9 +3045,31 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						Specialization of a <a href="#tek.ui.class.text">Text</a> for placing
-						checkmarks.
+						Specialization of the <a href="#tek.ui.class.text">Text</a> class,
+						implementing a toggle button with a graphical check mark.
 					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>ATTRIBUTES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<code>Image &#091;IG&#093;</code> (<a href="#tek.ui.class.image">Image</a>)
+							<blockquote>
+								<p>
+									Image to be displayed when the CheckMark element is unselected.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>SelectImage &#091;IG&#093;</code> (<a href="#tek.ui.class.image">Image</a>)
+							<blockquote>
+								<p>
+									Image to be displayed when the CheckMark element is selected.
+								</p>
+							</blockquote>
+						</li>
+					</ul>
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>OVERRIDES</dfn>
@@ -3006,7 +3104,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v10.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v11.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3036,24 +3134,24 @@ end
 							<code>Kind &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									The visual appearance or purpose of the lister, which will
+									The visual appearance (or purpose) of the lister, which will
 									determine the arrangement of some interface elements:
 								</p>
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;requester&quot; - for being used as a standalone file requester
+											<code>&quot;requester&quot;</code> - for a standalone file requester
 										</li>
 										<li style="list-style-type: none">
-											&quot;lister&quot; - for being used as a lister component
+											<code>&quot;lister&quot;</code> - for a directory lister component
 										</li>
 										<li style="list-style-type: none">
-											&quot;simple&quot; - without accompanying user interface elements
+											<code>&quot;simple&quot;</code> - without accompanying user interface elements
 										</li>
 									</ul>
 								</blockquote>
 								<p>
-									The default kind is &quot;lister&quot;.
+									The default kind is <code>&quot;lister&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -3061,7 +3159,7 @@ end
 							<code>Location &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									The entry currently selected, may be a file or directory
+									The currently selected entry, may be a file or directory
 								</p>
 							</blockquote>
 						</li>
@@ -3084,19 +3182,14 @@ end
 						<li style="list-style-type: none">
 							<code>SelectMode &#091;IG&#093;</code> (String)
 							<blockquote>
-								<p>
-									Mode of selection:
-								</p>
-								<blockquote>
-									<ul>
-										<li style="list-style-type: none">
-											&quot;single&quot; - allows selections of one entry at a time
-										</li>
-										<li style="list-style-type: none">
-											&quot;multi&quot; - allows selections of multiple entries
-										</li>
-									</ul>
-								</blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										<code>&quot;single&quot;</code> - allows selections of one entry at a time
+									</li>
+									<li style="list-style-type: none">
+										<code>&quot;multi&quot;</code> - allows selections of multiple entries
+									</li>
+								</ul>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
@@ -3110,22 +3203,17 @@ end
 						<li style="list-style-type: none">
 							<code>Status &#091;G&#093;</code> (string)
 							<blockquote>
-								<p>
-									Status of the lister:
-								</p>
-								<blockquote>
-									<ul>
-										<li style="list-style-type: none">
-											&quot;running&quot; - the lister is currently being shown
-										</li>
-										<li style="list-style-type: none">
-											&quot;selected&quot; - the user has selected one or more entries
-										</li>
-										<li style="list-style-type: none">
-											&quot;cancelled&quot; - the lister has been cancelled by the user
-										</li>
-									</ul>
-								</blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										<code>&quot;running&quot;</code> - the lister is currently being shown
+									</li>
+									<li style="list-style-type: none">
+										<code>&quot;selected&quot;</code> - the user has selected one or more entries
+									</li>
+									<li style="list-style-type: none">
+										<code>&quot;cancelled&quot;</code> - the lister has been cancelled by the user
+									</li>
+								</ul>
 							</blockquote>
 						</li>
 					</ul>
@@ -3135,16 +3223,16 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#DirList:abortScan"><code>DirList:abortScan()</code></a> - Abort scanning
+							<a href="#DirList:abortScan"><code>DirList:abortScan()</code></a> - Aborts scanning
 						</li>
 						<li style="list-style-type: none">
-							<a href="#DirList:getCurrentDir"><code>DirList:getCurrentDir()</code></a> - Get current directory
+							<a href="#DirList:getCurrentDir"><code>DirList:getCurrentDir()</code></a> - Gets the current directory
 						</li>
 						<li style="list-style-type: none">
-							<a href="#DirList:getDirectoryIterator"><code>DirList:getDirectoryIterator()</code></a> - Get an iterator an a directory
+							<a href="#DirList:getDirIterator"><code>DirList:getDirIterator()</code></a> - Gets an iterator over a directory
 						</li>
 						<li style="list-style-type: none">
-							<a href="#DirList:getFileStat"><code>DirList:getFileStat()</code></a> - Examine file entry
+							<a href="#DirList:getFileStat"><code>DirList:getFileStat()</code></a> - Examines a file entry
 						</li>
 						<li style="list-style-type: none">
 							<a href="#DirList:goParent"><code>DirList:goParent()</code></a> - Goes to the parent of the current directory
@@ -3153,13 +3241,13 @@ end
 							<a href="#DirList:showDirectory"><code>DirList:showDirectory()</code></a> - Reads and shows a directory
 						</li>
 						<li style="list-style-type: none">
-							<a href="#DirList:scanEntry"><code>DirList:scanEntry()</code></a> - Scan a single entry in a directory
+							<a href="#DirList:scanEntry"><code>DirList:scanEntry()</code></a> - Scans a single entry in a directory
 						</li>
 						<li style="list-style-type: none">
-							<a href="#DirList:showDirectory"><code>DirList:showDirectory()</code></a> - Start scanning and display a directory
+							<a href="#DirList:showDirectory"><code>DirList:showDirectory()</code></a> - Starts scanning and displays a directory
 						</li>
 						<li style="list-style-type: none">
-							<a href="#DirList:splitPath"><code>DirList:splitPath()</code></a> - Split a filename
+							<a href="#DirList:splitPath"><code>DirList:splitPath()</code></a> - Splits a filename
 						</li>
 					</ul>
 				</blockquote>
@@ -3175,7 +3263,7 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="DirList:abortScan" id="DirList:abortScan"><code>DirList:abortScan()</code></a></h3>
+		<div class="node"><h3><a name="DirList:abortScan" id="DirList:abortScan"><code>abortScan()</code></a></h3>
 			<p>
 				This function aborts the coroutine which is
 				currently scanning the directory. The caller of this function must
@@ -3189,7 +3277,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="DirList:getDirectoryIterator" id="DirList:getDirectoryIterator"><code>iterator = getDirectoryIterator(path)</code></a></h3>
+		<div class="node"><h3><a name="DirList:getDirIterator" id="DirList:getDirIterator"><code>iterator = getDirIterator(path)</code></a></h3>
 			<p>
 				Returns an iterator function for
 				traversal of the entries in the given directory. You can override this
@@ -3210,14 +3298,14 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="DirList:goParent" id="DirList:goParent"><code>DirList:goParent()</code></a></h3>
+		<div class="node"><h3><a name="DirList:goParent" id="DirList:goParent"><code>goParent()</code></a></h3>
 			<p>
-				Starts reading and displays the parent directory
-				of the current directory.
+				Starts reading and displays the parent directory of the
+				current directory.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="DirList:scanEntry" id="DirList:scanEntry"><code>table, type = DirList:scanEntry(path, name, idx)</code></a></h3>
+		<div class="node"><h3><a name="DirList:scanEntry" id="DirList:scanEntry"><code>table, type = scanEntry(path, name, idx)</code></a></h3>
 			<p>
 				Scans a single entry
 				<code>name</code> in a directory named <code>path</code>. <code>idx</code> is the entry number
@@ -3228,10 +3316,9 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="DirList:showDirectory" id="DirList:showDirectory"><code>DirList:showDirectory(path)</code></a></h3>
+		<div class="node"><h3><a name="DirList:showDirectory" id="DirList:showDirectory"><code>showDirectory(path)</code></a></h3>
 			<p>
-				Starts reading and displays the specified
-				directory.
+				Starts reading and displays the specified directory.
 			</p>
 			<hr />
 		</div>
@@ -3243,7 +3330,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v16.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v17.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3261,6 +3348,32 @@ end
 					</p>
 				</blockquote>
 			</div>
+			<div class="definition"><dfn>ATTRIBUTES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<code>AspectX &#091;IG&#093;</code> (number)
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										X component of the display's aspect ratio
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>AspectY &#091;IG&#093;</code> (number)
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Y component of the display's aspect ratio
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+					</ul>
+				</blockquote>
+			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
 					<ul>
@@ -3268,7 +3381,10 @@ end
 							<a href="#Display:closeFont"><code>Display:closeFont()</code></a> - Closes font
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:colorNameToRGB"><code>Display:colorNameToRGB()</code></a> - Converts a symbolic color name to RGB
+							<a href="#Display:colorToRGB"><code>Display:colorToRGB()</code></a> - Converts a symbolic color name to RGB
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Display:createPixMap"><code>Display.createPixMap()</code></a> - Creates a pixmap from picture file data
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Display:getFontAttrs"><code>Display:getFontAttrs()</code></a> - Gets font attributes
@@ -3277,7 +3393,16 @@ end
 							<a href="#Display:getPaletteEntry"><code>Display:getPaletteEntry()</code></a> - Gets an entry from the symbolic palette
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Display:getPixmap"><code>Display.getPixmap()</code></a> - Gets a a pixmap from the cache
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Display:getTextSize"><code>Display:getTextSize()</code></a> - Gets the size of a text in pixels
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Display:getTime"><code>Display:getTime()</code></a> - Gets system time
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Display:loadPixmap"><code>Display.loadPixmap()</code></a> - Loads a pixmap from the file system
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Display:openFont"><code>Display:openFont()</code></a> - Opens a named font
@@ -3287,12 +3412,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Display:sleep"><code>Display:sleep()</code></a> - Sleeps for a period of time
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Display:getTextSize"><code>Display:getTextSize()</code></a> - Gets size of text rendered with a given font
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Display:wait"><code>Display:wait()</code></a> - Waits for visuals
 						</li>
 					</ul>
 				</blockquote>
@@ -3319,67 +3438,13 @@ end
 							<code>font-small</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-dark</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-shadow</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-half-shadow</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-half-shine</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-shine</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-outline</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-background</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-fill</code> 
-						</li>
-						<li style="list-style-type: none">
 							<code>rgb-active</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-focus</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-hover</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-disabled</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-detail</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-active-detail</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-focus-detail</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-hover-detail</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-disabled-detail</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-disabled-detail2</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-border-shine</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-border-shadow</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-border-rim</code> 
+							<code>rgb-background</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-border-focus</code> 
@@ -3388,25 +3453,61 @@ end
 							<code>rgb-border-legend</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-menu</code> 
+							<code>rgb-border-rim</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-menu-detail</code> 
+							<code>rgb-border-shadow</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-menu-active</code> 
+							<code>rgb-border-shine</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-menu-active-detail</code> 
+							<code>rgb-cursor</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-cursor-detail</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-dark</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-detail</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-disabled</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-disabled-detail</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-disabled-detail2</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-fill</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-focus</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-focus-detail</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-group</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-half-shadow</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-half-shine</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-hover</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-hover-detail</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-list</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-list2</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>rgb-list-detail</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-list-active</code> 
@@ -3415,13 +3516,31 @@ end
 							<code>rgb-list-active-detail</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-group</code> 
+							<code>rgb-list-detail</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-cursor</code> 
+							<code>rgb-list2</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-cursor-detail</code> 
+							<code>rgb-menu</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-menu-active</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-menu-active-detail</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-menu-detail</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-outline</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-shadow</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-shine</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-user1</code> 
@@ -3449,17 +3568,19 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Display:closeFont" id="Display:closeFont"><code>Display:closeFont(font)</code></a></h3>
+		<div class="node"><h3><a name="Display:closeFont" id="Display:closeFont"><code>closeFont(font)</code></a></h3>
 			<p>
-				Closes the specified font
+				Closes the specified font.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:colorNameToRGB" id="Display:colorNameToRGB"><code>r, g, b = colorNameToRGB(colspec, defcolspec)</code></a></h3>
+		<div class="node"><h3><a name="Display:colorToRGB" id="Display:colorToRGB"><code>r, g, b = colorToRGB(colspec[, defcolspec])</code></a></h3>
 			<p>
 				Converts a color
-				specification to RGB. If <code>colspec</code> is not a valid color, <code>defcolspec</code> 
-				is used as a fallback.
+				specification to RGB. If <code>colspec</code> is not a valid color, the optional
+				<code>defcolspec</code> can be used as a fallback. Valid color specifications are
+				<code>#rrggbb</code> (each color component is noted in 8 bit hexadecimal) and
+				<code>#rgb</code> (each color component is noted in 4 bit hexadecimal).
 			</p>
 			<hr />
 		</div>
@@ -3470,17 +3591,18 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:getFontAttrs" id="Display:getFontAttrs"><code>Display:getFontAttrs(font)</code></a></h3>
+		<div class="node"><h3><a name="Display:getFontAttrs" id="Display:getFontAttrs"><code>h, up, ut = getFontAttrs(font)</code></a></h3>
 			<p>
 				Returns the font attributes height,
 				underline position and underline thickness.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:getPaletteEntry" id="Display:getPaletteEntry"><code>name, r, g, b = getPaletteEntry(i)</code></a></h3>
+		<div class="node"><h3><a name="Display:getPaletteEntry" id="Display:getPaletteEntry"><code>name, r, g, b = getPaletteEntry(index)</code></a></h3>
 			<p>
-				Gets the name and red, green, blue
-				components of a color in the Display's symbolic color palette.
+				Gets the <code>name</code> and red, green,
+				blue components of a color of the given <code>index</code> in the Display's
+				symbolic color palette.
 			</p>
 			<hr />
 		</div>
@@ -3492,11 +3614,17 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:getTextSize" id="Display:getTextSize"><code>width, height = Display:getTextSize(font, text)</code></a></h3>
+		<div class="node"><h3><a name="Display:getTextSize" id="Display:getTextSize"><code>width, height = getTextSize(font, text)</code></a></h3>
 			<p>
 				Returns the width and
 				height of the specified <code>text</code> when it is rendered with the given
 				<code>font</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Display:getTime" id="Display:getTime"><code>Display:getTime()</code></a></h3>
+			<p>
+				Gets the system time.
 			</p>
 			<hr />
 		</div>
@@ -3508,14 +3636,14 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:openFont" id="Display:openFont"><code>font = Display:openFont(fontname)</code></a></h3>
+		<div class="node"><h3><a name="Display:openFont" id="Display:openFont"><code>font = openFont(fontname)</code></a></h3>
 			<p>
 				Opens the named font. For a discussion
-				of the fontname format, see <a href="#tek.ui.class.text">Text</a>.
+				of the <code>fontname</code> format, see <a href="#tek.ui.class.text">Text</a>.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v14.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v15.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3589,36 +3717,36 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Drawable:copyArea" id="Drawable:copyArea"><code>Drawable:copyArea(x0, y0, x1, y1, deltax, deltay, exposures)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:copyArea" id="Drawable:copyArea"><code>copyArea(x0, y0, x1, y1, deltax, deltay, exposures)</code></a></h3>
 			<p>
 				Copy the
 				specified rectangle to the position determined by the relative
 				coordinates <code>deltax</code> and <code>deltay</code>. The <code>exposures</code> argument is a
-				table used for collecting the raw coordinates of rectangles which got
+				table used for collecting the raw coordinates of rectangles getting
 				exposed as a result of the copy operation.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:drawLine" id="Drawable:drawLine"><code>Drawable:drawLine(x0, y0, x1, y1, pen)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:drawLine" id="Drawable:drawLine"><code>drawLine(x0, y0, x1, y1, pen)</code></a></h3>
 			<p>
 				Draws a line using the specified
 				pen.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:drawPlot" id="Drawable:drawPlot"><code>Drawable:drawPlot(x0, y0, pen)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:drawPlot" id="Drawable:drawPlot"><code>drawPlot(x0, y0, pen)</code></a></h3>
 			<p>
 				Draws a point.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:drawRect" id="Drawable:drawRect"><code>Drawable:drawRect(x0, y0, x1, y1, pen)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:drawRect" id="Drawable:drawRect"><code>drawRect(x0, y0, x1, y1, pen)</code></a></h3>
 			<p>
 				Draws an unfilled rectangle.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:drawText" id="Drawable:drawText"><code>Drawable:drawText(x0, y0, text, fgpen[, bgpen])</code></a></h3>
+		<div class="node"><h3><a name="Drawable:drawText" id="Drawable:drawText"><code>drawText(x0, y0, text, fgpen[, bgpen])</code></a></h3>
 			<p>
 				Renders text
 				with the specified foreground pen. If the optional background pen is
@@ -3626,13 +3754,13 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:fillRect" id="Drawable:fillRect"><code>Drawable:fillRect(x0, y0, x1, y1, pen)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:fillRect" id="Drawable:fillRect"><code>fillRect(x0, y0, x1, y1, pen)</code></a></h3>
 			<p>
 				Draws a filled rectangle.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:getMsg" id="Drawable:getMsg"><code>msg = Drawable:getMsg([msg])</code></a></h3>
+		<div class="node"><h3><a name="Drawable:getMsg" id="Drawable:getMsg"><code>msg = getMsg([msg])</code></a></h3>
 			<p>
 				Gets the next pending message from the
 				Drawable. Optionally, the fields of the new message are inserted into
@@ -3640,47 +3768,47 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:getShift" id="Drawable:getShift"><code>shiftx, shifty = Drawable:getShift()</code></a></h3>
+		<div class="node"><h3><a name="Drawable:getShift" id="Drawable:getShift"><code>shiftx, shifty = getShift()</code></a></h3>
 			<p>
 				Get the Drawable's current
 				coordinate displacement.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:getTextSize" id="Drawable:getTextSize"><code>width, height = Drawable:getTextSize(text)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:getTextSize" id="Drawable:getTextSize"><code>width, height = getTextSize(text)</code></a></h3>
 			<p>
 				Determines the width and height
 				of a text using the font which is currently set on the Drawable.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:popClipRect" id="Drawable:popClipRect"><code>Drawable:popClipRect()</code></a></h3>
+		<div class="node"><h3><a name="Drawable:popClipRect" id="Drawable:popClipRect"><code>popClipRect()</code></a></h3>
 			<p>
 				Pop the topmost cliprect from the Drawable.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:pushClipRect" id="Drawable:pushClipRect"><code>Drawable:pushClipRect(x0, y0, x1, y1)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:pushClipRect" id="Drawable:pushClipRect"><code>pushClipRect(x0, y0, x1, y1)</code></a></h3>
 			<p>
 				Pushes a new cliprect on the top
 				of the drawable's stack of cliprects.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:setFont" id="Drawable:setFont"><code>Drawable:setFont(font)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:setFont" id="Drawable:setFont"><code>setFont(font)</code></a></h3>
 			<p>
 				Sets the specified font.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:setShift" id="Drawable:setShift"><code>Drawable:setShift(deltax, deltay)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:setShift" id="Drawable:setShift"><code>setShift(deltax, deltay)</code></a></h3>
 			<p>
 				Add a delta to the Drawable's
 				coordinate displacement.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v13.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v14.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3707,8 +3835,8 @@ end
 							<code>Application &#091;G&#093;</code> (<a href="#tek.ui.class.application">Application</a>)
 							<blockquote>
 								<p>
-									The application the element is registered with, or <strong>false</strong>;
-									this attribute is set in the <a href="#Element:setup"><code>Element:setup()</code></a> method.
+									The Application the element is registered with, or <strong>false</strong>;
+									this attribute is set during <a href="#Element:setup"><code>Element:setup()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -3718,7 +3846,7 @@ end
 								<p>
 									The name of the element's style class, which can be referenced
 									in a style sheet, or <strong>false</strong>. Multiple classes can be
-									specified if they are separated with spaces, e.g.
+									specified by separating them with spaces, e.g.
 									<code>&quot;button knob warn&quot;</code>.
 								</p>
 							</blockquote>
@@ -3757,7 +3885,7 @@ end
 							<blockquote>
 								<p>
 									The window the element is registered with, or <strong>false</strong>. This
-									attribute is set when the <a href="#Element:setup"><code>Element:setup()</code></a> method is called.
+									attribute is set during <a href="#Element:setup"><code>Element:setup()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -3778,6 +3906,9 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:disconnect"><code>Element:disconnect()</code></a> - Disconnects the element from its parent
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:getAttr"><code>Element:getAttr()</code></a> - Gets an attribute from an element
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:getById"><code>Element:getById()</code></a> - Shortcut for <a href="#self:Application:getById"><code>self.Application:getById()</code></a> 
@@ -3808,7 +3939,7 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Element:cleanup" id="Element:cleanup"><code>Element:cleanup()</code></a></h3>
+		<div class="node"><h3><a name="Element:cleanup" id="Element:cleanup"><code>cleanup()</code></a></h3>
 			<p>
 				This function is used to unlink the element from its
 				<a href="#tek.ui.class.application">Application</a> and
@@ -3816,7 +3947,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:connect" id="Element:connect"><code>success = Element:connect(parent)</code></a></h3>
+		<div class="node"><h3><a name="Element:connect" id="Element:connect"><code>success = connect(parent)</code></a></h3>
 			<p>
 				Attempts to connect the element to the
 				<code>parent</code> element; returns a boolean indicating whether the connection
@@ -3824,23 +3955,33 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:decodeProperties" id="Element:decodeProperties"><code>Element:decodeProperties(props)</code></a></h3>
+		<div class="node"><h3><a name="Element:decodeProperties" id="Element:decodeProperties"><code>decodeProperties(props)</code></a></h3>
 			<p>
-				&#091;Internal&#093; Invokes the element's
+				Invokes the element's
 				<a href="#Element:getProperties"><code>Element:getProperties()</code></a> function, possibly multiple times, passing it
 				(in turn) the decoded properties from the element's <code>Style</code> attribute,
-				and global properties from one or more style sheets.
+				and global properties from one or more style sheets. &#091;internal&#093;
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:disconnect" id="Element:disconnect"><code>Element:disconnect()</code></a></h3>
+		<div class="node"><h3><a name="Element:disconnect" id="Element:disconnect"><code>disconnect()</code></a></h3>
 			<p>
 				Disconnects the formerly connected element
 				from its parent.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getById" id="Element:getById"><code>Element:getById(id)</code></a></h3>
+		<div class="node"><h3><a name="Element:getAttr" id="Element:getAttr"><code>ret1, ... = getAttr(attr, ...)</code></a></h3>
+			<p>
+				This function gets an attribute
+				from an element, and returns <strong>nil</strong> if the attribute is unknown.
+				This mechanism can be used for elements that wish to exchange data with
+				each other, without having to break in upon their common base class (which
+				may not be under their control), for adding a getter method.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Element:getById" id="Element:getById"><code>getById(id)</code></a></h3>
 			<p>
 				Gets the element with the specified id, under which
 				it was previously registered with the Application. See also
@@ -3848,29 +3989,30 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getNumProperty" id="Element:getNumProperty"><code>value = Element:getNumProperty(properties, pseudoclass, attribute)</code></a></h3>
+		<div class="node"><h3><a name="Element:getNumProperty" id="Element:getNumProperty"><code>value = getNumProperty(properties, pseudoclass, attribute)</code></a></h3>
 			<p>
 				Gets a
 				property and converts it to a number value. See also <a href="#Element:getProperty"><code>Element:getProperty()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getProperties" id="Element:getProperties"><code>Element:getProperties(properties, pseudoclass)</code></a></h3>
+		<div class="node"><h3><a name="Element:getProperties" id="Element:getProperties"><code>getProperties(properties, pseudoclass)</code></a></h3>
 			<p>
 				This function is called
 				after connecting the element, for retrieving style properties from a
 				style sheet or from decoding the element's <code>Style</code> attribute
 				(&quot;direct formatting&quot;). It can be invoked multiple times with different
 				pseudo classes and <code>properties</code>.
-				When you override this function, among the reasonable things to do is to
+				When overriding this function, among the reasonable things to do is to
 				query properties using the <a href="#Element:getProperty"><code>Element:getProperty()</code></a> function, passing it the
 				<code>properties</code> and <code>pseudoclass</code> arguments. First recurse into your
-				super class with your own new pseudo classes (if any), and finally pass
-				the call to your super class with the <code>pseudoclass</code> you received.
+				super class with the pseudo classes your class defines (if any), and
+				finally pass the call to your super class with the <code>pseudoclass</code> you
+				received.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getProperty" id="Element:getProperty"><code>value = Element:getProperty(properties, pseudoclass, attribute)</code></a></h3>
+		<div class="node"><h3><a name="Element:getProperty" id="Element:getProperty"><code>value = getProperty(properties, pseudoclass, attribute)</code></a></h3>
 			<p>
 				Returns
 				the value of a style <code>attribute</code> from the specified <code>properties</code> 
@@ -3882,7 +4024,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:setup" id="Element:setup"><code>Element:setup(app, window)</code></a></h3>
+		<div class="node"><h3><a name="Element:setup" id="Element:setup"><code>setup(app, window)</code></a></h3>
 			<p>
 				This function is used to pass the element the
 				environment determined by an <a href="#tek.ui.class.application">Application</a> 
@@ -3954,7 +4096,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v7.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v9.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3983,7 +4125,8 @@ end
 							<code>FGPen &#091;IG&#093;</code> (userdata)
 							<blockquote>
 								<p>
-									Pen for rendering the text
+									Pen for rendering the text. This attribute is controllable via the
+									<code>color</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -3992,7 +4135,8 @@ end
 							<blockquote>
 								<p>
 									Font specifier; see <a href="#tek.ui.class.text">Text</a> for a
-									format description
+									format description. This attribute is controllable via the
+									<code>font</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -4000,8 +4144,8 @@ end
 							<code>Preformatted &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Boolean, indicating that the text is layouted already and should
-									not be layouted to fit the element's width.
+									Boolean, indicating that the text is already formatted and should
+									not be reformatted to fit the element's width.
 								</p>
 							</blockquote>
 						</li>
@@ -4032,10 +4176,10 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>color</code> 
+							<code>color</code> - controls the <code>FloatText.FGPen</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>font</code> 
+							<code>font</code> - controls the <code>FloatText.Font</code> attribute
 						</li>
 					</ul>
 				</blockquote>
@@ -4050,13 +4194,22 @@ end
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:damage"><code>Area:damage()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:draw"><code>Area:draw()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:hide"><code>Area:hide()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
@@ -4067,15 +4220,18 @@ end
 						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:show"><code>Area:show()</code></a> 
+						</li>
 					</ul>
 				</blockquote>
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="FloatText:appendLine" id="FloatText:appendLine"><code>appendLine(text[, movebottom])</code></a></h3>
+		<div class="node"><h3><a name="FloatText:appendLine" id="FloatText:appendLine"><code>appendLine(text[, movetail])</code></a></h3>
 			<p>
 				Append a line of text; if the
-				optional boolean <code>movebottom</code> is <strong>true</strong>, the visible area of the
+				optional boolean <code>movetail</code> is <strong>true</strong>, the visible area of the
 				element is moved towards the end of the text.
 			</p>
 			<hr />
@@ -4086,7 +4242,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v6.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v7.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4115,8 +4271,8 @@ end
 							</li>
 							<li>
 								The 'rim' border seperates the two other borders and
-								may give the composition a more contrastful look. This border has
-								the lowest priority.
+								may give the composition a more contrastful appearance. This
+								border has the lowest priority.
 							</li>
 							<li>
 								The 'focus' border (in addition to the element's focus
@@ -4131,10 +4287,10 @@ end
 					</blockquote>
 					<p>
 						Border classes (which are organized as plug-ins) do not need to
-						implement all sub borders; in fact, their properties are all
-						internally handled by the &quot;default&quot; border class, and more (and other)
-						sub borders and properties may be defined and implemented in the
-						future (or in other border classes). As the Frame class has no
+						implement all sub borders; in fact, these properties are all
+						internally handled by the <code>&quot;default&quot;</code> border class, and more (and
+						other) sub borders and properties may be defined and implemented in
+						the future (or in other border classes). As the Frame class has no
 						notion of sub borders, their respective widths are subtracted
 						from the Element's total border width, leaving only the remaining
 						width for the 'main' border.
@@ -4149,7 +4305,8 @@ end
 							<blockquote>
 								<p>
 									An array of four widths (in pixels) for the element's
-									border, in the order left, right, top, bottom.
+									border, in the order left, right, top, bottom. This attribute
+									is controllable via the <code>border-width</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -4158,7 +4315,8 @@ end
 							<blockquote>
 								<p>
 									Name of the border class used to implement this element's
-									border. Default: &quot;default&quot;
+									border. This attribute is controllable via the <code>border-class</code> 
+									style property. Default: <code>&quot;default&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -4185,55 +4343,55 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>border-bottom-color</code> 
+							<code>border-bottom-color</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-bottom-width</code> 
+							<code>border-bottom-width</code> - controls <code>Frame.Border</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>border-class</code> 
+							<code>border-class</code> - controls <code>Frame.BorderClass</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>border-color</code> 
+							<code>border-color</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-focus-color</code> 
+							<code>border-focus-color</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-focus-width</code> 
+							<code>border-focus-width</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-left-color</code> 
+							<code>border-left-color</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-left-width</code> 
+							<code>border-left-width</code> - controls <code>Frame.Border</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>border-legend-font</code> 
+							<code>border-legend-font</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-right-color</code> 
+							<code>border-right-color</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-right-width</code> 
+							<code>border-right-width</code> - controls <code>Frame.Border</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>border-rim-color</code> 
+							<code>border-rim-color</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-rim-width</code> 
+							<code>border-rim-width</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-style</code> 
+							<code>border-style</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-top-color</code> 
+							<code>border-top-color</code> - controls the <code>&quot;default&quot;</code> border class
 						</li>
 						<li style="list-style-type: none">
-							<code>border-top-width</code> 
+							<code>border-top-width</code> - controls <code>Frame.Border</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>border-width</code> 
+							<code>border-width</code> - controls <code>Frame.Border</code> 
 						</li>
 					</ul>
 				</blockquote>
@@ -4254,10 +4412,7 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:draw"><code>Area:draw()</code></a> 
+							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
@@ -4269,10 +4424,7 @@ end
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:markDamage"><code>Area:markDamage()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Class:new"><code>Class.new()</code></a> 
+							<a href="#Area:damage"><code>Area:damage()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:punch"><code>Area:punch()</code></a> 
@@ -4297,14 +4449,14 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>border = Frame:getBorder()</code></a></h3>
+		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>border = getBorder()</code></a></h3>
 			<p>
 				Returns an element's border widths in the
 				order left, top, right, bottom.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v11.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v13.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4335,7 +4487,7 @@ end
 									Signifies a change of the Gadget's activation state. While active,
 									the position of the mouse pointer is being verified (which is also
 									reflected by the <code>Hover</code> attribute). When the <code>Active</code> state
-									changes, the Gadget's behavior depends on its <code>Mode</code> attribute:
+									changes, the Gadget's behavior depends on its <code>Mode</code> (see below):
 								</p>
 								<blockquote>
 									<ul>
@@ -4378,9 +4530,22 @@ end
 							<code>Disabled &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Signifies a change of the Gadget's ability to interact with the
-									user. Invokes the <a href="#Gadget:onDisable"><code>Gadget:onDisable()</code></a> method. When an element is
-									getting disabled, it loses its focus, too.
+									Determines the Gadget's ability to interact with the user. If
+									changed, it invokes the <a href="#Gadget:onDisable"><code>Gadget:onDisable()</code></a> method. When an element
+									is getting disabled, it loses its focus, too.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Effect &#091;IG</code> (string)
+							<blockquote>
+								<p>
+									Name of a hook class for rendering an overlay effect. A possible
+									overlay effect is named <code>&quot;ripple&quot;</code>, and, as its name suggests,
+									can paint various ripple effects (used e.g. for sliders and
+									handles). Effect hooks are stored in <code>tek/ui/hook</code> and may define
+									their own style properties. This attribute is controllable via the
+									<code>effect</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -4388,7 +4553,8 @@ end
 							<code>FGPen &#091;IG&#093;</code> (userdata)
 							<blockquote>
 								<p>
-									A colored pen for rendering the foreground of the element
+									A colored pen for rendering the foreground details of the element.
+									This attribute is controllable via the <code>color</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -4398,7 +4564,7 @@ end
 								<p>
 									Specifies that the element should receive the focus initially.
 									If <strong>true</strong>, the element will notify <code>Focus=true</code> to itself
-									upon invocation of the <code>show()</code> method. Default: <strong>false</strong> 
+									upon invocation of the <a href="#Area:show"><code>Area:show()</code></a> method. Default: <strong>false</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -4447,26 +4613,31 @@ end
 							<code>Mode &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									Interaction mode of the Gadget; can be
+									The element's interaction mode:
 								</p>
-								<ul>
-									<li style="list-style-type: none">
-										&quot;inert&quot;: The element does not react to input,
-									</li>
-									<li style="list-style-type: none">
-										&quot;toggle&quot;: The element does not rebound at all and keeps its
-										<code>Selected</code> state; it can't be unselected by the user.
-									</li>
-									<li style="list-style-type: none">
-										&quot;touch&quot;: The element rebounds immediately and acts as a strobe,
-										submitting always <strong>true</strong> for <code>Pressed</code> and <code>Selected</code>.
-									</li>
-									<li style="list-style-type: none">
-										&quot;button&quot;: The element sets the <code>Pressed</code> attribute only if
-										the mouse pointer is released when hovering it.
-										See also <code>Active</code>.
-									</li>
-								</ul>
+								<blockquote>
+									<ul>
+										<li>
+											<code>&quot;inert&quot;</code>: The element does not react to input
+										</li>
+										<li>
+											<code>&quot;toggle&quot;</code>: The element does not rebound and keeps its
+											<code>Selected</code> state; it cannot be unselected by the user
+										</li>
+										<li>
+											<code>&quot;touch&quot;</code>: The element rebounds immediately and acts as a
+											strobe, always submitting <strong>true</strong> for <code>Pressed</code> and
+											<code>Selected</code> 
+										</li>
+										<li>
+											<code>&quot;button&quot;</code>: The element sets the <code>Pressed</code> attribute
+											only if the mouse pointer is released when hovering it.
+										</li>
+									</ul>
+								</blockquote>
+								<p>
+									See also the <code>Active</code> attribute.
+								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
@@ -4494,10 +4665,37 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>color</code> - color of text and details
+							<code>color</code> - controls the <code>Gadget.FGPen</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>effect</code> - name of an overlay effect
+							<code>effect</code> - controls the <code>Gadget.Effect</code> attribute
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-color</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-color2</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-kind</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-maxnum</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-maxnum2</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-orientation</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-padding</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-ratio</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+						</li>
+						<li style="list-style-type: none">
+							<code>effect-ratio2</code> - controls the <code>&quot;ripple&quot;</code> effect hook
 						</li>
 					</ul>
 				</blockquote>
@@ -4555,6 +4753,9 @@ end
 					<ul>
 						<li style="list-style-type: none">
 							<a href="#Area:checkFocus"><code>Area:checkFocus()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:checkHover"><code>Area:checkHover()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
@@ -4641,7 +4842,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v4.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v6.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4709,7 +4910,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v17.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v18.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4739,7 +4940,7 @@ end
 							<code>Children &#091;IG&#093;</code> (table)
 							<blockquote>
 								<p>
-									A numerically indexed table of the object's children
+									A table of the object's children
 								</p>
 							</blockquote>
 						</li>
@@ -4806,9 +5007,6 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Group:getStructure"><code>Group:getStructure()</code></a> - Get group's structural parameters
-						</li>
-						<li style="list-style-type: none">
 							<code>Group:addMember()</code> - See <a href="#Family:addMember"><code>Family:addMember()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -4830,9 +5028,6 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getElement"><code>Area:getElement()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:getElementByXY"><code>Area:getElementByXY()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -4845,7 +5040,7 @@ end
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:markDamage"><code>Area:markDamage()</code></a> 
+							<a href="#Area:damage"><code>Area:damage()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> 
@@ -4873,17 +5068,10 @@ end
 						</li>
 					</ul>
 				</blockquote>
-				<hr />
+				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Group:getStructure" id="Group:getStructure"><code>width, height, orientation = Group:getStructure()</code></a></h3>
-			<p>
-				get Group's structural
-				parameters.
-			</p>
-			<hr class="page-break" />
-		</div>
-		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v3.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v3.4)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4901,8 +5089,8 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						Implements a handle to drag around in the group,
-						thus reassigning widths (or heights) to its neighbours elements.
+						Implements a handle that can be dragged on the axis of the Group's
+						orientation. It reassigns Weights to its flanking elements.
 					</p>
 				</blockquote>
 			</div>
@@ -4938,7 +5126,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v15.7)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v17.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4961,7 +5149,7 @@ end
 						list is a table consisting of the following elements:
 					</p>
 <pre>
-{ { &quot;one&quot;, &quot;two&quot;, ... }, userdata, selected, ... }
+{ { &quot;column1&quot;, &quot;column2&quot;, ... }, userdata, selected, ... }
 </pre>
 					<p>
 						Description:
@@ -4981,7 +5169,7 @@ end
 					</blockquote>
 					<p>
 						The following fields are reserved for internal use by the ListGadget;
-						you should never rely on them or modify them.
+						you should never rely on their contents or modify them.
 					</p>
 				</blockquote>
 			</div>
@@ -5010,7 +5198,7 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>BgPenAlt &#091;IG&#093;</code> (userdata)
+							<code>BGPenAlt &#091;IG&#093;</code> (userdata)
 							<blockquote>
 								<p>
 									A colored pen for painting the background of alternating lines
@@ -5108,8 +5296,8 @@ end
 							<code>SelectMode &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									The ListGadget's selection mode, which can be &quot;none&quot;, &quot;single&quot;,
-									or &quot;multi&quot;.
+									The ListGadget's selection mode, which can be <code>&quot;none&quot;</code>,
+									<code>&quot;single&quot;</code>, or <code>&quot;multi&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -5214,7 +5402,7 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="ListGadget:addItem" id="ListGadget:addItem"><code>ListGadget:addItem(item[, line[, quick]])</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:addItem" id="ListGadget:addItem"><code>addItem(item[, line[, quick]])</code></a></h3>
 			<p>
 				Adds an item to the list. If
 				<code>line</code> is unspecified, the entry is added at the end of the list. The
@@ -5224,7 +5412,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:changeItem" id="ListGadget:changeItem"><code>ListGadget:changeItem(item, line[, quick])</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:changeItem" id="ListGadget:changeItem"><code>changeItem(item, line[, quick])</code></a></h3>
 			<p>
 				Overwrites the item at the
 				specified line in the list. The boolean <code>quick</code> indicates that the list
@@ -5232,7 +5420,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:changeSelection" id="ListGadget:changeSelection"><code>ListGadget:changeSelection(mode)</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:changeSelection" id="ListGadget:changeSelection"><code>changeSelection(mode)</code></a></h3>
 			<p>
 				Changes the selection of the entire
 				list; modes supported are:
@@ -5246,31 +5434,31 @@ end
 			</blockquote>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:clear" id="ListGadget:clear"><code>ListGadget:clear()</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:clear" id="ListGadget:clear"><code>clear()</code></a></h3>
 			<p>
 				Remove all items from the list.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:damageLine" id="ListGadget:damageLine"><code>ListGadget:damageLine(lnr)</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:damageLine" id="ListGadget:damageLine"><code>damageLine(lnr)</code></a></h3>
 			<p>
 				Marks the specified line for repainting.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:getItem" id="ListGadget:getItem"><code>ListGadget:getItem(line)</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:getItem" id="ListGadget:getItem"><code>getItem(line)</code></a></h3>
 			<p>
 				Returns the item at the specified line.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:getN" id="ListGadget:getN"><code>ListGadget:getN()</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:getN" id="ListGadget:getN"><code>getN()</code></a></h3>
 			<p>
 				Returns the number of lines in the list.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:getSelectedLines" id="ListGadget:getSelectedLines"><code>ListGadget:getSelectedLines([mode])</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:getSelectedLines" id="ListGadget:getSelectedLines"><code>getSelectedLines([mode])</code></a></h3>
 			<p>
 				Returns a table of all
 				selected entries, sorted by (by default) their line number. Currently
@@ -5278,29 +5466,21 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:moveLine" id="ListGadget:moveLine"><code>ListGadget:moveLine(lnr[, follow])</code></a></h3>
-			<p>
-				Moves the list cursor to the
-				specified line; if the optional boolean <code>follow</code> is <strong>true</strong>,
-				the visible part of the list follows the cursor.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="ListGadget:onSelectLine" id="ListGadget:onSelectLine"><code>ListGadget:onSelectLine(line, oldline)</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:onSelectLine" id="ListGadget:onSelectLine"><code>onSelectLine(line, oldline)</code></a></h3>
 			<p>
 				This method is invoked when the
 				<code>SelectedLine</code> attribute is set.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:onSetCursor" id="ListGadget:onSetCursor"><code>ListGadget:onSetCursor(line, oldline)</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:onSetCursor" id="ListGadget:onSetCursor"><code>onSetCursor(line, oldline)</code></a></h3>
 			<p>
 				This method is invoked when the
 				<code>CursorLine</code> attribute has changed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:remItem" id="ListGadget:remItem"><code>ListGadget:remItem(line[, quick])</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:remItem" id="ListGadget:remItem"><code>remItem(line[, quick])</code></a></h3>
 			<p>
 				Removes the item from the list at the
 				specified line. The boolean <code>quick</code> indicates that the list should not
@@ -5309,20 +5489,20 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:repaint" id="ListGadget:repaint"><code>ListGadget:repaint()</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:repaint" id="ListGadget:repaint"><code>repaint()</code></a></h3>
 			<p>
 				Relayouts and repaints the list.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:setList" id="ListGadget:setList"><code>ListGadget:setList(listobject)</code></a></h3>
+		<div class="node"><h3><a name="ListGadget:setList" id="ListGadget:setList"><code>setList(listobject)</code></a></h3>
 			<p>
 				Sets a new <a href="#tek.class.list">List</a> 
 				object, and relayouts and repaints the list.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v4.9)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v5.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5404,10 +5584,10 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This class implements the basic items for window menus and popups.
-						In particular, it displays a <a href="#tek.ui.class.popitem">PopItem</a>'s
-						<code>Shortcut</code> attribute and an arrow to indicate that there is a
-						sub menu.
+						This class implements basic, recursive items for window and popup
+						menus with a typical menu look; in particular, it displays the
+						<a href="#tek.ui.class.popitem">PopItem</a>'s <code>Shortcut</code> string and an
+						arrow to indicate the presence of a sub menu.
 					</p>
 				</blockquote>
 			</div>
@@ -5557,14 +5737,14 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Numeric:decrease" id="Numeric:decrease"><code>Numeric:decrease([delta])</code></a></h3>
+		<div class="node"><h3><a name="Numeric:decrease" id="Numeric:decrease"><code>decrease([delta])</code></a></h3>
 			<p>
 				Decrease <code>Value</code> by the specified <code>delta</code>.
 				If <code>delta</code> is omitted, the <code>Step</code> attribute is used in its place.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Numeric:increase" id="Numeric:increase"><code>Numeric:increase([delta])</code></a></h3>
+		<div class="node"><h3><a name="Numeric:increase" id="Numeric:increase"><code>increase([delta])</code></a></h3>
 			<p>
 				Increase <code>Value</code> by the specified <code>delta</code>.
 				If <code>delta</code> is omitted, the <code>Step</code> attribute is used in its place.
@@ -5592,13 +5772,13 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Numeric:reset" id="Numeric:reset"><code>Numeric:reset()</code></a></h3>
+		<div class="node"><h3><a name="Numeric:reset" id="Numeric:reset"><code>reset()</code></a></h3>
 			<p>
 				Reset <code>Value</code> to is <code>Default</code> value.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v9.9)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5652,10 +5832,10 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#PageGroup:disablePage"><code>PageGroup:disablePage()</code></a> - disable/enable a Page
+							<a href="#PageGroup:disablePage"><code>PageGroup:disablePage()</code></a> - Enables a Page
 						</li>
 						<li style="list-style-type: none">
-							<a href="#PageGroup:onSetPageNumber"><code>PageGroup:onSetPageNumber()</code></a> - handler for <code>PageNumber</code> 
+							<a href="#PageGroup:onSetPageNumber"><code>PageGroup:onSetPageNumber()</code></a> - Handler for <code>PageNumber</code> 
 						</li>
 					</ul>
 				</blockquote>
@@ -5694,7 +5874,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v8.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v9.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5740,22 +5920,22 @@ end
 									<a href="#tek.ui.class.gadget">Gadget</a>.KeyCode, this shortcut is
 									also enabled while the object is invisible. By convention, only
 									combinations with a qualifier should be used here, e.g.
-									&quot;Alt+C&quot;, &quot;Shift+Ctrl+Q&quot;. Qualifiers are separated by &quot;+&quot; and
-									must precede the key. Valid qualifiers are:
+									<code>&quot;Alt+C&quot;</code>, <code>&quot;Shift+Ctrl+Q&quot;</code>. Qualifiers are separated by
+									 <code>&quot;+&quot;</code> and must precede the key. Valid qualifiers are:
 								</p>
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;Alt&quot;, &quot;LAlt&quot;, &quot;RAlt&quot;
+											<code>&quot;Alt&quot;</code>, <code>&quot;LAlt&quot;</code>, &quot;RAlt&quot;}}
 										</li>
 										<li style="list-style-type: none">
-											&quot;Shift&quot;, &quot;LShift&quot;, &quot;RShift&quot;
+											<code>&quot;Shift&quot;</code>, <code>&quot;LShift&quot;</code>, &quot;RShift&quot;}}
 										</li>
 										<li style="list-style-type: none">
-											&quot;Ctrl&quot;, &quot;LCtrl&quot;, &quot;RCtrl&quot;
+											<code>&quot;Ctrl&quot;, {{&quot;LCtrl&quot;</code>, <code>&quot;RCtrl&quot;</code> 
 										</li>
 										<li style="list-style-type: none">
-											&quot;IgnoreCase&quot;
+											<code>&quot;IgnoreCase&quot;</code> 
 										</li>
 									</ul>
 								</blockquote>
@@ -5765,15 +5945,15 @@ end
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;F1&quot; ... &quot;F12&quot; (function keys),
+											<code>&quot;F1&quot;</code> ... <code>&quot;F12&quot;</code> (function keys),
 										</li>
 										<li style="list-style-type: none">
-											&quot;Left&quot;, &quot;Right&quot;, &quot;Up&quot;, &quot;Down&quot; (cursor keys)
+											<code>&quot;Left&quot;</code>, <code>&quot;Right&quot;</code>, <code>&quot;Up&quot;</code>, <code>&quot;Down&quot;</code> (cursor keys)
 										</li>
 										<li style="list-style-type: none">
-											&quot;BckSpc&quot;, &quot;Tab&quot;, &quot;Esc&quot;, &quot;Insert&quot;, &quot;Overwrite&quot;,
-											&quot;PageUp&quot;, &quot;PageDown&quot;, &quot;Pos1&quot;, &quot;End&quot;, &quot;Print&quot;, &quot;Scroll&quot;,
-											and &quot;Pause&quot;.
+											<code>&quot;BckSpc&quot;</code>, <code>&quot;Tab&quot;</code>, <code>&quot;Esc&quot;</code>, <code>&quot;Insert&quot;</code>,
+											<code>&quot;Overwrite&quot;</code>, <code>&quot;PageUp&quot;</code>, <code>&quot;PageDown&quot;</code>, <code>&quot;Pos1&quot;</code>,
+											<code>&quot;End&quot;</code>, <code>&quot;Print&quot;</code>, <code>&quot;Scroll&quot;</code>, and <code>&quot;Pause&quot;</code>}}.
 										</li>
 									</ul>
 								</blockquote>
@@ -5787,6 +5967,9 @@ end
 					<ul>
 						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:getAttr"><code>Element:getAttr()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
@@ -5892,21 +6075,21 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="PopList:onSelectEntry" id="PopList:onSelectEntry"><code>PopList:onSelectEntry(line)</code></a></h3>
+		<div class="node"><h3><a name="PopList:onSelectEntry" id="PopList:onSelectEntry"><code>onSelectEntry(line)</code></a></h3>
 			<p>
 				This method is invoked when the
 				<code>SelectedLine</code> attribute is set.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="PopList:setList" id="PopList:setList"><code>PopList:setList(listobject)</code></a></h3>
+		<div class="node"><h3><a name="PopList:setList" id="PopList:setList"><code>setList(listobject)</code></a></h3>
 			<p>
 				Sets a new <a href="#tek.class.list">List</a> 
 				object.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v1.8)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v2.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5948,7 +6131,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v2.9)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v4.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6135,7 +6318,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v9.10)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6182,19 +6365,20 @@ end
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;on&quot; - The horizontal scrollbar is displayed
+											<code>&quot;on&quot;</code> - The horizontal scrollbar is displayed
 										</li>
 										<li style="list-style-type: none">
-											&quot;off&quot; - The horizontal scrollbar is not displayed
+											<code>&quot;off&quot;</code> - The horizontal scrollbar is not displayed
 										</li>
 										<li style="list-style-type: none">
-											&quot;auto&quot; - The horizontal scrollbar is displayed when
+											<code>&quot;auto&quot;</code> - The horizontal scrollbar is displayed when
 											the ListGadget is wider than the currently visible area.
 										</li>
 									</ul>
 								</blockquote>
 								<p>
-									Note: The use of the &quot;auto&quot; mode is currently (v8.0) discouraged.
+									Note: The use of the <code>&quot;auto&quot;</code> mode is currently (v8.0)
+									discouraged.
 								</p>
 							</blockquote>
 						</li>
@@ -6208,19 +6392,20 @@ end
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;on&quot; - The vertical scrollbar is displayed
+											<code>&quot;on&quot;</code> - The vertical scrollbar is displayed
 										</li>
 										<li style="list-style-type: none">
-											&quot;off&quot; - The vertical scrollbar is not displayed
+											<code>&quot;off&quot;</code> - The vertical scrollbar is not displayed
 										</li>
 										<li style="list-style-type: none">
-											&quot;auto&quot; - The vertical scrollbar is displayed when
+											<code>&quot;auto&quot;</code> - The vertical scrollbar is displayed when
 											the ListGadget is taller than the currently visible area.
 										</li>
 									</ul>
 								</blockquote>
 								<p>
-									Note: The use of the &quot;auto&quot; mode is currently (v8.0) discouraged.
+									Note: The use of the <code>&quot;auto&quot;</code> mode is currently (v8.0)
+									discouraged.
 								</p>
 							</blockquote>
 						</li>
@@ -6253,7 +6438,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v8.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v10.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6414,7 +6599,7 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Slider:onSetRange" id="Slider:onSetRange"><code>Slider:onSetRange(range)</code></a></h3>
+		<div class="node"><h3><a name="Slider:onSetRange" id="Slider:onSetRange"><code>onSetRange(range)</code></a></h3>
 			<p>
 				This handler is invoked when the Slider's
 				<code>Range</code> attribute has changed.
@@ -6457,7 +6642,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v15.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v16.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6500,25 +6685,27 @@ end
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;__fixed&quot;: The default fixed font
+											<code>&quot;ui-fixed&quot;</code>: The default fixed font
 										</li>
 										<li style="list-style-type: none">
-											&quot;__main&quot;: The default main font, e.g. for buttons and menus
+											<code>&quot;ui-main&quot;</code> or <code>&quot;&quot;</code>: The default main font, e.g. for
+											buttons and menus
 										</li>
 										<li style="list-style-type: none">
-											&quot;__small&quot;: The default small font, e.g. for group captions
+											<code>&quot;ui-small&quot;</code>: The default small font, e.g. for group
+											captions
 										</li>
 										<li style="list-style-type: none">
-											&quot;__large&quot;: The default 'large' font
+											<code>&quot;ui-large&quot;</code>: The default 'large' font
 										</li>
 										<li style="list-style-type: none">
-											&quot;__huge&quot;: The default 'huge' font
+											<code>&quot;ui-huge&quot;</code>: The default 'huge' font
 										</li>
 									</ul>
 								</blockquote>
 								<p>
-									If no font name is specified, the main font will be assumed.
-									The size specification (in pixels) is optional as well, if absent,
+									If no font name is specified, the main font will be used.
+									The size specification (in pixels) is optional as well; if absent,
 									the respective font's default size will be used.
 								</p>
 							</blockquote>
@@ -6555,22 +6742,22 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>TextHAlign &#091;IG&#093;</code> (&quot;left&quot;, &quot;center&quot;, &quot;right&quot;)
+							<code>TextHAlign &#091;IG&#093;</code> (<code>&quot;left&quot;</code>, <code>&quot;center&quot;</code>, <code>&quot;right&quot;</code>)
 							<blockquote>
 								<p>
 									The text's horizontal alignment, which will be used in
 									<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a>. If <strong>false</strong> during initialization,
-									the class' default will be used. &#091;Default:  &quot;center&quot;&#093;
+									the class' default will be used. &#091;Default: <code>&quot;center&quot;</code>&#093;
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>TextVAlign &#091;IG&#093;</code> (&quot;top&quot;, &quot;center&quot;, &quot;bottom&quot;)
+							<code>TextVAlign &#091;IG&#093;</code> (<code>&quot;top&quot;</code>, <code>&quot;center&quot;</code>, <code>&quot;bottom&quot;</code>)
 							<blockquote>
 								<p>
 									The text's vertical alignment, which will be used in
 									<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a>. If <strong>false</strong> during initialization, the
-									class' default will be used. &#091;Default: &quot;center&quot;&#093;
+									class' default will be used. &#091;Default: <code>&quot;center&quot;</code>&#093;
 								</p>
 							</blockquote>
 						</li>
@@ -6674,7 +6861,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v8.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v9.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6930,7 +7117,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v14.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v15.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7020,7 +7207,10 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>MouseX &#091;G&#093;</code>, <code>MouseY &#091;G&#093;</code> (number)
+							<code>MouseX &#091;G&#093;</code> (number)
+						</li>
+						<li style="list-style-type: none">
+							<code>MouseY &#091;G&#093;</code> (number)
 							<blockquote>
 								<p>
 									The current screen coordinates of the pointing device.
@@ -7128,9 +7318,6 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Area:getElement"><code>Area:getElement()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -7153,7 +7340,7 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Window:addInputHandler" id="Window:addInputHandler"><code>Window:addInputHandler(msgtype, object, function)</code></a></h3>
+		<div class="node"><h3><a name="Window:addInputHandler" id="Window:addInputHandler"><code>addInputHandler(msgtype, object, function)</code></a></h3>
 			<p>
 				Adds an <code>object</code> and
 				a <code>function</code> to the window's chain of handlers for input of the
@@ -7169,7 +7356,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:addInterval" id="Window:addInterval"><code>Window:addInterval()</code></a></h3>
+		<div class="node"><h3><a name="Window:addInterval" id="Window:addInterval"><code>addInterval()</code></a></h3>
 			<p>
 				Adds an interval timer to the window, which will
 				furtheron generate MSG_INTERVAL messages 50 times per second. These
@@ -7180,7 +7367,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:checkDblClickTime" id="Window:checkDblClickTime"><code>dblclick = Window:checkDblClickTime(as, au, bs, bu)</code></a></h3>
+		<div class="node"><h3><a name="Window:checkDblClickTime" id="Window:checkDblClickTime"><code>dblclick = checkDblClickTime(as, au, bs, bu)</code></a></h3>
 			<p>
 				Check if the two
 				given times (first a, second b) are within the doubleclick interval.
@@ -7189,7 +7376,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:clickElement" id="Window:clickElement"><code>Window:clickElement(element)</code></a></h3>
+		<div class="node"><h3><a name="Window:clickElement" id="Window:clickElement"><code>clickElement(element)</code></a></h3>
 			<p>
 				This function performs a simulated click on
 				the specified <code>element</code>; if <code>element</code> is a string, it will be looked up
@@ -7199,14 +7386,14 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:onChangeStatus" id="Window:onChangeStatus"><code>Window:onChangeStatus(status)</code></a></h3>
+		<div class="node"><h3><a name="Window:onChangeStatus" id="Window:onChangeStatus"><code>onChangeStatus(status)</code></a></h3>
 			<p>
 				This method is invoked when the Window's
 				<code>Status</code> has changed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:onHide" id="Window:onHide"><code>Window:onHide()</code></a></h3>
+		<div class="node"><h3><a name="Window:onHide" id="Window:onHide"><code>onHide()</code></a></h3>
 			<p>
 				This handler is invoked when the window's close button
 				is clicked (or the Escape key is pressed and the <code>HideOnEscape</code> flag
@@ -7216,7 +7403,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:remInputHandler" id="Window:remInputHandler"><code>Window:remInputHandler(msgtype, object, func)</code></a></h3>
+		<div class="node"><h3><a name="Window:remInputHandler" id="Window:remInputHandler"><code>remInputHandler(msgtype, object, func)</code></a></h3>
 			<p>
 				Removes an input handler
 				that was previously registered with the window using
@@ -7224,7 +7411,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:remInterval" id="Window:remInterval"><code>Window:remInterval()</code></a></h3>
+		<div class="node"><h3><a name="Window:remInterval" id="Window:remInterval"><code>remInterval()</code></a></h3>
 			<p>
 				Decreases the use counter for interval messages and
 				stops sending interval messages to the window when called by the last
@@ -7233,7 +7420,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setActiveElement" id="Window:setActiveElement"><code>Window:setActiveElement(element)</code></a></h3>
+		<div class="node"><h3><a name="Window:setActiveElement" id="Window:setActiveElement"><code>setActiveElement(element)</code></a></h3>
 			<p>
 				Sets/unsets the element which is
 				currently active (or 'in use'). If <code>element</code> is <strong>nil</strong>, the currently
@@ -7241,7 +7428,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setDblClickElement" id="Window:setDblClickElement"><code>Window:setDblClickElement(element)</code></a></h3>
+		<div class="node"><h3><a name="Window:setDblClickElement" id="Window:setDblClickElement"><code>setDblClickElement(element)</code></a></h3>
 			<p>
 				Sets/unsets the element which is
 				candidate for double click detection. If the element is set twice in a
@@ -7252,21 +7439,21 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setFocusElement" id="Window:setFocusElement"><code>Window:setFocusElement(element)</code></a></h3>
+		<div class="node"><h3><a name="Window:setFocusElement" id="Window:setFocusElement"><code>setFocusElement(element)</code></a></h3>
 			<p>
 				Sets/unsets the element which is marked
 				for receiving the keyboard input.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setHiliteElement" id="Window:setHiliteElement"><code>Window:setHiliteElement(element)</code></a></h3>
+		<div class="node"><h3><a name="Window:setHiliteElement" id="Window:setHiliteElement"><code>setHiliteElement(element)</code></a></h3>
 			<p>
 				Sets/unsets the element which is being
 				hovered by the mouse pointer.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:setMovingElement" id="Window:setMovingElement"><code>Window:setMovingElement(element)</code></a></h3>
+		<div class="node"><h3><a name="Window:setMovingElement" id="Window:setMovingElement"><code>setMovingElement(element)</code></a></h3>
 			<p>
 				Sets/unsets the element which is
 				being moved around by the user.
@@ -7314,7 +7501,7 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Layout:askMinMax" id="Layout:askMinMax"><code>minw, minh, maxw, maxh = Layout:askMinMax(group, minw, minh, maxw, maxh)</code></a></h3>
+		<div class="node"><h3><a name="Layout:askMinMax" id="Layout:askMinMax"><code>minw, minh, maxw, maxh = askMinMax(group, minw, minh, maxw, maxh)</code></a></h3>
 			<p>
 				This method queries the specified <a href="#tek.ui.class.group">Group</a> for
 				its size requirements, which will subsequently invoke
@@ -7322,7 +7509,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Layout:layout" id="Layout:layout"><code>Layout:layout(group, x0, y0, x1, y1[, markdamage])</code></a></h3>
+		<div class="node"><h3><a name="Layout:layout" id="Layout:layout"><code>layout(group, x0, y0, x1, y1[, markdamage])</code></a></h3>
 			<p>
 				Layouts the <a href="#tek.ui.class.group">Group</a> into the specified
 				rectangle and calculates the sizes and positions of all of its
@@ -7333,7 +7520,7 @@ message = function(object, message)
 			</p>
 			<hr />
 			<p>
-				Document generated on Thu May  7 14:17:32 2009
+				Document generated on Thu May 14 23:13:46 2009
 			</p>
 		</div>
 	</body>

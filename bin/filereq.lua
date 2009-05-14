@@ -3,14 +3,14 @@
 local ui = require "tek.ui"
 
 local APP_ID = "tekui-demo"
-local VENDOR = "schulze-mueller.de"
+local DOMAIN = "schulze-mueller.de"
 
-local L = ui.getLocale(APP_ID, VENDOR)
+local L = ui.getLocale(APP_ID, DOMAIN)
 
 app = ui.Application:new
 {
 	ApplicationId = APP_ID,
-	VendorDomain = VENDOR,
+	Domain = DOMAIN,
 	Children =
 	{
 		ui.Window:new

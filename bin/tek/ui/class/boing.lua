@@ -15,7 +15,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.boing", tek.ui.class.frame)
-_VERSION = "Boing 2.0"
+_VERSION = "Boing 2.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -79,9 +79,7 @@ function Boing:draw()
 		d:fillRect(r[1], r[2], r[3], r[4], bgpen)
 	elseif dr then
 		-- repaint intra-area damagerects:
-		for _, r1, r2, r3, r4 in dr:getRects() do
-			d:fillRect(r1, r2, r3, r4, bgpen)
-		end
+		dr:forEach(d.fillRect, d, bgpen)
 		self.DamageRegion = false
 	end
 

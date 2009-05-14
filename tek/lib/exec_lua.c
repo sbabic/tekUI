@@ -14,20 +14,19 @@
 #include <tek/proto/hal.h>
 #include <tek/proto/exec.h>
 
-static const struct TInitModule initmodules[] =
+static const struct TInitModule tek_lib_exec_initmodules[] =
 {
 	{"hal", tek_init_hal, TNULL, 0},
 	{"exec", tek_init_exec, TNULL, 0},
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
-static const luaL_Reg libfuncs[] =
+static const luaL_Reg tek_lib_exec_funcs[] =
 {
 	{NULL, NULL}
 };
 
-static int
-tek_lib_exec_base_gc(lua_State *L)
+static int tek_lib_exec_base_gc(lua_State *L)
 {
 	TAPTR *pexec = luaL_checkudata(L, 1, "tek.lib.exec.base.meta");
 	if (*pexec)
@@ -46,7 +45,7 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	TTAGITEM tags[2];
 	TAPTR basetask;
 
-	luaL_register(L, "tek.lib.exec", libfuncs);
+	luaL_register(L, "tek.lib.exec", tek_lib_exec_funcs);
 	/* s: libtab */
 
 	pexec = lua_newuserdata(L, sizeof(TAPTR));
@@ -68,7 +67,7 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	lua_pop(L, 1);
 
 	tags[0].tti_Tag = TExecBase_ModInit;
-	tags[0].tti_Value = (TTAG) initmodules;
+	tags[0].tti_Value = (TTAG) tek_lib_exec_initmodules;
 	tags[1].tti_Tag = TTAG_DONE;
 
 	basetask = TEKCreate(tags);

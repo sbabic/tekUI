@@ -15,7 +15,7 @@ local unpack = unpack
 local Region = require "tek.lib.region"
 
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 4.3"
+_VERSION = "ImageGadget 4.5"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -142,10 +142,7 @@ function ImageGadget:draw()
 	local R = self.Region
 	local img = self.Image
 	if R then
-		local bgpen, tx, ty = self:getBackground()
-		for _, r1, r2, r3, r4 in R:getRects() do
-			d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
-		end
+		R:forEach(d.fillRect, d, self:getBG())
 	end
 	if img then
 		local x, y, iw, ih = unpack(self.ImageData)

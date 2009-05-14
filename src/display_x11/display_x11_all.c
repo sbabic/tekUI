@@ -19,6 +19,9 @@
 #endif
 
 #include "../teklib/teklib.c"
+#if defined(TDEBUG) && TDEBUG > 0
+#include "../teklib/debug.c"
+#endif
 
 #include "display_x11_mod.c"
 #include "display_x11_api.c"

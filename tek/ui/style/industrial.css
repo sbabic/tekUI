@@ -50,16 +50,23 @@ tek.ui.class.display {
   font-huge: sans-serif,helvetica,Vera:32;
 }
 
-tek.ui.class.checkmark:hover {
+tek.ui.class.checkmark {
 	color: detail;
+}
+
+tek.ui.class.checkmark:hover {
+	color: hover-detail;
+	background-color: hover;
 }
 
 tek.ui.class.checkmark:active {
-	color: detail;
+	color: active-detail;
+	background-color: active;
 }
 
 tek.ui.class.checkmark:focus {
-	color: detail;
+	color: hover-detail;
+	background-color: hover;
 }
 
 tek.ui.class.popupwindow {

@@ -42,10 +42,12 @@ local Numeric = ui.Numeric
 local floor = math.floor
 local max = math.max
 local min = math.min
+local freeRegion = ui.freeRegion
+local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 4.6"
+_VERSION = "Gauge 6.0"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -54,6 +56,7 @@ _VERSION = "Gauge 4.6"
 local Gauge = _M
 
 function Gauge.init(self)
+	self.BGRegion = false
 	self.Mode = "inert"
 	self.Orientation = self.Orientation or "horizontal"
 	self.Child = self.Child or ui.Frame:new { Class = "gauge-fill" }
@@ -115,6 +118,7 @@ end
 function Gauge:hide()
 	self.Child:hide()
 	Numeric.hide(self)
+	self.BGRegion = freeRegion(self.BGRegion)
 	return true
 end
 
@@ -155,6 +159,20 @@ function Gauge:getKnobRect()
 end
 
 -------------------------------------------------------------------------------
+--	updateBGRegion:
+-------------------------------------------------------------------------------
+
+function Gauge:updateBGRegion()
+	local r = self.Rect
+	local bg = reuseRegion(self.BGRegion, r[1], r[2], r[3], r[4])
+	self.BGRegion = bg
+	local c = self.Child
+	r = c.Rect
+	local c1, c2, c3, c4 = c:getBorder()
+	bg:subRect(r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4)
+end
+
+-------------------------------------------------------------------------------
 --	layout: overrides
 -------------------------------------------------------------------------------
 
@@ -162,6 +180,7 @@ function Gauge:layout(r1, r2, r3, r4, markdamage)
 	if Numeric.layout(self, r1, r2, r3, r4, markdamage) then
 		local x0, y0, x1, y1 = self:getKnobRect()
 		self.Child:layout(x0, y0, x1, y1, markdamage)
+		self:updateBGRegion()
 		return true
 	end
 end
@@ -188,12 +207,12 @@ function Gauge:refresh()
 end
 
 -------------------------------------------------------------------------------
---	markDamage: overrides
+--	damage: overrides
 -------------------------------------------------------------------------------
 
-function Gauge:markDamage(r1, r2, r3, r4)
-	Numeric.markDamage(self, r1, r2, r3, r4)
-	self.Child:markDamage(r1, r2, r3, r4)
+function Gauge:damage(r1, r2, r3, r4)
+	Numeric.damage(self, r1, r2, r3, r4)
+	self.Child:damage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
@@ -202,16 +221,7 @@ end
 
 function Gauge:draw()
 	local d = self.Drawable
-	local r = self.Rect
-	local bg = Region.new(r[1], r[2], r[3], r[4])
-	local c = self.Child
-	local r = c.Rect
-	local c1, c2, c3, c4 = c:getBorder()
-	bg:subRect(r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4)
-	local bgpen, tx, ty = self:getBackground()
-	for _, r1, r2, r3, r4 in bg:getRects() do
-		d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
-	end
+	self.BGRegion:forEach(d.fillRect, d, self:getBG())
 end
 
 -------------------------------------------------------------------------------
@@ -223,6 +233,7 @@ function Gauge:onSetValue(v)
 	local x0, y0, x1, y1 = self:getKnobRect()
 	if x0 then
 		self.Window:relayout(self.Child, x0, y0, x1, y1)
+		self:updateBGRegion()
 		self.Redraw = true
 	end
 end

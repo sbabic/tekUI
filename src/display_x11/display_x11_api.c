@@ -918,12 +918,12 @@ LOCAL void x11_drawtags(X11DISPLAY *mod, struct TVRequest *req)
 **	additionally have to enclose XShmAttach() in a mutex.
 */
 
-static TBOOL shm_available = TTRUE;
+static TBOOL x11_shm_available = TTRUE;
 
 static int shm_errhandler(Display *d, XErrorEvent *evt)
 {
 	TDBPRINTF(TDB_ERROR,("Remote display - fallback to normal XPutImage\n"));
-	shm_available = TFALSE;
+	x11_shm_available = TFALSE;
 	return 0;
 }
 
@@ -985,11 +985,11 @@ LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 						v->shminfo.readOnly = False;
 						XSync(mod->x11_Display, 0);
 						oldhnd = XSetErrorHandler(shm_errhandler);
-						shm_available = TTRUE;
+						x11_shm_available = TTRUE;
 						XShmAttach(mod->x11_Display, &v->shminfo);
 						XSync(mod->x11_Display, 0);
 						XSetErrorHandler(oldhnd);
-						if (shm_available)
+						if (x11_shm_available)
 						{
 							v->imw = w;
 							v->imh = h;

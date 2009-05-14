@@ -16,8 +16,14 @@
 --		CheckMark
 --
 --	OVERVIEW::
---		Specialization of a [[#tek.ui.class.text : Text]] for placing
---		checkmarks.
+--		Specialization of the [[#tek.ui.class.text : Text]] class,
+--		implementing a toggle button with a graphical check mark.
+--
+--	ATTRIBUTES::
+--		- {{Image [IG]}} ([[#tek.ui.class.image : Image]])
+--			Image to be displayed when the CheckMark element is unselected.
+--		- {{SelectImage [IG]}} ([[#tek.ui.class.image : Image]])
+--			Image to be displayed when the CheckMark element is selected.
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
@@ -38,7 +44,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 3.16"
+_VERSION = "CheckMark 4.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -62,12 +68,14 @@ function CheckMark.new(class, self)
 end
 
 function CheckMark.init(self)
-	self.AltImage = self.AltImage or CheckImage2
+	self.SelectImage = self.SelectImage or CheckImage2
 	self.Image = self.Image or CheckImage1
 	self.ImageHeight = false
 	self.ImageMinHeight = self.ImageMinHeight or DEF_IMAGEMINHEIGHT
 	self.ImageWidth = false
-	self.KeyCode = self.KeyCode == nil and true or self.KeyCode
+	if self.KeyCode == nil then
+		self.KeyCode = true
+	end
 	self.Mode = self.Mode or "toggle"
 	self.OldSelected = false
 	return Text.init(self)
@@ -132,7 +140,7 @@ end
 
 function CheckMark:draw()
 	Text.draw(self)
-	local img = self.Selected and self.AltImage or self.Image
+	local img = self.Selected and self.SelectImage or self.Image
 	if img then
 		img:draw(self.Drawable, unpack(self.ImageRect))
 	end

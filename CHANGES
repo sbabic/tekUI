@@ -1,6 +1,46 @@
 
 == tekUI Changelog ==
 
+ * Improved some demos, texts, localizations, and style sheets
+ * Compiler: added commandline arguments
+ * C sources and their symbol names are now better suited for amalgamed
+ builds
+ * Removed unused memory managers from TEKlib
+ * Application: Added GCControl
+ * Application, PopupWindow: Removed use of checkDescend()
+ * FloatText: corrected flaky color property evaluation
+ * Gauge, Slider: Added BackgroundRegion, updateBackgroundRegion(), faster
+ repaint
+ * Region: now supports a custom datatype for rectangles, renamed
+ overlap...() to intersect...(), removed free() and intersect() methods,
+ added caching of rectangle nodes, management and caching of rectangle
+ nodes now more efficient, removed getRects(), replaced by forEach()
+ * Area, Canvas, FloatText, Gauge, Group, ImageGadget, ListGadget,
+ ScrollGroup, Slider, Window: Now using region:forEach() instead of
+ region:getRects()
+ * Default border, Border: getBorderRegion() renamed to getRegion(), now
+ expecting a border to be supplied by the caller
+ * UI: added allocRegion(), freeRegion(), newRegion(), reuseRegion(),
+ ProgDir is now guaranteed to contain a trailing path separator
+ * Area, Canvas, Frame, Gauge, Group, ListGadget, Slider: added region
+ caching and reusing
+ * ListGadget, FloatText: innerloop of draw() is now a separate function
+ * Element: Added getAttr()
+ * PopItem: implemented "menuitem-size" via getAttr()
+ * Area:getBackground() renamed to getBG(), getRectangle() to getRect()
+ markDamage() to damage(), focusRectangle() to focusRect(),
+ BackgroundPosition to BGPosition, removed getElement(), added
+ getChildren(), getSiblings(), getParent(), getGroup(), getNext(),
+ getPrev(), checkHover()
+ * Application: Renamed CollectGarbage to GCControl, VendorName to Vendor,
+ VendorDomain to Domain
+ * Canvas: renamed markChildDamage() to damageChild()
+ * CheckMark, RadioButton: renamed AltImage to SelectImage
+ * DirList: renamed getDirectoryIterator() to getDirIterator()
+ * Display: renamed colorNameToRGB() to colorToRGB()
+ * FloatText: renamed Reposition argument from "bottom" to "tail"
+ * Gadget: renamed EffectName to Effect
+
 === 0.8e: ===
 
  * Eliminated the use of 'ipairs' in many classes 

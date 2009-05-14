@@ -91,7 +91,7 @@ EXPORT struct TTask *exec_CreateSysTask(struct TExecBase *TExecBase,
 		if (THALInitLock(hal, &newtask->tsk_TaskLock))
 		{
 			if (exec_initmm(TExecBase, &newtask->tsk_HeapMemManager, TNULL,
-				TMMT_Tracking | TMMT_TaskSafe, TNULL))
+				TMMT_MemManager, TNULL))
 			{
 				if (exec_initport(TExecBase, &newtask->tsk_UserPort, newtask,
 					TTASK_SIG_USER))

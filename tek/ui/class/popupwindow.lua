@@ -29,11 +29,10 @@
 
 local ui = require "tek.ui"
 local Window = ui.Window
-local ipairs = ipairs
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 1.8"
+_VERSION = "PopupWindow 2.0"
 
 local PopupWindow = _M
 
@@ -60,21 +59,22 @@ end
 
 function PopupWindow:show(display)
 	if Window.show(self, display) then
-		local miclass = ui.PopItem
-		if miclass then
-			-- determine width of menuitems in group:
-			local maxw = 0
-			for _, e in ipairs(self.Children) do
-				if e:checkDescend(miclass) then
-					local w = e:getTextSize()
-					maxw = max(maxw, w)
-				end
+		-- determine width of menuitems in group:
+		local maxw = 0
+		local c = self:getChildren()
+		for i = 1, #c do
+			local e = c[i]
+			local w = e:getAttr("menuitem-size")
+			if w then
+				maxw = max(maxw, w + 10) -- TODO: hardcoded padding
 			end
-			for _, e in ipairs(self.Children) do
-				-- align shortcut text (if present):
-				if e:checkDescend(miclass) and e.TextRecords[2] then
-					e.TextRecords[2][5] = maxw
-				end
+		end
+		for i = 1, #c do
+			local e = c[i]
+			-- align shortcut text (if present):
+			local w = e:getAttr("menuitem-size")
+			if w then
+				e.TextRecords[2][5] = maxw
 			end
 		end
 		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)

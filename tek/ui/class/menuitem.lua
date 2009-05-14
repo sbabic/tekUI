@@ -17,10 +17,10 @@
 --		MenuItem
 --
 --	OVERVIEW::
---		This class implements the basic items for window menus and popups.
---		In particular, it displays a [[#tek.ui.class.popitem : PopItem]]'s
---		{{Shortcut}} attribute and an arrow to indicate that there is a
---		sub menu.
+--		This class implements basic, recursive items for window and popup
+--		menus with a typical menu look; in particular, it displays the
+--		[[#tek.ui.class.popitem : PopItem]]'s {{Shortcut}} string and an
+--		arrow to indicate the presence of a sub menu.
 --
 --	OVERRIDES::
 --		- Area:askMinMax()

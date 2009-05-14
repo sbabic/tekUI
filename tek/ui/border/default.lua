@@ -1,7 +1,6 @@
 
 local ui = require "tek.ui"
 local Border = require "tek.ui.class.border"
-local Region = require "tek.lib.region"
 local assert = assert
 local floor = math.floor
 local max = math.max
@@ -9,7 +8,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 1.8"
+_VERSION = "DefaultBorder 2.0"
 
 local PEN_SHINE = ui.PEN_BORDERSHINE
 local PEN_SHADOW = ui.PEN_BORDERSHADOW
@@ -167,8 +166,8 @@ function DefaultBorder:draw()
 
 	p[14], p[15], p[16], p[17] = unpack(self.Rect)
 	p[18], p[19], p[20], p[21] = unpack(self.Border)
-	local _, ox, oy = e:getBackground()
-	local gb, gox, goy = e:getElement("group"):getBackground()
+	local _, ox, oy = e:getBG()
+	local gb, gox, goy = e:getGroup():getBG()
 
 	local tw = self.LegendWidth
 	if tw then
@@ -214,13 +213,14 @@ function DefaultBorder:draw()
 		pen, pen, pen, pen, ox, oy)
 
 	pen = e.Focus and pens[p[10]] or gb
-	drawBorderRect(d, p, p[18], p[19], p[20], p[21], pen, pen, pen, pen, gox, goy)
+	drawBorderRect(d, p, p[18], p[19], p[20], p[21], pen, pen, pen, pen, 
+		gox, goy)
 end
 
-function DefaultBorder:getBorderRegion()
+function DefaultBorder:getRegion(b)
 	local b1, b2, b3, b4 = unpack(self.Border)
 	local x0, y0, x1, y1 = self:layout()
-	local b = Region.new(x0 - b1, y0 - b2, x1 + b3, y1 + b4)
+	b:setRect(x0 - b1, y0 - b2, x1 + b3, y1 + b4)
 	b:subRect(x0, y0, x1, y1)
 	local tw = self.LegendWidth
 	if tw then

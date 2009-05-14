@@ -589,7 +589,7 @@ static struct TTask *exec_createtask(TEXECBASE *TExecBase, struct THook *hook,
 	if (THALInitLock(hal, &newtask->tsk_TaskLock))
 	{
 		if (exec_initmm(TExecBase, &newtask->tsk_HeapMemManager, TNULL,
-			TMMT_TaskSafe | TMMT_Tracking, TNULL))
+			TMMT_MemManager, TNULL))
 		{
 			if (exec_initport(TExecBase, &newtask->tsk_UserPort, newtask,
 				TTASK_SIG_USER))

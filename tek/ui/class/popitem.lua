@@ -30,21 +30,22 @@
 --			[[#tek.ui.class.gadget : Gadget]].KeyCode, this shortcut is
 --			also enabled while the object is invisible. By convention, only
 --			combinations with a qualifier should be used here, e.g.
---			"Alt+C", "Shift+Ctrl+Q". Qualifiers are separated by "+" and
---			must precede the key. Valid qualifiers are:
---				- "Alt", "LAlt", "RAlt"
---				- "Shift", "LShift", "RShift"
---				- "Ctrl", "LCtrl", "RCtrl"
---				- "IgnoreCase"
+--			{{"Alt+C"}}, {{"Shift+Ctrl+Q"}}. Qualifiers are separated by
+--			 {{"+"}} and must precede the key. Valid qualifiers are:
+--				- {{"Alt"}}, {{"LAlt"}}, "RAlt"}}
+--				- {{"Shift"}}, {{"LShift"}}, "RShift"}}
+--				- {{"Ctrl", {{"LCtrl"}}, {{"RCtrl"}}
+--				- {{"IgnoreCase"}}
 --			Alias names for keys are
---				- "F1" ... "F12" (function keys),
---				- "Left", "Right", "Up", "Down" (cursor keys)
---				- "BckSpc", "Tab", "Esc", "Insert", "Overwrite",
---				"PageUp", "PageDown", "Pos1", "End", "Print", "Scroll",
---				and "Pause".
+--				- {{"F1"}} ... {{"F12"}} (function keys),
+--				- {{"Left"}}, {{"Right"}}, {{"Up"}}, {{"Down"}} (cursor keys)
+--				- {{"BckSpc"}}, {{"Tab"}}, {{"Esc"}}, {{"Insert"}},
+--				{{"Overwrite"}}, {{"PageUp"}}, {{"PageDown"}}, {{"Pos1"}}, 
+--				{{"End"}}, {{"Print"}}, {{"Scroll"}}, and {{"Pause"}}}}.
 --
 --	OVERRIDES::
 --		- Element:cleanup()
+--		- Element:getAttr()
 --		- Object.init()
 --		- Gadget:onPress()
 --		- Area:passMsg()
@@ -64,7 +65,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 8.6"
+_VERSION = "PopItem 9.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -87,7 +88,6 @@ local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate", ui.NOTIFY_VALUE }
 local PopItem = _M
 
 function PopItem.init(self)
-	self.Children = self.Children or false
 	self.EraseBG = true
 	self.Image = self.Image or false
 	self.ImageRect = self.ImageRect or false
@@ -95,13 +95,16 @@ function PopItem.init(self)
 	self.PopupWindow = false
 	self.DelayedBeginPopup = false
 	self.DelayedEndPopup = false
-	self.KeyCode = self.KeyCode == nil and true or self.KeyCode
+	if self.KeyCode == nil then
+		self.KeyCode = true
+	end
 	self.ShiftX = false
 	self.ShiftY = false
 	if self.Children then
 		self.Mode = "toggle"
 		self.FocusNotification = { self, "unselectPopup" }
 	else
+		self.Children = false
 		self.Mode = "button"
 	end
 	self.Shortcut = self.Shortcut or false
@@ -400,13 +403,13 @@ end
 function PopItem:connectPopItems(app, window)
 	if self:checkDescend(PopItem) then
 		db.info("adding %s", self:getClassName())
-		local c = self:getElement("children")
+		local c = self:getChildren(true)
 		if c then
 			self:addNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_SUBMENU)
 			self:addNotify("Selected", true, NOTIFY_ONSELECT)
 			self:addNotify("Selected", false, NOTIFY_ONUNSELECT)
-			for _, child in ipairs(c) do
-				PopItem.connectPopItems(child, app, window)
+			for i = 1, #c do
+				PopItem.connectPopItems(c[i], app, window)
 			end
 		else
 			if self.Shortcut then
@@ -427,10 +430,10 @@ end
 function PopItem:disconnectPopItems(window)
 	if self:checkDescend(PopItem) then
 		db.info("removing popitem %s", self:getClassName())
-		local c = self:getElement("children")
+		local c = self:getChildren(true)
 		if c then
-			for _, child in ipairs(c) do
-				PopItem.disconnectPopItems(child, window)
+			for i = 1, #c do
+				PopItem.disconnectPopItems(c[i], window)
 			end
 			self:remNotify("Selected", false, NOTIFY_ONUNSELECT)
 			self:remNotify("Selected", true, NOTIFY_ONSELECT)
@@ -446,12 +449,27 @@ function PopItem:disconnectPopItems(window)
 end
 
 -------------------------------------------------------------------------------
---	getElement: overrides
+--	getAttr: overrides
 -------------------------------------------------------------------------------
 
-function PopItem:getElement(mode)
-	if mode == "children" then
-		return self.Children
-	end
-	return Text.getElement(self, mode)
+local getattrs =
+{
+	["menuitem-size"] = function(self)
+		-- Do we have a text record for a shortcut? If so, return its size
+		if self.TextRecords[2] then
+			return self:getTextSize()	
+		end
+	end,
+}
+
+function PopItem:getAttr(attr, ...)
+	return (getattrs[attr] or Text.getAttr)(self, attr, ...)
+end
+
+-------------------------------------------------------------------------------
+--	getChildren: overrides
+-------------------------------------------------------------------------------
+
+function PopItem:getChildren(init)
+	return init and self.Children
 end

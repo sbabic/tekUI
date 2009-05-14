@@ -16,13 +16,28 @@
 --	MEMBERS::
 --		- {{ApplicationId [IG]}}
 --			Name of the application, normally used as an unique identifier
---			in combination with the {{VendorDomain}} attribute. Default is
+--			in combination with the {{Domain}} attribute. Default is
 --			{{"unknown"}}.
 --		- {{Author [IG]}}
 --			Names of the application's authors. Default: {{"unknown"}}
 --		- {{Copyright [IG]}}
 --			Copyright notice applying to the application, default
 --			{{"unknown"}}
+--		- {{Display [IG]}}
+--			Initial [[#tek.ui.class.display : Display]]. By default, the
+--			application creates a new one during Application.new().
+--		- {{Domain [IG]}}
+--			An uniquely identifying domain name of the vendor, organization
+--			or author manufacturing the application (preferrably without
+--			domain parts like {{"www."}} if they are insignificant for
+--			identification). Default is {{"unknown"}}.
+--		- {{GCControl [IG]}}
+--			The application can perform a garbage collection of the specified
+--			type immediately before going to sleep waiting for input. If set
+--			to '''false''', no garbage collection is initiated. If the value
+--			is '''true''', the application performs a single garbage collection
+--			step. Other values (e.g. {{"collect"}}) are passed unmodified to
+--			{{collectgarbage()}}. Default: '''true'''
 --		- {{ProgramName [IG]}}
 --			Name of the application, as displayed to the user. This is
 --			also the fallback for the {{Title}} attribute in windows.
@@ -41,35 +56,32 @@
 --				- {{"desktop"}}: Tries to import the desktop's color scheme,
 --				besides trying to load a style sheet named {{"desktop.css"}}.
 --			Default: {{"desktop"}}
---		- {{VendorDomain [IG]}}
---			An uniquely identifying domain name of the vendor, organization
---			or author manufacturing the application, preferrably without
---			domain parts like {{"www."}} if they are insignificant for
---			identification. Default is {{"unknown"}}.
---		- {{VendorName [IG]}}
+--		- {{Vendor [IG]}}
 --			Name of the vendor or organization responsible for producing
 --			the application, as displayed to the user. Default {{"unknown"}}.
 --
 --	NOTES::
---		The {{VendorDomain}} and {{ApplicationId}} attributes are
+--		The {{Domain}} and {{ApplicationId}} attributes are
 --		UTF-8 encoded strings, so any international character sequence is
 --		valid for them. Anyhow, it is recommended to avoid too adventurous
 --		symbolism, as its end up in a hardly decipherable, UTF-8 plus
 --		URL-encoded form in the file system, e.g. for loading catalog files
---		under {{tek/ui/locale/<vendordomain>/<applicationid>}}.
+--		under {{tek/ui/locale/<domain>/<applicationid>}}.
 --
 --	IMPLEMENTS::
---		- Application:addCoroutine() - adds a coroutine to the application
---		- Application:addInputHandler() - adds input handler to the application
---		- Application:connect() - connects children recursively
---		- Application:easyRequest() - opens a message box
---		- Application:getById() - returns an element by Id
---		- Application:getLocale() - returns a locale for the application
+--		- Application:addCoroutine() - Adds a coroutine to the application
+--		- Application:addInputHandler() - Adds input handler to the application
+--		- Application:connect() - Connects children recursively
+--		- Application:easyRequest() - Opens a message box
+--		- Application:getById() - Returns an element by Id
+--		- Application:getChildren() - Returns the application's children
+--		- Application:getGroup() - Returns the application's group
+--		- Application:getLocale() - Returns a locale for the application
 --		- Application:quit() - Quits the application
---		- Application:remInputHandler() - removes a registered input handler
---		- Application:requestFile() - opens a file requester
---		- Application:run() - runs the application
---		- Application:suspend() - suspends the caller's coroutine
+--		- Application:remInputHandler() - Removes a registered input handler
+--		- Application:requestFile() - Opens a file requester
+--		- Application:run() - Runs the application
+--		- Application:suspend() - Suspends the caller's coroutine
 --
 --	OVERRIDES::
 --		- Family:addMember()
@@ -85,6 +97,7 @@ local ui = require "tek.ui"
 local Display = ui.Display
 local Family = ui.Family
 local Group = ui.Group
+local Text = ui.Text
 local Window = ui.Window
 
 local assert = assert
@@ -107,7 +120,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 16.2"
+_VERSION = "Application 20.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -150,6 +163,7 @@ end
 -------------------------------------------------------------------------------
 
 function Application.init(self)
+	local t
 	self.Application = self
 	self.ApplicationId = self.ApplicationId or "unknown"
 	self.Author = self.Author or "unknown"
@@ -157,6 +171,10 @@ function Application.init(self)
 	self.Coroutines = { }
 	self.Display = self.Display or false
 	self.ElementById = { }
+	t = self.GCControl
+	if t == nil or t == true then
+		self.GCControl = "step"
+	end
 	self.InputHandlers = { [MSG_USER] = { } }
 	self.ModalWindows = { } -- stack of
 	self.MsgDispatch = false
@@ -164,8 +182,8 @@ function Application.init(self)
 	self.ProgramName = self.ProgramName or self.Title or "unknown"
 	self.Status = "initializing"
 	self.Theme = self.Theme or ui.ThemeName or "desktop"
-	self.VendorName = self.VendorName or "unknown"
-	self.VendorDomain = self.VendorDomain or "unknown"
+	self.Vendor = self.Vendor or "unknown"
+	self.Domain = self.Domain or "unknown"
 	self.Properties = { ui.Theme.getStyleSheet("internal") }
 	if self.Theme and self.Theme ~= "internal" then
 		local s = ui.prepareProperties(ui.Theme.getStyleSheet(self.Theme))
@@ -177,17 +195,17 @@ function Application.init(self)
 end
 
 -------------------------------------------------------------------------------
---	Application:connect(parent): Checks member linkage and connects all
---	children by invoking their [[connect()][#Element:connect]]
---	methods. Note that unlike Element:connect(), this function is recursive.
+--	connect(parent): Checks member linkage and connects all children by
+--	invoking their [[connect()][#Element:connect]] methods. Note that
+--	unlike Element:connect(), this function is recursive.
 -------------------------------------------------------------------------------
 
 function Application:connect(parent)
-	local c = self:getElement("children")
+	local c = self:getChildren(true) -- true indicates initialization
 	if c then
 		for i = 1, #c do
 			local child = c[i]
-			if child:checkDescend(Group) then
+			if child:getGroup() == child then
 				-- descend into group:
 				if not Application.connect(child, self) then
 					return false
@@ -255,9 +273,9 @@ function Application:remElement(e)
 end
 
 -------------------------------------------------------------------------------
--- 	element = Application:getById(id): Returns the element that was
---	registered with the Application under its unique {{id}}. Returns
---	'''nil''' if the id was not found.
+-- 	element = getById(id): Returns the element that was registered with the
+--	Application under its unique {{id}}. Returns '''nil''' if the id was not
+--	found.
 -------------------------------------------------------------------------------
 
 function Application:getById(id)
@@ -500,12 +518,13 @@ function Application:passMsgInterval(msg)
 end
 
 -------------------------------------------------------------------------------
--- 	success, status = Application:run(): Runs the application. Returns when
---	all child windows are closed or when the application's {{Status}} is set
---	to "quit".
+-- 	success, status = run(): Runs the application. Returns when all child
+--	windows are closed or when the application's {{Status}} is set to "quit".
 -------------------------------------------------------------------------------
 
 function Application:run()
+
+	local gcarg = self.GCControl
 
 	-- assert(self.Status == "connected", "Application not in connected state")
 
@@ -569,14 +588,14 @@ function Application:run()
 
 		-- wait if no coroutines are running, and windows are open:
 		if idle and #ow > 0 then
-			if collectgarbage then
-				collectgarbage("step")
+			if gcarg then
+				collectgarbage(gcarg)
 			end
 			d:wait()
 		end
 
 		-- dispatch input messages:
-		while d:getmsg(msg) do
+		while d:getMsg(msg) do
 			msgdispatch[msg[2]](self, msg)
 		end
 
@@ -592,7 +611,7 @@ function Application:run()
 end
 
 -------------------------------------------------------------------------------
---	Application:addCoroutine(function, arg1, ...): Adds the specified function
+--	addCoroutine(function, arg1, ...): Adds the specified function
 --	and arguments to the application as a new coroutine, and returns to the
 --	caller. The new coroutine is not started immediately, but scheduled for
 --	later execution during the application's update procedure. This gives the
@@ -636,7 +655,7 @@ function Application:serviceCoroutines()
 end
 
 -------------------------------------------------------------------------------
---	Application:suspend([window]): Suspends the caller (which must be running
+--	suspend([window]): Suspends the caller (which must be running
 --	in a coroutine) until it is getting rescheduled by the application.
 --	Coroutines can use this as a cooperation point, which gives the
 --	application an opportunity to service all pending messages and updates.
@@ -658,7 +677,7 @@ function Application:suspend(window)
 end
 
 -------------------------------------------------------------------------------
---	status[, path, selection] = Application:requestFile(args):
+--	status[, path, selection] = requestFile(args):
 --	Requests a single or multiple files or directories. Possible keys in
 --	the {{args}} table are:
 --		- {{Center}} - Boolean, whether requester should be opened centered
@@ -694,13 +713,18 @@ function Application:requestFile(args)
 		SelectText = args.SelectText
 	}
 
+	local center = args.Center
+	if center == nil then
+		center = true
+	end
+
 	local window = Window:new
 	{
 		Title = args.Title or dirlist.Locale.SELECT_FILE_OR_DIRECTORY,
 		Modal = true,
 		Width = args.Width or 400,
 		Height = args.Height or 500,
-		Center = args.Center == nil and true or args.Center,
+		Center = center,
 		Children = { dirlist },
 		HideOnEscape = true
 	}
@@ -732,7 +756,7 @@ function Application:requestFile(args)
 end
 
 -------------------------------------------------------------------------------
---	selected = Application:easyRequest(title, text, buttontext1[, ...]):
+--	selected = easyRequest(title, text, buttontext1[, ...]):
 --	This function shows a message box or requester. {{title}} will be
 --	displayed as the window title; if this argument is '''false''', the
 --	application's {{ProgramName}} will be used for the title. {{text}}
@@ -753,7 +777,7 @@ function Application:easyRequest(title, text, ...)
 
 	local numb = select("#", ...)
 	for i = 1, numb do
-		local button = ui.Text:new
+		local button = Text:new
 		{
 			Class = "button",
 			Mode = "button",
@@ -764,7 +788,7 @@ function Application:easyRequest(title, text, ...)
 					result = i
 					window:setValue("Status", "hide")
 				end
-				ui.Text.onPress(self, pressed)
+				Text.onPress(self, pressed)
 			end
 		}
 		if i == numb then
@@ -782,8 +806,8 @@ function Application:easyRequest(title, text, ...)
 		HideOnEscape = true,
 		Children =
 		{
-			ui.Text:new { Class = "message", Width = "fill", Text = text },
-			ui.Group:new { Width = "fill", SameSize = true,
+			Text:new { Class = "message", Width = "fill", Text = text },
+			Group:new { Width = "fill", SameSize = true,
 				Children = buttons }
 		}
 	}
@@ -802,23 +826,27 @@ function Application:easyRequest(title, text, ...)
 end
 
 -------------------------------------------------------------------------------
---	getElement: see Area:getElement()
+--	getGroup(): See Area:getGroup().
 -------------------------------------------------------------------------------
 
-function Application:getElement(mode)
-	if mode == "children" then
-		return self.Children
-	end
+function Application:getGroup()
+end
+
+-------------------------------------------------------------------------------
+--	getChildren(): See Area:getChildren().
+-------------------------------------------------------------------------------
+
+function Application:getChildren()
+	return self.Children
 end
 
 -------------------------------------------------------------------------------
 --	getLocale([deflang[, language]]): Returns a table of locale strings for
---	{{ApplicationId}} and {{VendorDomain}}. See ui.getLocale() for more
---	information.
+--	{{ApplicationId}} and {{Domain}}. See ui.getLocale() for more information.
 -------------------------------------------------------------------------------
 
 function Application:getLocale(deflang, lang)
-	return ui.getLocale(self.ApplicationId, self.VendorDomain, deflang, lang)
+	return ui.getLocale(self.ApplicationId, self.Domain, deflang, lang)
 end
 
 -------------------------------------------------------------------------------
@@ -849,8 +877,8 @@ function Application:addInputHandler(msgtype, object, func)
 end
 
 -------------------------------------------------------------------------------
---	Application:remInputHandler(msgtype, object, func): Removes an input
---	handler that was previously registered with Application:addInputHandler().
+--	remInputHandler(msgtype, object, func): Removes an input handler that was
+--	previously registered with Application:addInputHandler().
 -------------------------------------------------------------------------------
 
 function Application:remInputHandler(msgtype, object, func)

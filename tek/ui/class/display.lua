@@ -13,17 +13,25 @@
 --	OVERVIEW::
 --		This class manages a display.
 --
+--	ATTRIBUTES::
+--		- {{AspectX [IG]}} (number)
+--			- X component of the display's aspect ratio
+--		- {{AspectY [IG]}} (number)
+--			- Y component of the display's aspect ratio
+--
 --	IMPLEMENTS::
 --		- Display:closeFont() - Closes font
---		- Display:colorNameToRGB() - Converts a symbolic color name to RGB
+--		- Display:colorToRGB() - Converts a symbolic color name to RGB
+--		- Display.createPixMap() - Creates a pixmap from picture file data
 --		- Display:getFontAttrs() - Gets font attributes
 --		- Display:getPaletteEntry() - Gets an entry from the symbolic palette
+--		- Display.getPixmap() - Gets a a pixmap from the cache
+--		- Display:getTextSize() - Gets the size of a text in pixels
 --		- Display:getTime() - Gets system time
+--		- Display.loadPixmap() - Loads a pixmap from the file system
 --		- Display:openFont() - Opens a named font
 --		- Display:openVisual() - Opens a visual
 --		- Display:sleep() - Sleeps for a period of time
---		- Display:getTextSize() - Gets size of text rendered with a given font
---		- Display:wait() - Waits for visuals
 --
 --	STYLE PROPERTIES::
 --		- {{font}}
@@ -32,41 +40,41 @@
 --		- {{font-large}}
 --		- {{font-menu}}
 --		- {{font-small}}
---		- {{rgb-dark}}
---		- {{rgb-shadow}}
---		- {{rgb-half-shadow}}
---		- {{rgb-half-shine}}
---		- {{rgb-shine}}
---		- {{rgb-outline}}
---		- {{rgb-background}}
---		- {{rgb-fill}}
 --		- {{rgb-active}}
---		- {{rgb-focus}}
---		- {{rgb-hover}}
---		- {{rgb-disabled}}
---		- {{rgb-detail}}
 --		- {{rgb-active-detail}}
---		- {{rgb-focus-detail}}
---		- {{rgb-hover-detail}}
---		- {{rgb-disabled-detail}}
---		- {{rgb-disabled-detail2}}
---		- {{rgb-border-shine}}
---		- {{rgb-border-shadow}}
---		- {{rgb-border-rim}}
+--		- {{rgb-background}}
 --		- {{rgb-border-focus}}
 --		- {{rgb-border-legend}}
---		- {{rgb-menu}}
---		- {{rgb-menu-detail}}
---		- {{rgb-menu-active}}
---		- {{rgb-menu-active-detail}}
---		- {{rgb-list}}
---		- {{rgb-list2}}
---		- {{rgb-list-detail}}
---		- {{rgb-list-active}}
---		- {{rgb-list-active-detail}}
---		- {{rgb-group}}
+--		- {{rgb-border-rim}}
+--		- {{rgb-border-shadow}}
+--		- {{rgb-border-shine}}
 --		- {{rgb-cursor}}
 --		- {{rgb-cursor-detail}}
+--		- {{rgb-dark}}
+--		- {{rgb-detail}}
+--		- {{rgb-disabled}}
+--		- {{rgb-disabled-detail}}
+--		- {{rgb-disabled-detail2}}
+--		- {{rgb-fill}}
+--		- {{rgb-focus}}
+--		- {{rgb-focus-detail}}
+--		- {{rgb-group}}
+--		- {{rgb-half-shadow}}
+--		- {{rgb-half-shine}}
+--		- {{rgb-hover}}
+--		- {{rgb-hover-detail}}
+--		- {{rgb-list}}
+--		- {{rgb-list-active}}
+--		- {{rgb-list-active-detail}}
+--		- {{rgb-list-detail}}
+--		- {{rgb-list2}}
+--		- {{rgb-menu}}
+--		- {{rgb-menu-active}}
+--		- {{rgb-menu-active-detail}}
+--		- {{rgb-menu-detail}}
+--		- {{rgb-outline}}
+--		- {{rgb-shadow}}
+--		- {{rgb-shine}}
 --		- {{rgb-user1}}
 --		- {{rgb-user2}}
 --		- {{rgb-user3}}
@@ -88,7 +96,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 16.2"
+_VERSION = "Display 17.0"
 
 local Display = _M
 
@@ -176,12 +184,12 @@ local ColorDefaults =
 local FontDefaults =
 {
 	-- cache name : propname : default
-	["ui-main"] = { "font", DEF_MAINFONT },
-	["ui-small"] = { "font-small", DEF_SMALLFONT },
-	["ui-menu"] = { "font-menu", DEF_MENUFONT },
 	["ui-fixed"] = { "font-fixed", DEF_FIXEDFONT },
-	["ui-large"] = { "font-large", DEF_LARGEFONT },
 	["ui-huge"] = { "font-huge", DEF_HUGEFONT },
+	["ui-large"] = { "font-large", DEF_LARGEFONT },
+	["ui-main"] = { "font", DEF_MAINFONT },
+	["ui-menu"] = { "font-menu", DEF_MENUFONT },
+	["ui-small"] = { "font-small", DEF_SMALLFONT },
 }
 FontDefaults[""] = FontDefaults["ui-main"]
 
@@ -268,12 +276,14 @@ function Display:fitMinAspect(w, h, iw, ih, round)
 end
 
 -------------------------------------------------------------------------------
---	r, g, b = colorNameToRGB(colspec, defcolspec): Converts a color
---	specification to RGB. If {{colspec}} is not a valid color, {{defcolspec}}
---	is used as a fallback.
+--	r, g, b = colorToRGB(colspec[, defcolspec]): Converts a color
+--	specification to RGB. If {{colspec}} is not a valid color, the optional
+--	{{defcolspec}} can be used as a fallback. Valid color specifications are
+--	{{#rrggbb}} (each color component is noted in 8 bit hexadecimal) and
+--	{{#rgb}} (each color component is noted in 4 bit hexadecimal).
 -------------------------------------------------------------------------------
 
-function Display:colorNameToRGB(col, def)
+function Display:colorToRGB(col, def)
 	for i = 1, 2 do
 		local r, g, b = col:match("%#(%x%x)(%x%x)(%x%x)")
 		if r then
@@ -299,8 +309,9 @@ function Display:colorNameToRGB(col, def)
 end
 
 -------------------------------------------------------------------------------
---	name, r, g, b = getPaletteEntry(i): Gets the name and red, green, blue
---	components of a color in the Display's symbolic color palette.
+--	name, r, g, b = getPaletteEntry(index): Gets the {{name}} and red, green,
+--	blue components of a color of the given {{index}} in the Display's
+--	symbolic color palette.
 -------------------------------------------------------------------------------
 
 function Display:getPaletteEntry(i)
@@ -308,7 +319,7 @@ function Display:getPaletteEntry(i)
 	if color then
 		local name, defrgb = color[1], color[2]
 		local rgb = self.RGBTab[i] or defrgb
-		return name, self:colorNameToRGB(rgb, defrgb)
+		return name, self:colorToRGB(rgb, defrgb)
 	end
 end
 
@@ -330,7 +341,7 @@ function Display:getProperties(p, pclass)
 end
 
 -------------------------------------------------------------------------------
---	width, height = Display:getTextSize(font, text): Returns the width and
+--	width, height = getTextSize(font, text): Returns the width and
 --	height of the specified {{text}} when it is rendered with the given
 --	{{font}}.
 -------------------------------------------------------------------------------
@@ -340,8 +351,8 @@ function Display:getTextSize(...)
 end
 
 -------------------------------------------------------------------------------
---	font = Display:openFont(fontname): Opens the named font. For a discussion
---	of the fontname format, see [[#tek.ui.class.text : Text]].
+--	font = openFont(fontname): Opens the named font. For a discussion
+--	of the {{fontname}} format, see [[#tek.ui.class.text : Text]].
 -------------------------------------------------------------------------------
 
 function Display:openFont(fname)
@@ -357,7 +368,7 @@ function Display:openFont(fname)
 			end
 			name = nname
 		end
-		size = size ~= "" and tonumber(size) or nil
+		size = tonumber(size)
 		for name in name:gmatch("%s*([^,]*)%s*,?") do
 			if name == "" then
 				name = FontDefaults[""][2]:match("^([^:,]*),?[^:]*:?(%d*)$")
@@ -377,14 +388,14 @@ function Display:openFont(fname)
 end
 
 -------------------------------------------------------------------------------
---	Display:closeFont(font): Closes the specified font
+--	closeFont(font): Closes the specified font.
 -------------------------------------------------------------------------------
 
 function Display:closeFont(display, font)
 end
 
 -------------------------------------------------------------------------------
---	Display:getFontAttrs(font): Returns the font attributes height,
+--	h, up, ut = getFontAttrs(font): Returns the font attributes height,
 --	underline position and underline thickness.
 -------------------------------------------------------------------------------
 
@@ -397,15 +408,15 @@ end
 --	wait:
 -------------------------------------------------------------------------------
 
-function Display:wait(...)
-	return Visual.wait(...)
+function Display:wait()
+	return Visual.wait()
 end
 
 -------------------------------------------------------------------------------
---	getmsg:
+--	getMsg:
 -------------------------------------------------------------------------------
 
-function Display:getmsg(...)
+function Display:getMsg(...)
 	return Visual.getmsg(...)
 end
 
@@ -413,12 +424,12 @@ end
 --	sleep:
 -------------------------------------------------------------------------------
 
-function Display:sleep(...)
+function Display.sleep(...)
 	return Visual.sleep(...)
 end
 
 -------------------------------------------------------------------------------
---	getTime:
+--	Display:getTime(): Gets the system time.
 -------------------------------------------------------------------------------
 
 function Display:getTime(...)

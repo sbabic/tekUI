@@ -40,23 +40,19 @@ local Region = require "tek.lib.region"
 
 local assert = assert
 local insert = table.insert
-local max = math.max
-local min = math.min
-local overlap = Region.overlapCoords
-local pairs = pairs
+local intersect = Region.intersect
 local remove = table.remove
 local setmetatable = setmetatable
-local type = type
 local unpack = unpack
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 14.3"
+_VERSION = "Drawable 15.0"
 
 DEBUG_DELAY = 3
 
 -------------------------------------------------------------------------------
--- Class implementation:
+--	Class implementation:
 -------------------------------------------------------------------------------
 
 local Drawable = _M
@@ -79,6 +75,10 @@ function Drawable.init(self)
 	self.DebugPen2 = false
 	return Object.init(self)
 end
+
+-------------------------------------------------------------------------------
+--	open:
+-------------------------------------------------------------------------------
 
 function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
 	center, fulls)
@@ -119,7 +119,7 @@ function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
 				if key:sub(1, 1) == "#" then
 					-- we assume a string representing a color number:
 					local pen = self.Visual:allocpen(
-						self.Display:colorNameToRGB(key, "#ff00ff"))
+						self.Display:colorToRGB(key, "#f0f"))
 					tab[key] = pen
 					return pen
 				end
@@ -161,7 +161,7 @@ function Drawable:close()
 end
 
 -------------------------------------------------------------------------------
---	Drawable:fillRect(x0, y0, x1, y1, pen): Draws a filled rectangle.
+--	fillRect(x0, y0, x1, y1, pen): Draws a filled rectangle.
 -------------------------------------------------------------------------------
 
 function Drawable:fillRect_normal(...)
@@ -169,7 +169,7 @@ function Drawable:fillRect_normal(...)
 end
 
 -------------------------------------------------------------------------------
---	Drawable:drawRect(x0, y0, x1, y1, pen): Draws an unfilled rectangle.
+--	drawRect(x0, y0, x1, y1, pen): Draws an unfilled rectangle.
 -------------------------------------------------------------------------------
 
 function Drawable:drawRect_normal(...)
@@ -177,7 +177,7 @@ function Drawable:drawRect_normal(...)
 end
 
 -------------------------------------------------------------------------------
---	Drawable:drawText(x0, y0, text, fgpen[, bgpen]): Renders text
+--	drawText(x0, y0, text, fgpen[, bgpen]): Renders text
 --	with the specified foreground pen. If the optional background pen is
 --	specified, the background under the text is filled in this color.
 -------------------------------------------------------------------------------
@@ -199,7 +199,7 @@ function Drawable:drawPixmap(...)
 end
 
 -------------------------------------------------------------------------------
---	Drawable:drawLine(x0, y0, x1, y1, pen): Draws a line using the specified
+--	drawLine(x0, y0, x1, y1, pen): Draws a line using the specified
 --	pen.
 -------------------------------------------------------------------------------
 
@@ -208,7 +208,7 @@ function Drawable:drawLine_normal(...)
 end
 
 -------------------------------------------------------------------------------
---	Drawable:drawPlot(x0, y0, pen): Draws a point.
+--	drawPlot(x0, y0, pen): Draws a point.
 -------------------------------------------------------------------------------
 
 function Drawable:drawPlot_normal(...)
@@ -216,7 +216,7 @@ function Drawable:drawPlot_normal(...)
 end
 
 -------------------------------------------------------------------------------
---	Drawable:setFont(font): Sets the specified font.
+--	setFont(font): Sets the specified font.
 -------------------------------------------------------------------------------
 
 function Drawable:setFont(...)
@@ -224,7 +224,7 @@ function Drawable:setFont(...)
 end
 
 -------------------------------------------------------------------------------
---	width, height = Drawable:getTextSize(text): Determines the width and height
+--	width, height = getTextSize(text): Determines the width and height
 --	of a text using the font which is currently set on the Drawable.
 -------------------------------------------------------------------------------
 
@@ -233,7 +233,7 @@ function Drawable:getTextSize(...)
 end
 
 -------------------------------------------------------------------------------
---	msg = Drawable:getMsg([msg]): Gets the next pending message from the
+--	msg = getMsg([msg]): Gets the next pending message from the
 --	Drawable. Optionally, the fields of the new message are inserted into
 --	the specified table.
 -------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ function Drawable:getAttrs()
 end
 
 -------------------------------------------------------------------------------
---	Drawable:pushClipRect(x0, y0, x1, y1): Pushes a new cliprect on the top
+--	pushClipRect(x0, y0, x1, y1): Pushes a new cliprect on the top
 --	of the drawable's stack of cliprects.
 -------------------------------------------------------------------------------
 
@@ -271,7 +271,8 @@ function Drawable:pushClipRect(x0, y0, x1, y1)
 		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
 		insert(self.ClipStack, r)
 		if cr[1] then
-			x0, y0, x1, y1 = overlap(x0, y0, x1, y1, cr[1], cr[2], cr[3], cr[4])
+			x0, y0, x1, y1 = intersect(x0, y0, x1, y1, 
+				cr[1], cr[2], cr[3], cr[4])
 			if not x0 then
 				x0, y0, x1, y1 = -1, -1, -1, -1
 			end
@@ -282,7 +283,7 @@ function Drawable:pushClipRect(x0, y0, x1, y1)
 end
 
 -------------------------------------------------------------------------------
---	Drawable:popClipRect(): Pop the topmost cliprect from the Drawable.
+--	popClipRect(): Pop the topmost cliprect from the Drawable.
 -------------------------------------------------------------------------------
 
 function Drawable:popClipRect()
@@ -295,7 +296,7 @@ function Drawable:popClipRect()
 		if #cs > 0 then
 			x0, y0, x1, y1 = 0, 0, HUGE, HUGE
 			for i = 1, #cs do
-				x0, y0, x1, y1 = overlap(x0, y0, x1, y1, unpack(cs[i]))
+				x0, y0, x1, y1 = intersect(x0, y0, x1, y1, unpack(cs[i]))
 				if not x0 then
 					x0, y0, x1, y1 = -1, -1, -1, -1
 					break
@@ -312,7 +313,7 @@ function Drawable:popClipRect()
 end
 
 -------------------------------------------------------------------------------
---	Drawable:setShift(deltax, deltay): Add a delta to the Drawable's
+--	setShift(deltax, deltay): Add a delta to the Drawable's
 --	coordinate displacement.
 -------------------------------------------------------------------------------
 
@@ -326,7 +327,7 @@ function Drawable:setShift(dx, dy)
 end
 
 -------------------------------------------------------------------------------
---	shiftx, shifty = Drawable:getShift(): Get the Drawable's current
+--	shiftx, shifty = getShift(): Get the Drawable's current
 --	coordinate displacement.
 -------------------------------------------------------------------------------
 
@@ -335,10 +336,10 @@ function Drawable:getShift()
 end
 
 -------------------------------------------------------------------------------
---	Drawable:copyArea(x0, y0, x1, y1, deltax, deltay, exposures): Copy the
+--	copyArea(x0, y0, x1, y1, deltax, deltay, exposures): Copy the
 --	specified rectangle to the position determined by the relative
 --	coordinates {{deltax}} and {{deltay}}. The {{exposures}} argument is a
---	table used for collecting the raw coordinates of rectangles which got
+--	table used for collecting the raw coordinates of rectangles getting
 --	exposed as a result of the copy operation.
 -------------------------------------------------------------------------------
 
@@ -370,36 +371,36 @@ end
 function Drawable:fillRect_debug(...)
 	local x0, y0, x1, y1 = ...
 	self.Visual:frect(x0, y0, x1, y1, self.DebugPen1)
-	self.Display:sleep(DEBUG_DELAY)
+	self.Display.sleep(DEBUG_DELAY)
 	self.Visual:frect(x0, y0, x1, y1, self.DebugPen2)
-	self.Display:sleep(DEBUG_DELAY)
+	self.Display.sleep(DEBUG_DELAY)
 	self.Visual:frect(...)
 end
 
 function Drawable:drawRect_debug(...)
 	local x0, y0, x1, y1 = ...
 	self.Visual:rect(x0, y0, x1, y1, self.DebugPen1)
-	self.Display:sleep(DEBUG_DELAY)
+	self.Display.sleep(DEBUG_DELAY)
 	self.Visual:rect(x0, y0, x1, y1, self.DebugPen2)
-	self.Display:sleep(DEBUG_DELAY)
+	self.Display.sleep(DEBUG_DELAY)
 	self.Visual:rect(...)
 end
 
 function Drawable:drawLine_debug(...)
 	local x0, y0, x1, y1 = ...
 	self.Visual:line(x0, y0, x1, y1, self.DebugPen1)
-	self.Display:sleep(DEBUG_DELAY)
+	self.Display.sleep(DEBUG_DELAY)
 	self.Visual:line(x0, y0, x1, y1, self.DebugPen2)
-	self.Display:sleep(DEBUG_DELAY)
+	self.Display.sleep(DEBUG_DELAY)
 	self.Visual:line(...)
 end
 
 function Drawable:drawPlot_debug(...)
 	local x0, y0 = ...
 	self.Visual:plot(x0, y0, self.DebugPen1)
-	self.Display:sleep(DEBUG_DELAY)
+	self.Display.sleep(DEBUG_DELAY)
 	self.Visual:plot(x0, y0, self.DebugPen2)
-	self.Display:sleep(DEBUG_DELAY)
+	self.Display.sleep(DEBUG_DELAY)
 	self.Visual:plot(...)
 end
 

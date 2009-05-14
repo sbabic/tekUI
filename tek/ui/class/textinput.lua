@@ -78,7 +78,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 8.4"
+_VERSION = "TextInput 9.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -192,7 +192,7 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:layoutText()
-	local r1, r2, r3, r4 = self:getRectangle()
+	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
 		
 		self:setCursor(self:getCursor())

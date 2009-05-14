@@ -286,8 +286,8 @@ exec_init(TEXECBASE *exec, TTAGITEM *tags)
 		if (exec_initmm(exec, &exec->texb_MsgMemManager, TNULL, TMMT_Message,
 			TNULL))
 		{
-			if (exec_initmm(exec, &exec->texb_BaseMemManager, TNULL, TMMT_TaskSafe,
-				TNULL))
+			if (exec_initmm(exec, &exec->texb_BaseMemManager, TNULL,
+				TMMT_MemManager, TNULL))
 			{
 				exec->texb_Module.tmd_Handle.thn_Hook.thk_Data = exec;
 				exec->texb_Module.tmd_Handle.thn_Name = TMODNAME_EXEC;

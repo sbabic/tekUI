@@ -10,9 +10,6 @@
 #include <tek/inline/exec.h>
 #include <tek/proto/visual.h>
 
-extern TMODENTRY TUINT
-tek_init_display_x11(TAPTR, struct TModule *, TUINT16, TTAGITEM *);
-
 /*****************************************************************************/
 
 #ifndef LUACFUNC

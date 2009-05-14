@@ -40,7 +40,8 @@
 --		- {{Modal [IG]}} (boolean)
 --			Instructs all other windows to reject input while this window is
 --			open.
---		- {{MouseX [G]}}, {{MouseY [G]}} (number)
+--		- {{MouseX [G]}} (number)
+--		- {{MouseY [G]}} (number)
 --			The current screen coordinates of the pointing device.
 --		- {{Status [ISG]}} (string)
 --			Status of the Window, which can be:
@@ -74,7 +75,6 @@
 --		- Window:setMovingElement() - Sets the window's moving element
 --
 --	OVERRIDES::
---		- Area:getElement()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
@@ -93,6 +93,7 @@ local Group = ui.Group
 
 local assert = assert
 local floor = math.floor
+local freeRegion = ui.freeRegion
 local insert = table.insert
 local max = math.max
 local min = math.min
@@ -104,7 +105,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 14.4"
+_VERSION = "Window 15.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -139,8 +140,8 @@ function Window.init(self)
 	self.CopyObjects = { }
 	self.DblClickElement = false
 	self.DblClickCheckInfo = { } -- check_element, sec, usec, mousex, mousey
-	self.DblClickTimeout = self.DblClickTimeout or DEF_DBLCLICKTIMELIMIT
 	self.DblClickJitter = self.DblClickJitter or DEF_DBLCLICKJITTER
+	self.DblClickTimeout = self.DblClickTimeout or DEF_DBLCLICKTIMELIMIT
 	self.FocusElement = false
 	self.FullScreen = self.FullScreen or ui.FullScreen == "true"
 	self.HideOnEscape = self.HideOnEscape or false
@@ -265,7 +266,7 @@ function Window:hide()
 end
 
 -------------------------------------------------------------------------------
---	Window:addInputHandler(msgtype, object, function): Adds an {{object}} and
+--	addInputHandler(msgtype, object, function): Adds an {{object}} and
 --	a {{function}} to the window's chain of handlers for input of the
 --	specified type. Multiple input types can be handled by one handler by
 --	logically or'ing message types. Input handlers are invoked as follows:
@@ -291,7 +292,7 @@ function Window:addInputHandler(msgtype, object, func)
 end
 
 -------------------------------------------------------------------------------
---	Window:remInputHandler(msgtype, object, func): Removes an input handler
+--	remInputHandler(msgtype, object, func): Removes an input handler
 --	that was previously registered with the window using
 --	Window:addInputHandler().
 -------------------------------------------------------------------------------
@@ -318,7 +319,7 @@ function Window:remInputHandler(msgtype, object, func)
 end
 
 -------------------------------------------------------------------------------
---	Window:addInterval(): Adds an interval timer to the window, which will
+--	addInterval(): Adds an interval timer to the window, which will
 --	furtheron generate MSG_INTERVAL messages 50 times per second. These
 --	messages cause a considerable load to the application, therefore each call
 --	to this function should be paired with an matching call to
@@ -335,7 +336,7 @@ function Window:addInterval()
 end
 
 -------------------------------------------------------------------------------
---	Window:remInterval(): Decreases the use counter for interval messages and
+--	remInterval(): Decreases the use counter for interval messages and
 --	stops sending interval messages to the window when called by the last
 --	client that has previously requested an interval timer using
 --	Window:addInterval().
@@ -374,7 +375,7 @@ function Window:hideWindow()
 end
 
 -------------------------------------------------------------------------------
---	Window:onChangeStatus(status): This method is invoked when the Window's
+--	onChangeStatus(status): This method is invoked when the Window's
 --	{{Status}} has changed.
 -------------------------------------------------------------------------------
 
@@ -459,7 +460,7 @@ function Window:rethinkLayout()
 				-- window needs to grow; mark new region as damaged:
 				w = max(w, m1 or w)
 				h = max(h, m2 or h)
-				self:markDamage(0, 0, w - 1, h - 1)
+				self:damage(0, 0, w - 1, h - 1)
 			end
 			self.Drawable:setAttrs { MinWidth = m1, MinHeight = m2,
 				MaxWidth = m3, MaxHeight = m4 }
@@ -540,7 +541,7 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_REFRESH] = function(self, msg)
-		self:markDamage(msg[7], msg[8], msg[9], msg[10])
+		self:damage(msg[7], msg[8], msg[9], msg[10])
 		return msg
 	end,
 	[ui.MSG_MOUSEOVER] = function(self, msg)
@@ -672,13 +673,12 @@ function Window:handleInput(msg)
 end
 
 -------------------------------------------------------------------------------
---	getHoverElementByXY: returns the element hovered by the mouse pointer,
---	given that it descends from the Gadget class
+--	getHoverElementByXY: returns the element hovered by the mouse pointer.
 -------------------------------------------------------------------------------
 
 function Window:getHoverElementByXY(mx, my)
 	local he = self:getElementByXY(mx, my)
-	return he and he:checkDescend(Gadget) and he
+	return he and he:checkHover() and he or false
 end
 
 -------------------------------------------------------------------------------
@@ -689,7 +689,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:addLayoutGroup(group, markdamage)
-	if group:checkDescend(Group) then
+	if group:getGroup() == group then
 		local record = self.LayoutGroup[group]
 		if not record then
 			record = { group, markdamage }
@@ -700,7 +700,7 @@ function Window:addLayoutGroup(group, markdamage)
 			record[2] = markdamage
 		end
 	else
-		db.info("Attempt to relayout non-group: %s", group:getClassName())
+		db.warn("Attempt to relayout non-group: %s", group:getClassName())
 	end
 end
 
@@ -710,6 +710,10 @@ end
 
 local function sortcopies(a, b) return a[1] > b[1] end
 
+local function insertcopy(t, r1, r2, r3, r4, dx, dy, dir)
+	insert(t, { (dx == 0 and r2 or r1) * dir, dx, dy, r1, r2, r3, r4 })
+end
+
 function Window:refresh()
 	-- handle copies:
 	local ca = self.CopyArea
@@ -717,10 +721,8 @@ function Window:refresh()
 	for key, e in pairs(ca) do
 		local dx, dy, region = e[1], e[2], e[3]
 		local dir = (dx == 0 and dy or dx) > 0 and 1 or -1
-		for _, r1, r2, r3, r4 in region:getRects() do
-			insert(t, { (dx == 0 and r2 or r1) * dir,
-				dx, dy, r1, r2, r3, r4 })
-		end
+		region:forEach(insertcopy, t, dx, dy, dir)
+		freeRegion(region)
 		ca[key] = nil
 	end
 	sort(t, sortcopies)
@@ -730,7 +732,7 @@ function Window:refresh()
 		local t = { }
 		d:copyArea(r[4], r[5], r[6], r[7], r[4] + r[2], r[5] + r[3], t)
 		for i = 1, #t, 4 do
-			self:markDamage(t[i], t[i + 1], t[i + 2], t[i + 3])
+			self:damage(t[i], t[i + 1], t[i + 2], t[i + 3])
 		end
 	end
 	self.CopyObjects = { }
@@ -758,7 +760,7 @@ function Window:update()
 					local group = record[1]
 					local markdamage = record[2]
 					group:calcWeights()
-					local r1, r2, r3, r4 = group:getRectangle()
+					local r1, r2, r3, r4 = group:getRect()
 					if r1 then
 						local m = group.MarginAndBorder
 						self:relayout(group, r1 - m[1], r2 - m[2],
@@ -770,7 +772,7 @@ function Window:update()
 					if markdamage == 1 then
 						group.Redraw = true
 					elseif markdamage == 2 then
-						group:markDamage(r1, r2, r3, r4)
+						group:damage(r1, r2, r3, r4)
 					end
 				end
 			end
@@ -801,7 +803,7 @@ function Window:layout(_, _, _, _, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	Window:setHiliteElement(element): Sets/unsets the element which is being
+--	setHiliteElement(element): Sets/unsets the element which is being
 --	hovered by the mouse pointer.
 -------------------------------------------------------------------------------
 
@@ -819,7 +821,7 @@ function Window:setHiliteElement(e)
 end
 
 -------------------------------------------------------------------------------
---	Window:setFocusElement(element): Sets/unsets the element which is marked
+--	setFocusElement(element): Sets/unsets the element which is marked
 --	for receiving the keyboard input.
 -------------------------------------------------------------------------------
 
@@ -837,7 +839,7 @@ function Window:setFocusElement(e)
 end
 
 -------------------------------------------------------------------------------
---	Window:setActiveElement(element): Sets/unsets the element which is
+--	setActiveElement(element): Sets/unsets the element which is
 --	currently active (or 'in use'). If {{element}} is '''nil''', the currently
 --	active element will be deactivated.
 -------------------------------------------------------------------------------
@@ -879,7 +881,7 @@ function Window:handleHold(msg)
 end
 
 -------------------------------------------------------------------------------
---	dblclick = Window:checkDblClickTime(as, au, bs, bu): Check if the two
+--	dblclick = checkDblClickTime(as, au, bs, bu): Check if the two
 --	given times (first a, second b) are within the doubleclick interval.
 --	Each time is specified in seconds ({{s}}) and microseconds ({{u}}).
 --	Returns '''true''' if the two times are indicative of a double click.
@@ -898,7 +900,7 @@ function Window:checkDblClickTime(as, au, bs, bu)
 end
 
 -------------------------------------------------------------------------------
---	Window:setDblClickElement(element): Sets/unsets the element which is
+--	setDblClickElement(element): Sets/unsets the element which is
 --	candidate for double click detection. If the element is set twice in a
 --	sufficiently short period of time and the pointing device did not move
 --	too much since the first event, the double click is triggered by
@@ -934,7 +936,7 @@ function Window:setDblClickElement(e)
 end
 
 -------------------------------------------------------------------------------
---	Window:setMovingElement(element): Sets/unsets the element which is
+--	setMovingElement(element): Sets/unsets the element which is
 --	being moved around by the user.
 -------------------------------------------------------------------------------
 
@@ -945,18 +947,35 @@ function Window:setMovingElement(e)
 end
 
 -------------------------------------------------------------------------------
---	getElement: overrides
+--	getParent: overrides
 -------------------------------------------------------------------------------
 
-function Window:getElement(mode)
-	if mode == "parent" or mode == "siblings" then
-		return -- a window has no parent or siblings
-	elseif mode == "prevorparent" then
-		return self:getElement("lastchild")
-	elseif mode == "nextorparent" then
-		return self:getElement("firstchild")
-	end
-	return Group.getElement(self, mode)
+function Window:getParent()
+end
+
+-------------------------------------------------------------------------------
+--	getSiblings: overrides
+-------------------------------------------------------------------------------
+
+function Window:getSiblings()
+end
+
+-------------------------------------------------------------------------------
+--	getPrev: overrides
+-------------------------------------------------------------------------------
+
+function Window:getPrev()
+	local c = self:getChildren()
+	return c and c[#c]
+end
+
+-------------------------------------------------------------------------------
+--	getNext: overrides
+-------------------------------------------------------------------------------
+
+function Window:getNext()
+	local c = self:getChildren()
+	return c and c[1]
 end
 
 -------------------------------------------------------------------------------
@@ -970,10 +989,19 @@ function Window:getNextElement(e, backward)
 	repeat
 		oe = oe or ne
 		if oe then
-			ne = e:getElement(backward and "lastchild" or "firstchild") or
-				e:getElement(backward and "prevorparent" or "nextorparent")
+			local c = e:getChildren()
+			if backward then
+				ne = c and c[#c] or e:getPrev()
+			else
+				ne = c and c[1] or e:getNext()
+			end
 		else
-			ne = self:getElement(backward and "lastchild" or "firstchild")
+			local c = self:getChildren()
+			if backward then
+				ne = c and c[#c]
+			else
+				ne = c and c[1]
+			end
 		end
 		if ne and ne:checkFocus() then
 			return ne
@@ -1044,7 +1072,7 @@ function Window:getShortcutElements(key, qual)
 end
 
 -------------------------------------------------------------------------------
---	Window:clickElement(element): This function performs a simulated click on
+--	clickElement(element): This function performs a simulated click on
 --	the specified {{element}}; if {{element}} is a string, it will be looked up
 --	using Application:getById(). This function is actually a shorthand
 --	for Window:setHiliteElement(), followed by Window:setActiveElement() twice
@@ -1064,7 +1092,7 @@ function Window:clickElement(e)
 end
 
 -------------------------------------------------------------------------------
---	Window:onHide(): This handler is invoked when the window's close button
+--	onHide(): This handler is invoked when the window's close button
 --	is clicked (or the Escape key is pressed and the {{HideOnEscape}} flag
 --	is set). The standard behavior is to hide the window by setting the 
 --	{{Status}} field to {{"hide"}}. When the last window is closed, the

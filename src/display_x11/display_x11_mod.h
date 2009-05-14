@@ -335,6 +335,8 @@ struct attrdata
 
 /*****************************************************************************/
 
+LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod);
+
 LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags);
 LOCAL void x11_exit(X11DISPLAY *mod);
 LOCAL TTASKENTRY void x11_taskfunc(struct TTask *task);

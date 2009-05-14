@@ -20,8 +20,8 @@
 --			{{"inset"}}, {{"outset"}}, {{"ridge"}}, {{"groove"}}, or
 --			{{"solid"}}. This border has priority over the other two.
 --			* The 'rim' border seperates the two other borders and
---			may give the composition a more contrastful look. This border has
---			the lowest priority.
+--			may give the composition a more contrastful appearance. This
+--			border has the lowest priority.
 --			* The 'focus' border (in addition to the element's focus
 --			highlighting style) can be used to visualize that the element
 --			is currently receiving the input. This border is designed as
@@ -30,10 +30,10 @@
 --			as the surrounding group, which makes it indistinguishable from
 --			the background.
 --		Border classes (which are organized as plug-ins) do not need to
---		implement all sub borders; in fact, their properties are all
---		internally handled by the "default" border class, and more (and other)
---		sub borders and properties may be defined and implemented in the
---		future (or in other border classes). As the Frame class has no
+--		implement all sub borders; in fact, these properties are all
+--		internally handled by the {{"default"}} border class, and more (and
+--		other) sub borders and properties may be defined and implemented in
+--		the future (or in other border classes). As the Frame class has no
 --		notion of sub borders, their respective widths are subtracted
 --		from the Element's total border width, leaving only the remaining
 --		width for the 'main' border.
@@ -41,46 +41,46 @@
 --	ATTRIBUTES::
 --		- {{Border [IG]}} (table)
 --			An array of four widths (in pixels) for the element's
---			border, in the order left, right, top, bottom.
+--			border, in the order left, right, top, bottom. This attribute
+--			is controllable via the {{border-width}} style property.
 --		- {{BorderClass [IG]}} (table)
 --			Name of the border class used to implement this element's
---			border. Default: "default"
+--			border. This attribute is controllable via the {{border-class}}
+--			style property. Default: {{"default"}}
 --		- {{BorderRegion [G]}} ([[#tek.lib.region : Region]])
 --			Region object holding the outline of the element's border
 --		- {{Legend [IG]}} (string)
 --			Border legend text [Default: '''false''']
 --
 --	STYLE PROPERTIES::
---		- {{border-bottom-color}}
---		- {{border-bottom-width}}
---		- {{border-class}}
---		- {{border-color}}
---		- {{border-focus-color}}
---		- {{border-focus-width}}
---		- {{border-left-color}}
---		- {{border-left-width}}
---		- {{border-legend-font}}
---		- {{border-right-color}}
---		- {{border-right-width}}
---		- {{border-rim-color}}
---		- {{border-rim-width}}
---		- {{border-style}}
---		- {{border-top-color}}
---		- {{border-top-width}}
---		- {{border-width}}
+--		- {{border-bottom-color}} - controls the {{"default"}} border class
+--		- {{border-bottom-width}} - controls {{Frame.Border}}
+--		- {{border-class}} - controls {{Frame.BorderClass}}
+--		- {{border-color}} - controls the {{"default"}} border class
+--		- {{border-focus-color}} - controls the {{"default"}} border class
+--		- {{border-focus-width}} - controls the {{"default"}} border class
+--		- {{border-left-color}} - controls the {{"default"}} border class
+--		- {{border-left-width}} - controls {{Frame.Border}}
+--		- {{border-legend-font}} - controls the {{"default"}} border class
+--		- {{border-right-color}} - controls the {{"default"}} border class
+--		- {{border-right-width}} - controls {{Frame.Border}}
+--		- {{border-rim-color}} - controls the {{"default"}} border class
+--		- {{border-rim-width}} - controls the {{"default"}} border class
+--		- {{border-style}} - controls the {{"default"}} border class
+--		- {{border-top-color}} - controls the {{"default"}} border class
+--		- {{border-top-width}} - controls {{Frame.Border}}
+--		- {{border-width}} - controls {{Frame.Border}}
 --
 --	IMPLEMENTS::
 --		- Frame:drawBorder() - Draws the element's border
 --		- Frame:getBorder() - Queries the element's border
 --
 --	OVERRIDES::
---		- Element:cleanup()
---		- Area:draw()
+--		- Element:getProperties()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
---		- Area:markDamage()
---		- Class.new()
+--		- Area:damage()
 --		- Area:punch()
 --		- Area:refresh()
 --		- Element:setup()
@@ -88,18 +88,13 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Area = ui.Area
-local Region = require "tek.lib.region"
-local floor = math.floor
-local min = math.min
-local max = math.max
-local newRegion = Region.new
-local unpack = unpack
+local allocRegion = ui.allocRegion
+local freeRegion = ui.freeRegion
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 6.5"
+_VERSION = "Frame 7.1"
 
 local Frame = _M
 
@@ -110,7 +105,13 @@ local Frame = _M
 function Frame.init(self)
 	self.Legend = self.Legend or false
 	if self.Legend then
-		self.Class = self.Class and self.Class .. " legend" or "legend"
+		local t = self.Class
+		if t then
+			t = t .. " legend"
+		else
+			t = "legend"
+		end
+		self.Class = t
 	end
 	self.BorderObject = false
 	self.BorderClass = self.BorderClass or false
@@ -177,7 +178,7 @@ function Frame:hide()
 	if self.BorderObject then
 		self.BorderObject:hide()
 	end
-	self.BorderRegion = false
+	self.BorderRegion = freeRegion(self.BorderRegion)
 	Area.hide(self)
 end
 
@@ -193,7 +194,7 @@ function Frame:calcOffsets()
 end
 
 -------------------------------------------------------------------------------
---	border = Frame:getBorder(): Returns an element's border widths in the
+--	border = getBorder(): Returns an element's border widths in the
 --	order left, top, right, bottom.
 -------------------------------------------------------------------------------
 
@@ -205,13 +206,13 @@ function Frame:getBorder()
 end
 
 -------------------------------------------------------------------------------
---	markDamage: overrides
+--	damage: overrides
 -------------------------------------------------------------------------------
 
-function Frame:markDamage(r1, r2, r3, r4)
-	Area.markDamage(self, r1, r2, r3, r4)
+function Frame:damage(r1, r2, r3, r4)
+	Area.damage(self, r1, r2, r3, r4)
 	if self.BorderRegion and
-		self.BorderRegion:checkOverlap(r1, r2, r3, r4) then
+		self.BorderRegion:checkIntersect(r1, r2, r3, r4) then
 		self.RedrawBorder = true
 	end
 end
@@ -223,8 +224,9 @@ end
 function Frame:layout(r1, r2, r3, r4, markdamage)
 	local changed, border_ok = Area.layout(self, r1, r2, r3, r4, markdamage)
 	if changed and self.BorderObject then
-		-- getBorderRegion() implies layout():
-		self.BorderRegion = self.BorderObject:getBorderRegion()
+		-- getRegion() implies layout(); also, reuse existing region:
+		self.BorderRegion = self.BorderObject:getRegion(self.BorderRegion or
+			allocRegion())
 		-- using the border_ok hack, we avoid redrawing the border when the
 		-- object was just copied:
 		if not border_ok and markdamage ~= false then
@@ -270,7 +272,7 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:getElementByXY(x, y)
-	local r1, r2, r3, r4 = self:getRectangle()
+	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
 		local b1, b2, b3, b4 = self:getBorder()
 		return x >= r1 - b1 and x <= r3 + b3 and y >= r2 - b2 and

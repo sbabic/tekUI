@@ -70,13 +70,14 @@ local ui = require "tek.ui"
 local Gadget = ui.Gadget
 local Region = require "tek.lib.region"
 local Numeric = ui.Numeric
-
 local floor = math.floor
 local max = math.max
 local min = math.min
+local freeRegion = ui.freeRegion
+local reuseRegion = ui.reuseRegion
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 8.4"
+_VERSION = "Slider 10.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -91,8 +92,13 @@ local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 local Slider = _M
 
 function Slider.init(self)
-	self.AutoPosition = self.AutoPosition ~= nil and self.AutoPosition or false
-	self.AutoFocus = self.AutoFocus ~= nil and self.AutoFocus or false
+	if self.AutoPosition == nil then
+		self.AutoPosition = false
+	end
+	if self.AutoFocus == nil then
+		self.AutoFocus = false
+	end
+	self.BGRegion = false
 	self.Integer = self.Integer or false
 	self.Kind = self.Kind or false
 	self.Orientation = self.Orientation or "horizontal"
@@ -168,6 +174,7 @@ function Slider:hide()
 	self:setCapture(false)
 	self.Child:hide()
 	Numeric.hide(self)
+	self.BGRegion = freeRegion(self.BGRegion)
 	return true
 end
 
@@ -190,7 +197,7 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:getKnobRect()
-	local r1, r2, r3, r4 = self:getRectangle()
+	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
 		local p = self.Padding
 		local m = self.Child.MarginAndBorder
@@ -220,6 +227,20 @@ function Slider:getKnobRect()
 end
 
 -------------------------------------------------------------------------------
+--	updateBGRegion:
+-------------------------------------------------------------------------------
+
+function Slider:updateBGRegion()
+	local r = self.Rect
+	local bg = reuseRegion(self.BGRegion, r[1], r[2], r[3], r[4])
+	self.BGRegion = bg
+	local c = self.Child
+	r = c.Rect
+	local c1, c2, c3, c4 = c:getBorder()
+	bg:subRect(r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4)
+end
+
+-------------------------------------------------------------------------------
 --	layout: overrides
 -------------------------------------------------------------------------------
 
@@ -227,6 +248,7 @@ function Slider:layout(r1, r2, r3, r4, markdamage)
 	if Numeric.layout(self, r1, r2, r3, r4, markdamage) then
 		local x0, y0, x1, y1 = self:getKnobRect()
 		self.Child:layout(x0, y0, x1, y1, markdamage)
+		self:updateBGRegion()
 		return true
 	end
 end
@@ -253,12 +275,12 @@ function Slider:refresh()
 end
 
 -------------------------------------------------------------------------------
---	markDamage: overrides
+--	damage: overrides
 -------------------------------------------------------------------------------
 
-function Slider:markDamage(r1, r2, r3, r4)
-	Numeric.markDamage(self, r1, r2, r3, r4)
-	self.Child:markDamage(r1, r2, r3, r4)
+function Slider:damage(r1, r2, r3, r4)
+	Numeric.damage(self, r1, r2, r3, r4)
+	self.Child:damage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
@@ -267,16 +289,7 @@ end
 
 function Slider:draw()
 	local d = self.Drawable
-	local r = self.Rect
-	local bg = Region.new(r[1], r[2], r[3], r[4])
-	local c = self.Child
-	r = c.Rect
-	local c1, c2, c3, c4 = c:getBorder()
-	bg:subRect(r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4)
-	local bgpen, tx, ty = self:getBackground()
-	for _, r1, r2, r3, r4 in bg:getRects() do
-		d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
-	end
+	self.BGRegion:forEach(d.fillRect, d, self:getBG())
 end
 
 -------------------------------------------------------------------------------
@@ -364,6 +377,7 @@ local function updateslider(self)
 		if x0 then
 			local _, changed = win:relayout(self.Child, x0, y0, x1, y1)
 			if changed then
+				self:updateBGRegion()
 				if self.Redraw then
 					-- also redraw child if we're slated for redraw already:
 					self.Child.Redraw = true
@@ -393,7 +407,7 @@ function Slider:onSetMax(m)
 end
 
 -------------------------------------------------------------------------------
---	Slider:onSetRange(range): This handler is invoked when the Slider's
+--	onSetRange(range): This handler is invoked when the Slider's
 --	{{Range}} attribute has changed.
 -------------------------------------------------------------------------------
 

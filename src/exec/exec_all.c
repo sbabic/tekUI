@@ -21,6 +21,9 @@
 
 #include "../teklib/teklib.c"
 #include "../teklib/string.c"
+#if defined(TDEBUG) && TDEBUG > 0
+#include "../teklib/debug.c"
+#endif
 
 #include "exec_mod.c"
 #include "exec_api.c"

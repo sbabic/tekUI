@@ -201,7 +201,7 @@ function PopList:beginPopup()
 end
 
 -------------------------------------------------------------------------------
---	PopList:onSelectEntry(line): This method is invoked when the
+--	onSelectEntry(line): This method is invoked when the
 --	{{SelectedLine}} attribute is set.
 -------------------------------------------------------------------------------
 
@@ -213,7 +213,7 @@ function PopList:onSelectEntry(lnr)
 end
 
 -------------------------------------------------------------------------------
---	PopList:setList(listobject): Sets a new [[#tek.class.list : List]]
+--	setList(listobject): Sets a new [[#tek.class.list : List]]
 --	object.
 -------------------------------------------------------------------------------
 
@@ -224,7 +224,7 @@ function PopList:setList(listobject)
 end
 
 -------------------------------------------------------------------------------
---	PopList:getProperties: overrides
+--	getProperties: overrides
 -------------------------------------------------------------------------------
 
 function PopList:getProperties(p, pclass)

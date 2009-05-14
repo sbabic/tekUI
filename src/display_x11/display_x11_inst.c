@@ -6,8 +6,6 @@
 
 #include "display_x11_mod.h"
 
-TBOOL initlibxft(X11DISPLAY *mod);
-
 static void x11_exitinstance(X11DISPLAY *inst);
 static void x11_processevent(X11DISPLAY *mod);
 static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
@@ -35,7 +33,7 @@ struct FileReader
 	int State;
 };
 
-static int readchar(struct FileReader *r, char c)
+static int x11_readchar(struct FileReader *r, char c)
 {
 	if (r->State != 0)
 		return 0;
@@ -71,7 +69,7 @@ static int readchar(struct FileReader *r, char c)
 	return 0;
 }
 
-static int readline(struct FileReader *r, char **line, size_t *len)
+static int x11_readline(struct FileReader *r, char **line, size_t *len)
 {
 	int c;
 	while (r->ReadBytes > 0 || r->BufBytes > 0)
@@ -111,15 +109,15 @@ static int readline(struct FileReader *r, char **line, size_t *len)
 	return 0;
 }
 
-static int reader_init(struct FileReader *r, int fd, size_t maxlen)
+static int x11_reader_init(struct FileReader *r, int fd, size_t maxlen)
 {
 	r->File = fd;
 	r->ReadBytes = 0;
 	r->BufBytes = 0;
 	r->BufPos = 0;
 	r->MaxLen = maxlen;
-	r->ReadCharFunc = readchar;
-	r->ReadLineFunc = readline;
+	r->ReadCharFunc = x11_readchar;
+	r->ReadLineFunc = x11_readline;
 	r->Buffer = NULL;
 	r->Pos = 0;
 	r->Size = 0;
@@ -127,14 +125,12 @@ static int reader_init(struct FileReader *r, int fd, size_t maxlen)
 	return 1;
 }
 
-static void
-reader_exit(struct FileReader *r)
+static void x11_reader_exit(struct FileReader *r)
 {
 	free(r->Buffer);
 }
 
-static void
-reader_addbytes(struct FileReader *r, int nbytes)
+static void x11_reader_addbytes(struct FileReader *r, int nbytes)
 {
 	r->ReadBytes += nbytes;
 }
@@ -352,7 +348,7 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		inst->x11_fd_max =
 			TMAX(inst->x11_fd_sigpipe_read, inst->x11_fd_display) + 1;
 
-		initlibxft(inst);
+		x11_initlibxft(inst);
 
 		/* needed for unsetcliprect: */
 		inst->x11_HugeRegion = XCreateRegion();
@@ -552,7 +548,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	#if defined(ENABLE_STDIN)
 	int fd_in = STDIN_FILENO;
 	struct FileReader fr;
-	reader_init(&fr, fd_in, 2048);
+	x11_reader_init(&fr, fd_in, 2048);
 	#endif
 
 	TGetSystemTime(&nextt);
@@ -617,8 +613,8 @@ LOCAL void x11_taskfunc(struct TTask *task)
 					{
 						char *line;
 						size_t len;
-						reader_addbytes(&fr, nbytes);
-						while (readline(&fr, &line, &len))
+						x11_reader_addbytes(&fr, nbytes);
+						while (x11_readline(&fr, &line, &len))
 						{
 							TIMSG *imsg;
 							if (inst->x11_IMsgPort &&
@@ -664,7 +660,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	TDBPRINTF(TDB_INFO,("Device instance closedown\n"));
 
 	#if defined(ENABLE_STDIN)
-	reader_exit(&fr);
+	x11_reader_exit(&fr);
 	#endif
 
 	/* closedown: */

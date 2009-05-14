@@ -23,7 +23,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 2.0"
+_VERSION = "Meter 2.1"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -239,9 +239,7 @@ end
 
 function Meter:draw()
 	local d = self.Drawable
-	for _, r1, r2, r3, r4 in self.TextRegion:getRects() do
-		d:fillRect(r1, r2, r3, r4, d.Pens[self.Background])
-	end
+	self.TextRegion:forEach(d.fillRect, d, self:getBG())
 	Text.draw(self)
 	local r = self.Rect
 	self:eraseGraphBackground()

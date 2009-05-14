@@ -32,16 +32,16 @@ visual$(DLLEXT): $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(VISUALLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo -L$(LIBDIR) -lvisual -ltek -ltekdebug $(LUA_DLLS)
 
 display/x11$(DLLEXT): $(OBJDIR)/x11_lua.lo $(DISPLAYX11LIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/x11_lua.lo -L$(LIBDIR) -ldisplay_x11 -ltek -ltekdebug $(X11_LIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/x11_lua.lo -L$(LIBDIR) -ldisplay_x11 -ltek -ltekdebug $(X11_LIBS) $(LUA_DLLS)
 
 display/directfb$(DLLEXT): $(OBJDIR)/directfb_lua.lo $(DISPLAYDFBLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/directfb_lua.lo -L$(LIBDIR) -ldisplay_directfb -ltek -ltekdebug $(DFB_LIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/directfb_lua.lo -L$(LIBDIR) -ldisplay_directfb -ltek -ltekdebug $(DFB_LIBS) $(LUA_DLLS)
 
 display/windows$(DLLEXT): $(OBJDIR)/windows_lua.lo $(DISPLAYWINLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/windows_lua.lo -L$(LIBDIR) -ldisplay_win -ltek -ltekdebug $(WIN_LIBS) $(LUA_DLLS)
 
 display/nanox$(DLLEXT): $(OBJDIR)/nanox_lua.lo $(DISPLAYNANOXLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/nanox_lua.lo -L$(LIBDIR) -ldisplay_nanox -ltek -ltekdebug $(NANOX_LIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/nanox_lua.lo -L$(LIBDIR) -ldisplay_nanox -ltek -ltekdebug $(NANOX_LIBS) $(LUA_DLLS)
 
 $(OBJDIR)/region.lo: region.c
 	$(CC) $(LIBCFLAGS) -o $@ -c region.c

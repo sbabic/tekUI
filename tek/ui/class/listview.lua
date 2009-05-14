@@ -47,7 +47,7 @@ local Text = ui.Text
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 4.9"
+_VERSION = "ListView 5.0"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -77,7 +77,7 @@ local LVScrollGroup = ScrollGroup:newClass { _NAME = "_lvscrollgroup" }
 function LVScrollGroup:onSetCanvasHeight(h)
 	ScrollGroup.onSetCanvasHeight(self, h)
 	local c = self.Child
-	local _, r2, _, r4 = c:getRectangle()
+	local _, r2, _, r4 = c:getRect()
 	if r2 then
 		local sh = r4 - r2 + 1
 		local en = self.VSliderGroupMode == "on" or

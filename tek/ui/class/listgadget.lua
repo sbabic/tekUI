@@ -19,7 +19,7 @@
 --		This class implements a scrollable list or table. Each item in the
 --		list is a table consisting of the following elements:
 --
---				{ { "one", "two", ... }, userdata, selected, ... }
+--				{ { "column1", "column2", ... }, userdata, selected, ... }
 --
 --		Description:
 --			- {{entry[1]}} is a table containing the text of each column;
@@ -27,7 +27,7 @@
 --			- {{entry[3]}} is a boolean indicating that the line is selected.
 --
 --		The following fields are reserved for internal use by the ListGadget;
---		you should never rely on them or modify them.
+--		you should never rely on their contents or modify them.
 --
 --	ATTRIBUTES::
 --		- {{AlignColumn [IG]}} (number)
@@ -39,7 +39,7 @@
 --			By default, the ListGadget's parent {{Canvas}} is used, but by
 --			use of this attribute it is possible to align the ListGadget to
 --			something else.
---		- {{BgPenAlt [IG]}} (userdata)
+--		- {{BGPenAlt [IG]}} (userdata)
 --			A colored pen for painting the background of alternating lines
 --		- {{ColumnPadding [IG]}} (number)
 --			The padding between columns, in pixels. By default, the
@@ -75,8 +75,8 @@
 --			the {{SelectedLines}} attribute. Setting this value will invoke
 --			the ListGadget:onSelectLine() method.
 --		- {{SelectMode [IG]}} (string)
---			The ListGadget's selection mode, which can be "none", "single",
---			or "multi".
+--			The ListGadget's selection mode, which can be {{"none"}},
+--			{{"single"}}, or {{"multi"}}.
 --
 --	IMPLEMENTS::
 --		- ListGadget:addItem() - Adds an item to the list
@@ -112,7 +112,6 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Display = ui.Display
 local Text = ui.Text
@@ -122,22 +121,20 @@ local ScrollGroup = ui.ScrollGroup
 local Text = ui.Text
 
 local assert = assert
-local concat = table.concat
 local floor = math.floor
-local insert = table.insert
 local ipairs = ipairs
+local insert = table.insert
+local intersect = Region.intersect
 local max = math.max
 local min = math.min
-local overlap = Region.overlapCoords
 local pairs = pairs
-local remove = table.remove
 local sort = table.sort
 local tostring = tostring
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 15.7"
+_VERSION = "ListGadget 17.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -168,13 +165,13 @@ function ListGadget.init(self)
 	self.ColumnPadding = self.ColumnPadding or false
 	self.ColumnPositions = { 0 }
 	self.ColumnWidths = { 0 }
-	self.CursorBorderClass = self.CursorBorderClass or false
 	self.CursorBorder = { }
-	self.CursorObject = false
+	self.CursorBorderClass = self.CursorBorderClass or false
 	self.CursorLine = self.CursorLine or 0
+	self.CursorObject = false
 	self.FHeight = false
-	self.FontHandle = false
 	self.Font = self.Font or false
+	self.FontHandle = false
 	self.FWidth = false
 	self.HeaderGroup = self.HeaderGroup or false
 	self.Margin = ui.NULLOFFS -- fixed
@@ -184,6 +181,7 @@ function ListGadget.init(self)
 	self.NumColumns = 1
 	self.NumSelectedLines = 0
 	self.Padding = ui.NULLOFFS -- fixed
+	self.RenderData = { }
 	self.SelectedLines = false
 	self.SelectedLine = self.SelectedLine or 0
 	-- selection modes ("none", "single", "multi"):
@@ -319,13 +317,13 @@ function ListGadget:getLineOnScreen(lnr)
 	if l then
 		local c = self.Canvas
 		if c then
-			local r1, r2, r3, r4 = c:getRectangle()
+			local r1, r2, r3, r4 = c:getRect()
 			if r1 then
 				local v1 = c.CanvasLeft
 				local v2 = c.CanvasTop
 				local v3 = v1 + r3 - r1
 				local v4 = v2 + r4 - r2
-				return overlap(v1, v2, v3, v4, 0, l[4], c.CanvasWidth - 1,
+				return intersect(v1, v2, v3, v4, 0, l[4], c.CanvasWidth - 1,
 					l[5])
 			end
 		end
@@ -333,13 +331,13 @@ function ListGadget:getLineOnScreen(lnr)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:damageLine(lnr): Marks the specified line for repainting.
+--	damageLine(lnr): Marks the specified line for repainting.
 -------------------------------------------------------------------------------
 
 function ListGadget:damageLine(lnr)
 	local r1, r2, r3, r4 = self:getLineOnScreen(lnr)
 	if r1 then
-		self:markDamage(r1, r2, r3, r4)
+		self:damage(r1, r2, r3, r4)
 	end
 end
 
@@ -367,7 +365,7 @@ function ListGadget:shiftSelection(lnr, delta)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:addItem(item[, line[, quick]]): Adds an item to the list. If
+--	addItem(item[, line[, quick]]): Adds an item to the list. If
 --	{{line}} is unspecified, the entry is added at the end of the list. The
 --	boolean {{quick}} indicates that the list should not be relayouted and
 --	repainted. (For relayouting and repainting the list after mass addition,
@@ -399,7 +397,7 @@ function ListGadget:addItem(entry, lnr, quick)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:remItem(line[, quick]): Removes the item from the list at the
+--	remItem(line[, quick]): Removes the item from the list at the
 --	specified line. The boolean {{quick}} indicates that the list should not
 --	be relayouted and repainted. (For relayouting and repainting the list
 --	after mass removal, see also ListGadget:repaint().)
@@ -428,7 +426,7 @@ function ListGadget:remItem(lnr, quick)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:changeItem(item, line[, quick]): Overwrites the item at the
+--	changeItem(item, line[, quick]): Overwrites the item at the
 --	specified line in the list. The boolean {{quick}} indicates that the list
 ---	should not be relayouted and repainted. (For relayouting and repainting
 --	the list after mass changes, see also ListGadget:repaint().)
@@ -448,7 +446,7 @@ function ListGadget:changeItem(entry, lnr, quick)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:setList(listobject): Sets a new [[#tek.class.list : List]]
+--	setList(listobject): Sets a new [[#tek.class.list : List]]
 --	object, and relayouts and repaints the list.
 -------------------------------------------------------------------------------
 
@@ -460,7 +458,7 @@ function ListGadget:setList(listobject)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:repaint(): Relayouts and repaints the list.
+--	repaint(): Relayouts and repaints the list.
 -------------------------------------------------------------------------------
 
 function ListGadget:repaint()
@@ -508,7 +506,7 @@ function ListGadget:prepare(damage)
 		-- the real question is if we have been layouted yet...
 		if damage and self.AlignColumn then
 			local ae = self.AlignElement or self.Canvas
-			local r1, _, r3 = ae:getRectangle()
+			local r1, _, r3 = ae:getRect()
 			if r1 then
 				local pw = r3 - r1 + 1 - b1 - b3
 				local cx = 0
@@ -583,93 +581,76 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:draw()
-	local lo = self.ListObject
-	if not lo then
-		return
-	end
-	local dr = self.DamageRegion
-	if dr then
-		local _, tx, ty = self:getBackground()
-
+	local lo, dr = self.ListObject, self.DamageRegion
+	if lo and dr then
 		-- repaint intra-area damagerects:
 		local d = self.Drawable
-		d:setFont(self.FontHandle)
-
+		local t = self.RenderData
+		local _, tx, ty = self:getBG()
 		local pens = d.Pens
-		local fpen = pens[self.FGPen]
+		t[6] = pens[self.BGPen] -- background pen
+		t[7] = pens[self.BGPenAlt or self.BGPen] -- background pen, alternate
+		d:setFont(self.FontHandle)
+		dr:forEach(self.drawPatch, self, t, d, lo, self.LineHeight, 
+			self.Canvas.CanvasWidth - 1,
+			pens[self.FGPen], -- foreground pen
+			pens[self.BGPenSelected or ui.PEN_LISTACTIVE], -- cursor pen
+			pens[self.FGPenSelected or ui.PEN_LISTACTIVEDETAIL], -- f+c pen
+			tx, ty)
+		self.DamageRegion = false
+	end
+end
 
-		local cpen = pens[self.BGPenSelected or ui.PEN_LISTACTIVE]
-		local cfpen = pens[self.FGPenSelected or ui.PEN_LISTACTIVEDETAIL]
-
-		local bpens = self.BackPens
-		bpens[0] = pens[self.BGPen]
-		bpens[1] = pens[self.BGPenAlt or self.BGPen]
-
-		local cbc = self.CursorObject
-		local b1, b2, b3, b4 = cbc:getBorder()
-
-		local x1 = self.Canvas.CanvasWidth - 1
-		local cl = self.CursorLine
-		local cp = self.ColumnPositions
-		local nc = #cp
-		local lh = self.LineHeight
-
-		for _, r1, r2, r3, r4 in dr:getRects() do
-			d:pushClipRect(r1, r2, r3, r4)
-			for lnr = floor(r2 / lh) + 1, min(lo:getN(), floor(r4 / lh) + 1) do
-				local bpen = bpens[(lnr - 1) % 2]
-				local l = lo:getItem(lnr)
-				-- overlap between damage and line:
-				if overlap(r1, r2, r3, r4, 0, l[4], x1, l[5]) then
-					if lnr == cl then
-						-- with cursor:
-						d:fillRect(b1, l[4] + b2, x1 - b3, l[5] - b4,
-							l[3] and cpen or bpen, tx, ty)
-						for ci = 1, nc do
-							local text = l[1][ci]
-							if text then
-								local cx = cp[ci]
-								d:pushClipRect(b1 + cx, l[4] + b2,
-									b1 + cx + self.ColumnWidths[ci], l[5] - b4)
-								d:drawText(b1 + cx, l[4] + b2,
-									b1 + cx + self.ColumnWidths[ci], l[5] - b4,
-									l[1][ci], l[3] and cfpen or fpen)
-								d:popClipRect()
-							end
-						end
-						cbc:layout(b1, l[4] + b2, x1 - b3, l[5] - b4)
-						cbc:draw(d)
-					else
-						-- without cursor:
-						d:fillRect(0, l[4], x1, l[5], l[3] and cpen or bpen,
-							tx, ty)
-						for ci = 1, nc do
-							local text = l[1][ci]
-							if text then
-								local cx = cp[ci]
-								if overlap(r1, r2, r3, r4, cx, l[4],
-									b1 + cx + self.ColumnWidths[ci] - 1,
-									l[5]) then
-									d:pushClipRect(b1 + cx, l[4] + b2,
-										b1 + cx + self.ColumnWidths[ci],
-										l[5] - b4)
-									-- draw text:
-									d:drawText(b1 + cx, l[4] + b2, 
-										b1 + cx + self.ColumnWidths[ci],
-										l[5] - b4, l[1][ci],
-										l[3] and cfpen or fpen)
-									d:popClipRect()
-								end
-							end
+function ListGadget:drawPatch(r1, r2, r3, r4, t, d, lo, lh, x1, fpen, cpen,
+	cfpen, tx, ty)
+	d:pushClipRect(r1, r2, r3, r4)
+	for lnr = floor(r2 / lh) + 1, min(lo:getN(), floor(r4 / lh) + 1) do
+		local l = lo:getItem(lnr)
+		-- overlap between damage and line:
+		if intersect(r1, r2, r3, r4, 0, l[4], x1, l[5]) then
+			local b1, b2, b3, b4 = unpack(t, 1, 4)
+			local cp = self.ColumnPositions
+			local bpen = t[6 + lnr % 2]
+			if lnr == self.CursorLine then
+				-- with cursor:
+				d:fillRect(b1, l[4] + b2, x1 - b3, l[5] - b4,
+					l[3] and cpen or bpen, tx, ty)
+				for ci = 1, #cp do
+					local text = l[1][ci]
+					if text then
+						local cx = cp[ci]
+						d:pushClipRect(b1 + cx, l[4] + b2,
+							b1 + cx + self.ColumnWidths[ci], l[5] - b4)
+						d:drawText(b1 + cx, l[4] + b2,
+							b1 + cx + self.ColumnWidths[ci], l[5] - b4,
+							l[1][ci], l[3] and cfpen or fpen)
+						d:popClipRect()
+					end
+				end
+				self.CursorObject:draw(d)
+			else
+				-- without cursor:
+				d:fillRect(0, l[4], x1, l[5], l[3] and cpen or bpen, tx, ty)
+				for ci = 1, #cp do
+					local text = l[1][ci]
+					if text then
+						local cx = cp[ci]
+						if intersect(r1, r2, r3, r4, cx, l[4],
+							b1 + cx + self.ColumnWidths[ci] - 1, l[5]) then
+							d:pushClipRect(b1 + cx, l[4] + b2,
+								b1 + cx + self.ColumnWidths[ci], l[5] - b4)
+							-- draw text:
+							d:drawText(b1 + cx, l[4] + b2,
+								b1 + cx + self.ColumnWidths[ci],
+								l[5] - b4, l[1][ci], l[3] and cfpen or fpen)
+							d:popClipRect()
 						end
 					end
 				end
 			end
-			d:popClipRect()
 		end
-
-		self.DamageRegion = false
 	end
+	d:popClipRect()
 end
 
 -------------------------------------------------------------------------------
@@ -678,8 +659,9 @@ end
 
 function ListGadget:layout(r1, r2, r3, r4, markdamage)
 	local res
-
-	local ch = self.CanvasHeight -- !!
+	local c = self.Canvas
+	local ch = self.CanvasHeight
+	local cw = c.CanvasWidth
 	local m = self.MarginAndBorder
 	local x0 = r1 + m[1]
 	local y0 = r2 + m[2]
@@ -688,13 +670,26 @@ function ListGadget:layout(r1, r2, r3, r4, markdamage)
 	local r = self.Rect
 	if r[1] ~= x0 or r[2] ~= y0 or r[3] ~= x1 or r[4] ~= y1 then
 		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
-		self.Canvas:setValue("CanvasHeight", ch)
+		c:setValue("CanvasHeight", ch)
+		self:layoutCursor()
 		res = true
 	end
 	if markdamage then
-		self.Canvas:markChildDamage(0, 0, self.Canvas.CanvasWidth - 1, ch - 1)
+		c:damageChild(0, 0, cw - 1, ch - 1)
 	end
 	return res
+end
+
+function ListGadget:layoutCursor()
+	local co = self.CursorObject
+	local x1 = self.Canvas.CanvasWidth - 1
+	local t = self.RenderData
+	t[1], t[2], t[3], t[4] = co:getBorder()
+	t[5] = x1
+	local lh = self.LineHeight
+	local y0 = (self.CursorLine - 1) * lh
+	local y1 = y0 + lh - 1
+	co:layout(t[1], y0 + t[2], x1 - t[3], y1 - t[4])
 end
 
 -------------------------------------------------------------------------------
@@ -707,7 +702,7 @@ function ListGadget:setState(bg, fg)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:onSetCursor(line, oldline): This method is invoked when the
+--	onSetCursor(line, oldline): This method is invoked when the
 --	{{CursorLine}} attribute has changed.
 -------------------------------------------------------------------------------
 
@@ -717,11 +712,12 @@ function ListGadget:onSetCursor(lnr, oldlnr)
 		lnr = lnr and min(max(0, lnr), lo:getN())
 		self.CursorLine = oldlnr
 		self:moveLine(lnr, true)
+		self:layoutCursor()
 	end
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:onDoubleClick(clicked)
+--	onDoubleClick(clicked)
 -------------------------------------------------------------------------------
 
 function ListGadget:onDoubleClick(clicked)
@@ -733,7 +729,7 @@ function ListGadget:onDoubleClick(clicked)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:onSelectLine(line, oldline): This method is invoked when the
+--	onSelectLine(line, oldline): This method is invoked when the
 --	{{SelectedLine}} attribute is set.
 -------------------------------------------------------------------------------
 
@@ -772,7 +768,7 @@ function ListGadget:onSelectLine(lnr, oldlnr)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:moveLine(lnr[, follow]): Moves the list cursor to the
+--	moveLine(lnr[, follow]) - Moves the list cursor to the
 --	specified line; if the optional boolean {{follow}} is '''true''',
 --	the visible part of the list follows the cursor.
 -------------------------------------------------------------------------------
@@ -794,20 +790,20 @@ function ListGadget:moveLine(lnr, follow)
 		if cl >= 0 then
 			local ol = lo:getItem(cl)
 			if ol then
-				self:markDamage(0, ol[4], x1, ol[5])
+				self:damage(0, ol[4], x1, ol[5])
 			end
 		end
 		local l = lnr and lo:getItem(lnr)
 		if l then
 			local y0, y1 = l[4], l[5]
 			if y0 and y1 then
-				self:markDamage(0, y0, x1, y1)
+				self:damage(0, y0, x1, y1)
 				if y1 < ca.CanvasTop then
 					if follow then
 						ca:setValue("CanvasTop", y0)
 					end
 				else
-					local _, r2, _, r4 = ca:getRectangle()
+					local _, r2, _, r4 = ca:getRect()
 					if r2 then
 						local vh = r4 - r2 + 1 - (y1 - y0 + 1)
 						if y0 > ca.CanvasTop + vh then
@@ -839,7 +835,7 @@ function ListGadget:findLine(y)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:changeSelection(mode): Changes the selection of the entire
+--	changeSelection(mode): Changes the selection of the entire
 --	list; modes supported are:
 --		- "none": marks all lines as unselected
 -------------------------------------------------------------------------------
@@ -870,7 +866,6 @@ function ListGadget:passMsg(msg)
 				local lnr = self:findLine(msg[5])
 				if lnr then
 					if self.SelectMode == "multi" then
-						db.trace("qual: %s - line: %s", qual, lnr)
 						if qual == 0 or qual >= 16 then
 							local active = self.SelectedLines[lnr]
 							self:changeSelection("none")
@@ -971,7 +966,7 @@ function ListGadget:onFocus(focused)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:getN(): Returns the number of lines in the list.
+--	getN(): Returns the number of lines in the list.
 -------------------------------------------------------------------------------
 
 function ListGadget:getN()
@@ -980,7 +975,7 @@ function ListGadget:getN()
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:getItem(line): Returns the item at the specified line.
+--	getItem(line): Returns the item at the specified line.
 -------------------------------------------------------------------------------
 
 function ListGadget:getItem(lnr)
@@ -989,7 +984,7 @@ function ListGadget:getItem(lnr)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:getSelectedLines([mode]): Returns a table of all
+--	getSelectedLines([mode]): Returns a table of all
 --	selected entries, sorted by (by default) their line number. Currently
 --	defined modes are "ascending" or "descending". Default: "ascending"
 -------------------------------------------------------------------------------
@@ -1010,7 +1005,7 @@ function ListGadget:getSelectedLines(mode)
 end
 
 -------------------------------------------------------------------------------
---	ListGadget:clear(): Remove all items from the list.
+--	clear(): Remove all items from the list.
 -------------------------------------------------------------------------------
 
 function ListGadget:clear()

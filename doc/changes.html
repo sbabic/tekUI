@@ -10,6 +10,97 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<blockquote>
+			<ul>
+				<li>
+					Improved some demos, texts, localizations, and style sheets
+				</li>
+				<li>
+					Compiler: added commandline arguments
+				</li>
+				<li>
+					C sources and their symbol names are now better suited for amalgamed
+					builds
+				</li>
+				<li>
+					Removed unused memory managers from TEKlib
+				</li>
+				<li>
+					Application: Added GCControl
+				</li>
+				<li>
+					Application, PopupWindow: Removed use of <a href="manual.html#checkDescend"><code>checkDescend()</code></a> 
+				</li>
+				<li>
+					FloatText: corrected flaky color property evaluation
+				</li>
+				<li>
+					Gauge, Slider: Added BackgroundRegion, <a href="manual.html#updateBackgroundRegion"><code>updateBackgroundRegion()</code></a>, faster
+					repaint
+				</li>
+				<li>
+					Region: now supports a custom datatype for rectangles, renamed
+					<a href="manual.html#overlap:::"><code>overlap...()</code></a> to <a href="manual.html#intersect:::"><code>intersect...()</code></a>, removed <a href="manual.html#free"><code>free()</code></a> and <a href="manual.html#intersect"><code>intersect()</code></a> methods,
+					added caching of rectangle nodes, management and caching of rectangle
+					nodes now more efficient, removed <a href="manual.html#getRects"><code>getRects()</code></a>, replaced by <a href="manual.html#forEach"><code>forEach()</code></a> 
+				</li>
+				<li>
+					Area, Canvas, FloatText, Gauge, Group, ImageGadget, ListGadget,
+					ScrollGroup, Slider, Window: Now using <a href="manual.html#region:forEach"><code>region:forEach()</code></a> instead of
+					<a href="manual.html#region:getRects"><code>region:getRects()</code></a> 
+				</li>
+				<li>
+					Default border, Border: <a href="manual.html#getBorderRegion"><code>getBorderRegion()</code></a> renamed to <a href="manual.html#getRegion"><code>getRegion()</code></a>, now
+					expecting a border to be supplied by the caller
+				</li>
+				<li>
+					UI: added <a href="manual.html#allocRegion"><code>allocRegion()</code></a>, <a href="manual.html#freeRegion"><code>freeRegion()</code></a>, <a href="manual.html#newRegion"><code>newRegion()</code></a>, <a href="manual.html#reuseRegion"><code>reuseRegion()</code></a>,
+					ProgDir is now guaranteed to contain a trailing path separator
+				</li>
+				<li>
+					Area, Canvas, Frame, Gauge, Group, ListGadget, Slider: added region
+					caching and reusing
+				</li>
+				<li>
+					ListGadget, FloatText: innerloop of <a href="manual.html#draw"><code>draw()</code></a> is now a separate function
+				</li>
+				<li>
+					Element: Added <a href="manual.html#getAttr"><code>getAttr()</code></a> 
+				</li>
+				<li>
+					PopItem: implemented &quot;menuitem-size&quot; via <a href="manual.html#getAttr"><code>getAttr()</code></a> 
+				</li>
+				<li>
+					<a href="manual.html#Area:getBackground"><code>Area:getBackground()</code></a> renamed to <a href="manual.html#getBG"><code>getBG()</code></a>, <a href="manual.html#getRectangle"><code>getRectangle()</code></a> to <a href="manual.html#getRect"><code>getRect()</code></a> 
+					<a href="manual.html#markDamage"><code>markDamage()</code></a> to <a href="manual.html#damage"><code>damage()</code></a>, <a href="manual.html#focusRectangle"><code>focusRectangle()</code></a> to <a href="manual.html#focusRect"><code>focusRect()</code></a>,
+					BackgroundPosition to BGPosition, removed <a href="manual.html#getElement"><code>getElement()</code></a>, added
+					<a href="manual.html#getChildren"><code>getChildren()</code></a>, <a href="manual.html#getSiblings"><code>getSiblings()</code></a>, <a href="manual.html#getParent"><code>getParent()</code></a>, <a href="manual.html#getGroup"><code>getGroup()</code></a>, <a href="manual.html#getNext"><code>getNext()</code></a>,
+					<a href="manual.html#getPrev"><code>getPrev()</code></a>, <a href="manual.html#checkHover"><code>checkHover()</code></a> 
+				</li>
+				<li>
+					Application: Renamed CollectGarbage to GCControl, VendorName to Vendor,
+					VendorDomain to Domain
+				</li>
+				<li>
+					Canvas: renamed <a href="manual.html#markChildDamage"><code>markChildDamage()</code></a> to <a href="manual.html#damageChild"><code>damageChild()</code></a> 
+				</li>
+				<li>
+					CheckMark, RadioButton: renamed AltImage to SelectImage
+				</li>
+				<li>
+					DirList: renamed <a href="manual.html#getDirectoryIterator"><code>getDirectoryIterator()</code></a> to <a href="manual.html#getDirIterator"><code>getDirIterator()</code></a> 
+				</li>
+				<li>
+					Display: renamed <a href="manual.html#colorNameToRGB"><code>colorNameToRGB()</code></a> to <a href="manual.html#colorToRGB"><code>colorToRGB()</code></a> 
+				</li>
+				<li>
+					FloatText: renamed Reposition argument from &quot;bottom&quot; to &quot;tail&quot;
+				</li>
+				<li>
+					Gadget: renamed EffectName to Effect
+				</li>
+			</ul>
+		</blockquote>
 		<h3>
 			0.8e:
 		</h3>

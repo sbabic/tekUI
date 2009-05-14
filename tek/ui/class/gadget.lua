@@ -21,7 +21,7 @@
 --			Signifies a change of the Gadget's activation state. While active,
 --			the position of the mouse pointer is being verified (which is also
 --			reflected by the {{Hover}} attribute). When the {{Active}} state
---			changes, the Gadget's behavior depends on its {{Mode}} attribute:
+--			changes, the Gadget's behavior depends on its {{Mode}} (see below):
 --				* in {{"button"}} mode, the {{Selected}} attribute is set to
 --				the value of the {{Hover}} attribute. The {{Pressed}} attribute
 --				is set to the value of the {{Active}} attribute, if it caused a
@@ -40,15 +40,23 @@
 --			This attribute usually needs to get a notification handler attached
 --			to it before it is useful.
 --		- {{Disabled [ISG]}} (boolean)
---			Signifies a change of the Gadget's ability to interact with the
---			user. Invokes the Gadget:onDisable() method. When an element is
---			getting disabled, it loses its focus, too.
+--			Determines the Gadget's ability to interact with the user. If
+--			changed, it invokes the Gadget:onDisable() method. When an element
+--			is getting disabled, it loses its focus, too.
+--		- {{Effect [IG}} (string)
+--			Name of a hook class for rendering an overlay effect. A possible
+--			overlay effect is named {{"ripple"}}, and, as its name suggests,
+--			can paint various ripple effects (used e.g. for sliders and
+--			handles). Effect hooks are stored in {{tek/ui/hook}} and may define
+--			their own style properties. This attribute is controllable via the
+--			{{effect}} style property.
 --		- {{FGPen [IG]}} (userdata)
---			A colored pen for rendering the foreground of the element
+--			A colored pen for rendering the foreground details of the element.
+--			This attribute is controllable via the {{color}} style property.
 --		- {{InitialFocus [IG]}} (boolean)
 --			Specifies that the element should receive the focus initially.
 --			If '''true''', the element will notify {{Focus=true}} to itself
---			upon invocation of the {{show()}} method. Default: '''false'''
+--			upon invocation of the Area:show() method. Default: '''false'''
 --		- {{Hilite [SG]}} (boolean)
 --			Signifies a change of the Gadget's highligting state. Invokes
 --			Gadget:onHilite().
@@ -67,15 +75,16 @@
 --			(by default an underscore), and if found, the {{KeyCode}} attribute
 --			will be replaced by the character following this marker.
 --		- {{Mode [IG]}} (string)
---			Interaction mode of the Gadget; can be
---			- "inert": The element does not react to input,
---			- "toggle": The element does not rebound at all and keeps its
---			{{Selected}} state; it can't be unselected by the user.
---			- "touch": The element rebounds immediately and acts as a strobe,
---			submitting always '''true''' for {{Pressed}} and {{Selected}}.
---			- "button": The element sets the {{Pressed}} attribute only if
---			the mouse pointer is released when hovering it.
---			See also {{Active}}.
+--			The element's interaction mode:
+--				* {{"inert"}}: The element does not react to input
+--				* {{"toggle"}}: The element does not rebound and keeps its
+--				{{Selected}} state; it cannot be unselected by the user
+--				* {{"touch"}}: The element rebounds immediately and acts as a
+--				strobe, always submitting '''true''' for {{Pressed}} and
+--				{{Selected}}
+--				* {{"button"}}: The element sets the {{Pressed}} attribute
+--				only if the mouse pointer is released when hovering it.
+--			See also the {{Active}} attribute.
 --		- {{Pressed [SG]}} (boolean)
 --			Signifies that a button was pressed or released. Invokes
 --			Gadget:onPress().
@@ -84,8 +93,17 @@
 --			Gadget:onSelect().
 --
 --	STYLE PROPERTIES::
---		- {{color}} - color of text and details
---		- {{effect}} - name of an overlay effect
+--		- {{color}} - controls the {{Gadget.FGPen}} attribute
+--		- {{effect}} - controls the {{Gadget.Effect}} attribute
+--		- {{effect-color}} - controls the {{"ripple"}} effect hook
+--		- {{effect-color2}} - controls the {{"ripple"}} effect hook
+--		- {{effect-kind}} - controls the {{"ripple"}} effect hook
+--		- {{effect-maxnum}} - controls the {{"ripple"}} effect hook
+--		- {{effect-maxnum2}} - controls the {{"ripple"}} effect hook
+--		- {{effect-orientation}} - controls the {{"ripple"}} effect hook
+--		- {{effect-padding}} - controls the {{"ripple"}} effect hook
+--		- {{effect-ratio}} - controls the {{"ripple"}} effect hook
+--		- {{effect-ratio2}} - controls the {{"ripple"}} effect hook
 --
 --	STYLE PSEUDO CLASSES::
 --		- {{active}} - for elements in active state
@@ -105,6 +123,7 @@
 --
 --	OVERRIDES::
 --		- Area:checkFocus()
+--		- Area:checkHover()
 --		- Element:cleanup()
 --		- Area:hide()
 --		- Object.init()
@@ -119,7 +138,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 11.3"
+_VERSION = "Gadget 13.0"
 
 local Gadget = _M
 
@@ -148,7 +167,7 @@ function Gadget.init(self)
 	self.BGPenSelected = self.BGPenSelected or false
 	self.DblClick = false
 	self.EffectHook = false
-	self.EffectName = self.EffectName or false
+	self.Effect = self.Effect or false
 	self.FGPen = self.FGPen or false
 	self.FGPenDisabled = self.FGPenDisabled or false
 	self.FGPenFocus = self.FGPenFocus or false
@@ -170,7 +189,7 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:getProperties(p, pclass)
-	self.EffectName = self.EffectName or self:getProperty(p, pclass, "effect")
+	self.Effect = self.Effect or self:getProperty(p, pclass, "effect")
 	self.FGPen = self.FGPen or self:getProperty(p, pclass, "color")
 	self.BGPenDisabled = self.BGPenDisabled or
 		self:getProperty(p, pclass or "disabled", "background-color")
@@ -207,7 +226,7 @@ function Gadget:setup(app, window)
 	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:addNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
 	-- create effect hook:
-	self.EffectHook = ui.createHook("hook", self.EffectName, self,
+	self.EffectHook = ui.createHook("hook", self.Effect, self,
 		{ Style = self.Style })
 end
 
@@ -495,13 +514,21 @@ function Gadget:checkFocus()
 end
 
 -------------------------------------------------------------------------------
+--	checkHover: overrides
+-------------------------------------------------------------------------------
+
+function Gadget:checkHover()
+	return not self.Disabled and self.Mode ~= "inert"
+end
+
+-------------------------------------------------------------------------------
 --	Gadget:onFocus(focused): This method is invoked when the element's
 --	{{Focus}} attribute has changed (see also [[#tek.ui.class.area : Area]]).
 -------------------------------------------------------------------------------
 
 function Gadget:onFocus(focused)
 	if focused and self.AutoPosition then
-		self:focusRectangle()
+		self:focusRect()
 	end
 	self.Window:setFocusElement(focused and self)
 	self.RedrawBorder = true

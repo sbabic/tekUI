@@ -17,12 +17,14 @@ local window = ui.Window:new
 	Status = "hide",
 	Height = "auto",
 	HideOnEscape = true,
+	Style = "Width: 400",
 	Children =
 	{
 		Group:new
 		{
 			Width = "free",
 			Height = "auto",
+			Legend = L.BORDER_STYLES,
 			Children =
 			{
 				SameSize = true,
@@ -53,11 +55,6 @@ local window = ui.Window:new
 							Style = "border-style:solid; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
 							Mode = "button",
 						},
-						Text:new
-						{
-							Style = "border-style:solid; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
-							Mode = "button",
-						},
 					}
 				},
 				Group:new
@@ -84,11 +81,6 @@ local window = ui.Window:new
 						Text:new
 						{
 							Style = "border-style:inset; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
-							Mode = "button",
-						},
-						Text:new
-						{
-							Style = "border-style:inset; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
 							Mode = "button",
 						},
 					}
@@ -119,11 +111,6 @@ local window = ui.Window:new
 							Style = "border-style:outset; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
 							Mode = "button",
 						},
-						Text:new
-						{
-							Style = "border-style:outset; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
-							Mode = "button",
-						},
 					}
 				},
 				Group:new
@@ -152,11 +139,6 @@ local window = ui.Window:new
 							Style = "border-style:groove; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
 							Mode = "button",
 						},
-						Text:new
-						{
-							Style = "border-style:groove; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
-							Mode = "button",
-						},
 					}
 				},
 				Group:new
@@ -183,11 +165,6 @@ local window = ui.Window:new
 						Text:new
 						{
 							Style = "border-style:ridge; border-rim-width: 1; border-focus-width: 1; border-width: 8;",
-							Mode = "button",
-						},
-						Text:new
-						{
-							Style = "border-style:ridge; border-rim-width: 1; border-focus-width: 1; border-width: 12;",
 							Mode = "button",
 						},
 					}

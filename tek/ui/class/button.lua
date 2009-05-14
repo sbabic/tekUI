@@ -38,7 +38,7 @@ local ui = require "tek.ui"
 local Text = ui.Text
 
 module("tek.ui.class.button", tek.ui.class.text)
-_VERSION = "Button 1.3"
+_VERSION = "Button 1.4"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -49,6 +49,8 @@ local Button = _M
 function Button.init(self)
 	self.Mode = self.Mode or "button"
 	self.Class = self.Class or "button"
-	self.KeyCode = self.KeyCode == nil and true or self.KeyCode
+	if self.KeyCode == nil then
+		self.KeyCode = true
+	end
 	return Text.init(self)
 end

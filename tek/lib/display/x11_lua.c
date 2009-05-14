@@ -28,25 +28,25 @@ typedef struct
 
 } TEKDisplay;
 
-static const struct TInitModule initmodules[] =
+static const struct TInitModule tek_lib_display_x11_initmodules[] =
 {
 	{ "display_x11", tek_init_display_x11, TNULL, 0 },
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
-static struct TModInitNode im_display =
+static struct TModInitNode im_display = /* TODO: const */
 {
 	{ TNULL, TNULL },
-	(struct TInitModule *) initmodules,
+	(struct TInitModule *) tek_lib_display_x11_initmodules,
 	TNULL,
 };
 
-static const luaL_Reg libfuncs[] =
+static const luaL_Reg tek_lib_display_x11_funcs[] =
 {
 	{ TNULL, TNULL }
 };
 
-static const luaL_Reg libmethods[] =
+static const luaL_Reg tek_lib_display_x11_methods[] =
 {
 	{ "__gc", tek_lib_display_x11_close },
 	{ TNULL, TNULL }
@@ -88,7 +88,7 @@ int luaopen_tek_lib_display_x11(lua_State *L)
 	exec = *(TAPTR *) lua_touserdata(L, -1);
 
 	/* register functions: */
-	luaL_register(L, "tek.lib.display.x11", libfuncs);
+	luaL_register(L, "tek.lib.display.x11", tek_lib_display_x11_funcs);
 	/* s: exectab, execbase, libtab */
 
 	/* create userdata: */
@@ -112,7 +112,7 @@ int luaopen_tek_lib_display_x11(lua_State *L)
 	/* s: exectab, execbase, libtab, libbase, libmeta, libmeta */
 	lua_setfield(L, -2, "__index");
 	/* s: exectab, execbase, libtab, libbase, libmeta */
-	luaL_register(L, NULL, libmethods);
+	luaL_register(L, NULL, tek_lib_display_x11_methods);
 	/* s: exectab, execbase, libtab, libbase, libmeta */
 	lua_setmetatable(L, -2);
 	/* s: exectab, execbase, libtab, libbase */

@@ -5,7 +5,7 @@ local Region = require "tek.lib.region"
 local unpack = unpack
 
 module("tek.ui.class.border", tek.ui.class.drawhook)
-_VERSION = "Border 6.0"
+_VERSION = "Border 7.0"
 local Border = _M
 
 function Border.init(self)
@@ -27,7 +27,7 @@ function Border:layout(x0, y0, x1, y1)
 	return x0, y0, x1, y1
 end
 
-function Border:getBorderRegion()
+function Border:getRegion()
 	local b1, b2, b3, b4 = self:getBorder()
 	local x0, y0, x1, y1 = self:layout()
 	local b = Region.new(x0 - b1, y0 - b2, x1 + b3, y1 + b4)

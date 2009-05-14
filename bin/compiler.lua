@@ -9,12 +9,13 @@
 --	Luiz Henrique de Figueiredo <lhf@tecgraf.puc-rio.br>
 --
 
+local Args = require "tek.lib.args"
 local lfs = require "lfs"
 local ui = require "tek.ui"
 local List = require "tek.class.list"
 
 local APP_ID = "lua-compiler"
-local VENDOR = "schulze-mueller.de"
+local DOMAIN = "schulze-mueller.de"
 local PROGNAME = "Lua Compiler"
 local VERSION = "1.1"
 local AUTHOR = "Timm S. Müller"
@@ -70,7 +71,7 @@ local function compile(fname, arg)
 	end
 
 	for i = m + 2, n do
-		local mod, fname = arg[i]:match("^%s*([^%s=]+)%s*=%s*(.+)%s*$")
+		local mod, fname = arg[i]:match("^%s*([^%s:]+)%s*:%s*(.+)%s*$")
 		mod = mod:gsub("^.-([^" .. PS .. "]+)$", "t['%1']=function()end")
 		table.insert(b, mod)
 		arg[i] = string.sub(string.dump(assert(loadfile(fname))), 13)
@@ -148,6 +149,43 @@ end
 		os.remove(".luac_sample.txt")
 	end
 	return mods
+end
+
+-------------------------------------------------------------------------------
+
+function tocsource(outname)
+	local tmpname = outname .. ".tmp"
+	local b = io.open(outname):read("*a")
+	local f = io.open(tmpname, "wb")
+	if f then
+		local size = b:len()
+		local out = function(...) f:write(...) end
+		out(("const unsigned char bytecode[%d] = {\n\t"):format(size))
+		for i = 1, size do
+			local c = string.byte(b:sub(i, i))
+			out(("%d,"):format(c))
+			if i % 32 == 0 then
+				out("\n\t")
+			end
+		end
+		out("\n};\n")
+		f:close()
+		os.rename(tmpname, outname)
+		return true
+	end
+end
+
+-------------------------------------------------------------------------------
+
+function strip(outname)
+	local tmpname = outname .. ".tmp"
+	local cmd = ('luac -s -o "%s" "%s"'):format(tmpname:gsub("\\", "\\\\"), 
+		outname:gsub("\\", "\\\\"))
+	if os.execute(cmd) == 0 and stat(tmpname, "mode") == "file" then
+		os.remove(outname)
+		os.rename(tmpname, outname)
+		return true
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -255,7 +293,7 @@ local function gui_sample(self)
 		local mods = sample(fname)
 		local n = 0
 		for _, mod in ipairs(mods) do
-			local classname, filename = mod:match("^(.*)%s*=%s*(.*)$")
+			local classname, filename = mod:match("^(.-)%s*=%s*(.*)$")
 			n = n + addmodule(app, classname, filename)
 		end
 		self.Application:setStatus("%d modules added.", n)
@@ -318,7 +356,7 @@ local function gui_compile(self)
 						local classname = checkbutton.Text
 						local filename = modgroup[i + 1].Text
 						if io.open(filename) then
-							table.insert(mods, ("%s = %s"):format(classname, filename))
+							table.insert(mods, ("%s:%s"):format(classname, filename))
 						else
 							local text =
 								filename == "" and "No filename specified" or
@@ -343,12 +381,7 @@ local function gui_compile(self)
 					else
 						local tmpname = outname .. ".tmp"
 						if app:getById("check-strip").Selected then
-							local cmd = ('luac -s -o "%s" "%s"'):format(tmpname:gsub("\\", "\\\\"), 
-								outname:gsub("\\", "\\\\"))
-							if os.execute(cmd) == 0 and stat(tmpname, "mode") == "file" then
-								os.remove(outname)
-								os.rename(tmpname, outname)
-							else
+							if not strip(outname) then
 								app:easyRequest("Error",
 									"Error stripping file:\n" .. outname, "_Okay")
 								success = false
@@ -357,21 +390,7 @@ local function gui_compile(self)
 						if success then
 							local size = stat(outname, "size")
 							if savemode == 2 then
-								local b = io.open(outname):read("*a")
-								local f = io.open(tmpname, "wb")
-								if f then
-									local out = function(...) f:write(...) end
-									out(("const unsigned char bytecode[%d] = {\n\t"):format(size))
-									for i = 1, size do
-										local c = string.byte(b:sub(i, i))
-										out(("%d,"):format(c))
-										if i % 32 == 0 then
-											out("\n\t")
-										end
-									end
-									out("\n};\n")
-									f:close()
-									os.rename(tmpname, outname)
+								if tocsource(outname) then
 									app:setStatus("C source saved, binary size: %d bytes", size)
 								end
 							else
@@ -391,11 +410,62 @@ local function gui_compile(self)
 end
 
 -------------------------------------------------------------------------------
+--	main
+-------------------------------------------------------------------------------
+
+local template = "-f=FROM,-o=TO,-c=SOURCE/S,-s=STRIP/S,-l=LINK/M,-h=HELP/S"
+local args = Args.read(template, arg)
+if not args or args["-h"] then
+	print "Lua linker and compiler, with optional GUI"
+	print "Available options:"
+	print "  -f=FROM      Lua source file name"
+	print "  -o=TO        Lua bytecode output file name"
+	print "  -c=SOURCE/S  Output as C source"
+	print "  -s=STRIP/S   Strip debug information"
+	print "  -l=LINK/M    List of modules to link, each as modname:filename"
+	print "  -h=HELP/S    This help"
+	return
+end
+
+local from, to, mods = args["-f"], args["-o"], args["-l"]
+
+if from or (to and mods) then
+	local ext = args["-c"] and ".c" or ".luac"
+	to = to or (from:match("^(.*)%.lua$") or from) .. ext
+	
+	local t = { }
+	if from then
+		table.insert(t, from)
+	end
+	
+	if mods then
+		table.insert(t, "-L")
+		for _, m in ipairs(mods) do
+			table.insert(t, m)
+		end		
+	end
+	
+	compile(to, t)
+	
+	if args["-s"] then
+		strip(to)
+	end
+	
+	if args["-c"] then
+		tocsource(to)
+	end
+	
+	return
+end
+
+-------------------------------------------------------------------------------
+--	GUI main
+-------------------------------------------------------------------------------
 
 local app = ui.Application:new
 {
 	ApplicationId = APP_ID,
-	VendorDomain = VENDOR,
+	Domain = DOMAIN,
 	
 	Settings =
 	{

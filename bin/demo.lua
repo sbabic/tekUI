@@ -32,7 +32,7 @@ function loaddemos(app)
 
 	for fname in lfs.readdir(ui.ProgDir) do
 		if fname:match("^demo_.*%.lua$") then
-			fname = ui.ProgDir .. "/" .. fname
+			fname = ui.ProgDir .. fname
 			db.info("Loading demo '%s' ...", fname)
 			local success, res = pcall(dofile, fname)
 			if success then
@@ -82,7 +82,7 @@ app = ui.Application:new
 	Author = "Timm S. Müller",
 	Copyright = "Copyright © 2008, 2009, Schulze-Müller GbR",
 	ApplicationId = APP_ID,
-	VendorDomain = VENDOR,
+	Domain = VENDOR,
 	Children =
 	{
 		ui.Window:new
@@ -260,6 +260,7 @@ app = ui.Application:new
 												}
 											}
 										},
+										
 										ui.Group:new
 										{
 											Legend = L.LUA_VIRTUAL_MACHINE,
@@ -280,9 +281,88 @@ app = ui.Application:new
 														ui.Text:new { Id = "about-mem-used" },
 														ui.Gauge:new { Id = "about-mem-gauge" },
 													}
-												}
+												},
+												
+												ui.Text:new
+												{
+													Text = L.GARBAGE_COLLECTOR,
+													Class = "caption",
+													Style = "text-align: right; width: fill"
+												},
+												ui.Group:new
+												{
+													Columns = 3,
+													Children =
+													{
+														ui.Text:new
+														{
+															Text = L.GC_PAUSE,
+															Class = "caption",
+															Style = "text-align: right; width: fill"
+														},
+														ui.ScrollBar:new
+														{
+															Style = "width: free",
+															Min = 1,
+															Max = 300,
+															Integer = true,
+															Kind = "number",
+															show = function(self, display, drawable)
+																local ssm = collectgarbage("setpause", 0)
+																collectgarbage("setpause", ssm)
+																self:setValue("Value", ssm, true)
+																return ui.ScrollBar.show(self, display, drawable)
+															end,
+															onSetValue = function(self, val)
+																ui.ScrollBar.onSetValue(self, val)
+																collectgarbage("setpause", val)
+																self:getById("text-gcpause"):setValue("Text", ("  %d  "):format(val))
+															end,
+														},
+														ui.Text:new
+														{
+															Id = "text-gcpause",
+															Style = "width: fill",
+															KeepMinWidth = true,
+														},
+														ui.Text:new
+														{
+															Text = L.GC_STEPMUL,
+															Class = "caption",
+															Style = "text-align: right; width: fill"
+														},
+														ui.ScrollBar:new
+														{
+															Style = "width: free",
+															Min = 1,
+															Max = 300,
+															Integer = true,
+															Kind = "number",
+															show = function(self, display, drawable)
+																local ssm = collectgarbage("setstepmul", 0)
+																collectgarbage("setstepmul", ssm)
+																self:setValue("Value", ssm, true)
+																return ui.ScrollBar.show(self, display, drawable)
+															end,
+															onSetValue = function(self, val)
+																ui.ScrollBar.onSetValue(self, val)
+																collectgarbage("setstepmul", val)
+																self:getById("text-gcstepmul"):setValue("Text", ("  %d  "):format(val))
+															end,
+														},
+														ui.Text:new
+														{
+															Id = "text-gcstepmul",
+															Style = "width: fill",
+															KeepMinWidth = true,
+														},
+													}
+												},
+												
+												
 											}
 										},
+										
 										ui.Group:new
 										{
 											Legend = L.DEBUGGING,
@@ -514,6 +594,7 @@ app = ui.Application:new
 								AutoWidth = true,
 								Child = ui.FloatText:new
 								{
+									Style = "margin: 10",
 									Id = "info-text",
 									Text = L.DEMO_TEXT,
 								}

@@ -945,6 +945,7 @@ static THOOKENTRY TTAG exec_mmu_msg(struct THook *hook, TAPTR obj, TTAG m)
 **	static memheader allocator
 */
 
+#if 0
 static TAPTR exec_mmu_staticalloc(struct TMemManager *mmu, TSIZE size)
 {
 	return exec_staticalloc(mmu->tmm_Allocator, size);
@@ -1572,6 +1573,7 @@ static THOOKENTRY TTAG exec_mmu_mmu(struct THook *hook, TAPTR obj, TTAG m)
 	}
 	return 0;
 }
+#endif
 
 /*****************************************************************************/
 /*
@@ -1678,12 +1680,15 @@ LOCAL TBOOL exec_initmm(TEXECBASE *TExecBase, struct TMemManager *mmu,
 	{
 		case TMMT_MemManager:
 			/* MM on top of another MM - no additional functionality */
+			#if 0
 			if (allocator)
 				mmu->tmm_Hook.thk_Entry = exec_mmu_mmu;
 			else
+			#endif
 				mmu->tmm_Hook.thk_Entry = exec_mmu_kernel;
 			return TTRUE;
 
+		#if 0
 		case TMMT_Tracking:
 			TINITLIST(&mmu->tmm_TrackList);
 			if (allocator)
@@ -1735,6 +1740,7 @@ LOCAL TBOOL exec_initmm(TEXECBASE *TExecBase, struct TMemManager *mmu,
 				return TTRUE;
 			}
 			break;
+		#endif
 
 		case TMMT_Message:
 			if (allocator == TNULL) /* must be TNULL for now */
@@ -1746,6 +1752,7 @@ LOCAL TBOOL exec_initmm(TEXECBASE *TExecBase, struct TMemManager *mmu,
 			}
 			break;
 
+		#if 0
 		case TMMT_Static:
 			/*	MM on top of memheader */
 			if (allocator)
@@ -1787,6 +1794,7 @@ LOCAL TBOOL exec_initmm(TEXECBASE *TExecBase, struct TMemManager *mmu,
 				}
 			}
 			break;
+		#endif
 
 		case TMMT_Void:
 			mmu->tmm_Hook.thk_Entry = exec_mmu_void;

@@ -27,19 +27,21 @@
 --		- {{HSliderMode [IG]}} (string)
 --			Specifies when the horizontal
 --			[[#tek.ui.class.scrollbar : ScrollBar]] should be visible:
---				- "on" - The horizontal scrollbar is displayed
---				- "off" - The horizontal scrollbar is not displayed
---				- "auto" - The horizontal scrollbar is displayed when
+--				- {{"on"}} - The horizontal scrollbar is displayed
+--				- {{"off"}} - The horizontal scrollbar is not displayed
+--				- {{"auto"}} - The horizontal scrollbar is displayed when
 --				the ListGadget is wider than the currently visible area.
---			Note: The use of the "auto" mode is currently (v8.0) discouraged.
+--			Note: The use of the {{"auto"}} mode is currently (v8.0)
+--			discouraged.
 --		- {{VSliderMode [IG]}} (string)
 --			Specifies when the vertical
 --			[[#tek.ui.class.scrollbar : ScrollBar]] should be visible:
---				- "on" - The vertical scrollbar is displayed
---				- "off" - The vertical scrollbar is not displayed
---				- "auto" - The vertical scrollbar is displayed when
+--				- {{"on"}} - The vertical scrollbar is displayed
+--				- {{"off"}} - The vertical scrollbar is not displayed
+--				- {{"auto"}} - The vertical scrollbar is displayed when
 --				the ListGadget is taller than the currently visible area.
---			Note: The use of the "auto" mode is currently (v8.0) discouraged.
+--			Note: The use of the {{"auto"}} mode is currently (v8.0)
+--			discouraged.
 --
 --	OVERRIDES::
 --		- Element:cleanup()
@@ -52,20 +54,19 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Region = require "tek.lib.region"
 local Group = ui.Group
+local Region = require "tek.lib.region"
 local ScrollBar = ui.ScrollBar
 local floor = math.floor
 local insert = table.insert
-local min = math.min
+local intersect = Region.intersect
 local max = math.max
-local overlap = Region.overlapCoords
+local min = math.min
 local remove = table.remove
-local type = type
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 9.10"
+_VERSION = "ScrollGroup 10.0"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -237,7 +238,7 @@ end
 
 function ScrollGroup:onSetCanvasWidth(w)
 	local c = self.Child
-	local r1, _, r3 = c:getRectangle()
+	local r1, _, r3 = c:getRect()
 	if r1 then
 		local sw = r3 - r1 + 1
 		self.Child:setValue("CanvasWidth", w)
@@ -257,7 +258,7 @@ end
 
 function ScrollGroup:onSetCanvasHeight(h)
 	local c = self.Child
-	local _, r2, _, r4 = c:getRectangle()
+	local _, r2, _, r4 = c:getRect()
 	if r2 then
 		local sh = r4 - r2 + 1
 		self.Child:setValue("CanvasHeight", h)
@@ -277,7 +278,7 @@ end
 
 function ScrollGroup:onSetCanvasLeft(x, ox)
 	local c = self.Child
-	local r1, _, r3 = c:getRectangle()
+	local r1, _, r3 = c:getRect()
 	if r1 then
 		ox = ox or c.CanvasLeft
 		x = max(0, min(c.CanvasWidth - (r3 - r1 + 1), floor(x)))
@@ -299,7 +300,7 @@ end
 
 function ScrollGroup:onSetCanvasTop(y, oy)
 	local c = self.Child
-	local _, r2, _, r4 = c:getRectangle()
+	local _, r2, _, r4 = c:getRect()
 	if r2 then
 		oy = oy or c.CanvasTop
 		y = max(0, min(c.CanvasHeight - (r4 - r2 + 1), floor(y)))
@@ -320,7 +321,7 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollGroup:exposeArea(r1, r2, r3, r4)
-	self.Child:markDamage(r1, r2, r3, r4)
+	self.Child:damage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
@@ -390,15 +391,15 @@ function ScrollGroup:refresh()
 			ay = ay + cs[i].Rect[2] - cs[i].CanvasTop
 		end
 
-		-- overlap self and parent:
+		-- get intersection between self and parent:
 		local a1, a2, a3, a4 = unpack(canvas.Rect)
 		local b1, b2, b3, b4 = unpack(parent.Rect)
-		a1, a2, a3, a4 = overlap(a1 + ax, a2 + ay, a3 + ax, a4 + ay,
+		a1, a2, a3, a4 = intersect(a1 + ax, a2 + ay, a3 + ax, a4 + ay,
 			b1 + bx, b2 + by, b3 + bx, b4 + by)
 		if a1 then
 
-			-- overlap with top rect:
-			a1, a2, a3, a4 = overlap(a1, a2, a3, a4, unpack(cs[1].Rect))
+			-- intersect with top rect:
+			a1, a2, a3, a4 = intersect(a1, a2, a3, a4, unpack(cs[1].Rect))
 			if a1 then
 
 				local d = self.Drawable
@@ -414,7 +415,7 @@ function ScrollGroup:refresh()
 				local dr = Region.new(a1, a2, a3, a4)
 
 				local x0, y0, x1, y1 = unpack(canvas.Rect)
-				x0, y0, x1, y1 = overlap(x0, y0, x1, y1,
+				x0, y0, x1, y1 = intersect(x0, y0, x1, y1,
 					a1 + dx, a2 + dy, a3 + dx, a4 + dy)
 				if x0 then
 
@@ -435,9 +436,7 @@ function ScrollGroup:refresh()
 					end
 
 					-- exposures resulting from areas shifting into canvas:
-					for _, r1, r2, r3, r4 in dr:getRects() do
-						self:exposeArea(r1, r2, r3, r4)
-					end
+					dr:forEach(self.exposeArea, self)
 
 					d:popClipRect()
 

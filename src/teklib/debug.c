@@ -1,3 +1,5 @@
+#ifndef _TEK_DEBUG_C
+#define _TEK_DEBUG_C
 
 /*
 **	$Id: debug.c,v 1.1.1.1 2006/08/20 22:15:20 tmueller Exp $
@@ -45,3 +47,5 @@ TDebugFatal(void)
 	TDEBUG_PLATFORM_FATAL();
 	return 0;
 }
+
+#endif /* _TEK_DEBUG_C */

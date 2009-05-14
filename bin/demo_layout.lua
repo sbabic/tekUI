@@ -82,18 +82,6 @@ local window = ui.Window:new
 		},
 		Group:new
 		{
-			Legend = L.LAYOUT_FIXED_VS_FREE,
-			Children =
-			{
-				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
-				Button:new { Text = "25%", Style = "max-width: free", Weight = 0x4000 },
-				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
-				Button:new { Text = "75%", Style = "max-width: free", Weight = 0xc000 },
-				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
-			}
-		},
-		Group:new
-		{
 			Style = "max-height: free",
 			Legend = L.LAYOUT_DIFFERENT_WEIGHTS,
 			Children =
@@ -106,6 +94,18 @@ local window = ui.Window:new
 				ui.Spacer:new { },
 				Button:new { Text = "50%", Weight = 0x8000,
 					Style = "max-width: free; max-height: free" },
+			}
+		},
+		Group:new
+		{
+			Legend = L.LAYOUT_FIXED_VS_FREE,
+			Children =
+			{
+				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
+				Button:new { Text = "25%", Style = "max-width: free", Weight = 0x4000 },
+				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
+				Button:new { Text = "75%", Style = "max-width: free", Weight = 0xc000 },
+				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
 			}
 		}
 	}

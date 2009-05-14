@@ -32,7 +32,7 @@ local window = Window:new
 			{
 				Button:new
 				{
-					Text = L.BEGIN,
+					Text = L.LEFT,
 					Width = "auto",
 					Height = "free",
 					HAlign = "left", -- Style = "horizontal-grid-align: left",
@@ -54,7 +54,7 @@ local window = Window:new
 					{
 						Button:new
 						{
-							Text = L.END,
+							Text = L.RIGHT,
 							Width = "auto",
 							Height = "free"
 						}
@@ -70,7 +70,7 @@ local window = Window:new
 			{
 				Button:new
 				{
-					Text = L.BEGIN,
+					Text = L.TOP,
 					Width = "free",
 					VAlign = "top", -- Style = "vertical-grid-align: top",
 				},
@@ -89,7 +89,7 @@ local window = Window:new
 					{
 						Button:new
 						{
-							Text = L.END,
+							Text = L.BOTTOM,
 							Width = "free"
 						}
 					}

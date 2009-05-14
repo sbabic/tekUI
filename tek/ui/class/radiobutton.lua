@@ -29,10 +29,9 @@
 
 local ui = require "tek.ui"
 local CheckMark = ui.CheckMark
-local ipairs = ipairs
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 2.9"
+_VERSION = "RadioButton 4.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -49,7 +48,7 @@ local RadioButton = _M
 
 function RadioButton.init(self)
 	self.Image = self.Image or RadioImage1
-	self.AltImage = self.AltImage or RadioImage2
+	self.SelectImage = self.SelectImage or RadioImage2
 	self.Mode = self.Mode or "touch"
 	return CheckMark.init(self)
 end
@@ -62,7 +61,9 @@ function RadioButton:onSelect(selected)
 	if selected then
 		-- unselect siblings in group:
 		local myclass = self:getClass()
-		for _, e in ipairs(self:getElement("siblings")) do
+		local c = self:getSiblings()
+		for i = 1, #c do
+			local e = c[i]
 			if e ~= self and e:getClass() == myclass and e.Selected then
 				e:setValue("Selected", false) -- no notify
 			end

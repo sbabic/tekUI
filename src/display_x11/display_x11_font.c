@@ -75,8 +75,8 @@ TSTRPTR libfcsyms[LIBFC_NUMSYMS] =
 ** if initlibxft() succeeds g->use_xft is set to TTRUE
 ** undefining ENABLE_XFT can be used to enforce xlib based font rendering
 */
-TBOOL
-initlibxft(X11DISPLAY *mod)
+
+LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod)
 {
 	#if defined(ENABLE_XFT)
 
@@ -173,7 +173,8 @@ initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms, TAPTR iface, T
 ** all fontquerynodes, a fontqueryhandle is obtained by calling
 ** x11_hostqueryfonts()
 */
-THOOKENTRY TTAG
+
+static THOOKENTRY TTAG
 fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
