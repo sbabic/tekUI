@@ -15,7 +15,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.boing", tek.ui.class.frame)
-_VERSION = "Boing 2.1"
+_VERSION = "Boing 3.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -54,12 +54,10 @@ function Boing:cleanup()
 	Frame.cleanup(self)
 end
 
-function Boing:show(display, drawable)
-	if Frame.show(self, display, drawable) then
-		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
-		self.OldRect[1] = false
-		return true
-	end
+function Boing:show(drawable)
+	Frame.show(self, drawable)
+	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+	self.OldRect[1] = false
 end
 
 function Boing:hide()

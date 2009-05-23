@@ -94,7 +94,7 @@ local allocRegion = ui.allocRegion
 local freeRegion = ui.freeRegion
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 7.1"
+_VERSION = "Frame 8.0"
 
 local Frame = _M
 
@@ -152,21 +152,26 @@ function Frame:setup(app, window)
 end
 
 -------------------------------------------------------------------------------
+--	cleanup: overrides
+-------------------------------------------------------------------------------
+
+function Frame:cleanup()
+	self.BorderObject = ui.destroyHook(self.BorderObject)
+	Area.cleanup(self)
+end
+
+-------------------------------------------------------------------------------
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Frame:show(display, drawable)
-	if self.BorderObject then
-		self.BorderObject:show(display, drawable)
+function Frame:show(drawable)
+	local b = self.BorderObject
+	if b then
+		b:show(drawable)
 	end
-	if Area.show(self, display, drawable) then
-		if self.Focus then
-			self:setValue("Focus", true, true)
-		end
-		return true
-	end
-	if self.BorderObject then
-		self.BorderObject:hide()
+	Area.show(self, drawable)
+	if self.Focus then
+		self:setValue("Focus", true, true)
 	end
 end
 
@@ -175,8 +180,9 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:hide()
-	if self.BorderObject then
-		self.BorderObject:hide()
+	local b = self.BorderObject
+	if b then
+		b:hide()
 	end
 	self.BorderRegion = freeRegion(self.BorderRegion)
 	Area.hide(self)

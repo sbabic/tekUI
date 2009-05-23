@@ -59,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 10.0"
+_VERSION = "PageGroup 11.1"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -94,13 +94,9 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:show(display, drawable)
-	if Gadget.show(self, display, drawable) then
-		if not self.PageElement:show(display, drawable) then
-			return self:hide()
-		end
-		return true
-	end
+function PageContainerGroup:show(drawable)
+	Gadget.show(self, drawable)
+	self.PageElement:show(drawable)
 end
 
 -------------------------------------------------------------------------------
@@ -261,19 +257,16 @@ function PageContainerGroup:changeTab(pagebuttons, tabnr)
 		self.PageNumber = tabnr
 		self.PageElement:hide()
 		self.PageElement = self.Children[tabnr]
-		if self.Display then
-			if self.PageElement:show(self.Display, self.Drawable) then
-				local m = self.MarginAndBorder
-				self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
-				local r = self.Rect
-				local m = self.MarginAndBorder
-				self:relayout(self, r[1] - m[1], r[2] - m[2], r[3] + m[3],
-					r[4] + m[4])
-				self.PageElement:rethinkLayout(2)
-			else
-				db.error("failed to show element: %s",
-					self.PageElement:getClassName())
-			end
+		local d = self.Drawable
+		if d then
+			self.PageElement:show(d)
+			local m = self.MarginAndBorder
+			self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
+			local r = self.Rect
+			local m = self.MarginAndBorder
+			self:relayout(self, r[1] - m[1], r[2] - m[2], r[3] + m[3],
+				r[4] + m[4])
+			self.PageElement:rethinkLayout(2)
 		else
 			db.error("pagegroup not connected to display")
 		end
@@ -349,18 +342,10 @@ function PageGroup.new(class, self)
 							Mode = "touch",
 							Width = "auto",
 							Text = text,
-							KeyCode = true,
-							Notifications =
-							{
-								["Pressed"] =
-								{
-									[true] =
-									{
-										{ self, "setValue", "PageNumber", i },
-									}
-								}
-							}
+							KeyCode = true
 						}
+						pc:addNotify("Pressed", true, 
+							{ self, "setValue", "PageNumber", i })
 					end
 					insert(pagebuttons, pc)
 				end

@@ -55,10 +55,54 @@ end
 --	Create demo window:
 -------------------------------------------------------------------------------
 
+local slider1 = ui.Slider:new
+{
+	Width = "free",
+	Min = 1,
+	Max = 19,
+	Value = 8,
+	Range = 20,
+	Step = 1
+}
+slider1:addNotify("Value", ui.NOTIFY_ALWAYS, 
+	{ ui.NOTIFY_ID, "the-tunnel", "setSpeed", ui.NOTIFY_VALUE })
+
+local slider2 = ui.Slider:new
+{
+	Width = "free",
+	Min = 0x10,
+	Max = 0x1ff,
+	Value = 0x50,
+	Range = 0x200,
+	Step = 20
+}
+slider2:addNotify("Value", ui.NOTIFY_ALWAYS, 
+	{ ui.NOTIFY_ID, "the-tunnel", "setViewZ", ui.NOTIFY_VALUE })
+
+local slider3 = ui.Slider:new 
+{
+	Width = "free",
+	Min = 1,
+	Max = 19,
+	Value = 6,
+	Range = 20,
+	Step = 1
+}
+slider3:addNotify("Value", ui.NOTIFY_ALWAYS, 
+	{ ui.NOTIFY_ID, "the-tunnel", "setNumSeg", ui.NOTIFY_VALUE })
+
+local startbutton = ui.Button:new { Text = L.ANIMATIONS_START }
+startbutton:addNotify("Pressed", false,
+	{ ui.NOTIFY_ID, "the-boing", "setValue", "Running", true })
+
+local stopbutton = ui.Button:new { Text = L.ANIMATIONS_STOP }
+stopbutton:addNotify("Pressed", false,
+	{ ui.NOTIFY_ID, "the-boing", "setValue", "Running", false })
+
 local window = ui.Window:new
 {
 	Orientation = "vertical",
-	Style = "width: 400; height: 400",
+	Width = 400, Height = 400,
 	Id = "anims-window",
 	Title = L.ANIMATIONS_TITLE,
 	Status = "hide",
@@ -82,11 +126,12 @@ local window = ui.Window:new
 								ui.Tunnel:new
 								{
 									Id = "the-tunnel",
-									Style = "horizontal-align: center",
+									HAlign = "center",
 								},
 								Group:new
 								{
-									Style = "width: fill; height: auto;",
+									Width = "fill",
+									Height = "auto",
 									Legend = L.ANIMATIONS_PARAMETERS,
 									Columns = 2,
 									Children =
@@ -95,76 +140,23 @@ local window = ui.Window:new
 										{
 											Text = L.ANIMATIONS_SPEED,
 											Class = "caption",
-											Style = "width: fill",
+											Width = "fill"
 										},
-										Slider:new
-										{
-											Style = "width: free",
-											Min = 1,
-											Max = 19,
-											Value = 8,
-											Range = 20,
-											Step = 1,
-											Notifications =
-											{
-												["Value"] =
-												{
-													[ui.NOTIFY_ALWAYS] =
-													{
-														{ ui.NOTIFY_ID, "the-tunnel", "setSpeed", ui.NOTIFY_VALUE },
-													}
-												}
-											}
-										},
+										slider1,
 										Text:new
 										{
 											Text = L.ANIMATIONS_FOCUS,
 											Class = "caption",
-											Style = "width: fill",
+											Width = "fill"
 										},
-										Slider:new
-										{
-											Style = "width: free",
-											Min = 0x10,
-											Max = 0x1ff,
-											Value = 0x50,
-											Range = 0x200,
-											Step = 20,
-											Notifications =
-											{
-												["Value"] =
-												{
-													[ui.NOTIFY_ALWAYS] =
-													{
-														{ ui.NOTIFY_ID, "the-tunnel", "setViewZ", ui.NOTIFY_VALUE },
-													}
-												}
-											}
-										},
+										slider2,
 										Text:new
 										{
 											Text = L.ANIMATIONS_SEGMENTS,
 											Class = "caption",
-											Style = "width: fill",
+											Width = "fill"
 										},
-										Slider:new {
-											Style = "width: free",
-											Min = 1,
-											Max = 19,
-											Value = 6,
-											Range = 20,
-											Step = 1,
-											Notifications =
-											{
-												["Value"] =
-												{
-													[ui.NOTIFY_ALWAYS] =
-													{
-														{ ui.NOTIFY_ID, "the-tunnel", "setNumSeg", ui.NOTIFY_VALUE },
-													}
-												}
-											}
-										}
+										slider3,
 									}
 								}
 							}
@@ -213,37 +205,10 @@ local window = ui.Window:new
 						},
 						Group:new
 						{
-							Style = "height: auto",
 							Children =
 							{
-								ui.Button:new
-								{
-									Text = L.ANIMATIONS_START,
-									Notifications =
-									{
-										["Pressed"] =
-										{
-											[false] =
-											{
-												{ ui.NOTIFY_ID, "the-boing", "setValue", "Running", true }
-											}
-										}
-									}
-								},
-								ui.Button:new
-								{
-									Text = L.ANIMATIONS_STOP,
-									Notifications =
-									{
-										["Pressed"] =
-										{
-											[false] =
-											{
-												{ ui.NOTIFY_ID, "the-boing", "setValue", "Running", false }
-											}
-										}
-									}
-								}
+								startbutton,
+								stopbutton,
 							}
 						}
 					}

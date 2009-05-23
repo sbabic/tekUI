@@ -47,7 +47,7 @@ local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 6.0"
+_VERSION = "Gauge 7.0"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -105,10 +105,9 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Gauge:show(display, drawable)
-	Numeric.show(self, display, drawable)
-	self.Child:show(display, drawable)
-	return true
+function Gauge:show(drawable)
+	Numeric.show(self, drawable)
+	self.Child:show(drawable)
 end
 
 -------------------------------------------------------------------------------
@@ -136,15 +135,15 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:getKnobRect()
-	if self.Display then
-		local r = self.Rect
+	local r1, r2, r3, r4 = self:getRect()
+	if r1 then
 		local p = self.Padding
 		local m = self.Child.MarginAndBorder
 		local km = self.Child.MinMax
-		local x0 = r[1] + p[1] + m[1]
-		local y0 = r[2] + p[2] + m[2]
-		local x1 = r[3] - p[3] - m[3]
-		local y1 = r[4] - p[4] - m[4]
+		local x0 = r1 + p[1] + m[1]
+		local y0 = r2 + p[2] + m[2]
+		local x1 = r3 - p[3] - m[3]
+		local y1 = r4 - p[4] - m[4]
 		local r = self.Max - self.Min
 		if self.Orientation == "horizontal" then
 			local w = x1 - x0 - km[1] + 1
@@ -221,7 +220,8 @@ end
 
 function Gauge:draw()
 	local d = self.Drawable
-	self.BGRegion:forEach(d.fillRect, d, self:getBG())
+	local bgpen, tx, ty = self:getBG()
+	self.BGRegion:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
 end
 
 -------------------------------------------------------------------------------

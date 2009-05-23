@@ -65,7 +65,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 9.1"
+_VERSION = "PopItem 9.3"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -170,7 +170,7 @@ function PopItem:askMinMax(m1, m2, m3, m4)
 		local m = self.MarginAndBorder
 		local iw = n1 - m1 - p[3] - p[1] - m[3] - m[1] + 1
 		local ih = n2 - m2 - p[4] - p[2] - m[4] - m[2] + 1
-		iw, ih = self.Display:fitMinAspect(iw, ih, 1, 1, 0)
+		iw, ih = self.Drawable:fitMinAspect(iw, ih, 1, 1, 0)
 		n1 = n1 + iw
 		n3 = n3 + ih
 	end
@@ -188,7 +188,7 @@ function PopItem:layout(x0, y0, x1, y1, markdamage)
 			local p = self.Padding
 			local iw = r[3] - r[1] - p[3] - p[1] + 1
 			local ih = r[4] - r[2] - p[4] - p[2] + 1
-			iw, ih = self.Display:fitMinAspect(iw, ih, 1, 1, 0)
+			iw, ih = self.Drawable:fitMinAspect(iw, ih, 1, 1, 0)
 			-- use half the padding that was granted for the right edge:
 			local x = r[3] - floor(p[3] / 2) - iw
 			local y = r[2] + p[2]
@@ -415,6 +415,7 @@ function PopItem:connectPopItems(app, window)
 			if self.Shortcut then
 				window:addKeyShortcut("IgnoreCase+" .. self.Shortcut, self)
 			end
+			-- TODO: why not connect()?
 			self.Application = app
 			self.Window = window
 			self:addNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
@@ -444,6 +445,7 @@ function PopItem:disconnectPopItems(window)
 			end
 			self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
 			self:remNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
+			-- TODO: why not disconnect()?
 		end
 	end
 end

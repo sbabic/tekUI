@@ -16,14 +16,14 @@
 --		Window
 --
 --	OVERVIEW::
---		This class implements a [[#tek.ui.class.group : Group]] which is
---		rooted in a window on the [[#tek.ui.class.display : Display]].
+--		This class implements a [[#tek.ui.class.group : Group]] which
+--		fills up a window on the [[#tek.ui.class.display : Display]].
 --
 --	ATTRIBUTES::
 --		- {{Center [IG]}} (boolean)
 --			Instructs the Window to open centered.
 --		- {{DblClickJitter [IG]}} (number)
---			Maximum sum of squared pixel differences (dx² + dy²) between
+--			Maximum sum of squared pixel deltas (dx² + dy²) between
 --			mouse positions to be tolerated for a double click.
 --			The default is 70. Large touchscreens require a much larger value.
 --		- {{DblClickTimeout [IG]}} (number)
@@ -31,7 +31,7 @@
 --			a double click. Default: 32000. Use a larger value for
 --			touchscreens.
 --		- {{FullScreen [IG]}} (boolean)
---			Instructs the Window to open borderless and in full screen mode.
+--			Instructs the Window to open borderless and in fullscreen mode.
 --		- {{HideOnEscape [IG]}} (boolean)
 --			Instructs the window to invoke the Window:onHide() method
 --			when the Escape key is pressed. Default: '''false'''
@@ -42,7 +42,7 @@
 --			open.
 --		- {{MouseX [G]}} (number)
 --		- {{MouseY [G]}} (number)
---			The current screen coordinates of the pointing device.
+--			The current window coordinates of the pointing device.
 --		- {{Status [ISG]}} (string)
 --			Status of the Window, which can be:
 --				- {{"initializing"}} - The window is initializing
@@ -66,6 +66,7 @@
 --		- Window:clickElement() - Simulates a click on an element
 --		- Window:onChangeStatus() - Handler for {{Status}}
 --		- Window:onHide() - Handler for when the window is about to be closed
+--		- Window:postMsg() - Post an user message in the Window's message queue
 --		- Window:remInputHandler() - Removes an input handler from the window
 --		- Window:remInterval() - Removes an interval timer from the window
 --		- Window:setActiveElement() - Sets the window's active element
@@ -78,6 +79,8 @@
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
+--		- Area:passMsg()
+--		- Area:refresh()
 --		- Area:rethinkLayout()
 --		- Element:setup()
 --		- Area:show()
@@ -105,7 +108,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 15.0"
+_VERSION = "Window 16.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -236,18 +239,17 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Window:show(display)
+function Window:show()
+	assert(self.Application.Display)
 	assert(not self.Drawable)
-	self.Drawable = Drawable:new { Display = display }
+	local drawable = Drawable:new { Display = self.Application.Display } 
+	self.Drawable = drawable
 	-- window input handlers must be added before children can
 	-- register themselves during show():
 	self:addInputHandler(0x171f, self, self.handleInput)
-	if Group.show(self, display, self.Drawable) then
-		-- notification handlers:
-		self:addNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
-		return true
-	end
-	self:remInputHandler(0x171f, self, self.handleInput)
+	Group.show(self, drawable)
+	-- notification handlers:
+	self:addNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
 end
 
 -------------------------------------------------------------------------------
@@ -262,6 +264,7 @@ function Window:hide()
 	assert(d)
 	self:hideWindow()
 	Group.hide(self)
+	self.Drawable = false
 	d:close()
 end
 
@@ -483,7 +486,8 @@ function Window:getMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	postMsg:
+--	postMsg(msg): This function adds an user message to the Window's message
+--	queue.
 -------------------------------------------------------------------------------
 
 function Window:postMsg(msg)
@@ -545,10 +549,12 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_MOUSEOVER] = function(self, msg)
+		self.MouseX, self.MouseY = msg[4], msg[5]
 		self:setHiliteElement()
 		return msg
 	end,
 	[ui.MSG_MOUSEBUTTON] = function(self, msg)
+		self.MouseX, self.MouseY = msg[4], msg[5]
 		if msg[3] == 1 then -- leftdown:
 			-- send "Pressed" to window:
 			self:setValue("Pressed", true, true)
@@ -572,6 +578,7 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_KEYDOWN] = function(self, msg)
+		self.MouseX, self.MouseY = msg[4], msg[5]
 		-- pass message to active popup element:
 		if self.ActivePopup then
 			-- return
@@ -629,6 +636,7 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_KEYUP] = function(self, msg)
+		self.MouseX, self.MouseY = msg[4], msg[5]
 		-- pass message to active popup element:
 		if self.ActivePopup then
 			-- return
@@ -658,13 +666,13 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_MOUSEMOVE] = function(self, msg)
+		self.MouseX, self.MouseY = msg[4], msg[5]
 		self.HoverElement = self:getHoverElementByXY(msg[4], msg[5])
 		return msg
 	end,
 }
 
 function Window:handleInput(msg)
-	self.MouseX, self.MouseY = msg[4], msg[5]
 	msg = MsgHandlers[msg[2]](self, msg)
 	if msg then
 		return Group.passMsg(self, msg)
@@ -915,9 +923,10 @@ function Window:setDblClickElement(e)
 		de:setValue("DblClick", false)
 		self.DblClickElement = false
 	end
-	if e and self.Display then
+	local d = self.Drawable
+	if e and d then
 		de = di[1] -- check element
-		local ts, tu = self.Display:getTime()
+		local ts, tu = d.Display:getTime()
 		if de == e and di[4] then
 			local d1 = self.MouseX - di[4]
 			local d2 = self.MouseY - di[5]
@@ -1015,10 +1024,8 @@ end
 -------------------------------------------------------------------------------
 
 function Window:addKeyShortcut(keycode, element)
-
 	local key, quals = ui.resolveKeyCode(keycode)
 	db.info("binding shortcut: %s -> %s", key, element:getClassName())
-
 	local keytab = self.KeyShortcuts[key]
 	if not keytab then
 		keytab = { }

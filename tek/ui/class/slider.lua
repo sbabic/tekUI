@@ -65,7 +65,6 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Gadget = ui.Gadget
 local Region = require "tek.lib.region"
@@ -77,7 +76,7 @@ local freeRegion = ui.freeRegion
 local reuseRegion = ui.reuseRegion
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 10.1"
+_VERSION = "Slider 11.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -160,10 +159,9 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Slider:show(display, drawable)
-	Numeric.show(self, display, drawable)
-	self.Child:show(display, drawable)
-	return true
+function Slider:show(drawable)
+	Numeric.show(self, drawable)
+	self.Child:show(drawable)
 end
 
 -------------------------------------------------------------------------------
@@ -289,7 +287,8 @@ end
 
 function Slider:draw()
 	local d = self.Drawable
-	self.BGRegion:forEach(d.fillRect, d, self:getBG())
+	local bgpen, tx, ty = self:getBG()
+	self.BGRegion:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
 end
 
 -------------------------------------------------------------------------------

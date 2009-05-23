@@ -25,11 +25,10 @@
 --			List object
 --		- {{SelectedLine [ISG]}} (number)
 --			Number of the selected entry, or 0 if none is selected. Changing
---			this attribute invokes the PopList:onSelectEntry() method.
+--			this attribute invokes the PopList:onSelectLine() method.
 --
 --	IMPLEMENTS::
---		- PopList:onSelectEntry() - Handler for the {{SelectedLine}}
---		attribute
+--		- PopList:onSelectLine() - Handler for the {{SelectedLine}} attribute
 --		- PopList:setList() - Sets a new list object
 --
 --	OVERRIDES::
@@ -57,7 +56,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 6.8"
+_VERSION = "PopList 8.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -69,7 +68,7 @@ local ArrowImage = ui.Image:new
 	{ { 0x1000, 3, { 1, 2, 3 }, ui.PEN_MENUDETAIL } },
 }
 
-local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectEntry", ui.NOTIFY_VALUE }
+local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	PopListGadget:
@@ -170,16 +169,16 @@ function PopList:cleanup()
 	PopItem.cleanup(self)
 end
 
-function PopList:show(display, drawable)
-	PopList.onSelectEntry(self, self.SelectedLine)
-	return PopItem.show(self, display, drawable)
+function PopList:show(drawable)
+	PopList.onSelectLine(self, self.SelectedLine)
+	PopItem.show(self, drawable)
 end
 
 function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
 	if lo and not self.KeepMinWidth then
 		local tr = { }
-		local font = self.Display:openFont(self.Font)
+		local font = self.Drawable:openFont(self.Font)
 		for lnr = 1, lo:getN() do
 			local entry = lo:getItem(lnr)
 			local t = self:newTextRecord(entry[1][1], font, self.TextHAlign,
@@ -201,11 +200,11 @@ function PopList:beginPopup()
 end
 
 -------------------------------------------------------------------------------
---	onSelectEntry(line): This method is invoked when the
---	{{SelectedLine}} attribute is set.
+--	onSelectLine(line): This method is invoked when the {{SelectedLine}}
+--	attribute is set.
 -------------------------------------------------------------------------------
 
-function PopList:onSelectEntry(lnr)
+function PopList:onSelectLine(lnr)
 	local entry = self.ListGadget:getItem(lnr)
 	if entry then
 		self:setValue("Text", entry[1][1])

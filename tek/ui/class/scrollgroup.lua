@@ -66,7 +66,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 10.0"
+_VERSION = "ScrollGroup 11.0"
 
 -------------------------------------------------------------------------------
 --	ScrollGroup:
@@ -76,22 +76,17 @@ local ScrollGroup = _M
 
 function ScrollGroup.new(class, self)
 	self = self or { }
-
-	self.NotifyLeft =
-		{ self, "onSetCanvasLeft", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
-	self.NotifyTop =
-		{ self, "onSetCanvasTop", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
-	self.NotifyWidth =
-		{ self, "onSetCanvasWidth", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
-	self.NotifyHeight =
-		{ self, "onSetCanvasHeight", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE }
-
+	
 	self.CopyAreaList = { }
 	self.Orientation = "vertical"
 	self.HSliderEnabled = false
 	self.HSliderGroup = self.HSliderGroup or false
 	self.HSliderMode = self.HSliderMode or "off"
 	self.HSliderNotify = { self, "onSetSliderLeft", ui.NOTIFY_VALUE }
+	self.NotifyHeight = { self, "onSetCanvasHeight", ui.NOTIFY_VALUE }
+	self.NotifyLeft = { self, "onSetCanvasLeft", ui.NOTIFY_VALUE }
+	self.NotifyTop = { self, "onSetCanvasTop", ui.NOTIFY_VALUE }
+	self.NotifyWidth = { self, "onSetCanvasWidth", ui.NOTIFY_VALUE }
 	self.ScrollStep = self.ScrollStep or 10
 	self.VSliderMode = self.VSliderMode or "off"
 	self.VSliderEnabled = false
@@ -105,7 +100,7 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "horizontal",
 			Min = 0,
-			Step = self.ScrollStep,
+			Step = self.ScrollStep
 		}
 		self.HSliderGroup = hslider
 		self.HSliderEnabled = true
@@ -116,7 +111,7 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "vertical",
 			Min = 0,
-			Step = self.ScrollStep,
+			Step = self.ScrollStep
 		}
 		self.VSliderGroup = vslider
 		self.VSliderEnabled = true
@@ -129,8 +124,8 @@ function ScrollGroup.new(class, self)
 			Children =
 			{
 				self.Child,
-				vslider,
-			},
+				vslider
+			}
 		},
 		hslider,
 	}
@@ -276,14 +271,16 @@ end
 --	onSetCanvasLeft:
 -------------------------------------------------------------------------------
 
-function ScrollGroup:onSetCanvasLeft(x, ox)
+function ScrollGroup:onSetCanvasLeft(x)
 	local c = self.Child
 	local r1, _, r3 = c:getRect()
 	if r1 then
+		local ox = c.OldCanvasLeft
 		ox = ox or c.CanvasLeft
 		x = max(0, min(c.CanvasWidth - (r3 - r1 + 1), floor(x)))
 		local dx = ox - x
 		c.CanvasLeft = x
+		c.OldCanvasLeft = x
 		self.Child:setValue("CanvasLeft", x)
 		if self.HSliderGroup then
 			self.HSliderGroup.Slider:setValue("Value", x)
@@ -298,14 +295,16 @@ end
 --	onSetCanvasTop:
 -------------------------------------------------------------------------------
 
-function ScrollGroup:onSetCanvasTop(y, oy)
+function ScrollGroup:onSetCanvasTop(y)
 	local c = self.Child
 	local _, r2, _, r4 = c:getRect()
 	if r2 then
+		local oy = c.OldCanvasTop
 		oy = oy or c.CanvasTop
 		y = max(0, min(c.CanvasHeight - (r4 - r2 + 1), floor(y)))
 		local dy = oy - y
 		c.CanvasTop = y
+		c.OldCanvasTop = y
 		self.Child:setValue("CanvasTop", y)
 		if self.VSliderGroup then
 			self.VSliderGroup.Slider:setValue("Value", y)

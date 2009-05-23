@@ -55,7 +55,6 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Object = require "tek.class.object"
 local assert = assert
@@ -64,7 +63,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 14.0"
+_VERSION = "Element 14.2"
 local Element = _M
 
 -------------------------------------------------------------------------------
@@ -160,9 +159,7 @@ end
 -------------------------------------------------------------------------------
 
 function Element:setup(app, window)
-	if self.Application then
-		db.warn("Element already initialized: %s", self:getClassName())
-	end
+	assert(not self.Application)
 	self.Application = app
 	self.Window = window
 	if self.Id then
@@ -195,11 +192,6 @@ end
 --	this is used for direct formattings).
 -------------------------------------------------------------------------------
 
-local function getpropfmt(props, attr, fmt, ...)
-	local key = fmt:format(...)
-	return props[key] and props[key][attr]
-end
-
 function Element:getProperty(props, pclass, attr)
 
 	if pclass == true then
@@ -210,63 +202,58 @@ function Element:getProperty(props, pclass, attr)
 	local id = self.Id
 	local classname = self._NAME
 	local styleclass = self.Class
-	local val
+	local key
 	if pclass then
 		if id then
-			val = getpropfmt(props, attr, "%s#%s:%s", classname, id,
-				pclass) or
-				getpropfmt(props, attr, "%s#%s", classname, id) or
-				getpropfmt(props, attr, "#%s:%s", id, pclass) or
-				getpropfmt(props, attr, "#%s", id)
-			if val then 
-				return val 
-			end
+			key = props[classname .. "#" .. id .. ":" .. pclass]
+			if key and key[attr] then return key[attr] end
+			key = props[classname .. "#" .. id]
+			if key and key[attr] then return key[attr] end
+			key = props["#" .. id .. ":" .. pclass]
+			if key and key[attr] then return key[attr] end
+			key = props["#" .. id]
+			if key and key[attr] then return key[attr] end		
 		end
 		if styleclass then
 			for class in styleclass:gmatch("%S+") do
-				val = getpropfmt(props, attr, "%s.%s:%s", classname, class,
-					pclass) or
-					getpropfmt(props, attr, "%s.%s", classname, class) or
-					getpropfmt(props, attr, ".%s:%s", class, pclass) or
-					getpropfmt(props, attr, ".%s", class)
-				if val then 
-					return val
-				end
+				key = props[classname .. "." .. class .. ":" .. pclass]
+				if key and key[attr] then return key[attr] end
+				key = props[classname .. "." .. class]
+				if key and key[attr] then return key[attr] end
+				key = props["." .. class .. ":" .. pclass]
+				if key and key[attr] then return key[attr] end
+				key = props["." .. class]
+				if key and key[attr] then return key[attr] end
 			end
 		end
 		local class = self:getClass()
 		while class ~= Element do
 			local n = class._NAME
-			val = getpropfmt(props, attr, "%s:%s", n, pclass)
-				or props[n] and props[n][attr]
-			if val then
-				return val
-			end
+			key = props[n .. ":" .. pclass]
+			if key and key[attr] then return key[attr] end
+			key = props[n]
+			if key and key[attr] then return key[attr] end
 			class = class:getSuper()
 		end
 	else
 		if id then
-			val = getpropfmt(props, attr, "%s#%s", classname, id) or
-				getpropfmt(props, attr, "#%s", id)
-			if val then
-				return val
-			end
+			key = props[classname .. "#" .. id]
+			if key and key[attr] then return key[attr] end
+			key = props["#" .. id]
+			if key and key[attr] then return key[attr] end
 		end
 		if styleclass then
 			for class in styleclass:gmatch("%S+") do
-				val = getpropfmt(props, attr, "%s.%s", classname, class) or
-					getpropfmt(props, attr, ".%s", class)
-				if val then
-					return val
-				end
+				key = props[classname .. "." .. class]
+				if key and key[attr] then return key[attr] end
+				key = props["." .. class]
+				if key and key[attr] then return key[attr] end
 			end
 		end
 		local class = self:getClass()
 		while class ~= Element do
-			local n = props[class._NAME]
-			if n and n[attr] then
-				return n[attr]
-			end
+			key = props[class._NAME]
+			if key and key[attr] then return key[attr] end
 			class = class:getSuper()
 		end
 	end

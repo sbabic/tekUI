@@ -44,7 +44,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 4.0"
+_VERSION = "CheckMark 4.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -101,7 +101,7 @@ function CheckMark:askMinMax(m1, m2, m3, m4)
 	if tr then
 		local w, h = tr[9], tr[10]
 		local ih, iw = max(h, self.ImageMinHeight or h)
-		iw, ih = self.Display:fitMinAspect(ih, ih, 1, 1, 0)
+		iw, ih = self.Drawable:fitMinAspect(ih, ih, 1, 1, 0)
 		self.ImageWidth = iw
 		self.ImageHeight = ih
 		h = max(0, ih - h)

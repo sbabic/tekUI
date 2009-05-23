@@ -1,6 +1,12 @@
 
 == tekUI Changelog ==
+ 
+=== 0.8f: ===
 
+ * Element: Major speedup in parsing style properties
+ * Drawable:openFont(), closeFont(), fitMinAspect() added, Visual API:
+ font:getTextSize() added, Font and Display usage simplified in shortened
+ many classes
  * Improved some demos, texts, localizations, and style sheets
  * Compiler: added commandline arguments
  * C sources and their symbol names are now better suited for amalgamed
@@ -8,7 +14,8 @@
  * Removed unused memory managers from TEKlib
  * Application: Added GCControl
  * Application, PopupWindow: Removed use of checkDescend()
- * FloatText: corrected flaky color property evaluation
+ * FloatText: corrected flaky color property evaluation, UnusedRegion,
+ updateUnusedRegion() removed, now handled by Canvas
  * Gauge, Slider: Added BackgroundRegion, updateBackgroundRegion(), faster
  repaint
  * Region: now supports a custom datatype for rectangles, renamed
@@ -19,27 +26,41 @@
  ScrollGroup, Slider, Window: Now using region:forEach() instead of
  region:getRects()
  * Default border, Border: getBorderRegion() renamed to getRegion(), now
- expecting a border to be supplied by the caller
+ expecting a border to be supplied by the caller, now determines group
+ color from getBGElement()
  * UI: added allocRegion(), freeRegion(), newRegion(), reuseRegion(),
- ProgDir is now guaranteed to contain a trailing path separator
+ destroyHook(), ProgDir is now guaranteed to contain a trailing path
+ separator
  * Area, Canvas, Frame, Gauge, Group, ListGadget, Slider: added region
  caching and reusing
  * ListGadget, FloatText: innerloop of draw() is now a separate function
  * Element: Added getAttr()
  * PopItem: implemented "menuitem-size" via getAttr()
- * Area:getBackground() renamed to getBG(), getRectangle() to getRect()
+ * Area:getBackground() renamed to getBG(), getRectangle() to getRect(),
  markDamage() to damage(), focusRectangle() to focusRect(),
  BackgroundPosition to BGPosition, removed getElement(), added
  getChildren(), getSiblings(), getParent(), getGroup(), getNext(),
- getPrev(), checkHover()
+ getPrev(), checkHover(), getBGElement(), Display removed, show() now
+ takes only a Drawable as an argument and has no return value anymore
  * Application: Renamed CollectGarbage to GCControl, VendorName to Vendor,
  VendorDomain to Domain
- * Canvas: renamed markChildDamage() to damageChild()
+ * Canvas: renamed markChildDamage() to damageChild(), added UseChildBG
+ attribute, onSetChild() is no longer passed ui.NOTIFY_OLDVALUE, now
+ handles child margins
  * CheckMark, RadioButton: renamed AltImage to SelectImage
  * DirList: renamed getDirectoryIterator() to getDirIterator()
- * Display: renamed colorNameToRGB() to colorToRGB()
+ * Display: renamed colorNameToRGB() to colorToRGB(), closeFont() now
+ always returns false
  * FloatText: renamed Reposition argument from "bottom" to "tail"
  * Gadget: renamed EffectName to Effect
+ * X11 Display: Added missing X11 include, added support for UTF-8 encoded
+ window titles, added fontconfig closedown, fixed uninitialized stack and 
+ minor memory leak problems
+ * Window:handleInput() doesn't update MouseX,MouseY generally anymore
+ but in appropriate handlers
+ * PopList: Renamed onSelectEntry() to onSelectLine()
+ * Nano-X, X11 Display: stdin reader did not handle incomplete reads
+ correctly, fixed
 
 === 0.8e: ===
 

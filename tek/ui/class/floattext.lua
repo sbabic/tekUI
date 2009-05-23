@@ -57,7 +57,6 @@
 
 local ui = require "tek.ui"
 local Area = ui.Area
-local Display = ui.Display
 local Region = require "tek.lib.region"
 
 local concat = table.concat
@@ -67,7 +66,7 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 9.0"
+_VERSION = "FloatText 10.1"
 
 local FloatText = _M
 
@@ -97,7 +96,6 @@ function FloatText.init(self)
 	if self.TrackDamage == nil then
 		self.TrackDamage = true
 	end
-	self.UnusedRegion = false
 	self.WidthsCache = false
 	self.WordSpacing = false
 	return Area.init(self)
@@ -137,13 +135,12 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function FloatText:show(display, drawable)
-	if Area.show(self, display, drawable) then
-		self.FontHandle = display:openFont(self.Font)
-		self.FWidth, self.FHeight = Display:getTextSize(self.FontHandle, "W")
-		self:prepareText()
-		return true
-	end
+function FloatText:show(drawable)
+	Area.show(self, drawable)
+	local f = drawable:openFont(self.Font)
+	self.FontHandle = f
+	self.FWidth, self.FHeight = f:getTextSize("W")
+	self:prepareText()
 end
 
 -------------------------------------------------------------------------------
@@ -151,10 +148,7 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:hide()
-	if self.Display then
-		self.Display:closeFont(self.FontHandle)
-		self.FontHandle = false
-	end
+	self.FontHandle = self.Drawable:closeFont(self.FontHandle)
 	Area.hide(self)
 end
 
@@ -184,11 +178,7 @@ function FloatText:draw()
 		local x1 = ca and x0 + ca.CanvasWidth - 1 or self.Rect[3]
 		local fp = p[self.Foreground]
 		d:setFont(self.FontHandle)
-		dr:forEach(self.drawPatch, self, d, x0, y0, x1, fp, bp, tx, ty)
-	end
-	local ur = self.UnusedRegion
-	if ur then
-		ur:forEach(d.fillRect, d, bp, tx, ty)
+		dr:forEach(self.drawPatch, self, d, x0, y0, x1, fp, d.Pens[bp], tx, ty)
 	end
 end
 
@@ -216,33 +206,32 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:prepareText()
-	if self.Display then
-		local lw = 0 -- widest width in text
-		local w, h
-		local i = 0
-		local wl = { }
-		self.WidthsCache = wl -- cache for word lengths / line lengths
-		if self.Preformatted then
-			-- determine widths line by line
-			for line in self.Text:gmatch("([^\n]*)\n?") do
-				w, h = Display:getTextSize(self.FontHandle, line)
-				lw = max(lw, w)
-				i = i + 1
-				wl[i] = w
-			end
-		else
-			-- determine widths word by word
-			for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
-				w, h = Display:getTextSize(self.FontHandle, word)
-				lw = max(lw, w)
-				i = i + 1
-				wl[i] = w
-			end
-			self.WordSpacing = Display:getTextSize(self.FontHandle, " ")
+	local f = self.FontHandle
+	local lw = 0 -- widest width in text
+	local w, h
+	local i = 0
+	local wl = { }
+	self.WidthsCache = wl -- cache for word lengths / line lengths
+	if self.Preformatted then
+		-- determine widths line by line
+		for line in self.Text:gmatch("([^\n]*)\n?") do
+			w, h = f:getTextSize(line)
+			lw = max(lw, w)
+			i = i + 1
+			wl[i] = w
 		end
-		self.MinWidth, self.MinHeight = lw, h
-		return lw, h
+	else
+		-- determine widths word by word
+		for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
+			w, h = f:getTextSize(word)
+			lw = max(lw, w)
+			i = i + 1
+			wl[i] = w
+		end
+		self.WordSpacing = f:getTextSize(" ")
 	end
+	self.MinWidth, self.MinHeight = lw, h
+	return lw, h
 end
 
 -------------------------------------------------------------------------------
@@ -357,7 +346,6 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 			self.DamageRegion:subRect(r[1], r[2], r[3], r[4])
 		end
 		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
-		self:updateUnusedRegion()
 		self.Redraw = true
 		return true
 	end
@@ -388,23 +376,6 @@ function FloatText:onSetText()
 end
 
 -------------------------------------------------------------------------------
---	updateUnusedRegion: internal
--------------------------------------------------------------------------------
-
-function FloatText:updateUnusedRegion()
-	-- determine unused region:
-	local m = self.MarginAndBorder
-	if m[1] ~= 0 or m[2] ~= 0 or m[3] ~= 0 or m[4] ~= 0 then
-		local r = self.Rect
-		self.UnusedRegion = Region.new(r[1] - m[1], r[2] - m[2], r[3] + m[3],
-			r[4] + m[4])
-		self.UnusedRegion:subRect(r[1], r[2], r[3], r[4])
-	else
-		self.UnusedRegion = false
-	end
-end
-
--------------------------------------------------------------------------------
 --	appendLine(text[, movetail]): Append a line of text; if the
 --	optional boolean {{movetail}} is '''true''', the visible area of the
 --	element is moved towards the end of the text.
@@ -416,17 +387,5 @@ function FloatText:appendLine(text, movetail)
 		self:setValue("Text", text)
 	else
 		self:setValue("Text", self.Text .. "\n" .. text)
-	end
-end
-
--------------------------------------------------------------------------------
---	damage: overrides
--------------------------------------------------------------------------------
-
-function FloatText:damage(r1, r2, r3, r4)
-	Area.damage(self, r1, r2, r3, r4)
-	if self.UnusedRegion and
-		self.UnusedRegion:checkIntersect(r1, r2, r3, r4) then
-		self.Redraw = true
 	end
 end

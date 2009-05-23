@@ -15,6 +15,7 @@ modules: libs
 
 tools: modules
 	cd src && $(MAKE) $@
+	cd tek/lib && $(MAKE) $@
 
 install:
 	cd tek && $(MAKE) $@

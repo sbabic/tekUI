@@ -78,6 +78,7 @@ static const luaL_Reg tek_lib_visual_fontmethods[] =
 	{ "__gc", tek_lib_visual_closefont },
 	{ "getattrs", tek_lib_visual_getfontattrs },
 	{ "close", tek_lib_visual_closefont },
+	{ "getTextSize", tek_lib_visual_textsize_font },
 	{ TNULL, TNULL }
 };
 

@@ -17,7 +17,7 @@ local sin = math.sin
 local unpack = unpack
 
 module("tek.ui.class.plasma", tek.ui.class.frame)
-_VERSION = "Plasma 2.0"
+_VERSION = "Plasma 3.0"
 
 local WIDTH = 80
 local HEIGHT = 60
@@ -80,11 +80,9 @@ function Plasma.init(self)
 	return Frame.init(self)
 end
 
-function Plasma:show(display, drawable)
-	if Frame.show(self, display, drawable) then
-		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
-		return true
-	end
+function Plasma:show(drawable)
+	Frame.show(self, drawable)
+	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 end
 
 function Plasma:hide()

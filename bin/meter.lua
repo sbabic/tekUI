@@ -49,11 +49,9 @@ local sintab =
 
 local MyGraph1 = ui.Meter:newClass()
 
-function MyGraph1:show(display, drawable)
-	if ui.Meter.show(self, display, drawable) then
-		self.Application:addInputHandler(ui.MSG_USER, self, self.updateData)
-		return true
-	end
+function MyGraph1:show(drawable)
+	ui.Meter.show(self, drawable)
+	self.Application:addInputHandler(ui.MSG_USER, self, self.updateData)
 end
 
 function MyGraph1:hide()
@@ -93,11 +91,9 @@ function MyGraph2.init(self)
 	return ui.Meter.init(self)
 end
 
-function MyGraph2:show(display, drawable)
-	if ui.Meter.show(self, display, drawable) then
-		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateData)
-		return true
-	end
+function MyGraph2:show(drawable)
+	ui.Meter.show(self, drawable)
+	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateData)
 end
 
 function MyGraph2:hide()

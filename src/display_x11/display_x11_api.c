@@ -15,6 +15,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 	TAPTR TExecBase = TGetExecBase(mod);
 	TTAGITEM *tags = req->tvr_Op.OpenWindow.Tags;
 	X11WINDOW *v = TAlloc0(mod->x11_MemMgr, sizeof(X11WINDOW));
+	XTextProperty title_prop;
 
 	req->tvr_Op.OpenWindow.Window = v;
 	if (v == TNULL) return;
@@ -157,9 +158,14 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		if (v->sizehints->flags)
 			XSetWMNormalHints(mod->x11_Display, v->window, v->sizehints);
 
-		XStringListToTextProperty((char **) &v->title, 1, &v->title_prop);
-		XSetWMProperties(mod->x11_Display, v->window, &v->title_prop,
-			NULL, NULL, 0, NULL, NULL, NULL);
+		if (Xutf8TextListToTextProperty(mod->x11_Display, 
+			(char **) &v->title, 1, XUTF8StringStyle, &title_prop) ==
+			Success)
+		{
+			XSetWMProperties(mod->x11_Display, v->window, &title_prop,
+				NULL, NULL, 0, NULL, NULL, NULL);
+			XFree(title_prop.value);
+		}
 
 		v->atom_wm_delete_win = XInternAtom(mod->x11_Display,
 			"WM_DELETE_WINDOW", True);

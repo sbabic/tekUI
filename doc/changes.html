@@ -10,8 +10,19 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<h3>
+			0.8f:
+		</h3>
 		<blockquote>
 			<ul>
+				<li>
+					Element: Major speedup in parsing style properties
+				</li>
+				<li>
+					<a href="manual.html#Drawable:openFont"><code>Drawable:openFont()</code></a>, <a href="manual.html#closeFont"><code>closeFont()</code></a>, <a href="manual.html#fitMinAspect"><code>fitMinAspect()</code></a> added, Visual API:
+					<a href="manual.html#font:getTextSize"><code>font:getTextSize()</code></a> added, Font and Display usage simplified in shortened
+					many classes
+				</li>
 				<li>
 					Improved some demos, texts, localizations, and style sheets
 				</li>
@@ -32,7 +43,8 @@
 					Application, PopupWindow: Removed use of <a href="manual.html#checkDescend"><code>checkDescend()</code></a> 
 				</li>
 				<li>
-					FloatText: corrected flaky color property evaluation
+					FloatText: corrected flaky color property evaluation, UnusedRegion,
+					<a href="manual.html#updateUnusedRegion"><code>updateUnusedRegion()</code></a> removed, now handled by Canvas
 				</li>
 				<li>
 					Gauge, Slider: Added BackgroundRegion, <a href="manual.html#updateBackgroundRegion"><code>updateBackgroundRegion()</code></a>, faster
@@ -51,11 +63,13 @@
 				</li>
 				<li>
 					Default border, Border: <a href="manual.html#getBorderRegion"><code>getBorderRegion()</code></a> renamed to <a href="manual.html#getRegion"><code>getRegion()</code></a>, now
-					expecting a border to be supplied by the caller
+					expecting a border to be supplied by the caller, now determines group
+					color from <a href="manual.html#getBGElement"><code>getBGElement()</code></a> 
 				</li>
 				<li>
 					UI: added <a href="manual.html#allocRegion"><code>allocRegion()</code></a>, <a href="manual.html#freeRegion"><code>freeRegion()</code></a>, <a href="manual.html#newRegion"><code>newRegion()</code></a>, <a href="manual.html#reuseRegion"><code>reuseRegion()</code></a>,
-					ProgDir is now guaranteed to contain a trailing path separator
+					<a href="manual.html#destroyHook"><code>destroyHook()</code></a>, ProgDir is now guaranteed to contain a trailing path
+					separator
 				</li>
 				<li>
 					Area, Canvas, Frame, Gauge, Group, ListGadget, Slider: added region
@@ -71,18 +85,21 @@
 					PopItem: implemented &quot;menuitem-size&quot; via <a href="manual.html#getAttr"><code>getAttr()</code></a> 
 				</li>
 				<li>
-					<a href="manual.html#Area:getBackground"><code>Area:getBackground()</code></a> renamed to <a href="manual.html#getBG"><code>getBG()</code></a>, <a href="manual.html#getRectangle"><code>getRectangle()</code></a> to <a href="manual.html#getRect"><code>getRect()</code></a> 
+					<a href="manual.html#Area:getBackground"><code>Area:getBackground()</code></a> renamed to <a href="manual.html#getBG"><code>getBG()</code></a>, <a href="manual.html#getRectangle"><code>getRectangle()</code></a> to <a href="manual.html#getRect"><code>getRect()</code></a>,
 					<a href="manual.html#markDamage"><code>markDamage()</code></a> to <a href="manual.html#damage"><code>damage()</code></a>, <a href="manual.html#focusRectangle"><code>focusRectangle()</code></a> to <a href="manual.html#focusRect"><code>focusRect()</code></a>,
 					BackgroundPosition to BGPosition, removed <a href="manual.html#getElement"><code>getElement()</code></a>, added
 					<a href="manual.html#getChildren"><code>getChildren()</code></a>, <a href="manual.html#getSiblings"><code>getSiblings()</code></a>, <a href="manual.html#getParent"><code>getParent()</code></a>, <a href="manual.html#getGroup"><code>getGroup()</code></a>, <a href="manual.html#getNext"><code>getNext()</code></a>,
-					<a href="manual.html#getPrev"><code>getPrev()</code></a>, <a href="manual.html#checkHover"><code>checkHover()</code></a> 
+					<a href="manual.html#getPrev"><code>getPrev()</code></a>, <a href="manual.html#checkHover"><code>checkHover()</code></a>, <a href="manual.html#getBGElement"><code>getBGElement()</code></a>, Display removed, <a href="manual.html#show"><code>show()</code></a> now
+					takes only a Drawable as an argument and has no return value anymore
 				</li>
 				<li>
 					Application: Renamed CollectGarbage to GCControl, VendorName to Vendor,
 					VendorDomain to Domain
 				</li>
 				<li>
-					Canvas: renamed <a href="manual.html#markChildDamage"><code>markChildDamage()</code></a> to <a href="manual.html#damageChild"><code>damageChild()</code></a> 
+					Canvas: renamed <a href="manual.html#markChildDamage"><code>markChildDamage()</code></a> to <a href="manual.html#damageChild"><code>damageChild()</code></a>, added UseChildBG
+					attribute, <a href="manual.html#onSetChild"><code>onSetChild()</code></a> is no longer passed ui.NOTIFY_OLDVALUE, now
+					handles child margins
 				</li>
 				<li>
 					CheckMark, RadioButton: renamed AltImage to SelectImage
@@ -91,13 +108,30 @@
 					DirList: renamed <a href="manual.html#getDirectoryIterator"><code>getDirectoryIterator()</code></a> to <a href="manual.html#getDirIterator"><code>getDirIterator()</code></a> 
 				</li>
 				<li>
-					Display: renamed <a href="manual.html#colorNameToRGB"><code>colorNameToRGB()</code></a> to <a href="manual.html#colorToRGB"><code>colorToRGB()</code></a> 
+					Display: renamed <a href="manual.html#colorNameToRGB"><code>colorNameToRGB()</code></a> to <a href="manual.html#colorToRGB"><code>colorToRGB()</code></a>, <a href="manual.html#closeFont"><code>closeFont()</code></a> now
+					always returns false
 				</li>
 				<li>
 					FloatText: renamed Reposition argument from &quot;bottom&quot; to &quot;tail&quot;
 				</li>
 				<li>
 					Gadget: renamed EffectName to Effect
+				</li>
+				<li>
+					X11 Display: Added missing X11 include, added support for UTF-8 encoded
+					window titles, added fontconfig closedown, fixed uninitialized stack and
+					minor memory leak problems
+				</li>
+				<li>
+					<a href="manual.html#Window:handleInput"><code>Window:handleInput()</code></a> doesn't update MouseX,MouseY generally anymore
+					but in appropriate handlers
+				</li>
+				<li>
+					PopList: Renamed <a href="manual.html#onSelectEntry"><code>onSelectEntry()</code></a> to <a href="manual.html#onSelectLine"><code>onSelectLine()</code></a> 
+				</li>
+				<li>
+					Nano-X, X11 Display: stdin reader did not handle incomplete reads
+					correctly, fixed
 				</li>
 			</ul>
 		</blockquote>

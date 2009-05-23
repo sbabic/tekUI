@@ -68,6 +68,7 @@ TSTRPTR libfcsyms[LIBFC_NUMSYMS] =
 	"FcPatternGetInteger",
 	"FcPatternGetBool",
 	"FcInit",
+	"FcFini",
 };
 
 /*****************************************************************************/
@@ -84,9 +85,9 @@ LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod)
 	int major, minor, first;
  	if (XQueryExtension(mod->x11_Display, "Composite", &major, &minor, &first))
  		return TFALSE;
- 	#endif
 	if (mod->x11_Depth > 24)
 		return TFALSE;
+ 	#endif
 
 	/* init fontconfig (needed for font matching) */
 	mod->x11_libfchandle = initlib(mod, "libfontconfig.so", libfcsyms,
@@ -101,7 +102,7 @@ LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod)
 
 		if (mod->x11_libxfthandle)
 		{
-			if((*mod->x11_fciface.FcInit)())
+			if ((*mod->x11_fciface.FcInit)())
 				mod->x11_use_xft = TTRUE;
 			else
 				TDBPRINTF(TDB_ERROR,("fontconfig init failed\n"));
@@ -120,13 +121,25 @@ LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod)
 	#endif
 }
 
+LOCAL void x11_exitlibxft(X11DISPLAY *mod)
+{
+	if (mod->x11_libfchandle)
+		(*mod->x11_fciface.FcFini)();
+	if (mod->x11_libfchandle)
+		dlclose(mod->x11_libfchandle);
+	#if defined(ENABLE_XFT)
+	if (mod->x11_libxfthandle)
+		dlclose(mod->x11_libxfthandle);
+	#endif
+}
+
 /*****************************************************************************/
 /* dlopen the library named libname, bind numsyms symbols from libsyms[]
 ** to iface and return the libhandle obtained by dlopen or TNULL
 */
 #if defined(ENABLE_XFT)
-static TAPTR
-initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms, TAPTR iface, TINT numsyms)
+static TAPTR initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms,
+	TAPTR iface, TINT numsyms)
 {
 	TAPTR libhandle = TNULL;
 
@@ -145,11 +158,7 @@ initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms, TAPTR iface, T
 			if (dlerror())	break;
 		}
 
-		if (i == numsyms)
-		{
-			TDBPRINTF(TDB_INFO,("%s successfully initialised\n", libname));
-		}
-		else
+		if (i != numsyms)
 		{
 			/* missing symbols */
 			TDBPRINTF(TDB_ERROR,("%s initialisation failed\n", libname));

@@ -138,7 +138,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 13.0"
+_VERSION = "Gadget 14.0"
 
 local Gadget = _M
 
@@ -235,7 +235,7 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:cleanup()
-	self.EffectHook = false
+	self.EffectHook = ui.destroyHook(self.EffectHook)
 	self:remNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
 	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
@@ -251,19 +251,19 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:show(display, drawable)
+function Gadget:show(drawable)
 	local interactive = self.Mode ~= "inert"
-	if interactive and self.KeyCode then
-		self.Window:addKeyShortcut(self.KeyCode, self)
+	local keycode = self.KeyCode
+	if interactive and keycode then
+		self.Window:addKeyShortcut(keycode, self)
 	end
-	if Frame.show(self, display, drawable) then
-		if self.EffectHook then
-			self.EffectHook:show()
-		end
-		if interactive and self.InitialFocus then
-			self:setValue("Focus", true)
-		end
-		return true
+	Frame.show(self, drawable)
+	local e = self.EffectHook
+	if e then
+		e:show()
+	end
+	if interactive and self.InitialFocus then
+		self:setValue("Focus", true)
 	end
 end
 
@@ -272,8 +272,9 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:hide()
-	if self.EffectHook then
-		self.EffectHook:hide()
+	local e = self.EffectHook
+	if e then
+		e:hide()
 	end
 	Frame.hide(self)
 	if self.KeyCode then

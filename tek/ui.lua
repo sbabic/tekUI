@@ -16,6 +16,7 @@
 --
 --	FUNCTIONS::
 --		- ui.createHook() - Creates a hook object
+--		- ui.destroyHook() - Destroys a hook object
 --		- ui.getStockImage() - Gets a stock image object
 --		- ui.extractKeyCode() - Extracts a keycode from a string
 --		- ui.getLocale() - Gets a locale catalog
@@ -83,7 +84,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 23.1"
+_VERSION = "tekUI 24.0"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -251,6 +252,19 @@ function createHook(domain, name, parent, object)
 		app:decodeProperties(child)
 		child:setup(app, parent.Window)
 		return child
+	end
+	return false
+end
+
+-------------------------------------------------------------------------------
+--	false = destroyHook([hookobject]): Destroys a hook object by invoking its
+--	{{cleanup()}} and {{disconnect()}} methods. Always returns '''false'''.
+-------------------------------------------------------------------------------
+
+function destroyHook(object)
+	if object then
+		object:cleanup()
+		object:disconnect()
 	end
 	return false
 end

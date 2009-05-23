@@ -76,11 +76,11 @@ static int x11_readline(struct FileReader *r, char **line, size_t *len)
 	{
 		if (r->BufBytes == 0)
 		{
-			int rdbytes = TMIN(sizeof(r->ReadBuf), r->ReadBytes);
-			read(r->File, r->ReadBuf, rdbytes);
+			int rdlen = TMIN(sizeof(r->ReadBuf), r->ReadBytes);
+			rdlen = read(r->File, r->ReadBuf, rdlen);
 			r->BufPos = 0;
-			r->BufBytes = rdbytes;
-			r->ReadBytes -= rdbytes;
+			r->BufBytes = rdlen;
+			r->ReadBytes -= rdlen;
 		}
 		c = r->ReadBuf[r->BufPos++];
 		r->BufBytes--;
@@ -295,9 +295,8 @@ static void x11_createnullcursor(X11DISPLAY *mod)
 	xgc.function = GXclear;
 	gc = XCreateGC(display, cursormask, GCFunction, &xgc);
 	XFillRectangle(display, cursormask, gc, 0, 0, 1, 1);
-	dummycolour.pixel = 0;
-	dummycolour.red = 0;
-	dummycolour.flags = 04;
+	memset(&dummycolour, 0, sizeof(XColor));
+	dummycolour.flags = 7;
 	mod->x11_NullCursor = XCreatePixmapCursor(display, cursormask, cursormask,
 		&dummycolour, &dummycolour, 0, 0);
 	XFreePixmap(display, cursormask);
@@ -348,8 +347,6 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		inst->x11_fd_max =
 			TMAX(inst->x11_fd_sigpipe_read, inst->x11_fd_display) + 1;
 
-		x11_initlibxft(inst);
-
 		/* needed for unsetcliprect: */
 		inst->x11_HugeRegion = XCreateRegion();
 		rectangle.x = 0;
@@ -359,6 +356,8 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		XUnionRectWithRegion(&rectangle, inst->x11_HugeRegion,
 			inst->x11_HugeRegion);
 
+		x11_initlibxft(inst);
+		
 		ftags[0].tti_Tag = TVisual_FontName;
 		ftags[0].tti_Value = (TTAG) FNT_DEFNAME;
 		ftags[1].tti_Tag = TVisual_FontPxSize;
@@ -412,7 +411,8 @@ static void x11_exitinstance(X11DISPLAY *inst)
 	for (; (next = node->tln_Succ); node = next)
 		x11_hostclosefont(inst, (TAPTR) node);
 
-	/*XDestroyRegion(inst->x11_HugeRegion);*/
+	if (inst->x11_HugeRegion)
+		XDestroyRegion(inst->x11_HugeRegion);
 
 	if (inst->x11_fd_sigpipe_read != -1)
 	{
@@ -423,13 +423,7 @@ static void x11_exitinstance(X11DISPLAY *inst)
 	if (inst->x11_Display)
 		XCloseDisplay(inst->x11_Display);
 
-	if (inst->x11_libfchandle)
-		dlclose(inst->x11_libfchandle);
-
-	#if defined(ENABLE_XFT)
-	if (inst->x11_libxfthandle)
-		dlclose(inst->x11_libxfthandle);
-	#endif
+	x11_exitlibxft(inst);
 }
 
 /*****************************************************************************/

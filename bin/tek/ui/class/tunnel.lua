@@ -16,7 +16,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 1.11"
+_VERSION = "Tunnel 2.0"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -60,11 +60,9 @@ function Tunnel.init(self)
 	return Frame.init(self)
 end
 
-function Tunnel:show(display, drawable)
-	if Frame.show(self, display, drawable) then
-		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
-		return true
-	end
+function Tunnel:show(drawable)
+	Frame.show(self, drawable)
+	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 end
 
 function Tunnel:hide()

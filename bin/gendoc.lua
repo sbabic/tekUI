@@ -277,7 +277,7 @@ function processfile(state, fname)
 	f:close()
 
 	if version then
-		version = version:match("^%D*%s+(%d+[%d.]*%.%d+)%s*$")
+		version = version:match("^[%w%s]+%s+(%d+[%d.]*%.%d+)%s*$")
 		if not version then
 			io.stderr:write(
 				("%s: _VERSION malformatted\n"):format(classname or fname))

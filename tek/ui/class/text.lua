@@ -79,10 +79,8 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Display = ui.Display
 local Gadget = ui.Gadget
 
 local floor = math.floor
@@ -93,7 +91,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 16.0"
+_VERSION = "Text 17.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -166,12 +164,10 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Text:show(display, drawable)
-	if Gadget.show(self, display, drawable) then
-		if not self.TextRecords then
-			self:makeTextRecords(self.Text)
-		end
-		return true
+function Text:show(drawable)
+	Gadget.show(self, drawable)
+	if not self.TextRecords then
+		self:makeTextRecords(self.Text)
 	end
 end
 
@@ -316,11 +312,11 @@ function Text:draw()
 end
 
 -------------------------------------------------------------------------------
---	newTextRecord: internal
+--	newTextRecord: Note that this function might get called before the element
+--	has a Drawable, therefore we must open the font from Application.Display
 -------------------------------------------------------------------------------
 
 function Text:newTextRecord(line, font, halign, valign, m1, m2, m3, m4)
-	font = type(font) ~= "string" and font or self.Display:openFont(font)
 	local keycode, _
 	local r = { line, font, halign or "center", valign or "center",
 		m1 or 0, m2 or 0, m3 or 0, m4 or 0 }
@@ -331,13 +327,13 @@ function Text:newTextRecord(line, font, halign, valign, m1, m2, m3, m4)
 		if b ~= "" then
 			keycode = b:sub(1, 1)
 			-- insert underline rectangle:
-			r[11] = Display:getTextSize(font, a)
-			_, r[12], r[14] = self.Display:getFontAttrs(font)
-			r[13] = Display:getTextSize(font, keycode)
+			r[11] = font:getTextSize(a)
+			_, r[12], r[14] = self.Application.Display:getFontAttrs(font)
+			r[13] = font:getTextSize(keycode)
 			r[1] = a .. b
 		end
 	end
-	local w, h = Display:getTextSize(font, r[1])
+	local w, h = font:getTextSize(r[1])
 	r[9], r[10] = w + 2, h + 2 -- for disabled state
 	return r, keycode
 end
@@ -376,27 +372,21 @@ end
 -------------------------------------------------------------------------------
 
 function Text:makeTextRecords(text)
-	local d = self.Display
-	if d then
-		text = text or ""
-		local tr = { }
-		self.TextRecords = tr
-		local y, nl = 0, 0
-		local font = d:openFont(self.Font)
-		for line in (text .. "\n"):gmatch("([^\n]*)\n") do
-			local r = self:addTextRecord(line, font, self.TextHAlign,
-				self.TextVAlign, 0, y, 0, 0)
-			y = y + r[10]
-			nl = nl + 1
-		end
-		y = 0
-		for i = nl, 1, -1 do
-			tr[i][8] = y
-			y = y + tr[i][10]
-		end
-	else
-		db.info("%s : Cannot set text - not connected to a display",
-			self:getClassName())
+	text = text or ""
+	local tr = { }
+	self.TextRecords = tr
+	local y, nl = 0, 0
+	local font = self.Application.Display:openFont(self.Font)
+	for line in (text .. "\n"):gmatch("([^\n]*)\n") do
+		local r = self:addTextRecord(line, font, self.TextHAlign,
+			self.TextVAlign, 0, y, 0, 0)
+		y = y + r[10]
+		nl = nl + 1
+	end
+	y = 0
+	for i = nl, 1, -1 do
+		tr[i][8] = y
+		y = y + tr[i][10]
 	end
 end
 

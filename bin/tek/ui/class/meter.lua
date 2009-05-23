@@ -23,7 +23,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 2.1"
+_VERSION = "Meter 3.1"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -78,13 +78,12 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 	local res = Text.layout(self, x0, y0, x1, y1, markdamage)
 	if res then
 	
-		local d = self.Display
-		local font = d:openFont(self.Font)
+		local font = self.Drawable:openFont(self.Font)
 		local r = self.Rect
 		
 		local captionheight, captionwidth, _ = 0, 0
 		if #self.CaptionsX > 0 then
-			_, captionheight = d:getTextSize(font, "")
+			_, captionheight = font:getTextSize("")
 		end
 		
 		-- flush text records:
@@ -98,7 +97,7 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 		local pris = { }
 		for i, c in ipairs(self.CaptionsY) do
 			insert(pris, c)
-			local tw, th = d:getTextSize(font, c.text)
+			local tw, th = font:getTextSize(c.text)
 			local y0 = floor(cy / 0x10000)
 			y0 = y0 - floor(th / 2)
 			y0 = max(0, min(y0, height - 1 - th)) + captionheight
@@ -139,7 +138,7 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 		local pris = { }
 		for i, c in ipairs(self.CaptionsX) do
 			insert(pris, c)
-			local tw, th = d:getTextSize(font, c.text)
+			local tw, th = font:getTextSize(c.text)
 			local x0 = floor(cx / 0x10000)
 			x0 = x0 - floor(tw / 2)
 			x0 = max(0, min(x0, width - 1 - tw)) + captionwidth
@@ -239,7 +238,8 @@ end
 
 function Meter:draw()
 	local d = self.Drawable
-	self.TextRegion:forEach(d.fillRect, d, self:getBG())
+	local bgpen, tx, ty = self:getBG()
+	self.TextRegion:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
 	Text.draw(self)
 	local r = self.Rect
 	self:eraseGraphBackground()

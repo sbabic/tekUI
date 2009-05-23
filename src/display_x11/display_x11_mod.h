@@ -11,6 +11,7 @@
 #include <tek/exec.h>
 #include <tek/teklib.h>
 
+#include <X11/X.h>
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <sys/shm.h>
@@ -180,6 +181,7 @@ struct FcInterface
 	FcResult (*FcPatternGetBool)(const FcPattern *p, const char *object,
 		int n, FcBool *b);
 	FcBool (*FcInit)(void);
+	void (*FcFini)(void);
 };
 
 #define LIBFC_NUMSYMS	(sizeof(struct FcInterface) / sizeof(void (*)(void)))
@@ -273,7 +275,6 @@ typedef struct
 
 	Window window;
 
-	XTextProperty title_prop;
 	Colormap colormap;
 	GC gc;
 
@@ -336,6 +337,7 @@ struct attrdata
 /*****************************************************************************/
 
 LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod);
+LOCAL void x11_exitlibxft(X11DISPLAY *mod);
 
 LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags);
 LOCAL void x11_exit(X11DISPLAY *mod);

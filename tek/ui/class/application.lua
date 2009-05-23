@@ -120,7 +120,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 20.0"
+_VERSION = "Application 21.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -150,7 +150,7 @@ function Application.new(class, self)
 		self.Display = self.Display or Display:new { }
 		self:decodeProperties()
 		self:setup()
-		self:show(self.Display)
+		self:show()
 	else
 		db.error("Could not connect elements")
 		self.Status = "error"
@@ -234,13 +234,10 @@ end
 function Application:addMember(child, pos)
 	self:decodeProperties(child)
 	child:setup(self, child)
-	if child:show(self.Display) then
-		if Family.addMember(self, child, pos) then
-			return child
-		end
-		child:hide()
+	child:show()
+	if Family.addMember(self, child, pos) then
+		return child
 	end
-	child:cleanup()
 end
 
 -------------------------------------------------------------------------------
@@ -336,14 +333,12 @@ end
 --	show: internal
 -------------------------------------------------------------------------------
 
-function Application:show(display)
-	self.Display = display
+function Application:show()
 	self:addInputHandler(MSG_USER, self, self.handleInput)
 	local c = self.Children
 	for i = 1, #c do
-		c[i]:show(display)
+		c[i]:show()
 	end
-	return true
 end
 
 -------------------------------------------------------------------------------
@@ -542,7 +537,7 @@ function Application:run()
 
 	while self.Status == "running" and #ow > 0 do
 
-		-- process the geometry-altering newsize messages first:
+		-- process geometry-altering messages first:
 		for i = 1, #ow do
 			local win = ow[i]
 			if win.NewSizeMsg then

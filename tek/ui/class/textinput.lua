@@ -65,7 +65,6 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
 local Area = ui.Area
-local Display = ui.Display
 local Gadget = ui.Gadget
 local Text = ui.Text
 local UTF8String = require "tek.class.utf8string"
@@ -78,7 +77,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 9.0"
+_VERSION = "TextInput 10.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -150,16 +149,14 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function TextInput:show(display, drawable)
-	if Text.show(self, display, drawable) then
-		self.FontWidth, self.FontHeight =
-			Display:getTextSize(self.TextRecords[1][2], " ")
-		self.TextRect = { }
-		self.TextOffset = 0
-		self.BlinkTick = 0
-		self.BlinkTickInit = 18
-		return true
-	end
+function TextInput:show(drawable)
+	Text.show(self, drawable)
+	self.FontWidth, self.FontHeight = self.TextRecords[1][2]:getTextSize(" ")
+	self.TextRect = { }
+	self.TextOffset = 0
+	self.BlinkTick = 0
+	self.BlinkTickInit = 18
+	return true
 end
 
 -------------------------------------------------------------------------------

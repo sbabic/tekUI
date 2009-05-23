@@ -121,11 +121,9 @@ app = ui.Application:new
 				return msg
 			end,
 
-			show = function(self, display, drawable)
-				if ui.Window.show(self, display, drawable) then
-					self:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
-					return true
-				end
+			show = function(self, drawable)
+				ui.Window.show(self, drawable)
+				self:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 			end,
 
 			hide = function(self)
@@ -465,16 +463,12 @@ app = ui.Application:new
 			end,
 		
 			Orientation = "vertical",
-			Notifications =
-			{
-				["Status"] =
-				{
-					["hide"] =
-					{
-						{ ui.NOTIFY_APPLICATION, "setValue", "Status", "quit" }
-					}
-				}
-			},
+			onChangeStatus = function(self, status)
+				ui.Window.onChangeStatus(self, status)
+				if status == "hide" then
+					self.Application:setValue("Status", "quit")
+				end
+			end,
 			Children =
 			{
 				ui.Group:new
@@ -491,16 +485,12 @@ app = ui.Application:new
 								{
 									Text = L.MENU_ABOUT,
 									Shortcut = "Ctrl+?",
-									Notifications =
-									{
-										["Pressed"] =
-										{
-											[false] =
-											{
-												{ ui.NOTIFY_ID, "about-window", "setValue", "Status", "show" }
-											}
-										}
-									}
+									onPress = function(self, pressed)
+										ui.MenuItem.onPress(self, pressed)
+										if pressed == false then
+											self:getById("about-window"):setValue("Status", "show")
+										end
+									end
 								},
 								ui.Spacer:new { },
 								ui.MenuItem:new
@@ -614,3 +604,5 @@ loaddemos(app)
 -- -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 app:run()
+app:hide()
+app:cleanup()

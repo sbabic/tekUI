@@ -32,7 +32,7 @@ local Window = ui.Window
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 2.0"
+_VERSION = "PopupWindow 3.0"
 
 local PopupWindow = _M
 
@@ -58,28 +58,26 @@ end
 -------------------------------------------------------------------------------
 
 function PopupWindow:show(display)
-	if Window.show(self, display) then
-		-- determine width of menuitems in group:
-		local maxw = 0
-		local c = self:getChildren()
-		for i = 1, #c do
-			local e = c[i]
-			local w = e:getAttr("menuitem-size")
-			if w then
-				maxw = max(maxw, w + 10) -- TODO: hardcoded padding
-			end
+	Window.show(self, display)
+	-- determine width of menuitems in group:
+	local maxw = 0
+	local c = self:getChildren()
+	for i = 1, #c do
+		local e = c[i]
+		local w = e:getAttr("menuitem-size")
+		if w then
+			maxw = max(maxw, w + 10) -- TODO: hardcoded padding
 		end
-		for i = 1, #c do
-			local e = c[i]
-			-- align shortcut text (if present):
-			local w = e:getAttr("menuitem-size")
-			if w then
-				e.TextRecords[2][5] = maxw
-			end
-		end
-		self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
-		return true
 	end
+	for i = 1, #c do
+		local e = c[i]
+		-- align shortcut text (if present):
+		local w = e:getAttr("menuitem-size")
+		if w then
+			e.TextRecords[2][5] = maxw
+		end
+	end
+	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 end
 
 -------------------------------------------------------------------------------

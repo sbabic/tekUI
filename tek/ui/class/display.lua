@@ -26,7 +26,6 @@
 --		- Display:getFontAttrs() - Gets font attributes
 --		- Display:getPaletteEntry() - Gets an entry from the symbolic palette
 --		- Display.getPixmap() - Gets a a pixmap from the cache
---		- Display:getTextSize() - Gets the size of a text in pixels
 --		- Display:getTime() - Gets system time
 --		- Display.loadPixmap() - Loads a pixmap from the file system
 --		- Display:openFont() - Opens a named font
@@ -96,7 +95,7 @@ local Element = require "tek.ui.class.element"
 local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 17.0"
+_VERSION = "Display 19.0"
 
 local Display = _M
 
@@ -341,16 +340,6 @@ function Display:getProperties(p, pclass)
 end
 
 -------------------------------------------------------------------------------
---	width, height = getTextSize(font, text): Returns the width and
---	height of the specified {{text}} when it is rendered with the given
---	{{font}}.
--------------------------------------------------------------------------------
-
-function Display:getTextSize(...)
-	return Visual.textsize(...)
-end
-
--------------------------------------------------------------------------------
 --	font = openFont(fontname): Opens the named font. For a discussion
 --	of the {{fontname}} format, see [[#tek.ui.class.text : Text]].
 -------------------------------------------------------------------------------
@@ -388,10 +377,11 @@ function Display:openFont(fname)
 end
 
 -------------------------------------------------------------------------------
---	closeFont(font): Closes the specified font.
+--	closeFont(font): Closes the specified font, and always returns '''false'''.
 -------------------------------------------------------------------------------
 
 function Display:closeFont(display, font)
+	return false
 end
 
 -------------------------------------------------------------------------------

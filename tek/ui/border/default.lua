@@ -8,7 +8,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 2.0"
+_VERSION = "DefaultBorder 3.1"
 
 local PEN_SHINE = ui.PEN_BORDERSHINE
 local PEN_SHADOW = ui.PEN_BORDERSHADOW
@@ -59,7 +59,7 @@ function DefaultBorder:getProperties(props, pclass)
 	return Border.getProperties(self, p, pclass)
 end
 
-function DefaultBorder:show(display, drawable)
+function DefaultBorder:show(drawable)
 
 	local e = self.Parent
 	local p = self.Params
@@ -110,20 +110,18 @@ function DefaultBorder:show(display, drawable)
 	-- p[14]...p[17]: temp rect
 	-- p[18]...p[21]: temp border
 
-	if self.Legend then
-		self.LegendFont = display:openFont(self.LegendFontName)
-		self.LegendWidth, self.LegendHeight =
-			ui.Display:getTextSize(self.LegendFont, self.Legend)
+	local l = self.Legend
+	if l then
+		local f = drawable:openFont(self.LegendFontName)
+		self.LegendFont = f
+		self.LegendWidth, self.LegendHeight = f:getTextSize(l)
 	end
 
 	Border.show(self, display, drawable)
 end
 
 function DefaultBorder:hide()
-	if self.Parent.Display then
-		self.Parent.Display:closeFont(self.LegendFont)
-	end
-	self.LegendFont = false
+	self.LegendFont = self.Parent.Drawable:closeFont(self.LegendFont)
 	Border.hide(self)
 end
 
@@ -167,7 +165,9 @@ function DefaultBorder:draw()
 	p[14], p[15], p[16], p[17] = unpack(self.Rect)
 	p[18], p[19], p[20], p[21] = unpack(self.Border)
 	local _, ox, oy = e:getBG()
-	local gb, gox, goy = e:getGroup():getBG()
+	local gb, gox, goy = e:getBGElement():getBG()
+	
+	gb = d.Pens[gb]
 
 	local tw = self.LegendWidth
 	if tw then

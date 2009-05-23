@@ -10,7 +10,8 @@
 --		[[#tek.class.object : Object]] /
 --		[[#tek.ui.class.element : Element]] / Area
 --
---		This class implements an outer margin, layouting and drawing.
+--		This is the base class of all visible user interface elements.
+--		It implements an outer margin, layouting, drawing, and navigation.
 --
 --	ATTRIBUTES::
 --		- {{AutoPosition [IG]}} (boolean)
@@ -125,6 +126,7 @@
 --		- Area:erase() - Erases the element's background
 --		- Area:focusRect() - Make the element fully visible
 --		- Area:getBG() - Gets the element's background properties
+--		- Area:getBGElement() - Gets the element's background element
 --		- Area:getChildren() - Gets the element's children
 --		- Area:getByXY() - Checks if the element covers a coordinate
 --		- Area:getGroup() - Gets the element's group
@@ -133,7 +135,7 @@
 --		- Area:getPrev() - Gets the element's predecessor in its group
 --		- Area:getRect() - Returns the element's layouted coordinates
 --		- Area:getSiblings() - Gets the element's siblings
---		- Area:hide() - Disconnects the element from a Display and Drawable
+--		- Area:hide() - Disconnects the element from a Drawable
 --		- Area:layout() - Layouts the element into a rectangle
 --		- Area:passMsg() - Passes an input message to the element
 --		- Area:punch() - [internal] Subtracts the outline of the element from a
@@ -142,10 +144,9 @@
 --		- Area:relayout() - [internal] Relayouts the element if necessary
 --		- Area:rethinkLayout() - Causes a relayout of the element and its group
 --		- Area:setState() - Sets the background attribute of an element
---		- Area:show() - Connects the element to a Display and Drawable
+--		- Area:show() - Connects the element to a Drawable
 --
 --	OVERRIDES::
---		- Element:cleanup()
 --		- Object.init()
 --		- Class.new()
 --		- Element:setup()
@@ -167,7 +168,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 20.0"
+_VERSION = "Area 21.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -200,7 +201,6 @@ function Area.init(self)
 	self.BGPen = self.BGPen or false
 	self.DamageRegion = false
 	self.Disabled = self.Disabled or false
-	self.Display = false
 	self.Drawable = false
 	self.EraseBG = self.EraseBG or false
 	self.Focus = false
@@ -282,31 +282,23 @@ function Area:setup(app, win)
 end
 
 -------------------------------------------------------------------------------
---	success = show(display, drawable): Passes an element the
---	[[#tek.ui.class.display : Display]] and
---	[[#tek.ui.class.drawable : Drawable]] it will be rendered to. Returns
---	a boolean indicating success. If you override this method, pass the call
---	to your super class and check and propagate its return value. See also:
---	Area:hide().
+--	show(drawable): Passes an element the [[#tek.ui.class.drawable : Drawable]]
+--	it will be rendered to.
 -------------------------------------------------------------------------------
 
-function Area:show(display, drawable)
-	self.Display = display
+function Area:show(drawable)
 	self.Drawable = drawable
 	self:calcOffsets()
 	self:setState()
-	return true
 end
 
 -------------------------------------------------------------------------------
---	hide(): Removes the display and drawable from an element.
---	Override this method to free all display-related resources previously
---	allocated in Area:show().
+--	hide(): Clears a drawable from an element. Override this method to free
+--	all display-related resources previously allocated in Area:show().
 -------------------------------------------------------------------------------
 
 function Area:hide()
 	self.DamageRegion = freeRegion(self.DamageRegion)
-	self.Display = false
 	self.Drawable = false
 	self.MinMax = { }
 	self.Rect = { }
@@ -324,25 +316,25 @@ function Area:calcOffsets()
 end
 
 -------------------------------------------------------------------------------
---	rethinkLayout([damage]): This method causes a relayout of the
---	element and possibly the [[#tek.ui.class.group : Group]] in which it
---	resides. The optional numeric argument {{damage}} indicates the kind
---	of damage to apply to the element:
---		- 0 - do not mark the element as damaged
---		- 1 - slate the group (not its contents) for repaint [default]
---		- 2 - mark the whole group and its contents as damaged
+--	rethinkLayout([damage]): This method causes a relayout of the element and
+--	possibly the [[#tek.ui.class.group : Group]] in which it resides (and even
+--	parent groups thereof if necessary). The optional numeric argument
+--	{{damage}} indicates the kind of damage to apply to the element:
+--		- {{0}} - do not mark the element as damaged
+--		- {{1}} - slate the group (not its contents) for repaint [default]
+--		- {{2}} - mark the whole group and its contents as damaged
 -------------------------------------------------------------------------------
 
 function Area:rethinkLayout(damage)
 	-- must be on a display and layouted previously:
-	if self.Display and self.Rect[1] then
+	if self.Drawable and self.Rect[1] then
 		self:calcOffsets()
-		local parent = self:getGroup(true)
-		self.Window:addLayoutGroup(parent, damage or 1)
-		-- this causes the rethink to bubble up until it reaches the window:
-		parent:rethinkLayout(0)
+		local pgroup = self:getGroup(true) -- get parent group
+		self.Window:addLayoutGroup(pgroup, damage or 1)
+		-- cause the rethink to bubble up until it reaches the Window:
+		pgroup:rethinkLayout(0)
 	else
-		db.info("%s : Cannot rethink layout - not connected to a display",
+		db.info("%s : Cannot rethink layout - not connected/layouted",
 			self:getClassName())
 	end
 end
@@ -350,11 +342,11 @@ end
 -------------------------------------------------------------------------------
 --	minw, minh, maxw, maxh = askMinMax(minw, minh, maxw, maxh): This
 --	method is called during the layouting process for adding the required
---	spatial extents (width and height) of this class to the min/max values
+--	spatial extents (width and height) of this object to the min/max values
 --	passed from a child class, before passing them on to its super class.
 --	{{minw}}, {{minh}} are cumulative of the minimal size of the element,
 --	while {{maxw}}, {{maxw}} collect the size the element is allowed to
---	expand to. Use {{ui.HUGE}} to indicate a practically unlimited size.
+--	expand to. Use {{ui.HUGE}} to indicate a (practically) unlimited size.
 -------------------------------------------------------------------------------
 
 function Area:askMinMax(m1, m2, m3, m4)
@@ -534,19 +526,31 @@ function Area:draw()
 end
 
 -------------------------------------------------------------------------------
---	bgpen, tx, ty = getBG(): Get the element's background
---	properties. If bgpen happens to be a texture, tx and ty determine the
---	texture origin relative to the drawable.
+--	bgpen[, tx, ty] = getBG(): Gets the element's background properties.
+--	{{bgpen}} is the background pen (which may be a texture). If the element
+--	background is scrollable, then {{tx}} and {{ty}} are the coordinates of
+--	the texture origin, otherwise (if the background is fixed) '''nil'''.
 -------------------------------------------------------------------------------
 
 function Area:getBG()
-	local tx, ty
+	local bgpen = self.Background
 	if self.BGPosition ~= "fixed" then
 		local r = self.Rect
-		tx, ty = r[1], r[2]
+		return bgpen, r[1], r[2]
 	end
-	return self.Drawable.Pens[self.Background], tx, ty
+	return bgpen
 end	
+
+-------------------------------------------------------------------------------
+--	element = getBGElement(): Returns the element that is responsible for
+--	painting the surroundings (or the background) of the element. This
+--	information is useful for painting transparent or translucent parts of
+--	the element, e.g. an inactive focus border.
+-------------------------------------------------------------------------------
+
+function Area:getBGElement()
+	return self:getParent():getBGElement()
+end
 
 -------------------------------------------------------------------------------
 --	erase(): Clears the element's background.
@@ -556,6 +560,7 @@ function Area:erase()
 	local d = self.Drawable
 	local dr = self.DamageRegion
 	local bgpen, tx, ty = self:getBG()
+	bgpen = d.Pens[bgpen]
 	if dr then
 		-- repaint intra-area damagerects:
 		dr:forEach(d.fillRect, d, bgpen, tx, ty)
@@ -614,7 +619,7 @@ end
 function Area:setState(bg, fg)
 	bg = bg or self.BGPen or ui.PEN_BACKGROUND
 	if bg == ui.PEN_PARENTGROUP then
-		bg = self:getGroup().Background
+		bg = self:getBGElement().Background
 	end
 	if bg ~= self.Background then
 		self.Background = bg
@@ -685,11 +690,11 @@ function Area:getPrev()
 end
 
 -------------------------------------------------------------------------------
---	element = getGroup(parent): Returns the element's closest group
---	containing it. If the {{parent}} argument is '''true''', this function
---	will start looking for the closest group at its parent, otherwise it
---	returns itself if it is a group. Returns '''nil''' if the element is not
---	currently connected.
+--	element = getGroup(parent): Returns the element's closest
+--	[[#tek.ui.class.group : Group]] containing it. If the {{parent}} argument
+--	is '''true''', this function will start looking for the closest group at
+--	its parent (otherwise it returns itself if it is a group already). Returns
+--	'''nil''' if the element is not currently connected.
 -------------------------------------------------------------------------------
 
 function Area:getGroup()
@@ -740,7 +745,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getRect()
-	if self.Display then
+	if self.Drawable then
 		return unpack(self.Rect)
 	end
 	db.info("Layout not available")

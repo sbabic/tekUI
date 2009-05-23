@@ -40,7 +40,7 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 5.8"
+_VERSION = "MenuItem 6.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -76,20 +76,19 @@ function MenuItem.init(self)
 	return PopItem.init(self)
 end
 
-function MenuItem:show(display, drawable)
+function MenuItem:show(drawable)
 	if self.Children then
 		if self.PopupBase then
 			self.Image = ArrowImage
 			self.ImageRect = { 0, 0, 0, 0 }
 		end
 	end
-	if PopItem.show(self, display, drawable) then
-		self:setTextRecord(1, self.Text, self.Font, "left")
-		if self.Shortcut and -- self.Parent.Class ~= "menubar" and
-			not self.Children then
-			self:setTextRecord(2, self.Shortcut, self.Font, "left")
-		end
-		return true
+	PopItem.show(self, drawable)
+	local font = drawable:openFont(self.Font)
+	self:setTextRecord(1, self.Text, font, "left")
+	if self.Shortcut and -- self.Parent.Class ~= "menubar" and
+		not self.Children then
+		self:setTextRecord(2, self.Shortcut, font, "left")
 	end
 end
 

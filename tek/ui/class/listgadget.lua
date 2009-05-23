@@ -113,7 +113,6 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Display = ui.Display
 local Text = ui.Text
 local List = require "tek.class.list"
 local Region = require "tek.lib.region"
@@ -134,17 +133,15 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 17.0"
+_VERSION = "ListGadget 19.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local NOTIFY_CURSOR = { ui.NOTIFY_SELF, "onSetCursor", ui.NOTIFY_VALUE,
-	ui.NOTIFY_OLDVALUE }
-local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE,
-	ui.NOTIFY_OLDVALUE }
+local NOTIFY_CURSOR = { ui.NOTIFY_SELF, "onSetCursor", ui.NOTIFY_VALUE }
+local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE }
 local NOTIFY_DBLCLICK = { ui.NOTIFY_SELF, "onDoubleClick", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
@@ -187,6 +184,8 @@ function ListGadget.init(self)
 	-- selection modes ("none", "single", "multi"):
 	self.SelectMode = self.SelectMode or "single"
 	self.TrackDamage = true
+	self.OldCursorLine = self.CursorLine
+	self.OldSelectedLine = self.SelectedLine
 	return Text.init(self)
 end
 
@@ -236,7 +235,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:cleanup()
-	self.CursorObject = false
+	self.CursorObject = ui.destroyHook(self.CursorObject)
 	self:remNotify("DblClick", ui.NOTIFY_ALWAYS, NOTIFY_DBLCLICK)
 	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
 	self:remNotify("CursorLine", ui.NOTIFY_ALWAYS, NOTIFY_CURSOR)
@@ -249,17 +248,16 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:show(display, drawable)
-	if Text.show(self, display, drawable) then
-		self.CursorObject:show(display, drawable)
-		self.FontHandle = display:openFont(self.Font)
-		self.FWidth, self.FHeight = Display:getTextSize(self.FontHandle, "x")
-		local _, b2, _, b4 = self.CursorObject:getBorder()
-		self.LineHeight = self.FHeight + b2 + b4
-		self.ColumnPadding = self.ColumnPadding or self.FWidth
-		self:prepare(false)
-		return true
-	end
+function ListGadget:show(drawable)
+	Text.show(self, drawable)
+	self.CursorObject:show(drawable)
+	local f = drawable:openFont(self.Font)
+	self.FontHandle = f
+	self.FWidth, self.FHeight = f:getTextSize("x")
+	local _, b2, _, b4 = self.CursorObject:getBorder()
+	self.LineHeight = self.FHeight + b2 + b4
+	self.ColumnPadding = self.ColumnPadding or self.FWidth
+	self:prepare(false)
 end
 
 -------------------------------------------------------------------------------
@@ -268,10 +266,7 @@ end
 
 function ListGadget:hide()
 	self.CursorObject:hide()
-	if self.Display then
-		self.Display:closeFont(self.FontHandle)
-		self.FontHandle = false
-	end
+	self.FontHandle = self.Drawable:closeFont(self.FontHandle)
 	Text.hide(self)
 end
 
@@ -471,7 +466,8 @@ end
 
 function ListGadget:prepare(damage)
 	local lo = self.ListObject
-	if lo and self.Display then
+	local d = self.Drawable
+	if lo and d then
 
 		local b1, b2, b3, b4 = self.CursorObject:getBorder()
 		local f = self.FontHandle
@@ -495,7 +491,7 @@ function ListGadget:prepare(damage)
 			local columns = l[1]
 			nc = max(nc, #columns)
 			for i, t in ipairs(columns) do
-				local w = Display:getTextSize(f, columns[i])
+				local w = f:getTextSize(columns[i])
 				cw[i] = max(cw[i] or 0, w)
 			end
 			l[4], l[5] = y, y + lh - 1
@@ -706,11 +702,13 @@ end
 --	{{CursorLine}} attribute has changed.
 -------------------------------------------------------------------------------
 
-function ListGadget:onSetCursor(lnr, oldlnr)
+function ListGadget:onSetCursor(lnr)
 	local lo = self.ListObject
 	if lo then
+		local oldlnr = self.OldCursorLine
 		lnr = lnr and min(max(0, lnr), lo:getN())
 		self.CursorLine = oldlnr
+		self.OldCursorLine = lnr
 		self:moveLine(lnr, true)
 		self:layoutCursor()
 	end
@@ -729,13 +727,15 @@ function ListGadget:onDoubleClick(clicked)
 end
 
 -------------------------------------------------------------------------------
---	onSelectLine(line, oldline): This method is invoked when the
---	{{SelectedLine}} attribute is set.
+--	onSelectLine(line): This method is invoked when the {{SelectedLine}}
+--	attribute is set.
 -------------------------------------------------------------------------------
 
-function ListGadget:onSelectLine(lnr, oldlnr)
+function ListGadget:onSelectLine(lnr)
 	local lo = self.ListObject
 	if lo then
+		local oldlnr = self.OldSelectedLine
+		self.OldSelectedLine = lnr
 		local m = self.SelectMode
 		if m == "single" and oldlnr ~= lnr then
 			local oe = lo:getItem(oldlnr)

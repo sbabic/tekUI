@@ -76,7 +76,7 @@ local reuseRegion = ui.reuseRegion
 local tonumber = tonumber
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 18.1"
+_VERSION = "Group 19.0"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -136,15 +136,11 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Group:show(display, drawable)
-	if Gadget.show(self, display, drawable) then
-		local c = self.Children
-		for i = 1, #c do
-			if not c[i]:show(display, drawable) then
-				return self:hide()
-			end
-		end
-		return true
+function Group:show(drawable)
+	Gadget.show(self, drawable)
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:show(drawable)
 	end
 end
 
@@ -224,13 +220,12 @@ function Group:addMember(child, pos)
 	child:connect(self)
 	self.Application:decodeProperties(child)
 	child:setup(self.Application, self.Window)
-	if child:show(self.Display, self.Drawable) then
-		if Family.addMember(self, child, pos) then
-			self:rethinkLayout(1)
-			return child
-		end
-		child:hide()
+	child:show(self.Drawable)
+	if Family.addMember(self, child, pos) then
+		self:rethinkLayout(1)
+		return child
 	end
+	child:hide()
 	child:cleanup()
 end
 
@@ -290,6 +285,7 @@ function Group:draw()
 	local f = self.FreeRegion
 	local dr = self.DamageRegion
 	local p, tx, ty = self:getBG()
+	p = d.Pens[p]
 	if dr then
 		-- repaint where damageregion and freeregion overlap:
 		dr:andRegion(f)
@@ -403,7 +399,10 @@ end
 -------------------------------------------------------------------------------
 
 function Group:getGroup(parent)
-	return parent and Gadget.getGroup(self, parent) or self
+	if parent then
+		return Gadget.getGroup(self, parent)
+	end
+	return self
 end
 
 -------------------------------------------------------------------------------
@@ -412,4 +411,12 @@ end
 
 function Group:getChildren()
 	return self.Children
+end
+
+-------------------------------------------------------------------------------
+--	getBGElement: overrides
+-------------------------------------------------------------------------------
+
+function Group:getBGElement()
+	return self
 end

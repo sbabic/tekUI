@@ -12,6 +12,108 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 --	Create demo window:
 -------------------------------------------------------------------------------
 
+local scrollbar1 = ui.ScrollBar:new
+{
+	Id = "slider-slider-1",
+	Kind = "number",
+	Width = "free",
+	Min = 0,
+	Max = 10
+}
+
+scrollbar1:addNotify("Value", ui.NOTIFY_ALWAYS, { ui.NOTIFY_ID, 
+	"slider-text-1", "setValue", "Text", ui.NOTIFY_FORMAT, "%2.2f" })
+scrollbar1:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "slider-slider-2", "setValue", "Value", ui.NOTIFY_VALUE })
+scrollbar1:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "slider-gauge-1", "setValue", "Value", ui.NOTIFY_VALUE })
+
+local scrollbar2 = ui.ScrollBar:new
+{
+	Id = "slider-slider-2",
+	Kind = "number",
+	Width = "free",
+	Min = 0,
+	Max = 10,
+	Integer = true
+}
+
+scrollbar2:addNotify("Value", ui.NOTIFY_ALWAYS, { ui.NOTIFY_ID, 
+	"slider-text-2", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" })
+scrollbar2:addNotify("Value", ui.NOTIFY_ALWAYS, 
+	{ ui.NOTIFY_ID, "slider-slider-1", "setValue", "Value", ui.NOTIFY_VALUE })
+scrollbar2:addNotify("Value", ui.NOTIFY_ALWAYS, 
+	{ ui.NOTIFY_ID, "slider-gauge-1", "setValue", "Value", ui.NOTIFY_VALUE })
+
+local scrollbar3 = ui.ScrollBar:new
+{
+	Id = "slider-slider-3",
+	Kind = "number",
+	Width = "free",
+	Min = 10,
+	Max = 20,
+	Integer = true,
+}
+
+scrollbar3:addNotify("Value", ui.NOTIFY_ALWAYS, { ui.NOTIFY_ID, 
+	"slider-text-3", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" })
+scrollbar3:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "slider-slider-1", "setValue", "Range", ui.NOTIFY_VALUE })
+scrollbar3:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "slider-slider-2", "setValue", "Range", ui.NOTIFY_VALUE })
+
+local slider1 = ui.Slider:new
+{
+	Id = "slider-1",
+	Orientation = "vertical",
+	Step = 5,
+}
+
+slider1:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "slider-2", "setValue", "Value", ui.NOTIFY_VALUE })
+
+local slider2 = ui.Slider:new
+{
+	Id = "slider-2",
+	Orientation = "vertical",
+	Step = 5
+}
+
+slider2:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "gauge-2", "setValue", "Value", ui.NOTIFY_VALUE })
+
+local slider3 = ui.Slider:new
+{
+	Id = "slider-7",
+	Step = 5
+}
+
+slider3:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "slider-1", "setValue", "Value", ui.NOTIFY_VALUE })
+slider3:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "slider-6", "setValue", "Value", ui.NOTIFY_VALUE })
+
+local slider4 = ui.Slider:new
+{
+	Id = "slider-5",
+	Orientation = "vertical",
+	Step = 5
+}
+
+slider4:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "gauge-3", "setValue", "Value", ui.NOTIFY_VALUE })
+
+local slider5 = ui.Slider:new
+{
+	Id = "slider-6",
+	Orientation = "vertical",
+	Step = 5
+}
+
+slider5:addNotify("Value", ui.NOTIFY_ALWAYS,
+	{ ui.NOTIFY_ID, "slider-5", "setValue", "Value", ui.NOTIFY_VALUE })
+
+
 local window = ui.Window:new
 {
 	Id = "slider-window",
@@ -30,98 +132,39 @@ local window = ui.Window:new
 				Text:new
 				{
 					Text = L.SLIDER_CONTINUOUS,
-					Style = "width: fill",
+					Width = "fill",
 				},
-				ScrollBar:new
-				{
-					Id = "slider-slider-1",
-					Style = "width: free",
-					Min = 0,
-					Max = 10,
-					Kind = "number",
-					Notifications =
-					{
-						["Value"] =
-						{
-							[ui.NOTIFY_ALWAYS] =
-							{
-								{ ui.NOTIFY_ID, "slider-text-1", "setValue", "Text", ui.NOTIFY_FORMAT, "%2.2f" },
-								{ ui.NOTIFY_ID, "slider-slider-2", "setValue", "Value", ui.NOTIFY_VALUE },
-								{ ui.NOTIFY_ID, "slider-gauge-1", "setValue", "Value", ui.NOTIFY_VALUE  }
-							}
-						}
-					}
-				},
+				scrollbar1,
 				Text:new
 				{
 					Id = "slider-text-1",
-					Style = "width: fill",
+					Width = "fill",
 					Text = "  0.00  ",
 					KeepMinWidth = true,
 				},
 				Text:new
 				{
 					Text = L.SLIDER_INTEGER_STEP,
-					Style = "width: fill",
+					Width = "fill",
 				},
-				ScrollBar:new
-				{
-					Id = "slider-slider-2",
-					Style = "width: free",
-					Min = 0,
-					Max = 10,
-					Integer = true,
-					Kind = "number",
-					Notifications =
-					{
-						["Value"] =
-						{
-							[ui.NOTIFY_ALWAYS] =
-							{
-								{ ui.NOTIFY_ID, "slider-text-2", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" },
-								{ ui.NOTIFY_ID, "slider-slider-1", "setValue", "Value", ui.NOTIFY_VALUE },
-								{ ui.NOTIFY_ID, "slider-gauge-1", "setValue", "Value", ui.NOTIFY_VALUE  }
-							}
-						}
-					}
-				},
+				scrollbar2,
 				Text:new
 				{
 					Id = "slider-text-2",
-					Style = "width: fill",
+					Width = "fill",
 					Text = "  0  ",
 					KeepMinWidth = true,
 				},
 				Text:new
 				{
 					Text = L.SLIDER_RANGE,
-					Style = "width: fill",
+					Width = "fill",
 				},
-				ScrollBar:new
-				{
-					Id = "slider-slider-3",
-					Style = "width: free",
-					Min = 10,
-					Max = 20,
-					Integer = true,
-					Kind = "number",
-					Notifications =
-					{
-						["Value"] =
-						{
-							[ui.NOTIFY_ALWAYS] =
-							{
-								{ ui.NOTIFY_ID, "slider-text-3", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" },
-								{ ui.NOTIFY_ID, "slider-slider-1", "setValue", "Range", ui.NOTIFY_VALUE },
-								{ ui.NOTIFY_ID, "slider-slider-2", "setValue", "Range", ui.NOTIFY_VALUE },
-							}
-						}
-					}
-				},
+				scrollbar3,
 				Text:new
 				{
 					Id = "slider-text-3",
-					Style = "width: fill",
+					Width = "fill",
 					Text = "  0  ",
 					KeepMinWidth = true,
 				}
@@ -143,115 +186,42 @@ local window = ui.Window:new
 
 		Group:new
 		{
-			Style = "width: free; height: free",
+			Width = "free",
+			Height = "free",
 			Legend = L.SLIDER_CONNECTIONS,
 			Children =
 			{
-				Slider:new
-				{
-					Id = "slider-1",
-					Orientation = "vertical",
-					Step = 5,
-					Notifications =
-					{
-						["Value"] =
-						{
-							[ui.NOTIFY_ALWAYS] =
-							{
-								{ ui.NOTIFY_ID, "slider-2", "setValue", "Value", ui.NOTIFY_VALUE },
-							}
-						}
-					}
-				},
-				Slider:new
-				{
-					Id = "slider-2",
-					Orientation = "vertical",
-					Step = 5,
-					Notifications =
-					{
-						["Value"] =
-						{
-							[ui.NOTIFY_ALWAYS] =
-							{
-								{ ui.NOTIFY_ID, "slider-3", "setValue", "Value", ui.NOTIFY_VALUE },
-							}
-						}
-					}
-				},
+				slider1,
+				slider2,
 				Group:new
 				{
 					Orientation = "vertical",
-					Style = "height: auto; vertical-grid-align: center",
+					Height = "auto",
+					VAlign = "center",
 					Children =
 					{
-						Slider:new
-						{
-							Id = "slider-7",
-							Step = 5,
-							Notifications =
-							{
-								["Value"] =
-								{
-									[ui.NOTIFY_ALWAYS] =
-									{
-										{ ui.NOTIFY_ID, "slider-1", "setValue", "Value", ui.NOTIFY_VALUE },
-										{ ui.NOTIFY_ID, "slider-6", "setValue", "Value", ui.NOTIFY_VALUE },
-									}
-								}
-							}
-						},
+						slider3,
 						Group:new
 						{
-							Style = "Width: free",
+							Width = "free",
 							Children =
 							{
 								Gauge:new
 								{
-									Id = "slider-3",
-									Style = "Width: free",
+									Id = "gauge-2",
+									Width = "free",
 								},
 								Gauge:new
 								{
-									Id = "slider-4",
-									Style = "width: free",
+									Id = "gauge-3",
+									Width = "free",
 								}
 							}
 						}
 					}
 				},
-				Slider:new
-				{
-					Id = "slider-5",
-					Orientation = "vertical",
-					Step = 5,
-					Notifications =
-					{
-						["Value"] =
-						{
-							[ui.NOTIFY_ALWAYS] =
-							{
-								{ ui.NOTIFY_ID, "slider-4", "setValue", "Value", ui.NOTIFY_VALUE },
-							}
-						}
-					}
-				},
-				Slider:new
-				{
-					Id = "slider-6",
-					Orientation = "vertical",
-					Step = 5,
-					Notifications =
-					{
-						["Value"] =
-						{
-							[ui.NOTIFY_ALWAYS] =
-							{
-								{ ui.NOTIFY_ID, "slider-5", "setValue", "Value", ui.NOTIFY_VALUE },
-							}
-						}
-					}
-				}
+				slider4,
+				slider5
 			}
 		}
 	}

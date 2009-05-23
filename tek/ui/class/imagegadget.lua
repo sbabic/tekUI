@@ -15,7 +15,7 @@ local unpack = unpack
 local Region = require "tek.lib.region"
 
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 4.5"
+_VERSION = "ImageGadget 4.7"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -105,8 +105,8 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 			iw, ih = self.ImageWidth, self.ImageHeight
 		else
 			-- can stretch:
-			iw, ih = self.Display:fitMinAspect(w, h, self.ImageAspectX,
-				self.ImageAspectY, 0)
+			iw, ih = self.Drawable:fitMinAspect(w, h,
+				self.ImageAspectX, self.ImageAspectY, 0)
 		end
 		
 		if iw ~= rw or ih ~= rh then
@@ -142,7 +142,8 @@ function ImageGadget:draw()
 	local R = self.Region
 	local img = self.Image
 	if R then
-		R:forEach(d.fillRect, d, self:getBG())
+		local bgpen, tx, ty = self:getBG()
+		R:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
 	end
 	if img then
 		local x, y, iw, ih = unpack(self.ImageData)
