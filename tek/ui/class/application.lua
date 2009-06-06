@@ -14,39 +14,38 @@
 --		This class implements the framework's entrypoint and main loop.
 --
 --	MEMBERS::
---		- {{ApplicationId [IG]}}
+--		- {{ApplicationId [IG]}} (string)
 --			Name of the application, normally used as an unique identifier
 --			in combination with the {{Domain}} attribute. Default is
 --			{{"unknown"}}.
---		- {{Author [IG]}}
+--		- {{Author [IG]}} (string)
 --			Names of the application's authors. Default: {{"unknown"}}
---		- {{Copyright [IG]}}
+--		- {{Copyright [IG]}} (string)
 --			Copyright notice applying to the application, default
 --			{{"unknown"}}
---		- {{Display [IG]}}
---			Initial [[#tek.ui.class.display : Display]]. By default, the
+--		- {{Display [IG]}} ([[#tek.ui.class.display : Display]])
+--			An initial [[#tek.ui.class.display : Display]]. By default, the
 --			application creates a new one during Application.new().
---		- {{Domain [IG]}}
+--		- {{Domain [IG]}} (string)
 --			An uniquely identifying domain name of the vendor, organization
 --			or author manufacturing the application (preferrably without
 --			domain parts like {{"www."}} if they are insignificant for
 --			identification). Default is {{"unknown"}}.
---		- {{GCControl [IG]}}
+--		- {{GCControl [IG]}} (boolean or string)
 --			The application can perform a garbage collection of the specified
 --			type immediately before going to sleep waiting for input. If set
---			to '''false''', no garbage collection is initiated. If the value
---			is '''true''', the application performs a single garbage collection
---			step. Other values (e.g. {{"collect"}}) are passed unmodified to
---			{{collectgarbage()}}. Default: '''true'''
---		- {{ProgramName [IG]}}
+--			to '''false''', no garbage collection is initiated explicitely. If
+--			the value is '''true''', the application performs a single garbage
+--			collection step. Other values (e.g. {{"collect"}}) are passed
+--			unmodified to {{collectgarbage()}}. Default: '''true'''
+--		- {{ProgramName [IG]}} (string)
 --			Name of the application, as displayed to the user. This is
 --			also the fallback for the {{Title}} attribute in windows.
 --			If unset, the default will be {{"unknown"}}.
---		- {{Status [G]}}
---			Status of the application, can be {{"connected"}},
---			{{"connecting"}}, {{"disconnected"}}, {{"disconnecting"}},
---			{{"initializing"}}, {{"error"}}, {{"running"}}.
---		- {{Theme [IG]}}
+--		- {{Status [G]}} (string) (string)
+--			Status of the application, can be {{"init"}}, {{"error"}},
+--			{{"run"}}, {{"quit"}}.
+--		- {{Theme [IG]}} (string)
 --			Name of a theme, which usually maps to an equally named
 --			style sheet file (with the extension ".css") under
 --			{{tek/ui/style/}}.
@@ -56,7 +55,7 @@
 --				- {{"desktop"}}: Tries to import the desktop's color scheme,
 --				besides trying to load a style sheet named {{"desktop.css"}}.
 --			Default: {{"desktop"}}
---		- {{Vendor [IG]}}
+--		- {{Vendor [IG]}} (string)
 --			Name of the vendor or organization responsible for producing
 --			the application, as displayed to the user. Default {{"unknown"}}.
 --
@@ -66,7 +65,7 @@
 --		valid for them. Anyhow, it is recommended to avoid too adventurous
 --		symbolism, as its end up in a hardly decipherable, UTF-8 plus
 --		URL-encoded form in the file system, e.g. for loading catalog files
---		under {{tek/ui/locale/<domain>/<applicationid>}}.
+--		from {{tek/ui/locale/<domain>/<applicationid>}}.
 --
 --	IMPLEMENTS::
 --		- Application:addCoroutine() - Adds a coroutine to the application
@@ -120,7 +119,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 21.0"
+_VERSION = "Application 23.0"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -144,13 +143,11 @@ function Application.new(class, self)
 		[ui.MSG_KEYUP] = self.passMsgNoModal,
 		[MSG_USER] = self.passMsg,
 	}
-	-- Check linkage of members and connect them recursively:
+	-- Check linkage of members, connect and setup them recursively:
 	if self:connect() then
-		self.Status = "disconnected"
 		self.Display = self.Display or Display:new { }
 		self:decodeProperties()
 		self:setup()
-		self:show()
 	else
 		db.error("Could not connect elements")
 		self.Status = "error"
@@ -164,12 +161,14 @@ end
 
 function Application.init(self)
 	local t
+	
 	self.Application = self
 	self.ApplicationId = self.ApplicationId or "unknown"
 	self.Author = self.Author or "unknown"
 	self.Copyright = self.Copyright or "unknown"
 	self.Coroutines = { }
 	self.Display = self.Display or false
+	self.Domain = self.Domain or "unknown"
 	self.ElementById = { }
 	t = self.GCControl
 	if t == nil or t == true then
@@ -180,17 +179,18 @@ function Application.init(self)
 	self.MsgDispatch = false
 	self.OpenWindows = { }
 	self.ProgramName = self.ProgramName or self.Title or "unknown"
-	self.Status = "initializing"
+	self.Properties = { ui.Theme.getStyleSheet("internal") }
+	self.Status = "init"
 	self.Theme = self.Theme or ui.ThemeName or "desktop"
 	self.Vendor = self.Vendor or "unknown"
-	self.Domain = self.Domain or "unknown"
-	self.Properties = { ui.Theme.getStyleSheet("internal") }
+	
 	if self.Theme and self.Theme ~= "internal" then
 		local s = ui.prepareProperties(ui.Theme.getStyleSheet(self.Theme))
 		if s then
 			insert(self.Properties, 1, s)
 		end
 	end
+	
 	return Family.init(self)
 end
 
@@ -234,7 +234,6 @@ end
 function Application:addMember(child, pos)
 	self:decodeProperties(child)
 	child:setup(self, child)
-	child:show()
 	if Family.addMember(self, child, pos) then
 		return child
 	end
@@ -245,9 +244,10 @@ end
 -------------------------------------------------------------------------------
 
 function Application:remMember(child)
-	assert(child.Parent == self)
+	if child.Drawable then
+		child:hide()
+	end
 	Family.remMember(self, child)
-	child:hide()
 	child:cleanup()
 end
 
@@ -305,13 +305,9 @@ end
 -------------------------------------------------------------------------------
 
 function Application:setup()
-	if self.Status == "disconnected" then
-		self.Status = "connecting"
-		local c = self.Children
-		for i = 1, #c do
-			c[i]:setup(self, c[i])
-		end
-		self.Status = "connected"
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:setup(self, c[i])
 	end
 end
 
@@ -320,13 +316,10 @@ end
 -------------------------------------------------------------------------------
 
 function Application:cleanup()
-	-- assert(self.Status == "connected")
-	self.Status = "disconnecting"
 	local c = self.Children
 	for i = 1, #c do
 		c[i]:cleanup()
 	end
-	self.Status = "disconnected"
 end
 
 -------------------------------------------------------------------------------
@@ -337,7 +330,10 @@ function Application:show()
 	self:addInputHandler(MSG_USER, self, self.handleInput)
 	local c = self.Children
 	for i = 1, #c do
-		c[i]:show()
+		local w = c[i]
+		if w.Status ~= "hide" then
+			c[i]:show()
+		end
 	end
 end
 
@@ -351,7 +347,6 @@ function Application:hide()
 		c[i]:hide()
 	end
 	self:remInputHandler(MSG_USER, self, self.handleInput)
-	self.Display = false
 end
 
 -------------------------------------------------------------------------------
@@ -359,17 +354,10 @@ end
 -------------------------------------------------------------------------------
 
 function Application:openWindow(window)
-	local status = window.Status
-	if status ~= "show" then
-		status = window:openWindow()
-		if status == "show" then
-			if window.Modal then
-				insert(self.ModalWindows, 1, window)
-			end
-			insert(self.OpenWindows, window)
-		end
+	if window.Modal then
+		insert(self.ModalWindows, 1, window)
 	end
-	return status
+	insert(self.OpenWindows, window)
 end
 
 -------------------------------------------------------------------------------
@@ -377,48 +365,10 @@ end
 -------------------------------------------------------------------------------
 
 function Application:closeWindow(window)
-	local status = window.Status
-	if status ~= "hide" then
-		status = window:closeWindow()
-		if window == self.ModalWindows[1] then
-			remove(self.ModalWindows, 1)
-		end
-		-- NOTE: windows are purged from OpenWindows list during wait()
+	if window == self.ModalWindows[1] then
+		remove(self.ModalWindows, 1)
 	end
-	return status
-end
-
--------------------------------------------------------------------------------
---	showWindow: make a window visible.
---	if no window is specified, show all windows that aren't of Status "hide"
--------------------------------------------------------------------------------
-
-function Application:showWindow(window)
-	if window then
-		window:showWindow()
-	else
-		local c = self.Children
-		for i = 1, #c do
-			if c[i].Status ~= "hide" then
-				c[i]:showWindow()
-			end
-		end
-	end
-end
-
--------------------------------------------------------------------------------
---	hideWindow: hide a window. if no window is specified, hide all windows.
--------------------------------------------------------------------------------
-
-function Application:hideWindow(window)
-	if window then
-		return window:hideWindow()
-	else
-		local c = self.Children
-		for i = 1, #c do
-			c[i]:hideWindow()
-		end
-	end
+	-- NOTE: windows are purged from OpenWindows list during wait()
 end
 
 -------------------------------------------------------------------------------
@@ -426,7 +376,7 @@ end
 -------------------------------------------------------------------------------
 
 function Application:quit()
-	self:hideWindow()
+	self:hide()
 end
 
 -------------------------------------------------------------------------------
@@ -521,12 +471,10 @@ function Application:run()
 
 	local gcarg = self.GCControl
 
-	-- assert(self.Status == "connected", "Application not in connected state")
-
 	-- open all windows that aren't in "hide" state:
-	self:showWindow()
+	self:show()
 
-	self.Status = "running"
+	self.Status = "run"
 
 	local d = self.Display
 	local ow = self.OpenWindows
@@ -535,7 +483,12 @@ function Application:run()
 
 	-- the main loop:
 
-	while self.Status == "running" and #ow > 0 do
+	while self.Status == "run" do
+		
+		if #ow == 0 then
+			self.Status = "quit"
+			break
+		end
 
 		-- process geometry-altering messages first:
 		for i = 1, #ow do
@@ -596,12 +549,8 @@ function Application:run()
 
 	end
 
-	-- hide all windows:
-	self:hideWindow()
-
-	-- self:hide()
-	-- self:cleanup()
-
+	self:hide()
+	
 	return true, self.Status
 end
 
@@ -665,7 +614,9 @@ function Application:suspend(window)
 	if window then
 		window:addInterval()
 		coyield(window)
-		window:remInterval()
+		if window.Drawable then
+			window:remInterval()
+		end
 	else
 		coyield()
 	end

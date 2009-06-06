@@ -1736,7 +1736,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v21.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v23.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1758,7 +1758,7 @@ ui.Application:new { ...
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>ApplicationId &#091;IG&#093;</code> 
+							<code>ApplicationId &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Name of the application, normally used as an unique identifier
@@ -1768,7 +1768,7 @@ ui.Application:new { ...
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Author &#091;IG&#093;</code> 
+							<code>Author &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Names of the application's authors. Default: <code>&quot;unknown&quot;</code> 
@@ -1776,7 +1776,7 @@ ui.Application:new { ...
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Copyright &#091;IG&#093;</code> 
+							<code>Copyright &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Copyright notice applying to the application, default
@@ -1785,16 +1785,16 @@ ui.Application:new { ...
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Display &#091;IG&#093;</code> 
+							<code>Display &#091;IG&#093;</code> (<a href="#tek.ui.class.display">Display</a>)
 							<blockquote>
 								<p>
-									Initial <a href="#tek.ui.class.display">Display</a>. By default, the
+									An initial <a href="#tek.ui.class.display">Display</a>. By default, the
 									application creates a new one during <a href="#Application:new"><code>Application.new()</code></a>.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Domain &#091;IG&#093;</code> 
+							<code>Domain &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									An uniquely identifying domain name of the vendor, organization
@@ -1805,20 +1805,20 @@ ui.Application:new { ...
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>GCControl &#091;IG&#093;</code> 
+							<code>GCControl &#091;IG&#093;</code> (boolean or string)
 							<blockquote>
 								<p>
 									The application can perform a garbage collection of the specified
 									type immediately before going to sleep waiting for input. If set
-									to <strong>false</strong>, no garbage collection is initiated. If the value
-									is <strong>true</strong>, the application performs a single garbage collection
-									step. Other values (e.g. <code>&quot;collect&quot;</code>) are passed unmodified to
-									<code>collectgarbage()</code>. Default: <strong>true</strong> 
+									to <strong>false</strong>, no garbage collection is initiated explicitely. If
+									the value is <strong>true</strong>, the application performs a single garbage
+									collection step. Other values (e.g. <code>&quot;collect&quot;</code>) are passed
+									unmodified to <code>collectgarbage()</code>. Default: <strong>true</strong> 
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>ProgramName &#091;IG&#093;</code> 
+							<code>ProgramName &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Name of the application, as displayed to the user. This is
@@ -1828,17 +1828,16 @@ ui.Application:new { ...
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Status &#091;G&#093;</code> 
+							<code>Status &#091;G&#093;</code> (string) (string)
 							<blockquote>
 								<p>
-									Status of the application, can be <code>&quot;connected&quot;</code>,
-									<code>&quot;connecting&quot;</code>, <code>&quot;disconnected&quot;</code>, <code>&quot;disconnecting&quot;</code>,
-									<code>&quot;initializing&quot;</code>, <code>&quot;error&quot;</code>, <code>&quot;running&quot;</code>.
+									Status of the application, can be <code>&quot;init&quot;</code>, <code>&quot;error&quot;</code>,
+									<code>&quot;run&quot;</code>, <code>&quot;quit&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Theme &#091;IG&#093;</code> 
+							<code>Theme &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Name of a theme, which usually maps to an equally named
@@ -1864,7 +1863,7 @@ ui.Application:new { ...
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Vendor &#091;IG&#093;</code> 
+							<code>Vendor &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Name of the vendor or organization responsible for producing
@@ -1883,7 +1882,7 @@ ui.Application:new { ...
 						valid for them. Anyhow, it is recommended to avoid too adventurous
 						symbolism, as its end up in a hardly decipherable, UTF-8 plus
 						URL-encoded form in the file system, e.g. for loading catalog files
-						under <code>tek/ui/locale/&lt;domain&gt;/&lt;applicationid&gt;</code>.
+						from <code>tek/ui/locale/&lt;domain&gt;/&lt;applicationid&gt;</code>.
 					</p>
 				</blockquote>
 			</div>
@@ -2110,7 +2109,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v21.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v24.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2121,7 +2120,8 @@ message = function(object, message)
 					</p>
 					<p>
 						This is the base class of all visible user interface elements.
-						It implements an outer margin, layouting, drawing, and navigation.
+						It implements an outer margin, layouting, drawing, and the
+						relationships to its neighbours.
 					</p>
 				</blockquote>
 			</div>
@@ -2136,16 +2136,47 @@ message = function(object, message)
 									position itself automatically into the visible area of any Canvas
 									that may contain it. An affected <a href="#tek.ui.class.canvas">Canvas</a> 
 									must have its <code>AutoPosition</code> attribute enabled as well for this
-									option to take effect, but unlike the Area class, the Canvas class
+									option to take effect, but unlike the Area class, the Canvas
 									disables it by default.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>BGPen &#091;IG&#093;</code> (number)
+							<code>BGColor &#091;IG&#093;</code> (string or number)
 							<blockquote>
 								<p>
-									A pen number for painting the background of the element
+									A color specification for painting the background of the element.
+									Valid are predefined color numbers (e.g. <code>ui.PEN_DETAIL</code>),
+									predefined color names (e.g. <code>&quot;detail&quot;</code>, see also
+									<a href="#tek.ui.class.display">Display</a> for more), or a direct
+									hexadecimal RGB specification (e.g. <code>&quot;#334455&quot;</code>, <code>&quot;#f0f&quot;</code>.
+									This attribute is controllable via the <code>background-color</code> style
+									property.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>BGPosition &#091;IG&#093;</code> (boolean or string)
+							<blockquote>
+								<p>
+									Kind of anchoring for a possible background image or texture:
+								</p>
+								<blockquote>
+									<ul>
+										<li>
+											<code>&quot;scollable&quot;</code> or <strong>false</strong> - The texture is anchored to
+											the element and during scrolling moves with it.
+										</li>
+										<li>
+											<code>&quot;fixed&quot;</code> - The texture is anchored to the Window.
+										</li>
+									</ul>
+								</blockquote>
+								<p>
+									Note that repainting elements with <code>&quot;fixed&quot;</code> anchoring can be
+									expensive. This variant should be used sparingly, and some classes
+									may implement it incompletely or incorrectly. This attribute can
+									be controlled using the <code>background-position</code> attribute.
 								</p>
 							</blockquote>
 						</li>
@@ -2170,27 +2201,29 @@ message = function(object, message)
 							<code>EraseBG &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									If <strong>false</strong>, the element's background is painted by the Area
-									class using the <a href="#Area:erase"><code>Area:erase()</code></a> method. Child classes can set this
-									attribute to <strong>true</strong>, indicating that they wish to paint the
-									background themselves.
+									If <strong>true</strong>, the element's background is painted automatically
+									using the <a href="#Area:erase"><code>Area:erase()</code></a> method. Set this attribute to <strong>false</strong> to
+									indicate that you wish to paint the background yourself.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Focus &#091;ISG&#093;</code> (boolean)
+							<code>Focus &#091;SG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element has the input focus. This attribute
-									is handled by the <a href="#tek.ui.class.gadget">Gadget</a> class.
+									is handled by the <a href="#tek.ui.class.gadget">Gadget</a> class. Note:
+									The <code>Focus</code> attribute cannot be initialized; see also the
+									<a href="#tek.ui.class.gadget">InitialFocus</a> attribute.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>HAlign &#091;IG&#093;</code> (&quot;left&quot;, &quot;center&quot;, &quot;right&quot;)
+							<code>HAlign &#091;IG&#093;</code> (<code>&quot;left&quot;</code>, <code>&quot;center&quot;</code>, <code>&quot;right&quot;</code>)
 							<blockquote>
 								<p>
-									Horizontal alignment of the element in its group
+									Horizontal alignment of the element in its group. This attribute
+									can be controlled using the <code>horizontal-grid-align</code> attribute.
 								</p>
 							</blockquote>
 						</li>
@@ -2217,11 +2250,13 @@ message = function(object, message)
 										<li style="list-style-type: none">
 											<code>&quot;fill&quot;</code> - Completely fills up the height that other
 											elements in the same group have left, but does not claim more.
+											This value is useful only once per group.
 										</li>
 									</ul>
 								</blockquote>
 								<p>
-									Note: Normally, <code>&quot;fill&quot;</code> is useful only once per group.
+									This attribute can be controlled using the <code>height</code> style
+									property.
 								</p>
 							</blockquote>
 						</li>
@@ -2241,7 +2276,8 @@ message = function(object, message)
 								<p>
 									An array of four offsets for the element's outer margin in the
 									order left, right, top, bottom &#091;pixels&#093;. If unspecified during
-									initialization, the class' default margins are used.
+									initialization, the class' default margins are used. This
+									attribute is controllable via the <code>margin</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -2249,7 +2285,9 @@ message = function(object, message)
 							<code>MaxHeight &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Maximum height of the element, in pixels &#091;default: <code>ui.HUGE</code>&#093;
+									Maximum height of the element, in pixels &#091;default: <code>ui.HUGE</code>&#093;.
+									This attribute is controllable via the <code>max-height</code> style
+									property.
 								</p>
 							</blockquote>
 						</li>
@@ -2257,7 +2295,9 @@ message = function(object, message)
 							<code>MaxWidth &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Maximum width of the element, in pixels &#091;default: <code>ui.HUGE</code>&#093;
+									Maximum width of the element, in pixels &#091;default: <code>ui.HUGE</code>&#093;.
+									This attribute is controllable via the <code>max-width</code> style
+									property.
 								</p>
 							</blockquote>
 						</li>
@@ -2265,7 +2305,9 @@ message = function(object, message)
 							<code>MinHeight &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Minimum height of the element, in pixels &#091;default: 0&#093;
+									Minimum height of the element, in pixels &#091;default: 0&#093;.
+									This attribute is controllable via the <code>min-height</code> style
+									property.
 								</p>
 							</blockquote>
 						</li>
@@ -2273,7 +2315,9 @@ message = function(object, message)
 							<code>MinWidth &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Minimum width of the element, in pixels &#091;default: 0&#093;
+									Minimum width of the element, in pixels &#091;default: 0&#093;.
+									This attribute is controllable via the <code>min-width</code> style
+									property.
 								</p>
 							</blockquote>
 						</li>
@@ -2284,6 +2328,8 @@ message = function(object, message)
 									An array of four offsets for the element's inner padding in the
 									order left, right, top, bottom &#091;pixels&#093;. If unspecified during
 									initialization, the class' default paddings are used.
+									This attribute is controllable via the <code>padding</code> style
+									property.
 								</p>
 							</blockquote>
 						</li>
@@ -2300,18 +2346,19 @@ message = function(object, message)
 							<code>TrackDamage &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									If <strong>true</strong>, the element gathers intra-area damages in a
-									Region named <code>DamageRegion</code>, which can be used by class
-									writers for minimally invasive repaints. Default:
-									<strong>false</strong>, the element is redrawn in its entirety.
+									If <strong>true</strong>, the element collects intra-area damages in a
+									<a href="#tek.lib.region">Region</a> named <code>DamageRegion</code>, which can be
+									used by class writers to implement minimally invasive repaints.
+									Default: <strong>false</strong>, the element is repainted in its entirety.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>VAlign &#091;IG&#093;</code> (&quot;top&quot;, &quot;center&quot;, &quot;bottom&quot;)
+							<code>VAlign &#091;IG&#093;</code> (<code>&quot;top&quot;</code>, <code>&quot;center&quot;</code>, <code>&quot;bottom&quot;</code>)
 							<blockquote>
 								<p>
-									Vertical alignment of the element in its group
+									Vertical alignment of the element in its group. This attribute
+									can be controlled using the <code>vertical-grid-align</code> attribute.
 								</p>
 							</blockquote>
 						</li>
@@ -2319,7 +2366,7 @@ message = function(object, message)
 							<code>Weight &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Determines the weight that is attributed to the element, relative
+									Determines the weight that is attributed to the element relative
 									to its siblings in its group. Note: By recommendation, the weights
 									in a group should sum up to 0x10000.
 								</p>
@@ -2363,64 +2410,64 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>background-color</code> 
+							<code>background-color</code> - controls the <code>Area.BGColor</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>background-position</code> 
+							<code>background-position</code> - controls the <code>Area.BGPosition</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>height</code> 
+							<code>height</code> - controls the <code>Area.Height</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>horizontal-grid-align</code> 
+							<code>horizontal-grid-align</code> - controls the <code>Area.HAlign</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>margin</code> 
+							<code>margin</code> - controls the <code>Area.Margin</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>margin-bottom</code> 
+							<code>margin-bottom</code> - controls the <code>Area.Margin</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>margin-left</code> 
+							<code>margin-left</code> - controls the <code>Area.Margin</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>margin-right</code> 
+							<code>margin-right</code> - controls the <code>Area.Margin</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>margin-top</code> 
+							<code>margin-top</code> - controls the <code>Area.Margin</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>max-height</code> 
+							<code>max-height</code> - controls the <code>Area.MaxHeight</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>max-width</code> 
+							<code>max-width</code> - controls the <code>Area.MaxWidth</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>min-height</code> 
+							<code>min-height</code> - controls the <code>Area.MinHeight</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>min-width</code> 
+							<code>min-width</code> - controls the <code>Area.MinWidth</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>padding</code> 
+							<code>padding</code> - controls the <code>Area.Padding</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>padding-bottom</code> 
+							<code>padding-bottom</code> - controls the <code>Area.Padding</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>padding-left</code> 
+							<code>padding-left</code> - controls the <code>Area.Padding</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>padding-right</code> 
+							<code>padding-right</code> - controls the <code>Area.Padding</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>padding-top</code> 
+							<code>padding-top</code> - controls the <code>Area.Padding</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>vertical-grid-align</code> 
+							<code>vertical-grid-align</code> - controls the <code>Area.VAlign</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>width</code> 
+							<code>width</code> - controls the <code>Area.Width</code> attribute
 						</li>
 					</ul>
 				</blockquote>
@@ -2747,7 +2794,7 @@ message = function(object, message)
 		</div>
 		<div class="node"><h3><a name="Area:setState" id="Area:setState"><code>setState(bg)</code></a></h3>
 			<p>
-				Sets the <code>Background</code> attribute according to
+				Sets the <code>BGPen</code> attribute according to
 				the state of the element, and if it changed, slates the element
 				for repainting.
 			</p>
@@ -2755,8 +2802,8 @@ message = function(object, message)
 		</div>
 		<div class="node"><h3><a name="Area:show" id="Area:show"><code>show(drawable)</code></a></h3>
 			<p>
-				Passes an element the <a href="#tek.ui.class.drawable">Drawable</a> 
-				it will be rendered to.
+				This function passes an element the
+				<a href="#tek.ui.class.drawable">Drawable</a> that it will be rendered to.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -2805,7 +2852,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v16.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v17.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3058,7 +3105,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v4.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v5.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3112,9 +3159,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
@@ -3664,7 +3708,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v16.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v17.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3686,9 +3730,6 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Drawable:closeFont"><code>Drawable:closeFont()</code></a> - Closes a font
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Drawable:copyArea"><code>Drawable:copyArea()</code></a> - Copies an area
 						</li>
 						<li style="list-style-type: none">
@@ -3707,9 +3748,6 @@ end
 							<a href="#Drawable:fillRect"><code>Drawable:fillRect()</code></a> - Draws a filled rectangle
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:fitMinAspect"><code>Drawable:fitMinAspect()</code></a> - See <a href="#Display:fitMinAspect"><code>Display:fitMinAspect()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Drawable:getMsg"><code>Drawable:getMsg()</code></a> - Gets the next pending input message
 						</li>
 						<li style="list-style-type: none">
@@ -3717,9 +3755,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:getTextSize"><code>Drawable:getTextSize()</code></a> - Determines the width and height of text
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:openFont"><code>Drawable:openFont()</code></a> - Opens a font
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:popClipRect"><code>Drawable:popClipRect()</code></a> - Pops the topmost cliprect from the drawable
@@ -3746,12 +3781,6 @@ end
 				</blockquote>
 				<hr />
 			</div>
-		</div>
-		<div class="node"><h3><a name="Drawable:closeFont" id="Drawable:closeFont"><code>closeFont(font)</code></a></h3>
-			<p>
-				Closes a font.
-			</p>
-			<hr />
 		</div>
 		<div class="node"><h3><a name="Drawable:copyArea" id="Drawable:copyArea"><code>copyArea(x0, y0, x1, y1, deltax, deltay, exposures)</code></a></h3>
 			<p>
@@ -3815,12 +3844,6 @@ end
 			<p>
 				Determines the width and height
 				of a text using the font which is currently set on the Drawable.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:openFont" id="Drawable:openFont"><code>font = openFont(fname)</code></a></h3>
-			<p>
-				Opens a font.
 			</p>
 			<hr />
 		</div>
@@ -4138,7 +4161,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4164,7 +4187,7 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>FGPen &#091;IG&#093;</code> (userdata)
+							<code>FGColor &#091;IG&#093;</code> (userdata)
 							<blockquote>
 								<p>
 									Pen for rendering the text. This attribute is controllable via the
@@ -4218,7 +4241,7 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>color</code> - controls the <code>FloatText.FGPen</code> attribute
+							<code>color</code> - controls the <code>FloatText.FGColor</code> attribute
 						</li>
 						<li style="list-style-type: none">
 							<code>font</code> - controls the <code>FloatText.Font</code> attribute
@@ -4284,7 +4307,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4498,7 +4521,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v14.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v16.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4527,27 +4550,28 @@ end
 							<blockquote>
 								<p>
 									Signifies a change of the Gadget's activation state. While active,
-									the position of the mouse pointer is being verified (which is also
-									reflected by the <code>Hover</code> attribute). When the <code>Active</code> state
-									changes, the Gadget's behavior depends on its <code>Mode</code> (see below):
+									the position of the pointing device is being verified (which is
+									also reflected by the <code>Hover</code> attribute, see below). When the
+									<code>Active</code> state changes, the Gadget's behavior depends on its
+									<code>Mode</code> attribute (see below):
 								</p>
 								<blockquote>
 									<ul>
 										<li>
-											in <code>&quot;button&quot;</code> mode, the <code>Selected</code> attribute is set to
+											in <em>button</em> mode, the <code>Selected</code> attribute is set to
 											the value of the <code>Hover</code> attribute. The <code>Pressed</code> attribute
 											is set to the value of the <code>Active</code> attribute, if it caused a
 											change of the <code>Selected</code> state.
 										</li>
 										<li>
-											in <code>&quot;toggle&quot;</code> mode, the <code>Selected</code> attribute of the
-											Gadget is logically toggled, and the <code>Pressed</code> attribute is
+											in <em>toggle</em> mode, the <code>Selected</code> attribute of the
+											Gadget is inverted logically, and the <code>Pressed</code> attribute is
 											set to <strong>true</strong>.
 										</li>
 										<li>
-											in <code>&quot;touch&quot;</code> mode, the <code>Selected</code> and <code>Pressed</code> 
-											attributes are set to <strong>true</strong>, if the Gadget wasn't selected
-											already.
+											in <em>touch</em> mode, the <code>Selected</code> and <code>Pressed</code> 
+											attributes are set to <strong>true</strong>, if the Gadget was not
+											selected already.
 										</li>
 									</ul>
 								</blockquote>
@@ -4560,11 +4584,12 @@ end
 							<code>DblClick &#091;SG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Signifies that the element was doubleclicked; is is set to
-									<strong>true</strong> when the element was doubleclicked and is still being
-									held, and <strong>false</strong> when it was doubleclicked and then released.
-									This attribute usually needs to get a notification handler attached
-									to it before it is useful.
+									Signifies that the element was double-clicked; it is set to
+									<strong>true</strong> when the element was double-clicked and is still being
+									held, and <strong>false</strong> when it was double-clicked and then released.
+									This attribute normally needs to get a notification handler
+									attached to it before it can be reacted on; see also
+									<a href="#Object:addNotify"><code>Object:addNotify()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -4572,41 +4597,32 @@ end
 							<code>Disabled &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Determines the Gadget's ability to interact with the user. If
+									Determines the Gadget's ability to interact with the user. When
 									changed, it invokes the <a href="#Gadget:onDisable"><code>Gadget:onDisable()</code></a> method. When an element
 									is getting disabled, it loses its focus, too.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Effect &#091;IG</code> (string)
+							<code>EffectClass &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									Name of a hook class for rendering an overlay effect. A possible
-									overlay effect is named <code>&quot;ripple&quot;</code>, and, as its name suggests,
-									can paint various ripple effects (used e.g. for sliders and
-									handles). Effect hooks are stored in <code>tek/ui/hook</code> and may define
-									their own style properties. This attribute is controllable via the
-									<code>effect</code> style property.
+									Name of a hook class for rendering an overlay effect. This
+									attribute is controllable via the <code>effect-class</code> style property.
+									A possible overlay effect is named <em>ripple</em>. As its name
+									suggests, it can paint various ripple effects (e.g. for slider
+									knobs and bar handles). Effect hooks are stored in <code>tek/ui/hook</code> 
+									and may define their own style properties.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>FGPen &#091;IG&#093;</code> (userdata)
+							<code>FGColor &#091;IG&#093;</code> (string or number)
 							<blockquote>
 								<p>
-									A colored pen for rendering the foreground details of the element.
-									This attribute is controllable via the <code>color</code> style property.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>InitialFocus &#091;IG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Specifies that the element should receive the focus initially.
-									If <strong>true</strong>, the element will notify <code>Focus=true</code> to itself
-									upon invocation of the <a href="#Area:show"><code>Area:show()</code></a> method. Default: <strong>false</strong> 
+									A color specification for rendering the foreground details of the
+									element. This attribute is controllable via the <code>color</code> style
+									property.
 								</p>
 							</blockquote>
 						</li>
@@ -4623,8 +4639,14 @@ end
 							<code>Hold &#091;SG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Signifies that the element is being held. Invokes
-									<a href="#Gadget:onHold"><code>Gadget:onHold()</code></a>.
+									Signifies that the element is being held. While being held, the
+									value is repeatedly set to <strong>true</strong> in intervals of <code>n/50</code> 
+									seconds, with <code>n</code> being determined by the
+									<a href="#tek.ui.class.window">Window</a>.HoldTickInitRepeat attribute.
+									When the element is getting released, this value is set to
+									<strong>false</strong>. This attribute normally needs to get a notification
+									handler attached to it before it can be reacted on; see also
+									<a href="#Object:addNotify"><code>Object:addNotify()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -4634,6 +4656,16 @@ end
 								<p>
 									Signifies a change of the Gadget being hovered by the pointing
 									device. Invokes <a href="#Gadget:onHover"><code>Gadget:onHover()</code></a>.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>InitialFocus &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Specifies that the element should receive the focus initially.
+									If <strong>true</strong>, the element will notify <code>Focus=true</code> to itself
+									upon invocation of the <a href="#Area:show"><code>Area:show()</code></a> method. Default: <strong>false</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -4707,37 +4739,37 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>color</code> - controls the <code>Gadget.FGPen</code> attribute
+							<code>color</code> - controls the <code>Gadget.FGColor</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>effect</code> - controls the <code>Gadget.Effect</code> attribute
+							<code>effect-class</code> - controls the <code>Gadget.EffectClass</code> attribute
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-color</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-color</code> - controls the <em>ripple</em> effect hook
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-color2</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-color2</code> - controls the <em>ripple</em> effect hook
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-kind</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-kind</code> - controls the <em>ripple</em> effect hook
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-maxnum</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-maxnum</code> - controls the <em>ripple</em> effect hook
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-maxnum2</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-maxnum2</code> - controls the <em>ripple</em> effect hook
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-orientation</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-orientation</code> - controls the <em>ripple</em> effect hook
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-padding</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-padding</code> - controls the <em>ripple</em> effect hook
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-ratio</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-ratio</code> - controls the <em>ripple</em> effect hook
 						</li>
 						<li style="list-style-type: none">
-							<code>effect-ratio2</code> - controls the <code>&quot;ripple&quot;</code> effect hook
+							<code>effect-ratio2</code> - controls the <em>ripple</em> effect hook
 						</li>
 					</ul>
 				</blockquote>
@@ -4774,9 +4806,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Gadget:onHilite"><code>Gadget:onHilite()</code></a> - Handler for <code>Hilite</code> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Gadget:onHold"><code>Gadget:onHold()</code></a> - Handler for <code>Hold</code> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Gadget:onHover"><code>Gadget:onHover()</code></a> - Handler for <code>Hover</code> 
@@ -4853,16 +4882,6 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Gadget:onHold" id="Gadget:onHold"><code>onHold(held)</code></a></h3>
-			<p>
-				This method is invoked when the gadget's <code>Hold</code> 
-				attribute is set. While the gadget is being held, repeated
-				<code>Hold</code> = <strong>true</strong> events are submitted in intervals of n/50 seconds
-				determined by the <a href="#tek.ui.class.window">Window</a>.HoldTickInitRepeat
-				attribute.
-			</p>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="Gadget:onHover" id="Gadget:onHover"><code>onHover(hovered)</code></a></h3>
 			<p>
 				This method is invoked when the gadget's <code>Hover</code> 
@@ -4884,7 +4903,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v8.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4952,7 +4971,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v20.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5168,7 +5187,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v22.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5240,7 +5259,7 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>BGPenAlt &#091;IG&#093;</code> (userdata)
+							<code>BGAlt &#091;IG&#093;</code> (userdata)
 							<blockquote>
 								<p>
 									A colored pen for painting the background of alternating lines
@@ -5606,7 +5625,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v6.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v7.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5820,7 +5839,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v11.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v11.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5916,7 +5935,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v9.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v10.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6030,7 +6049,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v8.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6130,7 +6149,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v3.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v4.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6212,7 +6231,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v8.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v9.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6479,7 +6498,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v14.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6647,7 +6666,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v1.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v1.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6683,7 +6702,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v17.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v19.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6902,7 +6921,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v13.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7110,7 +7129,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v6.23)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v7.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7158,7 +7177,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v16.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v18.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7579,7 +7598,7 @@ message = function(object, message)
 			</p>
 			<hr />
 			<p>
-				Document generated on Sat May 23 15:01:59 2009
+				Document generated on Mon Jun  1 16:52:16 2009
 			</p>
 		</div>
 	</body>

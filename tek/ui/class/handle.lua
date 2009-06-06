@@ -62,7 +62,7 @@ end
 -------------------------------------------------------------------------------
 
 function Handle:askMinMax(m1, m2, m3, m4)
-	local o = self.Parent:getStructure()
+	local o = self:getGroup():getStructure()
 	self.Orientation = o
 	m3 = o == 1 and 0 or m3
 	m4 = o == 2 and 0 or m4
@@ -75,7 +75,7 @@ end
 
 function Handle:startMove(x, y)
 
-	local g = self.Parent
+	local g = self:getGroup()
 	local i1, i3
 	if self.Orientation == 1 then
 		i1, i3 = 1, 3
@@ -171,7 +171,7 @@ end
 
 function Handle:doMove(x, y)
 
-	local g = self.Parent
+	local g = self:getGroup()
 	local xy = (self.Orientation == 1 and x or y) - self.Move0
 
 	if xy < self.MoveMinMax[1] then

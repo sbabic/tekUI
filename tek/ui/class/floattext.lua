@@ -18,7 +18,7 @@
 --		[[#tek.ui.class.canvas : Canvas]].
 --
 --	ATTRIBUTES::
---		- {{FGPen [IG]}} (userdata)
+--		- {{FGColor [IG]}} (userdata)
 --			Pen for rendering the text. This attribute is controllable via the
 --			{{color}} style property.
 --		- {{Font [IG]}} (string)
@@ -36,7 +36,7 @@
 --		- FloatText:onSetText() - Handler called when {{Text}} is changed
 --
 --	STYLE PROPERTIES::
---		- {{color}} - controls the {{FloatText.FGPen}} attribute
+--		- {{color}} - controls the {{FloatText.FGColor}} attribute
 --		- {{font}} - controls the {{FloatText.Font}} attribute
 --
 --	OVERRIDES::
@@ -66,7 +66,7 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 10.1"
+_VERSION = "FloatText 12.0"
 
 local FloatText = _M
 
@@ -83,11 +83,11 @@ local NOTIFY_TEXT = { ui.NOTIFY_SELF, "onSetText" }
 function FloatText.init(self)
 	self.Canvas = false
 	self.CanvasHeight = false
-	self.FGPen = self.FGPen or false
+	self.FGColor = self.FGColor or false
 	self.FHeight = false
 	self.Font = self.Font or false
 	self.FontHandle = false
-	self.Foreground = false
+	self.FGPen = false
 	self.FWidth = false
 	self.Lines = false
 	self.Preformatted = self.Preformatted or false
@@ -106,7 +106,7 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:getProperties(p, pclass)
-	self.FGPen = self.FGPen or self:getProperty(p, pclass, "color")
+	self.FGColor = self.FGColor or self:getProperty(p, pclass, "color")
 	self.Font = self.Font or self:getProperty(p, pclass, "font")
 	Area.getProperties(self, p, pclass)
 end
@@ -116,9 +116,13 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:setup(app, window)
-	self.Canvas = self.Parent
+	self.Canvas = self:getParent()
 	Area.setup(self, app, window)
 	self:addNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_TEXT)
+	local f = self.Application.Display:openFont(self.Font)
+	self.FontHandle = f
+	self.FWidth, self.FHeight = f:getTextSize("W")
+	self:prepareText()
 end
 
 -------------------------------------------------------------------------------
@@ -127,29 +131,9 @@ end
 
 function FloatText:cleanup()
 	self:remNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_TEXT)
-	Area.cleanup(self)
 	self.Canvas = false
-end
-
--------------------------------------------------------------------------------
---	show: overrides
--------------------------------------------------------------------------------
-
-function FloatText:show(drawable)
-	Area.show(self, drawable)
-	local f = drawable:openFont(self.Font)
-	self.FontHandle = f
-	self.FWidth, self.FHeight = f:getTextSize("W")
-	self:prepareText()
-end
-
--------------------------------------------------------------------------------
---	hide: overrides
--------------------------------------------------------------------------------
-
-function FloatText:hide()
-	self.FontHandle = self.Drawable:closeFont(self.FontHandle)
-	Area.hide(self)
+	self.FontHandle = self.Application.Display:closeFont(self.FontHandle)
+	Area.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
@@ -176,7 +160,7 @@ function FloatText:draw()
 		local ca = self.Canvas
 		local x0 = ca and ca.CanvasLeft or 0
 		local x1 = ca and x0 + ca.CanvasWidth - 1 or self.Rect[3]
-		local fp = p[self.Foreground]
+		local fp = p[self.FGPen]
 		d:setFont(self.FontHandle)
 		dr:forEach(self.drawPatch, self, d, x0, y0, x1, fp, d.Pens[bp], tx, ty)
 	end
@@ -357,9 +341,9 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:setState(bg, fg)
-	fg = fg or self.FGPen or ui.PEN_LISTDETAIL	
-	if fg ~= self.Foreground then
-		self.Foreground = fg
+	fg = fg or self.FGColor or ui.PEN_LISTDETAIL	
+	if fg ~= self.FGPen then
+		self.FGPen = fg
 		self.Redraw = true
 	end
 	Area.setState(self, bg)

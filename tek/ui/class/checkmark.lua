@@ -28,7 +28,6 @@
 --	OVERRIDES::
 --		- Area:askMinMax()
 --		- Area:draw()
---		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
 --		- Class.new()
@@ -44,7 +43,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 4.2"
+_VERSION = "CheckMark 5.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -82,17 +81,6 @@ function CheckMark.init(self)
 end
 
 -------------------------------------------------------------------------------
---	hide:
--------------------------------------------------------------------------------
-
-function CheckMark:hide()
-	if self.TextRecords then
-		self.TextRecords[1] = false
-	end
-	Text.hide(self)
-end
-
--------------------------------------------------------------------------------
 --	askMinMax:
 -------------------------------------------------------------------------------
 
@@ -101,7 +89,7 @@ function CheckMark:askMinMax(m1, m2, m3, m4)
 	if tr then
 		local w, h = tr[9], tr[10]
 		local ih, iw = max(h, self.ImageMinHeight or h)
-		iw, ih = self.Drawable:fitMinAspect(ih, ih, 1, 1, 0)
+		iw, ih = self.Application.Display:fitMinAspect(ih, ih, 1, 1, 0)
 		self.ImageWidth = iw
 		self.ImageHeight = ih
 		h = max(0, ih - h)
@@ -153,7 +141,7 @@ end
 function CheckMark:setState(bg, fg)
 	if not bg and self.Hilite then
 		-- in checkmarks, Hilite has precedence over Selected:
-		bg = self.BGPenHilite
+		bg = self.BGHilite
 	end
 	if self.Selected ~= self.OldSelected then
 		self.OldSelected = self.Selected

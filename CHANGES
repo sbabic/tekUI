@@ -1,6 +1,30 @@
 
 == tekUI Changelog ==
- 
+
+ * Application, Window: Major simplification in setup and closedown 
+ procedure, the show() method is now invoked shortly after opening the
+ window
+ * Area: Changed meaning of the EraseBG attribute, removed calcOffset,
+ BGPen renamed to BGColor
+ * Drawable: removed closeFont(), fitMinAspect(), openFont()
+ * Gadget: Effect renamed to EffectClass, BGPen... to BG..., FGPen... to
+ FG..., InitialFocus is now functional, removed onHold(), simplified
+ * Gadget, FloatText: FGPen renamed to FGColor
+ * ListGadget: Renamed BGPenAlt to BGAlt
+ * TextInput: Renamed BGPenCursor to BGCursor
+ * Window:getWindowDimensions() renamed to askMinMax(), show() now invokes
+ Group.show() before askMinMax(), now creates a Drawable during setup()
+ and passes it to its superclass during show()
+ * Theme, stylesheets: effect renamed to effect-class
+ * Default Border, DrawHook, Border, Ripple Hook: show() renamed to
+ setup(), hide() renamed to cleanup() 
+ * Frame, ListGadget, TextInput: simplified
+ * ScrollBar, Slider: now register Hold notification themselves
+ * Application: Status can now be "init", "error", "run" and "quit", some
+ cleanup
+ * Application, Area and demos: Some cleanup, improved documentation,
+ demos, texts and imagery
+
 === 0.8f: ===
 
  * Element: Major speedup in parsing style properties

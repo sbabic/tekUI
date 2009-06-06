@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 6.23"
+_VERSION = "Theme 7.0"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -93,7 +93,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 	},
 
 	["tek.ui.class.gadget.knob-scrollbar"] = {
-		["effect"] = "ripple",
+		["effect-class"] = "ripple",
 		["effect-orientation"] = "inline",
 		["effect-kind"] = "dot",
 	},
@@ -114,7 +114,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 	},
 
 	["tek.ui.class.handle"] = {
-		["effect"] = "ripple",
+		["effect-class"] = "ripple",
 		["effect-orientation"] = "across",
 		["effect-kind"] = "slant",
 		["border-width"] = 0,

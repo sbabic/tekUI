@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 16.0"
+_VERSION = "Window 18.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -180,7 +180,7 @@ function Window.init(self)
 		[5] = 0,
 		[6] = 0,
 	}
-	self.IntervalNest = 0
+	self.IntervalCount = 0
 	self.KeyShortcuts = { }
 	self.LayoutGroup = { }
 	self.Left = self.Left or false
@@ -221,6 +221,7 @@ function Window.init(self)
 	self.Status = self.Status or "initializing"
 	self.Title = self.Title or false
 	self.Top = self.Top or false
+	self.Visible = false
 	self.WindowFocus = false
 	self.WindowMinMax = { }
 	return Group.init(self)
@@ -231,8 +232,21 @@ end
 -------------------------------------------------------------------------------
 
 function Window:setup(app)
-	-- pass ourselves as the window argument:
+	self.Drawable = Drawable:new { Display = app.Display }
 	Group.setup(self, app, self)
+	self:addNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
+	self:addInputHandler(0x171f, self, self.handleInput)
+end
+
+-------------------------------------------------------------------------------
+--	cleanup: overrides
+-------------------------------------------------------------------------------
+
+function Window:cleanup()
+	self:remInputHandler(0x171f, self, self.handleInput)
+	self:remNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
+	Group.cleanup(self)
+	assert(self.IntervalCount == 0)
 end
 
 -------------------------------------------------------------------------------
@@ -240,16 +254,20 @@ end
 -------------------------------------------------------------------------------
 
 function Window:show()
-	assert(self.Application.Display)
-	assert(not self.Drawable)
-	local drawable = Drawable:new { Display = self.Application.Display } 
-	self.Drawable = drawable
-	-- window input handlers must be added before children can
-	-- register themselves during show():
-	self:addInputHandler(0x171f, self, self.handleInput)
-	Group.show(self, drawable)
-	-- notification handlers:
-	self:addNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
+	self.Status = "show"
+	if not self.Visible then
+		self.Visible = true
+		local d = self.Drawable
+		local m1, m2, m3, m4, x, y, w, h = self:askMinMax()
+		d:open(self, self.Title or self.Application.ProgramName,
+			w, h, m1, m2, m3, m4, x, y, self.Center, self.FullScreen)
+		local wm = self.WindowMinMax
+		wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
+		self.Application:openWindow(self)
+		Group.show(self, d)
+		self:layout()
+		self:addLayoutGroup(self, 2)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -257,15 +275,18 @@ end
 -------------------------------------------------------------------------------
 
 function Window:hide()
-	self:remNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
-	self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
-	self:remInputHandler(0x171f, self, self.handleInput)
-	local d = self.Drawable
-	assert(d)
-	self:hideWindow()
-	Group.hide(self)
-	self.Drawable = false
-	d:close()
+	self.Status = "hide"
+	if self.Visible then
+		self.Visible = false
+		-- we must save the Drawable, as it gets flushed in hide():
+		local d = self.Drawable
+		self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
+		Group.hide(self)
+		self.Window.Drawable = d -- restore
+		d:close()
+		self.Width, self.Height = d.Width, d.Height
+		self.Application:closeWindow(self)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -331,9 +352,9 @@ end
 -------------------------------------------------------------------------------
 
 function Window:addInterval()
-	self.IntervalNest = self.IntervalNest + 1
-	if self.IntervalNest == 1 then
-		db.info("add interval")
+	self.IntervalCount = self.IntervalCount + 1
+	if self.IntervalCount == 1 then
+		db.info("%s : add interval", self)
 		self.Drawable:setInterval(true)
 	end
 end
@@ -346,35 +367,12 @@ end
 -------------------------------------------------------------------------------
 
 function Window:remInterval()
-	self.IntervalNest = self.IntervalNest - 1
-	assert(self.IntervalNest >= 0)
-	if self.IntervalNest == 0 then
-		db.info("rem interval")
+	self.IntervalCount = self.IntervalCount - 1
+	assert(self.IntervalCount >= 0)
+	if self.IntervalCount == 0 then
+		db.info("%s : rem interval", self)
 		self.Drawable:setInterval(false)
 	end
-end
-
--------------------------------------------------------------------------------
---	showWindow:
--------------------------------------------------------------------------------
-
-function Window:showWindow()
-	self:setValue("Status", "opening")
-	self.Application:openWindow(self)
-	-- necessary to setup a freeregion:
-	self:layout()
-	self:setValue("Status", "show")
-	self:addLayoutGroup(self, 2)
-end
-
--------------------------------------------------------------------------------
---	hideWindow:
--------------------------------------------------------------------------------
-
-function Window:hideWindow()
-	self.Application:closeWindow(self)
-	self:setValue("Status", "hide")
-	self.FreeRegion = false
 end
 
 -------------------------------------------------------------------------------
@@ -384,22 +382,20 @@ end
 
 function Window:onChangeStatus(showhide)
 	if showhide == "show" then
-		self.Status = "hide"
-		self:showWindow()
+		self:show()
 	elseif showhide == "hide" then
-		self.Status = "show"
-		self:hideWindow()
+		self:hide()
 	end
 end
 
 -------------------------------------------------------------------------------
---	getWindowDimensions:
+--	askMinMax: overrides
 -------------------------------------------------------------------------------
 
-function Window:getWindowDimensions()
+function Window:askMinMax()
 	local mw, mh = self.MinWidth, self.MinHeight
 	self.MinWidth, self.MinHeight = 0, 0
-	local m1, m2, m3, m4 = self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
+	local m1, m2, m3, m4 = Group.askMinMax(self, 0, 0, self.MaxWidth, self.MaxHeight)
 	self.MinWidth = mw
 	self.MinHeight = mh
 	m1, m2 = max(mw, m1), max(mh, m2)
@@ -414,47 +410,13 @@ function Window:getWindowDimensions()
 end
 
 -------------------------------------------------------------------------------
---	openWindow:
--------------------------------------------------------------------------------
-
-function Window:openWindow()
-	if self.Status ~= "show" then
-		local m1, m2, m3, m4, x, y, w, h = self:getWindowDimensions()
-		if self.Drawable:open(self, self.Title or self.Application.ProgramName,
-			w, h, m1, m2, m3, m4, x, y, self.Center, self.FullScreen) then
-			local wm = self.WindowMinMax
-			wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
-			self.Status = "show"
-		end
-	end
-	return self.Status
-end
-
--------------------------------------------------------------------------------
---	closeWindow:
--------------------------------------------------------------------------------
-
-function Window:closeWindow()
-	local d = self.Drawable
-	assert(d)
-	if self.Status ~= "hide" then
-		self:setValue("Status", "closing")
-		if d:close() then
-			self.Width, self.Height = d.Width, d.Height
-			self:setValue("Status", "hide")
-		end
-	end
-	return self.Status
-end
-
--------------------------------------------------------------------------------
 --	rethinkLayout: overrides
 -------------------------------------------------------------------------------
 
 function Window:rethinkLayout()
 	if self.Status == "show" then
 		local wm = self.WindowMinMax
-		local m1, m2, m3, m4 = self:getWindowDimensions()
+		local m1, m2, m3, m4 = self:askMinMax()
 		if m1 ~= wm[1] or m2 ~= wm[2] or m3 ~= wm[3] or m4 ~= wm[4] then
 			wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
 			db.trace("New window minmax: %d %d %d %d", m1, m2, m3, m4)
@@ -869,7 +831,6 @@ function Window:setActiveElement(e)
 	end
 end
 
-
 -------------------------------------------------------------------------------
 --	handleHold: use interval messages to decrease a counter for hold events:
 -------------------------------------------------------------------------------
@@ -1048,20 +1009,22 @@ end
 -------------------------------------------------------------------------------
 
 function Window:remKeyShortcut(keycode, element)
-	local key, quals = ui.resolveKeyCode(keycode)
-	db.info("removing shortcut: %s -> %s", key, element:getClassName())
-	local keytab = self.KeyShortcuts[key]
-	if keytab then
-		for i = 1, #quals do
-			local qual = quals[i]
-			local qualtab = keytab[qual]
-			if qualtab then
-				for idx = 1, #qualtab do
-					local e = qualtab[idx]
-					if element == e then
-						db.trace("%s : removing qualifier %d", key, qual)
-						remove(qualtab, idx)
-						break
+	if keycode then
+		local key, quals = ui.resolveKeyCode(keycode)
+		db.info("removing shortcut: %s -> %s", key, element:getClassName())
+		local keytab = self.KeyShortcuts[key]
+		if keytab then
+			for i = 1, #quals do
+				local qual = quals[i]
+				local qualtab = keytab[qual]
+				if qualtab then
+					for idx = 1, #qualtab do
+						local e = qualtab[idx]
+						if element == e then
+							db.trace("%s : removing qualifier %d", key, qual)
+							remove(qualtab, idx)
+							break
+						end
 					end
 				end
 			end
@@ -1088,7 +1051,7 @@ end
 
 function Window:clickElement(e)
 	if type(e) == "string" then
-		e = self.Application:getById(e)
+		e = self:getById(e)
 		assert(e, "Unknown Id")
 	end
 	local he = self.HiliteElement

@@ -11,7 +11,8 @@
 --		[[#tek.ui.class.element : Element]] / Area
 --
 --		This is the base class of all visible user interface elements.
---		It implements an outer margin, layouting, drawing, and navigation.
+--		It implements an outer margin, layouting, drawing, and the
+--		relationships to its neighbours.
 --
 --	ATTRIBUTES::
 --		- {{AutoPosition [IG]}} (boolean)
@@ -19,25 +20,42 @@
 --			position itself automatically into the visible area of any Canvas
 --			that may contain it. An affected [[#tek.ui.class.canvas : Canvas]]
 --			must have its {{AutoPosition}} attribute enabled as well for this
---			option to take effect, but unlike the Area class, the Canvas class
+--			option to take effect, but unlike the Area class, the Canvas
 --			disables it by default.
---		- {{BGPen [IG]}} (number)
---			A pen number for painting the background of the element
+--		- {{BGColor [IG]}} (string or number)
+--			A color specification for painting the background of the element.
+--			Valid are predefined color numbers (e.g. {{ui.PEN_DETAIL}}),
+--			predefined color names (e.g. {{"detail"}}, see also 
+--			[[#tek.ui.class.display : Display]] for more), or a direct
+--			hexadecimal RGB specification (e.g. {{"#334455"}}, {{"#f0f"}}.
+--			This attribute is controllable via the {{background-color}} style
+--			property.
+--		- {{BGPosition [IG]}} (boolean or string)
+--			Kind of anchoring for a possible background image or texture:
+--				* {{"scollable"}} or '''false''' - The texture is anchored to
+--				the element and during scrolling moves with it.
+--				* {{"fixed"}} - The texture is anchored to the Window.
+--			Note that repainting elements with {{"fixed"}} anchoring can be
+--			expensive. This variant should be used sparingly, and some classes
+--			may implement it incompletely or incorrectly. This attribute can
+--			be controlled using the {{background-position}} attribute.
 --		- {{DamageRegion [G]}} ([[#tek.lib.region : Region]])
 --			see {{TrackDamage}}
 --		- {{Disabled [ISG]}} (boolean)
 --			If '''true''', the element is in disabled state. This attribute is
 --			handled by the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{EraseBG [IG]}} (boolean)
---			If '''false''', the element's background is painted by the Area
---			class using the Area:erase() method. Child classes can set this
---			attribute to '''true''', indicating that they wish to paint the
---			background themselves.
---		- {{Focus [ISG]}} (boolean)
+--			If '''true''', the element's background is painted automatically
+--			using the Area:erase() method. Set this attribute to '''false''' to
+--			indicate that you wish to paint the background yourself.
+--		- {{Focus [SG]}} (boolean)
 --			If '''true''', the element has the input focus. This attribute
---			is handled by the [[#tek.ui.class.gadget : Gadget]] class.
---		- {{HAlign [IG]}} ("left", "center", "right")
---			Horizontal alignment of the element in its group
+--			is handled by the [[#tek.ui.class.gadget : Gadget]] class. Note:
+--			The {{Focus}} attribute cannot be initialized; see also the
+--			[[#tek.ui.class.gadget : InitialFocus]] attribute.
+--		- {{HAlign [IG]}} ({{"left"}}, {{"center"}}, {{"right"}})
+--			Horizontal alignment of the element in its group. This attribute
+--			can be controlled using the {{horizontal-grid-align}} attribute.
 --		- {{Height [IG]}} (number, '''false''', {{"auto"}}, {{"fill"}}, 
 --		{{"free"}})
 --			Height of the element, in pixels, or
@@ -48,7 +66,9 @@
 --				- {{"free"}} - Allows the element's height to grow to any size.
 --				- {{"fill"}} - Completely fills up the height that other
 --				elements in the same group have left, but does not claim more.
---			Note: Normally, {{"fill"}} is useful only once per group.
+--				This value is useful only once per group.
+--			This attribute can be controlled using the {{height}} style
+--			property.
 --		- {{Hilite [SG]}} (boolean)
 --			If '''true''', the element is in highlighted state. This
 --			attribute is handled by the [[#tek.ui.class.gadget : Gadget]]
@@ -56,31 +76,43 @@
 --		- {{Margin [IG]}} (table)
 --			An array of four offsets for the element's outer margin in the
 --			order left, right, top, bottom [pixels]. If unspecified during
---			initialization, the class' default margins are used.
+--			initialization, the class' default margins are used. This
+--			attribute is controllable via the {{margin}} style property.
 --		- {{MaxHeight [IG]}} (number)
---			Maximum height of the element, in pixels [default: {{ui.HUGE}}]
+--			Maximum height of the element, in pixels [default: {{ui.HUGE}}].
+--			This attribute is controllable via the {{max-height}} style
+--			property.
 --		- {{MaxWidth [IG]}} (number)
---			Maximum width of the element, in pixels [default: {{ui.HUGE}}]
+--			Maximum width of the element, in pixels [default: {{ui.HUGE}}].
+--			This attribute is controllable via the {{max-width}} style
+--			property.
 --		- {{MinHeight [IG]}} (number)
---			Minimum height of the element, in pixels [default: 0]
+--			Minimum height of the element, in pixels [default: 0].
+--			This attribute is controllable via the {{min-height}} style
+--			property.
 --		- {{MinWidth [IG]}} (number)
---			Minimum width of the element, in pixels [default: 0]
+--			Minimum width of the element, in pixels [default: 0].
+--			This attribute is controllable via the {{min-width}} style
+--			property.
 --		- {{Padding [IG]}} (table)
 --			An array of four offsets for the element's inner padding in the
 --			order left, right, top, bottom [pixels]. If unspecified during
 --			initialization, the class' default paddings are used.
+--			This attribute is controllable via the {{padding}} style
+--			property.
 --		- {{Selected [ISG]}} (boolean)
 --			If '''true''', the element is in selected state. This attribute
 --			is handled by the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{TrackDamage [IG]}} (boolean)
---			If '''true''', the element gathers intra-area damages in a
---			Region named {{DamageRegion}}, which can be used by class
---			writers for minimally invasive repaints. Default:
---			'''false''', the element is redrawn in its entirety.
---		- {{VAlign [IG]}} ("top", "center", "bottom")
---			Vertical alignment of the element in its group
+--			If '''true''', the element collects intra-area damages in a
+--			[[#tek.lib.region : Region]] named {{DamageRegion}}, which can be
+--			used by class writers to implement minimally invasive repaints.
+--			Default: '''false''', the element is repainted in its entirety.
+--		- {{VAlign [IG]}} ({{"top"}}, {{"center"}}, {{"bottom"}})
+--			Vertical alignment of the element in its group. This attribute
+--			can be controlled using the {{vertical-grid-align}} attribute.
 --		- {{Weight [IG]}} (number)
---			Determines the weight that is attributed to the element, relative
+--			Determines the weight that is attributed to the element relative
 --			to its siblings in its group. Note: By recommendation, the weights
 --			in a group should sum up to 0x10000.
 --		- {{Width [IG]}} (number, '''false''', {{"auto"}}, {{"fill"}},
@@ -96,26 +128,26 @@
 --			Note: Normally, "fill" is useful only once per group.
 --
 --	STYLE PROPERTIES::
---		- {{background-color}}
---		- {{background-position}}
---		- {{height}}
---		- {{horizontal-grid-align}}
---		- {{margin}}
---		- {{margin-bottom}}
---		- {{margin-left}}
---		- {{margin-right}}
---		- {{margin-top}}
---		- {{max-height}}
---		- {{max-width}}
---		- {{min-height}}
---		- {{min-width}}
---		- {{padding}}
---		- {{padding-bottom}}
---		- {{padding-left}}
---		- {{padding-right}}
---		- {{padding-top}}
---		- {{vertical-grid-align}}
---		- {{width}}
+--		- {{background-color}} - controls the {{Area.BGColor}} attribute
+--		- {{background-position}} - controls the {{Area.BGPosition}} attribute
+--		- {{height}} - controls the {{Area.Height}} attribute
+--		- {{horizontal-grid-align}} - controls the {{Area.HAlign}} attribute
+--		- {{margin}} - controls the {{Area.Margin}} attribute
+--		- {{margin-bottom}} - controls the {{Area.Margin}} attribute
+--		- {{margin-left}} - controls the {{Area.Margin}} attribute
+--		- {{margin-right}} - controls the {{Area.Margin}} attribute
+--		- {{margin-top}} - controls the {{Area.Margin}} attribute
+--		- {{max-height}} - controls the {{Area.MaxHeight}} attribute
+--		- {{max-width}} - controls the {{Area.MaxWidth}} attribute
+--		- {{min-height}} - controls the {{Area.MinHeight}} attribute
+--		- {{min-width}} - controls the {{Area.MinWidth}} attribute
+--		- {{padding}} - controls the {{Area.Padding}} attribute
+--		- {{padding-bottom}} - controls the {{Area.Padding}} attribute
+--		- {{padding-left}} - controls the {{Area.Padding}} attribute
+--		- {{padding-right}} - controls the {{Area.Padding}} attribute
+--		- {{padding-top}} - controls the {{Area.Padding}} attribute
+--		- {{vertical-grid-align}} - controls the {{Area.VAlign}} attribute
+--		- {{width}} - controls the {{Area.Width}} attribute
 --
 --	IMPLEMENTS::
 --		- Area:askMinMax() - Queries element's minimum and maximum dimensions
@@ -158,7 +190,6 @@ local ui = require "tek.ui"
 local Element = ui.Element
 local Region = require "tek.lib.region"
 
-local assert = assert
 local freeRegion = ui.freeRegion
 local intersect = Region.intersect
 local max = math.max
@@ -168,7 +199,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 21.0"
+_VERSION = "Area 24.1"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -196,13 +227,17 @@ function Area.init(self)
 		t = true
 	end
 	self.AutoPosition = t
-	self.Background = false
+	self.BGPen = false
+	self.BGColor = self.BGColor or false
 	self.BGPosition = false
-	self.BGPen = self.BGPen or false
 	self.DamageRegion = false
 	self.Disabled = self.Disabled or false
 	self.Drawable = false
-	self.EraseBG = self.EraseBG or false
+	t = self.EraseBG
+	if t == nil then
+		t = true
+	end
+	self.EraseBG = t
 	self.Focus = false
 	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
@@ -229,7 +264,8 @@ end
 function Area:getProperties(p, pclass)
 	self.BGPosition = self.BGPosition or
 		self:getProperty(p, pclass, "background-position")
-	self.BGPen = self.BGPen or self:getProperty(p, pclass, "background-color")
+	self.BGColor = self.BGColor or 
+		self:getProperty(p, pclass, "background-color")
 	self.HAlign = self.HAlign or
 		self:getProperty(p, pclass, "horizontal-grid-align")
 	self.VAlign = self.VAlign or
@@ -271,25 +307,39 @@ function Area:setup(app, win)
 	local m, p = self.Margin, self.Padding
 	m[1], m[2], m[3], m[4] = m[1] or 0, m[2] or 0, m[3] or 0, m[4] or 0
 	p[1], p[2], p[3], p[4] = p[1] or 0, p[2] or 0, p[3] or 0, p[4] or 0
-	if not self.MaxHeight or self.MaxHeight == "free" then
+	if not self.MaxHeight then
 		self.MaxHeight = ui.HUGE
 	end
-	if not self.MaxWidth or self.MaxWidth == "free" then
+	if not self.MaxWidth then
 		self.MaxWidth = ui.HUGE
 	end
 	self.MinHeight = self.MinHeight or 0
 	self.MinWidth = self.MinWidth or 0
+	-- initialize margin_and_border:
+	local d, s = self.MarginAndBorder, self.Margin
+	d[1], d[2], d[3], d[4] = s[1], s[2], s[3], s[4]
 end
 
 -------------------------------------------------------------------------------
---	show(drawable): Passes an element the [[#tek.ui.class.drawable : Drawable]]
---	it will be rendered to.
+--	cleanup: overrides
+-------------------------------------------------------------------------------
+
+function Area:cleanup()
+	self.MarginAndBorder = { }
+	self.DamageRegion = freeRegion(self.DamageRegion)
+	self.MinMax = { }
+	self.Rect = { }
+	Element.cleanup(self)
+end
+
+-------------------------------------------------------------------------------
+--	show(drawable): This function passes an element the
+--	[[#tek.ui.class.drawable : Drawable]] that it will be rendered to.
 -------------------------------------------------------------------------------
 
 function Area:show(drawable)
-	self.Drawable = drawable
-	self:calcOffsets()
 	self:setState()
+	self.Drawable = drawable
 end
 
 -------------------------------------------------------------------------------
@@ -298,21 +348,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:hide()
-	self.DamageRegion = freeRegion(self.DamageRegion)
 	self.Drawable = false
-	self.MinMax = { }
-	self.Rect = { }
-	self.MarginAndBorder = { }
-end
-
--------------------------------------------------------------------------------
---	calcOffsets() [internal] - This function calculates the
---	{{MarginAndBorder}} property.
--------------------------------------------------------------------------------
-
-function Area:calcOffsets()
-	local s, d = self.Margin, self.MarginAndBorder
-	d[1], d[2], d[3], d[4] = s[1], s[2], s[3], s[4]
 end
 
 -------------------------------------------------------------------------------
@@ -328,7 +364,6 @@ end
 function Area:rethinkLayout(damage)
 	-- must be on a display and layouted previously:
 	if self.Drawable and self.Rect[1] then
-		self:calcOffsets()
 		local pgroup = self:getGroup(true) -- get parent group
 		self.Window:addLayoutGroup(pgroup, damage or 1)
 		-- cause the rethink to bubble up until it reaches the Window:
@@ -520,7 +555,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:draw()
-	if not self.EraseBG then
+	if self.EraseBG then
 		self:erase()
 	end
 end
@@ -533,7 +568,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getBG()
-	local bgpen = self.Background
+	local bgpen = self.BGPen
 	if self.BGPosition ~= "fixed" then
 		local r = self.Rect
 		return bgpen, r[1], r[2]
@@ -611,18 +646,18 @@ function Area:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	setState(bg): Sets the {{Background}} attribute according to
+--	setState(bg): Sets the {{BGPen}} attribute according to
 --	the state of the element, and if it changed, slates the element
 --	for repainting.
 -------------------------------------------------------------------------------
 
 function Area:setState(bg, fg)
-	bg = bg or self.BGPen or ui.PEN_BACKGROUND
+	bg = bg or self.BGColor or ui.PEN_BACKGROUND
 	if bg == ui.PEN_PARENTGROUP then
-		bg = self:getBGElement().Background
+		bg = self:getBGElement().BGPen
 	end
-	if bg ~= self.Background then
-		self.Background = bg
+	if bg ~= self.BGPen then
+		self.BGPen = bg
 		self.Redraw = true
 	end
 end

@@ -14,11 +14,12 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 local window = ui.Window:new
 {
 	Id = "buttons-window",
-	Style = "Width: auto; Height: auto",
 	Title = L.BUTTONS_TITLE,
 	Orientation = "vertical",
 	Status = "hide",
 	HideOnEscape = true,
+	Width = "auto",
+	Height = "auto",
 	Children =
 	{
 		Group:new
@@ -101,9 +102,9 @@ local window = ui.Window:new
 					SameSize = "height",
 					Children =
 					{
-						Button:new { Text = L.BUTTONS_TOP_LEFT, Style = "text-align: left; vertical-align: top; height: free" },
-						Button:new { Text = L.BUTTONS_CENTER, Style = "text-align: center; vertical-align: center; height: free" },
-						Button:new { Text = L.BUTTONS_RIGHT_BOTTOM, Style = "text-align: right; vertical-align: bottom; height: free" },
+						Button:new { Text = L.BUTTONS_TOP_LEFT, Style = "text-align: left; vertical-align: top; height: auto" },
+						Button:new { Text = L.BUTTONS_CENTER, Style = "text-align: center; vertical-align: center; height: auto" },
+						Button:new { Text = L.BUTTONS_RIGHT_BOTTOM, Style = "text-align: right; vertical-align: bottom; height: auto" },
 					}
 				}
 			}

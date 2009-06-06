@@ -44,7 +44,6 @@ ui.Application:new
 						},
 						ui.Area:new
 						{
-							Width = "free",
 							Height = "auto"
 						},
 						ui.Text:new

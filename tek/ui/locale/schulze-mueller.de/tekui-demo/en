@@ -69,7 +69,7 @@ BUTTONS_COLORS = "Colors";
 BUTTONS_DESCRIPTION = [[
 » The main determinants of an element's appearance and behavior are its (visual) class and mode.
 
-» Buttons are just Text elements with a button mode (behavioral attribute) and class (visual attribute).
+» Buttons are just Text elements with a "button" mode (behavioral attribute) and "button" class (visual attribute).
 
 » More attributes are available e.g. for colorization and the alignment of a button's text.
  
@@ -128,7 +128,7 @@ DEMO_TEXT = [[
 
 » Use the buttons to the left to choose from the available demos, or use the menu to open all demos at once.
 
-» The demos are designed as plug-ins for the demo application, so they do not have to be started as separate processes. But it also possible to start them individually.
+» The demos are designed as plug-ins for the demo application, so they do not have to be started as separate processes. (But it remains possible to start them individually.)
 ]];
 DISCLAIMER = "Disclaimer";
 DISCLAIMER_TEXT = [[

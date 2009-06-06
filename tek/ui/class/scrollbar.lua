@@ -61,7 +61,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 8.5"
+_VERSION = "ScrollBar 9.0"
 
 local ScrollBar = _M
 
@@ -78,6 +78,7 @@ local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
 local NOTIFY_MIN = { ui.NOTIFY_SELF, "onSetMin", ui.NOTIFY_VALUE }
 local NOTIFY_MAX = { ui.NOTIFY_SELF, "onSetMax", ui.NOTIFY_VALUE }
 local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
+local NOTIFY_HOLD = { ui.NOTIFY_SELF, "onHold", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	ArrowButton:
@@ -93,6 +94,16 @@ function ArrowButton.init(self)
 	return ImageGadget.init(self)
 end
 
+function ArrowButton:setup(app, window)
+	ImageGadget.setup(self, app, window)
+	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
+end
+
+function ArrowButton:cleanup()
+	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
+	ImageGadget.cleanup(self)
+end
+
 function ArrowButton:onPress(pressed)
 	if pressed then
 		self.Slider:increase(self.Increase)
@@ -104,7 +115,7 @@ function ArrowButton:onHold(hold)
 	if hold then
 		self.Slider:increase(self.Increase)
 	end
-	ImageGadget.onHold(self, hold)
+-- 	ImageGadget.onHold(self, hold)
 end
 
 -------------------------------------------------------------------------------

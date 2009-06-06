@@ -80,9 +80,7 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-
 local Gadget = ui.Gadget
-
 local floor = math.floor
 local insert = table.insert
 local max = math.max
@@ -91,7 +89,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 17.1"
+_VERSION = "Text 19.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -106,7 +104,7 @@ local NOTIFY_SETTEXT = { ui.NOTIFY_SELF, "onSetText", ui.NOTIFY_VALUE }
 local Text = _M
 
 function Text.init(self)
-	self.FGPenDisabled2 = self.FGPenDisabled2 or false
+	self.FGDisabled2 = self.FGDisabled2 or false
 	self.Font = self.Font or false
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
@@ -124,7 +122,7 @@ end
 
 function Text:getProperties(p, pclass)
 	if not pclass then
-		self.FGPenDisabled2 = self.FGPenDisabled2 or
+		self.FGDisabled2 = self.FGDisabled2 or
 			self:getProperty(p, "disabled", "color2")
 	end
 	self.Font = self.Font or self:getProperty(p, pclass, "font")
@@ -149,6 +147,9 @@ function Text:setup(app, window)
 	end
 	Gadget.setup(self, app, window)
 	self:addNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_SETTEXT)
+	if not self.TextRecords then
+		self:makeTextRecords(self.Text)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -157,27 +158,8 @@ end
 
 function Text:cleanup()
 	self:remNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_SETTEXT)
-	Gadget.cleanup(self)
-end
-
--------------------------------------------------------------------------------
---	show: overrides
--------------------------------------------------------------------------------
-
-function Text:show(drawable)
-	Gadget.show(self, drawable)
-	if not self.TextRecords then
-		self:makeTextRecords(self.Text)
-	end
-end
-
--------------------------------------------------------------------------------
---	hide: overrides
--------------------------------------------------------------------------------
-
-function Text:hide()
 	self.TextRecords = false
-	Gadget.hide(self)
+	Gadget.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
@@ -190,18 +172,16 @@ function Text:getTextSize(tr)
 	tr = tr or self.TextRecords
 	local totw, toth = 0, 0
 	local x, y
-	if tr then
-		for i = 1, #tr do
-			local t = tr[i]
-			local tw, th = t[9], t[10]
-			totw = max(totw, tw + t[5] + t[7])
-			toth = max(toth, th + t[6] + t[8])
-			if t[15] then
-				x = min(x or 1000000, t[15])
-			end
-			if t[16] then
-				y = min(y or 1000000, t[16])
-			end
+	for i = 1, #tr do
+		local t = tr[i]
+		local tw, th = t[9], t[10]
+		totw = max(totw, tw + t[5] + t[7])
+		toth = max(toth, th + t[6] + t[8])
+		if t[15] then
+			x = min(x or 1000000, t[15])
+		end
+		if t[16] then
+			y = min(y or 1000000, t[16])
 		end
 	end
 	return totw, toth, x, y
@@ -286,14 +266,14 @@ function Text:draw()
 	local r = self.Rect
 	local p = self.Padding
 	d:pushClipRect(r[1] + p[1], r[2] + p[2], r[3] - p[3], r[4] - p[4])
-	local fp = d.Pens[self.Foreground]
+	local fp = d.Pens[self.FGPen]
 	local tr = self.TextRecords
 	for i = 1, #tr do
 		local t = tr[i]
 		local x, y = t[15], t[16]
 		d:setFont(t[2])
 		if self.Disabled then
-			local fp2 = d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2]
+			local fp2 = d.Pens[self.FGDisabled2 or ui.PEN_DISABLEDDETAIL2]
 			d:drawText(x + 2, y + 2, x + t[9] + 1, y + t[10] + 1, t[1], fp2)
 			if t[11] then
 				-- draw underline:

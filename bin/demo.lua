@@ -322,6 +322,7 @@ app = ui.Application:new
 															Id = "text-gcpause",
 															Style = "width: fill",
 															KeepMinWidth = true,
+															Text = "0000",
 														},
 														ui.Text:new
 														{
@@ -353,6 +354,7 @@ app = ui.Application:new
 															Id = "text-gcstepmul",
 															Style = "width: fill",
 															KeepMinWidth = true,
+															Text = "0000",
 														},
 													}
 												},
@@ -555,7 +557,6 @@ app = ui.Application:new
 								ui.ScrollGroup:new
 								{
 									Legend = L.AVAILABLE_DEMOS,
-									Style = "max-width: free",
 									VSliderMode = "auto",
 									Child = ui.Canvas:new
 									{
@@ -566,7 +567,6 @@ app = ui.Application:new
 										Child = ui.Group:new
 										{
 											Id = "demo-group",
-											Style = "max-width: free",
 											Orientation = "vertical",
 										}
 									}

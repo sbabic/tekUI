@@ -76,13 +76,14 @@ local freeRegion = ui.freeRegion
 local reuseRegion = ui.reuseRegion
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 11.0"
+_VERSION = "Slider 14.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
 local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
+local NOTIFY_HOLD = { ui.NOTIFY_SELF, "onHold", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -142,6 +143,7 @@ end
 function Slider:setup(app, window)
 	Numeric.setup(self, app, window)
 	self:addNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE, 1)
+	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self.Child:setup(app, window)
 end
 
@@ -151,8 +153,10 @@ end
 
 function Slider:cleanup()
 	self.Child:cleanup()
+	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:remNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE)
 	Numeric.cleanup(self)
+	self.BGRegion = freeRegion(self.BGRegion)
 end
 
 -------------------------------------------------------------------------------
@@ -172,8 +176,6 @@ function Slider:hide()
 	self:setCapture(false)
 	self.Child:hide()
 	Numeric.hide(self)
-	self.BGRegion = freeRegion(self.BGRegion)
-	return true
 end
 
 -------------------------------------------------------------------------------
@@ -318,7 +320,7 @@ function Slider:clickContainer(xy)
 end
 
 -------------------------------------------------------------------------------
---	onHold: overrides
+--	onHold:
 -------------------------------------------------------------------------------
 
 function Slider:onHold(hold)
@@ -331,8 +333,11 @@ function Slider:onHold(hold)
 	else
 		self.ClickDirection = false
 	end
-	Numeric.onHold(self, hold)
 end
+
+-------------------------------------------------------------------------------
+--	startMove:
+-------------------------------------------------------------------------------
 
 function Slider:startMove(x, y)
 	local b1, b2, b3, b4 = self.Child:getBorder()
@@ -344,6 +349,10 @@ function Slider:startMove(x, y)
 	end
 	return false
 end
+
+-------------------------------------------------------------------------------
+--	doMove:
+-------------------------------------------------------------------------------
 
 function Slider:doMove(x, y)
 	local r = self.Rect
@@ -539,7 +548,7 @@ end
 
 function Slider:setState(bg, fg)
 	if not bg and self.Captured then
-		bg = self.BGPenSelected
+		bg = self.BGSelected
 	end
 	Gadget.setState(self, bg)
 end

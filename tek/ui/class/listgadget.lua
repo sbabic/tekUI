@@ -39,7 +39,7 @@
 --			By default, the ListGadget's parent {{Canvas}} is used, but by
 --			use of this attribute it is possible to align the ListGadget to
 --			something else.
---		- {{BGPenAlt [IG]}} (userdata)
+--		- {{BGAlt [IG]}} (userdata)
 --			A colored pen for painting the background of alternating lines
 --		- {{ColumnPadding [IG]}} (number)
 --			The padding between columns, in pixels. By default, the
@@ -133,7 +133,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 19.0"
+_VERSION = "ListGadget 22.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ function ListGadget.init(self)
 	self.AlignElement = self.AlignElement or false
 	self.BackPens = { }
 	-- alternative list background pen:
-	self.BGPenAlt = self.BGPenAlt or false
+	self.BGAlt = self.BGAlt or false
 	self.Border = ui.NULLOFFS
 	self.BorderStyle = "" -- fixed
 	self.Canvas = false -- fixed
@@ -203,7 +203,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:getProperties(p, pclass)
-	self.BGPenAlt = self.BGPenAlt or
+	self.BGAlt = self.BGAlt or
 		self:getProperty(p, pclass, "background-color2")
 	self.CursorBorderClass = self.CursorBorderClass or
 		self:getProperty(p, pclass, "border-class")
@@ -228,30 +228,8 @@ function ListGadget:setup(app, window)
 	self.CursorObject = ui.createHook("border",
 		self.CursorBorderClass or "default", self,
 			{ Border = self.CursorBorder })
-end
 
--------------------------------------------------------------------------------
---	cleanup: overrides
--------------------------------------------------------------------------------
-
-function ListGadget:cleanup()
-	self.CursorObject = ui.destroyHook(self.CursorObject)
-	self:remNotify("DblClick", ui.NOTIFY_ALWAYS, NOTIFY_DBLCLICK)
-	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
-	self:remNotify("CursorLine", ui.NOTIFY_ALWAYS, NOTIFY_CURSOR)
-	self.SelectedLines = false
-	Text.cleanup(self)
-	self.Canvas = false
-end
-
--------------------------------------------------------------------------------
---	show: overrides
--------------------------------------------------------------------------------
-
-function ListGadget:show(drawable)
-	Text.show(self, drawable)
-	self.CursorObject:show(drawable)
-	local f = drawable:openFont(self.Font)
+	local f = self.Application.Display:openFont(self.Font)
 	self.FontHandle = f
 	self.FWidth, self.FHeight = f:getTextSize("x")
 	local _, b2, _, b4 = self.CursorObject:getBorder()
@@ -261,13 +239,18 @@ function ListGadget:show(drawable)
 end
 
 -------------------------------------------------------------------------------
---	hide: overrides
+--	cleanup: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:hide()
-	self.CursorObject:hide()
-	self.FontHandle = self.Drawable:closeFont(self.FontHandle)
-	Text.hide(self)
+function ListGadget:cleanup()
+	self.FontHandle = self.Application.Display:closeFont(self.FontHandle)
+	self.CursorObject = ui.destroyHook(self.CursorObject)
+	self:remNotify("DblClick", ui.NOTIFY_ALWAYS, NOTIFY_DBLCLICK)
+	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
+	self:remNotify("CursorLine", ui.NOTIFY_ALWAYS, NOTIFY_CURSOR)
+	self.SelectedLines = false
+	Text.cleanup(self)
+	self.Canvas = false
 end
 
 -------------------------------------------------------------------------------
@@ -466,8 +449,7 @@ end
 
 function ListGadget:prepare(damage)
 	local lo = self.ListObject
-	local d = self.Drawable
-	if lo and d then
+	if lo then -- and d then
 
 		local b1, b2, b3, b4 = self.CursorObject:getBorder()
 		local f = self.FontHandle
@@ -584,14 +566,14 @@ function ListGadget:draw()
 		local t = self.RenderData
 		local _, tx, ty = self:getBG()
 		local pens = d.Pens
-		t[6] = pens[self.BGPen] -- background pen
-		t[7] = pens[self.BGPenAlt or self.BGPen] -- background pen, alternate
+		t[6] = pens[self.BGColor] -- background pen
+		t[7] = pens[self.BGAlt or self.BGColor] -- background pen, alternate
 		d:setFont(self.FontHandle)
 		dr:forEach(self.drawPatch, self, t, d, lo, self.LineHeight, 
 			self.Canvas.CanvasWidth - 1,
-			pens[self.FGPen], -- foreground pen
-			pens[self.BGPenSelected or ui.PEN_LISTACTIVE], -- cursor pen
-			pens[self.FGPenSelected or ui.PEN_LISTACTIVEDETAIL], -- f+c pen
+			pens[self.FGColor], -- foreground pen
+			pens[self.BGSelected or ui.PEN_LISTACTIVE], -- cursor pen
+			pens[self.FGSelected or ui.PEN_LISTACTIVEDETAIL], -- f+c pen
 			tx, ty)
 		self.DamageRegion = false
 	end
@@ -693,7 +675,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:setState(bg, fg)
-	bg = bg or self.BGPen
+	bg = bg or self.BGColor
 	Text.setState(self, bg, fg)
 end
 

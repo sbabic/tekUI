@@ -47,7 +47,7 @@ local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 7.0"
+_VERSION = "Gauge 8.0"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -99,6 +99,7 @@ end
 function Gauge:cleanup()
 	self.Child:cleanup()
 	Numeric.cleanup(self)
+	self.BGRegion = freeRegion(self.BGRegion)
 end
 
 -------------------------------------------------------------------------------
@@ -117,8 +118,6 @@ end
 function Gauge:hide()
 	self.Child:hide()
 	Numeric.hide(self)
-	self.BGRegion = freeRegion(self.BGRegion)
-	return true
 end
 
 -------------------------------------------------------------------------------

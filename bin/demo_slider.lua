@@ -203,18 +203,15 @@ local window = ui.Window:new
 						slider3,
 						Group:new
 						{
-							Width = "free",
 							Children =
 							{
 								Gauge:new
 								{
 									Id = "gauge-2",
-									Width = "free",
 								},
 								Gauge:new
 								{
 									Id = "gauge-3",
-									Width = "free",
 								}
 							}
 						}

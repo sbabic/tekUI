@@ -14,18 +14,15 @@
 --		This class implements a graphical context which can be painted on.
 --
 --	IMPLEMENTS::
---		- Drawable:closeFont() - Closes a font
 --		- Drawable:copyArea() - Copies an area
 --		- Drawable:drawLine() - Draws a line
 --		- Drawable:drawPlot() - Draws a point
 --		- Drawable:drawRect() - Draws an unfilled rectangle
 --		- Drawable:drawText() - Renders text
 --		- Drawable:fillRect() - Draws a filled rectangle
---		- Drawable:fitMinAspect() - See Display:fitMinAspect()
 --		- Drawable:getMsg() - Gets the next pending input message
 --		- Drawable:getShift() - Gets the current coordinate displacement
 --		- Drawable:getTextSize() - Determines the width and height of text
---		- Drawable:openFont() - Opens a font
 --		- Drawable:popClipRect() - Pops the topmost cliprect from the drawable
 --		- Drawable:pushClipRect() - Pushes a new cliprect on the drawable
 --		- Drawable:setFont() - Sets a font
@@ -50,7 +47,7 @@ local unpack = unpack
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 16.0"
+_VERSION = "Drawable 17.0"
 
 DEBUG_DELAY = 3
 
@@ -199,30 +196,6 @@ end
 
 function Drawable:drawPixmap(...)
 	self.Visual:drawpixmap(...)
-end
-
--------------------------------------------------------------------------------
---	font = openFont(fname): Opens a font.
--------------------------------------------------------------------------------
-
-function Drawable:openFont(fname)
-	return self.Display:openFont(fname)
-end
-
--------------------------------------------------------------------------------
---	closeFont(font): Closes a font.
--------------------------------------------------------------------------------
-
-function Drawable:closeFont(font)
-	return self.Display:closeFont(font)
-end
-
--------------------------------------------------------------------------------
---	fitMinAspect: See Display:fitMinAspect()
--------------------------------------------------------------------------------
-
-function Drawable:fitMinAspect(...)
-	return self.Display:fitMinAspect(...)
 end
 
 -------------------------------------------------------------------------------

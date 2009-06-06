@@ -32,7 +32,7 @@ local Window = ui.Window
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 3.0"
+_VERSION = "PopupWindow 4.0"
 
 local PopupWindow = _M
 
@@ -57,8 +57,8 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function PopupWindow:show(display)
-	Window.show(self, display)
+function PopupWindow:setup(app, window)
+	Window.setup(self, app, window)
 	-- determine width of menuitems in group:
 	local maxw = 0
 	local c = self:getChildren()
@@ -77,6 +77,15 @@ function PopupWindow:show(display)
 			e.TextRecords[2][5] = maxw
 		end
 	end
+-- 	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+end
+
+-------------------------------------------------------------------------------
+--	show: overrides
+-------------------------------------------------------------------------------
+
+function PopupWindow:show(drawable)
+	Window.show(self, drawable)
 	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 end
 

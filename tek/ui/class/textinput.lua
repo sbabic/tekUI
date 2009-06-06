@@ -77,7 +77,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 10.1"
+_VERSION = "TextInput 13.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -92,14 +92,14 @@ local NOTIFY_ENTER = { ui.NOTIFY_SELF, "onEnter", ui.NOTIFY_VALUE }
 local TextInput = _M
 
 function TextInput.init(self)
-	self.BGPenCursor = false
+	self.BGCursor = false
 	self.BlinkState = false
 	self.BlinkTick = false
 	self.BlinkTickInit = false
 	self.Editing = false
 	self.Enter = false
 	self.EnterNext = self.EnterNext or false
-	self.FGPenCursor = false
+	self.FGCursor = false
 	self.FontHeight = false
 	self.FontWidth = false
 	self.Mode = "touch"
@@ -122,8 +122,8 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:getProperties(p, pclass)
-	self.FGPenCursor = self:getProperty(p, pclass, "cursor-color")
-	self.BGPenCursor = self:getProperty(p, pclass, "cursor-background-color")
+	self.FGCursor = self:getProperty(p, pclass, "cursor-color")
+	self.BGCursor = self:getProperty(p, pclass, "cursor-background-color")
 	Text.getProperties(self, p, pclass)
 end
 
@@ -134,6 +134,9 @@ end
 function TextInput:setup(app, window)
 	Text.setup(self, app, window)
 	self:addNotify("Enter", ui.NOTIFY_ALWAYS, NOTIFY_ENTER)
+	self.FontWidth, self.FontHeight = self.TextRecords[1][2]:getTextSize(" ")
+	self.TextRect = { }
+	self.TextOffset = 0
 end
 
 -------------------------------------------------------------------------------
@@ -141,8 +144,12 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:cleanup()
+	self:setEditing(false)
 	self:remNotify("Enter", ui.NOTIFY_ALWAYS, NOTIFY_ENTER)
 	Text.cleanup(self)
+	self.TextOffset = 0
+	self.TextCursor = 0
+	self.TextRect = false
 end
 
 -------------------------------------------------------------------------------
@@ -151,24 +158,8 @@ end
 
 function TextInput:show(drawable)
 	Text.show(self, drawable)
-	self.FontWidth, self.FontHeight = self.TextRecords[1][2]:getTextSize(" ")
-	self.TextRect = { }
-	self.TextOffset = 0
 	self.BlinkTick = 0
 	self.BlinkTickInit = 18
-	return true
-end
-
--------------------------------------------------------------------------------
---	hide: overrides
--------------------------------------------------------------------------------
-
-function TextInput:hide()
-	self:setEditing(false)
-	Text.hide(self)
-	self.TextOffset = 0
-	self.TextCursor = 0
-	self.TextRect = false
 end
 
 -------------------------------------------------------------------------------
@@ -253,10 +244,10 @@ function TextInput:draw()
 	
 	if self.Disabled then
 		d:drawText(x + 1, y + 1, tr[3] + 1, tr[4] + 1, text,
-			d.Pens[self.FGPenDisabled2 or ui.PEN_DISABLEDDETAIL2])
+			d.Pens[self.FGDisabled2 or ui.PEN_DISABLEDDETAIL2])
 	end
 	
-	local pen = pens[self.Foreground]
+	local pen = pens[self.FGPen]
 	d:drawText(x, y, tr[3], tr[4], text, pen)
 	
 	if not self.Disabled and self.Editing then
@@ -266,8 +257,8 @@ function TextInput:draw()
 			d:drawText(tr[1] + tc * fw, tr[2], 
 				tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
 				s,
-				pens[self.FGPenCursor or ui.PEN_CURSORDETAIL],
-				pens[self.BGPenCursor or ui.PEN_CURSOR])
+				pens[self.FGCursor or ui.PEN_CURSORDETAIL],
+				pens[self.BGCursor or ui.PEN_CURSOR])
 		else
 			d:drawText(tr[1] + tc * fw, tr[2],
 				tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
@@ -310,11 +301,11 @@ function TextInput:setEditing(onoff)
 		self:setValue("Focus", true)
 		self:setValue("Selected", true)
 	elseif not onoff and self.Editing then
+		self.Editing = false
 		self:setValue("Selected", false)
 		self.Window:remInputHandler(ui.MSG_KEYUP + ui.MSG_KEYDOWN,
 			self, self.handleInput)
 		self.Window:remInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
-		self.Editing = false
 	end
 end
 
@@ -332,8 +323,8 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:onFocus(focused)
-	self:setEditing(focused)
 	Text.onFocus(self, focused)
+	self:setEditing(focused)
 end
 
 -------------------------------------------------------------------------------

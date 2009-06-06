@@ -17,8 +17,6 @@ local window = ui.Window:new
 	Id = "layout-window",
 	Title = L.LAYOUT_TITLE,
 	Status = "hide",
-	MaxWidth = ui.HUGE,
-	MaxHeight = ui.HUGE,
 	HideOnEscape = true,
 	Children =
 	{
@@ -27,13 +25,13 @@ local window = ui.Window:new
 			Legend = L.LAYOUT_RELATIVE_SIZES,
 			Children =
 			{
-				Button:new { Text = "1", Style = "max-width: free" },
+				Button:new { Text = "1" },
 				ui.Spacer:new { },
-				Button:new { Text = "12", Style = "max-width: free" },
+				Button:new { Text = "12" },
 				ui.Spacer:new { },
-				Button:new { Text = "123", Style = "max-width: free" },
+				Button:new { Text = "123" },
 				ui.Spacer:new { },
-				Button:new { Text = "1234", Style = "max-width: free" },
+				Button:new { Text = "1234" },
 			},
 		},
 		Group:new
@@ -42,13 +40,13 @@ local window = ui.Window:new
 			Legend = L.LAYOUT_SAME_SIZES,
 			Children =
 			{
-				Button:new { Text = "1", Style = "max-width: free" },
+				Button:new { Text = "1" },
 				ui.Spacer:new { },
-				Button:new { Text = "12", Style = "max-width: free" },
+				Button:new { Text = "12" },
 				ui.Spacer:new { },
-				Button:new { Text = "123", Style = "max-width: free" },
+				Button:new { Text = "123" },
 				ui.Spacer:new { },
-				Button:new { Text = "1234", Style = "max-width: free" },
+				Button:new { Text = "1234" },
 			}
 		},
 		Group:new
@@ -65,35 +63,29 @@ local window = ui.Window:new
 		},
 		Group:new
 		{
-			Style = "height: free",
 			Legend = L.LAYOUT_GRID,
 			Columns = 3,
 			SameSize = "width",
-			Height = "auto",
 			Children =
 			{
-				Button:new { Text = "1", Style = "height: free" },
-				Button:new { Text = "12", Style = "height: free" },
-				Button:new { Text = "123", Style = "height: free" },
-				Button:new { Text = "1234", Style = "height: free" },
-				Button:new { Text = "12345", Style = "height: free" },
-				Button:new { Text = "123456", Style = "height: free" },
+				Button:new { Text = "1" },
+				Button:new { Text = "12" },
+				Button:new { Text = "123" },
+				Button:new { Text = "1234" },
+				Button:new { Text = "12345" },
+				Button:new { Text = "123456" },
 			}
 		},
 		Group:new
 		{
-			Style = "max-height: free",
 			Legend = L.LAYOUT_DIFFERENT_WEIGHTS,
 			Children =
 			{
-				Button:new { Text = "25%", Weight = 0x4000,
-					Style = "max-width: free; max-height: free" },
+				Button:new { Text = "25%", Weight = 0x4000 },
 				ui.Spacer:new { },
-				Button:new { Text = "25%", Weight = 0x4000,
-					Style = "max-width: free; max-height: free" },
+				Button:new { Text = "25%", Weight = 0x4000 },
 				ui.Spacer:new { },
-				Button:new { Text = "50%", Weight = 0x8000,
-					Style = "max-width: free; max-height: free" },
+				Button:new { Text = "50%", Weight = 0x8000 },
 			}
 		},
 		Group:new
@@ -102,9 +94,9 @@ local window = ui.Window:new
 			Children =
 			{
 				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
-				Button:new { Text = "25%", Style = "max-width: free", Weight = 0x4000 },
+				Button:new { Text = "25%", Weight = 0x4000 },
 				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
-				Button:new { Text = "75%", Style = "max-width: free", Weight = 0xc000 },
+				Button:new { Text = "75%", Weight = 0xc000 },
 				Text:new { Text = L.LAYOUT_FIX, Height = "fill" },
 			}
 		}

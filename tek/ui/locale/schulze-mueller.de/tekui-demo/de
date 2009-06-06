@@ -128,7 +128,7 @@ DEMO_TEXT = [[
 
 » Benutzen Sie die Knöpfe auf der linken Seite, um einzelne Demos auszuwählen, oder verwenden Sie das Menü, um alle Demos auf einmal zu öffnen.
 
-» Die Demos sind als Plug-Ins für die Demoanwendung konzipiert und müssen daher nicht als separate Prozesse gestartet werden. Aber ist auch möglich, sie einzeln zu starten.
+» Die Demos sind als Plug-Ins für die Demoanwendung konzipiert und müssen daher nicht als separate Prozesse gestartet werden. (Aber ist auch möglich, sie einzeln zu starten.)
 ]];
 DISCLAIMER = "Haftungsausschluss";
 DISCLAIMER_TEXT = [[

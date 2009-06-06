@@ -72,7 +72,7 @@ tek.ui.class.gadget:hover {
 }
 
 tek.ui.class.gadget.knob-scrollbar {
-	effect: ripple;
+	effect-class: ripple;
 	effect-orientation: inline;
 	effect-kind: dot;
 }
@@ -93,7 +93,7 @@ tek.ui.class.group {
 }
 
 tek.ui.class.handle {
-	effect: ripple;
+	effect-class: ripple;
 	effect-orientation: across;
 	effect-kind: slant;
 	border-width: 0;

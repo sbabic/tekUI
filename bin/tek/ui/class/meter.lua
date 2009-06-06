@@ -23,7 +23,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 3.1"
+_VERSION = "Meter 4.0"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -33,14 +33,14 @@ local Meter = _M
 
 function Meter.init(self)
 	self.NumSamples = self.NumSamples or 256
-	self.GraphBGPen = self.GraphBGPen or ui.PEN_DARK
-	self.GraphFGPen = self.GraphFGPen or ui.PEN_SHINE
-	self.GraphFGPen2 = self.GraphFGPen2 or self.GraphFGPen
-	self.GraphFGPen3 = self.GraphFGPen3 or self.GraphFGPen
-	self.GraphFGPen4 = self.GraphFGPen4 or self.GraphFGPen
+	self.GraphBGColor = self.GraphBGColor or ui.PEN_DARK
+	self.GraphColor = self.GraphColor or ui.PEN_SHINE
+	self.GraphColor2 = self.GraphColor2 or self.GraphColor
+	self.GraphColor3 = self.GraphColor3 or self.GraphColor
+	self.GraphColor4 = self.GraphColor4 or self.GraphColor
 	
-	self.GraphPens = { self.GraphFGPen, self.GraphFGPen2, self.GraphFGPen3,
-		self.GraphFGPen4 }
+	self.GraphPens = { self.GraphColor, self.GraphColor2, self.GraphColor3,
+		self.GraphColor4 }
 	
 	self.CaptionsX = self.CaptionsX or 
 	{
@@ -59,7 +59,7 @@ function Meter.init(self)
 		{ pri = 100, text = "1.0" },
 	}
 	self.Curves = self.Curves or { { } }
-	self.EraseBG = true
+	self.EraseBG = false
 	self.Font = "ui-small"
 	self.GraphRect = false
 	self.Height = self.Height or "free"
@@ -78,7 +78,7 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 	local res = Text.layout(self, x0, y0, x1, y1, markdamage)
 	if res then
 	
-		local font = self.Drawable:openFont(self.Font)
+		local font = self.Application.Display:openFont(self.Font)
 		local r = self.Rect
 		
 		local captionheight, captionwidth, _ = 0, 0
@@ -230,10 +230,10 @@ function Meter:drawGraph()
 	end
 end
 
-function Meter:eraseGraphBackground()
+function Meter:eraseGraphBG()
 	local x0, y0, x1, y1 = unpack(self.GraphRect)
 	local d = self.Drawable
-	d:fillRect(x0, y0, x1, y1, d.Pens[self.GraphBGPen])
+	d:fillRect(x0, y0, x1, y1, d.Pens[self.GraphBGColor])
 end
 
 function Meter:draw()
@@ -242,14 +242,14 @@ function Meter:draw()
 	self.TextRegion:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
 	Text.draw(self)
 	local r = self.Rect
-	self:eraseGraphBackground()
+	self:eraseGraphBG()
 	self:drawGraph()
 end
 
 function Meter:refresh()
 	Text.refresh(self)
 	if self.RedrawGraph then
-		self:eraseGraphBackground()
+		self:eraseGraphBG()
 		self:drawGraph()
 		self.RedrawGraph = false
 	end

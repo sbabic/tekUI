@@ -68,7 +68,6 @@ local Family = ui.Family
 local Gadget = ui.Gadget
 local Region = require "tek.lib.region"
 local allocRegion = ui.allocRegion
-local assert = assert
 local floor = math.floor
 local freeRegion = ui.freeRegion
 local intersect = Region.intersect
@@ -76,7 +75,7 @@ local reuseRegion = ui.reuseRegion
 local tonumber = tonumber
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 19.0"
+_VERSION = "Group 20.0"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -220,7 +219,9 @@ function Group:addMember(child, pos)
 	child:connect(self)
 	self.Application:decodeProperties(child)
 	child:setup(self.Application, self.Window)
-	child:show(self.Drawable)
+	if self.Drawable then
+		child:show(self.Drawable)
+	end
 	if Family.addMember(self, child, pos) then
 		self:rethinkLayout(1)
 		return child
@@ -234,12 +235,13 @@ end
 -------------------------------------------------------------------------------
 
 function Group:remMember(child)
-	assert(child.Parent == self)
 	if child == self.Window.FocusElement then
 		self.Window:setFocusElement()
 	end
 	Family.remMember(self, child)
-	child:hide()
+	if child.Drawable then
+		child:hide()
+	end
 	child:cleanup()
 	self:rethinkLayout(1)
 end

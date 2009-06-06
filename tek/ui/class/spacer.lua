@@ -27,7 +27,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.spacer", tek.ui.class.frame)
-_VERSION = "Spacer 1.5"
+_VERSION = "Spacer 1.6"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -40,7 +40,7 @@ local Spacer = _M
 -------------------------------------------------------------------------------
 
 function Spacer:askMinMax(m1, m2, m3, m4)
-	local o = self.Parent:getStructure()
+	local o = self:getGroup():getStructure()
 	if o == 1 then
 		self.Height = "fill"
 		self.Width = "auto"

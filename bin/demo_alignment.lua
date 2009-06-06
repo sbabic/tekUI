@@ -27,6 +27,7 @@ local window = Window:new
 		{
 			Orientation = "vertical",
 			Width = "free",
+			Height = "free",
 			Legend = L.ALIGN_HORIZONTAL,
 			Children =
 			{
@@ -55,7 +56,6 @@ local window = Window:new
 						Button:new
 						{
 							Text = L.RIGHT,
-							Width = "auto",
 							Height = "free"
 						}
 					}
@@ -71,26 +71,22 @@ local window = Window:new
 				Button:new
 				{
 					Text = L.TOP,
-					Width = "free",
 					VAlign = "top", -- Style = "vertical-grid-align: top",
 				},
 				Button:new
 				{
 					Text = L.CENTER,
-					Width = "free",
 					VAlign = "center", -- Style = "vertical-grid-align: center",
 				},
 				Group:new
 				{
 					Legend = L.GROUP,
-					Width = "free",
 					VAlign = "bottom", -- Style = "vertical-grid-align: bottom",
 					Children =
 					{
 						Button:new
 						{
 							Text = L.BOTTOM,
-							Width = "free"
 						}
 					}
 				}

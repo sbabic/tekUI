@@ -8,7 +8,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 3.1"
+_VERSION = "DefaultBorder 5.0"
 
 local PEN_SHINE = ui.PEN_BORDERSHINE
 local PEN_SHADOW = ui.PEN_BORDERSHADOW
@@ -59,11 +59,13 @@ function DefaultBorder:getProperties(props, pclass)
 	return Border.getProperties(self, p, pclass)
 end
 
-function DefaultBorder:show(drawable)
-
+function DefaultBorder:setup(app, win)
+	
+	Border.setup(self, app, win)
+	
 	local e = self.Parent
 	local p = self.Params
-
+	
 	-- consolidation of properties:
 
 	local p1, p2, p3, p4
@@ -112,17 +114,17 @@ function DefaultBorder:show(drawable)
 
 	local l = self.Legend
 	if l then
-		local f = drawable:openFont(self.LegendFontName)
+		local f = app.Display:openFont(self.LegendFontName)
 		self.LegendFont = f
 		self.LegendWidth, self.LegendHeight = f:getTextSize(l)
 	end
 
-	Border.show(self, display, drawable)
 end
 
-function DefaultBorder:hide()
-	self.LegendFont = self.Parent.Drawable:closeFont(self.LegendFont)
-	Border.hide(self)
+function DefaultBorder:cleanup()
+	self.LegendFont = 
+		self.Application.Display:closeFont(self.LegendFont)
+	Border.cleanup(self)
 end
 
 function DefaultBorder:getBorder()

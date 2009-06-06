@@ -97,7 +97,7 @@ local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 16.0"
+_VERSION = "Canvas 17.0"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -268,7 +268,7 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 
 	d:setShift(sx, sy)
 	
-	-- relayout object until width and height settle in:
+	-- layout child until width and height settle in:
 	-- TODO: break out if they don't settle in?
 	local iw, ih
 	repeat
@@ -371,7 +371,7 @@ function Canvas:getBG()
 	if self.UseChildBG then
 		local c = self.Child
 		local r = c.Rect
-		return c.Background, r[1], r[2]
+		return c.BGPen, r[1], r[2]
 	end
 	return Frame.getBG(self)
 end
@@ -529,15 +529,13 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:focusRect(x0, y0, x1, y1)
-	
-	local r = self.Rect
-	local vw = r[3] - r[1]
-	local vh = r[4] - r[2]
+	local r1, r2, r3, r4 = self:getRect()
+	local vw = r3 - r1
+	local vh = r4 - r2
 	local vx0 = self.CanvasLeft
 	local vy0 = self.CanvasTop
 	local vx1 = vx0 + vw
 	local vy1 = vy0 + vh
-		
 	if x0 and self.AutoPosition then
 		local n1, n2, n3, n4 = intersect(x0, y0, x1, y1, vx0, vy0, vx1, vy1)
 		if n1 == x0 and n2 == y0 and n3 == x1 and n4 == y1 then
@@ -569,11 +567,10 @@ function Canvas:focusRect(x0, y0, x1, y1)
 		vx1 = x1
 		vy1 = y1
 	end
-		
 	local parent = self:getParent()
 	if parent then
-		parent:focusRect(r[1] + vx0, r[2] + vy0, r[3] + vx1,
-			r[4] + vy1)
+		parent:focusRect(r1 + vx0, r2 + vy0, r3 + vx1,
+			r4 + vy1)
 	end
 end
 

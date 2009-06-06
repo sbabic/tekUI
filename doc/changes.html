@@ -10,6 +10,61 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<blockquote>
+			<ul>
+				<li>
+					Application, Window: Major simplification in setup and closedown
+					procedure, the <a href="manual.html#show"><code>show()</code></a> method is now invoked shortly after opening the
+					window
+				</li>
+				<li>
+					Area: Changed meaning of the EraseBG attribute, removed calcOffset,
+					BGPen renamed to BGColor
+				</li>
+				<li>
+					Drawable: removed <a href="manual.html#closeFont"><code>closeFont()</code></a>, <a href="manual.html#fitMinAspect"><code>fitMinAspect()</code></a>, <a href="manual.html#openFont"><code>openFont()</code></a> 
+				</li>
+				<li>
+					Gadget: Effect renamed to EffectClass, BGPen... to BG..., FGPen... to
+					FG..., InitialFocus is now functional, removed <a href="manual.html#onHold"><code>onHold()</code></a>, simplified
+				</li>
+				<li>
+					Gadget, FloatText: FGPen renamed to FGColor
+				</li>
+				<li>
+					ListGadget: Renamed BGPenAlt to BGAlt
+				</li>
+				<li>
+					TextInput: Renamed BGPenCursor to BGCursor
+				</li>
+				<li>
+					<a href="manual.html#Window:getWindowDimensions"><code>Window:getWindowDimensions()</code></a> renamed to <a href="manual.html#askMinMax"><code>askMinMax()</code></a>, <a href="manual.html#show"><code>show()</code></a> now invokes
+					<a href="manual.html#Group:show"><code>Group.show()</code></a> before <a href="manual.html#askMinMax"><code>askMinMax()</code></a>, now creates a Drawable during <a href="manual.html#setup"><code>setup()</code></a> 
+					and passes it to its superclass during <a href="manual.html#show"><code>show()</code></a> 
+				</li>
+				<li>
+					Theme, stylesheets: effect renamed to effect-class
+				</li>
+				<li>
+					Default Border, DrawHook, Border, Ripple Hook: <a href="manual.html#show"><code>show()</code></a> renamed to
+					<a href="manual.html#setup"><code>setup()</code></a>, <a href="manual.html#hide"><code>hide()</code></a> renamed to <a href="manual.html#cleanup"><code>cleanup()</code></a> 
+				</li>
+				<li>
+					Frame, ListGadget, TextInput: simplified
+				</li>
+				<li>
+					ScrollBar, Slider: now register Hold notification themselves
+				</li>
+				<li>
+					Application: Status can now be &quot;init&quot;, &quot;error&quot;, &quot;run&quot; and &quot;quit&quot;, some
+					cleanup
+				</li>
+				<li>
+					Application, Area and demos: Some cleanup, improved documentation,
+					demos, texts and imagery
+				</li>
+			</ul>
+		</blockquote>
 		<h3>
 			0.8f:
 		</h3>

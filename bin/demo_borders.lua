@@ -22,7 +22,6 @@ local window = ui.Window:new
 	{
 		Group:new
 		{
-			Width = "free",
 			Height = "auto",
 			Legend = L.BORDER_STYLES,
 			Children =

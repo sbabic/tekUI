@@ -59,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 11.1"
+_VERSION = "PageGroup 11.2"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -159,8 +159,8 @@ end
 
 function PageContainerGroup:layout(r1, r2, r3, r4, markdamage)
 	Gadget.layout(self, r1, r2, r3, r4, markdamage)
-	self.FreeRegion = self.Parent.FreeRegion
-	local f = self.FreeRegion
+	local f = self:getGroup(true).FreeRegion
+	self.FreeRegion = f
 	local m = self.Margin
 	local b = Region.new(r1 + m[1], r2 + m[2], r3 - m[3], r4 - m[4])
 	local q1, q2, q3, q4 = self:getBorder()

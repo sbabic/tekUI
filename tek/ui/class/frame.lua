@@ -94,7 +94,7 @@ local allocRegion = ui.allocRegion
 local freeRegion = ui.freeRegion
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 8.0"
+_VERSION = "Frame 10.0"
 
 local Frame = _M
 
@@ -145,9 +145,15 @@ function Frame:setup(app, window)
 	local b = self.Border
 	if (b[1] and b[1] > 0) or (b[2] and b[2] > 0) or
 		(b[3] and b[3] > 0) or (b[4] and b[4] > 0) then
-		self.BorderObject = ui.createHook("border", self.BorderClass or
-			"default", self,
+		self.BorderObject = ui.createHook("border", 
+			self.BorderClass or "default", self,
 			{ Border = b, Legend = self.Legend, Style = self.Style })
+		local b1, b2, b3, b4 = self:getBorder()
+		local d = self.MarginAndBorder
+		d[1] = d[1] + b1
+		d[2] = d[2] + b2
+		d[3] = d[3] + b3
+		d[4] = d[4] + b4
 	end
 end
 
@@ -156,47 +162,9 @@ end
 -------------------------------------------------------------------------------
 
 function Frame:cleanup()
+	self.BorderRegion = freeRegion(self.BorderRegion)
 	self.BorderObject = ui.destroyHook(self.BorderObject)
 	Area.cleanup(self)
-end
-
--------------------------------------------------------------------------------
---	show: overrides
--------------------------------------------------------------------------------
-
-function Frame:show(drawable)
-	local b = self.BorderObject
-	if b then
-		b:show(drawable)
-	end
-	Area.show(self, drawable)
-	if self.Focus then
-		self:setValue("Focus", true, true)
-	end
-end
-
--------------------------------------------------------------------------------
---	hide: overrides
--------------------------------------------------------------------------------
-
-function Frame:hide()
-	local b = self.BorderObject
-	if b then
-		b:hide()
-	end
-	self.BorderRegion = freeRegion(self.BorderRegion)
-	Area.hide(self)
-end
-
--------------------------------------------------------------------------------
---	calcOffsets: overrides
--------------------------------------------------------------------------------
-
-function Frame:calcOffsets()
-	local b1, b2, b3, b4 = self:getBorder()
-	local m = self.Margin
-	local d = self.MarginAndBorder
-	d[1], d[2], d[3], d[4] = b1 + m[1], b2 + m[2], b3 + m[3], b4 + m[4]
 end
 
 -------------------------------------------------------------------------------

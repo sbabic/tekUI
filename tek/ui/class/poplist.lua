@@ -56,7 +56,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 8.0"
+_VERSION = "PopList 8.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -178,7 +178,7 @@ function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
 	if lo and not self.KeepMinWidth then
 		local tr = { }
-		local font = self.Drawable:openFont(self.Font)
+		local font = self.Application.Display:openFont(self.Font)
 		for lnr = 1, lo:getN() do
 			local entry = lo:getItem(lnr)
 			local t = self:newTextRecord(entry[1][1], font, self.TextHAlign,

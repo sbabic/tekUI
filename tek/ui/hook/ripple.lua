@@ -9,7 +9,7 @@ local min = math.min
 local type = type
 
 module("tek.ui.hook.ripple", tek.ui.class.drawhook)
-_VERSION = "RippleHook 2.0"
+_VERSION = "RippleHook 3.0"
 
 local RippleHook = _M
 
@@ -43,7 +43,7 @@ function RippleHook:getProperties(p, pclass)
 	DrawHook.getProperties(self, p, pclass)
 end
 
-function RippleHook:show(drawable)
+function RippleHook:setup(app, win)
 	local e = self.Parent
 	local d = self.Defs
 	d[6] = d[6] or ui.PEN_BORDERSHINE
@@ -70,7 +70,7 @@ function RippleHook:show(drawable)
 		self.DrawDotFunc = RippleHook.drawDot
 	end
 
-	DrawHook.show(self, drawable)
+	DrawHook.setup(self, app, win)
 end
 
 function RippleHook:layout(x0, y0, x1, y1)

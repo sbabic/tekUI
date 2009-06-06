@@ -70,14 +70,10 @@ local window = ui.Window:new
 				{
 					Mode = "button",
 					Class = "button",
-					Width = "free",
-					Height = "free",
 					Image = ui.loadImage(ui.ProgDir .. "/graphics/locale.ppm")
 				},
 				ui.ImageGadget:new
 				{
-					Width = "free",
-					Height = "free",
 					Style = "background-color: shine;",
 					Image = ui.loadImage(ui.ProgDir .. "/graphics/world.ppm")
 				}

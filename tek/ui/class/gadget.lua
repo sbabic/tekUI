@@ -19,53 +19,62 @@
 --	ATTRIBUTES::
 --		- {{Active [SG]}} (boolean)
 --			Signifies a change of the Gadget's activation state. While active,
---			the position of the mouse pointer is being verified (which is also
---			reflected by the {{Hover}} attribute). When the {{Active}} state
---			changes, the Gadget's behavior depends on its {{Mode}} (see below):
---				* in {{"button"}} mode, the {{Selected}} attribute is set to
+--			the position of the pointing device is being verified (which is
+--			also reflected by the {{Hover}} attribute, see below). When the
+--			{{Active}} state changes, the Gadget's behavior depends on its
+--			{{Mode}} attribute (see below):
+--				* in ''button'' mode, the {{Selected}} attribute is set to
 --				the value of the {{Hover}} attribute. The {{Pressed}} attribute
 --				is set to the value of the {{Active}} attribute, if it caused a
 --				change of the {{Selected}} state.
---				* in {{"toggle"}} mode, the {{Selected}} attribute of the
---				Gadget is logically toggled, and the {{Pressed}} attribute is
+--				* in ''toggle'' mode, the {{Selected}} attribute of the
+--				Gadget is inverted logically, and the {{Pressed}} attribute is
 --				set to '''true'''.
---				* in {{"touch"}} mode, the {{Selected}} and {{Pressed}}
---				attributes are set to '''true''', if the Gadget wasn't selected
---				already.
+--				* in ''touch'' mode, the {{Selected}} and {{Pressed}}
+--				attributes are set to '''true''', if the Gadget was not
+--				selected already.
 --			Changing this attribute invokes the Gadget:onActivate() method.
 --		- {{DblClick [SG]}} (boolean)
---			Signifies that the element was doubleclicked; is is set to
---			'''true''' when the element was doubleclicked and is still being
---			held, and '''false''' when it was doubleclicked and then released.
---			This attribute usually needs to get a notification handler attached
---			to it before it is useful.
+--			Signifies that the element was double-clicked; it is set to
+--			'''true''' when the element was double-clicked and is still being
+--			held, and '''false''' when it was double-clicked and then released.
+--			This attribute normally needs to get a notification handler
+--			attached to it before it can be reacted on; see also
+--			Object:addNotify().
 --		- {{Disabled [ISG]}} (boolean)
---			Determines the Gadget's ability to interact with the user. If
+--			Determines the Gadget's ability to interact with the user. When
 --			changed, it invokes the Gadget:onDisable() method. When an element
 --			is getting disabled, it loses its focus, too.
---		- {{Effect [IG}} (string)
---			Name of a hook class for rendering an overlay effect. A possible
---			overlay effect is named {{"ripple"}}, and, as its name suggests,
---			can paint various ripple effects (used e.g. for sliders and
---			handles). Effect hooks are stored in {{tek/ui/hook}} and may define
---			their own style properties. This attribute is controllable via the
---			{{effect}} style property.
---		- {{FGPen [IG]}} (userdata)
---			A colored pen for rendering the foreground details of the element.
---			This attribute is controllable via the {{color}} style property.
---		- {{InitialFocus [IG]}} (boolean)
---			Specifies that the element should receive the focus initially.
---			If '''true''', the element will notify {{Focus=true}} to itself
---			upon invocation of the Area:show() method. Default: '''false'''
+--		- {{EffectClass [IG]}} (string)
+--			Name of a hook class for rendering an overlay effect. This
+--			attribute is controllable via the {{effect-class}} style property.
+--			A possible overlay effect is named ''ripple''. As its name
+--			suggests, it can paint various ripple effects (e.g. for slider
+--			knobs and bar handles). Effect hooks are stored in {{tek/ui/hook}}
+--			and may define their own style properties.
+--		- {{FGColor [IG]}} (string or number)
+--			A color specification for rendering the foreground details of the
+--			element. This attribute is controllable via the {{color}} style
+--			property.
 --		- {{Hilite [SG]}} (boolean)
 --			Signifies a change of the Gadget's highligting state. Invokes
 --			Gadget:onHilite().
 --		- {{Hold [SG]}} (boolean)
---			Signifies that the element is being held. Invokes
---			Gadget:onHold().
+--			Signifies that the element is being held. While being held, the
+--			value is repeatedly set to '''true''' in intervals of {{n/50}}
+--			seconds, with {{n}} being determined by the 
+--			[[#tek.ui.class.window : Window]].HoldTickInitRepeat attribute.
+--			When the element is getting released, this value is set to
+--			'''false'''. This attribute normally needs to get a notification
+--			handler attached to it before it can be reacted on; see also
+--			Object:addNotify().
 --		- {{Hover [SG]}} (boolean)
 --			Signifies a change of the Gadget being hovered by the pointing
 --			device. Invokes Gadget:onHover().
+--		- {{InitialFocus [IG]}} (boolean)
+--			Specifies that the element should receive the focus initially.
+--			If '''true''', the element will notify {{Focus=true}} to itself
+--			upon invocation of the Area:show() method. Default: '''false'''
 --		- {{KeyCode [IG]}} (string or boolean)
 --			If set, a keyboard equivalent for activating the element. See also
 --			[[#tek.ui.class.popitem : PopItem]] for a discussion of denoting
@@ -93,17 +102,17 @@
 --			Gadget:onSelect().
 --
 --	STYLE PROPERTIES::
---		- {{color}} - controls the {{Gadget.FGPen}} attribute
---		- {{effect}} - controls the {{Gadget.Effect}} attribute
---		- {{effect-color}} - controls the {{"ripple"}} effect hook
---		- {{effect-color2}} - controls the {{"ripple"}} effect hook
---		- {{effect-kind}} - controls the {{"ripple"}} effect hook
---		- {{effect-maxnum}} - controls the {{"ripple"}} effect hook
---		- {{effect-maxnum2}} - controls the {{"ripple"}} effect hook
---		- {{effect-orientation}} - controls the {{"ripple"}} effect hook
---		- {{effect-padding}} - controls the {{"ripple"}} effect hook
---		- {{effect-ratio}} - controls the {{"ripple"}} effect hook
---		- {{effect-ratio2}} - controls the {{"ripple"}} effect hook
+--		- {{color}} - controls the {{Gadget.FGColor}} attribute
+--		- {{effect-class}} - controls the {{Gadget.EffectClass}} attribute
+--		- {{effect-color}} - controls the ''ripple'' effect hook
+--		- {{effect-color2}} - controls the ''ripple'' effect hook
+--		- {{effect-kind}} - controls the ''ripple'' effect hook
+--		- {{effect-maxnum}} - controls the ''ripple'' effect hook
+--		- {{effect-maxnum2}} - controls the ''ripple'' effect hook
+--		- {{effect-orientation}} - controls the ''ripple'' effect hook
+--		- {{effect-padding}} - controls the ''ripple'' effect hook
+--		- {{effect-ratio}} - controls the ''ripple'' effect hook
+--		- {{effect-ratio2}} - controls the ''ripple'' effect hook
 --
 --	STYLE PSEUDO CLASSES::
 --		- {{active}} - for elements in active state
@@ -116,7 +125,6 @@
 --		- Gadget:onDisable() - Handler for {{Disabled}}
 --		- Gadget:onFocus() - Handler for {{Focus}}
 --		- Gadget:onHilite() - Handler for {{Hilite}}
---		- Gadget:onHold() - Handler for {{Hold}}
 --		- Gadget:onHover() - Handler for {{Hover}}
 --		- Gadget:onPress() - Handler for {{Pressed}}
 --		- Gadget:onSelect() - Handler for {{Selected}}
@@ -138,7 +146,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 14.0"
+_VERSION = "Gadget 16.0"
 
 local Gadget = _M
 
@@ -152,7 +160,6 @@ local NOTIFY_HILITE = { ui.NOTIFY_SELF, "onHilite", ui.NOTIFY_VALUE }
 local NOTIFY_DISABLED = { ui.NOTIFY_SELF, "onDisable", ui.NOTIFY_VALUE }
 local NOTIFY_SELECTED = { ui.NOTIFY_SELF, "onSelect", ui.NOTIFY_VALUE }
 local NOTIFY_PRESSED = { ui.NOTIFY_SELF, "onPress", ui.NOTIFY_VALUE }
-local NOTIFY_HOLD = { ui.NOTIFY_SELF, "onHold", ui.NOTIFY_VALUE }
 local NOTIFY_FOCUS = { ui.NOTIFY_SELF, "onFocus", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
@@ -161,19 +168,19 @@ local NOTIFY_FOCUS = { ui.NOTIFY_SELF, "onFocus", ui.NOTIFY_VALUE }
 
 function Gadget.init(self)
 	self.Active = false
-	self.BGPenDisabled = self.BGPenDisabled or false
-	self.BGPenFocus = self.BGPenFocus or false
-	self.BGPenHilite = self.BGPenHilite or false
-	self.BGPenSelected = self.BGPenSelected or false
+	self.BGDisabled = self.BGDisabled or false
+	self.BGFocus = self.BGFocus or false
+	self.BGHilite = self.BGHilite or false
+	self.BGSelected = self.BGSelected or false
 	self.DblClick = false
 	self.EffectHook = false
-	self.Effect = self.Effect or false
-	self.FGPen = self.FGPen or false
-	self.FGPenDisabled = self.FGPenDisabled or false
-	self.FGPenFocus = self.FGPenFocus or false
-	self.FGPenHilite = self.FGPenHilite or false
-	self.FGPenSelected = self.FGPenSelected or false
-	self.Foreground = false
+	self.EffectClass = self.EffectClass or false
+	self.FGColor = self.FGColor or false
+	self.FGDisabled = self.FGDisabled or false
+	self.FGFocus = self.FGFocus or false
+	self.FGHilite = self.FGHilite or false
+	self.FGSelected = self.FGSelected or false
+	self.FGPen = false
 	self.Hold = false
 	self.Hover = false
 	self.InitialFocus = self.InitialFocus or false
@@ -189,23 +196,24 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:getProperties(p, pclass)
-	self.Effect = self.Effect or self:getProperty(p, pclass, "effect")
-	self.FGPen = self.FGPen or self:getProperty(p, pclass, "color")
-	self.BGPenDisabled = self.BGPenDisabled or
+	self.EffectClass = self.EffectClass or 
+		self:getProperty(p, pclass, "effect-class")
+	self.FGColor = self.FGColor or self:getProperty(p, pclass, "color")
+	self.BGDisabled = self.BGDisabled or
 		self:getProperty(p, pclass or "disabled", "background-color")
-	self.BGPenSelected = self.BGPenSelected or
+	self.BGSelected = self.BGSelected or
 		self:getProperty(p, pclass or "active", "background-color")
-	self.BGPenHilite = self.BGPenHilite or
+	self.BGHilite = self.BGHilite or
 		self:getProperty(p, pclass or "hover", "background-color")
-	self.BGPenFocus = self.BGPenFocus or
+	self.BGFocus = self.BGFocus or
 		self:getProperty(p, pclass or "focus", "background-color")
-	self.FGPenDisabled = self.FGPenDisabled or
+	self.FGDisabled = self.FGDisabled or
 		self:getProperty(p, pclass or "disabled", "color")
-	self.FGPenSelected = self.FGPenSelected or
+	self.FGSelected = self.FGSelected or
 		self:getProperty(p, pclass or "active", "color")
-	self.FGPenHilite = self.FGPenHilite or
+	self.FGHilite = self.FGHilite or
 		self:getProperty(p, pclass or "hover", "color")
-	self.FGPenFocus = self.FGPenFocus or
+	self.FGFocus = self.FGFocus or
 		self:getProperty(p, pclass or "focus", "color")
 	Frame.getProperties(self, p, pclass)
 end
@@ -223,11 +231,15 @@ function Gadget:setup(app, window)
 	self:addNotify("Hover", ui.NOTIFY_ALWAYS, NOTIFY_HOVER)
 	self:addNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
 	self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:addNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
 	-- create effect hook:
-	self.EffectHook = ui.createHook("hook", self.Effect, self,
+	self.EffectHook = ui.createHook("hook", self.EffectClass, self,
 		{ Style = self.Style })
+	local interactive = self.Mode ~= "inert"
+	local keycode = self.KeyCode
+	if interactive and keycode then
+		self.Window:addKeyShortcut(keycode, self)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -236,8 +248,8 @@ end
 
 function Gadget:cleanup()
 	self.EffectHook = ui.destroyHook(self.EffectHook)
+	self.Window:remKeyShortcut(self.KeyCode, self)
 	self:remNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
-	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
 	self:remNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
 	self:remNotify("Hover", ui.NOTIFY_ALWAYS, NOTIFY_HOVER)
@@ -252,33 +264,9 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:show(drawable)
-	local interactive = self.Mode ~= "inert"
-	local keycode = self.KeyCode
-	if interactive and keycode then
-		self.Window:addKeyShortcut(keycode, self)
-	end
 	Frame.show(self, drawable)
-	local e = self.EffectHook
-	if e then
-		e:show()
-	end
-	if interactive and self.InitialFocus then
+	if self.Mode ~= "inert" and self.InitialFocus then
 		self:setValue("Focus", true)
-	end
-end
-
--------------------------------------------------------------------------------
---	hide: overrides
--------------------------------------------------------------------------------
-
-function Gadget:hide()
-	local e = self.EffectHook
-	if e then
-		e:hide()
-	end
-	Frame.hide(self)
-	if self.KeyCode then
-		self.Window:remKeyShortcut(self.KeyCode, self)
 	end
 end
 
@@ -424,46 +412,35 @@ function Gadget:onPress(pressed)
 end
 
 -------------------------------------------------------------------------------
---	onHold(held): This method is invoked when the gadget's {{Hold}}
---	attribute is set. While the gadget is being held, repeated
---	{{Hold}} = '''true''' events are submitted in intervals of n/50 seconds
---	determined by the [[#tek.ui.class.window : Window]].HoldTickInitRepeat
---	attribute.
--------------------------------------------------------------------------------
-
-function Gadget:onHold(hold)
-end
-
--------------------------------------------------------------------------------
 --	setState: overrides
 -------------------------------------------------------------------------------
 
 function Gadget:setState(bg, fg)
 	if not bg then
 		if self.Disabled then
-			bg = self.BGPenDisabled
+			bg = self.BGDisabled
 		elseif self.Selected then
-			bg = self.BGPenSelected
+			bg = self.BGSelected
 		elseif self.Hilite then
-			bg = self.BGPenHilite
+			bg = self.BGHilite
 		elseif self.Focus then
-			bg = self.BGPenFocus
+			bg = self.BGFocus
 		end
 	end
 	if not fg then
 		if self.Disabled then
-			fg = self.FGPenDisabled
+			fg = self.FGDisabled
 		elseif self.Selected then
-			fg = self.FGPenSelected
+			fg = self.FGSelected
 		elseif self.Hilite then
-			fg = self.FGPenHilite
+			fg = self.FGHilite
 		elseif self.Focus then
-			fg = self.FGPenFocus
+			fg = self.FGFocus
 		end
 	end
-	fg = fg or self.FGPen or ui.PEN_DETAIL
-	if fg ~= self.Foreground then
-		self.Foreground = fg
+	fg = fg or self.FGColor or ui.PEN_DETAIL
+	if fg ~= self.FGPen then
+		self.FGPen = fg
 		self.Redraw = true
 	end
 	Frame.setState(self, bg)

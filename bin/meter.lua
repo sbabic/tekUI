@@ -169,13 +169,13 @@ ui.Application:new
 				MyGraph1:new { 
 					NumSamples = 256,
 					Curves = { sintab, { } },
-					GraphBGPen = ui.PEN_USER1;
-					GraphFGPen = ui.PEN_USER2;
-					GraphFGPen2 = ui.PEN_USER3;
+					GraphBGColor = ui.PEN_USER1,
+					GraphColor = ui.PEN_USER2,
+					GraphColor2 = ui.PEN_USER3
 				},
 				MyGraph2:new { 
 					NumSamples = 128,
-					GraphFGPen = ui.PEN_USER3;
+					GraphColor = ui.PEN_USER3
 				},
 			}
 		}
