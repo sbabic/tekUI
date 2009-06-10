@@ -365,7 +365,7 @@ function dumpclasstree(state, tab, indent)
 
 	sort(set, function(a, b) return a.cmp < b.cmp end)
 
-	for i, rec in pairs(set) do
+	for i, rec in ipairs(set) do
 
 		local name, sub, data, path = rec.name, rec.sub, rec.data, rec.path
 
@@ -510,7 +510,7 @@ function processtree(state)
 		insert(state.documentation, state.documents[docname])
 	end
 
-	insert(state.documentation, "\n" .. RULE .. "\n\n")
+	insert(state.documentation, "\n" .. PAGE .. "\n\n")
 	insert(state.documentation, "Document generated on " .. os.date() .. "\n")
 
 	if state.docname then
@@ -545,8 +545,10 @@ end
 --	main
 -------------------------------------------------------------------------------
 
-local template =
-"-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S,-e=EMPTY/S,--header/K,-r=REFDOC/K,-n=NAME/F"
+local template = "-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S," ..
+	"-e=EMPTY/S,--header/K,--author/K,--created/K,--adddate/S," ..
+	"-r=REFDOC/K,-n=NAME/F"
+
 local args = Args.read(template, arg)
 
 if not args or args["-h"] then
@@ -559,8 +561,11 @@ if not args or args["-h"] then
 	print("  -p=PLAIN/S     generate formatted plain text instead of HTML")
 	print("  -e=EMPTY/S     also show empty (undocumented) modules in index")
 	print("  --header/K     read a header from the specified file")
+	print("  --author/K     document author (HTML generator metadata)")
+	print("  --created/K    creation date (HTML generator metadata)")
+	print("  --adddate/S    add creation date (HTML generator metadata)")
 	print("  -r=REFDOC/K    document implicitely referenced by functions")
-	print("  -n=NAME/F      document name (rest of commandline will be used)")
+	print("  -n=NAME/F      document name (rest of arguments will be used)")
 	print("If a path is specified, it is scanned for files with the extension")
 	print(".lua. From these files, a HTML document is generated containing a")
 	print("class tree, library index and function reference from specially")
@@ -575,11 +580,16 @@ else
 		docname = args["-n"], showempty = args["-e"] }
 
 	state.textdoc = ""
+	
+	state.created = args["--created"]
+	if args["--adddate"] then
+		state.created = os.date("%Y-%m-%d")
+	end
 
 	if args["--header"] then
 		state.textdoc = io.open(args["--header"]):read("*a")
 	end
-
+	
 	if args["-f"] and fs.stat(args["-f"], "mode") == "file" then
 		-- read existing text file with markup:
 		state.textdoc = state.textdoc .. io.open(args["-f"]):read("*a")
@@ -595,6 +605,8 @@ else
 	else
 		DocMarkup:new { input = state.textdoc, docname = args["-n"],
 			refdoc = args["-r"] or false,
+			author = args["--author"],
+			created = state.created,
 			indentchar = string.char(args["-i"] or 9) }:run()
 	end
 

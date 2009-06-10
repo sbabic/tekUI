@@ -14,7 +14,7 @@
 --		Gadget
 --
 --	OVERVIEW::
---		This class implements interactivity.
+--		This class implements interactions with the user.
 --
 --	ATTRIBUTES::
 --		- {{Active [SG]}} (boolean)
@@ -47,14 +47,14 @@
 --			is getting disabled, it loses its focus, too.
 --		- {{EffectClass [IG]}} (string)
 --			Name of a hook class for rendering an overlay effect. This
---			attribute is controllable via the {{effect-class}} style property.
+--			attribute is controllable via the ''effect-class'' style property.
 --			A possible overlay effect is named ''ripple''. As its name
 --			suggests, it can paint various ripple effects (e.g. for slider
---			knobs and bar handles). Effect hooks are stored in {{tek/ui/hook}}
---			and may define their own style properties.
---		- {{FGColor [IG]}} (string or number)
+--			knobs and bar handles). Effect hooks are loaded from
+--			{{tek.ui.hook}} and may define their own style properties.
+--		- {{FGColor [IG]}} (color specification)
 --			A color specification for rendering the foreground details of the
---			element. This attribute is controllable via the {{color}} style
+--			element. This attribute is controllable via the ''color'' style
 --			property.
 --		- {{Hilite [SG]}} (boolean)
 --			Signifies a change of the Gadget's highligting state. Invokes
@@ -63,7 +63,7 @@
 --			Signifies that the element is being held. While being held, the
 --			value is repeatedly set to '''true''' in intervals of {{n/50}}
 --			seconds, with {{n}} being determined by the 
---			[[#tek.ui.class.window : Window]].HoldTickInitRepeat attribute.
+--			[[#tek.ui.class.window : Window]].HoldTickRepeat attribute.
 --			When the element is getting released, this value is set to
 --			'''false'''. This attribute normally needs to get a notification
 --			handler attached to it before it can be reacted on; see also
@@ -73,52 +73,54 @@
 --			device. Invokes Gadget:onHover().
 --		- {{InitialFocus [IG]}} (boolean)
 --			Specifies that the element should receive the focus initially.
---			If '''true''', the element will notify {{Focus=true}} to itself
---			upon invocation of the Area:show() method. Default: '''false'''
+--			If '''true''', the element will set the element's {{Focus}}
+--			attribute to '''true''' upon invocation of the
+--			[[#Area:show : show]] method.
 --		- {{KeyCode [IG]}} (string or boolean)
---			If set, a keyboard equivalent for activating the element. See also
+--			If set, a keyboard equivalent for activating the element. See
 --			[[#tek.ui.class.popitem : PopItem]] for a discussion of denoting
 --			keyboard qualifiers. The [[#tek.ui.class.text : Text]] class allows
---			this attribute to be set to '''true''', in which case the element's
+--			setting this attribute to '''true''', in which case the element's
 --			{{Text}} will be examined during setup for an initiatory character
 --			(by default an underscore), and if found, the {{KeyCode}} attribute
 --			will be replaced by the character following this marker.
 --		- {{Mode [IG]}} (string)
 --			The element's interaction mode:
 --				* {{"inert"}}: The element does not react to input
---				* {{"toggle"}}: The element does not rebound and keeps its
---				{{Selected}} state; it cannot be unselected by the user
---				* {{"touch"}}: The element rebounds immediately and acts as a
---				strobe, always submitting '''true''' for {{Pressed}} and
---				{{Selected}}
---				* {{"button"}}: The element sets the {{Pressed}} attribute
---				only if the mouse pointer is released when hovering it.
+--				* {{"touch"}}: The element does not rebound and keeps its
+--				{{Selected}} state; it cannot be unselected by the user and
+--				always submits '''true''' for the {{Pressed}} and {{Selected}}
+--				attributes.
+--				* {{"toggle"}}: The element does not rebound immediately
+--				and keeps its {{Selected}} state until the next activation.
+--				* {{"button"}}: The element rebounds when the mouse button is
+--				released or when it is no longer hovering it.
 --			See also the {{Active}} attribute.
 --		- {{Pressed [SG]}} (boolean)
 --			Signifies that a button was pressed or released. Invokes
 --			Gadget:onPress().
 --		- {{Selected [ISG]}} (boolean)
---			Signifies a change of the gadget's selection state. Invokes
+--			Signifies a change of the Gadget's selection state. Invokes
 --			Gadget:onSelect().
 --
 --	STYLE PROPERTIES::
---		- {{color}} - controls the {{Gadget.FGColor}} attribute
---		- {{effect-class}} - controls the {{Gadget.EffectClass}} attribute
---		- {{effect-color}} - controls the ''ripple'' effect hook
---		- {{effect-color2}} - controls the ''ripple'' effect hook
---		- {{effect-kind}} - controls the ''ripple'' effect hook
---		- {{effect-maxnum}} - controls the ''ripple'' effect hook
---		- {{effect-maxnum2}} - controls the ''ripple'' effect hook
---		- {{effect-orientation}} - controls the ''ripple'' effect hook
---		- {{effect-padding}} - controls the ''ripple'' effect hook
---		- {{effect-ratio}} - controls the ''ripple'' effect hook
---		- {{effect-ratio2}} - controls the ''ripple'' effect hook
+--		- ''color'' || controls the {{Gadget.FGColor}} attribute
+--		- ''effect-class'' || controls the {{Gadget.EffectClass}} attribute
+--		- ''effect-color'' || controls the ''ripple'' effect hook
+--		- ''effect-color2'' || controls the ''ripple'' effect hook
+--		- ''effect-kind'' || controls the ''ripple'' effect hook
+--		- ''effect-maxnum'' || controls the ''ripple'' effect hook
+--		- ''effect-maxnum2'' || controls the ''ripple'' effect hook
+--		- ''effect-orientation'' || controls the ''ripple'' effect hook
+--		- ''effect-padding'' || controls the ''ripple'' effect hook
+--		- ''effect-ratio'' || controls the ''ripple'' effect hook
+--		- ''effect-ratio2'' || controls the ''ripple'' effect hook
 --
 --	STYLE PSEUDO CLASSES::
---		- {{active}} - for elements in active state
---		- {{disabled}} - for elements in disabled state
---		- {{focus}} - for elements that have the focus
---		- {{hover}} - for elements that are being hovered by the mouse
+--		- ''active'' || for elements in active state
+--		- ''disabled'' || for elements in disabled state
+--		- ''focus'' || for elements that have the focus
+--		- ''hover'' || for elements that are being hovered by the mouse
 --
 --	IMPLEMENTS::
 --		- Gadget:onActivate() - Handler for {{Active}}
@@ -133,11 +135,13 @@
 --		- Area:checkFocus()
 --		- Area:checkHover()
 --		- Element:cleanup()
---		- Area:hide()
+--		- Element:getProperties()
 --		- Object.init()
+--		- Area:layout()
 --		- Area:passMsg()
---		- Element:setup()
+--		- Area:refresh()
 --		- Area:setState()
+--		- Element:setup()
 --		- Area:show()
 --
 -------------------------------------------------------------------------------
@@ -146,7 +150,7 @@ local ui = require "tek.ui"
 local Frame = ui.Frame
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 16.0"
+_VERSION = "Gadget 17.0"
 
 local Gadget = _M
 
@@ -285,7 +289,7 @@ function Gadget:layout(x0, y0, x1, y1, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	draw: overrides
+--	refresh: overrides
 -------------------------------------------------------------------------------
 
 function Gadget:refresh()
@@ -297,7 +301,7 @@ function Gadget:refresh()
 end
 
 -------------------------------------------------------------------------------
---	onHover(hovered): This method is invoked when the gadget's {{Hover}}
+--	Gadget:onHover(hovered): This method is invoked when the Gadget's {{Hover}}
 --	attribute has changed.
 -------------------------------------------------------------------------------
 
@@ -312,8 +316,8 @@ function Gadget:onHover(hover)
 end
 
 -------------------------------------------------------------------------------
---	onActivate(active): This method is invoked when the gadget's {{Active}}
---	attribute has changed.
+--	Gadget:onActivate(active): This method is invoked when the Gadget's
+--	{{Active}} attribute has changed.
 -------------------------------------------------------------------------------
 
 function Gadget:onActivate(active)
@@ -359,8 +363,8 @@ function Gadget:onActivate(active)
 end
 
 -------------------------------------------------------------------------------
---	onDisable(disabled): This method is invoked when the gadget's {{Disabled}}
---	attribute has changed.
+--	Gadget:onDisable(disabled): This method is invoked when the Gadget's
+--	{{Disabled}} attribute has changed.
 -------------------------------------------------------------------------------
 
 function Gadget:onDisable(disabled)
@@ -373,8 +377,8 @@ function Gadget:onDisable(disabled)
 end
 
 -------------------------------------------------------------------------------
---	onSelect(selected): This method is invoked when the gadget's {{Selected}}
---	attribute has changed.
+--	Gadget:onSelect(selected): This method is invoked when the Gadget's
+--	{{Selected}} attribute has changed.
 -------------------------------------------------------------------------------
 
 function Gadget:onSelect(selected)
@@ -395,8 +399,8 @@ function Gadget:onSelect(selected)
 end
 
 -------------------------------------------------------------------------------
---	onHilite(selected): This method is invoked when the gadget's {{Selected}}
---	attribute has changed.
+--	Gadget:onHilite(selected): This method is invoked when the Gadget's
+--	{{Hilite}} attribute has changed.
 -------------------------------------------------------------------------------
 
 function Gadget:onHilite(hilite)
@@ -404,8 +408,8 @@ function Gadget:onHilite(hilite)
 end
 
 -------------------------------------------------------------------------------
---	onPress(pressed): This method is invoked when the gadget's {{Pressed}}
---	attribute has changed.
+--	Gadget:onPress(pressed): This method is invoked when the Gadget's
+--	{{Pressed}} attribute has changed.
 -------------------------------------------------------------------------------
 
 function Gadget:onPress(pressed)
@@ -458,7 +462,7 @@ function Gadget:passMsg(msg)
 		if msg[2] == ui.MSG_MOUSEBUTTON then
 			if msg[3] == 1 then -- leftdown:
 				if not self.Disabled and
-					self:getElementByXY(msg[4], msg[5]) == self then
+					self:getByXY(msg[4], msg[5]) == self then
 					win:setHiliteElement(self)
 					if self:checkFocus() then
 						win:setFocusElement(self)

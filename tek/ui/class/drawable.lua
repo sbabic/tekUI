@@ -11,14 +11,14 @@
 --		Drawable
 --
 --	OVERVIEW::
---		This class implements a graphical context which can be painted on.
+--		This class implements a graphical context that can be painted on.
 --
 --	IMPLEMENTS::
---		- Drawable:copyArea() - Copies an area
+--		- Drawable:copyArea() - Copies a rectangular area
 --		- Drawable:drawLine() - Draws a line
---		- Drawable:drawPlot() - Draws a point
+--		- Drawable:drawPoint() - Draws a point
 --		- Drawable:drawRect() - Draws an unfilled rectangle
---		- Drawable:drawText() - Renders text
+--		- Drawable:drawText() - Draws text
 --		- Drawable:fillRect() - Draws a filled rectangle
 --		- Drawable:getMsg() - Gets the next pending input message
 --		- Drawable:getShift() - Gets the current coordinate displacement
@@ -47,7 +47,7 @@ local unpack = unpack
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 17.0"
+_VERSION = "Drawable 18.0"
 
 DEBUG_DELAY = 3
 
@@ -161,7 +161,7 @@ function Drawable:close()
 end
 
 -------------------------------------------------------------------------------
---	fillRect(x0, y0, x1, y1, pen): Draws a filled rectangle.
+--	Drawable:fillRect(x0, y0, x1, y1, pen): Draws a filled rectangle.
 -------------------------------------------------------------------------------
 
 function Drawable:fillRect_normal(...)
@@ -169,7 +169,7 @@ function Drawable:fillRect_normal(...)
 end
 
 -------------------------------------------------------------------------------
---	drawRect(x0, y0, x1, y1, pen): Draws an unfilled rectangle.
+--	Drawable:drawRect(x0, y0, x1, y1, pen): Draws an unfilled rectangle.
 -------------------------------------------------------------------------------
 
 function Drawable:drawRect_normal(...)
@@ -177,7 +177,7 @@ function Drawable:drawRect_normal(...)
 end
 
 -------------------------------------------------------------------------------
---	drawText(x0, y0, text, fgpen[, bgpen]): Renders text
+--	Drawable:drawText(x0, y0, text, fgpen[, bgpen]): Renders text
 --	with the specified foreground pen. If the optional background pen is
 --	specified, the background under the text is filled in this color.
 -------------------------------------------------------------------------------
@@ -199,7 +199,7 @@ function Drawable:drawPixmap(...)
 end
 
 -------------------------------------------------------------------------------
---	drawLine(x0, y0, x1, y1, pen): Draws a line using the specified
+--	Drawable:drawLine(x0, y0, x1, y1, pen): Draws a line using the specified
 --	pen.
 -------------------------------------------------------------------------------
 
@@ -208,15 +208,15 @@ function Drawable:drawLine_normal(...)
 end
 
 -------------------------------------------------------------------------------
---	drawPlot(x0, y0, pen): Draws a point.
+--	Drawable:drawPoint(x0, y0, pen): Draws a point.
 -------------------------------------------------------------------------------
 
-function Drawable:drawPlot_normal(...)
+function Drawable:drawPoint_normal(...)
 	self.Visual:plot(...)
 end
 
 -------------------------------------------------------------------------------
---	setFont(font): Sets the specified font.
+--	Drawable:setFont(font): Sets the specified font.
 -------------------------------------------------------------------------------
 
 function Drawable:setFont(...)
@@ -224,7 +224,7 @@ function Drawable:setFont(...)
 end
 
 -------------------------------------------------------------------------------
---	width, height = getTextSize(text): Determines the width and height
+--	width, height = Drawable:getTextSize(text): Determines the width and height
 --	of a text using the font which is currently set on the Drawable.
 -------------------------------------------------------------------------------
 
@@ -233,7 +233,7 @@ function Drawable:getTextSize(...)
 end
 
 -------------------------------------------------------------------------------
---	msg = getMsg([msg]): Gets the next pending message from the
+--	msg = Drawable:getMsg([msg]): Gets the next pending message from the
 --	Drawable. Optionally, the fields of the new message are inserted into
 --	the specified table.
 -------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ function Drawable:getAttrs()
 end
 
 -------------------------------------------------------------------------------
---	pushClipRect(x0, y0, x1, y1): Pushes a new cliprect on the top
+--	Drawable:pushClipRect(x0, y0, x1, y1): Pushes a new cliprect on the top
 --	of the drawable's stack of cliprects.
 -------------------------------------------------------------------------------
 
@@ -283,7 +283,7 @@ function Drawable:pushClipRect(x0, y0, x1, y1)
 end
 
 -------------------------------------------------------------------------------
---	popClipRect(): Pop the topmost cliprect from the Drawable.
+--	Drawable:popClipRect(): Pop the topmost cliprect from the Drawable.
 -------------------------------------------------------------------------------
 
 function Drawable:popClipRect()
@@ -313,7 +313,7 @@ function Drawable:popClipRect()
 end
 
 -------------------------------------------------------------------------------
---	setShift(deltax, deltay): Add a delta to the Drawable's
+--	Drawable:setShift(deltax, deltay): Add a delta to the Drawable's
 --	coordinate displacement.
 -------------------------------------------------------------------------------
 
@@ -327,7 +327,7 @@ function Drawable:setShift(dx, dy)
 end
 
 -------------------------------------------------------------------------------
---	shiftx, shifty = getShift(): Get the Drawable's current
+--	shiftx, shifty = Drawable:getShift(): Get the Drawable's current
 --	coordinate displacement.
 -------------------------------------------------------------------------------
 
@@ -336,10 +336,10 @@ function Drawable:getShift()
 end
 
 -------------------------------------------------------------------------------
---	copyArea(x0, y0, x1, y1, deltax, deltay, exposures): Copy the
+--	Drawable:copyArea(x0, y0, x1, y1, deltax, deltay, exposures): Copy the
 --	specified rectangle to the position determined by the relative
 --	coordinates {{deltax}} and {{deltay}}. The {{exposures}} argument is a
---	table used for collecting the raw coordinates of rectangles getting
+--	table for collecting the raw coordinates of rectangles getting
 --	exposed as a result of the copy operation.
 -------------------------------------------------------------------------------
 
@@ -395,7 +395,7 @@ function Drawable:drawLine_debug(...)
 	self.Visual:line(...)
 end
 
-function Drawable:drawPlot_debug(...)
+function Drawable:drawPoint_debug(...)
 	local x0, y0 = ...
 	self.Visual:plot(x0, y0, self.DebugPen1)
 	self.Display.sleep(DEBUG_DELAY)
@@ -409,12 +409,12 @@ function Drawable.enableDebug(enabled)
 		fillRect = fillRect_debug
 		drawRect = drawRect_debug
 		drawLine = drawLine_debug
-		drawPlot = drawPlot_debug
+		drawPoint = drawPoint_debug
 	else
 		fillRect = fillRect_normal
 		drawRect = drawRect_normal
 		drawLine = drawLine_normal
-		drawPlot = drawPlot_normal
+		drawPoint = drawPoint_normal
 	end
 end
 

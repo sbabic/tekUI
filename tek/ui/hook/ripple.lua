@@ -128,6 +128,6 @@ end
 
 function RippleHook.drawDot(d, x, y, p1, p2)
 	d:drawLine(x - 1, y - 1, x, y - 1, p1)
-	d:drawPlot(x - 1, y, p1)
-	d:drawPlot(x, y, p2)
+	d:drawPoint(x - 1, y, p1)
+	d:drawPoint(x, y, p2)
 end

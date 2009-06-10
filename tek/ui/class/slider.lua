@@ -76,7 +76,7 @@ local freeRegion = ui.freeRegion
 local reuseRegion = ui.reuseRegion
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 14.0"
+_VERSION = "Slider 15.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -428,7 +428,7 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:passMsg(msg)
-	if self:getElementByXY(msg[4], msg[5]) then
+	if self:getByXY(msg[4], msg[5]) then
 		if msg[2] == ui.MSG_MOUSEBUTTON then
 			if msg[3] == 64 then -- wheelup
 				self:decrease()

@@ -70,7 +70,7 @@
 --		- Area:getBG()
 --		- Area:getBGElement()
 --		- Area:getChildren()
---		- Area:getElementByXY()
+--		- Area:getByXY()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
@@ -97,7 +97,7 @@ local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 17.0"
+_VERSION = "Canvas 18.0"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -416,14 +416,16 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:damageChild(r1, r2, r3, r4)
-	local r = self.Rect
-	local x = self.CanvasLeft
-	local y = self.CanvasTop
-	local w = min(self.CanvasWidth, r[3] - r[1] + 1)
-	local h = min(self.CanvasHeight, r[4] - r[2] + 1)
-	r1, r2, r3, r4 = intersect(r1, r2, r3, r4, x, y, x + w - 1, y + h - 1)
-	if r1 then
-		self.Child:damage(r1, r2, r3, r4)
+	local s1, s2, s3, s4 = self:getRect()
+	if s1 then
+		local x = self.CanvasLeft
+		local y = self.CanvasTop
+		local w = min(self.CanvasWidth, s3 - s1 + 1)
+		local h = min(self.CanvasHeight, s4 - s2 + 1)
+		r1, r2, r3, r4 = intersect(r1, r2, r3, r4, x, y, x + w - 1, y + h - 1)
+		if r1 then
+			self.Child:damage(r1, r2, r3, r4)
+		end
 	end
 end
 
@@ -440,12 +442,12 @@ function Canvas:checkArea(x, y)
 end
 
 -------------------------------------------------------------------------------
---	getElementByXY: overrides
+--	getByXY: overrides
 -------------------------------------------------------------------------------
 
-function Canvas:getElementByXY(x, y)
+function Canvas:getByXY(x, y)
 	local sx, sy = self:checkArea(x, y)
-	return sx and self.Child:getElementByXY(x - sx, y - sy)
+	return sx and self.Child:getByXY(x - sx, y - sy)
 end
 
 -------------------------------------------------------------------------------

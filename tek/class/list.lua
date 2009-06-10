@@ -19,6 +19,10 @@
 --		- List:getN() - Returns the number of items in the list
 --		- List:remItem() - Removes an item from the list
 --
+--	ATTRIBUTES::
+--		- {{Items}} [I] (table)
+--			Table of initial list items, indexed numerically
+--
 --	OVERRIDES::
 --		- Class.new()
 --

@@ -21,12 +21,17 @@ a:link:active, a:visited:active {
 	color: #f00;
 }
 
-p a:link, p a:visited {
+a:link, a:visited {
 	text-decoration: underline;
 }
 
 h3 code {
-	font-family: inherit;
+	background-color: inherit;
+}
+
+a code {
+	background-color: inherit;
+	font-weight: inherit;
 }
 
 pre {

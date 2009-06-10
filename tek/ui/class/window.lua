@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 18.0"
+_VERSION = "Window 19.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -154,9 +154,9 @@ function Window.init(self)
 	-- Hold tick counter reinitialization (see below):
 	self.HoldTickActiveInit = 0
 	-- Number of ticks for first hold tick counter initialization:
-	self.HoldTickInitFirst = 22
+	self.HoldTickFirst = 22
 	-- Number of ticks for hold counter repeat initialization:
-	self.HoldTickInitRepeat = 7
+	self.HoldTickRepeat = 7
 	self.HoverElement = false
 	self.InputHandlers =
 	{
@@ -647,7 +647,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:getHoverElementByXY(mx, my)
-	local he = self:getElementByXY(mx, my)
+	local he = self:getByXY(mx, my)
 	return he and he:checkHover() and he or false
 end
 
@@ -823,8 +823,8 @@ function Window:setActiveElement(e)
 		end
 		self.ActiveElement = e or false
 		if e then
-			self.HoldTickActive = self.HoldTickInitFirst
-			self.HoldTickActiveInit = self.HoldTickInitFirst
+			self.HoldTickActive = self.HoldTickFirst
+			self.HoldTickActiveInit = self.HoldTickFirst
 			e:setValue("Active", true)
 			self:addInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 		end
@@ -841,8 +841,8 @@ function Window:handleHold(msg)
 		assert(self.HoldTickActive > 0)
 		self.HoldTickActive = self.HoldTickActive - 1
 		if self.HoldTickActive == 0 then
-			self.HoldTickActiveInit = self.HoldTickInitRepeat
-			self.HoldTickActive = self.HoldTickInitRepeat
+			self.HoldTickActiveInit = self.HoldTickRepeat
+			self.HoldTickActive = self.HoldTickRepeat
 			ae:setValue("Hold", true, true)
 		end
 	end

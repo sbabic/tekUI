@@ -64,7 +64,7 @@ local print = print
 local tonumber = tonumber
 
 module "tek.lib.args"
-_VERSION = "Args 2.0"
+_VERSION = "Args 2.1"
 
 local function checkfl(self, fl)
 	for s in fl:gmatch(".") do
@@ -119,9 +119,11 @@ end
 
 local function items(rest)
 	if type(rest) == "table" then
-		rest = concat(rest, " ")
-	elseif type(rest) ~= "string" then
-		return nil, "Invalid arguments"
+		return function()
+			local r = concat(rest, " ")
+			local s = remove(rest, 1)
+			return s, r
+		end
 	end
 	return function()
 		if rest then
@@ -139,13 +141,12 @@ end
 -------------------------------------------------------------------------------
 --	res, msg = read(template, args): Parses {{args}} according to
 --	{{template}}. {{args}} can be a string or a table of strings. If the
---	arguments can be successfully matched against the template (see
---	[[#tek.lib.args]] for details), the result will be a table of parsed
---	arguments, indexed by both keywords and numerical order in which they
---	appear in {{template}}, and the second argument will be set to the
---	number of arguments in the template. If the arguments cannot be matched
---	against the template, the result will be '''nil''' followed by an error
---	message.
+--	arguments can be successfully matched against the template, the result
+--	will be a table of parsed arguments, indexed by both keywords and
+--	numerical order in which they appear in {{template}}, and the second
+--	argument will be set to the number of arguments in the template. If the
+--	arguments cannot be matched against the template, the result will be
+--	'''nil''' followed by an error message.
 -------------------------------------------------------------------------------
 
 function read(tmpl, args)

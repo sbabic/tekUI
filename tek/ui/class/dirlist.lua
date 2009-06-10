@@ -21,26 +21,29 @@
 --	ATTRIBUTES::
 --		- {{Kind [IG]}} (string)
 --			The visual appearance (or purpose) of the lister, which will
---			determine the arrangement of some interface elements:
---				- {{"requester"}} - for a standalone file requester
---				- {{"lister"}} - for a directory lister component
---				- {{"simple"}} - without accompanying user interface elements
+--			determine the presence and arrangement of some interface elements:
+--				* {{"requester"}} - for a standalone file requester
+--				* {{"lister"}} - for a directory lister component
+--				* {{"simple"}} - for the use without accompanying elements
 --			The default kind is {{"lister"}}.
 --		- {{Location [IG]}} (string)
---			The currently selected entry, may be a file or directory
+--			The currently selected entry (may be a file or directory)
 --		- {{Path [IG]}} (string)
 --			Directory in the file system
 --		- {{Selection [G]}} (table)
 --			An array of selected entries
 --		- {{SelectMode [IG]}} (String)
---			- {{"single"}} - allows selections of one entry at a time
---			- {{"multi"}} - allows selections of multiple entries
+--			Selection mode:
+--				- {{"single"}} - allows selections of one entry at a time
+--				- {{"multi"}} - allows selections of multiple entries
 --		- {{SelectText [IG]}} (String)
---			Text to display on the selection button. Default: {{"Open"}}.
+--			The text to display on the selection button. Default: {{"Open"}}
+--			(or its equivalent in the current locale)
 --		- {{Status [G]}} (string)
---			- {{"running"}} - the lister is currently being shown
---			- {{"selected"}} - the user has selected one or more entries
---			- {{"cancelled"}} - the lister has been cancelled by the user
+--			Status of the directory lister:
+--				- {{"running"}} - the lister is currently being shown
+--				- {{"selected"}} - the user has selected one or more entries
+--				- {{"cancelled"}} - the lister has been cancelled by the user
 --
 --	IMPLEMENTS::
 --		- DirList:abortScan() - Aborts scanning
@@ -48,6 +51,7 @@
 --		- DirList:getDirIterator() - Gets an iterator over a directory
 --		- DirList:getFileStat() - Examines a file entry
 --		- DirList:goParent() - Goes to the parent of the current directory
+--		- DirList:onSelectEntry() - Handler invoked on selection of an entry
 --		- DirList:showDirectory() - Reads and shows a directory
 --		- DirList:scanEntry() - Scans a single entry in a directory
 --		- DirList:showDirectory() - Starts scanning and displays a directory
@@ -74,12 +78,13 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 11.0"
+_VERSION = "DirList 12.0"
 
 local DirList = _M
 
 -------------------------------------------------------------------------------
---	cdir = getCurrentDir(): Get current directory
+--	cdir = getCurrentDir(): Returns the current directory. You can override
+--	this function to implement your own filesystem semantics.
 -------------------------------------------------------------------------------
 
 function DirList:getCurrentDir()
@@ -88,8 +93,8 @@ function DirList:getCurrentDir()
 end
 
 -------------------------------------------------------------------------------
---	iterator = getDirIterator(path): Returns an iterator function for
---	traversal of the entries in the given directory. You can override this
+--	iterator = getDirIterator(directory): Returns an iterator function for
+--	traversal of the entries in the given {{directory}}. You can override this
 --	function to get an iterator over arbitrary kinds of listings.
 -------------------------------------------------------------------------------
 
@@ -108,13 +113,13 @@ end
 
 -------------------------------------------------------------------------------
 --	attr = getFileStat(path, name, attr[, idx]): Returns an attribute for the
---	entry of the given path and name; for the attribute names and their
---	meanings, see the documentation of the LuaFileSystem module.
---	Currently, only the "mode" and "size" attributes are actually requested,
+--	entry of the given {{path}} and {{name}}; see the documentation of the
+--	LuaFileSystem module for the attribute names and their meanings.
+--	Currently, only the {{"mode"}} and {{"size"}} attributes are requested,
 --	but if you override this function, it would be smart to implement as many
---	attributes as possible. {{idx}} is optional and determines the entry
---	number inside the list, which is an information that may or may not be
---	supplied by the calling function.
+--	attributes as possible. {{idx}} is optional and specifies the entry number
+--	inside the list, which is an information that may or may not be supplied
+--	by the calling function.
 -------------------------------------------------------------------------------
 
 function DirList:getFileStat(path, name, attr, idx)
@@ -571,9 +576,22 @@ function DirList:clickList()
 	local locationfield = self.LocationField
 	local entry = list:getItem(list.CursorLine)
 	entry = entry and entry[1][1]
-	if entry and self:getFileStat(self.Path, entry, "mode") == "file" then
-		locationfield:setValue("Text", entry)
+	if entry then
+		local type = self:getFileStat(self.Path, entry, "mode")
+		if type == "file" then
+			locationfield:setValue("Text", entry)
+		end
+		self:onSelectEntry(list.CursorLine, entry, type)
 	end
+end
+
+-------------------------------------------------------------------------------
+--	onSelectEntry(lnr, name, type): This handler is called when an item in the
+--	list was selected by the user. It is passed the line number, {{name}} and
+--	{{type}} of the entry (which can be {{"file"}} or {{"directory"}}).
+-------------------------------------------------------------------------------
+
+function DirList:onSelectEntry(lnr, name, type)
 end
 
 -------------------------------------------------------------------------------

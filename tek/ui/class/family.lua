@@ -18,8 +18,8 @@
 --			Array of child objects
 --
 --	FUNCTIONS::
---		- Family:addMember()
---		- Family:remMember()
+--		- Family:addMember() - Adds an element to a Family
+--		- Family:remMember() - Removed an element from a Family
 --
 -------------------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ end
 --	success = addMember(child[, pos]): Invokes the {{child}}'s
 --	[[connect()][#Element:connect]] method to check for its ability to
 --	integrate into the family, and if successful, inserts it into the
---	family's list of children. Optionally, the child is inserted into the
+--	Family's list of children. Optionally, the child is inserted into the
 --	list at the specified position.
 -------------------------------------------------------------------------------
 

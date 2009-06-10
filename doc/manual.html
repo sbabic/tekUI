@@ -3,8 +3,9 @@
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 	<head>
-		<title>Class Reference Manual</title>
+		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
+		<meta name="created" content="2009-06-10" />
 	</head>
 	<body>
 		<h1>
@@ -14,7 +15,7 @@
 			Version 0.8f
 		</p>
 		<h1>
-			Class Reference Manual
+			tekUI Class Reference Manual
 		</h1>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -374,6 +375,20 @@ class = superclass()
 					</ul>
 				</blockquote>
 			</div>
+			<div class="definition"><dfn>ATTRIBUTES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<code>Items</code> &#091;I&#093; (table)
+							<blockquote>
+								<p>
+									Table of initial list items, indexed numerically
+								</p>
+							</blockquote>
+						</li>
+					</ul>
+				</blockquote>
+			</div>
 			<div class="definition"><dfn>OVERRIDES</dfn>
 				<blockquote>
 					<ul>
@@ -425,7 +440,7 @@ class = superclass()
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.markup" id="tek.class.markup">Markup (v3.0)</a></h2>
+		<div class="node"><h2><a name="tek.class.markup" id="tek.class.markup">Markup (v3.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -687,9 +702,8 @@ class = superclass()
 						This class implements notifications.
 					</p>
 				</blockquote>
-				<p>
-					ATTRIBUTES:
-				</p>
+			</div>
+			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
@@ -716,8 +730,8 @@ Notifications =
 }
 </pre>
 								<p>
-									Refer to <a href="#Object:addNotify"><code>Object:addNotify()</code></a> for the possible placeholders for
-									values and a description of the action data structure.
+									Refer to <a href="#Object:addNotify"><code>Object:addNotify()</code></a> for possible placeholders
+									and a description of the action data structure.
 								</p>
 							</blockquote>
 						</li>
@@ -757,7 +771,7 @@ Notifications =
 			<p>
 				Adds a notification to an object. <code>attr</code> is the name of an attribute to
 				react on setting its value. <code>val</code> is the value that triggers the
-				notification. The <code>ui.NOTIFY_ALWAYS</code> placeholder is supported for
+				notification. The placeholder <code>ui.NOTIFY_ALWAYS</code> can be used for
 				reacting on any change of the value.
 				<code>dest</code> is a table describing the action to take when the notification
 				occurs; it has the general form:
@@ -818,8 +832,8 @@ Notifications =
 					</li>
 					<li>
 						<code>ui.NOTIFY_COROUTINE</code> - like <code>ui.NOTIFY_FUNCTION</code>, but the
-						function will be launched by the
-						<a href="#tek.ui.class.application">Application</a> as a coroutine. See also
+						function will be launched as a coroutine by the
+						<a href="#tek.ui.class.application">Application</a>. See also
 						<a href="#Application:addCoroutine"><code>Application:addCoroutine()</code></a> for further details.
 					</li>
 				</ul>
@@ -834,8 +848,12 @@ method(object, arg1, ...)
 				The optional <code>pos</code> argument allows for insertion at the specified
 				position in the list of notifications. By default, notifications are
 				added at the end, and the only reasonable value for <code>pos</code> is <code>1</code>.
+			</p>
+			<p>
 				If the destination object or addressed method cannot be determined,
 				nothing else besides setting the attribute will happen.
+			</p>
+			<p>
 				Notifications should be removed using <a href="#Object:remNotify"><code>Object:remNotify()</code></a> when they are
 				no longer needed, to reduce overhead and memory use.
 			</p>
@@ -844,16 +862,16 @@ method(object, arg1, ...)
 		<div class="node"><h3><a name="Object:init" id="Object:init"><code>object = Object.init(object)</code></a></h3>
 			<p>
 				This function is called during <a href="#Object:new"><code>Object.new()</code></a> 
-				before passing control to <code>superclass.new()</code>; by convention, <code>new()</code> 
+				before passing control to <code>superclass.new()</code>. By convention, <code>new()</code> 
 				is used to claim resources (e.g. to create tables), whereas the <code>init()</code> 
 				function is used to initialize them. Calling <code>init()</code> separately from
-				<code>new()</code> can be sensible for reinitializing and reusing objects.
+				<code>new()</code> can be reasonable for reinitializing and reusing objects.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Object:remNotify" id="Object:remNotify"><code>success = Object:remNotify(attr, val, dest)</code></a></h3>
 			<p>
-				Removes a notification from an object and returns <strong>true</strong> when it
+				Removes a notification from an object and returns <strong>true</strong> if it
 				was found and removed successfully. You must specify the exact set of
 				arguments as for <a href="#Object:addNotify"><code>Object:addNotify()</code></a> to identify a notification.
 			</p>
@@ -973,7 +991,7 @@ method(object, arg1, ...)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="UTF8String:new" id="UTF8String:new"><code>object = UTF8String.new(class, string)</code></a></h3>
+		<div class="node"><h3><a name="UTF8String:new" id="UTF8String:new"><code>string = UTF8String.new(class, string)</code></a></h3>
 			<p>
 				Creates a string object from an
 				(already UTF-8 encoded) regular string.
@@ -1001,7 +1019,7 @@ method(object, arg1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1132,13 +1150,12 @@ SOURCE=-s/A/M,DEST=-d/A/K
 			<p>
 				Parses <code>args</code> according to
 				<code>template</code>. <code>args</code> can be a string or a table of strings. If the
-				arguments can be successfully matched against the template (see
-				<a href="#tek.lib.args">tek.lib.args</a> for details), the result will be a table of parsed
-				arguments, indexed by both keywords and numerical order in which they
-				appear in <code>template</code>, and the second argument will be set to the
-				number of arguments in the template. If the arguments cannot be matched
-				against the template, the result will be <strong>nil</strong> followed by an error
-				message.
+				arguments can be successfully matched against the template, the result
+				will be a table of parsed arguments, indexed by both keywords and
+				numerical order in which they appear in <code>template</code>, and the second
+				argument will be set to the number of arguments in the template. If the
+				arguments cannot be matched against the template, the result will be
+				<strong>nil</strong> followed by an error message.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -2109,7 +2126,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v24.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v25.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2142,7 +2159,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>BGColor &#091;IG&#093;</code> (string or number)
+							<code>BGColor &#091;IG&#093;</code> (color specification)
 							<blockquote>
 								<p>
 									A color specification for painting the background of the element.
@@ -2407,70 +2424,212 @@ message = function(object, message)
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>background-color</code> - controls the <code>Area.BGColor</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>background-position</code> - controls the <code>Area.BGPosition</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>height</code> - controls the <code>Area.Height</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>horizontal-grid-align</code> - controls the <code>Area.HAlign</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>margin</code> - controls the <code>Area.Margin</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>margin-bottom</code> - controls the <code>Area.Margin</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>margin-left</code> - controls the <code>Area.Margin</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>margin-right</code> - controls the <code>Area.Margin</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>margin-top</code> - controls the <code>Area.Margin</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>max-height</code> - controls the <code>Area.MaxHeight</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>max-width</code> - controls the <code>Area.MaxWidth</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>min-height</code> - controls the <code>Area.MinHeight</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>min-width</code> - controls the <code>Area.MinWidth</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>padding</code> - controls the <code>Area.Padding</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>padding-bottom</code> - controls the <code>Area.Padding</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>padding-left</code> - controls the <code>Area.Padding</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>padding-right</code> - controls the <code>Area.Padding</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>padding-top</code> - controls the <code>Area.Padding</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>vertical-grid-align</code> - controls the <code>Area.VAlign</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>width</code> - controls the <code>Area.Width</code> attribute
-						</li>
-					</ul>
-				</blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<table>
+							<tr>
+								<td class="column1">
+									<em>background-color</em> 
+								</td>
+								<td class="column2">
+									controls the <code>Area.BGColor</code> attribute
+								</td>
+							</tr>
+							<ul>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>background-position</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.BGPosition</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>height</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Height</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>horizontal-grid-align</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.HAlign</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>margin</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Margin</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>margin-bottom</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Margin</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>margin-left</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Margin</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>margin-right</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Margin</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>margin-top</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Margin</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>max-height</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.MaxHeight</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>max-width</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.MaxWidth</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>min-height</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.MinHeight</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>min-width</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.MinWidth</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>padding</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Padding</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>padding-bottom</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Padding</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>padding-left</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Padding</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>padding-right</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Padding</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>padding-top</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Padding</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>vertical-grid-align</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.VAlign</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>width</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Area.Width</code> attribute
+										</td>
+									</tr>
+								</li>
+							</ul>
+						</table>
+					</li>
+				</ul>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
@@ -2536,14 +2695,14 @@ message = function(object, message)
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> - Passes an input message to the element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:punch"><code>Area:punch()</code></a> - &#091;internal&#093; Subtracts the outline of the element from a
+							<a href="#Area:punch"><code>Area:punch()</code></a> - Subtracts the outline of the element from a
 							<a href="#tek.lib.region">Region</a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> - &#091;internal&#093; Repaints the element if necessary
+							<a href="#Area:refresh"><code>Area:refresh()</code></a> - Repaints the element if necessary
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:relayout"><code>Area:relayout()</code></a> - &#091;internal&#093; Relayouts the element if necessary
+							<a href="#Area:relayout"><code>Area:relayout()</code></a> - Relayouts the element if necessary
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:rethinkLayout"><code>Area:rethinkLayout()</code></a> - Causes a relayout of the element and its group
@@ -2560,6 +2719,12 @@ message = function(object, message)
 			<div class="definition"><dfn>OVERRIDES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
+						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
@@ -2648,19 +2813,19 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Area:getByXY" id="Area:getByXY"><code>self = getByXY(x, y)</code></a></h3>
+			<p>
+				Returns <code>self</code> if the element covers
+				the specified coordinate.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Area:getChildren" id="Area:getChildren"><code>element = getChildren(init)</code></a></h3>
 			<p>
 				Returns a table containing the element's
 				children, or <strong>nil</strong> if this element cannot have children. If the
 				optional <code>init</code> argument is <strong>true</strong>, this signals that this function
 				is called during initialization or deinitialization.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Area:getElementByXY" id="Area:getElementByXY"><code>self = getElementByXY(x, y)</code></a></h3>
-			<p>
-				Returns <code>self</code> if the element covers
-				the specified coordinate.
 			</p>
 			<hr />
 		</div>
@@ -2744,14 +2909,14 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:punch" id="Area:punch"><code>punch(region) [internal]</code></a></h3>
+		<div class="node"><h3><a name="Area:punch" id="Area:punch"><code>punch(region)</code></a></h3>
 			<p>
 				Subtracts the element from (punching a
 				hole into) the specified Region. This function is called by the layouter.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:refresh" id="Area:refresh"><code>refresh() [internal]</code></a></h3>
+		<div class="node"><h3><a name="Area:refresh" id="Area:refresh"><code>refresh()</code></a></h3>
 			<p>
 				Redraws the element (and all possible children)
 				if they are marked as damaged. This function is called in the Window's
@@ -2759,7 +2924,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:relayout" id="Area:relayout"><code>found[, changed] = relayout(element, x0, y0, x1, y1) [internal]</code></a></h3>
+		<div class="node"><h3><a name="Area:relayout" id="Area:relayout"><code>found[, changed] = relayout(element, x0, y0, x1, y1)</code></a></h3>
 			<p>
 				Traverses the element tree searching for the specified element, and if
 				this class (or the class of one of its children) is responsible for it,
@@ -2803,7 +2968,8 @@ message = function(object, message)
 		<div class="node"><h3><a name="Area:show" id="Area:show"><code>show(drawable)</code></a></h3>
 			<p>
 				This function passes an element the
-				<a href="#tek.ui.class.drawable">Drawable</a> that it will be rendered to.
+				<a href="#tek.ui.class.drawable">Drawable</a> that it will be rendered to. This
+				function is called when the element's window is opened.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -2818,7 +2984,7 @@ message = function(object, message)
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
-						<a href="#tek.ui.class.gadget">Text</a> /
+						<a href="#tek.ui.class.text">Text</a> /
 						Button
 					</p>
 				</blockquote>
@@ -2826,11 +2992,11 @@ message = function(object, message)
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						The Button class implements a Text element with a <code>&quot;button&quot;</code> 
-						<code>Mode</code> (behavior) and <code>&quot;button&quot;</code> <code>Class</code> (appearance). In
-						addition to that, it enables the initialization of a possible
-						keyboard shortcut from a special initiatory character (by default
-						an underscore) preceding a letter in the element's <code>Text</code> attribute.
+						The Button class implements a Text element with a <em>button mode</em> 
+						(behavior) and <em>button class</em> (appearance). In addition to that,
+						it enables the initialization of a possible keyboard shortcut from
+						a special initiatory character (by default an underscore) preceding
+						a letter in the element's <code>Text</code> attribute.
 					</p>
 				</blockquote>
 			</div>
@@ -2852,7 +3018,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v17.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v18.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3046,7 +3212,7 @@ end
 							<a href="#Area:getChildren"><code>Area:getChildren()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getElementByXY"><code>Area:getElementByXY()</code></a> 
+							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
@@ -3180,7 +3346,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3211,18 +3377,18 @@ end
 							<blockquote>
 								<p>
 									The visual appearance (or purpose) of the lister, which will
-									determine the arrangement of some interface elements:
+									determine the presence and arrangement of some interface elements:
 								</p>
 								<blockquote>
 									<ul>
-										<li style="list-style-type: none">
+										<li>
 											<code>&quot;requester&quot;</code> - for a standalone file requester
 										</li>
-										<li style="list-style-type: none">
+										<li>
 											<code>&quot;lister&quot;</code> - for a directory lister component
 										</li>
-										<li style="list-style-type: none">
-											<code>&quot;simple&quot;</code> - without accompanying user interface elements
+										<li>
+											<code>&quot;simple&quot;</code> - for the use without accompanying elements
 										</li>
 									</ul>
 								</blockquote>
@@ -3235,7 +3401,7 @@ end
 							<code>Location &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									The currently selected entry, may be a file or directory
+									The currently selected entry (may be a file or directory)
 								</p>
 							</blockquote>
 						</li>
@@ -3258,38 +3424,49 @@ end
 						<li style="list-style-type: none">
 							<code>SelectMode &#091;IG&#093;</code> (String)
 							<blockquote>
-								<ul>
-									<li style="list-style-type: none">
-										<code>&quot;single&quot;</code> - allows selections of one entry at a time
-									</li>
-									<li style="list-style-type: none">
-										<code>&quot;multi&quot;</code> - allows selections of multiple entries
-									</li>
-								</ul>
+								<p>
+									Selection mode:
+								</p>
+								<blockquote>
+									<ul>
+										<li style="list-style-type: none">
+											<code>&quot;single&quot;</code> - allows selections of one entry at a time
+										</li>
+										<li style="list-style-type: none">
+											<code>&quot;multi&quot;</code> - allows selections of multiple entries
+										</li>
+									</ul>
+								</blockquote>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
 							<code>SelectText &#091;IG&#093;</code> (String)
 							<blockquote>
 								<p>
-									Text to display on the selection button. Default: <code>&quot;Open&quot;</code>.
+									The text to display on the selection button. Default: <code>&quot;Open&quot;</code> 
+									(or its equivalent in the current locale)
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
 							<code>Status &#091;G&#093;</code> (string)
 							<blockquote>
-								<ul>
-									<li style="list-style-type: none">
-										<code>&quot;running&quot;</code> - the lister is currently being shown
-									</li>
-									<li style="list-style-type: none">
-										<code>&quot;selected&quot;</code> - the user has selected one or more entries
-									</li>
-									<li style="list-style-type: none">
-										<code>&quot;cancelled&quot;</code> - the lister has been cancelled by the user
-									</li>
-								</ul>
+								<p>
+									Status of the directory lister:
+								</p>
+								<blockquote>
+									<ul>
+										<li style="list-style-type: none">
+											<code>&quot;running&quot;</code> - the lister is currently being shown
+										</li>
+										<li style="list-style-type: none">
+											<code>&quot;selected&quot;</code> - the user has selected one or more entries
+										</li>
+										<li style="list-style-type: none">
+											<code>&quot;cancelled&quot;</code> - the lister has been cancelled by the user
+										</li>
+									</ul>
+								</blockquote>
 							</blockquote>
 						</li>
 					</ul>
@@ -3312,6 +3489,9 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#DirList:goParent"><code>DirList:goParent()</code></a> - Goes to the parent of the current directory
+						</li>
+						<li style="list-style-type: none">
+							<a href="#DirList:onSelectEntry"><code>DirList:onSelectEntry()</code></a> - Handler invoked on selection of an entry
 						</li>
 						<li style="list-style-type: none">
 							<a href="#DirList:showDirectory"><code>DirList:showDirectory()</code></a> - Reads and shows a directory
@@ -3349,14 +3529,15 @@ end
 		</div>
 		<div class="node"><h3><a name="DirList:getCurrentDir" id="DirList:getCurrentDir"><code>cdir = getCurrentDir()</code></a></h3>
 			<p>
-				Get current directory
+				Returns the current directory. You can override
+				this function to implement your own filesystem semantics.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="DirList:getDirIterator" id="DirList:getDirIterator"><code>iterator = getDirIterator(path)</code></a></h3>
+		<div class="node"><h3><a name="DirList:getDirIterator" id="DirList:getDirIterator"><code>iterator = getDirIterator(directory)</code></a></h3>
 			<p>
 				Returns an iterator function for
-				traversal of the entries in the given directory. You can override this
+				traversal of the entries in the given <code>directory</code>. You can override this
 				function to get an iterator over arbitrary kinds of listings.
 			</p>
 			<hr />
@@ -3364,13 +3545,13 @@ end
 		<div class="node"><h3><a name="DirList:getFileStat" id="DirList:getFileStat"><code>attr = getFileStat(path, name, attr[, idx])</code></a></h3>
 			<p>
 				Returns an attribute for the
-				entry of the given path and name; for the attribute names and their
-				meanings, see the documentation of the LuaFileSystem module.
-				Currently, only the &quot;mode&quot; and &quot;size&quot; attributes are actually requested,
+				entry of the given <code>path</code> and <code>name</code>; see the documentation of the
+				LuaFileSystem module for the attribute names and their meanings.
+				Currently, only the <code>&quot;mode&quot;</code> and <code>&quot;size&quot;</code> attributes are requested,
 				but if you override this function, it would be smart to implement as many
-				attributes as possible. <code>idx</code> is optional and determines the entry
-				number inside the list, which is an information that may or may not be
-				supplied by the calling function.
+				attributes as possible. <code>idx</code> is optional and specifies the entry number
+				inside the list, which is an information that may or may not be supplied
+				by the calling function.
 			</p>
 			<hr />
 		</div>
@@ -3378,6 +3559,14 @@ end
 			<p>
 				Starts reading and displays the parent directory of the
 				current directory.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="DirList:onSelectEntry" id="DirList:onSelectEntry"><code>onSelectEntry(lnr, name, type)</code></a></h3>
+			<p>
+				This handler is called when an item in the
+				list was selected by the user. It is passed the line number, <code>name</code> and
+				<code>type</code> of the entry (which can be <code>&quot;file&quot;</code> or <code>&quot;directory&quot;</code>).
 			</p>
 			<hr />
 		</div>
@@ -3708,7 +3897,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v17.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v18.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3722,7 +3911,7 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This class implements a graphical context which can be painted on.
+						This class implements a graphical context that can be painted on.
 					</p>
 				</blockquote>
 			</div>
@@ -3730,19 +3919,19 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Drawable:copyArea"><code>Drawable:copyArea()</code></a> - Copies an area
+							<a href="#Drawable:copyArea"><code>Drawable:copyArea()</code></a> - Copies a rectangular area
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:drawLine"><code>Drawable:drawLine()</code></a> - Draws a line
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:drawPlot"><code>Drawable:drawPlot()</code></a> - Draws a point
+							<a href="#Drawable:drawPoint"><code>Drawable:drawPoint()</code></a> - Draws a point
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:drawRect"><code>Drawable:drawRect()</code></a> - Draws an unfilled rectangle
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Drawable:drawText"><code>Drawable:drawText()</code></a> - Renders text
+							<a href="#Drawable:drawText"><code>Drawable:drawText()</code></a> - Draws text
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:fillRect"><code>Drawable:fillRect()</code></a> - Draws a filled rectangle
@@ -3782,36 +3971,36 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Drawable:copyArea" id="Drawable:copyArea"><code>copyArea(x0, y0, x1, y1, deltax, deltay, exposures)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:copyArea" id="Drawable:copyArea"><code>Drawable:copyArea(x0, y0, x1, y1, deltax, deltay, exposures)</code></a></h3>
 			<p>
 				Copy the
 				specified rectangle to the position determined by the relative
 				coordinates <code>deltax</code> and <code>deltay</code>. The <code>exposures</code> argument is a
-				table used for collecting the raw coordinates of rectangles getting
+				table for collecting the raw coordinates of rectangles getting
 				exposed as a result of the copy operation.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:drawLine" id="Drawable:drawLine"><code>drawLine(x0, y0, x1, y1, pen)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:drawLine" id="Drawable:drawLine"><code>Drawable:drawLine(x0, y0, x1, y1, pen)</code></a></h3>
 			<p>
 				Draws a line using the specified
 				pen.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:drawPlot" id="Drawable:drawPlot"><code>drawPlot(x0, y0, pen)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:drawPoint" id="Drawable:drawPoint"><code>Drawable:drawPoint(x0, y0, pen)</code></a></h3>
 			<p>
 				Draws a point.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:drawRect" id="Drawable:drawRect"><code>drawRect(x0, y0, x1, y1, pen)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:drawRect" id="Drawable:drawRect"><code>Drawable:drawRect(x0, y0, x1, y1, pen)</code></a></h3>
 			<p>
 				Draws an unfilled rectangle.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:drawText" id="Drawable:drawText"><code>drawText(x0, y0, text, fgpen[, bgpen])</code></a></h3>
+		<div class="node"><h3><a name="Drawable:drawText" id="Drawable:drawText"><code>Drawable:drawText(x0, y0, text, fgpen[, bgpen])</code></a></h3>
 			<p>
 				Renders text
 				with the specified foreground pen. If the optional background pen is
@@ -3819,13 +4008,13 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:fillRect" id="Drawable:fillRect"><code>fillRect(x0, y0, x1, y1, pen)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:fillRect" id="Drawable:fillRect"><code>Drawable:fillRect(x0, y0, x1, y1, pen)</code></a></h3>
 			<p>
 				Draws a filled rectangle.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:getMsg" id="Drawable:getMsg"><code>msg = getMsg([msg])</code></a></h3>
+		<div class="node"><h3><a name="Drawable:getMsg" id="Drawable:getMsg"><code>msg = Drawable:getMsg([msg])</code></a></h3>
 			<p>
 				Gets the next pending message from the
 				Drawable. Optionally, the fields of the new message are inserted into
@@ -3833,40 +4022,40 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:getShift" id="Drawable:getShift"><code>shiftx, shifty = getShift()</code></a></h3>
+		<div class="node"><h3><a name="Drawable:getShift" id="Drawable:getShift"><code>shiftx, shifty = Drawable:getShift()</code></a></h3>
 			<p>
 				Get the Drawable's current
 				coordinate displacement.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:getTextSize" id="Drawable:getTextSize"><code>width, height = getTextSize(text)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:getTextSize" id="Drawable:getTextSize"><code>width, height = Drawable:getTextSize(text)</code></a></h3>
 			<p>
 				Determines the width and height
 				of a text using the font which is currently set on the Drawable.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:popClipRect" id="Drawable:popClipRect"><code>popClipRect()</code></a></h3>
+		<div class="node"><h3><a name="Drawable:popClipRect" id="Drawable:popClipRect"><code>Drawable:popClipRect()</code></a></h3>
 			<p>
 				Pop the topmost cliprect from the Drawable.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:pushClipRect" id="Drawable:pushClipRect"><code>pushClipRect(x0, y0, x1, y1)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:pushClipRect" id="Drawable:pushClipRect"><code>Drawable:pushClipRect(x0, y0, x1, y1)</code></a></h3>
 			<p>
 				Pushes a new cliprect on the top
 				of the drawable's stack of cliprects.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:setFont" id="Drawable:setFont"><code>setFont(font)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:setFont" id="Drawable:setFont"><code>Drawable:setFont(font)</code></a></h3>
 			<p>
 				Sets the specified font.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Drawable:setShift" id="Drawable:setShift"><code>setShift(deltax, deltay)</code></a></h3>
+		<div class="node"><h3><a name="Drawable:setShift" id="Drawable:setShift"><code>Drawable:setShift(deltax, deltay)</code></a></h3>
 			<p>
 				Add a delta to the Drawable's
 				coordinate displacement.
@@ -3900,8 +4089,8 @@ end
 							<code>Application &#091;G&#093;</code> (<a href="#tek.ui.class.application">Application</a>)
 							<blockquote>
 								<p>
-									The Application the element is registered with, or <strong>false</strong>;
-									this attribute is set during <a href="#Element:setup"><code>Element:setup()</code></a>.
+									The Application the element is registered with.
+									This attribute is set during <a href="#Element:setup"><code>Element:setup()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -3910,9 +4099,8 @@ end
 							<blockquote>
 								<p>
 									The name of the element's style class, which can be referenced
-									in a style sheet, or <strong>false</strong>. Multiple classes can be
-									specified by separating them with spaces, e.g.
-									<code>&quot;button knob warn&quot;</code>.
+									in a style sheet. Multiple classes can be specified by separating
+									them with spaces, e.g. <code>&quot;button knob warn&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -3920,9 +4108,8 @@ end
 							<code>Id &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									An unique Id identifying the element, or <strong>false</strong>. If present,
-									this Id will be registered with the Application during
-									<a href="#Element:setup"><code>Element:setup()</code></a>.
+									An unique Id identifying the element. If present, this Id will be
+									registered with the Application during <a href="#Element:setup"><code>Element:setup()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -3930,8 +4117,8 @@ end
 							<code>Parent &#091;G&#093;</code> (object)
 							<blockquote>
 								<p>
-									Parent object of the element, or <strong>false</strong>. This attribute
-									is set in the <a href="#Element:connect"><code>Element:connect()</code></a> method.
+									Parent object of the element. This attribute is set during
+									<a href="#Element:connect"><code>Element:connect()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -3940,16 +4127,18 @@ end
 							<blockquote>
 								<p>
 									Direct style formattings of the element, overriding class-wide
-									formattings in a style sheet, or <strong>false</strong>. Example:
-									<code>&quot;background-color: #880000; color: #ffff00&quot;</code> 
+									formattings in a style sheet. Example:
 								</p>
+<pre>
+&quot;background-color: #880000; color: #ffff00&quot;
+</pre>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
 							<code>Window &#091;G&#093;</code> (<a href="#tek.ui.class.window">Window</a>)
 							<blockquote>
 								<p>
-									The window the element is registered with, or <strong>false</strong>. This
+									The Window the element is registered with. This
 									attribute is set during <a href="#Element:setup"><code>Element:setup()</code></a>.
 								</p>
 							</blockquote>
@@ -3967,16 +4156,13 @@ end
 							<a href="#Element:connect"><code>Element:connect()</code></a> - Connects the element to a parent element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a> - Decodes the element's style attributes
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Element:disconnect"><code>Element:disconnect()</code></a> - Disconnects the element from its parent
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:getAttr"><code>Element:getAttr()</code></a> - Gets an attribute from an element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:getById"><code>Element:getById()</code></a> - Shortcut for <a href="#self:Application:getById"><code>self.Application:getById()</code></a> 
+							<a href="#Element:getById"><code>Element:getById()</code></a> - Get Id of any registered element
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:getNumProperty"><code>Element:getNumProperty()</code></a> - Retrieves a numerical style property
@@ -4004,7 +4190,7 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Element:cleanup" id="Element:cleanup"><code>cleanup()</code></a></h3>
+		<div class="node"><h3><a name="Element:cleanup" id="Element:cleanup"><code>Element:cleanup()</code></a></h3>
 			<p>
 				This function is used to unlink the element from its
 				<a href="#tek.ui.class.application">Application</a> and
@@ -4012,7 +4198,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:connect" id="Element:connect"><code>success = connect(parent)</code></a></h3>
+		<div class="node"><h3><a name="Element:connect" id="Element:connect"><code>success = Element:connect(parent)</code></a></h3>
 			<p>
 				Attempts to connect the element to the
 				<code>parent</code> element; returns a boolean indicating whether the connection
@@ -4020,54 +4206,45 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:decodeProperties" id="Element:decodeProperties"><code>decodeProperties(props)</code></a></h3>
+		<div class="node"><h3><a name="Element:disconnect" id="Element:disconnect"><code>Element:disconnect()</code></a></h3>
 			<p>
-				Invokes the element's
-				<a href="#Element:getProperties"><code>Element:getProperties()</code></a> function, possibly multiple times, passing it
-				(in turn) the decoded properties from the element's <code>Style</code> attribute,
-				and global properties from one or more style sheets. &#091;internal&#093;
+				Disconnects the element from its parent.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:disconnect" id="Element:disconnect"><code>disconnect()</code></a></h3>
+		<div class="node"><h3><a name="Element:getAttr" id="Element:getAttr"><code>ret1, ... = Element:getAttr(attribute, ...)</code></a></h3>
 			<p>
-				Disconnects the formerly connected element
-				from its parent.
+				This function gets a named
+				<code>attribute</code> from an element, and returns <strong>nil</strong> if it is unknown.
+				This mechanism can be used by classes for exchanging data without having
+				to add a getter method in their common base class (which may not be under
+				the author's control).
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getAttr" id="Element:getAttr"><code>ret1, ... = getAttr(attr, ...)</code></a></h3>
+		<div class="node"><h3><a name="Element:getById" id="Element:getById"><code>Element:getById(id)</code></a></h3>
 			<p>
-				This function gets an attribute
-				from an element, and returns <strong>nil</strong> if the attribute is unknown.
-				This mechanism can be used for elements that wish to exchange data with
-				each other, without having to break in upon their common base class (which
-				may not be under their control), for adding a getter method.
+				Gets the element with the specified <code>id</code>, that was
+				previously registered with the <a href="#tek.ui.class.application">Application</a>.
+				This function is a shortcut for <a href="#Application:getById"><code>Application:getById()</code></a>, applied to
+				<code>self.Application</code>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getById" id="Element:getById"><code>getById(id)</code></a></h3>
-			<p>
-				Gets the element with the specified id, under which
-				it was previously registered with the Application. See also
-				<a href="#Application:getById"><code>Application:getById()</code></a>.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Element:getNumProperty" id="Element:getNumProperty"><code>value = getNumProperty(properties, pseudoclass, attribute)</code></a></h3>
+		<div class="node"><h3><a name="Element:getNumProperty" id="Element:getNumProperty"><code>value = Element:getNumProperty(properties, pseudoclass, attribute)</code></a></h3>
 			<p>
 				Gets a
 				property and converts it to a number value. See also <a href="#Element:getProperty"><code>Element:getProperty()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getProperties" id="Element:getProperties"><code>getProperties(properties, pseudoclass)</code></a></h3>
+		<div class="node"><h3><a name="Element:getProperties" id="Element:getProperties"><code>Element:getProperties(properties, pseudoclass)</code></a></h3>
 			<p>
 				This function is called
 				after connecting the element, for retrieving style properties from a
 				style sheet or from decoding the element's <code>Style</code> attribute
-				(&quot;direct formatting&quot;). It can be invoked multiple times with different
-				pseudo classes and <code>properties</code>.
+				(<em>direct formatting</em>). It can be invoked multiple times with different
+				<code>properties</code> and pseudo classes.
 				When overriding this function, among the reasonable things to do is to
 				query properties using the <a href="#Element:getProperty"><code>Element:getProperty()</code></a> function, passing it the
 				<code>properties</code> and <code>pseudoclass</code> arguments. First recurse into your
@@ -4077,7 +4254,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getProperty" id="Element:getProperty"><code>value = getProperty(properties, pseudoclass, attribute)</code></a></h3>
+		<div class="node"><h3><a name="Element:getProperty" id="Element:getProperty"><code>value = Element:getProperty(properties, pseudoclass, attribute)</code></a></h3>
 			<p>
 				Returns
 				the value of a style <code>attribute</code> from the specified <code>properties</code> 
@@ -4089,7 +4266,7 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:setup" id="Element:setup"><code>setup(app, window)</code></a></h3>
+		<div class="node"><h3><a name="Element:setup" id="Element:setup"><code>Element:setup(app, window)</code></a></h3>
 			<p>
 				This function is used to pass the element the
 				environment determined by an <a href="#tek.ui.class.application">Application</a> 
@@ -4133,10 +4310,10 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Family:addMember"><code>Family:addMember()</code></a> 
+							<a href="#Family:addMember"><code>Family:addMember()</code></a> - Adds an element to a Family
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Family:remMember"><code>Family:remMember()</code></a> 
+							<a href="#Family:remMember"><code>Family:remMember()</code></a> - Removed an element from a Family
 						</li>
 					</ul>
 				</blockquote>
@@ -4148,7 +4325,7 @@ end
 				Invokes the <code>child</code>'s
 				<a href="#Element:connect">connect()</a> method to check for its ability to
 				integrate into the family, and if successful, inserts it into the
-				family's list of children. Optionally, the child is inserted into the
+				Family's list of children. Optionally, the child is inserted into the
 				list at the specified position.
 			</p>
 			<hr />
@@ -4307,7 +4484,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v10.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v11.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4323,24 +4500,24 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This class implements an element's borders. The <code>&quot;default&quot;</code> border
+						This class implements an element's borders. The <em>default</em> border
 						class handles up to three sub borders:
 					</p>
 					<blockquote>
 						<ul>
 							<li>
-								The 'main' border is the innermost of the three sub borders.
+								The <em>main</em> border is the innermost of the three sub borders.
 								It is used to render the primary border style, which can be
-								<code>&quot;inset&quot;</code>, <code>&quot;outset&quot;</code>, <code>&quot;ridge&quot;</code>, <code>&quot;groove&quot;</code>, or
-								<code>&quot;solid&quot;</code>. This border has priority over the other two.
+								<em>inset</em>, <em>outset</em>, <em>ridge</em>, <em>groove</em>, or
+								<em>solid</em>. This border has priority over the other two.
 							</li>
 							<li>
-								The 'rim' border seperates the two other borders and
+								The <em>rim</em> border separates the two other borders and
 								may give the composition a more contrastful appearance. This
 								border has the lowest priority.
 							</li>
 							<li>
-								The 'focus' border (in addition to the element's focus
+								The <em>focus</em> border (in addition to the element's focus
 								highlighting style) can be used to visualize that the element
 								is currently receiving the input. This border is designed as
 								the outermost of the three sub borders. When the element is
@@ -4353,12 +4530,12 @@ end
 					<p>
 						Border classes (which are organized as plug-ins) do not need to
 						implement all sub borders; in fact, these properties are all
-						internally handled by the <code>&quot;default&quot;</code> border class, and more (and
+						internally handled by the <em>default</em> border class, and more (and
 						other) sub borders and properties may be defined and implemented in
 						the future (or in other border classes). As the Frame class has no
 						notion of sub borders, their respective widths are subtracted
 						from the Element's total border width, leaving only the remaining
-						width for the 'main' border.
+						width for the <em>main</em> border.
 					</p>
 				</blockquote>
 			</div>
@@ -4371,7 +4548,7 @@ end
 								<p>
 									An array of four widths (in pixels) for the element's
 									border, in the order left, right, top, bottom. This attribute
-									is controllable via the <code>border-width</code> style property.
+									is controllable via the <em>border-width</em> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -4380,8 +4557,9 @@ end
 							<blockquote>
 								<p>
 									Name of the border class used to implement this element's
-									border. This attribute is controllable via the <code>border-class</code> 
-									style property. Default: <code>&quot;default&quot;</code> 
+									border. Border classes are loaded from <code>tek.ui.border</code>.
+									This attribute is controllable via the <em>border-class</em> style
+									property. Default: <code>&quot;default&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -4397,7 +4575,7 @@ end
 							<code>Legend &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									Border legend text &#091;Default: <strong>false</strong>&#093;
+									Border legend text
 								</p>
 							</blockquote>
 						</li>
@@ -4405,61 +4583,182 @@ end
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>border-bottom-color</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-bottom-width</code> - controls <code>Frame.Border</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>border-class</code> - controls <code>Frame.BorderClass</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>border-color</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-focus-color</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-focus-width</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-left-color</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-left-width</code> - controls <code>Frame.Border</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>border-legend-font</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-right-color</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-right-width</code> - controls <code>Frame.Border</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>border-rim-color</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-rim-width</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-style</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-top-color</code> - controls the <code>&quot;default&quot;</code> border class
-						</li>
-						<li style="list-style-type: none">
-							<code>border-top-width</code> - controls <code>Frame.Border</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>border-width</code> - controls <code>Frame.Border</code> 
-						</li>
-					</ul>
-				</blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<table>
+							<tr>
+								<td class="column1">
+									<em>border-bottom-color</em> 
+								</td>
+								<td class="column2">
+									controls the <em>default</em> border class
+								</td>
+							</tr>
+							<ul>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-bottom-width</em> 
+										</td>
+										<td class="column2">
+											controls <code>Frame.Border</code> 
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-class</em> 
+										</td>
+										<td class="column2">
+											controls <code>Frame.BorderClass</code> 
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-color</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-focus-color</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-focus-width</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-left-color</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-left-width</em> 
+										</td>
+										<td class="column2">
+											controls <code>Frame.Border</code> 
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-legend-font</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-right-color</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-right-width</em> 
+										</td>
+										<td class="column2">
+											controls <code>Frame.Border</code> 
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-rim-color</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-rim-width</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-style</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-top-color</em> 
+										</td>
+										<td class="column2">
+											controls the <em>default</em> border class
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-top-width</em> 
+										</td>
+										<td class="column2">
+											controls <code>Frame.Border</code> 
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>border-width</em> 
+										</td>
+										<td class="column2">
+											controls <code>Frame.Border</code> 
+										</td>
+									</tr>
+								</li>
+							</ul>
+						</table>
+					</li>
+				</ul>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
@@ -4477,19 +4776,22 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
+							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:hide"><code>Area:hide()</code></a> 
+							<a href="#Area:damage"><code>Area:damage()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:damage"><code>Area:damage()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:punch"><code>Area:punch()</code></a> 
@@ -4500,28 +4802,25 @@ end
 						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:show"><code>Area:show()</code></a> 
-						</li>
 					</ul>
 				</blockquote>
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Frame:drawBorder" id="Frame:drawBorder"><code>drawBorder()</code></a></h3>
+		<div class="node"><h3><a name="Frame:drawBorder" id="Frame:drawBorder"><code>Frame:drawBorder()</code></a></h3>
 			<p>
 				Draws an element's border.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>border = getBorder()</code></a></h3>
+		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>border = Frame:getBorder()</code></a></h3>
 			<p>
 				Returns an element's border widths in the
 				order left, top, right, bottom.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v16.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v17.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4538,7 +4837,7 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This class implements interactivity.
+						This class implements interactions with the user.
 					</p>
 				</blockquote>
 			</div>
@@ -4608,20 +4907,20 @@ end
 							<blockquote>
 								<p>
 									Name of a hook class for rendering an overlay effect. This
-									attribute is controllable via the <code>effect-class</code> style property.
+									attribute is controllable via the <em>effect-class</em> style property.
 									A possible overlay effect is named <em>ripple</em>. As its name
 									suggests, it can paint various ripple effects (e.g. for slider
-									knobs and bar handles). Effect hooks are stored in <code>tek/ui/hook</code> 
-									and may define their own style properties.
+									knobs and bar handles). Effect hooks are loaded from
+									<code>tek.ui.hook</code> and may define their own style properties.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>FGColor &#091;IG&#093;</code> (string or number)
+							<code>FGColor &#091;IG&#093;</code> (color specification)
 							<blockquote>
 								<p>
 									A color specification for rendering the foreground details of the
-									element. This attribute is controllable via the <code>color</code> style
+									element. This attribute is controllable via the <em>color</em> style
 									property.
 								</p>
 							</blockquote>
@@ -4642,7 +4941,7 @@ end
 									Signifies that the element is being held. While being held, the
 									value is repeatedly set to <strong>true</strong> in intervals of <code>n/50</code> 
 									seconds, with <code>n</code> being determined by the
-									<a href="#tek.ui.class.window">Window</a>.HoldTickInitRepeat attribute.
+									<a href="#tek.ui.class.window">Window</a>.HoldTickRepeat attribute.
 									When the element is getting released, this value is set to
 									<strong>false</strong>. This attribute normally needs to get a notification
 									handler attached to it before it can be reacted on; see also
@@ -4664,8 +4963,9 @@ end
 							<blockquote>
 								<p>
 									Specifies that the element should receive the focus initially.
-									If <strong>true</strong>, the element will notify <code>Focus=true</code> to itself
-									upon invocation of the <a href="#Area:show"><code>Area:show()</code></a> method. Default: <strong>false</strong> 
+									If <strong>true</strong>, the element will set the element's <code>Focus</code> 
+									attribute to <strong>true</strong> upon invocation of the
+									<a href="#Area:show">show</a> method.
 								</p>
 							</blockquote>
 						</li>
@@ -4673,10 +4973,10 @@ end
 							<code>KeyCode &#091;IG&#093;</code> (string or boolean)
 							<blockquote>
 								<p>
-									If set, a keyboard equivalent for activating the element. See also
+									If set, a keyboard equivalent for activating the element. See
 									<a href="#tek.ui.class.popitem">PopItem</a> for a discussion of denoting
 									keyboard qualifiers. The <a href="#tek.ui.class.text">Text</a> class allows
-									this attribute to be set to <strong>true</strong>, in which case the element's
+									setting this attribute to <strong>true</strong>, in which case the element's
 									<code>Text</code> will be examined during setup for an initiatory character
 									(by default an underscore), and if found, the <code>KeyCode</code> attribute
 									will be replaced by the character following this marker.
@@ -4695,17 +4995,18 @@ end
 											<code>&quot;inert&quot;</code>: The element does not react to input
 										</li>
 										<li>
-											<code>&quot;toggle&quot;</code>: The element does not rebound and keeps its
-											<code>Selected</code> state; it cannot be unselected by the user
+											<code>&quot;touch&quot;</code>: The element does not rebound and keeps its
+											<code>Selected</code> state; it cannot be unselected by the user and
+											always submits <strong>true</strong> for the <code>Pressed</code> and <code>Selected</code> 
+											attributes.
 										</li>
 										<li>
-											<code>&quot;touch&quot;</code>: The element rebounds immediately and acts as a
-											strobe, always submitting <strong>true</strong> for <code>Pressed</code> and
-											<code>Selected</code> 
+											<code>&quot;toggle&quot;</code>: The element does not rebound immediately
+											and keeps its <code>Selected</code> state until the next activation.
 										</li>
 										<li>
-											<code>&quot;button&quot;</code>: The element sets the <code>Pressed</code> attribute
-											only if the mouse pointer is released when hovering it.
+											<code>&quot;button&quot;</code>: The element rebounds when the mouse button is
+											released or when it is no longer hovering it.
 										</li>
 									</ul>
 								</blockquote>
@@ -4727,7 +5028,7 @@ end
 							<code>Selected &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Signifies a change of the gadget's selection state. Invokes
+									Signifies a change of the Gadget's selection state. Invokes
 									<a href="#Gadget:onSelect"><code>Gadget:onSelect()</code></a>.
 								</p>
 							</blockquote>
@@ -4736,61 +5037,170 @@ end
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>color</code> - controls the <code>Gadget.FGColor</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-class</code> - controls the <code>Gadget.EffectClass</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-color</code> - controls the <em>ripple</em> effect hook
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-color2</code> - controls the <em>ripple</em> effect hook
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-kind</code> - controls the <em>ripple</em> effect hook
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-maxnum</code> - controls the <em>ripple</em> effect hook
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-maxnum2</code> - controls the <em>ripple</em> effect hook
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-orientation</code> - controls the <em>ripple</em> effect hook
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-padding</code> - controls the <em>ripple</em> effect hook
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-ratio</code> - controls the <em>ripple</em> effect hook
-						</li>
-						<li style="list-style-type: none">
-							<code>effect-ratio2</code> - controls the <em>ripple</em> effect hook
-						</li>
-					</ul>
-				</blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<table>
+							<tr>
+								<td class="column1">
+									<em>color</em> 
+								</td>
+								<td class="column2">
+									controls the <code>Gadget.FGColor</code> attribute
+								</td>
+							</tr>
+							<ul>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-class</em> 
+										</td>
+										<td class="column2">
+											controls the <code>Gadget.EffectClass</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-color</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-color2</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-kind</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-maxnum</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-maxnum2</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-orientation</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-padding</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-ratio</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>effect-ratio2</em> 
+										</td>
+										<td class="column2">
+											controls the <em>ripple</em> effect hook
+										</td>
+									</tr>
+								</li>
+							</ul>
+						</table>
+					</li>
+				</ul>
 			</div>
 			<div class="definition"><dfn>STYLE PSEUDO CLASSES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>active</code> - for elements in active state
-						</li>
-						<li style="list-style-type: none">
-							<code>disabled</code> - for elements in disabled state
-						</li>
-						<li style="list-style-type: none">
-							<code>focus</code> - for elements that have the focus
-						</li>
-						<li style="list-style-type: none">
-							<code>hover</code> - for elements that are being hovered by the mouse
-						</li>
-					</ul>
-				</blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<table>
+							<tr>
+								<td class="column1">
+									<em>active</em> 
+								</td>
+								<td class="column2">
+									for elements in active state
+								</td>
+							</tr>
+							<ul>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>disabled</em> 
+										</td>
+										<td class="column2">
+											for elements in disabled state
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>focus</em> 
+										</td>
+										<td class="column2">
+											for elements that have the focus
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>hover</em> 
+										</td>
+										<td class="column2">
+											for elements that are being hovered by the mouse
+										</td>
+									</tr>
+								</li>
+							</ul>
+						</table>
+					</li>
+				</ul>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
@@ -4832,19 +5242,25 @@ end
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:hide"><code>Area:hide()</code></a> 
+							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:setup"><code>Element:setup()</code></a> 
+							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:show"><code>Area:show()</code></a> 
@@ -4854,17 +5270,17 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Gadget:onActivate" id="Gadget:onActivate"><code>onActivate(active)</code></a></h3>
+		<div class="node"><h3><a name="Gadget:onActivate" id="Gadget:onActivate"><code>Gadget:onActivate(active)</code></a></h3>
 			<p>
-				This method is invoked when the gadget's <code>Active</code> 
-				attribute has changed.
+				This method is invoked when the Gadget's
+				<code>Active</code> attribute has changed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Gadget:onDisable" id="Gadget:onDisable"><code>onDisable(disabled)</code></a></h3>
+		<div class="node"><h3><a name="Gadget:onDisable" id="Gadget:onDisable"><code>Gadget:onDisable(disabled)</code></a></h3>
 			<p>
-				This method is invoked when the gadget's <code>Disabled</code> 
-				attribute has changed.
+				This method is invoked when the Gadget's
+				<code>Disabled</code> attribute has changed.
 			</p>
 			<hr />
 		</div>
@@ -4875,31 +5291,31 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Gadget:onHilite" id="Gadget:onHilite"><code>onHilite(selected)</code></a></h3>
+		<div class="node"><h3><a name="Gadget:onHilite" id="Gadget:onHilite"><code>Gadget:onHilite(selected)</code></a></h3>
 			<p>
-				This method is invoked when the gadget's <code>Selected</code> 
+				This method is invoked when the Gadget's
+				<code>Hilite</code> attribute has changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Gadget:onHover" id="Gadget:onHover"><code>Gadget:onHover(hovered)</code></a></h3>
+			<p>
+				This method is invoked when the Gadget's <code>Hover</code> 
 				attribute has changed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Gadget:onHover" id="Gadget:onHover"><code>onHover(hovered)</code></a></h3>
+		<div class="node"><h3><a name="Gadget:onPress" id="Gadget:onPress"><code>Gadget:onPress(pressed)</code></a></h3>
 			<p>
-				This method is invoked when the gadget's <code>Hover</code> 
-				attribute has changed.
+				This method is invoked when the Gadget's
+				<code>Pressed</code> attribute has changed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Gadget:onPress" id="Gadget:onPress"><code>onPress(pressed)</code></a></h3>
+		<div class="node"><h3><a name="Gadget:onSelect" id="Gadget:onSelect"><code>Gadget:onSelect(selected)</code></a></h3>
 			<p>
-				This method is invoked when the gadget's <code>Pressed</code> 
-				attribute has changed.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Gadget:onSelect" id="Gadget:onSelect"><code>onSelect(selected)</code></a></h3>
-			<p>
-				This method is invoked when the gadget's <code>Selected</code> 
-				attribute has changed.
+				This method is invoked when the Gadget's
+				<code>Selected</code> attribute has changed.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -4971,7 +5387,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v20.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v21.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5089,7 +5505,7 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getElementByXY"><code>Area:getElementByXY()</code></a> 
+							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
@@ -5475,9 +5891,10 @@ end
 		</div>
 		<div class="node"><h3><a name="ListGadget:changeItem" id="ListGadget:changeItem"><code>changeItem(item, line[, quick])</code></a></h3>
 			<p>
-				Overwrites the item at the
-				specified line in the list. The boolean <code>quick</code> indicates that the list
-				the list after mass changes, see also <a href="#ListGadget:repaint"><code>ListGadget:repaint()</code></a>.)
+				Overwrites the <code>item</code> at the
+				specified <code>line</code> in the list. The boolean <code>quick</code> indicates that
+				the list should not be relayouted and repainted. For relayouting and
+				repainting the list after mass changes, see also <a href="#ListGadget:repaint"><code>ListGadget:repaint()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -5839,7 +6256,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v11.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5987,13 +6404,13 @@ end
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											<code>&quot;Alt&quot;</code>, <code>&quot;LAlt&quot;</code>, &quot;RAlt&quot;}}
+											<code>&quot;Alt&quot;</code>, <code>&quot;LAlt&quot;</code>, <code>&quot;RAlt&quot;</code> 
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;Shift&quot;</code>, <code>&quot;LShift&quot;</code>, &quot;RShift&quot;}}
+											<code>&quot;Shift&quot;</code>, <code>&quot;LShift&quot;</code>, <code>&quot;RShift&quot;</code> 
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;Ctrl&quot;, {{&quot;LCtrl&quot;</code>, <code>&quot;RCtrl&quot;</code> 
+											<code>&quot;Ctrl&quot;</code>, <code>&quot;LCtrl&quot;</code>, <code>&quot;RCtrl&quot;</code> 
 										</li>
 										<li style="list-style-type: none">
 											<code>&quot;IgnoreCase&quot;</code> 
@@ -6498,7 +6915,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v14.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v15.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6720,7 +7137,7 @@ end
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This gadget implements text rendering.
+						This class implements gadgets with text.
 					</p>
 				</blockquote>
 			</div>
@@ -6744,22 +7161,22 @@ end
 								</p>
 								<blockquote>
 									<ul>
-										<li style="list-style-type: none">
-											<code>&quot;ui-fixed&quot;</code>: The default fixed font
+										<li>
+											<em>ui-fixed</em> - The default fixed font
 										</li>
-										<li style="list-style-type: none">
-											<code>&quot;ui-main&quot;</code> or <code>&quot;&quot;</code>: The default main font, e.g. for
-											buttons and menus
+										<li>
+											<em>ui-main</em> or an empty string - The default main font,
+											e.g. for buttons and menus
 										</li>
-										<li style="list-style-type: none">
-											<code>&quot;ui-small&quot;</code>: The default small font, e.g. for group
+										<li>
+											<em>ui-small</em> - The default small font, e.g. for group
 											captions
 										</li>
-										<li style="list-style-type: none">
-											<code>&quot;ui-large&quot;</code>: The default 'large' font
+										<li>
+											<em>ui-large</em> - The default 'large' font
 										</li>
-										<li style="list-style-type: none">
-											<code>&quot;ui-huge&quot;</code>: The default 'huge' font
+										<li>
+											<em>ui-huge</em> - The default 'huge' font
 										</li>
 									</ul>
 								</blockquote>
@@ -6775,7 +7192,7 @@ end
 							<blockquote>
 								<p>
 									After the initial size calculation, keep the minimal height of
-									the element and do not rethink the layout in regard to a
+									the element and do not rethink the layout in response to a
 									possible new minimal height (e.g. resulting from a newly set
 									text).
 								</p>
@@ -6786,7 +7203,7 @@ end
 							<blockquote>
 								<p>
 									After the initial size calculation, keep the minimal width of
-									the element and do not rethink the layout in regard to a
+									the element and do not rethink the layout in response to a
 									possible new minimal width (e.g. resulting from a newly set text).
 								</p>
 							</blockquote>
@@ -6806,8 +7223,8 @@ end
 							<blockquote>
 								<p>
 									The text's horizontal alignment, which will be used in
-									<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a>. If <strong>false</strong> during initialization,
-									the class' default will be used. &#091;Default: <code>&quot;center&quot;</code>&#093;
+									<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a>. If unspecified at initialization,
+									the class' default will be used.
 								</p>
 							</blockquote>
 						</li>
@@ -6816,43 +7233,73 @@ end
 							<blockquote>
 								<p>
 									The text's vertical alignment, which will be used in
-									<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a>. If <strong>false</strong> during initialization, the
-									class' default will be used. &#091;Default: <code>&quot;center&quot;</code>&#093;
+									<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a>. If unspecified during initialization, the
+									class' default will be used.
 								</p>
 							</blockquote>
 						</li>
 					</ul>
 				</blockquote>
 			</div>
+			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
+				<ul>
+					<li style="list-style-type: none">
+						<table>
+							<tr>
+								<td class="column1">
+									<em>color2</em> 
+								</td>
+								<td class="column2">
+									Secondary color for rendering text in disabled state
+								</td>
+							</tr>
+							<ul>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>font</em> 
+										</td>
+										<td class="column2">
+											Controls the <code>Text.Font</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>text-align</em> 
+										</td>
+										<td class="column2">
+											Controls the <code>Text.TextHAlign</code> attribute
+										</td>
+									</tr>
+								</li>
+								<li style="list-style-type: none">
+									<tr>
+										<td class="column1">
+											<em>vertical-align</em> 
+										</td>
+										<td class="column2">
+											Controls the <code>Text.TextVAlign</code> attribute
+										</td>
+									</tr>
+								</li>
+							</ul>
+						</table>
+					</li>
+				</ul>
+			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Text:getTextSize"><code>Text:getTextSize()</code></a> - Get total size of text records
+							<a href="#Text:getTextSize"><code>Text:getTextSize()</code></a> - Gets the total extents of text records
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a> - Break text into multiple text records
+							<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a> - Breaks text into multiple line records
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Text:onSetText"><code>Text:onSetText()</code></a> - handler for the <code>Text</code> attribute
-						</li>
-					</ul>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>color2</code> - secondary color used in disabled state
-						</li>
-						<li style="list-style-type: none">
-							<code>font</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>text-align</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>vertical-align</code> 
+							<a href="#Text:onSetText"><code>Text:onSetText()</code></a> - Handler for changes of the <code>Text</code> attribute
 						</li>
 					</ul>
 				</blockquote>
@@ -6864,22 +7311,19 @@ end
 							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:draw"><code>Area:draw()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:show"><code>Element:show()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:hide"><code>Element:hide()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:setState"><code>Area:setState()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
@@ -7067,9 +7511,6 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="TextInput:arethinkLayout" id="TextInput:arethinkLayout"><code>a rethinkLayout()</code></a></h3>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="TextInput:addChar" id="TextInput:addChar"><code>addChar(utf8s)</code></a></h3>
 			<p>
 				Perform add character
@@ -7129,7 +7570,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v7.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7177,7 +7618,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v18.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v19.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7596,9 +8037,9 @@ message = function(object, message)
 				also call the <a href="#Area:punch">punch()</a> method on each child for
 				subtracting their new outlines from the group's <code>FreeRegion</code>.
 			</p>
-			<hr />
+			<hr class="page-break" />
 			<p>
-				Document generated on Mon Jun  1 16:52:16 2009
+				Document generated on Wed Jun 10 09:44:37 2009
 			</p>
 		</div>
 	</body>

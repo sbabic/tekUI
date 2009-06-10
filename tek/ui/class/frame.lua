@@ -13,16 +13,16 @@
 --		Frame
 --
 --	OVERVIEW::
---		This class implements an element's borders. The {{"default"}} border
+--		This class implements an element's borders. The ''default'' border
 --		class handles up to three sub borders:
---			* The 'main' border is the innermost of the three sub borders.
+--			* The ''main'' border is the innermost of the three sub borders.
 --			It is used to render the primary border style, which can be
---			{{"inset"}}, {{"outset"}}, {{"ridge"}}, {{"groove"}}, or
---			{{"solid"}}. This border has priority over the other two.
---			* The 'rim' border seperates the two other borders and
+--			''inset'', ''outset'', ''ridge'', ''groove'', or
+--			''solid''. This border has priority over the other two.
+--			* The ''rim'' border separates the two other borders and
 --			may give the composition a more contrastful appearance. This
 --			border has the lowest priority.
---			* The 'focus' border (in addition to the element's focus
+--			* The ''focus'' border (in addition to the element's focus
 --			highlighting style) can be used to visualize that the element
 --			is currently receiving the input. This border is designed as
 --			the outermost of the three sub borders. When the element is
@@ -31,60 +31,61 @@
 --			the background.
 --		Border classes (which are organized as plug-ins) do not need to
 --		implement all sub borders; in fact, these properties are all
---		internally handled by the {{"default"}} border class, and more (and
+--		internally handled by the ''default'' border class, and more (and
 --		other) sub borders and properties may be defined and implemented in
 --		the future (or in other border classes). As the Frame class has no
 --		notion of sub borders, their respective widths are subtracted
 --		from the Element's total border width, leaving only the remaining
---		width for the 'main' border.
+--		width for the ''main'' border.
 --
 --	ATTRIBUTES::
 --		- {{Border [IG]}} (table)
 --			An array of four widths (in pixels) for the element's
 --			border, in the order left, right, top, bottom. This attribute
---			is controllable via the {{border-width}} style property.
+--			is controllable via the ''border-width'' style property.
 --		- {{BorderClass [IG]}} (table)
 --			Name of the border class used to implement this element's
---			border. This attribute is controllable via the {{border-class}}
---			style property. Default: {{"default"}}
+--			border. Border classes are loaded from {{tek.ui.border}}. 
+--			This attribute is controllable via the ''border-class'' style
+--			property. Default: {{"default"}}
 --		- {{BorderRegion [G]}} ([[#tek.lib.region : Region]])
 --			Region object holding the outline of the element's border
 --		- {{Legend [IG]}} (string)
---			Border legend text [Default: '''false''']
+--			Border legend text
 --
 --	STYLE PROPERTIES::
---		- {{border-bottom-color}} - controls the {{"default"}} border class
---		- {{border-bottom-width}} - controls {{Frame.Border}}
---		- {{border-class}} - controls {{Frame.BorderClass}}
---		- {{border-color}} - controls the {{"default"}} border class
---		- {{border-focus-color}} - controls the {{"default"}} border class
---		- {{border-focus-width}} - controls the {{"default"}} border class
---		- {{border-left-color}} - controls the {{"default"}} border class
---		- {{border-left-width}} - controls {{Frame.Border}}
---		- {{border-legend-font}} - controls the {{"default"}} border class
---		- {{border-right-color}} - controls the {{"default"}} border class
---		- {{border-right-width}} - controls {{Frame.Border}}
---		- {{border-rim-color}} - controls the {{"default"}} border class
---		- {{border-rim-width}} - controls the {{"default"}} border class
---		- {{border-style}} - controls the {{"default"}} border class
---		- {{border-top-color}} - controls the {{"default"}} border class
---		- {{border-top-width}} - controls {{Frame.Border}}
---		- {{border-width}} - controls {{Frame.Border}}
+--		- ''border-bottom-color'' || controls the ''default'' border class
+--		- ''border-bottom-width'' || controls {{Frame.Border}}
+--		- ''border-class'' || controls {{Frame.BorderClass}}
+--		- ''border-color'' || controls the ''default'' border class
+--		- ''border-focus-color'' || controls the ''default'' border class
+--		- ''border-focus-width'' || controls the ''default'' border class
+--		- ''border-left-color'' || controls the ''default'' border class
+--		- ''border-left-width'' || controls {{Frame.Border}}
+--		- ''border-legend-font'' || controls the ''default'' border class
+--		- ''border-right-color'' || controls the ''default'' border class
+--		- ''border-right-width'' || controls {{Frame.Border}}
+--		- ''border-rim-color'' || controls the ''default'' border class
+--		- ''border-rim-width'' || controls the ''default'' border class
+--		- ''border-style'' || controls the ''default'' border class
+--		- ''border-top-color'' || controls the ''default'' border class
+--		- ''border-top-width'' || controls {{Frame.Border}}
+--		- ''border-width'' || controls {{Frame.Border}}
 --
 --	IMPLEMENTS::
 --		- Frame:drawBorder() - Draws the element's border
 --		- Frame:getBorder() - Queries the element's border
 --
 --	OVERRIDES::
+--		- Element:cleanup()
+--		- Area:damage()
+--		- Area:getByXY()
 --		- Element:getProperties()
---		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
---		- Area:damage()
 --		- Area:punch()
 --		- Area:refresh()
 --		- Element:setup()
---		- Area:show()
 --
 -------------------------------------------------------------------------------
 
@@ -94,7 +95,7 @@ local allocRegion = ui.allocRegion
 local freeRegion = ui.freeRegion
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 10.0"
+_VERSION = "Frame 11.0"
 
 local Frame = _M
 
@@ -168,7 +169,7 @@ function Frame:cleanup()
 end
 
 -------------------------------------------------------------------------------
---	border = getBorder(): Returns an element's border widths in the
+--	border = Frame:getBorder(): Returns an element's border widths in the
 --	order left, top, right, bottom.
 -------------------------------------------------------------------------------
 
@@ -220,7 +221,7 @@ function Frame:punch(region)
 end
 
 -------------------------------------------------------------------------------
---	drawBorder(): Draws an element's border.
+--	Frame:drawBorder(): Draws an element's border.
 -------------------------------------------------------------------------------
 
 function Frame:drawBorder()
@@ -242,10 +243,10 @@ function Frame:refresh()
 end
 
 -------------------------------------------------------------------------------
---	getElementByXY: overrides
+--	getByXY: overrides
 -------------------------------------------------------------------------------
 
-function Frame:getElementByXY(x, y)
+function Frame:getByXY(x, y)
 	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
 		local b1, b2, b3, b4 = self:getBorder()

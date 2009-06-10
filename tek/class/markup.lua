@@ -221,7 +221,7 @@ local ipairs = ipairs
 
 module("tek.class.markup", tek.class)
 
-_VERSION = "Markup 3.0"
+_VERSION = "Markup 3.1"
 local Markup = _M
 
 -------------------------------------------------------------------------------
@@ -467,6 +467,19 @@ end
 
 function Markup:init(docname)
 	self.depth = 1
+	
+	local metadata = { }
+	
+	for _, k in ipairs { "author", "created" } do
+		if self[k] then
+			insert(metadata, [[
+		<meta name="]] .. k .. [[" content="]] .. self[k] .. [[" />
+]])
+		end			
+	end
+	
+	metadata = concat(metadata)
+	
 	return [[
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -475,6 +488,7 @@ function Markup:init(docname)
 	<head>
 		<title>]] .. docname .. [[</title>
 		<link rel="stylesheet" href="manual.css" />
+]] .. metadata .. [[
 	</head>
 	<body>
 ]]
@@ -1161,6 +1175,8 @@ function Markup.new(class, self)
 	self.wrfunc = self.wrfunc or function(s) stdout:write(s) end
 	self.features = self.features or "hespcadlint"
 	self.docname = self.docname or "Manual"
+	self.author = self.author or false
+	self.created = self.created or false
 
 	self.column = false
 	self.inline = false

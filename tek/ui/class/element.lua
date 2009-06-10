@@ -16,35 +16,32 @@
 --
 --	ATTRIBUTES:
 --		- {{Application [G]}} ([[#tek.ui.class.application : Application]])
---			The Application the element is registered with, or '''false''';
---			this attribute is set during Element:setup().
+--			The Application the element is registered with.
+--			This attribute is set during Element:setup().
 --		- {{Class [IG]}} (string)
 --			The name of the element's style class, which can be referenced
---			in a style sheet, or '''false'''. Multiple classes can be
---			specified by separating them with spaces, e.g.
---			{{"button knob warn"}}.
+--			in a style sheet. Multiple classes can be specified by separating
+--			them with spaces, e.g. {{"button knob warn"}}
 --		- {{Id [IG]}} (string)
---			An unique Id identifying the element, or '''false'''. If present,
---			this Id will be registered with the Application during
---			Element:setup().
+--			An unique Id identifying the element. If present, this Id will be
+--			registered with the Application during Element:setup().
 --		- {{Parent [G]}} (object)
---			Parent object of the element, or '''false'''. This attribute
---			is set in the Element:connect() method.
+--			Parent object of the element. This attribute is set during
+--			Element:connect().
 --		- {{Style [IG]}} (string)
 --			Direct style formattings of the element, overriding class-wide
---			formattings in a style sheet, or '''false'''. Example:
---			{{"background-color: #880000; color: #ffff00"}}
+--			formattings in a style sheet. Example:
+--					"background-color: #880000; color: #ffff00"
 --		- {{Window [G]}} ([[#tek.ui.class.window : Window]])
---			The window the element is registered with, or '''false'''. This
+--			The Window the element is registered with. This
 --			attribute is set during Element:setup().
 --
 --	IMPLEMENTS::
 --		- Element:cleanup() - Unlinks the element from its environment
 --		- Element:connect() - Connects the element to a parent element
---		- Element:decodeProperties() - Decodes the element's style attributes
 --		- Element:disconnect() - Disconnects the element from its parent
 --		- Element:getAttr() - Gets an attribute from an element
---		- Element:getById() - Shortcut for self.Application:getById()
+--		- Element:getById() - Get Id of any registered element
 --		- Element:getNumProperty() - Retrieves a numerical style property
 --		- Element:getProperties() - Retrieves an element's style properties
 --		- Element:getProperty() - Retrieves a single style property
@@ -109,21 +106,18 @@ function Element.init(self)
 end
 
 -------------------------------------------------------------------------------
---	success = connect(parent): Attempts to connect the element to the
+--	success = Element:connect(parent): Attempts to connect the element to the
 --	{{parent}} element; returns a boolean indicating whether the connection
 --	succeeded.
 -------------------------------------------------------------------------------
 
 function Element:connect(parent)
-	assert(parent)
-	-- assert(not self.Parent)
 	self.Parent = parent
 	return true
 end
 
 -------------------------------------------------------------------------------
---	disconnect(): Disconnects the formerly connected element
---	from its parent.
+--	Element:disconnect(): Disconnects the element from its parent.
 -------------------------------------------------------------------------------
 
 function Element:disconnect()
@@ -131,7 +125,7 @@ function Element:disconnect()
 end
 
 -------------------------------------------------------------------------------
---	decodeProperties(props): Invokes the element's
+--	Element:decodeProperties(props) - Invokes the element's
 --	Element:getProperties() function, possibly multiple times, passing it
 --	(in turn) the decoded properties from the element's {{Style}} attribute,
 --	and global properties from one or more style sheets. [internal]
@@ -153,7 +147,7 @@ function Element:decodeProperties(props)
 end
 
 -------------------------------------------------------------------------------
---	setup(app, window): This function is used to pass the element the
+--	Element:setup(app, window): This function is used to pass the element the
 --	environment determined by an [[#tek.ui.class.application : Application]]
 --	and a [[#tek.ui.class.window : Window]].
 -------------------------------------------------------------------------------
@@ -168,7 +162,7 @@ function Element:setup(app, window)
 end
 
 -------------------------------------------------------------------------------
---	cleanup(): This function is used to unlink the element from its
+--	Element:cleanup(): This function is used to unlink the element from its
 --	[[#tek.ui.class.application : Application]] and
 --	[[#tek.ui.class.window : Window]].
 -------------------------------------------------------------------------------
@@ -183,7 +177,7 @@ function Element:cleanup()
 end
 
 -------------------------------------------------------------------------------
---	value = getProperty(properties, pseudoclass, attribute): Returns
+--	value = Element:getProperty(properties, pseudoclass, attribute): Returns
 --	the value of a style {{attribute}} from the specified {{properties}}
 --	table, or '''false''' if the attribute is undefined. {{pseudoclass}} can
 --	be the name of a pseudo class, '''false''' if no pseudo class is used, or
@@ -261,7 +255,7 @@ function Element:getProperty(props, pclass, attr)
 end
 
 -------------------------------------------------------------------------------
---	value = getNumProperty(properties, pseudoclass, attribute): Gets a
+--	value = Element:getNumProperty(properties, pseudoclass, attribute): Gets a
 --	property and converts it to a number value. See also Element:getProperty().
 -------------------------------------------------------------------------------
 
@@ -270,11 +264,11 @@ function Element:getNumProperty(props, pclass, attr)
 end
 
 -------------------------------------------------------------------------------
---	getProperties(properties, pseudoclass): This function is called
+--	Element:getProperties(properties, pseudoclass): This function is called
 --	after connecting the element, for retrieving style properties from a
 --	style sheet or from decoding the element's {{Style}} attribute
---	("direct formatting"). It can be invoked multiple times with different
---	pseudo classes and {{properties}}.
+--	(''direct formatting''). It can be invoked multiple times with different
+--	{{properties}} and pseudo classes.
 --	When overriding this function, among the reasonable things to do is to
 --	query properties using the Element:getProperty() function, passing it the
 --	{{properties}} and {{pseudoclass}} arguments. First recurse into your
@@ -287,9 +281,10 @@ function Element:getProperties(p, pclass)
 end
 
 -------------------------------------------------------------------------------
---	getById(id): Gets the element with the specified id, under which
---	it was previously registered with the Application. See also
---	Application:getById().
+--	Element:getById(id): Gets the element with the specified {{id}}, that was
+--	previously registered with the [[#tek.ui.class.application : Application]].
+--	This function is a shortcut for Application:getById(), applied to
+--	{{self.Application}}.
 -------------------------------------------------------------------------------
 
 function Element:getById(id)
@@ -297,11 +292,11 @@ function Element:getById(id)
 end
 
 -------------------------------------------------------------------------------
---	ret1, ... = getAttr(attr, ...): This function gets an attribute
---	from an element, and returns '''nil''' if the attribute is unknown.
---	This mechanism can be used for elements that wish to exchange data with
---	each other, without having to break in upon their common base class (which
---	may not be under their control), for adding a getter method.
+--	ret1, ... = Element:getAttr(attribute, ...): This function gets a named
+--	{{attribute}} from an element, and returns '''nil''' if it is unknown.
+--	This mechanism can be used by classes for exchanging data without having
+--	to add a getter method in their common base class (which may not be under
+--	the author's control).
 -------------------------------------------------------------------------------
 
 function Element:getAttr()

@@ -1,12 +1,20 @@
 
 == tekUI Changelog ==
 
+ * Argument parser: Arguments with whitespaces were treated incorrectly 
+ even if they were surrounded by quotes, corrected
+ * Documentation generator: Added --author, --created, --adddate options
+ * Markup: Added metadata options for "author" and "created"
+ * Canvas:damageChild() can now be called without a layout, allowing
+ ListGadget:repaint() to work outside Application:run()
+ * DirList: added onSelectEntry() handler
  * Application, Window: Major simplification in setup and closedown 
  procedure, the show() method is now invoked shortly after opening the
  window
  * Area: Changed meaning of the EraseBG attribute, removed calcOffset,
- BGPen renamed to BGColor
- * Drawable: removed closeFont(), fitMinAspect(), openFont()
+ BGPen renamed to BGColor, getElementByXY() renamed to Area:getByXY()
+ * Drawable: removed closeFont(), fitMinAspect(), openFont(), drawPlot()
+ renamed to drawPoint()
  * Gadget: Effect renamed to EffectClass, BGPen... to BG..., FGPen... to
  FG..., InitialFocus is now functional, removed onHold(), simplified
  * Gadget, FloatText: FGPen renamed to FGColor
@@ -15,7 +23,7 @@
  * Window:getWindowDimensions() renamed to askMinMax(), show() now invokes
  Group.show() before askMinMax(), now creates a Drawable during setup()
  and passes it to its superclass during show()
- * Theme, stylesheets: effect renamed to effect-class
+ * Theme, stylesheets: effect renamed to effect-class, smaller handles
  * Default Border, DrawHook, Border, Ripple Hook: show() renamed to
  setup(), hide() renamed to cleanup() 
  * Frame, ListGadget, TextInput: simplified

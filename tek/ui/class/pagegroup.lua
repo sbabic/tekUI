@@ -59,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 11.2"
+_VERSION = "PageGroup 12.0"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -129,11 +129,11 @@ function PageContainerGroup:refresh()
 end
 
 -------------------------------------------------------------------------------
---	getElementByXY: overrides
+--	getByXY: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:getElementByXY(x, y)
-	return self.PageElement:getElementByXY(x, y)
+function PageContainerGroup:getByXY(x, y)
+	return self.PageElement:getByXY(x, y)
 end
 
 -------------------------------------------------------------------------------

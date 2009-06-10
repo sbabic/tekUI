@@ -542,7 +542,7 @@ end
 
 -------------------------------------------------------------------------------
 --	onSetText: overrides. Do not pass the control back to Text, as it performs
---	a rethinkLayout():
+--	a rethinkLayout:
 -------------------------------------------------------------------------------
 
 function TextInput:onSetText(text)

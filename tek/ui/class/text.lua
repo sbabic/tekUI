@@ -15,7 +15,7 @@
 --		Text
 --
 --	OVERVIEW::
---		This gadget implements text rendering.
+--		This class implements gadgets with text.
 --
 --	ATTRIBUTES::
 --		- {{Font [IG]}} (string)
@@ -25,24 +25,24 @@
 --			occurence in the string; the first font that can be opened will be
 --			used. For the font names, the following placeholders with
 --			predefined meanings are supported:
---				- {{"ui-fixed"}}: The default fixed font
---				- {{"ui-main"}} or {{""}}: The default main font, e.g. for
---				buttons and menus
---				- {{"ui-small"}}: The default small font, e.g. for group
+--				* ''ui-fixed'' - The default fixed font
+--				* ''ui-main'' or an empty string - The default main font,
+--				e.g. for buttons and menus
+--				* ''ui-small'' - The default small font, e.g. for group
 --				captions
---				- {{"ui-large"}}: The default 'large' font
---				- {{"ui-huge"}}: The default 'huge' font
+--				* ''ui-large'' - The default 'large' font
+--				* ''ui-huge'' - The default 'huge' font
 --			If no font name is specified, the main font will be used.
 --			The size specification (in pixels) is optional as well; if absent,
 --			the respective font's default size will be used.
 --		- {{KeepMinHeight [IG]}} (boolean)
 --			After the initial size calculation, keep the minimal height of
---			the element and do not rethink the layout in regard to a
+--			the element and do not rethink the layout in response to a
 --			possible new minimal height (e.g. resulting from a newly set
 --			text).
 --		- {{KeepMinWidth [IG]}} (boolean)
 --			After the initial size calculation, keep the minimal width of
---			the element and do not rethink the layout in regard to a
+--			the element and do not rethink the layout in response to a
 --			possible new minimal width (e.g. resulting from a newly set text).
 --		- {{Text [ISG]}} (string)
 --			The text that will be displayed on the element; it may span
@@ -50,32 +50,31 @@
 --			attribute invokes the Text:onSetText() method.
 --		- {{TextHAlign [IG]}} ({{"left"}}, {{"center"}}, {{"right"}})
 --			The text's horizontal alignment, which will be used in
---			Text:makeTextRecords(). If '''false''' during initialization,
---			the class' default will be used. [Default:  {{"center"}}]
+--			Text:makeTextRecords(). If unspecified at initialization,
+--			the class' default will be used.
 --		- {{TextVAlign [IG]}} ({{"top"}}, {{"center"}}, {{"bottom"}})
 --			The text's vertical alignment, which will be used in
---			Text:makeTextRecords(). If '''false''' during initialization, the
---			class' default will be used. [Default: {{"center"}}]
---
---	IMPLEMENTS::
---		- Text:getTextSize() - Get total size of text records
---		- Text:makeTextRecords() - Break text into multiple text records
---		- Text:onSetText() - handler for the {{Text}} attribute
+--			Text:makeTextRecords(). If unspecified during initialization, the
+--			class' default will be used.
 --
 --	STYLE PROPERTIES::
---		- {{color2}} - secondary color used in disabled state
---		- {{font}}
---		- {{text-align}}
---		- {{vertical-align}}
+--		- ''color2'' || Secondary color for rendering text in disabled state
+--		- ''font'' || Controls the {{Text.Font}} attribute
+--		- ''text-align'' || Controls the {{Text.TextHAlign}} attribute
+--		- ''vertical-align'' || Controls the {{Text.TextVAlign}} attribute
+--
+--	IMPLEMENTS::
+--		- Text:getTextSize() - Gets the total extents of text records
+--		- Text:makeTextRecords() - Breaks text into multiple line records
+--		- Text:onSetText() - Handler for changes of the {{Text}} attribute
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
+--		- Element:cleanup()
+--		- Area:draw()
+--		- Element:getProperties()
 --		- Object.init()
 --		- Element:setup()
---		- Element:cleanup()
---		- Element:show()
---		- Element:hide()
---		- Area:setState()
 --
 -------------------------------------------------------------------------------
 

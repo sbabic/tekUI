@@ -22,7 +22,7 @@
 --			must have its {{AutoPosition}} attribute enabled as well for this
 --			option to take effect, but unlike the Area class, the Canvas
 --			disables it by default.
---		- {{BGColor [IG]}} (string or number)
+--		- {{BGColor [IG]}} (color specification)
 --			A color specification for painting the background of the element.
 --			Valid are predefined color numbers (e.g. {{ui.PEN_DETAIL}}),
 --			predefined color names (e.g. {{"detail"}}, see also 
@@ -128,26 +128,26 @@
 --			Note: Normally, "fill" is useful only once per group.
 --
 --	STYLE PROPERTIES::
---		- {{background-color}} - controls the {{Area.BGColor}} attribute
---		- {{background-position}} - controls the {{Area.BGPosition}} attribute
---		- {{height}} - controls the {{Area.Height}} attribute
---		- {{horizontal-grid-align}} - controls the {{Area.HAlign}} attribute
---		- {{margin}} - controls the {{Area.Margin}} attribute
---		- {{margin-bottom}} - controls the {{Area.Margin}} attribute
---		- {{margin-left}} - controls the {{Area.Margin}} attribute
---		- {{margin-right}} - controls the {{Area.Margin}} attribute
---		- {{margin-top}} - controls the {{Area.Margin}} attribute
---		- {{max-height}} - controls the {{Area.MaxHeight}} attribute
---		- {{max-width}} - controls the {{Area.MaxWidth}} attribute
---		- {{min-height}} - controls the {{Area.MinHeight}} attribute
---		- {{min-width}} - controls the {{Area.MinWidth}} attribute
---		- {{padding}} - controls the {{Area.Padding}} attribute
---		- {{padding-bottom}} - controls the {{Area.Padding}} attribute
---		- {{padding-left}} - controls the {{Area.Padding}} attribute
---		- {{padding-right}} - controls the {{Area.Padding}} attribute
---		- {{padding-top}} - controls the {{Area.Padding}} attribute
---		- {{vertical-grid-align}} - controls the {{Area.VAlign}} attribute
---		- {{width}} - controls the {{Area.Width}} attribute
+--		- ''background-color'' || controls the {{Area.BGColor}} attribute
+--		- ''background-position'' || controls the {{Area.BGPosition}} attribute
+--		- ''height'' || controls the {{Area.Height}} attribute
+--		- ''horizontal-grid-align'' || controls the {{Area.HAlign}} attribute
+--		- ''margin'' || controls the {{Area.Margin}} attribute
+--		- ''margin-bottom'' || controls the {{Area.Margin}} attribute
+--		- ''margin-left'' || controls the {{Area.Margin}} attribute
+--		- ''margin-right'' || controls the {{Area.Margin}} attribute
+--		- ''margin-top'' || controls the {{Area.Margin}} attribute
+--		- ''max-height'' || controls the {{Area.MaxHeight}} attribute
+--		- ''max-width'' || controls the {{Area.MaxWidth}} attribute
+--		- ''min-height'' || controls the {{Area.MinHeight}} attribute
+--		- ''min-width'' || controls the {{Area.MinWidth}} attribute
+--		- ''padding'' || controls the {{Area.Padding}} attribute
+--		- ''padding-bottom'' || controls the {{Area.Padding}} attribute
+--		- ''padding-left'' || controls the {{Area.Padding}} attribute
+--		- ''padding-right'' || controls the {{Area.Padding}} attribute
+--		- ''padding-top'' || controls the {{Area.Padding}} attribute
+--		- ''vertical-grid-align'' || controls the {{Area.VAlign}} attribute
+--		- ''width'' || controls the {{Area.Width}} attribute
 --
 --	IMPLEMENTS::
 --		- Area:askMinMax() - Queries element's minimum and maximum dimensions
@@ -170,15 +170,17 @@
 --		- Area:hide() - Disconnects the element from a Drawable
 --		- Area:layout() - Layouts the element into a rectangle
 --		- Area:passMsg() - Passes an input message to the element
---		- Area:punch() - [internal] Subtracts the outline of the element from a
+--		- Area:punch() - Subtracts the outline of the element from a
 --		[[#tek.lib.region : Region]]
---		- Area:refresh() - [internal] Repaints the element if necessary
---		- Area:relayout() - [internal] Relayouts the element if necessary
+--		- Area:refresh() - Repaints the element if necessary
+--		- Area:relayout() - Relayouts the element if necessary
 --		- Area:rethinkLayout() - Causes a relayout of the element and its group
 --		- Area:setState() - Sets the background attribute of an element
 --		- Area:show() - Connects the element to a Drawable
 --
 --	OVERRIDES::
+--		- Element:cleanup()
+--		- Element:getProperties()
 --		- Object.init()
 --		- Class.new()
 --		- Element:setup()
@@ -199,7 +201,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 24.1"
+_VERSION = "Area 25.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -334,7 +336,8 @@ end
 
 -------------------------------------------------------------------------------
 --	show(drawable): This function passes an element the
---	[[#tek.ui.class.drawable : Drawable]] that it will be rendered to.
+--	[[#tek.ui.class.drawable : Drawable]] that it will be rendered to. This
+--	function is called when the element's window is opened.
 -------------------------------------------------------------------------------
 
 function Area:show(drawable)
@@ -502,7 +505,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	found[, changed] = relayout(element, x0, y0, x1, y1) [internal]:
+--	found[, changed] = relayout(element, x0, y0, x1, y1):
 --	Traverses the element tree searching for the specified element, and if
 --	this class (or the class of one of its children) is responsible for it,
 --	layouts it to the specified rectangle. Returns '''true''' if the element
@@ -518,7 +521,7 @@ function Area:relayout(e, r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
---	punch(region) [internal]: Subtracts the element from (punching a
+--	punch(region): Subtracts the element from (punching a
 --	hole into) the specified Region. This function is called by the layouter.
 -------------------------------------------------------------------------------
 
@@ -606,7 +609,7 @@ function Area:erase()
 end
 
 -------------------------------------------------------------------------------
---	refresh() [internal]: Redraws the element (and all possible children)
+--	refresh(): Redraws the element (and all possible children)
 --	if they are marked as damaged. This function is called in the Window's
 --	update procedure.
 -------------------------------------------------------------------------------
@@ -620,11 +623,11 @@ function Area:refresh()
 end
 
 -------------------------------------------------------------------------------
---	self = getElementByXY(x, y): Returns {{self}} if the element covers
+--	self = getByXY(x, y): Returns {{self}} if the element covers
 --	the specified coordinate.
 -------------------------------------------------------------------------------
 
-function Area:getElementByXY(x, y)
+function Area:getByXY(x, y)
 	local r1, r2, r3, r4 = self:getRect()
 	if r1 and x >= r1 and x <= r3 and y >= r2 and y <= r4 then
 		return self

@@ -46,7 +46,7 @@
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Area:draw()
---		- Area:getElementByXY()
+--		- Area:getByXY()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
@@ -75,7 +75,7 @@ local reuseRegion = ui.reuseRegion
 local tonumber = tonumber
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 20.0"
+_VERSION = "Group 21.0"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -311,13 +311,13 @@ function Group:refresh()
 end
 
 -------------------------------------------------------------------------------
---	getElementByXY: overrides
+--	getByXY: overrides
 -------------------------------------------------------------------------------
 
-function Group:getElementByXY(x, y)
+function Group:getByXY(x, y)
 	local c = self.Children
 	for i = 1, #c do
-		local ret = c[i]:getElementByXY(x, y)
+		local ret = c[i]:getByXY(x, y)
 		if ret then
 			return ret
 		end

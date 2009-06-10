@@ -12,15 +12,15 @@
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
---		[[#tek.ui.class.gadget : Text]] /
+--		[[#tek.ui.class.text : Text]] /
 --		Button
 --
 --	OVERVIEW::
---		The Button class implements a Text element with a {{"button"}}
---		{{Mode}} (behavior) and {{"button"}} {{Class}} (appearance). In
---		addition to that, it enables the initialization of a possible
---		keyboard shortcut from a special initiatory character (by default
---		an underscore) preceding a letter in the element's {{Text}} attribute.
+--		The Button class implements a Text element with a ''button mode''
+--		(behavior) and ''button class'' (appearance). In addition to that,
+--		it enables the initialization of a possible keyboard shortcut from
+--		a special initiatory character (by default an underscore) preceding
+--		a letter in the element's {{Text}} attribute.
 --
 --	NOTES::
 --		This class adds redundancy, because it differs from the

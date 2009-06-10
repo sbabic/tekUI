@@ -32,9 +32,9 @@
 --			combinations with a qualifier should be used here, e.g.
 --			{{"Alt+C"}}, {{"Shift+Ctrl+Q"}}. Qualifiers are separated by
 --			 {{"+"}} and must precede the key. Valid qualifiers are:
---				- {{"Alt"}}, {{"LAlt"}}, "RAlt"}}
---				- {{"Shift"}}, {{"LShift"}}, "RShift"}}
---				- {{"Ctrl", {{"LCtrl"}}, {{"RCtrl"}}
+--				- {{"Alt"}}, {{"LAlt"}}, {{"RAlt"}}
+--				- {{"Shift"}}, {{"LShift"}}, {{"RShift"}}
+--				- {{"Ctrl"}}, {{"LCtrl"}}, {{"RCtrl"}}
 --				- {{"IgnoreCase"}}
 --			Alias names for keys are
 --				- {{"F1"}} ... {{"F12"}} (function keys),

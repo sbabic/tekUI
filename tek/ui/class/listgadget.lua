@@ -404,10 +404,10 @@ function ListGadget:remItem(lnr, quick)
 end
 
 -------------------------------------------------------------------------------
---	changeItem(item, line[, quick]): Overwrites the item at the
---	specified line in the list. The boolean {{quick}} indicates that the list
----	should not be relayouted and repainted. (For relayouting and repainting
---	the list after mass changes, see also ListGadget:repaint().)
+--	changeItem(item, line[, quick]): Overwrites the {{item}} at the
+--	specified {{line}} in the list. The boolean {{quick}} indicates that
+--	the list should not be relayouted and repainted. For relayouting and
+--	repainting the list after mass changes, see also ListGadget:repaint().
 -------------------------------------------------------------------------------
 
 function ListGadget:changeItem(entry, lnr, quick)

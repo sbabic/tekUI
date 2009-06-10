@@ -186,7 +186,7 @@ function UTF8String:set(s)
 end
 
 -------------------------------------------------------------------------------
---	object = UTF8String.new(class, string): Creates a string object from an
+--	string = UTF8String.new(class, string): Creates a string object from an
 --	(already UTF-8 encoded) regular string.
 -------------------------------------------------------------------------------
 

@@ -13,16 +13,34 @@
 		<blockquote>
 			<ul>
 				<li>
+					Argument parser: Arguments with whitespaces were treated incorrectly
+					even if they were surrounded by quotes, corrected
+				</li>
+				<li>
+					Documentation generator: Added --author, --created, --adddate options
+				</li>
+				<li>
+					Markup: Added metadata options for &quot;author&quot; and &quot;created&quot;
+				</li>
+				<li>
+					<a href="manual.html#Canvas:damageChild"><code>Canvas:damageChild()</code></a> can now be called without a layout, allowing
+					<a href="manual.html#ListGadget:repaint"><code>ListGadget:repaint()</code></a> to work outside <a href="manual.html#Application:run"><code>Application:run()</code></a> 
+				</li>
+				<li>
+					DirList: added <a href="manual.html#onSelectEntry"><code>onSelectEntry()</code></a> handler
+				</li>
+				<li>
 					Application, Window: Major simplification in setup and closedown
 					procedure, the <a href="manual.html#show"><code>show()</code></a> method is now invoked shortly after opening the
 					window
 				</li>
 				<li>
 					Area: Changed meaning of the EraseBG attribute, removed calcOffset,
-					BGPen renamed to BGColor
+					BGPen renamed to BGColor, <a href="manual.html#getElementByXY"><code>getElementByXY()</code></a> renamed to <a href="manual.html#Area:getByXY"><code>Area:getByXY()</code></a> 
 				</li>
 				<li>
-					Drawable: removed <a href="manual.html#closeFont"><code>closeFont()</code></a>, <a href="manual.html#fitMinAspect"><code>fitMinAspect()</code></a>, <a href="manual.html#openFont"><code>openFont()</code></a> 
+					Drawable: removed <a href="manual.html#closeFont"><code>closeFont()</code></a>, <a href="manual.html#fitMinAspect"><code>fitMinAspect()</code></a>, <a href="manual.html#openFont"><code>openFont()</code></a>, <a href="manual.html#drawPlot"><code>drawPlot()</code></a> 
+					renamed to <a href="manual.html#drawPoint"><code>drawPoint()</code></a> 
 				</li>
 				<li>
 					Gadget: Effect renamed to EffectClass, BGPen... to BG..., FGPen... to
@@ -43,7 +61,7 @@
 					and passes it to its superclass during <a href="manual.html#show"><code>show()</code></a> 
 				</li>
 				<li>
-					Theme, stylesheets: effect renamed to effect-class
+					Theme, stylesheets: effect renamed to effect-class, smaller handles
 				</li>
 				<li>
 					Default Border, DrawHook, Border, Ripple Hook: <a href="manual.html#show"><code>show()</code></a> renamed to

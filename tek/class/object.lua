@@ -11,7 +11,7 @@
 --	OVERVIEW::
 --		This class implements notifications.
 --
---	ATTRIBUTES:
+--	ATTRIBUTES::
 --		- {{Notifications [I]}} (table)
 --			Initial set of notifications. Static initialization of
 --			notifications has this form:
@@ -31,8 +31,8 @@
 --					  ["attribute-name2"] = ...
 --					}
 --
---			Refer to Object:addNotify() for the possible placeholders for
---			values and a description of the action data structure.
+--			Refer to Object:addNotify() for possible placeholders
+--			and a description of the action data structure.
 --
 --	IMPLEMENTS::
 --		- Object:addNotify() - Adds a notification to an object
@@ -90,10 +90,10 @@ end
 
 -------------------------------------------------------------------------------
 --	object = Object.init(object): This function is called during Object.new()
---	before passing control to {{superclass.new()}}; by convention, {{new()}}
+--	before passing control to {{superclass.new()}}. By convention, {{new()}}
 --	is used to claim resources (e.g. to create tables), whereas the {{init()}}
 --	function is used to initialize them. Calling {{init()}} separately from
---	{{new()}} can be sensible for reinitializing and reusing objects.
+--	{{new()}} can be reasonable for reinitializing and reusing objects.
 -------------------------------------------------------------------------------
 
 function Object.init(self)
@@ -164,7 +164,7 @@ end
 --	Object:addNotify(attr, val, dest[, pos]):
 --	Adds a notification to an object. {{attr}} is the name of an attribute to
 --	react on setting its value. {{val}} is the value that triggers the
---	notification. The {{ui.NOTIFY_ALWAYS}} placeholder is supported for
+--	notification. The placeholder {{ui.NOTIFY_ALWAYS}} can be used for
 --	reacting on any change of the value.
 --	{{dest}} is a table describing the action to take when the notification
 --	occurs; it has the general form:
@@ -193,16 +193,18 @@ end
 --		* {{ui.NOTIFY_APPLICATION}} - to address the
 --		[[Application][#tek.ui.class.application]] the object is connected to
 --		* {{ui.NOTIFY_COROUTINE}} - like {{ui.NOTIFY_FUNCTION}}, but the
---		function will be launched by the
---		[[Application][#tek.ui.class.application]] as a coroutine. See also
+--		function will be launched as a coroutine by the
+--		[[Application][#tek.ui.class.application]]. See also
 --		Application:addCoroutine() for further details.
 --	In any case, the {{method}} will be invoked as follows:
 --			method(object, arg1, ...)
 --	The optional {{pos}} argument allows for insertion at the specified
 --	position in the list of notifications. By default, notifications are
 --	added at the end, and the only reasonable value for {{pos}} is {{1}}.
+--
 --	If the destination object or addressed method cannot be determined,
 --	nothing else besides setting the attribute will happen.
+--
 --	Notifications should be removed using Object:remNotify() when they are
 --	no longer needed, to reduce overhead and memory use.
 ------------------------------------------------------------------------------
@@ -224,7 +226,7 @@ end
 
 -------------------------------------------------------------------------------
 --	success = Object:remNotify(attr, val, dest):
---	Removes a notification from an object and returns '''true''' when it
+--	Removes a notification from an object and returns '''true''' if it
 --	was found and removed successfully. You must specify the exact set of
 --	arguments as for Object:addNotify() to identify a notification.
 -------------------------------------------------------------------------------
