@@ -13,6 +13,9 @@
 #include <tek/mod/visual.h>
 #include <tek/inline/exec.h>
 #include <tek/proto/display.h>
+#if !defined(VISUAL_USE_INTERNAL_HASH)
+#include <tek/proto/util.h>
+#endif
 
 /*****************************************************************************/
 
@@ -51,6 +54,12 @@ struct TVisualBase
 {
 	/* Module header: */
 	struct TModule vis_Module;
+	
+	#if !defined(VISUAL_USE_INTERNAL_HASH)
+	/* Util module base ptr: */
+	TAPTR vis_UtilBase;
+	#endif
+	
 	/* Module global memory manager (thread safe): */
 	TAPTR vis_MemMgr;
 	/* Locking for module base structure: */
@@ -83,6 +92,8 @@ struct TVisualBase
 
 #define TVISFL_CMDRPORT_OWNER	0x0001
 #define TVISFL_IMSGPORT_OWNER	0x0002
+
+/*****************************************************************************/
 
 LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, TAPTR udata);
 LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash);

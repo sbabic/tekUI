@@ -9,6 +9,61 @@
 
 /*****************************************************************************/
 
+#if !defined(VISUAL_USE_INTERNAL_HASH)
+
+LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, TAPTR udata)
+{
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	mod->vis_UtilBase = TOpenModule("util", 0, TNULL);
+	if (mod->vis_UtilBase)
+	{
+		TTAGITEM tags[2];
+		TAPTR hash;
+		tags[0].tti_Tag = THash_Type;
+		tags[0].tti_Value = THASHTYPE_STRINGCOPY;
+		tags[1].tti_Tag = TTAG_DONE;
+		hash = TUtilCreateHash(mod->vis_UtilBase, tags);
+		if (hash)
+			return hash;
+		vis_destroyhash(mod, TNULL);
+	}
+	return TNULL;
+}
+
+LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash)
+{
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	if (hash)
+		TDestroy((struct THandle *) hash);
+	if (mod->vis_UtilBase)
+		TCloseModule(mod->vis_UtilBase);
+	mod->vis_UtilBase = TNULL;
+}
+
+LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash,
+	const TSTRPTR key, TTAG value)
+{
+	return TUtilPutHash(mod->vis_UtilBase, (struct THash *) hash,
+		(TTAG) key, value);
+}
+
+LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash,
+	const TSTRPTR key, TTAG *valp)
+{
+	return TUtilGetHash(mod->vis_UtilBase, (struct THash *) hash,
+		(TTAG) key, valp);
+}
+
+LOCAL TUINT vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash,
+	struct TList *list)
+{
+	return TUtilHashToList(mod->vis_UtilBase, (struct THash *) hash, list);
+}
+
+#endif
+
+/*****************************************************************************/
+
 static struct TVRequest *visi_getreq(struct TVisualBase *inst, TUINT cmd,
 	struct TDisplayBase *display, TTAGITEM *tags)
 {

@@ -1,6 +1,8 @@
 
 == tekUI Changelog ==
 
+=== 0.8g: ===
+
  * Argument parser: Arguments with whitespaces were treated incorrectly 
  even if they were surrounded by quotes, corrected
  * Documentation generator: Added --author, --created, --adddate options
@@ -32,6 +34,9 @@
  cleanup
  * Application, Area and demos: Some cleanup, improved documentation,
  demos, texts and imagery
+ * Visual module: Added VISUAL_USE_INTERNAL_HASH compile-time option
+ * Gendoc: Added --heading option
+ * Theme, internal stylesheet: Slightly changed looks of handles
 
 === 0.8f: ===
 

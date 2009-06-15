@@ -428,7 +428,9 @@ function processtree(state)
 		-- Class index:
 
 		state.classdiagram = { }
-		insert(state.classdiagram, RULE .. "\n")
+		if state.heading then
+			insert(state.classdiagram, RULE .. "\n")
+		end
 		insert(state.classdiagram, "==( Class Overview )==\n")
 
 		for key, val in pairs(state.index) do
@@ -513,8 +515,8 @@ function processtree(state)
 	insert(state.documentation, "\n" .. PAGE .. "\n\n")
 	insert(state.documentation, "Document generated on " .. os.date() .. "\n")
 
-	if state.docname then
-		insert(state.documentation, 1, "\n= " .. state.docname .. " =\n\n")
+	if state.heading then
+		insert(state.documentation, 1, "\n= " .. state.heading .. " =\n\n")
 	end
 
 end
@@ -546,7 +548,7 @@ end
 -------------------------------------------------------------------------------
 
 local template = "-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S," ..
-	"-e=EMPTY/S,--header/K,--author/K,--created/K,--adddate/S," ..
+	"-e=EMPTY/S,--heading/K,--header/K,--author/K,--created/K,--adddate/S," ..
 	"-r=REFDOC/K,-n=NAME/F"
 
 local args = Args.read(template, arg)
@@ -560,6 +562,7 @@ if not args or args["-h"] then
 	print("  -i=IINDENT/N/K indent character code in input [default 9]")
 	print("  -p=PLAIN/S     generate formatted plain text instead of HTML")
 	print("  -e=EMPTY/S     also show empty (undocumented) modules in index")
+	print("  --heading/K    single-line document heading")
 	print("  --header/K     read a header from the specified file")
 	print("  --author/K     document author (HTML generator metadata)")
 	print("  --created/K    creation date (HTML generator metadata)")
@@ -576,14 +579,20 @@ if not args or args["-h"] then
 
 else
 
-	local state = { from = args["-f"], plain = args["-p"],
-		docname = args["-n"], showempty = args["-e"] }
+	local state = 
+	{
+		from = args["-f"], 
+		plain = args["-p"],
+		docname = args["-n"], 
+		heading = args["--heading"],
+		showempty = args["-e"]
+	}
 
 	state.textdoc = ""
 	
 	state.created = args["--created"]
 	if args["--adddate"] then
-		state.created = os.date("%Y-%m-%d")
+		state.created = os.date("%d-%b-%Y")
 	end
 
 	if args["--header"] then
@@ -603,11 +612,15 @@ else
 	if state.plain then
 		print(state.textdoc)
 	else
-		DocMarkup:new { input = state.textdoc, docname = args["-n"],
+		DocMarkup:new 
+		{ 
+			input = state.textdoc, 
+			docname = args["-n"],
 			refdoc = args["-r"] or false,
 			author = args["--author"],
 			created = state.created,
-			indentchar = string.char(args["-i"] or 9) }:run()
+			indentchar = string.char(args["-i"] or 9) 
+		}:run()
 	end
 
 end

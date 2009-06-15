@@ -26,7 +26,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 7.1"
+_VERSION = "Theme 7.2"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -119,7 +119,8 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["effect-kind"] = "slant",
 		["border-width"] = 0,
 		["background-color"] = "parent-group",
-		["padding"] = 3,
+		["padding"] = 4,
+		["margin"] = 0,
 	},
 
 	["tek.ui.class.handle:active"] = {

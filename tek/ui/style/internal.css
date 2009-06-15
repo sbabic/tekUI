@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.19
+**	Version: 1.20
 */
 
 /*
@@ -98,7 +98,8 @@ tek.ui.class.handle {
 	effect-kind: slant;
 	border-width: 0;
 	background-color: parent-group;
-	padding: 3;
+	padding: 4;
+	margin: 0;
 }
 
 tek.ui.class.handle:active {
