@@ -2,7 +2,6 @@
 #define _TEK_STDCALL_VISUAL_H
 
 /*
-**	$Id: visual.h $
 **	teklib/tek/stdcall/visual.h - visual module interface
 **
 **	See copyright notice in teklib/COPYRIGHT

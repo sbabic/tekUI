@@ -35,6 +35,7 @@
 
 /*****************************************************************************/
 
+#if defined(VISUAL_USE_INTERNAL_HASH)
 struct vis_Hash;
 
 struct vis_HashNode
@@ -44,6 +45,7 @@ struct vis_HashNode
 	TTAG value;
 	TUINT hash;
 };
+#endif
 
 struct vis_FontQueryHandle
 {

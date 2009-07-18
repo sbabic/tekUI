@@ -277,8 +277,13 @@ vis_exit(struct TVisualBase *mod)
 		vis_hashtolist(mod, mod->vis_Displays, &dlist);
 		for (node = dlist.tlh_Head; (next = node->tln_Succ); node = next)
 		{
+			#if defined(VISUAL_USE_INTERNAL_HASH)
 			struct TModule *dmod = (struct TModule *)
 				((struct vis_HashNode *) node)->value;
+			#else
+			struct TModule *dmod = (struct TModule *)
+				((struct THashNode *) node)->thn_Value;
+			#endif
 			TCloseModule(dmod);
 		}
 

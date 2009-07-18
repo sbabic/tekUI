@@ -255,7 +255,7 @@ EXPORT struct TVisualBase *vis_attach(struct TVisualBase *mod, TTAGITEM *tags)
 
 EXPORT struct TVRequest *vis_openfont(struct TVisualBase *mod, TTAGITEM *tags)
 {
-	struct TVRequest *fontreq = visi_getreq(mod, TVCMD_OPENFONT, TNULL, tags);
+	struct TVRequest *fontreq = visi_getreq(mod, TVCMD_OPENFONT, mod->vis_Display, tags);
 	if (fontreq)
 	{
 		struct TExecBase *TExecBase = TGetExecBase(mod);
@@ -319,7 +319,7 @@ EXPORT TAPTR vis_queryfonts(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	TAPTR handle = TNULL;
 	struct TExecBase *TExecBase = TGetExecBase(mod);
-	struct TVRequest *req = visi_getreq(mod, TVCMD_QUERYFONTS, TNULL, tags);
+	struct TVRequest *req = visi_getreq(mod, TVCMD_QUERYFONTS, mod->vis_Display, tags);
 	if (req)
 	{
 		req->tvr_Op.QueryFonts.Tags = tags;

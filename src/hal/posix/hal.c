@@ -138,7 +138,7 @@ hal_freeself(TAPTR handle, TAPTR mem, TUINT size)
 */
 
 EXPORT TAPTR
-hal_alloc(struct THALBase *hal, TUINT size)
+hal_alloc(struct THALBase *hal, TSIZE size)
 {
 	TAPTR mem = malloc(size);
 	#ifdef TRACKMEM
@@ -155,7 +155,7 @@ hal_alloc(struct THALBase *hal, TUINT size)
 }
 
 EXPORT TAPTR
-hal_realloc(struct THALBase *hal, TAPTR mem, TUINT oldsize, TUINT newsize)
+hal_realloc(struct THALBase *hal, TAPTR mem, TSIZE oldsize, TSIZE newsize)
 {
 	TAPTR newmem;
 
@@ -183,7 +183,7 @@ hal_realloc(struct THALBase *hal, TAPTR mem, TUINT oldsize, TUINT newsize)
 }
 
 EXPORT void
-hal_free(struct THALBase *hal, TAPTR mem, TUINT size)
+hal_free(struct THALBase *hal, TAPTR mem, TSIZE size)
 {
 	#ifdef TRACKMEM
 	if (mem)

@@ -192,7 +192,7 @@ between GUI elements as well as many application tasks.
 
 The only admission to a more common appearance is that tekUI tries to
 import the color scheme found in a GTK+ configuration file. It can be
-conveniently created in the KDE configuration panel; thus, if you are
+created conveniently in the KDE configuration panel; thus, if you are
 using KDE and check the appropriate option, KDE, GTK+ and tekUI can
 all share the same color scheme.
 
