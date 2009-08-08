@@ -93,13 +93,16 @@ local ui = require "tek.ui"
 local Drawable = ui.Drawable
 local Gadget = ui.Gadget
 local Group = ui.Group
+local Region = require "tek.lib.region"
 
 local assert = assert
 local floor = math.floor
 local freeRegion = ui.freeRegion
 local insert = table.insert
+local intersect = Region.intersect
 local max = math.max
 local min = math.min
+local newRegion = ui.newRegion
 local pairs = pairs
 local remove = table.remove
 local sort = table.sort
@@ -108,7 +111,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 19.0"
+_VERSION = "Window 21.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -707,6 +710,7 @@ function Window:refresh()
 	end
 	self.CopyObjects = { }
 	Group.refresh(self)
+	d:flush()
 end
 
 -------------------------------------------------------------------------------
@@ -736,7 +740,7 @@ function Window:update()
 						self:relayout(group, r1 - m[1], r2 - m[2],
 							r3 + m[3], r4 + m[4])
 					else
-						db.info("%s : layout not available",
+						db.warn("%s : layout not available",
 							group:getClassName())
 					end
 					if markdamage == 1 then
@@ -1071,4 +1075,24 @@ end
 
 function Window:onHide()
 	self:setValue("Status", "hide")
+end
+
+-------------------------------------------------------------------------------
+--	addBlit:
+-------------------------------------------------------------------------------
+
+function Window:addBlit(x0, y0, x1, y1, dx, dy, c1, c2, c3, c4)
+	if c1 then
+		x0, y0, x1, y1 = 
+			intersect(x0, y0, x1, y1, c1 - dx, c2 - dy, c3 - dx, c4 - dy)
+	end
+	if x0 then
+		local key = ("%d:%d"):format(dx, dy)
+		local ca = self.CopyArea
+		if ca[key] then
+			ca[key][3]:orRect(x0, y0, x1, y1)
+		else
+			ca[key] = { dx, dy, newRegion(x0, y0, x1, y1) }
+		end
+	end
 end

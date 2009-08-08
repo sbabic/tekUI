@@ -286,7 +286,7 @@ LOCAL TAPTR dfb_hostopenfont(DFBDISPLAY *mod, TTAGITEM *tags);
 LOCAL void dfb_hostclosefont(DFBDISPLAY *mod, TAPTR font);
 LOCAL void dfb_hostsetfont(DFBDISPLAY *mod, DFBWINDOW *v, TAPTR font);
 LOCAL TTAGITEM *dfb_hostgetnextfont(DFBDISPLAY *mod, TAPTR fqhandle);
-LOCAL TINT dfb_hosttextsize(DFBDISPLAY *mod, TAPTR font, TSTRPTR text);
+LOCAL TINT dfb_hosttextsize(DFBDISPLAY *mod, TAPTR font, TSTRPTR text, size_t len);
 LOCAL THOOKENTRY TTAG dfb_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg);
 LOCAL TAPTR dfb_hostqueryfonts(DFBDISPLAY *mod, TTAGITEM *tags);
 

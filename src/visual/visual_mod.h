@@ -119,7 +119,8 @@ EXPORT struct TVRequest *vis_openfont(struct TVisualBase *mod, TTAGITEM *tags);
 EXPORT void vis_closefont(struct TVisualBase *mod, struct TVRequest *font);
 EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, struct TVRequest *font,
 	TTAGITEM *tags);
-EXPORT TINT vis_textsize(struct TVisualBase *mod, struct TVRequest *font, TSTRPTR t);
+EXPORT TINT vis_textsize(struct TVisualBase *mod, struct TVRequest *font,
+	TSTRPTR text, TINT numchars);
 EXPORT TAPTR vis_queryfonts(struct TVisualBase *mod, TTAGITEM *tags);
 EXPORT TTAGITEM *vis_getnextfont(struct TVisualBase *mod, TAPTR fqhandle);
 

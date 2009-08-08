@@ -19,6 +19,10 @@
 --		This class implements a directory lister.
 --
 --	ATTRIBUTES::
+--		- {{AutoWidth [IG]}} (boolean)
+--			Tells the directory lister to adapt its contents dynamically to
+--			the width of the element. By default, the column widths remain
+--			adjusted to the initial width.
 --		- {{Kind [IG]}} (string)
 --			The visual appearance (or purpose) of the lister, which will
 --			determine the presence and arrangement of some interface elements:
@@ -78,7 +82,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 12.0"
+_VERSION = "DirList 13.0"
 
 local DirList = _M
 
@@ -159,6 +163,7 @@ function DirList.new(class, self)
 
 	self = self or { }
 
+	self.AutoWidth = self.AutoWidth or false
 	self.Path = self.Path or ""
 	self.Location = self.Location or ""
 
@@ -247,7 +252,7 @@ function DirList.new(class, self)
 		VSliderMode = "on",
 		Child = ui.Canvas:new
 		{
-			AutoWidth = false,
+			AutoWidth = self.AutoWidth,
 			Child = self.ListGadget
 		}
 	}

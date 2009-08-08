@@ -24,6 +24,7 @@
    - 3.2.1 [[#notefbsd : FreeBSD notes]]
    - 3.2.2 [[#notex11 : X11 notes]]
    - 3.2.3 [[#notenanox : Nano-X notes]]
+   - 3.2.4 [[#noterawfb : Raw framebuffer notes]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
@@ -78,10 +79,9 @@ See [[copyright][copyright.html]].
 
 TekUI is in early stage of development. It is available for the
 Linux, Windows, and FreeBSD platforms. Display drivers are available
-for X11, Windows, DirectFB, and Nano-X. See also [[TODO][todo.html]]
-for a list of known bugs and missing features, and 
-[[#requirements]]
-for a list of the required packages.
+for X11, Windows, DirectFB, Nano-X, and a ''raw framebuffer''. See
+also [[TODO][todo.html]] for a list of known bugs and missing
+features, and [[#requirements]] for a list of the required packages.
 
 ==( development : 1.3. Development model )==
 
@@ -211,8 +211,8 @@ The C library isolates from the host and provides a few
 performance-critical routines. Rendering and input handling are
 provided in the form of display drivers, which allow for easy
 exchangeability. Display drivers currently supported are for X11,
-Windows, [[DirectFB][http://www.directfb.org/]], and
-[[Nano-X][http://www.nano-x.org/]].
+Windows, [[DirectFB][http://www.directfb.org/]],
+[[Nano-X][http://www.nano-x.org/]], and a raw framebuffer.
 
 Aside from the display driver interface, the C library features
 OS-like facilities such as portable threads, a timer device and
@@ -334,6 +334,18 @@ window manager. See also {{tek/ui/style/nanox.css}} for more
 information. Example:
 
   # nano-X & THEME=nanox FULLSCREEN=true bin/demo_custom.lua
+
+===( noterawfb : 3.2.4. Raw framebuffer notes )===
+
+The raw framebuffer driver is available as part of the commercially
+supported version. Drawing primitives, clipping, and antialiased
+fonts are provided, and rendering can be targeted to user-supplied
+memory. This driver implements no input and serves as a template
+(or skeleton) for specializations in a target context, like custom
+hardware or a 3D game or simulation. For testing and debugging, the
+raw framebuffer driver is recursive; by plugging in another display
+driver, an instant visualization device and input source can be
+provided.
 
 ==( building : 3.3. Building )==
 

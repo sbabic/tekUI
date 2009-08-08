@@ -21,7 +21,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 	if (v == TNULL) return;
 
 	v->userdata = TGetTag(tags, TVisual_UserData, TNULL);
-
+	
 	for (;;)
 	{
 		XSetWindowAttributes swa;
@@ -30,11 +30,28 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		TUINT gcv_mask;
 		struct FontNode *fn;
 		XWindowAttributes rootwa;
-		TBOOL grabkeyboard = TFALSE;
-
+		TBOOL setfocus = TFALSE;
+		TINT sw, sh;
+		TBOOL borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
+		TINT minw = (TINT) TGetTag(tags, TVisual_MinWidth, -1);
+		TINT minh = (TINT) TGetTag(tags, TVisual_MinHeight, -1);
+		TINT maxw = (TINT) TGetTag(tags, TVisual_MaxWidth, 1000000);
+		TINT maxh = (TINT) TGetTag(tags, TVisual_MaxHeight, 1000000);
+		
 		/* gain access to root window properties: */
 		XGetWindowAttributes(mod->x11_Display,
 			DefaultRootWindow(mod->x11_Display), &rootwa);
+		
+		if (mod->x11_FullScreenWidth == 0)
+		{
+			sw = WidthOfScreen(rootwa.screen);
+			sh = HeightOfScreen(rootwa.screen);
+		}
+		else
+		{
+			sw = mod->x11_FullScreenWidth;
+			sh = mod->x11_FullScreenHeight;
+		}
 
 		swa_mask = CWColormap | CWEventMask;
 
@@ -58,38 +75,81 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 
 		/* size/position calculation: */
 
-		v->winwidth = (TINT) TGetTag(tags,
-			TVisual_Width,
-			(TTAG) TMIN(WidthOfScreen(rootwa.screen), DEF_WINWIDTH));
-		v->winheight = (TINT) TGetTag(tags,
-			TVisual_Height,
-			(TTAG) TMIN(HeightOfScreen(rootwa.screen), DEF_WINHEIGHT));
+		v->winwidth = (TINT) TGetTag(tags, TVisual_Width, DEF_WINWIDTH);
+		v->winheight = (TINT) TGetTag(tags, TVisual_Height, DEF_WINHEIGHT);
+		
+		v->winwidth = TCLAMP(minw, v->winwidth, maxw);
+		v->winheight = TCLAMP(minh, v->winheight, maxh);
+		v->winwidth = TMIN(v->winwidth, sw);
+		v->winheight = TMIN(v->winheight, sh);
 
-		if (TGetTag(tags, TVisual_Center, TFALSE))
+		v->changevidmode = TFALSE;
+		
+		if (TGetTag(tags, TVisual_FullScreen, TFALSE))
 		{
-			v->winleft = (WidthOfScreen(rootwa.screen) - v->winwidth) / 2;
-			v->wintop = (HeightOfScreen(rootwa.screen) - v->winheight) / 2;
-		}
-		else if (TGetTag(tags, TVisual_FullScreen, TFALSE))
-		{
-			v->winwidth = WidthOfScreen(rootwa.screen);
-			v->winheight = HeightOfScreen(rootwa.screen);
+			#if defined(ENABLE_XVID)
+			if (mod->x11_FullScreenWidth == 0)
+			{
+				XF86VidModeModeInfo **modes;
+				int modeNum;
+				int i;
+				XF86VidModeGetAllModeLines(mod->x11_Display, 
+					mod->x11_Screen, &modeNum, &modes);
+				for (i = 0; i < modeNum; i++)
+				{
+					if ((modes[i]->hdisplay == v->winwidth) && 
+						(modes[i]->vdisplay == v->winheight))
+					{
+						mod->x11_OldMode = *modes[0];
+						mod->x11_VidMode = *modes[i];
+						v->changevidmode = TTRUE;
+						break;
+					}
+				}
+				XFree(modes);
+			}
+			#endif
+			
+			if (!v->changevidmode)
+			{
+				v->winwidth = sw;
+				v->winheight = sh;
+			}
 			v->winleft = 0;
-			v->wintop = 0;
-			swa_mask |= CWOverrideRedirect;
-			swa.override_redirect = True;
-			grabkeyboard = TTRUE;
+			v->wintop = 0;			
+			borderless = TTRUE;
+			setfocus = TTRUE;
+			mod->x11_FullScreen = TTRUE;
 		}
 		else
 		{
-			v->winleft = (int) TGetTag(tags, TVisual_WinLeft, (TTAG) -1);
-			v->wintop = (int) TGetTag(tags, TVisual_WinTop, (TTAG) -1);
+			if (TGetTag(tags, TVisual_Center, TFALSE))
+			{
+				v->winleft = (sw - v->winwidth) / 2;
+				v->wintop = (sh - v->winheight) / 2;
+			}
+			else
+			{
+				v->winleft = (int) TGetTag(tags, TVisual_WinLeft, (TTAG) -1);
+				v->wintop = (int) TGetTag(tags, TVisual_WinTop, (TTAG) -1);
+			}
+			
+			if (mod->x11_FullScreen)
+			{
+				borderless = TTRUE;
+				if (!TGetTag(tags, TVisual_Borderless, TFALSE))
+					setfocus = TTRUE;
+				if (v->winleft == -1)
+					v->winleft = (sw - v->winwidth) / 2;
+				if (v->wintop == -1)
+					v->wintop = (sh - v->winheight) / 2;
+			}
 		}
-
+		
 		if (v->winleft >= 0 || v->wintop >= 0)
 			v->sizehints->flags |= USPosition | USSize;
 
-		if (!TGetTag(tags, TVisual_Borderless, TFALSE))
+		if (!borderless)
 		{
 			v->sizehints->min_width = (TINT)
 				TGetTag(tags, TVisual_MinWidth, (TTAG) -1);
@@ -124,7 +184,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		v->winleft = TMAX(v->winleft, 0);
 		v->wintop = TMAX(v->wintop, 0);
 
-		if (TGetTag(tags, TVisual_Borderless, TFALSE))
+		if (borderless)
 		{
 			swa_mask |= CWOverrideRedirect;
 			swa.override_redirect = True;
@@ -184,12 +244,6 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 
 		XMapWindow(mod->x11_Display, v->window);
 
-		if (grabkeyboard)
-		{
-			XGrabKeyboard(mod->x11_Display,
-				v->window, True, GrabModeAsync, GrabModeAsync, CurrentTime);
-		}
-
 		#if defined(ENABLE_XFT)
 		if (mod->x11_use_xft)
 		{
@@ -201,6 +255,26 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 
 		v->bgpen = TVPEN_UNDEFINED;
 		v->fgpen = TVPEN_UNDEFINED;
+
+		#if defined(ENABLE_XVID)
+		/* enter fullscreen vidmode? */
+		if (v->changevidmode)
+		{
+			XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
+				&mod->x11_VidMode);
+			XF86VidModeSetViewPort(mod->x11_Display, mod->x11_Screen, 0, 0);
+			XWarpPointer(mod->x11_Display, None, v->window,
+				0, 0, 0, 0, 0, 0);
+			XGrabPointer(mod->x11_Display, v->window, True, 
+				ButtonPressMask, GrabModeAsync, GrabModeAsync,
+				v->window, None, CurrentTime);
+			mod->x11_FullScreenWidth = v->winwidth;
+			mod->x11_FullScreenHeight = v->winheight;
+		}
+		#endif
+
+		if (setfocus)
+			XSetInputFocus(mod->x11_Display, v->window, RevertToParent, CurrentTime);
 
 		TDBPRINTF(TDB_TRACE,("Created new window: %p\n", v->window));
 		TAddTail(&mod->x11_vlist, &v->node);
@@ -223,6 +297,17 @@ LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req)
 	X11WINDOW *v = req->tvr_Op.OpenWindow.Window;
 	struct X11Pen *pen;
 	if (v == TNULL) return;
+
+	#if defined(ENABLE_XVID)
+	if (v->changevidmode)
+	{
+		XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
+			&mod->x11_OldMode);
+		XF86VidModeSetViewPort(mod->x11_Display, mod->x11_Screen, 0, 0);
+		mod->x11_FullScreenWidth = 0;
+		mod->x11_FullScreenHeight = 0;
+	}
+	#endif
 
 	TRemove(&v->node);
 
@@ -786,7 +871,7 @@ LOCAL void x11_textsize(X11DISPLAY *mod, struct TVRequest *req)
 {
 	req->tvr_Op.TextSize.Width =
 		x11_hosttextsize(mod, req->tvr_Op.TextSize.Font,
-			req->tvr_Op.TextSize.Text, strlen(req->tvr_Op.TextSize.Text));
+			req->tvr_Op.TextSize.Text, req->tvr_Op.TextSize.NumChars);
 }
 
 /*****************************************************************************/

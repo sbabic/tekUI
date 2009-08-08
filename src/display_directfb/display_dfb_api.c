@@ -738,7 +738,7 @@ dfb_drawtext(DFBDISPLAY *mod, struct TVRequest *req)
 	TUINT x = req->tvr_Op.Text.X;
 	TUINT y = req->tvr_Op.Text.Y;
 	TINT w;
-	TINT h = ((struct FontNode *) v->curfont)->height;
+	/*TINT h = ((struct FontNode *) v->curfont)->height;*/
 	struct DFBPen *fgpen = (struct DFBPen *) req->tvr_Op.Text.FgPen;
 	TINT ascent = ((struct FontNode *) v->curfont)->ascent;
 	IDirectFBFont *f = ((struct FontNode *) v->curfont)->font;
@@ -771,9 +771,9 @@ dfb_openfont(DFBDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 dfb_textsize(DFBDISPLAY *mod, struct TVRequest *req)
 {
-	req->tvr_Op.TextSize.Width =
-		dfb_hosttextsize(mod, req->tvr_Op.TextSize.Font,
-			req->tvr_Op.TextSize.Text);
+	req->tvr_Op.TextSize.Width = dfb_hosttextsize(mod, 
+		req->tvr_Op.TextSize.Font, req->tvr_Op.TextSize.Text, 
+		req->tvr_Op.TextSize.NumChars);
 }
 
 /*****************************************************************************/

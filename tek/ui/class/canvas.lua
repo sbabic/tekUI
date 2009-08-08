@@ -97,7 +97,7 @@ local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 18.0"
+_VERSION = "Canvas 18.1"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -234,7 +234,7 @@ end
 
 function Canvas:layout(r1, r2, r3, r4, markdamage)
 
-	local sizechanged = false
+	local sizechanged
 	local m = self.MarginAndBorder
 	local r = self.Rect
 	local c = self.Child

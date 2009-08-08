@@ -108,7 +108,8 @@ struct TVRequest
 		struct { TAPTR Font; TTAGITEM *Tags; } OpenFont;
 		struct { TAPTR Font; } CloseFont;
 		struct { TAPTR Font; TTAGITEM *Tags; TUINT Num; } GetFontAttrs;
-		struct { TAPTR Font; TSTRPTR Text; TINT Width; } TextSize;
+		struct { TAPTR Font; TSTRPTR Text; TINT NumChars; TINT Width; } 
+			TextSize;
 		struct { TAPTR Handle; TTAGITEM *Tags; } QueryFonts;
 		struct { TAPTR Handle; TTAGITEM *Attrs; } GetNextFont;
 		struct { TAPTR Window; TUINT Mask; TUINT OldMask; } SetInput;
@@ -132,6 +133,7 @@ struct TVRequest
 		struct { TAPTR Window; TINT Rect[4]; TTAGITEM *Tags; } ClipRect;
 		struct { TAPTR Window; TINT RRect[4]; TAPTR Buf; TINT TotWidth;
 			TTAGITEM *Tags; } DrawBuffer;
+		struct { TAPTR Window; TINT Rect[4]; } Flush;
 	} tvr_Op;
 };
 
@@ -165,6 +167,7 @@ struct TVRequest
 #define TVCMD_UNSETCLIPRECT	0x101b
 #define TVCMD_DRAWFARC		0x101c
 #define TVCMD_DRAWBUFFER	0x101d
+#define TVCMD_FLUSH			0x101e
 #define TVCMD_EXTENDED		0x2000
 
 /*****************************************************************************/

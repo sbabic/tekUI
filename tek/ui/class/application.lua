@@ -119,7 +119,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 23.0"
+_VERSION = "Application 23.1"
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -748,6 +748,8 @@ function Application:easyRequest(title, text, ...)
 		Title = title or self.ProgramName,
 		Modal = true,
 		Center = true,
+		Width = 0,
+		Height = 0,
 		Orientation = "vertical",
 		HideOnEscape = true,
 		Children =

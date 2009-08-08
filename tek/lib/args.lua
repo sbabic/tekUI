@@ -56,61 +56,52 @@
 --
 -------------------------------------------------------------------------------
 
-local type = type
-local insert, remove, concat = table.insert, table.remove, table.concat
-local ipairs = ipairs
-local pairs = pairs
-local print = print
+local concat = table.concat
+local insert = table.insert
+local remove = table.remove
 local tonumber = tonumber
+local type = type
 
 module "tek.lib.args"
-_VERSION = "Args 2.1"
-
-local function checkfl(self, fl)
-	for s in fl:gmatch(".") do
-		if self.flags:find(s, 1, true) then
-			return true
-		end
-	end
-end
+_VERSION = "Args 2.2"
 
 -------------------------------------------------------------------------------
 --	parsetemplate: check validity and parse option template into a table
 --	with records of flags and keys
 -------------------------------------------------------------------------------
 
-local function parsetemplate(t)
-	if type(t) ~= "string" then
+local function parsetemplate(s)
+	if type(s) ~= "string" then
 		return nil, "Invalid template"
 	end
-	local template = { }
-	local arg, key, keys, modif
-	repeat
-		arg, t = t:match("^([%a%-_][%w%-=_/]*),?(.*)")
-		if not t then
-			return nil, "Invalid characters in template"
-		end
-		keys, mod = arg:match("^([^/]*)(/?[/aksnmfAKSNMF]*)$")
+	local t = { }
+	local n = 1
+	for arg in s:gmatch("([^,]+),?") do
+		local keys, mod = arg:match("^([^/]*)(/?[/aksnmfAKSNMF]*)$")
 		if not keys then
 			return nil, "Invalid modifiers in template"
 		end
-		local record = { flags = mod:lower():gsub("/", ""),
-			keys = { }, keymulti = {}, check = checkfl }
-		repeat
-			key, keys = keys:match("^([^=/]+)=?(.*)")
-			if not key then
-				return nil, "Invalid option name"
+		mod = mod:gsub("/", ""):lower()
+		local r = { { }, false }
+		mod:gsub(".", function(a) 
+			r[a] = true
+		end)
+		for alias in keys:gmatch("([^=]+)=?") do
+			if not alias:match("^[%a-_][%w%-_]*") then
+				return nil, "Invalid characters in keys"
 			end
-			key = key:lower()
-			insert(record.keys, key)
-			template[key] = record
-		until keys == ""
-		insert(template, record)
-		record.idx = #template
-	until t == ""
-	-- extra item at the end to collect multiple arguments:
-	insert(template, { flags = "m", keys = { }, check = checkfl })
-	return template
+			alias = alias:lower()
+			insert(r[1], alias)
+			if t[alias] then
+				return nil, "Double key in template"
+			end
+			t[alias] = n
+		end
+		insert(t, r)
+		n = n + 1
+	end
+	insert(t, { { }, false, m = true })
+	return t
 end
 
 -------------------------------------------------------------------------------
@@ -149,60 +140,63 @@ end
 --	'''nil''' followed by an error message.
 -------------------------------------------------------------------------------
 
-function read(tmpl, args)
-
-	local tmpl, msg = parsetemplate(tmpl)
+function read(template, args)
+	local tmpl, msg = parsetemplate(template)
 	if not tmpl then
 		return nil, msg
 	end
-
+	
 	local nextitem, msg = items(args)
 	if not nextitem then
 		return nil, msg
 	end
-
-	local nextn, n = 1
-	local item, rest, done, waitkey
+	
 	local multi = { }
-
+	local nextn = 1
+	local done
+	local n
+	
 	repeat
 		while true do
+			
+			local waitkey
+			
 			n = nextn
 			nextn = n + 1
-
-			local tt = tmpl[n]
-			if not tt then
-				done = true
+			
+			local t = tmpl[n]
+			if not t then
+				done = true -- no more in template
 				break
 			end
-
-			if tt.arg then
-				break -- continue
+			
+			if t[2] then
+				break -- current argument already filled
 			end
-
-			if tt:check("ks") then
-				waitkey = tt.idx
-				break -- continue waiting for argument
-			else
-				waitkey = false
+			
+			if t.s or t.k then
+				break -- wait for arg
 			end
-
-			item, rest = nextitem()
+			
+			-- get next value
+			local item, rest = nextitem()
 			if not item then
-				done = true -- no more items
-				break
+				done = true
+				break -- no more items
 			end
-
+			
 			local rec = tmpl[item:lower()]
 			if rec then
-				waitkey = true
+				-- got key
+				waitkey = rec
+				rec = tmpl[rec]
 			end
-
-			if rec and not rec.arg then
-				nextn = n -- retry current in next turn
-				n = rec.idx
-				tt = tmpl[n]
-				if not rec:check("s") then
+			
+			if rec and (not rec[2] or rec.m) then
+				nextn = n -- retry in next turn
+				n = waitkey
+				t = tmpl[n]
+				if not rec.s then
 					item, rest = nextitem()
 					if not item then
 						done = true
@@ -210,78 +204,79 @@ function read(tmpl, args)
 					end
 				end
 			elseif waitkey then
-				return nil, "key expected : " .. tmpl[n].keys[1]
+				return nil, "key expected : " .. tmpl[waitkey][1][1]
 			end
-
-			if tt:check("m") then
-				if waitkey or tt:check("k") then
-					insert(tt.keymulti, item)
+			
+			if t.m then
+				if t.k or waitkey then
+					t[2] = t[2] or { }
+					insert(t[2], item)
 				else
 					insert(multi, item)
 				end
-				nextn = n -- retry
-			elseif tt:check("f") then
-				tt.arg = rest
+				nextn = n -- redo
+			elseif t.f then
+				t[2] = rest
 				done = true
 				break
-			elseif tt:check("n") then
+			elseif t.n then
 				if not item:match("^%-?%d*%.?%d*$") then
 					return nil, "number expected"
 				end
-				tt.arg = tonumber(item)
-			elseif tt:check("s") then
-				tt.arg = true
+				t[2] = tonumber(item)
+			elseif t.s then
+				t[2] = true
 			else
-				tt.arg = item
+				t[2] = item
 			end
-
-			waitkey = false
-
 		end
 	until done
-
+	
 	-- unfilled /A steal from multi:
-	for i = #tmpl, 1, -1 do
-		local tt = tmpl[i]
-		if not tt.arg and tt:check("a") and not tt:check("m") then
-			if not tt:check("k") then
-				tt.arg = remove(multi)
+	for i = #tmpl - 1, 1, -1 do
+		local t = tmpl[i]
+		if not t[2] and t.a and not t.m then
+			if not t.k then
+				t[2] = remove(multi)
 			end
-			if not tt.arg then
-				return nil, "Required argument missing : " .. tt.keys[1]
+			if not t[2] then
+				return nil, "Required argument missing : " .. t[1][1]
 			end
 		end
 	end
-
+	
 	-- put remaining multi into /M:
 	for i = 1, #tmpl - 1 do
-		local tt = tmpl[i]
-		if tt.flags:match("[m]") then
-			tt.arg = tt.keymulti
-			if not tt:check("k") then
-				for key, val in ipairs(multi) do
-					insert(tt.arg, val)
+		local t = tmpl[i]
+		if t.m then
+			if not t.k or t[2] then
+				t[2] = t[2] or { }
+				while #multi > 0 do
+					local val = remove(multi, 1)
+					insert(t[2], val)
 				end
-			end
-			if tt:check("a") and #tt.arg == 0 then
-				return nil, "Required argument missing : " .. tt.keys[1]
+				if t.a and #t[2] == 0 then
+					return nil, "Required argument missing : " .. t[1][1]
+				end
 			end
 		end
 	end
-
+	
 	-- arguments left?
 	if n == #tmpl and #multi > 0 then
 		return nil, "Too many arguments"
 	end
 
 	local res = { }
-	for i, tt in ipairs(tmpl) do
-		res[i] = tt.arg
-		if tt.keys[1] then
-			res[tt.keys[1]] = tt.arg
+	for i = 1, #tmpl - 1 do
+		local t = tmpl[i]
+		res[i] = t[2]
+		for j = 1, #t[1] do
+			local key = t[1][j]
+			res[key] = res[i]
 		end
 	end
-
+	
 	return res, #tmpl
 end
 
@@ -326,7 +321,6 @@ end
 -- test("bla,fasel", "1", {bla="1"})
 -- test("bla,fasel", "1 2", {bla="1",fasel="2"})
 -- test("bla,fasel", "1 2 3", false)
--- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={ "4","1","2"},dst="3"})
 -- test("bla,fasel", "bla fasel fasel bla", {bla="fasel",fasel="bla"})
 -- test("bla,fasel", "bla fasel fasel bla blub", false)
 -- test("src/m/a,dst/a", "1", false)
@@ -335,21 +329,16 @@ end
 -- test("src=-s/m/a,dst=-d/a", "-s 1 -s 2 -d 3 4", {src={"1","2","4"},dst="3"})
 -- test("src=-s/m/a/k,dst=-d/a/k", "-s 1 -s 2 -d 3", {src={"1","2"},dst="3"})
 -- test("src=-s/m/a/k,dst=-d/a/k", "-s 1 -s 2 3", false)
--- test("src=-s/m/a/k,dst=-d/a/k", "-s 1 2 -d 3", false)
 -- test("bla/a,fasel/a", "1", false)
 -- test("bla/a,fasel/a", "1 2", {bla="1",fasel="2"})
 -- test("bla/a/k,fasel/a/k", "bla 1 fasel 2", {bla="1",fasel="2"})
 -- test("bla/a/k,fasel/a/k", "bla 1 fasel", false)
 -- test("bla/a/k,fasel/a", "bla 1 fasel", false)
--- test("SOURCE=-s/A/M,DEST=-d/A/K", "SOURCE one two three DEST foo",
--- 	{source={"one","two","three"},dest="foo"})
--- test("SOURCE=-s/A/M,DEST=-d/A/K", "DEST foo -s one",
--- 	{source={"one"},dest="foo"})
+-- test("SOURCE=-s/A/M,DEST=-d/A/K", "SOURCE one two three DEST foo", {source={"one","two","three"},dest="foo"})
+-- test("SOURCE=-s/A/M,DEST=-d/A/K", "DEST foo -s one", {source={"one"},dest="foo"})
 -- test("SOURCE=-s/A/M,DEST=-d/A/K", "one two three foo", false)
--- test("SOURCE=-s/A/M,DEST=-d/A/K", "one two dest foo",
--- 	{source={"one","two"},dest="foo"})
--- test("SOURCE=-s/A/M,DEST=-d/A/K", 'one two three -d="foo" four',
--- 	{source={"one","two","three","four"},dest="foo"})
+-- test("SOURCE=-s/A/M,DEST=-d/A/K", "one two dest foo", {source={"one","two"},dest="foo"})
+-- test("SOURCE=-s/A/M,DEST=-d/A/K", 'one two three -d="foo" four', {source={"one","two","three","four"},dest="foo"})
 -- test("a/s,b/s", "a b", {a=true, b=true})
 -- test("file/k,bla/k", "file foo bla fasel", {file="foo", bla="fasel"})
 -- test("file/k,bla/k,a/s", "file foo bla fasel", {file="foo", bla="fasel"})
@@ -366,6 +355,20 @@ end
 -- test("file=-f/k,silent=-s/s,targets/m", "eins -f file", {file="file", targets={"eins"}})
 -- test("PATHNAME,MD5SUM/K", "hallo", {pathname="hallo"})
 -- test("PATHNAME,MD5SUM/K", "md5sum hallo", {md5sum="hallo"})
+-- test("foo/a,bar/m", "eins zwei", {foo="eins", bar={"zwei"}})
+-- test("foo/a,bar/k/m", "eins bar zwei", {foo="eins", bar={"zwei"}})
+-- test("IP/A,MASK/K,DNS/M", "IP 1 MASK 2 3 4", {ip="1", mask="2", dns={"3", "4"}})
+-- test("IP/A,MASK/K,DNS/M", "IP 1 MASK 2 DNS 3 4", {ip="1", mask="2", dns={"3", "4"}})
+-- test("IP/A,MASK/K,DNS/K/M", "IP 1 MASK 2 DNS 3 4", {ip="1", mask="2", dns={"3", "4"}})
+-- test("src=-s/m/a/k,dst=-d/a/k", "-s 1 2 -d 3", {src={"1","2"},dst="3"})
+-- test("src=-s/m/a/k,dst=-d/a/k", "-d 3 -s 1 2", {src={"1","2"},dst="3"})
+-- test("src=-s/m/a/k,dst=-d/a/k", "1 -d 3 -s 2", {src={"1","2"},dst="3"})
+-- test("src=-s/m/a,dst=-d/a", "1 2 3 4", {src={"1","2","3"},dst="4"})
+-- test("src=-s/m/a,dst=-d/a", "1 2 3 -d 4", {src={"1","2","3"},dst="4"})
+-- test("src=-s/m/a,dst=-d/a", "1 2 -d 3 4", {src={"1","2","4"},dst="3"})
+-- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={"1","2","4"},dst="3"})
+-- test("foo/a,bar/k/m", "eins zwei", false)
+-- test("src=-s/m/a/k,dst=-d/a/k", "1 2 -d 3", false)
 
 -------------------------------------------------------------------------------
 --	Test tool:

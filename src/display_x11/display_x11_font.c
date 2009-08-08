@@ -339,7 +339,7 @@ fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TUINT pxsize)
  				== FcResultMatch)
  		{
  			/* got fontname, now copy it to fqnode */
- 			TINT flen = strlen((char *)fname);
+ 			TINT flen = strlen((char *) fname);
 			TSTRPTR myfname = TAlloc0(mod->x11_MemMgr, flen + 1);
 
 			if (myfname)
@@ -657,7 +657,7 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 		for (i = 0; i < len; i++)
 			fname[i] = tolower(fname[i]);
 
-		len = strlen((TSTRPTR)fcfname);
+		len = strlen((TSTRPTR) fcfname);
 		tempname = TAlloc0(mod->x11_MemMgr, len+1);
 		if (!tempname)
 		{

@@ -70,6 +70,7 @@ static const luaL_Reg tek_lib_visual_methods[] =
 	{ "drawrgb", tek_lib_visual_drawrgb },
 	{ "drawpixmap", tek_lib_visual_drawpixmap },
 	{ "getuserdata", tek_lib_visual_getuserdata },
+	{ "flush", tek_lib_visual_flush },
 	{ TNULL, TNULL }
 };
 
@@ -151,7 +152,7 @@ tek_lib_visual_open(lua_State *L)
 	vis->vis_ShiftX = 0;
 	vis->vis_ShiftY = 0;
 	vis->vis_Display = visbase->vis_Display;
-
+	
 	/* place ref to base in metatable: */
 	vis->vis_refBase = luaL_ref(L, -2);
 	/* s: visinst, vismeta */
@@ -273,15 +274,52 @@ tek_lib_visual_open(lua_State *L)
 	vis->vis_Visual = TVisualOpen(visbase->vis_Base, tags);
 	if (vis->vis_Visual)
 	{
-		TVisualSetFont(vis->vis_Visual, vis->vis_Font);
-		lua_pop(L, 1);
+		TTAGITEM attrs[3];
+		struct TVRequest *req;
+		TAPTR window;
+		TBOOL success = TTRUE;
+		
+		vis->vis_Device = TNULL;
+		vis->vis_FlushReq = TNULL;
+		
+		attrs[0].tti_Tag = TVisual_Device;
+		attrs[0].tti_Value = (TTAG) &vis->vis_Device;
+		attrs[1].tti_Tag = TVisual_Window;
+		attrs[1].tti_Value = (TTAG) &window;
+		attrs[2].tti_Tag = TTAG_DONE;
+		TVisualGetAttrs(vis->vis_Visual, attrs);
+		
+		if (vis->vis_Device)
+		{
+			success = TFALSE;
+			req = (struct TVRequest *) TDisplayAllocReq(vis->vis_Device);
+			if (req)
+			{
+				req->tvr_Req.io_Command = TVCMD_FLUSH;
+				req->tvr_Op.Flush.Window = window;
+				req->tvr_Op.Flush.Rect[0] = 0;
+				req->tvr_Op.Flush.Rect[1] = 0;
+				req->tvr_Op.Flush.Rect[2] = -1;
+				req->tvr_Op.Flush.Rect[3] = -1;
+				vis->vis_FlushReq = req;
+				success = TTRUE;
+			}
+		}
+			
+		if (success)
+		{
+			TVisualSetFont(vis->vis_Visual, vis->vis_Font);
+			lua_pop(L, 1);
+			return 1;
+		}
+		
+		TVisualClose(visbase->vis_Base, vis->vis_Visual);
+		vis->vis_Visual = TNULL;
 	}
-	else
-	{
-		TDBPRINTF(TDB_ERROR,("Failed to open visual\n"));
-		lua_pop(L, 2);
-		lua_pushnil(L);
-	}
+	
+	TDBPRINTF(TDB_ERROR,("Failed to open visual\n"));
+	lua_pop(L, 2);
+	lua_pushnil(L);
 	return 1;
 }
 
@@ -353,6 +391,10 @@ tek_lib_visual_close(lua_State *L)
 
 	if (vis->vis_Visual)
 	{
+		if (vis->vis_Device)
+			TDisplayFreeReq(vis->vis_Device, 
+				(struct TVRequest *) vis->vis_FlushReq);
+	
 		TVisualClose(vis->vis_Base, vis->vis_Visual);
 		vis->vis_Visual = TNULL;
 		TDBPRINTF(TDB_INFO,("visual instance %08x closed\n", vis));

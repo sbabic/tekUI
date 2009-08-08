@@ -639,6 +639,34 @@ static int region_foreach(lua_State *L)
 
 /*****************************************************************************/
 
+static int region_trans(lua_State *L)
+{
+	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	lua_Number sx = luaL_checknumber(L, 2);
+	lua_Number sy = luaL_checknumber(L, 3);	
+	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
+	for (; (next = node->tln_Succ); node = next)
+	{
+		struct RectNode *rn = (struct RectNode *) node;
+		rn->rn_Rect[0] += sx;
+		rn->rn_Rect[1] += sy;
+		rn->rn_Rect[2] += sx;
+		rn->rn_Rect[3] += sy;
+	}
+	return 0;
+}
+
+/*****************************************************************************/
+
+static int region_isnull(lua_State *L)
+{
+	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	lua_pushboolean(L, TISLISTEMPTY(&region->rg_Rects.rl_List));
+	return 1;
+}
+
+/*****************************************************************************/
+
 static int pool_collect(lua_State *L)
 {
 	struct Pool *pool = luaL_checkudata(L, 1, TEK_CLASS_UI_POOL_NAME);
@@ -669,6 +697,8 @@ static const luaL_Reg tek_lib_region_methods[] =
 	{ "andRect", region_andrect },
 	{ "andRegion", region_andregion },
 	{ "forEach", region_foreach },
+	{ "trans", region_trans },
+	{ "isNull", region_isnull },
 	{ NULL, NULL }
 };
 

@@ -190,9 +190,10 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_textsize_font(lua_State *L)
 {
 	TEKFont *font = checkfontptr(L, 1);
-	TSTRPTR s = (TSTRPTR) luaL_checkstring(L, 2);
+	size_t len;
+	TSTRPTR s = (TSTRPTR) luaL_checklstring(L, 2, &len);
 	lua_pushinteger(L,
-		TVisualTextSize(font->font_VisBase, font->font_Font, s));
+		TVisualTextSize(font->font_VisBase, font->font_Font, s, (TINT) len));
 	lua_pushinteger(L, font->font_Height);
 	return 2;
 }
@@ -242,6 +243,24 @@ tek_lib_visual_clearinput(lua_State *L)
 /*****************************************************************************/
 
 LOCAL LUACFUNC TINT
+tek_lib_visual_flush(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	if (vis->vis_FlushReq && (vis->vis_Dirty || lua_toboolean(L, 2)))
+	{
+		struct TExecBase *TExecBase = vis->vis_ExecBase;
+		struct TVRequest *req = vis->vis_FlushReq;
+		req->tvr_Req.io_ReplyPort = TGetSyncPort(TNULL);
+		TDoIO(&req->tvr_Req);
+		vis->vis_Dirty = TFALSE;
+	}
+	lua_pop(L, 1);
+	return 0;
+}
+
+/*****************************************************************************/
+
+LOCAL LUACFUNC TINT
 tek_lib_visual_getmsg(lua_State *L)
 {
 	struct TExecBase *TExecBase;
@@ -268,6 +287,7 @@ tek_lib_visual_getmsg(lua_State *L)
 		}
 
 		lua_getmetatable(L, -2);
+		
 		/* s: msgtab, reftab */
 		if (imsg->timsg_UserData > 0)
 		{
@@ -475,6 +495,7 @@ tek_lib_visual_rect(lua_State *L)
 	TEKPen *pen = checkpenptr(L, 6);
 	TVisualRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
 		pen->pen_Pen);
+	vis->vis_Dirty = TTRUE;
 	return 0;
 }
 
@@ -546,6 +567,7 @@ tek_lib_visual_frect(lua_State *L)
 		TINT oy = luaL_optinteger(L, 8, 0) + sy;
 		tek_lib_visual_frectpixmap(L, vis, pm, x0, y0, w, h, ox, oy);
 	}
+	vis->vis_Dirty = TTRUE;
 	return 0;
 }
 
@@ -560,6 +582,7 @@ tek_lib_visual_line(lua_State *L)
 	TINT y1 = luaL_checkinteger(L, 5) + sy;
 	TEKPen *pen = checkpenptr(L, 6);
 	TVisualLine(vis->vis_Visual, x0, y0, x1, y1, pen->pen_Pen);
+	vis->vis_Dirty = TTRUE;
 	return 0;
 }
 
@@ -572,6 +595,7 @@ tek_lib_visual_plot(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
 	TEKPen *pen = checkpenptr(L, 4);
 	TVisualPlot(vis->vis_Visual, x0, y0, pen->pen_Pen);
+	vis->vis_Dirty = TTRUE;
 	return 0;
 }
 
@@ -603,6 +627,7 @@ tek_lib_visual_text(lua_State *L)
 	
 	TVisualText(vis->vis_Visual, x0, y0, text, tlen, fpen->pen_Pen);
 		
+	vis->vis_Dirty = TTRUE;
 	return 0;
 }
 
@@ -746,6 +771,7 @@ tek_lib_visual_drawimage(lua_State *L)
 		lua_pop(L, 5);
 	}
 	
+	vis->vis_Dirty = TTRUE;
 	lua_pop(L, 2);
 	return 0;
 }
@@ -857,9 +883,10 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_textsize_visual(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TSTRPTR s = (TSTRPTR) luaL_checkstring(L, 2);
+	size_t len;
+	TSTRPTR s = (TSTRPTR) luaL_checklstring(L, 2, &len);
 	lua_pushinteger(L,
-		TVisualTextSize(vis->vis_Base, vis->vis_Font, s));
+		TVisualTextSize(vis->vis_Base, vis->vis_Font, s, (TINT) len));
 	lua_pushinteger(L, vis->vis_FontHeight);
 	return 2;
 }
@@ -966,6 +993,7 @@ tek_lib_visual_copyarea(lua_State *L)
 		vis->vis_RectBuffer = TNULL;
 	}
 
+	vis->vis_Dirty = TTRUE;
 	return 0;
 }
 
@@ -1061,6 +1089,7 @@ tek_lib_visual_drawrgb(lua_State *L)
 		TFree(buf);
 	}
 
+	vis->vis_Dirty = TTRUE;
 	return 0;
 }
 
@@ -1082,5 +1111,6 @@ tek_lib_visual_drawpixmap(lua_State *L)
 	TINT h = luaL_optinteger(L, 6, y0 + img->pxm_Height - 1) - y0 + 1;
 	TVisualDrawBuffer(vis->vis_Visual, x0 + sx, y0 + sy, img->pxm_Data,
 		w, h, img->pxm_Width, TNULL);
+	vis->vis_Dirty = TTRUE;
 	return 0;
 }

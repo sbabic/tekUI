@@ -1,6 +1,23 @@
 
 == tekUI Changelog ==
 
+ * Raw Framebuffer display driver: added
+ * 64bit fixes and source code maintenance adjustments merged in from
+ TEKlib
+ * X11 driver: Now using the XVid extension and a more sophisticated
+ window opening procedure to much better support fullscreen applications
+ * Visual, displays, Drawable: Added TVCMD_FLUSH command to TVRequest,
+ a flush() method and a dirty flag indicating window changes
+ * Visual, Lua bindings: Added length argument to textSize()
+ * Args: Partly rewritten, now handles missing keywords correctly in
+ /M/K modifiers
+ * Region: added trans(), isNull()
+ * Area:layout() now handles blits in transposed drawing contexts
+ * Drawable:getClipRect() added
+ * Frame:layoutBorder() split off from layout()
+ * ListGadget: fixedto work in absence of a style sheet
+ * Window:addBlit() added, update() now calls flush() after repaints
+
 === 0.8g: ===
 
  * Argument parser: Arguments with whitespaces were treated incorrectly 

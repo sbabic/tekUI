@@ -255,7 +255,8 @@ EXPORT struct TVisualBase *vis_attach(struct TVisualBase *mod, TTAGITEM *tags)
 
 EXPORT struct TVRequest *vis_openfont(struct TVisualBase *mod, TTAGITEM *tags)
 {
-	struct TVRequest *fontreq = visi_getreq(mod, TVCMD_OPENFONT, mod->vis_Display, tags);
+	struct TVRequest *fontreq = visi_getreq(mod, TVCMD_OPENFONT, 
+		mod->vis_Display, tags);
 	if (fontreq)
 	{
 		struct TExecBase *TExecBase = TGetExecBase(mod);
@@ -291,7 +292,7 @@ EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, struct TVRequest *fontreq,
 		fontreq->tvr_Req.io_Command = TVCMD_GETFONTATTRS;
 		fontreq->tvr_Op.GetFontAttrs.Tags = tags;
 		TDoIO(&fontreq->tvr_Req);
-		n = fontreq->tvr_Op.TextSize.Width;
+		n = fontreq->tvr_Op.GetFontAttrs.Num;
 	}
 	return n;
 }
@@ -299,7 +300,7 @@ EXPORT TUINT vis_getfattrs(struct TVisualBase *mod, struct TVRequest *fontreq,
 /*****************************************************************************/
 
 EXPORT TINT vis_textsize(struct TVisualBase *mod, struct TVRequest *fontreq,
-	TSTRPTR t)
+	TSTRPTR t, TINT numchars)
 {
 	TINT size = -1;
 	if (fontreq)
@@ -307,6 +308,7 @@ EXPORT TINT vis_textsize(struct TVisualBase *mod, struct TVRequest *fontreq,
 		struct TExecBase *TExecBase = TGetExecBase(mod);
 		fontreq->tvr_Req.io_Command = TVCMD_TEXTSIZE;
 		fontreq->tvr_Op.TextSize.Text = t;
+		fontreq->tvr_Op.TextSize.NumChars = numchars;
 		TDoIO(&fontreq->tvr_Req);
 		size = fontreq->tvr_Op.TextSize.Width;
 	}
@@ -319,7 +321,8 @@ EXPORT TAPTR vis_queryfonts(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	TAPTR handle = TNULL;
 	struct TExecBase *TExecBase = TGetExecBase(mod);
-	struct TVRequest *req = visi_getreq(mod, TVCMD_QUERYFONTS, mod->vis_Display, tags);
+	struct TVRequest *req = visi_getreq(mod, TVCMD_QUERYFONTS,
+		mod->vis_Display, tags);
 	if (req)
 	{
 		req->tvr_Op.QueryFonts.Tags = tags;

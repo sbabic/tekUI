@@ -9,6 +9,7 @@
 #include <tek/teklib.h>
 #include <tek/inline/exec.h>
 #include <tek/proto/visual.h>
+#include <tek/proto/display.h>
 
 /*****************************************************************************/
 
@@ -76,6 +77,10 @@ typedef struct TEKVisual
 	struct TMsgPort *vis_IMsgPort;
 	
 	TINT *vis_DrawBuffer;
+	
+	TBOOL vis_Dirty;
+	TAPTR vis_Device;
+	struct TVRequest *vis_FlushReq;
 
 } TEKVisual;
 
@@ -154,5 +159,6 @@ LOCAL LUACFUNC TINT tek_lib_visual_getfontattrs(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_drawppm(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_createpixmap(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_freepixmap(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_flush(lua_State *L);
 
 #endif

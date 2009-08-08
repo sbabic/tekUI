@@ -15,11 +15,14 @@
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <sys/shm.h>
-#include <X11/extensions/XShm.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <X11/XKBlib.h>
+#include <X11/extensions/XShm.h>
+#if defined(ENABLE_XVID)
+#include <X11/extensions/xf86vmode.h>
+#endif
 
 #include <tek/proto/exec.h>
 #include <tek/inline/exec.h>
@@ -253,6 +256,15 @@ typedef struct
 
 	TTAGITEM *x11_InitTags;
 	struct TMsgPort *x11_IMsgPort;
+	
+	TINT x11_FullScreenWidth;
+	TINT x11_FullScreenHeight;
+	TBOOL x11_FullScreen;
+	
+	#if defined(ENABLE_XVID)
+	XF86VidModeModeInfo x11_OldMode;
+	XF86VidModeModeInfo x11_VidMode;
+	#endif
 
 } X11DISPLAY;
 
@@ -309,6 +321,8 @@ typedef struct
 
 	/* userdata attached to this window, also propagated in messages: */
 	TTAG userdata;
+	
+	TBOOL changevidmode;
 
 } X11WINDOW;
 

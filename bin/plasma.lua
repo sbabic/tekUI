@@ -121,6 +121,7 @@ repeat
 	if paint then
 		effect()
 		v:drawrgb(0, 0, screen, WIDTH, HEIGHT, PIXWIDTH, PIXHEIGHT)
+		v:flush()
 		paint = false
 	end
 until abort

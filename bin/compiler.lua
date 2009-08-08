@@ -703,7 +703,7 @@ local app = ui.Application:new
 										if status == "selected" and select[1] then
 											local newfname = addpath(path, select[1])
 											filefield:setValue("Enter", newfname)
-											app:setStatus("Lua source selected.")
+											app:setStatus("Run the script to collect module dependencies.")
 										else
 											app:setStatus("File selection cancelled.")
 										end
@@ -791,7 +791,7 @@ local app = ui.Application:new
 								ui.Button:new
 								{
 									Id = "button-run",
-									Text = "_Run Sample",
+									Text = "_Run",
 									Disabled = true,
 									onPress = function(self, pressed)
 										ui.Button.onPress(self, pressed)

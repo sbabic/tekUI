@@ -734,7 +734,7 @@ dfb_hostclosefont(DFBDISPLAY *mod, TAPTR font)
 
 /*****************************************************************************/
 /* CALL:
-**  dfb_hosttextsize(visualbase, fontpointer, textstring)
+**  dfb_hosttextsize(visualbase, fontpointer, textstring, numchars)
 **
 ** USE:
 **  to obtain the width of a given string when the font referred to
@@ -749,11 +749,11 @@ dfb_hostclosefont(DFBDISPLAY *mod, TAPTR font)
 */
 
 LOCAL TINT
-dfb_hosttextsize(DFBDISPLAY *mod, TAPTR font, TSTRPTR text)
+dfb_hosttextsize(DFBDISPLAY *mod, TAPTR font, TSTRPTR text, size_t len)
 {
 	TINT width = 0;
 	struct FontNode *fn = (struct FontNode *) font;
-	fn->font->GetStringWidth(fn->font, text, strlen(text), &width);
+	fn->font->GetStringWidth(fn->font, text, len, &width);
 	return width;
 }
 

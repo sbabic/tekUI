@@ -498,7 +498,7 @@ fb_docmd(WINDISPLAY *mod, struct TVRequest *req)
 			fb_drawbuffer(mod, req);
 			break;
 		default:
-			TDBPRINTF(TDB_ERROR,("Unknown command code: %d\n",
+			TDBPRINTF(TDB_INFO,("Unknown command code: %08x\n",
 			req->tvr_Req.io_Command));
 	}
 }

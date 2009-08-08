@@ -47,7 +47,7 @@ local unpack = unpack
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 18.0"
+_VERSION = "Drawable 20.0"
 
 DEBUG_DELAY = 3
 
@@ -158,6 +158,15 @@ function Drawable:close()
 		self.Pens = false
 		return true
 	end
+end
+
+-------------------------------------------------------------------------------
+--	Drawable:flush(): Flush changed window contents, if supported by the
+--	underlying display driver.
+-------------------------------------------------------------------------------
+
+function Drawable:flush()
+	self.Visual:flush()
 end
 
 -------------------------------------------------------------------------------
@@ -280,6 +289,14 @@ function Drawable:pushClipRect(x0, y0, x1, y1)
 		cr[1], cr[2], cr[3], cr[4] = x0, y0, x1, y1
 		v:setcliprect(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
 	end
+end
+
+-------------------------------------------------------------------------------
+--	Drawable:getClipRect() - Returns the clip rect currently set.
+-------------------------------------------------------------------------------
+
+function Drawable:getClipRect()
+	return unpack(self.ClipRect)
 end
 
 -------------------------------------------------------------------------------

@@ -25,8 +25,8 @@
 #define TVisualGetFontAttrs(visual,font,tags) \
 	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TTAGITEM *))(visual))[-14]))(visual,font,tags)
 
-#define TVisualTextSize(visual,font,text) \
-	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TSTRPTR))(visual))[-15]))(visual,font,text)
+#define TVisualTextSize(visual,font,text,numchars) \
+	(*(((TMODCALL TINT(**)(TAPTR,TAPTR,TSTRPTR,TINT))(visual))[-15]))(visual,font,text,numchars)
 
 #define TVisualQueryFonts(visual,tags) \
 	(*(((TMODCALL TAPTR(**)(TAPTR,TTAGITEM *))(visual))[-16]))(visual,tags)

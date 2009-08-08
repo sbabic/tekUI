@@ -201,7 +201,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 25.0"
+_VERSION = "Area 26.1"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -444,11 +444,9 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	local win = self.Window
 	
 	local samesize = dw == 0 and dh == 0
-	local validmove = (dx == 0) ~= (dy == 0) and sx == 0 and sy == 0
-	-- and ((dx == 0 or sx == 0) and (dy == 0 or sy == 0))
+	local validmove = (dx == 0) ~= (dy == 0)
 	
 	-- refresh element by copying if:
-	-- * element is not transposed
 	-- * shifting occurs only on one axis
 	-- * size is unchanged OR TrackDamage enabled
 	-- * object is not already slated for copying
@@ -464,25 +462,39 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 		local s3 = x1 - dx + m[3]
 		local s4 = y1 - dy + m[4]
 
-		-- get sortable key for delta:
-		local key = ("%d:%d"):format(dx, dy)
+		local can_copy
 		
-		local ca = win.CopyArea[key]
-		if ca then
-			ca[3]:orRect(s1, s2, s3, s4)
+		local c1, c2, c3, c4 = self.Drawable:getClipRect()
+		if c1 then
+			-- if we have a cliprect, check if parts become visible that
+			-- were previously obscured (including borders and shift):
+			local r = newRegion(r1 + sx - m[1], r2 + sy - m[2], r3 + sx + m[3],
+				r4 + sy + m[4])
+			r:subRect(c1, c2, c3, c4)
+			r:trans(dx, dy)
+			r:andRect(c1, c2, c3, c4)
+			if r:isNull() then
+				-- completely visible before and after:
+				can_copy = true 
+			elseif self.TrackDamage then
+				db.warn("partially visible (masked by cliprect)")
+			end
 		else
-			win.CopyArea[key] = { dx, dy, newRegion(s1, s2, s3, s4) }
+			can_copy = true
 		end
-	
-		if samesize then
-			-- something changed, no Redraw. second value: border_ok hack
-			return true, true
+
+		if can_copy then
+			win:addBlit(s1 + sx, s2 + sy, s3 + sx, s4 + sy, dx, dy,
+				c1, c2, c3, c4)
+			if samesize then
+				-- something changed, no Redraw. second value: border_ok hack
+				return true, true
+			end
+			r1 = r1 + dx
+			r2 = r2 + dy
+			r3 = r3 + dx
+			r4 = r4 + dy
 		end
-	
-		r1 = r1 + dx
-		r2 = r2 + dy
-		r3 = r3 + dx
-		r4 = r4 + dy
 	end
 	
 	if x0 == r1 and y0 == r2 then

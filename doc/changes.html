@@ -10,6 +10,50 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<blockquote>
+			<ul>
+				<li>
+					Raw Framebuffer display driver: added
+				</li>
+				<li>
+					64bit fixes and source code maintenance adjustments merged in from
+					TEKlib
+				</li>
+				<li>
+					X11 driver: Now using the XVid extension and a more sophisticated
+					window opening procedure to much better support fullscreen applications
+				</li>
+				<li>
+					Visual, displays, Drawable: Added TVCMD_FLUSH command to TVRequest,
+					a <a href="manual.html#flush"><code>flush()</code></a> method and a dirty flag indicating window changes
+				</li>
+				<li>
+					Visual, Lua bindings: Added length argument to <a href="manual.html#textSize"><code>textSize()</code></a> 
+				</li>
+				<li>
+					Args: Partly rewritten, now handles missing keywords correctly in
+					/M/K modifiers
+				</li>
+				<li>
+					Region: added <a href="manual.html#trans"><code>trans()</code></a>, <a href="manual.html#isNull"><code>isNull()</code></a> 
+				</li>
+				<li>
+					<a href="manual.html#Area:layout"><code>Area:layout()</code></a> now handles blits in transposed drawing contexts
+				</li>
+				<li>
+					<a href="manual.html#Drawable:getClipRect"><code>Drawable:getClipRect()</code></a> added
+				</li>
+				<li>
+					<a href="manual.html#Frame:layoutBorder"><code>Frame:layoutBorder()</code></a> split off from <a href="manual.html#layout"><code>layout()</code></a> 
+				</li>
+				<li>
+					ListGadget: fixedto work in absence of a style sheet
+				</li>
+				<li>
+					<a href="manual.html#Window:addBlit"><code>Window:addBlit()</code></a> added, <a href="manual.html#update"><code>update()</code></a> now calls <a href="manual.html#flush"><code>flush()</code></a> after repaints
+				</li>
+			</ul>
+		</blockquote>
 		<h3>
 			0.8g:
 		</h3>

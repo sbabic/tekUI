@@ -911,7 +911,8 @@ fb_textsize(WINDISPLAY *mod, struct TVRequest *req)
 {
 	TINT len;
 	TSTRPTR text = req->tvr_Op.TextSize.Text;
-	TSTRPTR latin = fb_utf8tolatin(mod, text, strlen(text), &len);
+	TSTRPTR latin = fb_utf8tolatin(mod, text, 
+		req->tvr_Op.TextSize.NumChars, &len);
 	req->tvr_Op.TextSize.Width = fb_hosttextsize(mod,
 		req->tvr_Op.TextSize.Font, latin, len);
 }

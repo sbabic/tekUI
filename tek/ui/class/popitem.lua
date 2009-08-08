@@ -65,7 +65,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 10.0"
+_VERSION = "PopItem 10.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -284,6 +284,8 @@ function PopItem:beginPopup()
 		Top = winy,
 		Width = winw,
 		Height = winh,
+		MaxWidth = winw,
+		MaxHeight = winh,
 	}
 
 	-- connect children recursively:

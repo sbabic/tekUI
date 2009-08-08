@@ -95,7 +95,7 @@ local allocRegion = ui.allocRegion
 local freeRegion = ui.freeRegion
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 11.0"
+_VERSION = "Frame 12.0"
 
 local Frame = _M
 
@@ -198,17 +198,24 @@ end
 
 function Frame:layout(r1, r2, r3, r4, markdamage)
 	local changed, border_ok = Area.layout(self, r1, r2, r3, r4, markdamage)
-	if changed and self.BorderObject then
-		-- getRegion() implies layout(); also, reuse existing region:
-		self.BorderRegion = self.BorderObject:getRegion(self.BorderRegion or
-			allocRegion())
-		-- using the border_ok hack, we avoid redrawing the border when the
-		-- object was just copied:
-		if not border_ok and markdamage ~= false then
-			self.RedrawBorder = true
-		end
-	end
+	if changed and self:layoutBorder() and not border_ok and
+		markdamage ~= false then
+		self.RedrawBorder = true
+	end		
 	return changed
+end
+
+-------------------------------------------------------------------------------
+--	layoutBorder:
+-------------------------------------------------------------------------------
+
+function Frame:layoutBorder()
+	local bo = self.BorderObject
+	if bo then
+		-- getRegion() implies layout(); also, reuse existing region:
+		self.BorderRegion = bo:getRegion(self.BorderRegion or allocRegion())
+		return true
+	end
 end
 
 -------------------------------------------------------------------------------

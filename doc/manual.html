@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="18-Jul-2009" />
+		<meta name="created" content="08-Aug-2009" />
 	</head>
 	<body>
 		<h1>
@@ -1016,7 +1016,7 @@ method(object, arg1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.1)</a></h2>
+		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1339,7 +1339,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v8.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<p>
 					This library implements the management of regions, which are collections
@@ -1374,6 +1374,9 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 							<a href="#Region:intersect"><code>Region.intersect()</code></a> - Returns an intersection of two rectangles
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Region:isNull"><code>Region.isNull()</code></a> - Checks if a Region is Null
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Region:setRect"><code>Region:setRect()</code></a> - Resets a region to a single rectangle
 						</li>
 						<li style="list-style-type: none">
@@ -1381,6 +1384,9 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:subRegion"><code>Region:subRegion()</code></a> - Subtracts a region from a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:trans"><code>Region:trans()</code></a> - Transposes a region
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:xorRect"><code>Region:xorRect()</code></a> - <em>Exclusive Or</em>s a rectangle to a region
@@ -1433,6 +1439,12 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Region:isNull" id="Region:isNull"><code>region:isNull()</code></a></h3>
+			<p>
+				Returns <strong>true</strong> if a region is null.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Region:new" id="Region:new"><code>region = Region.new(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Creates a new region from the given
@@ -1468,6 +1480,12 @@ func(obj, x0, y0, x1, y1, ...)
 		<div class="node"><h3><a name="Region:subRegion" id="Region:subRegion"><code>region:subRegion(region2)</code></a></h3>
 			<p>
 				Subtracts <code>region2</code> from <code>region</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:trans" id="Region:trans"><code>region:trans(dx, dy)</code></a></h3>
+			<p>
+				Transposes a region by delta x and y.
 			</p>
 			<hr />
 		</div>
@@ -1750,7 +1768,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v23.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v23.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2123,7 +2141,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v25.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v26.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3015,7 +3033,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v18.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v18.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3343,7 +3361,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v13.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3369,6 +3387,16 @@ end
 			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<code>AutoWidth &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Tells the directory lister to adapt its contents dynamically to
+									the width of the element. By default, the column widths remain
+									adjusted to the initial width.
+								</p>
+							</blockquote>
+						</li>
 						<li style="list-style-type: none">
 							<code>Kind &#091;IG&#093;</code> (string)
 							<blockquote>
@@ -3894,7 +3922,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v18.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v20.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4008,6 +4036,13 @@ end
 		<div class="node"><h3><a name="Drawable:fillRect" id="Drawable:fillRect"><code>Drawable:fillRect(x0, y0, x1, y1, pen)</code></a></h3>
 			<p>
 				Draws a filled rectangle.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Drawable:flush" id="Drawable:flush"><code>Drawable:flush()</code></a></h3>
+			<p>
+				Flush changed window contents, if supported by the
+				underlying display driver.
 			</p>
 			<hr />
 		</div>
@@ -4481,7 +4516,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5600,7 +5635,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v22.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v22.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6349,7 +6384,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v10.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v10.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7615,7 +7650,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v21.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -8036,7 +8071,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 			<p>
-				Document generated on Sat Jul 18 22:29:15 2009
+				Document generated on Sat Aug  8 10:16:54 2009
 			</p>
 		</div>
 	</body>

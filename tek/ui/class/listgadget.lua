@@ -133,7 +133,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 22.0"
+_VERSION = "ListGadget 22.1"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -208,10 +208,10 @@ function ListGadget:getProperties(p, pclass)
 	self.CursorBorderClass = self.CursorBorderClass or
 		self:getProperty(p, pclass, "border-class")
 	local b = self.CursorBorder
-	b[1] = b[1] or self:getNumProperty(p, pclass, "border-left-width")
-	b[2] = b[2] or self:getNumProperty(p, pclass, "border-top-width")
-	b[3] = b[3] or self:getNumProperty(p, pclass, "border-right-width")
-	b[4] = b[4] or self:getNumProperty(p, pclass, "border-bottom-width")
+	b[1] = b[1] or self:getNumProperty(p, pclass, "border-left-width") or 0
+	b[2] = b[2] or self:getNumProperty(p, pclass, "border-top-width") or 0
+	b[3] = b[3] or self:getNumProperty(p, pclass, "border-right-width") or 0
+	b[4] = b[4] or self:getNumProperty(p, pclass, "border-bottom-width") or 0
 	Text.getProperties(self, p, pclass)
 end
 
@@ -228,7 +228,6 @@ function ListGadget:setup(app, window)
 	self.CursorObject = ui.createHook("border",
 		self.CursorBorderClass or "default", self,
 			{ Border = self.CursorBorder })
-
 	local f = self.Application.Display:openFont(self.Font)
 	self.FontHandle = f
 	self.FWidth, self.FHeight = f:getTextSize("x")
@@ -566,12 +565,13 @@ function ListGadget:draw()
 		local t = self.RenderData
 		local _, tx, ty = self:getBG()
 		local pens = d.Pens
-		t[6] = pens[self.BGColor] -- background pen
-		t[7] = pens[self.BGAlt or self.BGColor] -- background pen, alternate
+		local bgcol = self.BGColor or ui.PEN_BACKGROUND
+		t[6] = pens[bgcol] -- background pen
+		t[7] = pens[self.BGAlt or bgcol] -- background pen, alternate
 		d:setFont(self.FontHandle)
 		dr:forEach(self.drawPatch, self, t, d, lo, self.LineHeight, 
 			self.Canvas.CanvasWidth - 1,
-			pens[self.FGColor], -- foreground pen
+			pens[self.FGColor or ui.PEN_LISTDETAIL], -- foreground pen
 			pens[self.BGSelected or ui.PEN_LISTACTIVE], -- cursor pen
 			pens[self.FGSelected or ui.PEN_LISTACTIVEDETAIL], -- f+c pen
 			tx, ty)
