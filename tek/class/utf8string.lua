@@ -15,7 +15,9 @@
 --	IMPLEMENTS::
 --		- UTF8String:byte() - Returns Unicode character codes
 --		- UTF8String.char() - Returns UTF8-encoded character sequences
+--		- UTF8String.chars() - Iterator over a string's Unicode character codes
 --		- UTF8String:erase() - Removes substring
+--		- UTF8String:find() - Find an UTF-8-encoded string
 --		- UTF8String:get() - Returns the string in UTF-8 encoded form
 --		- UTF8String:insert() - Inserts a string at a given position
 --		- UTF8String:len() - Returns the length in characters
@@ -42,7 +44,7 @@ local type = type
 local unpack = unpack
 
 module("tek.class.utf8string", tek.class)
-_VERSION = "UTF8String 2.2"
+_VERSION = "UTF8String 3.0"
 
 local UTF8String = _M
 
@@ -124,6 +126,23 @@ local function utf8values(readc, data)
 		numa = 0
 		return 65533 -- bad character
 	end
+end
+
+-------------------------------------------------------------------------------
+--	UTF8String.chars(utf8): Returns an iterator that traverses the characters
+--	in an UTF-8 encoded string, returning character codes in the Unicode range
+--	(up to 31 bit). Example:
+--			for pos, char in UTF8String.chars(utf8str) do
+--			    ...
+--			end
+-------------------------------------------------------------------------------
+
+function chars(text)
+	local i = 0
+	return utf8values(function() 
+		i = i + 1
+		return text:byte(i)
+	end)
 end
 
 -------------------------------------------------------------------------------
@@ -264,7 +283,9 @@ local function getfirstlast(self, p0, p1)
 		if p1 < 0 then
 			p1 = len + 1 + p1
 		end
-		p0 = max(1, p0)
+		if p1 < p0 then
+			return
+		end
 		if p0 <= len then
 			p1 = min(max(p0, p1), len)
 			return p0, p1
@@ -283,7 +304,10 @@ function UTF8String:sub(p0, p1)
 	if p0 then
 		local tb = self[2]
 		for i = p0, p1 do
-			tinsert(t, self.char(tb[i]))
+			local c = tb[i]
+			if c then
+				tinsert(t, self.char(c))
+			end
 		end
 	end
 	return concat(t)
@@ -352,4 +376,41 @@ function UTF8String:overwrite(s, pos)
 		pos = pos + 1
 	end
 	self[1] = false
+end
+
+-------------------------------------------------------------------------------
+--	start, end = UTF8String:find(findstr[, pos]): Find the specified (UTF-8
+--	encoded) {{findstring}} in the string object, optionally starting at the
+--	given position. Returns the starting and ending position where the strings
+--	match in the string object, or '''nil'''.
+-------------------------------------------------------------------------------
+
+function UTF8String:find(s, p0)
+	self[3], self[4] = s, 0
+	local p0, p1 = getfirstlast(self, p0 or 1, -1)
+	if p0 then
+		local u = utf8values(readstring, self)
+		local _, nc = u()
+		local f = { nc }
+		local tb = self[2]
+		local j = 1
+		local s
+		for i = p0, p1 do
+			if not f[j + 1] then
+				_, f[j + 1] = u()
+			end
+			if tb[i] == f[j] then
+				if j == 1 then
+					s = i
+				end
+				if j == #f then
+					return s, s + j - 1
+				end
+				j = j + 1
+			else
+				j = 1
+				s = false
+			end
+		end
+	end
 end

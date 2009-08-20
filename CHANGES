@@ -1,6 +1,17 @@
 
 == tekUI Changelog ==
 
+ * Group:onActivateGroup() added
+ * Window, UI: Doubleclick jitter and timeout are now defined in UI
+ * Gendoc: NAME argument is now /K, HEADER is now /K/M, allowing multiple
+ header files. A reference document is now supplied to normal jumps
+ * UTF8String: find(), chars() added
+ * Canvas: added SmoothFactor attribute and incremental scroll
+ positioning in focusRect()
+ * ListGadget: fixed regression: the cursor border, if unset in a
+ stylesheet, was initialized to zero width, changed to 1;
+ * Text: now uses the "IgnoreAltShift" peudo qualifier for Keycode
+ shortcuts
  * Raw Framebuffer display driver: added
  * 64bit fixes and source code maintenance adjustments merged in from
  TEKlib
@@ -12,7 +23,9 @@
  * Args: Partly rewritten, now handles missing keywords correctly in
  /M/K modifiers
  * Region: added trans(), isNull()
+ * Application: fixed initial double refresh bug
  * Area:layout() now handles blits in transposed drawing contexts
+ * DirList: Added AutoWidth attribute
  * Drawable:getClipRect() added
  * Frame:layoutBorder() split off from layout()
  * ListGadget: fixedto work in absence of a style sheet

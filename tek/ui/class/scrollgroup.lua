@@ -66,18 +66,18 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 11.0"
-
--------------------------------------------------------------------------------
---	ScrollGroup:
--------------------------------------------------------------------------------
+_VERSION = "ScrollGroup 11.1"
 
 local ScrollGroup = _M
+
+-------------------------------------------------------------------------------
+--	new:
+-------------------------------------------------------------------------------
 
 function ScrollGroup.new(class, self)
 	self = self or { }
 	
-	self.CopyAreaList = { }
+	self.BlitList = { }
 	self.Orientation = "vertical"
 	self.HSliderEnabled = false
 	self.HSliderGroup = self.HSliderGroup or false
@@ -286,7 +286,7 @@ function ScrollGroup:onSetCanvasLeft(x)
 			self.HSliderGroup.Slider:setValue("Value", x)
 		end
 		if dx ~= 0 then
-			insert(self.CopyAreaList, { dx, 0 })
+			insert(self.BlitList, { dx, 0 })
 		end
 	end
 end
@@ -310,7 +310,7 @@ function ScrollGroup:onSetCanvasTop(y)
 			self.VSliderGroup.Slider:setValue("Value", y)
 		end
 		if dy ~= 0 then
-			insert(self.CopyAreaList, { 0, dy })
+			insert(self.BlitList, { 0, dy })
 		end
 	end
 end
@@ -369,8 +369,8 @@ function ScrollGroup:refresh()
 
 	-- determine cumulative copyarea shift:
 	local dx, dy = 0, 0
-	while #self.CopyAreaList > 0 do
-		local c = remove(self.CopyAreaList, 1)
+	while #self.BlitList > 0 do
+		local c = remove(self.BlitList, 1)
 		dx = dx + c[1]
 		dy = dy + c[2]
 	end
@@ -454,9 +454,17 @@ function ScrollGroup:refresh()
 	remove(cs)
 end
 
+-------------------------------------------------------------------------------
+--	onSetSliderTop:
+-------------------------------------------------------------------------------
+
 function ScrollGroup:onSetSliderTop(val)
 	self:onSetCanvasTop(val)
 end
+
+-------------------------------------------------------------------------------
+--	onSetSliderLeft:
+-------------------------------------------------------------------------------
 
 function ScrollGroup:onSetSliderLeft(val)
 	self:onSetCanvasLeft(val)

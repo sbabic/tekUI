@@ -111,7 +111,8 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 21.0"
+_VERSION = "Window 22.0"
+local Window = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -121,11 +122,6 @@ local HUGE = ui.HUGE
 
 local NOTIFY_STATUS = { ui.NOTIFY_SELF, "onChangeStatus", ui.NOTIFY_VALUE }
 
--- Double click time limit, in microseconds:
-local DEF_DBLCLICKTIMELIMIT = 320000 -- 600000 for touch screens
--- Max. square pixel distance between clicks:
-local DEF_DBLCLICKJITTER = 70 -- 3000 for touch screens
-
 local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, ui.MSG_MOUSEMOVE, ui.MSG_MOUSEBUTTON,
 	ui.MSG_INTERVAL, ui.MSG_KEYUP }
@@ -134,16 +130,14 @@ local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-local Window = _M
-
 function Window.init(self)
 	self.ActiveElement = false
 	-- Item in this window in which an active popup is anchored:
 	self.ActivePopup = false
+	self.Blits = { }
+	self.BlitObjects = { }
 	self.CanvasStack = { }
 	self.Center = self.Center or false
-	self.CopyArea = { }
-	self.CopyObjects = { }
 	self.DblClickElement = false
 	self.DblClickCheckInfo = { } -- check_element, sec, usec, mousex, mousey
 	self.DblClickJitter = self.DblClickJitter or DEF_DBLCLICKJITTER
@@ -398,7 +392,8 @@ end
 function Window:askMinMax()
 	local mw, mh = self.MinWidth, self.MinHeight
 	self.MinWidth, self.MinHeight = 0, 0
-	local m1, m2, m3, m4 = Group.askMinMax(self, 0, 0, self.MaxWidth, self.MaxHeight)
+	local m1, m2, m3, m4 = Group.askMinMax(self, 0, 0, self.MaxWidth,
+		self.MaxHeight)
 	self.MinWidth = mw
 	self.MinHeight = mh
 	m1, m2 = max(mw, m1), max(mh, m2)
@@ -683,18 +678,25 @@ end
 
 local function sortcopies(a, b) return a[1] > b[1] end
 
-local function insertcopy(t, r1, r2, r3, r4, dx, dy, dir)
-	insert(t, { (dx == 0 and r2 or r1) * dir, dx, dy, r1, r2, r3, r4 })
+local function insertblitx(t, r1, r2, r3, r4, dir, e)
+	insert(t, { r1 * dir, r1, r2, r3, r4, e })
+end
+
+local function insertblity(t, r1, r2, r3, r4, dir, e)
+	insert(t, { r2 * dir, r1, r2, r3, r4, e })
 end
 
 function Window:refresh()
 	-- handle copies:
-	local ca = self.CopyArea
+	local ca = self.Blits
 	local t = { }
 	for key, e in pairs(ca) do
 		local dx, dy, region = e[1], e[2], e[3]
-		local dir = (dx == 0 and dy or dx) > 0 and 1 or -1
-		region:forEach(insertcopy, t, dx, dy, dir)
+		if dy == 0 then
+			region:forEach(insertblitx, t, dx > 0 and 1 or -1, e)
+		else
+			region:forEach(insertblity, t, dy > 0 and 1 or -1, e)
+		end
 		freeRegion(region)
 		ca[key] = nil
 	end
@@ -702,13 +704,21 @@ function Window:refresh()
 	local d = self.Drawable
 	for i = 1, #t do
 		local r = t[i]
+		local e = r[6]
 		local t = { }
-		d:copyArea(r[4], r[5], r[6], r[7], r[4] + r[2], r[5] + r[3], t)
+		local dx, dy = e[1], e[2]
+		if e[4] then
+			d:pushClipRect(e[4], e[5], e[6], e[7])
+		end
+		d:copyArea(r[2], r[3], r[4], r[5], r[2] + dx, r[3] + dy, t)
+		if e[4] then
+			d:popClipRect()
+		end
 		for i = 1, #t, 4 do
 			self:damage(t[i], t[i + 1], t[i + 2], t[i + 3])
 		end
 	end
-	self.CopyObjects = { }
+	self.BlitObjects = { }
 	Group.refresh(self)
 	d:flush()
 end
@@ -869,7 +879,7 @@ end
 
 function Window:checkDblClickTime(as, au, bs, bu)
 	bs, bu = subtime(bs, bu, as, au)
-	return subtime(bs, bu, 0, self.DblClickTimeout) < 0
+	return subtime(bs, bu, 0, ui.DBLCLICKTIME) < 0
 end
 
 -------------------------------------------------------------------------------
@@ -896,7 +906,7 @@ function Window:setDblClickElement(e)
 			local d1 = self.MouseX - di[4]
 			local d2 = self.MouseY - di[5]
 			if self:checkDblClickTime(di[2], di[3], ts, tu) and
-				d1 * d1 + d2 * d2 < self.DblClickJitter then
+				d1 * d1 + d2 * d2 < ui.DBLCLICKJITTER then
 				self.DblClickElement = e
 				de:setValue("DblClick", true)
 			end
@@ -1082,17 +1092,26 @@ end
 -------------------------------------------------------------------------------
 
 function Window:addBlit(x0, y0, x1, y1, dx, dy, c1, c2, c3, c4)
-	if c1 then
-		x0, y0, x1, y1 = 
-			intersect(x0, y0, x1, y1, c1 - dx, c2 - dy, c3 - dx, c4 - dy)
+	if c1 and x0 and
+		intersect(x0 + dx, y0 + dy, x1 + dx, y1 + dy, c1, c2, c3, c4) then
+		x0, y0, x1, y1 = intersect(x0, y0, x1, y1, c1, c2, c3, c4)
 	end
 	if x0 then
-		local key = ("%d:%d"):format(dx, dy)
-		local ca = self.CopyArea
-		if ca[key] then
-			ca[key][3]:orRect(x0, y0, x1, y1)
+		if x1 >= x0 and y1 >= y0 then
+			local key
+			if c1 then
+				key = ("%d:%d:%d:%d:%d:%d"):format(dx, dy, c1, c2, c3, c4)
+			else
+				key = ("%d:%d"):format(dx, dy)
+			end
+			local ca = self.Blits
+			if ca[key] then
+				ca[key][3]:orRect(x0, y0, x1, y1)
+			else
+				ca[key] = { dx, dy, newRegion(x0, y0, x1, y1), c1, c2, c3, c4 }
+			end
 		else
-			ca[key] = { dx, dy, newRegion(x0, y0, x1, y1) }
+			db.warn("illegal blitrect: %s %s %s %s", x0, y0, x1, y1)
 		end
 	end
 end

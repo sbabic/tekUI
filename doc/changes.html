@@ -13,6 +13,31 @@
 		<blockquote>
 			<ul>
 				<li>
+					<a href="manual.html#Group:onActivateGroup"><code>Group:onActivateGroup()</code></a> added
+				</li>
+				<li>
+					Window, UI: Doubleclick jitter and timeout are now defined in UI
+				</li>
+				<li>
+					Gendoc: NAME argument is now /K, HEADER is now /K/M, allowing multiple
+					header files. A reference document is now supplied to normal jumps
+				</li>
+				<li>
+					UTF8String: <a href="manual.html#find"><code>find()</code></a>, <a href="manual.html#chars"><code>chars()</code></a> added
+				</li>
+				<li>
+					Canvas: added SmoothFactor attribute and incremental scroll
+					positioning in <a href="manual.html#focusRect"><code>focusRect()</code></a> 
+				</li>
+				<li>
+					ListGadget: fixed regression: the cursor border, if unset in a
+					stylesheet, was initialized to zero width, changed to 1;
+				</li>
+				<li>
+					Text: now uses the &quot;IgnoreAltShift&quot; peudo qualifier for Keycode
+					shortcuts
+				</li>
+				<li>
 					Raw Framebuffer display driver: added
 				</li>
 				<li>
@@ -38,7 +63,13 @@
 					Region: added <a href="manual.html#trans"><code>trans()</code></a>, <a href="manual.html#isNull"><code>isNull()</code></a> 
 				</li>
 				<li>
+					Application: fixed initial double refresh bug
+				</li>
+				<li>
 					<a href="manual.html#Area:layout"><code>Area:layout()</code></a> now handles blits in transposed drawing contexts
+				</li>
+				<li>
+					DirList: Added AutoWidth attribute
 				</li>
 				<li>
 					<a href="manual.html#Drawable:getClipRect"><code>Drawable:getClipRect()</code></a> added

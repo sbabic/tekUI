@@ -533,13 +533,17 @@ function DocMarkup:link(link)
 		-- function links uniformly use colons; replace dots:
 		link = funclink:gsub("%.", ":")
 	end
-	
-	local func = link:match("^(.*)%(%)$")
-	if func and self.refdoc then
-		return ('<a href="%s#%s"><code>'):format(self.refdoc, func), 
-			'</code></a>'
+	if self.refdoc then
+		local jump = link:match("^%#(.*)$")
+		if jump then
+			link = ("%s#%s"):format(self.refdoc, jump)
+		end
+		local func = link:match("^(.*)%(%)$")
+		if func then
+			return ('<a href="%s#%s"><code>'):format(self.refdoc, func), 
+				'</code></a>'
+		end
 	end
-	
 	return Markup.link(self, link)
 end
 
@@ -548,8 +552,8 @@ end
 -------------------------------------------------------------------------------
 
 local template = "-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S," ..
-	"-e=EMPTY/S,--heading/K,--header/K,--author/K,--created/K,--adddate/S," ..
-	"-r=REFDOC/K,-n=NAME/F"
+	"-e=EMPTY/S,--heading/K,--header/K/M,--author/K,--created/K," ..
+	"--adddate/S,-r=REFDOC/K,-n=NAME/K"
 
 local args = Args.read(template, arg)
 
@@ -563,12 +567,12 @@ if not args or args["-h"] then
 	print("  -p=PLAIN/S     generate formatted plain text instead of HTML")
 	print("  -e=EMPTY/S     also show empty (undocumented) modules in index")
 	print("  --heading/K    single-line document heading")
-	print("  --header/K     read a header from the specified file")
+	print("  --header/K/M   read header(s) from the specified file(s)")
 	print("  --author/K     document author (HTML generator metadata)")
 	print("  --created/K    creation date (HTML generator metadata)")
 	print("  --adddate/S    add creation date (HTML generator metadata)")
 	print("  -r=REFDOC/K    document implicitely referenced by functions")
-	print("  -n=NAME/F      document name (rest of arguments will be used)")
+	print("  -n=NAME/K      document name (rest of arguments will be used)")
 	print("If a path is specified, it is scanned for files with the extension")
 	print(".lua. From these files, a HTML document is generated containing a")
 	print("class tree, library index and function reference from specially")
@@ -595,8 +599,13 @@ else
 		state.created = os.date("%d-%b-%Y")
 	end
 
-	if args["--header"] then
-		state.textdoc = io.open(args["--header"]):read("*a")
+	local headers = args["--header"]
+	if headers then
+		local h = { }
+		for i = 1, #headers do
+			insert(h, io.open(headers[i]):read("*a"))
+		end
+		state.textdoc = concat(h)
 	end
 	
 	if args["-f"] and fs.stat(args["-f"], "mode") == "file" then

@@ -201,7 +201,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 26.1"
+_VERSION = "Area 27.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -224,22 +224,18 @@ end
 -------------------------------------------------------------------------------
 
 function Area.init(self)
-	local t = self.AutoPosition
-	if t == nil then
-		t = true
+	if self.AutoPosition == nil then
+		self.AutoPosition = true
 	end
-	self.AutoPosition = t
 	self.BGPen = false
 	self.BGColor = self.BGColor or false
 	self.BGPosition = false
 	self.DamageRegion = false
 	self.Disabled = self.Disabled or false
 	self.Drawable = false
-	t = self.EraseBG
-	if t == nil then
-		t = true
+	if self.EraseBG == nil then
+		self.EraseBG = true
 	end
-	self.EraseBG = t
 	self.Focus = false
 	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
@@ -451,11 +447,9 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	-- * size is unchanged OR TrackDamage enabled
 	-- * object is not already slated for copying
 	
-	if validmove and (samesize or self.TrackDamage)
-		and not win.CopyObjects[self] then
+	if validmove and (samesize or self.TrackDamage) and
+		not win.BlitObjects[self] then
 		
-		win.CopyObjects[self] = true
-
 		-- get source rect, incl. border:
 		local s1 = x0 - dx - m[1]
 		local s2 = y0 - dy - m[2]
@@ -484,6 +478,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 		end
 
 		if can_copy then
+			win.BlitObjects[self] = true
 			win:addBlit(s1 + sx, s2 + sy, s3 + sx, s4 + sy, dx, dy,
 				c1, c2, c3, c4)
 			if samesize then
@@ -803,10 +798,11 @@ function Area:getRect()
 end
 
 -------------------------------------------------------------------------------
---	focusRect([x0, y0, x1, y1]): Tries to shift any Canvas
+--	reached = focusRect([x0, y0, x1, y1]): Tries to shift any Canvas
 --	containing the element into a position that makes the element fully
 --	visible. Optionally, a rectangle can be specified that is to be made
---	visible.
+--	visible. If the return value is not '''true''', the destination rectangle
+--	cannot be reached or has not been reached (yet).
 -------------------------------------------------------------------------------
 
 function Area:focusRect(r1, r2, r3, r4)
@@ -823,6 +819,7 @@ function Area:focusRect(r1, r2, r3, r4)
 	end
 	local parent = self:getParent()
 	if parent then
-		parent:focusRect(r1, r2, r3, r4)
+		return parent:focusRect(r1, r2, r3, r4)
 	end
+	return true
 end

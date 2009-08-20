@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="08-Aug-2009" />
+		<meta name="created" content="20-Aug-2009" />
 	</head>
 	<body>
 		<h1>
@@ -101,6 +101,9 @@
 																										</li>
 																										<li>
 																											<a href="#tek.ui.class.slider">Slider</a> 
+																										</li>
+																										<li>
+																											<a href="#tek.ui.class.input">Input</a> 
 																										</li>
 																									</ul>
 																								</blockquote>
@@ -885,7 +888,7 @@ method(object, arg1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.utf8string" id="tek.class.utf8string">UTF8String (v2.2)</a></h2>
+		<div class="node"><h2><a name="tek.class.utf8string" id="tek.class.utf8string">UTF8String (v3.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -912,7 +915,13 @@ method(object, arg1, ...)
 							<a href="#UTF8String:char"><code>UTF8String.char()</code></a> - Returns UTF8-encoded character sequences
 						</li>
 						<li style="list-style-type: none">
+							<a href="#UTF8String:chars"><code>UTF8String.chars()</code></a> - Iterator over a string's Unicode character codes
+						</li>
+						<li style="list-style-type: none">
 							<a href="#UTF8String:erase"><code>UTF8String:erase()</code></a> - Removes substring
+						</li>
+						<li style="list-style-type: none">
+							<a href="#UTF8String:find"><code>UTF8String:find()</code></a> - Find an UTF-8-encoded string
 						</li>
 						<li style="list-style-type: none">
 							<a href="#UTF8String:get"><code>UTF8String:get()</code></a> - Returns the string in UTF-8 encoded form
@@ -960,11 +969,33 @@ method(object, arg1, ...)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="UTF8String:chars" id="UTF8String:chars"><code>UTF8String.chars(utf8)</code></a></h3>
+			<p>
+				Returns an iterator that traverses the characters
+				in an UTF-8 encoded string, returning character codes in the Unicode range
+				(up to 31 bit). Example:
+			</p>
+<pre>
+for pos, char in UTF8String.chars(utf8str) do
+    ...
+end
+</pre>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="UTF8String:erase" id="UTF8String:erase"><code>UTF8String:erase(i[, j])</code></a></h3>
 			<p>
 				Erases the characters at the positions from
 				<code>i</code> to <code>j</code>. The semantics for the range are the same as for
 				<a href="#UTF8String:sub"><code>UTF8String:sub()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="UTF8String:find" id="UTF8String:find"><code>start, end = UTF8String:find(findstr[, pos])</code></a></h3>
+			<p>
+				Find the specified (UTF-8
+				encoded) <code>findstring</code> in the string object, optionally starting at the
+				given position. Returns the starting and ending position where the strings
+				match in the string object, or <strong>nil</strong>.
 			</p>
 			<hr />
 		</div>
@@ -1016,7 +1047,7 @@ method(object, arg1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.2)</a></h2>
+		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1499,15 +1530,15 @@ func(obj, x0, y0, x1, y1, ...)
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						This is the base library of the user interface toolkit. It implements
+						This module is the user interface toolkit's base library. It implements
 						a class loader and provides a central place for various toolkit
-						constants. To invoke the class loader, simply aquire a class from
-						the <code>tek.ui</code> table, e.g. this will load the
+						constants and defaults. To invoke the class loader, simply aquire a
+						class from the <code>tek.ui</code> table, e.g. this will load the
 						<a href="#tek.ui.class.application">tek.ui.class.application</a> class (as well as all subsequently
 						needed classes):
 					</p>
 <pre>
-ui = require &quot;tek.ui&quot;
+local ui = require &quot;tek.ui&quot;
 ui.Application:new { ...
 </pre>
 				</blockquote>
@@ -1558,6 +1589,181 @@ ui.Application:new { ...
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<code>HUGE</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										This constant is used to express a &quot;huge&quot; spatial extent on a
+										given axis, e.g. <code>Width = ui.HUGE</code>.
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>NULLOFFS</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										A table with the contents <code> { 0, 0, 0, 0 } </code> (read-only),
+										used e.g. for <em>Null</em> borders, margins and paddings.
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>DEFAULTS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<code>DBLCLICKJITTER</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Maximum sum of squared delta mouse positions (dx&#178; + dy&#178;) for
+										a pair of mouse clicks to be accepted as a double click. The
+										default is <code>70</code>. Large touchscreens may require a much larger
+										value.
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>DBLCLICKTIME</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Maximum number of microseconds between mouse clicks to be
+										recognized as a double click. Default: <code>32000</code>. Use a larger
+										value for touchscreens.
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>MESSAGE TYPES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<code>MSG_CLOSE</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Message sent when a window was closed
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_FOCUS</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										A window has been activated or deactivated
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_INTERVAL</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										50Hz Timer interval message
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_KEYDOWN</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Key pressed down
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_KEYUP</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Key released
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_MOUSEBUTTON</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Mousebutton pressed or released
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_MOUSEMOVE</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Mouse pointer moved
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_MOUSEOVER</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Mouse pointer has entered or left the window
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_NEWSIZE</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										A window has been resized
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_REFRESH</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										A window needs a (partial) refresh
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>MSG_USER</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										User message
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>NOTIFICATIONS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
 							<code>NOTIFY_ALWAYS</code> - see <a href="#tek.class.object">Object</a> 
 						</li>
 						<li style="list-style-type: none">
@@ -1579,59 +1785,29 @@ ui.Application:new { ...
 							<code>NOTIFY_FUNCTION</code> - see <a href="#tek.class.object">Object</a> 
 						</li>
 						<li style="list-style-type: none">
-							<code>NOTIFY_WINDOW</code> - see <a href="#tek.class.object">Object</a> -
-							defined in <a href="#tek.ui.class.element">tek.ui.class.element</a> 
+							<code>NOTIFY_WINDOW</code> - see <a href="#tek.class.object">Object</a>,
+							defined in <a href="#tek.ui.class.element">Element</a> 
 						</li>
 						<li style="list-style-type: none">
-							<code>NOTIFY_APPLICATION</code> - see <a href="#tek.class.object">Object</a> -
-							defined in <a href="#tek.ui.class.element">tek.ui.class.element</a> 
+							<code>NOTIFY_APPLICATION</code> - see <a href="#tek.class.object">Object</a>,
+							defined in <a href="#tek.ui.class.element">Element</a> 
 						</li>
 						<li style="list-style-type: none">
-							<code>NOTIFY_ID</code> - see <a href="#tek.class.object">Object</a> -
-							defined in <a href="#tek.ui.class.element">tek.ui.class.element</a> 
+							<code>NOTIFY_ID</code> - see <a href="#tek.class.object">Object</a>,
+							defined in <a href="#tek.ui.class.element">Element</a> 
 						</li>
 						<li style="list-style-type: none">
-							<code>NOTIFY_COROUTINE</code> - see <a href="#tek.class.object">Object</a> -
-							defined in <a href="#tek.ui.class.element">tek.ui.class.element</a> 
+							<code>NOTIFY_COROUTINE</code> - see <a href="#tek.class.object">Object</a>,
+							defined in <a href="#tek.ui.class.element">Element</a> 
 						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>SEE ALSO</dfn>
+				<blockquote>
+					<ul>
 						<li style="list-style-type: none">
-							<code>HUGE</code> - use this value to express a &quot;huge&quot; spatial extent
-						</li>
-						<li style="list-style-type: none">
-							<code>NULLOFFS</code> - table <code> { 0, 0, 0, 0 } </code> (read-only)
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_CLOSE</code> - Input message type: Window closed
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_FOCUS</code> - Window activated/deactivated
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_NEWSIZE</code> - Window resized
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_REFRESH</code> - Window needs (partial) refresh
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_MOUSEOVER</code> - Mouse pointer entered/left window
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_KEYDOWN</code> - Key pressed down
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_MOUSEMOVE</code> - Mouse pointer moved
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_MOUSEBUTTON</code> - Mousebutton pressed/released
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_INTERVAL</code> - Timer interval message (default: 50Hz)
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_KEYUP</code> - Key released
-						</li>
-						<li style="list-style-type: none">
-							<code>MSG_USER</code> - User message
+							<a href="#ClassOverview">ClassOverview</a> 
 						</li>
 					</ul>
 				</blockquote>
@@ -1644,7 +1820,7 @@ ui.Application:new { ...
 				class of the given <code>domain</code> and <code>classname</code>, instantiates it
 				(optionally passing it <code>object</code> for initialization), connects it to
 				the specified <code>parent</code> element, and initializes it using its
-				<code>setup()</code> method. If <code>name</code> is the pre-defined name <code>&quot;none&quot;</code>,
+				<code>setup()</code> method. If <code>classname</code> is the pre-defined name <code>&quot;none&quot;</code>,
 				this function returns <strong>false</strong>. Refer also to <a href="#loadClass"><code>loadClass()</code></a> for
 				further details.
 			</p>
@@ -1681,9 +1857,9 @@ ui.Application:new { ...
 		</div>
 		<div class="node"><h3><a name="ui:getStockImage" id="ui:getStockImage"><code>imgobject = getStockImage(name, ...)</code></a></h3>
 			<p>
-				Creates an image of a named class,
-				corresponding to classes found in <code>tek/ui/image</code>. Additional arguments
-				are passed to <code>imageclass:new()</code>.
+				Creates an image object of a named
+				class, corresponding to classes found in <code>tek/ui/image</code>. Extra arguments
+				are passed on as <code>imageclass:new(...)</code>.
 			</p>
 			<hr />
 		</div>
@@ -1697,19 +1873,19 @@ ui.Application:new { ...
 			<blockquote>
 				<ul>
 					<li style="list-style-type: none">
-						&quot;class&quot; - user interface element classes
+						<code>&quot;border&quot;</code> - border classes
 					</li>
 					<li style="list-style-type: none">
-						&quot;border&quot; - border classes
+						<code>&quot;class&quot;</code> - user interface classes
 					</li>
 					<li style="list-style-type: none">
-						&quot;layout&quot; - classes used for layouting a group
+						<code>&quot;hook&quot;</code> - drawing hook classes
 					</li>
 					<li style="list-style-type: none">
-						&quot;hook&quot; - drawing hooks
+						<code>&quot;image&quot;</code> - image classes
 					</li>
 					<li style="list-style-type: none">
-						&quot;image&quot; - images
+						<code>&quot;layout&quot;</code> - group layouting classes
 					</li>
 				</ul>
 			</blockquote>
@@ -1735,10 +1911,9 @@ ui.Application:new { ...
 		<div class="node"><h3><a name="ui:loadTable" id="ui:loadTable"><code>table, msg = loadTable(fname)</code></a></h3>
 			<p>
 				This function tries to load a file from
-				the various possible locations as defined by <code>ui.LocalPath</code>, to
-				interprete is as Lua source, and to return its contents as keys and
-				values of a table. If unsuccessful, returns <strong>nil</strong> followed by an
-				error message.
+				the various possible locations as defined by <code>ui.LocalPath</code>, interpretes
+				it is as Lua source, and returns its contents as keys and values of a
+				table. If unsuccessful, returns <strong>nil</strong> followed by an error message.
 			</p>
 			<hr />
 		</div>
@@ -1768,7 +1943,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v23.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v24.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1784,6 +1959,25 @@ ui.Application:new { ...
 					<p>
 						This class implements the framework's entrypoint and main loop.
 					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>EXAMPLE</dfn>
+				<blockquote>
+					<p>
+						A tekUI application can be written in a single, nested expression:
+					</p>
+<pre>
+local ui = require &quot;tek.ui&quot;
+ui.Application:new {
+  Children = {
+    ui.Window:new {
+      Children = {
+        ui.Button:new { Text = &quot;Hello World&quot; }
+      }
+    }
+  }
+}:run()
+</pre>
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>MEMBERS</dfn>
@@ -1842,10 +2036,11 @@ ui.Application:new { ...
 								<p>
 									The application can perform a garbage collection of the specified
 									type immediately before going to sleep waiting for input. If set
-									to <strong>false</strong>, no garbage collection is initiated explicitely. If
-									the value is <strong>true</strong>, the application performs a single garbage
-									collection step. Other values (e.g. <code>&quot;collect&quot;</code>) are passed
-									unmodified to <code>collectgarbage()</code>. Default: <strong>true</strong> 
+									to <strong>false</strong>, no explicit garbage collection is initiated. If
+									the value is <strong>true</strong> or <code>&quot;step&quot;</code>, the application performs a
+									single garbage collection <em>step</em>. Other values (e.g.
+									<code>&quot;collect&quot;</code>) are passed unmodified to <code>collectgarbage()</code>.
+									Default: <strong>true</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -1855,7 +2050,7 @@ ui.Application:new { ...
 								<p>
 									Name of the application, as displayed to the user. This is
 									also the fallback for the <code>Title</code> attribute in windows.
-									If unset, the default will be <code>&quot;unknown&quot;</code>.
+									If unset, the default will be <code>&quot;tekUI&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -2141,7 +2336,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v26.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v27.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2801,12 +2996,13 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:focusRect" id="Area:focusRect"><code>focusRect([x0, y0, x1, y1])</code></a></h3>
+		<div class="node"><h3><a name="Area:focusRect" id="Area:focusRect"><code>reached = focusRect([x0, y0, x1, y1])</code></a></h3>
 			<p>
 				Tries to shift any Canvas
 				containing the element into a position that makes the element fully
 				visible. Optionally, a rectangle can be specified that is to be made
-				visible.
+				visible. If the return value is not <strong>true</strong>, the destination rectangle
+				cannot be reached or has not been reached (yet).
 			</p>
 			<hr />
 		</div>
@@ -3033,7 +3229,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v18.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v19.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5419,7 +5615,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v21.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v22.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5635,7 +5831,25 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v22.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v1.0)</a></h2>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Input:getLineRect" id="Input:getLineRect"><code>x0, y0, x1, y1 = getLineRect(line[, xstart[, xend]])</code></a></h3>
+			<p>
+				Gets a text line's
+				rectangle on the screen.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Input:setCursor" id="Input:setCursor"><code>setCursor(blink, cx, cy, follow)</code></a></h3>
+			<p>
+				blink=1 cursor on, blink=0 cursor off,
+				blink=-1 cursor on in next frame, blink=false no change, blink=-2
+				cursor on in next frame if something changed
+			</p>
+			<hr class="page-break" />
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v22.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6431,7 +6645,7 @@ end
 									also enabled while the object is invisible. By convention, only
 									combinations with a qualifier should be used here, e.g.
 									<code>&quot;Alt+C&quot;</code>, <code>&quot;Shift+Ctrl+Q&quot;</code>. Qualifiers are separated by
-									 <code>&quot;+&quot;</code> and must precede the key. Valid qualifiers are:
+									<code>&quot;+&quot;</code> and must precede the key. Valid qualifiers are:
 								</p>
 								<blockquote>
 									<ul>
@@ -6445,7 +6659,11 @@ end
 											<code>&quot;Ctrl&quot;</code>, <code>&quot;LCtrl&quot;</code>, <code>&quot;RCtrl&quot;</code> 
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;IgnoreCase&quot;</code> 
+											<code>&quot;IgnoreCase&quot;</code> - pseudo-qualifier; ignores the Shift key
+										</li>
+										<li style="list-style-type: none">
+											<code>&quot;IgnoreAltShift&quot;</code> - pseudo-qualifier, ignores the Shift
+											and Alt keys
 										</li>
 									</ul>
 								</blockquote>
@@ -6827,7 +7045,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v11.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7151,7 +7369,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v20.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7650,7 +7868,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v21.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v22.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -8071,7 +8289,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 			<p>
-				Document generated on Sat Aug  8 10:16:54 2009
+				Document generated on Thu Aug 20 23:47:25 2009
 			</p>
 		</div>
 	</body>

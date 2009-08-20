@@ -62,8 +62,14 @@ local remove = table.remove
 local tonumber = tonumber
 local type = type
 
+-- for testing (see below):
+
+-- local pairs = pairs
+-- local print = print
+-- local ipairs = ipairs
+
 module "tek.lib.args"
-_VERSION = "Args 2.2"
+_VERSION = "Args 2.3"
 
 -------------------------------------------------------------------------------
 --	parsetemplate: check validity and parse option template into a table
@@ -199,12 +205,11 @@ function read(template, args)
 				if not rec.s then
 					item, rest = nextitem()
 					if not item then
-						done = true
-						break
+						return nil, "Value expected for key : " .. t[1][1]
 					end
 				end
 			elseif waitkey then
-				return nil, "key expected : " .. tmpl[waitkey][1][1]
+				return nil, "Key expected : " .. tmpl[waitkey][1][1]
 			end
 			
 			if t.m then
@@ -221,7 +226,7 @@ function read(template, args)
 				break
 			elseif t.n then
 				if not item:match("^%-?%d*%.?%d*$") then
-					return nil, "number expected"
+					return nil, "Number expected"
 				end
 				t[2] = tonumber(item)
 			elseif t.s then
@@ -277,7 +282,7 @@ function read(template, args)
 		end
 	end
 	
-	return res, #tmpl
+	return res, #tmpl - 1
 end
 
 -------------------------------------------------------------------------------
@@ -317,7 +322,7 @@ end
 -- 		return result("ok")
 -- 	end
 -- end
---
+-- 
 -- test("bla,fasel", "1", {bla="1"})
 -- test("bla,fasel", "1 2", {bla="1",fasel="2"})
 -- test("bla,fasel", "1 2 3", false)
@@ -362,13 +367,16 @@ end
 -- test("IP/A,MASK/K,DNS/K/M", "IP 1 MASK 2 DNS 3 4", {ip="1", mask="2", dns={"3", "4"}})
 -- test("src=-s/m/a/k,dst=-d/a/k", "-s 1 2 -d 3", {src={"1","2"},dst="3"})
 -- test("src=-s/m/a/k,dst=-d/a/k", "-d 3 -s 1 2", {src={"1","2"},dst="3"})
--- test("src=-s/m/a/k,dst=-d/a/k", "1 -d 3 -s 2", {src={"1","2"},dst="3"})
+-- test("src=-s/m/a/k,dst=-d/a/k", "1 -d 3 -s 2", {src={"2","1"},dst="3"})
 -- test("src=-s/m/a,dst=-d/a", "1 2 3 4", {src={"1","2","3"},dst="4"})
 -- test("src=-s/m/a,dst=-d/a", "1 2 3 -d 4", {src={"1","2","3"},dst="4"})
 -- test("src=-s/m/a,dst=-d/a", "1 2 -d 3 4", {src={"1","2","4"},dst="3"})
--- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={"1","2","4"},dst="3"})
+-- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={"4","1","2"},dst="3"})
 -- test("foo/a,bar/k/m", "eins zwei", false)
 -- test("src=-s/m/a/k,dst=-d/a/k", "1 2 -d 3", false)
+-- test("hallo", "hallo", false)
+-- test("src=-s/m/a/k,dst=-d/a/k", "1 -d 3 -s 2", {src={"2","1"},dst="3"})
+-- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={"4","1","2"},dst="3"})
 
 -------------------------------------------------------------------------------
 --	Test tool:

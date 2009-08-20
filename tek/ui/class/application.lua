@@ -13,6 +13,19 @@
 --	OVERVIEW::
 --		This class implements the framework's entrypoint and main loop.
 --
+--	EXAMPLE::
+--		A tekUI application can be written in a single, nested expression:
+--				local ui = require "tek.ui"
+--				ui.Application:new {
+--				  Children = {
+--				    ui.Window:new {
+--				      Children = {
+--				        ui.Button:new { Text = "Hello World" }
+--				      }
+--				    }
+--				  }
+--				}:run()
+--
 --	MEMBERS::
 --		- {{ApplicationId [IG]}} (string)
 --			Name of the application, normally used as an unique identifier
@@ -34,14 +47,15 @@
 --		- {{GCControl [IG]}} (boolean or string)
 --			The application can perform a garbage collection of the specified
 --			type immediately before going to sleep waiting for input. If set
---			to '''false''', no garbage collection is initiated explicitely. If
---			the value is '''true''', the application performs a single garbage
---			collection step. Other values (e.g. {{"collect"}}) are passed
---			unmodified to {{collectgarbage()}}. Default: '''true'''
+--			to '''false''', no explicit garbage collection is initiated. If
+--			the value is '''true''' or {{"step"}}, the application performs a
+--			single garbage collection ''step''. Other values (e.g.
+--			{{"collect"}}) are passed unmodified to {{collectgarbage()}}.
+--			Default: '''true'''
 --		- {{ProgramName [IG]}} (string)
 --			Name of the application, as displayed to the user. This is
 --			also the fallback for the {{Title}} attribute in windows.
---			If unset, the default will be {{"unknown"}}.
+--			If unset, the default will be {{"tekUI"}}.
 --		- {{Status [G]}} (string) (string)
 --			Status of the application, can be {{"init"}}, {{"error"}},
 --			{{"run"}}, {{"quit"}}.
@@ -119,13 +133,12 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 23.1"
-
--------------------------------------------------------------------------------
---	class implementation:
--------------------------------------------------------------------------------
-
+_VERSION = "Application 24.0"
 local Application = _M
+
+-------------------------------------------------------------------------------
+--	new: overrides
+-------------------------------------------------------------------------------
 
 function Application.new(class, self)
 	self = Family.new(class, self)
@@ -160,8 +173,6 @@ end
 -------------------------------------------------------------------------------
 
 function Application.init(self)
-	local t
-	
 	self.Application = self
 	self.ApplicationId = self.ApplicationId or "unknown"
 	self.Author = self.Author or "unknown"
@@ -170,7 +181,7 @@ function Application.init(self)
 	self.Display = self.Display or false
 	self.Domain = self.Domain or "unknown"
 	self.ElementById = { }
-	t = self.GCControl
+	local t = self.GCControl
 	if t == nil or t == true then
 		self.GCControl = "step"
 	end
@@ -178,7 +189,7 @@ function Application.init(self)
 	self.ModalWindows = { } -- stack of
 	self.MsgDispatch = false
 	self.OpenWindows = { }
-	self.ProgramName = self.ProgramName or self.Title or "unknown"
+	self.ProgramName = self.ProgramName or self.Title or "tekUI"
 	self.Properties = { ui.Theme.getStyleSheet("internal") }
 	self.Status = "init"
 	self.Theme = self.Theme or ui.ThemeName or "desktop"
@@ -485,6 +496,11 @@ function Application:run()
 
 	while self.Status == "run" do
 		
+		-- dispatch input messages:
+		while d:getMsg(msg) do
+			msgdispatch[msg[2]](self, msg)
+		end
+		
 		if #ow == 0 then
 			self.Status = "quit"
 			break
@@ -540,11 +556,6 @@ function Application:run()
 				collectgarbage(gcarg)
 			end
 			d:wait()
-		end
-
-		-- dispatch input messages:
-		while d:getMsg(msg) do
-			msgdispatch[msg[2]](self, msg)
 		end
 
 	end

@@ -31,11 +31,14 @@
 --			also enabled while the object is invisible. By convention, only
 --			combinations with a qualifier should be used here, e.g.
 --			{{"Alt+C"}}, {{"Shift+Ctrl+Q"}}. Qualifiers are separated by
---			 {{"+"}} and must precede the key. Valid qualifiers are:
+--			{{"+"}} and must precede the key. Valid qualifiers are:
 --				- {{"Alt"}}, {{"LAlt"}}, {{"RAlt"}}
 --				- {{"Shift"}}, {{"LShift"}}, {{"RShift"}}
 --				- {{"Ctrl"}}, {{"LCtrl"}}, {{"RCtrl"}}
---				- {{"IgnoreCase"}}
+--				- {{"IgnoreCase"}} - pseudo-qualifier; ignores the Shift key
+--				- {{"IgnoreAltShift"}} - pseudo-qualifier, ignores the Shift
+--				and Alt keys
+--			
 --			Alias names for keys are
 --				- {{"F1"}} ... {{"F12"}} (function keys),
 --				- {{"Left"}}, {{"Right"}}, {{"Up"}}, {{"Down"}} (cursor keys)

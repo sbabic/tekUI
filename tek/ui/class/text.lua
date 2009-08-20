@@ -88,7 +88,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 19.0"
+_VERSION = "Text 20.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -142,7 +142,7 @@ function Text:setup(app, window)
 	if self.KeyCode == true then
 		local sc = ui.ShortcutMark
 		local keycode = self.Text:match("^[^" .. sc .. "]*" .. sc .. "(.)")
-		self.KeyCode = keycode and "IgnoreCase+" .. keycode or false
+		self.KeyCode = keycode and "IgnoreAltShift+" .. keycode or false
 	end
 	Gadget.setup(self, app, window)
 	self:addNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_SETTEXT)

@@ -133,7 +133,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 22.1"
+_VERSION = "ListGadget 22.2"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -208,10 +208,10 @@ function ListGadget:getProperties(p, pclass)
 	self.CursorBorderClass = self.CursorBorderClass or
 		self:getProperty(p, pclass, "border-class")
 	local b = self.CursorBorder
-	b[1] = b[1] or self:getNumProperty(p, pclass, "border-left-width") or 0
-	b[2] = b[2] or self:getNumProperty(p, pclass, "border-top-width") or 0
-	b[3] = b[3] or self:getNumProperty(p, pclass, "border-right-width") or 0
-	b[4] = b[4] or self:getNumProperty(p, pclass, "border-bottom-width") or 0
+	b[1] = b[1] or self:getNumProperty(p, pclass, "border-left-width") or 1
+	b[2] = b[2] or self:getNumProperty(p, pclass, "border-top-width") or 1
+	b[3] = b[3] or self:getNumProperty(p, pclass, "border-right-width") or 1
+	b[4] = b[4] or self:getNumProperty(p, pclass, "border-bottom-width") or 1
 	Text.getProperties(self, p, pclass)
 end
 

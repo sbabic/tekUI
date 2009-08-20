@@ -74,8 +74,10 @@ local intersect = Region.intersect
 local reuseRegion = ui.reuseRegion
 local tonumber = tonumber
 
+local MOUSEBUTTON = ui.MSG_MOUSEBUTTON
+
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 21.0"
+_VERSION = "Group 22.0"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -386,6 +388,11 @@ end
 -------------------------------------------------------------------------------
 
 function Group:passMsg(msg)
+	if msg[2] == MOUSEBUTTON and msg[3] == 1 then -- leftdown
+		if Gadget.getByXY(self, msg[4], msg[5]) then
+			self:onActivateGroup()
+		end
+	end
 	local c = self.Children
 	for i = 1, #c do
 		msg = c[i]:passMsg(msg)
@@ -421,4 +428,11 @@ end
 
 function Group:getBGElement()
 	return self
+end
+
+-------------------------------------------------------------------------------
+--	onActivateGroup:
+-------------------------------------------------------------------------------
+
+function Group:onActivateGroup()
 end

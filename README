@@ -44,6 +44,9 @@
  
  - 7. [[changes.html : Changelog]]
 
+The entrypoint to the toolkit is the [[tek.ui][manual.html#tek.ui]]
+module. See there for a quick start.
+
 ---------------------------------------------------------------------
 
 =( about : 1. About tekUI )=

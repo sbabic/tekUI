@@ -5,13 +5,13 @@
 --	See copyright notice in COPYRIGHT
 --
 --	OVERVIEW::
---		This is the base library of the user interface toolkit. It implements
+--		This module is the user interface toolkit's base library. It implements
 --		a class loader and provides a central place for various toolkit
---		constants. To invoke the class loader, simply aquire a class from
---		the {{tek.ui}} table, e.g. this will load the
+--		constants and defaults. To invoke the class loader, simply aquire a
+--		class from the {{tek.ui}} table, e.g. this will load the
 --		[[#tek.ui.class.application]] class (as well as all subsequently
 --		needed classes):
---				ui = require "tek.ui"
+--				local ui = require "tek.ui"
 --				ui.Application:new { ...
 --
 --	FUNCTIONS::
@@ -29,6 +29,49 @@
 --		- ui.testFlag() - Tests a bit in a flags field
 --
 --	CONSTANTS::
+--		- {{HUGE}}
+--			- This constant is used to express a "huge" spatial extent on a
+--			given axis, e.g. {{Width = ui.HUGE}}.
+--		- {{NULLOFFS}}
+--			- A table with the contents {{ { 0, 0, 0, 0 } }} (read-only),
+--			used e.g. for ''Null'' borders, margins and paddings.
+--
+--	DEFAULTS::
+--		- {{DBLCLICKJITTER}}
+--			- Maximum sum of squared delta mouse positions (dx² + dy²) for
+--			a pair of mouse clicks to be accepted as a double click. The
+--			default is {{70}}. Large touchscreens may require a much larger
+--			value.
+--		- {{DBLCLICKTIME}} 
+--			- Maximum number of microseconds between mouse clicks to be
+--			recognized as a double click. Default: {{32000}}. Use a larger
+--			value for touchscreens.
+--
+--	MESSAGE TYPES::
+--		- {{MSG_CLOSE}}
+--			- Message sent when a window was closed
+--		- {{MSG_FOCUS}}
+--			- A window has been activated or deactivated
+--		- {{MSG_INTERVAL}}
+--			- 50Hz Timer interval message
+--		- {{MSG_KEYDOWN}}
+--			- Key pressed down
+--		- {{MSG_KEYUP}}
+--			- Key released
+--		- {{MSG_MOUSEBUTTON}}
+--			- Mousebutton pressed or released
+--		- {{MSG_MOUSEMOVE}}
+--			- Mouse pointer moved
+--		- {{MSG_MOUSEOVER}}
+--			- Mouse pointer has entered or left the window
+--		- {{MSG_NEWSIZE}}
+--			- A window has been resized
+--		- {{MSG_REFRESH}}
+--			- A window needs a (partial) refresh
+--		- {{MSG_USER}}
+--			- User message
+--
+--	NOTIFICATIONS::
 --		- {{NOTIFY_ALWAYS}} - see [[Object][#tek.class.object]]
 --		- {{NOTIFY_VALUE}} - see [[Object][#tek.class.object]]
 --		- {{NOTIFY_TOGGLE}} - see [[Object][#tek.class.object]]
@@ -36,27 +79,17 @@
 --		- {{NOTIFY_SELF}} - see [[Object][#tek.class.object]]
 --		- {{NOTIFY_OLDVALUE}} - see [[Object][#tek.class.object]]
 --		- {{NOTIFY_FUNCTION}} - see [[Object][#tek.class.object]]
---		- {{NOTIFY_WINDOW}} - see [[Object][#tek.class.object]] -
---		defined in [[#tek.ui.class.element]]
---		- {{NOTIFY_APPLICATION}} - see [[Object][#tek.class.object]] -
---		defined in [[#tek.ui.class.element]]
---		- {{NOTIFY_ID}} - see [[Object][#tek.class.object]] -
---		defined in [[#tek.ui.class.element]]
---		- {{NOTIFY_COROUTINE}} - see [[Object][#tek.class.object]] -
---		defined in [[#tek.ui.class.element]]
---		- {{HUGE}} - use this value to express a "huge" spatial extent
---		- {{NULLOFFS}} - table {{ { 0, 0, 0, 0 } }} (read-only)
---		- {{MSG_CLOSE}} - Input message type: Window closed
---		- {{MSG_FOCUS}} - Window activated/deactivated
---		- {{MSG_NEWSIZE}} - Window resized
---		- {{MSG_REFRESH}} - Window needs (partial) refresh
---		- {{MSG_MOUSEOVER}} - Mouse pointer entered/left window
---		- {{MSG_KEYDOWN}} - Key pressed down
---		- {{MSG_MOUSEMOVE}} - Mouse pointer moved
---		- {{MSG_MOUSEBUTTON}} - Mousebutton pressed/released
---		- {{MSG_INTERVAL}} - Timer interval message (default: 50Hz)
---		- {{MSG_KEYUP}} - Key released
---		- {{MSG_USER}} - User message
+--		- {{NOTIFY_WINDOW}} - see [[Object][#tek.class.object]], 
+--		defined in [[Element][#tek.ui.class.element]]
+--		- {{NOTIFY_APPLICATION}} - see [[Object][#tek.class.object]],
+--		defined in [[Element][#tek.ui.class.element]]
+--		- {{NOTIFY_ID}} - see [[Object][#tek.class.object]],
+--		defined in [[Element][#tek.ui.class.element]]
+--		- {{NOTIFY_COROUTINE}} - see [[Object][#tek.class.object]],
+--		defined in [[Element][#tek.ui.class.element]]
+--
+--	SEE ALSO::
+--		- [[#ClassOverview]]
 --
 -------------------------------------------------------------------------------
 
@@ -126,11 +159,11 @@ ShortcutMark = "_"
 --	Returns the loaded class or '''false''' if the class or domain name is
 --	unknown or if an error was detected in the module. Possible values for
 --	{{domain}}, as currently defined, are:
---		- "class" - user interface element classes
---		- "border" - border classes
---		- "layout" - classes used for layouting a group
---		- "hook" - drawing hooks
---		- "image" - images
+--		- {{"border"}} - border classes
+--		- {{"class"}} - user interface classes
+--		- {{"hook"}} - drawing hook classes
+--		- {{"image"}} - image classes
+--		- {{"layout"}} - group layouting classes
 -------------------------------------------------------------------------------
 
 local function loadProtected(name)
@@ -208,9 +241,9 @@ function reuseRegion(r, ...)
 end
 
 -------------------------------------------------------------------------------
---	imgobject = getStockImage(name, ...): Creates an image of a named class,
---	corresponding to classes found in {{tek/ui/image}}. Additional arguments
---	are passed to {{imageclass:new()}}.
+--	imgobject = getStockImage(name, ...): Creates an image object of a named
+--	class, corresponding to classes found in {{tek/ui/image}}. Extra arguments
+--	are passed on as {{imageclass:new(...)}}.
 -------------------------------------------------------------------------------
 
 function getStockImage(name, ...)
@@ -238,7 +271,7 @@ end
 --	class of the given {{domain}} and {{classname}}, instantiates it
 --	(optionally passing it {{object}} for initialization), connects it to
 --	the specified {{parent}} element, and initializes it using its
---	{{setup()}} method. If {{name}} is the pre-defined name {{"none"}},
+--	{{setup()}} method. If {{classname}} is the pre-defined name {{"none"}},
 --	this function returns '''false'''. Refer also to loadClass() for
 --	further details.
 -------------------------------------------------------------------------------
@@ -335,10 +368,9 @@ end
 
 -------------------------------------------------------------------------------
 --	table, msg = loadTable(fname): This function tries to load a file from
---	the various possible locations as defined by {{ui.LocalPath}}, to
---	interprete is as Lua source, and to return its contents as keys and
---	values of a table. If unsuccessful, returns '''nil''' followed by an
---	error message.
+--	the various possible locations as defined by {{ui.LocalPath}}, interpretes
+--	it is as Lua source, and returns its contents as keys and values of a
+--	table. If unsuccessful, returns '''nil''' followed by an error message.
 -------------------------------------------------------------------------------
 
 function loadTable(fname)
@@ -706,6 +738,7 @@ setmetatable(_M, {
 
 KeyAliases =
 {
+	["IgnoreAltShift"] = { 0x0000, 0x00, 0x10, 0x20, 0x30 },
 	["IgnoreCase"] = { 0x0000, 0x00, 0x01, 0x02 },
 	["Shift"] = { 0x0000, 0x01, 0x02 },
 	["LShift"] = { 0x0000, 0x01 },
@@ -779,7 +812,7 @@ function resolveKeyCode(code)
 	local quals, key = { 0 }, ""
 	local ignorecase
 	for s in ("+" .. code):gmatch("%+(.[^+]*)") do
-		if s == "IgnoreCase" then
+		if s == "IgnoreCase" or s == "IgnoreAltShift" then
 			ignorecase = true
 		end
 		key = addqual(key, quals, s)
@@ -811,15 +844,21 @@ function testFlag(flag, mask)
 end
 
 -------------------------------------------------------------------------------
---	Constants: Note that 'Object' and 'Element' trigger the class loader
+--	Constants: 
 -------------------------------------------------------------------------------
 
 DEBUG = false
 HUGE = 1000000
 NULLOFFS = { 0, 0, 0, 0 }
 
+-- Double click time limit, in microseconds:
+DBLCLICKTIME = 320000 -- 600000 for touch screens
+-- Max. square pixel distance between clicks:
+DBLCLICKJITTER = 70 -- 3000 for touch screens
+
 -------------------------------------------------------------------------------
---	Placeholders for notifications:
+--	Placeholders for notifications;
+--	Note that 'Object' and 'Element' trigger the class loader
 -------------------------------------------------------------------------------
 
 NOTIFY_ALWAYS = Object.NOTIFY_ALWAYS
