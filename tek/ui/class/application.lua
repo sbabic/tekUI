@@ -107,11 +107,11 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Display = ui.Display
-local Family = ui.Family
-local Group = ui.Group
-local Text = ui.Text
-local Window = ui.Window
+local Display = ui.require("display", 19)
+local Family = ui.require("family", 2)
+local Group = ui.require("group", 22)
+local Text = ui.require("text", 20)
+local Window = ui.require("window", 22)
 
 local assert = assert
 local cocreate = coroutine.create
@@ -133,7 +133,7 @@ local unpack = unpack
 local MSG_USER = ui.MSG_USER
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 24.0"
+_VERSION = "Application 27.0"
 local Application = _M
 
 -------------------------------------------------------------------------------
@@ -186,6 +186,7 @@ function Application.init(self)
 		self.GCControl = "step"
 	end
 	self.InputHandlers = { [MSG_USER] = { } }
+	self.LastKey = false
 	self.ModalWindows = { } -- stack of
 	self.MsgDispatch = false
 	self.OpenWindows = { }
@@ -243,6 +244,8 @@ end
 -------------------------------------------------------------------------------
 
 function Application:addMember(child, pos)
+	-- connect recursively:
+	self.connect(child, self)
 	self:decodeProperties(child)
 	child:setup(self, child)
 	if Family.addMember(self, child, pos) then
@@ -388,6 +391,14 @@ end
 
 function Application:quit()
 	self:hide()
+end
+
+-------------------------------------------------------------------------------
+--	getModalWindow:
+-------------------------------------------------------------------------------
+
+function Application:getModalWindow()
+	return self.ModalWindows[1]
 end
 
 -------------------------------------------------------------------------------
@@ -638,6 +649,8 @@ end
 --	Requests a single or multiple files or directories. Possible keys in
 --	the {{args}} table are:
 --		- {{Center}} - Boolean, whether requester should be opened centered
+--		- {{FocusElement}} - What element to place the initial focus on;
+--		see [[#tek.ui.class.dirlist : DirList]] for possible values
 --		- {{Height}} - Height of the requester window
 --		- {{Lister}} - External lister object to operate on
 --		- {{Location}} - Initial contents of the requester's location field
@@ -667,7 +680,8 @@ function Application:requestFile(args)
 		Kind = "requester",
 		SelectMode = args.SelectMode or "single",
 		Location = args.Location,
-		SelectText = args.SelectText
+		SelectText = args.SelectText,
+		FocusElement = args.FocusElement,
 	}
 
 	local center = args.Center
@@ -677,6 +691,7 @@ function Application:requestFile(args)
 
 	local window = Window:new
 	{
+		Class = "app-dialog",
 		Title = args.Title or dirlist.Locale.SELECT_FILE_OR_DIRECTORY,
 		Modal = true,
 		Width = args.Width or 400,
@@ -756,6 +771,7 @@ function Application:easyRequest(title, text, ...)
 
 	window = Window:new
 	{
+		Class = "app-dialog",
 		Title = title or self.ProgramName,
 		Modal = true,
 		Center = true,
@@ -888,4 +904,18 @@ local MsgHandlers =
 function Application:handleInput(msg)
 	MsgHandlers[msg[2]](self, msg)
 	return false
+end
+
+-------------------------------------------------------------------------------
+--	retrig = setLastKey([newkey]): Sets {{newkey}} as the key that was last
+--	pressed in the application. If no new key is given, the current key is
+--	unset. Returns a boolean indicating whether it is the same as the
+--	previously registered key.
+-------------------------------------------------------------------------------
+
+function Application:setLastKey(key)
+	local oldkey = self.LastKey
+	key = key or false
+	self.LastKey = key
+	return oldkey == key
 end

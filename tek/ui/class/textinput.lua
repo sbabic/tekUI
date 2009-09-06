@@ -62,12 +62,11 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
-
-local Area = ui.Area
-local Gadget = ui.Gadget
-local Text = ui.Text
 local UTF8String = require "tek.class.utf8string"
+local ui = require "tek.ui"
+local Area = ui.require("area", 28)
+local Gadget = ui.require("gadget", 17)
+local Text = ui.require("text", 20)
 
 local char = string.char
 local floor = math.floor
@@ -77,7 +76,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 13.0"
+_VERSION = "TextInput 14.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -244,7 +243,7 @@ function TextInput:draw()
 	
 	if self.Disabled then
 		d:drawText(x + 1, y + 1, tr[3] + 1, tr[4] + 1, text,
-			d.Pens[self.FGDisabled2 or ui.PEN_DISABLEDDETAIL2])
+			d.Pens[self.FGDisabled2 or ui.PEN_DISABLEDDETAILSHINE])
 	end
 	
 	local pen = pens[self.FGPen]

@@ -43,11 +43,12 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Frame = ui.Frame
-local Gadget = ui.Gadget
-local Group = ui.Group
-local Region = require "tek.lib.region"
-local Text = ui.Text
+
+local Frame = ui.require("frame", 12)
+local Gadget = ui.require("gadget", 17)
+local Group = ui.require("group", 22)
+local Region = ui.loadLibrary("region", 8)
+local Text = ui.require("text", 20)
 
 local assert = assert
 local insert = table.insert
@@ -59,7 +60,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 12.0"
+_VERSION = "PageGroup 12.1"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------

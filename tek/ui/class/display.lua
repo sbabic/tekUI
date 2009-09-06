@@ -53,7 +53,7 @@
 --		- {{rgb-detail}}
 --		- {{rgb-disabled}}
 --		- {{rgb-disabled-detail}}
---		- {{rgb-disabled-detail2}}
+--		- {{rgb-disabled-detail-shine}}
 --		- {{rgb-fill}}
 --		- {{rgb-focus}}
 --		- {{rgb-focus-detail}}
@@ -66,7 +66,7 @@
 --		- {{rgb-list-active}}
 --		- {{rgb-list-active-detail}}
 --		- {{rgb-list-detail}}
---		- {{rgb-list2}}
+--		- {{rgb-list-alt}}
 --		- {{rgb-menu}}
 --		- {{rgb-menu-active}}
 --		- {{rgb-menu-active-detail}}
@@ -86,16 +86,18 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
+
+local Element = ui.require("element", 14)
+local Visual = ui.loadLibrary("visual", 2)
+
 local floor = math.floor
 local open = io.open
 local pairs = pairs
 local tonumber = tonumber
 local unpack = unpack
-local Element = require "tek.ui.class.element"
-local Visual = require "tek.lib.visual"
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 19.0"
+_VERSION = "Display 20.0"
 
 local Display = _M
 
@@ -110,25 +112,7 @@ local DEF_RGB_FILL       = "#6e82a0"
 local DEF_RGB_SHADOW     = "#777"
 local DEF_RGB_HALFSHADOW = "#bebebe"
 local DEF_RGB_HALFSHINE  = "#e1e1e1"
-local DEF_RGB_CURSOR     = "#c85014"
-
--- local DEF_RGB_BLACK      = "#000"
--- local DEF_RGB_RED        = "#f00"
--- local DEF_RGB_LIME       = "#0f0"
--- local DEF_RGB_YELLOW     = "#ff0"
--- local DEF_RGB_BLUE       = "#00f"
--- local DEF_RGB_FUCHSIA    = "#f0f"
--- local DEF_RGB_AQUA       = "#0ff"
--- local DEF_RGB_WHITE      = "#fff"
--- local DEF_RGB_GRAY       = "#808080"
--- local DEF_RGB_MAROON     = "#800000"
--- local DEF_RGB_GREEN      = "#008000"
--- local DEF_RGB_OLIVE      = "#808000"
--- local DEF_RGB_NAVY       = "#000080"
--- local DEF_RGB_PURPLE     = "#800080"
--- local DEF_RGB_TEAL       = "#008080"
--- local DEF_RGB_SILVER     = "#c0c0c0"
--- local DEF_RGB_ORANGE     = "#ffa500"
+local DEF_RGB_FOCUS      = "#e05014"
 
 local DEF_MAINFONT  = "sans-serif,helvetica,arial,Vera:14"
 local DEF_SMALLFONT = "sans-serif,helvetica,arial,Vera:12"
@@ -152,32 +136,51 @@ local ColorDefaults =
 	{ "focus-detail", DEF_RGB_DETAIL },
 	{ "hover-detail", DEF_RGB_DETAIL },
 	{ "disabled-detail", DEF_RGB_SHADOW },
-	{ "disabled-detail2", DEF_RGB_HALFSHINE },
+	{ "disabled-detail-shine", DEF_RGB_HALFSHINE },
 	{ "border-shine", DEF_RGB_HALFSHINE },
 	{ "border-shadow", DEF_RGB_SHADOW },
 	{ "border-rim", DEF_RGB_DETAIL },
-	{ "border-focus", DEF_RGB_CURSOR },
+	{ "border-focus", DEF_RGB_FOCUS },
 	{ "border-legend", DEF_RGB_DETAIL },
 	{ "menu", DEF_RGB_BACK },
 	{ "menu-detail", DEF_RGB_DETAIL },
 	{ "menu-active", DEF_RGB_FILL },
 	{ "menu-active-detail", DEF_RGB_SHINE },
 	{ "list", DEF_RGB_BACK },
-	{ "list2", DEF_RGB_HALFSHINE },
+	{ "list-alt", DEF_RGB_HALFSHINE },
 	{ "list-detail", DEF_RGB_DETAIL },
 	{ "list-active", DEF_RGB_FILL },
 	{ "list-active-detail", DEF_RGB_SHINE },
-	{ "cursor", DEF_RGB_CURSOR },
+	{ "cursor", DEF_RGB_FILL },
 	{ "cursor-detail", DEF_RGB_SHINE },
 	{ "group", DEF_RGB_HALFSHADOW },
 	{ "shadow", DEF_RGB_SHADOW },
 	{ "shine", DEF_RGB_SHINE },
 	{ "half-shadow", DEF_RGB_HALFSHADOW },
 	{ "half-shine", DEF_RGB_HALFSHINE },
+	{ "paper", DEF_RGB_SHINE },
+	{ "ink", DEF_RGB_DETAIL },
 	{ "user1", DEF_RGB_DETAIL },
 	{ "user2", DEF_RGB_DETAIL },
 	{ "user3", DEF_RGB_DETAIL },
 	{ "user4", DEF_RGB_DETAIL },
+	{ "black",   "#000" },
+	{ "red",     "#f00" },
+	{ "lime",    "#0f0" },
+	{ "yellow",  "#ff0" },
+	{ "blue",    "#00f" },
+	{ "fuchsia", "#f0f" },
+	{ "aqua",    "#0ff" },
+	{ "white",   "#fff" },
+	{ "gray",    "#808080" },
+	{ "maroon",  "#800000" },
+	{ "green",   "#008000" },
+	{ "olive",   "#808000" },
+	{ "navy",    "#000080" },
+	{ "purple",  "#800080" },
+	{ "teal",    "#008080" },
+	{ "silver",  "#c0c0c0" },
+	{ "orange",  "#ffa500" },
 }
 
 local FontDefaults =

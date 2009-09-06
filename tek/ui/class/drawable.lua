@@ -34,9 +34,9 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
 local Object = require "tek.class.object"
-local Region = require "tek.lib.region"
+local ui = require "tek.ui"
+local Region = ui.loadLibrary("region", 8)
 
 local assert = assert
 local insert = table.insert
@@ -44,10 +44,11 @@ local intersect = Region.intersect
 local remove = table.remove
 local setmetatable = setmetatable
 local unpack = unpack
+
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 20.0"
+_VERSION = "Drawable 21.0"
 
 DEBUG_DELAY = 3
 
@@ -136,14 +137,19 @@ function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
 			end
 		})
 		
-		-- Allocate standard pens:
-		for i = 1, ui.PEN_NUMBER do
+		-- Allocate colors:
+		local i = 1
+		while true do
 			local name, r, g, b = self.Display:getPaletteEntry(i)
+			if not name then
+				break
+			end
 			local key = ("#%02x%02x%02x"):format(r, g, b)
 			local pen = self.Pens[key]
 			self.Pens[key] = pen
 			self.Pens[name] = pen
 			self.Pens[i] = pen
+			i = i + 1
 		end
 		
 		return true

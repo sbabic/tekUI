@@ -35,12 +35,13 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local PopItem = ui.PopItem
+local PopItem = ui.require("popitem", 10)
+
 local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 7.0"
+_VERSION = "MenuItem 7.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:

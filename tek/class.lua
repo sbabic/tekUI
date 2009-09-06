@@ -12,11 +12,11 @@
 --		from classes.
 --
 --	IMPLEMENTS::
---		- Class:checkDescend() - Checks if an object descends from a class
 --		- Class:getClass() - Returns the class of an object, or the super
 --		class of a class
 --		- Class:getClassName() - Returns the class name of an object or class
 --		- Class:getSuper() - Returns the super class of an object or class
+--		- Class:instanceOf() - Checks if an object descends from a class
 --		- Class.new() - Creates and returns a new object
 --		- Class.newClass() - Creates a child class from a super class
 --		- Class:setClass() - Changes the class of an object, or the super
@@ -24,6 +24,7 @@
 --
 -------------------------------------------------------------------------------
 
+local assert = assert
 local error = error
 local tostring = tostring
 local getmetatable = getmetatable
@@ -35,7 +36,7 @@ local PROXY = true
 local DEBUG = true
 
 module "tek.class"
-_VERSION = "Class 6.3"
+_VERSION = "Class 7.0"
 
 local Class = _M
 
@@ -168,14 +169,15 @@ function Class:getClassName()
 end
 
 -------------------------------------------------------------------------------
---	is_descendant = object:checkDescend(class):
+--	is_descendant = object:instanceOf(class):
 --	Returns '''true''' if {{object}} is an instance of a class descending
 --	from the specified {{class}}. It is also possible to apply this function
 --	to a class instead of an object, e.g.:
---			Class.checkDescend(Button, Area)
+--			Class.instanceOf(Button, Area)
 -------------------------------------------------------------------------------
 
-function Class:checkDescend(ancestor)
+function Class:instanceOf(ancestor)
+	assert(ancestor)
 	while self ~= ancestor do
 		self = getmetatable(self)
 		if not self then

@@ -189,8 +189,9 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Element = ui.Element
-local Region = require "tek.lib.region"
+
+local Element = ui.require("element", 14)
+local Region = ui.loadLibrary("region", 8)
 
 local freeRegion = ui.freeRegion
 local intersect = Region.intersect
@@ -201,7 +202,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 27.0"
+_VERSION = "Area 29.0"
 local Area = _M
 
 -------------------------------------------------------------------------------
@@ -663,7 +664,7 @@ end
 
 function Area:setState(bg, fg)
 	bg = bg or self.BGColor or ui.PEN_BACKGROUND
-	if bg == ui.PEN_PARENTGROUP then
+	if bg == ui.PEN_DEFAULT then
 		bg = self:getBGElement().BGPen
 	end
 	if bg ~= self.BGPen then
@@ -798,28 +799,24 @@ function Area:getRect()
 end
 
 -------------------------------------------------------------------------------
---	reached = focusRect([x0, y0, x1, y1]): Tries to shift any Canvas
+--	moved = focusRect([x0, y0, x1, y1]): Tries to shift any Canvas
 --	containing the element into a position that makes the element fully
 --	visible. Optionally, a rectangle can be specified that is to be made
---	visible. If the return value is not '''true''', the destination rectangle
---	cannot be reached or has not been reached (yet).
+--	visible. If the return value (a boolean) indicates whether some kind
+--	of repositioning has taken place.
 -------------------------------------------------------------------------------
 
 function Area:focusRect(r1, r2, r3, r4)
 	if not r1 then
 		r1, r2, r3, r4 = self:getRect()
-		if not r1 then
-			return
-		end
+	end
+	local parent = self:getParent()
+	if r1 and parent then
 		local m = self.MarginAndBorder
 		r1 = r1 - m[1]
 		r2 = r2 - m[2]
 		r3 = r3 + m[3]
 		r4 = r4 + m[4]
-	end
-	local parent = self:getParent()
-	if parent then
 		return parent:focusRect(r1, r2, r3, r4)
 	end
-	return true
 end

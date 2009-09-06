@@ -22,8 +22,10 @@
 --		- ui.getLocale() - Gets a locale catalog
 --		- ui.loadClass() - Loads a named class
 --		- ui.loadImage() - Loads an image (possibly from an image cache)
+--		- ui.loadLibrary() - Loads a library
 --		- ui.loadStyleSheet() - Loads and parse a style sheet file
 --		- ui.loadTable() - Tries to load a table from standard paths
+--		- ui.require() - Loads a user interface class
 --		- ui.resolveKeyCode() - Converts a keycode into keys and qualifiers
 --		- ui.sourceTable() - Loads a file as a Lua source, returning a table
 --		- ui.testFlag() - Tests a bit in a flags field
@@ -108,16 +110,18 @@ local open = io.open
 local package = package
 local pairs = pairs
 local pcall = pcall
+local rawget = rawget
 local regionnew = Region.new
 local remove = table.remove
-local require = require
+local int_require = require
 local setfenv = setfenv
 local setmetatable = setmetatable
+local tonumber = tonumber
 local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 24.0"
+_VERSION = "tekUI 26.0"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -154,24 +158,51 @@ NoCursor = getenv("NOCURSOR") == "true"
 ShortcutMark = "_"
 
 -------------------------------------------------------------------------------
---	class = loadClass(domain, classname):
---	Loads a class of the specified {{domain}} and the given {{classname}}.
+--	class = loadClass(domain, classname[, min_version]):
+--	Loads a class of the given {{classname}} from the specified {{domain}},
+--	optionally with a minimum version requirement.
 --	Returns the loaded class or '''false''' if the class or domain name is
---	unknown or if an error was detected in the module. Possible values for
---	{{domain}}, as currently defined, are:
+--	unknown, if the (major) version cannot be satisfied, or if an error
+--	occured in the module. Currently defined values for {{domain}} are:
 --		- {{"border"}} - border classes
---		- {{"class"}} - user interface classes
+--		- {{"class"}} - user interface element classes
 --		- {{"hook"}} - drawing hook classes
 --		- {{"image"}} - image classes
 --		- {{"layout"}} - group layouting classes
 -------------------------------------------------------------------------------
 
-local function loadProtected(name)
-	return pcall(require, name)
+local function requireVersion(name, version)
+	local mod = int_require(name)
+	local ver = rawget(mod, "_VER")
+	if not ver then
+		ver = mod._VERSION
+		if ver then
+			ver = ver:match(" (%d+)%.%d+$")
+			ver = tonumber(ver)
+		else
+			ver = 999999
+		end
+		mod._VER = ver
+		db.info("Loaded module %s, version %s", name, ver)
+	end
+	if version then
+		if ver < version then
+			local msg = ("%s : required major version %s, got %s"):
+				format(name, version, ver)
+			db.error("%s", msg)
+			error(msg)
+		end
+	end
+	return mod
 end
 
-local function loadSimple(name)
-	return true, require(name)
+local function loadProtected(name, version)
+	return pcall(requireVersion, name, version)
+end
+
+local function loadSimple(name, version)
+	local mod = requireVersion(name, version)
+	return true, mod
 end
 
 local LoaderPaths =
@@ -181,26 +212,49 @@ local LoaderPaths =
 	["layout"] = "tek.ui.layout.",
 	["hook"] = "tek.ui.hook.",
 	["image"] = "tek.ui.image.",
+	["lib"] = "tek.lib.",
 }
 
-function loadClass(domain, name, pat, loader)
+function loadClass(domain, name, version, loader)
 	if name and name ~= "" and domain and LoaderPaths[domain] then
-		if not pat or name:match(pat) then
-			name = LoaderPaths[domain] .. name
-			db.trace("Loading class '%s'...", name)
-			package.path, package.cpath = LocalPath, LocalCPath
-			local success, result = (loader or loadProtected)(name)
-			package.path, package.cpath = OldPath, OldCPath
-			if success then
-				return result
+		if not version then
+			local name2
+			name2, version = name:match("^(.*)%-(%d+)$")
+			if version then
+				version = tonumber(version)
+				name = name2
 			end
-			db.error("Error loading class '%s'", name)
-			db.warn("%s", result)
-		else
-			db.error("Invalid (or prohibited) class name '%s'", name)
 		end
+		name = LoaderPaths[domain] .. name
+		db.trace("Loading module %s v%s...", name, version)
+		package.path, package.cpath = LocalPath, LocalCPath
+		local success, result = (loader or loadProtected)(name, version)
+		package.path, package.cpath = OldPath, OldCPath
+		if success then
+			return result
+		end
+		db.error("Error loading class '%s'", name)
 	end
 	return false
+end
+
+-------------------------------------------------------------------------------
+--	require(name[, version]): Loads an user interface class with at least the
+--	specified major version. This function is a shortcut for
+--	{{ui.loadClass("class", ...)}} - see ui.loadClass() for more details.
+-------------------------------------------------------------------------------
+
+function require(name, version)
+	return loadClass("class", name, version, loadSimple)
+end
+
+-------------------------------------------------------------------------------
+--	loadLibrary(name[, version]): Loads a library with at least the specified
+--	major version, from a local or global path starting with {{tek/lib}}.
+-------------------------------------------------------------------------------
+
+function loadLibrary(name, version)
+	return loadClass("lib", name, version, loadSimple)
 end
 
 -------------------------------------------------------------------------------
@@ -625,7 +679,7 @@ local matchkeys =
 {
 	["background-color"] =
 	{
-		{ "^parent%-group$", function(p, k) p[k] = 0 end }
+		{ "^default$", function(p, k) p[k] = 0 end }
 	},
 	["background-image"] =
 	{
@@ -663,6 +717,10 @@ local matchkeys =
 	["border-left"] =
 	{
 		{ "^(%d+)%s+(%S+)%s+(%S+)$", addborder3dir, "left" }
+	},
+	["color"] =
+	{
+		{ "^default$", function(p, k) p[k] = 0 end }
 	},
 	["margin"] =
 	{
@@ -720,7 +778,7 @@ end
 setmetatable(_M, {
 	__index = function(tab, key)
 		local pname = key:lower()
-		local class = loadClass("class", pname, "^%a+$", loadSimple)
+		local class = loadClass("class", pname, nil, loadSimple)
 		if class then
 			db.info("Loaded class '%s'", pname)
 			tab[pname] = class
@@ -857,17 +915,18 @@ DBLCLICKTIME = 320000 -- 600000 for touch screens
 DBLCLICKJITTER = 70 -- 3000 for touch screens
 
 -------------------------------------------------------------------------------
---	Placeholders for notifications;
---	Note that 'Object' and 'Element' trigger the class loader
+--	Placeholders for notifications
 -------------------------------------------------------------------------------
 
-NOTIFY_ALWAYS = Object.NOTIFY_ALWAYS
-NOTIFY_VALUE = Object.NOTIFY_VALUE
-NOTIFY_TOGGLE = Object.NOTIFY_TOGGLE
-NOTIFY_FORMAT = Object.NOTIFY_FORMAT
-NOTIFY_SELF = Object.NOTIFY_SELF
-NOTIFY_OLDVALUE = Object.NOTIFY_OLDVALUE
-NOTIFY_FUNCTION = Object.NOTIFY_FUNCTION
+local Element = require("element", 14)
+
+NOTIFY_ALWAYS = Element.NOTIFY_ALWAYS
+NOTIFY_VALUE = Element.NOTIFY_VALUE
+NOTIFY_TOGGLE = Element.NOTIFY_TOGGLE
+NOTIFY_FORMAT = Element.NOTIFY_FORMAT
+NOTIFY_SELF = Element.NOTIFY_SELF
+NOTIFY_OLDVALUE = Element.NOTIFY_OLDVALUE
+NOTIFY_FUNCTION = Element.NOTIFY_FUNCTION
 NOTIFY_WINDOW = Element.NOTIFY_WINDOW
 NOTIFY_APPLICATION = Element.NOTIFY_APPLICATION
 NOTIFY_ID = Element.NOTIFY_ID
@@ -878,7 +937,7 @@ NOTIFY_COROUTINE = Element.NOTIFY_COROUTINE
 --	scheme is inverted, i.e. usually bright colors become dark and vice versa.
 -------------------------------------------------------------------------------
 
-PEN_PARENTGROUP = 0       -- pseudo color: use the group's background color
+PEN_DEFAULT = 0           -- pseudo color: default, keep, do not override, etc.
 PEN_BACKGROUND = 1        -- background standard
 PEN_DARK = 2              -- darkest color (literally); usually black
 PEN_OUTLINE = 3           -- complements PEN_DETAIL
@@ -892,7 +951,7 @@ PEN_ACTIVEDETAIL = 10     -- color for active text or icon details
 PEN_FOCUSDETAIL = 11      -- color for focused text or icon details
 PEN_HOVERDETAIL = 12      -- color for text or icon details being hovered
 PEN_DISABLEDDETAIL = 13   -- color for disabled text or icon details
-PEN_DISABLEDDETAIL2 = 14  -- alt. color for disabled text or icon details
+PEN_DISABLEDDETAILSHINE = 14 -- shine color for disabled text or icon details
 PEN_BORDERSHINE = 15      -- shining borders
 PEN_BORDERSHADOW = 16     -- borders in the shadow
 PEN_BORDERRIM = 17        -- border to seperate and to enhance contrast
@@ -903,7 +962,7 @@ PEN_MENUDETAIL = 21       -- menu text and icon details
 PEN_MENUACTIVE = 22       -- active menu background
 PEN_MENUACTIVEDETAIL = 23 -- active menu text and icon details
 PEN_LIST = 24             -- list background
-PEN_LIST2 = 25            -- alt. list background
+PEN_LISTALT = 25          -- alt. list background
 PEN_LISTDETAIL = 26       -- list text and icon details
 PEN_LISTACTIVE = 27       -- active list entry background
 PEN_LISTACTIVEDETAIL = 28 -- active list entry text and icon details
@@ -914,12 +973,14 @@ PEN_SHADOW = 32           -- a color not quite as dark as PEN_DARK
 PEN_SHINE = 33            -- bright color
 PEN_HALFSHADOW = 34       -- brighter than PEN_SHADOW
 PEN_HALFSHINE = 35        -- brighter than PEN_HALFSHADOW
-PEN_USER1 = 36            -- user color 1
-PEN_USER2 = 37            -- user color 2
-PEN_USER3 = 38            -- user color 3
-PEN_USER4 = 39            -- user color 3
+PEN_PAPER = 36            -- color for "paper"
+PEN_INK = 37              -- color for "ink" on "paper"
+PEN_USER1 = 38            -- user color 1
+PEN_USER2 = 39            -- user color 2
+PEN_USER3 = 40            -- user color 3
+PEN_USER4 = 41            -- user color 4
 
-PEN_NUMBER = 39           -- number of pens
+PEN_NUMBER = 41           -- number of pens
 
 -------------------------------------------------------------------------------
 --	Message types:

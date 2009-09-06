@@ -449,6 +449,9 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	luaL_register(L, "tek.lib.visual", tek_lib_visual_funcs);
 	/* s: displaytab, exectab, execbase, vistab */
 
+	lua_pushstring(L, TEK_LIB_VISUAL_VERSION);
+	lua_setfield(L, -2, "_VERSION");
+
 	/* create userdata: */
 	vis = lua_newuserdata(L, sizeof(TEKVisual));
 	memset(vis, 0, sizeof(TEKVisual));

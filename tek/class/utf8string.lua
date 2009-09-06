@@ -44,7 +44,7 @@ local type = type
 local unpack = unpack
 
 module("tek.class.utf8string", tek.class)
-_VERSION = "UTF8String 3.0"
+_VERSION = "UTF8String 3.1"
 
 local UTF8String = _M
 
@@ -139,6 +139,7 @@ end
 
 function chars(text)
 	local i = 0
+	text = text:get()
 	return utf8values(function() 
 		i = i + 1
 		return text:byte(i)

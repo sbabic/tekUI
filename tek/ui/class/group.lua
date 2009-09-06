@@ -63,10 +63,12 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Area = ui.Area
-local Family = ui.Family
-local Gadget = ui.Gadget
-local Region = require "tek.lib.region"
+
+local Area = ui.require("area", 28)
+local Family = ui.require("family", 2)
+local Gadget = ui.require("gadget", 17)
+local Region = ui.loadLibrary("region", 8)
+
 local allocRegion = ui.allocRegion
 local floor = math.floor
 local freeRegion = ui.freeRegion
@@ -77,7 +79,7 @@ local tonumber = tonumber
 local MOUSEBUTTON = ui.MSG_MOUSEBUTTON
 
 module("tek.ui.class.group", tek.ui.class.gadget)
-_VERSION = "Group 22.0"
+_VERSION = "Group 23.0"
 local Group = _M
 
 -------------------------------------------------------------------------------
@@ -390,7 +392,9 @@ end
 function Group:passMsg(msg)
 	if msg[2] == MOUSEBUTTON and msg[3] == 1 then -- leftdown
 		if Gadget.getByXY(self, msg[4], msg[5]) then
-			self:onActivateGroup()
+			if not self:onActivateGroup() then
+				return false
+			end
 		end
 	end
 	local c = self.Children
@@ -435,4 +439,5 @@ end
 -------------------------------------------------------------------------------
 
 function Group:onActivateGroup()
+	return true
 end

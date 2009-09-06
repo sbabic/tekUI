@@ -15,8 +15,9 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
 local Class = require "tek.class"
+local ui = require "tek.ui"
+
 local getenv = os.getenv
 local insert = table.insert
 local ipairs = ipairs
@@ -26,7 +27,7 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 7.2"
+_VERSION = "Theme 9.0"
 local Theme = _M
 
 local DEF_STYLESHEET = ui.prepareProperties
@@ -49,7 +50,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["text-align"] = "left",
 		["vertical-align"] = "center",
 		["vertical-grid-align"] = "center",
-		["background-color"] = "parent-group",
+		["background-color"] = "default",
 	},
 	
 	["tek.ui.class.checkmark:hover"] = {
@@ -118,7 +119,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["effect-orientation"] = "across",
 		["effect-kind"] = "slant",
 		["border-width"] = 0,
-		["background-color"] = "parent-group",
+		["background-color"] = "default",
 		["padding"] = 4,
 		["margin"] = 0,
 	},
@@ -132,9 +133,22 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["background-color"] = "hover",
 	},
 
+	["tek.ui.class.imagegadget"] = {
+		["color"] = "default",
+	},
+	
+	["tek.ui.class.imagegadget:disabled"] = {
+		["color"] = "disabled-detail",
+	},
+	
+	["tek.ui.class.input"] = {
+		["background-color"] = "paper",
+		["color"] = "ink",
+	},
+	
 	["tek.ui.class.listgadget"] = {
 		["background-color"] = "list",
-		["background-color2"] = "list2",
+		["background-color2"] = "list-alt",
 		["border-width"] = 1,
 		["border-focus-width"] = 0,
 		["border-rim-width"] = 0,
@@ -252,7 +266,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 
 	[".caption"] = {
 		["border-width"] = 0,
-		["background-color"] = "parent-group",
+		["background-color"] = "default",
 		["background-position"] = "fixed",
 		["text-align"] = "center",
 		["vertical-align"] = "center",
@@ -260,6 +274,11 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["vertical-grid-align"] = "center",
 	},
 
+	[".field"] = {
+		["border-style"] = "inset",
+		["padding"] = 1,
+	},
+	
 	[".gauge-fill"] = {
 		["border-style"] = "solid",
 		["border-color"] = "dark",
@@ -322,7 +341,7 @@ local DEF_STYLESHEET = ui.prepareProperties
 		["border-style"] = "inset",
 		["border-width"] = "0 0 2 2",
 		["border-focus-width"] = 0,
-		["background-color"] = "parent-group",
+		["background-color"] = "default",
 		["background-position"] = "fixed",
 		["margin"] = 0,
 	},
@@ -479,7 +498,7 @@ local function importGTKConfig(def_s)
 								d["rgb-border-legend"] = c
 							elseif color == "fg[INSENSITIVE]" then
 								d["rgb-disabled-detail"] = c
-								d["rgb-disabled-detail2"] =
+								d["rgb-disabled-detail-shine"] =
 									fmtrgb(r, g, b, 2)
 							elseif color == "fg[ACTIVE]" then
 								d["rgb-active-detail"] = c
@@ -491,7 +510,7 @@ local function importGTKConfig(def_s)
 
 							elseif color == "base[NORMAL]" then
 								d["rgb-list"] = fmtrgb(r, g, b, 1.05)
-								d["rgb-list2"] = fmtrgb(r, g, b, 0.92)
+								d["rgb-list-alt"] = fmtrgb(r, g, b, 0.92)
 							elseif color == "base[SELECTED]" then
 								d["rgb-list-active"] = c
 

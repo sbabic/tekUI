@@ -28,11 +28,12 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Window = ui.Window
+local Window = ui.require("window", 22)
+
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 4.0"
+_VERSION = "PopupWindow 4.1"
 
 local PopupWindow = _M
 

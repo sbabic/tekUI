@@ -57,10 +57,10 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
+
 local ui = require "tek.ui"
-local Application = ui.Application
-local PopupWindow = ui.PopupWindow
-local Text = ui.Text
+local PopupWindow = ui.require("popupwindow", 4)
+local Text = ui.require("text", 20)
 
 local floor = math.floor
 local ipairs = ipairs
@@ -68,7 +68,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 10.1"
+_VERSION = "PopItem 11.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -270,7 +270,7 @@ function PopItem:beginPopup()
 	-- prepare children for being used in a popup window:
 	for _, c in ipairs(self.Children) do
 		c:init()
-		if c:checkDescend(PopItem) then
+		if c:instanceOf(PopItem) then
 			c.PopupBase = self.PopupBase or self
 		end
 	end
@@ -291,12 +291,14 @@ function PopItem:beginPopup()
 		MaxHeight = winh,
 	}
 
+	local app = self.Application
+
 	-- connect children recursively:
-	Application.connect(self.PopupWindow)
+	app.connect(self.PopupWindow)
 
 	self.Window.ActivePopup = self
 
-	self.Application:addMember(self.PopupWindow)
+	app:addMember(self.PopupWindow)
 
 	self.PopupWindow:setValue("Status", "show")
 
@@ -406,7 +408,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:connectPopItems(app, window)
-	if self:checkDescend(PopItem) then
+	if self:instanceOf(PopItem) then
 		db.info("adding %s", self:getClassName())
 		local c = self:getChildren(true)
 		if c then
@@ -434,7 +436,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:disconnectPopItems(window)
-	if self:checkDescend(PopItem) then
+	if self:instanceOf(PopItem) then
 		db.info("removing popitem %s", self:getClassName())
 		local c = self:getChildren(true)
 		if c then

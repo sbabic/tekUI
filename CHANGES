@@ -1,35 +1,65 @@
 
 == tekUI Changelog ==
 
+=== 0.8h: ===
+
+ * Window, Application: Hotkeys are now actuated on keydown, not on keyup
+ * Area, UI, Theme, internal stylesheet: PEN_PARENTGROUP renamed to
+ PEN_DEFAULT, "parent-group" pseudo-color renamed to "default", the default
+ color is now also evaluated for the foreground color
+ * ImageGadget: Now supports PEN_DEFAULT for not using a single pen for
+ rendering its imagery. This allows control over the greying-out behaviour
+ of images in style sheets. Crashed when no image was set; corrected
+ * UI, Display, Theme: Added symbolic pens PAPER and INK, DISABLEDDETAIL2
+ renamed to DISABLEDDETAILSHINE, LIST2 renamed to LISTALT, symbolic color
+ keys "disabled-detail2" renamed to "disabled-detail-shine", "list2" to
+ "list-alt"
+ * Display: more symbolic colors added (black, white, fuchsia, ...),
+ changed cursor color
+ * Theme, internal stylesheet: added "field" class
+ * ScrollBar: Implementation of arrow button and slider checkFocus() was
+ broken, corrected, added AcceptFocus attribute
+ * ScrollGroup: AcceptFocus attribute added
+ * dark.css stylesheet added
+ * UI: loadLibrary(), require() added, removed pattern argument from
+ loadClass(), minimum version requirements are now enforced in most classes
+ * Slider: now checks if it is allowed to receive the focus before it enters
+ capture mode
+ * Class:checkDescend() renamed to instanceOf()
  * Group:onActivateGroup() added
  * Window, UI: Doubleclick jitter and timeout are now defined in UI
  * Gendoc: NAME argument is now /K, HEADER is now /K/M, allowing multiple
  header files. A reference document is now supplied to normal jumps
  * UTF8String: find(), chars() added
- * Canvas: added SmoothFactor attribute and incremental scroll
- positioning in focusRect()
- * ListGadget: fixed regression: the cursor border, if unset in a
- stylesheet, was initialized to zero width, changed to 1;
- * Text: now uses the "IgnoreAltShift" peudo qualifier for Keycode
- shortcuts
+ * Canvas: focusRect() now has an optional "smooth" scroll positioning
+ argument, sanity check added
+ * Text: now uses the "IgnoreAltShift" peudo qualifier for Keycode shortcuts,
+ KeyCode attribute was lost during repeated invocations of setup(), corrected
  * Raw Framebuffer display driver: added
- * 64bit fixes and source code maintenance adjustments merged in from
- TEKlib
- * X11 driver: Now using the XVid extension and a more sophisticated
- window opening procedure to much better support fullscreen applications
- * Visual, displays, Drawable: Added TVCMD_FLUSH command to TVRequest,
- a flush() method and a dirty flag indicating window changes
+ * 64bit fixes and source code maintenance adjustments merged in from TEKlib
+ * X11 Display: Now using the XVid extension and a more sophisticated window
+ opening procedure to much better support fullscreen applications
+ * Visual, displays, Drawable: Added TVCMD_FLUSH command to TVRequest, a
+ flush() method and a dirty flag indicating visual changes
  * Visual, Lua bindings: Added length argument to textSize()
- * Args: Partly rewritten, now handles missing keywords correctly in
- /M/K modifiers
+ * Args: Partly rewritten, now handles missing keywords correctly in /M/K
+ modifiers
  * Region: added trans(), isNull()
- * Application: fixed initial double refresh bug
+ * Region, Visual: Added _VERSION
+ * Application: fixed initial double refresh bug, requestFile() now supports
+ an additional FocusElement argument, setLastKey() added, requesters receive
+ the style class "app-dialog", addMember() now connects children recursively,
+ getModalWindow() added
  * Area:layout() now handles blits in transposed drawing contexts
- * DirList: Added AutoWidth attribute
- * Drawable:getClipRect() added
+ * DirList: Added AutoWidth and FocusElement attributes, location field now
+ advances to the action button when Return is pressed
+ * Drawable:getClipRect() added, any number of symbolic colors can now be
+ allocated
  * Frame:layoutBorder() split off from layout()
- * ListGadget: fixedto work in absence of a style sheet
- * Window:addBlit() added, update() now calls flush() after repaints
+ * ListGadget: fixed to work in absence of a style sheet
+ * Window:addBlit() added, update() now calls flush() after repaints, the 
+ KEYDOWN message handler now checks if a popup to which this event may have
+ been forwarded collapsed already, improved key repeat/retrigger handling
 
 === 0.8g: ===
 

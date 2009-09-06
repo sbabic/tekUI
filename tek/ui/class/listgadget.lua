@@ -112,12 +112,11 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
-local Text = ui.Text
 local List = require "tek.class.list"
-local Region = require "tek.lib.region"
-local ScrollGroup = ui.ScrollGroup
-local Text = ui.Text
+local ui = require "tek.ui"
+local Region = ui.loadLibrary("region", 8)
+local ScrollGroup = ui.require("scrollgroup", 11)
+local Text = ui.require("text", 20)
 
 local assert = assert
 local floor = math.floor
@@ -133,7 +132,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 22.2"
+_VERSION = "ListGadget 23.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
@@ -428,7 +427,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:setList(listobject)
-	assert(not listobject or listobject:checkDescend(List))
+	assert(not listobject or listobject:instanceOf(List))
 	self.ListObject = listobject
 	self:initSelectedLines()
 	self:prepare(true)

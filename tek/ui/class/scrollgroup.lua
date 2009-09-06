@@ -21,6 +21,9 @@
 --		[[#tek.ui.class.scrollbar : ScrollBars]].
 --
 --	ATTRIBUTES::
+--		- {{AcceptFocus [IG]}} (boolean)
+--			This attribute is passed to the scrollbar elements inside the
+--			scroll group. See [[#tek.ui.class.scrollbar : ScrollBar]]
 --		- {{Child [IG]}} ([[#tek.ui.class.canvas : Canvas]])
 --			Specifies the Canvas which encapsulates the scrollable
 --			area and children.
@@ -54,9 +57,11 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Group = ui.Group
-local Region = require "tek.lib.region"
-local ScrollBar = ui.ScrollBar
+
+local Group = ui.require("group", 22)
+local Region = ui.loadLibrary("region", 8)
+local ScrollBar = ui.require("scrollbar", 9)
+
 local floor = math.floor
 local insert = table.insert
 local intersect = Region.intersect
@@ -66,7 +71,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 11.1"
+_VERSION = "ScrollGroup 12.0"
 
 local ScrollGroup = _M
 
@@ -77,6 +82,9 @@ local ScrollGroup = _M
 function ScrollGroup.new(class, self)
 	self = self or { }
 	
+	if self.AcceptFocus == nil then
+		self.AcceptFocus = true
+	end
 	self.BlitList = { }
 	self.Orientation = "vertical"
 	self.HSliderEnabled = false
@@ -100,7 +108,8 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "horizontal",
 			Min = 0,
-			Step = self.ScrollStep
+			Step = self.ScrollStep,
+			AcceptFocus = self.AcceptFocus
 		}
 		self.HSliderGroup = hslider
 		self.HSliderEnabled = true
@@ -111,7 +120,8 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "vertical",
 			Min = 0,
-			Step = self.ScrollStep
+			Step = self.ScrollStep,
+			AcceptFocus = self.AcceptFocus
 		}
 		self.VSliderGroup = vslider
 		self.VSliderEnabled = true

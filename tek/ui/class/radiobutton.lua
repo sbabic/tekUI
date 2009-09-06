@@ -28,10 +28,10 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local CheckMark = ui.CheckMark
+local CheckMark = ui.require("checkmark", 5)
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 4.0"
+_VERSION = "RadioButton 4.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:

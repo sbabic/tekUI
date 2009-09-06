@@ -7,7 +7,7 @@
 **	Note: This style sheet represents the hardcoded internal defaults in
 **	tek.ui.class.theme. It has been included for illustration purposes only.
 **
-**	Version: 1.20
+**	Version: 2.2
 */
 
 /*
@@ -28,7 +28,7 @@ tek.ui.class.checkmark {
 	text-align: left;
 	vertical-align: center;
 	vertical-grid-align: center;
-	background-color: parent-group;
+	background-color: default;
 }
 
 tek.ui.class.checkmark:hover {
@@ -97,7 +97,7 @@ tek.ui.class.handle {
 	effect-orientation: across;
 	effect-kind: slant;
 	border-width: 0;
-	background-color: parent-group;
+	background-color: default;
 	padding: 4;
 	margin: 0;
 }
@@ -111,9 +111,22 @@ tek.ui.class.handle:hover {
 	background-color: hover;
 }
 
+tek.ui.class.imagegadget {
+	color: default;
+}
+
+tek.ui.class.imagegadget:disabled {
+	color: disabled-detail;
+}
+
+tek.ui.class.input {
+	background-color: paper;
+	color: ink;
+}
+
 tek.ui.class.listgadget {
 	background-color: list;
-	background-color2: list2;
+	background-color2: list-alt;
 	border-width: 1;
 	border-focus-width: 0;
 	border-rim-width: 0;
@@ -232,12 +245,17 @@ tek.ui.class.window {
 
 .caption {
 	border-width: 0;
-	background-color: parent-group;
+	background-color: default;
 	background-position: fixed;
 	text-align: center;
 	vertical-align: center;
 	horizontal-grid-align: center;
 	vertical-grid-align: center;
+}
+
+.field {
+	border-style: inset;
+	padding: 1;
 }
 
 .gauge-fill {
@@ -302,7 +320,7 @@ tek.ui.class.window {
 	border-style: inset;
 	border-width: 0 0 2 2;
 	border-focus-width: 0;
-	background-color: parent-group;
+	background-color: default;
 	background-position: fixed;
 	margin: 0;
 }

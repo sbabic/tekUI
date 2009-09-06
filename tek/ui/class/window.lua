@@ -90,10 +90,10 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Drawable = ui.Drawable
-local Gadget = ui.Gadget
-local Group = ui.Group
-local Region = require "tek.lib.region"
+local Drawable = ui.require("drawable", 20)
+local Gadget = ui.require("gadget", 17)
+local Group = ui.require("group", 22)
+local Region = ui.loadLibrary("region", 8)
 
 local assert = assert
 local floor = math.floor
@@ -111,7 +111,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 22.0"
+_VERSION = "Window 23.2"
 local Window = _M
 
 -------------------------------------------------------------------------------
@@ -538,6 +538,12 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_KEYDOWN] = function(self, msg)
+		
+		if not self.Application then
+			db.warn("*** window already collapsed!")
+			return msg
+		end
+		
 		self.MouseX, self.MouseY = msg[4], msg[5]
 		-- pass message to active popup element:
 		if self.ActivePopup then
@@ -550,9 +556,11 @@ local MsgHandlers =
 		end
 		local fe = self.FocusElement
 		local key = msg[3]
+		local retrig = key ~= 0 and self.Application:setLastKey(key)
+		
 		-- activate window:
 		self:setValue("Active", true)
-		if key == 27 then
+		if key == 27 and not retrig then
 			local pr = self.PopupRootWindow
 			if pr then
 				pr.ActivePopup:endPopup()
@@ -573,29 +581,30 @@ local MsgHandlers =
 		elseif key == 61458 or key == 61456 then -- cursor up, left:
 			self:setFocusElement(self:getNextElement(fe, true))
 			return
-		elseif key == 13 or key == 32 then -- space or enter key:
+		elseif key == 13 or key == 32 and not retrig then 
 			if fe and not fe.Active then
 				self:setHiliteElement(fe)
 				self:setActiveElement(fe)
 			end
 			return
 		end
-		-- serve elements with keyboard shortcuts:
-		db.trace("keydown: %s - qual: %d", msg[7], msg[6])
-		local s = self:getShortcutElements(msg[7], msg[6])
-		if s then
-			for i = 1, #s do
-				local e = s[i]
-				if not e.Disabled and e.KeyCode then
-					self:setHiliteElement(e)
-					self:setFocusElement(e)
-					self:setActiveElement(e)
+		if not retrig then
+			-- serve elements with keyboard shortcuts:
+			local s = self:getShortcutElements(msg[7], msg[6])
+			if s then
+				for i = 1, #s do
+					local e = s[i]
+					if not e.Disabled and e.KeyCode then
+						self:clickElement(e)
+					end
 				end
 			end
 		end
 		return msg
 	end,
 	[ui.MSG_KEYUP] = function(self, msg)
+		local key = msg[3]
+		self.Application:setLastKey() -- release
 		self.MouseX, self.MouseY = msg[4], msg[5]
 		-- pass message to active popup element:
 		if self.ActivePopup then
@@ -606,23 +615,11 @@ local MsgHandlers =
 				return false
 			end
 		end
-		local key = msg[3]
 		if key == 13 or key == 32 then
 			self:setActiveElement()
 			self:setHiliteElement(self.HoverElement)
 		end
-		-- serve elements with keyboard shortcuts:
-		db.trace("keyup: %s - qual: %d", msg[7], msg[6])
-		local s = self:getShortcutElements(msg[7], msg[6])
-		if s then
-			for i = 1, #s do
-				local e = s[i]
-				if not e.Disabled and e.KeyCode then
-					self:setActiveElement()
-				end
-			end
-			-- self:setHiliteElement(self.HoverElement)
-		end
+		
 		return msg
 	end,
 	[ui.MSG_MOUSEMOVE] = function(self, msg)
@@ -999,22 +996,24 @@ end
 -------------------------------------------------------------------------------
 
 function Window:addKeyShortcut(keycode, element)
-	local key, quals = ui.resolveKeyCode(keycode)
-	db.info("binding shortcut: %s -> %s", key, element:getClassName())
-	local keytab = self.KeyShortcuts[key]
-	if not keytab then
-		keytab = { }
-		self.KeyShortcuts[key] = keytab
-	end
-	for i = 1, #quals do
-		local qual = quals[i]
-		local qualtab = keytab[qual]
-		if not qualtab then
-			qualtab = { }
-			keytab[qual] = qualtab
+	if type(keycode) == "string" then
+		local key, quals = ui.resolveKeyCode(keycode)
+		db.info("binding shortcut: %s -> %s", key, element:getClassName())
+		local keytab = self.KeyShortcuts[key]
+		if not keytab then
+			keytab = { }
+			self.KeyShortcuts[key] = keytab
 		end
-		db.trace("%s : adding qualifier %d", key, qual)
-		insert(qualtab, element)
+		for i = 1, #quals do
+			local qual = quals[i]
+			local qualtab = keytab[qual]
+			if not qualtab then
+				qualtab = { }
+				keytab[qual] = qualtab
+			end
+			db.trace("%s : adding qualifier %d", key, qual)
+			insert(qualtab, element)
+		end
 	end
 end
 
@@ -1023,7 +1022,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:remKeyShortcut(keycode, element)
-	if keycode then
+	if type(keycode) == "string" then
 		local key, quals = ui.resolveKeyCode(keycode)
 		db.info("removing shortcut: %s -> %s", key, element:getClassName())
 		local keytab = self.KeyShortcuts[key]

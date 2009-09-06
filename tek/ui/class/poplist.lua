@@ -42,21 +42,22 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
-local Canvas = ui.Canvas
-local Gadget = ui.Gadget
 local List = require "tek.class.list"
-local ListGadget = ui.ListGadget
-local PopItem = ui.PopItem
-local ScrollGroup = ui.ScrollGroup
-local Text = ui.Text
+local ui = require "tek.ui"
+
+local Canvas = ui.require("canvas", 20)
+local Gadget = ui.require("gadget", 17)
+local ListGadget = ui.require("listgadget", 22)
+local PopItem = ui.require("popitem", 10)
+local ScrollGroup = ui.require("scrollgroup", 11)
+local Text = ui.require("text", 20)
 
 local assert = assert
 local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 8.1"
+_VERSION = "PopList 9.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -217,7 +218,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopList:setList(listobject)
-	assert(not listobject or listobject:checkDescend(List))
+	assert(not listobject or listobject:instanceOf(List))
 	self.ListObject = listobject
 	self.ListGadget:setList(listobject)
 end

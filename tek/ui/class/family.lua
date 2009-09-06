@@ -24,11 +24,12 @@
 -------------------------------------------------------------------------------
 
 local Object = require "tek.class.object"
+
 local insert = table.insert
 local remove = table.remove
 
 module("tek.ui.class.family", tek.class.object)
-_VERSION = "Family 2.4"
+_VERSION = "Family 2.5"
 
 -------------------------------------------------------------------------------
 --	Class implementation:

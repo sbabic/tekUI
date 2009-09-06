@@ -20,6 +20,10 @@
 --		[[#tek.ui.class.slider : Slider]] and arrow buttons.
 --
 --	ATTRIBUTES::
+--		- {{AcceptFocus [IG]}} (boolean)
+--			If '''false''', the elements inside the scrollbar (slider, arrows)
+--			abstain from receiving the input focus, which means that they can
+--			only be operated with the mouse. Default: '''true'''
 --		- {{Integer [IG]}} (boolean)
 --			If '''true''', integer steps are enforced. By default, the
 --			slider moves continuously.
@@ -53,15 +57,15 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Group = ui.Group
-local ImageGadget = ui.ImageGadget
-local Slider = ui.Slider
+local Group = ui.require("group", 22)
+local ImageGadget = ui.require("imagegadget", 5)
+local Slider = ui.require("slider", 15)
 
 local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 9.0"
+_VERSION = "ScrollBar 10.1"
 
 local ScrollBar = _M
 
@@ -94,6 +98,13 @@ function ArrowButton.init(self)
 	return ImageGadget.init(self)
 end
 
+function ArrowButton:checkFocus()
+	if self.Parent.AcceptFocus then
+		return ImageGadget.checkFocus(self)
+	end
+	return false
+end
+
 function ArrowButton:setup(app, window)
 	ImageGadget.setup(self, app, window)
 	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
@@ -115,7 +126,6 @@ function ArrowButton:onHold(hold)
 	if hold then
 		self.Slider:increase(self.Increase)
 	end
--- 	ImageGadget.onHold(self, hold)
 end
 
 -------------------------------------------------------------------------------
@@ -123,6 +133,13 @@ end
 -------------------------------------------------------------------------------
 
 local SBSlider = Slider:newClass { _NAME = "_scrollbar-slider" }
+
+function SBSlider:checkFocus()
+	if self.Parent.AcceptFocus then
+		return Slider.checkFocus(self)
+	end
+	return false
+end
 
 function SBSlider:onSetValue(v)
 	Slider.onSetValue(self, v)
@@ -173,7 +190,9 @@ function ScrollBar.new(class, self)
 	self.Child = self.Child or false
 	self.ArrowOrientation = self.ArrowOrientation or self.Orientation
 	self.Kind = self.Kind or "scrollbar"
-
+	if self.AcceptFocus == nil then
+		self.AcceptFocus = true
+	end
 	self.Slider = self.Slider or SBSlider:new
 	{
 		Child = self.Child,

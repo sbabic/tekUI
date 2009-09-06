@@ -56,8 +56,9 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Area = ui.Area
-local Region = require "tek.lib.region"
+
+local Area = ui.require("area", 28)
+local Region = ui.loadLibrary("region", 8)
 
 local concat = table.concat
 local insert = table.insert
@@ -66,7 +67,7 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 12.0"
+_VERSION = "FloatText 12.1"
 
 local FloatText = _M
 

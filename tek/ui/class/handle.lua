@@ -31,7 +31,8 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Gadget = ui.Gadget
+local Gadget = ui.require("gadget", 17)
+
 local floor = math.floor
 local insert = table.insert
 local ipairs = ipairs
@@ -39,7 +40,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.gadget)
-_VERSION = "Handle 3.4"
+_VERSION = "Handle 3.5"
 
 local Handle = _M
 

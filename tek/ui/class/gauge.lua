@@ -36,8 +36,8 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Region = require "tek.lib.region"
-local Numeric = ui.Numeric
+local Numeric = ui.require("numeric", 1)
+local Region = ui.loadLibrary("region", 8)
 
 local floor = math.floor
 local max = math.max
@@ -47,7 +47,7 @@ local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 8.0"
+_VERSION = "Gauge 8.1"
 
 -------------------------------------------------------------------------------
 -- Gauge:

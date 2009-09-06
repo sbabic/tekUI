@@ -84,11 +84,13 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Application = ui.Application
-local Area = ui.Area
-local Element = ui.Element
-local Frame = ui.Frame
-local Region = require "tek.lib.region"
+
+local Application = ui.require("application", 24)
+local Area = ui.require("area", 28)
+local Element = ui.require("element", 14)
+local Frame = ui.require("frame", 12)
+local Region = ui.loadLibrary("region", 8)
+
 local assert = assert
 local floor = math.floor
 local max = math.max
@@ -98,7 +100,7 @@ local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 19.0"
+_VERSION = "Canvas 21.0"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
@@ -129,7 +131,6 @@ function Canvas.init(self)
 	self.OldCanvasLeft = self.CanvasLeft
 	self.OldCanvasTop = self.CanvasTop
 	self.OldChild = self.Child
-	self.SmoothFactor = self.SmoothFactor or false
 	self.TempMsg = { }
 	-- track intra-area damages, so that they can be applied to child object:
 	self.TrackDamage = true
@@ -532,15 +533,18 @@ end
 --	focusRect - overrides
 -------------------------------------------------------------------------------
 
-function Canvas:focusRect(x0, y0, x1, y1)
+function Canvas:focusRect(x0, y0, x1, y1, smooth)
 	local r1, r2, r3, r4 = self:getRect()
+	if not r1 then
+		return
+	end
 	local vw = r3 - r1
 	local vh = r4 - r2
 	local vx0 = self.CanvasLeft
 	local vy0 = self.CanvasTop
 	local vx1 = vx0 + vw
 	local vy1 = vy0 + vh
-	local reached = true
+	local moved
 	
 	if x0 and self.AutoPosition then
 		local n1, n2, n3, n4 = intersect(x0, y0, x1, y1, vx0, vy0, vx1, vy1)
@@ -565,26 +569,26 @@ function Canvas:focusRect(x0, y0, x1, y1)
 			vx1 = vx0 + vw
 		end
 		
-		local smooth = self.SmoothFactor
-		if smooth then
-			reached = 0
+		if smooth and smooth > 0 then
 			local nx = floor((vx0 - self.CanvasLeft) / smooth)
 			local ny = floor((vy0 - self.CanvasTop) / smooth)
 			if nx > 1 or nx < -1 then
 				vx0 = self.CanvasLeft + nx
-			else
-				reached = reached + 1
 			end
 			if ny > 1 or ny < -1 then
 				vy0 = self.CanvasTop + ny
-			else
-				reached = reached + 1
 			end
-			reached = reached == 2
 		end
 		
+		local t = self.CanvasLeft
 		self:setValue("CanvasLeft", vx0)
+		moved = self.CanvasLeft ~= t
+		
+		t = self.CanvasTop
 		self:setValue("CanvasTop", vy0)
+		if not moved then
+			moved = self.CanvasTop ~= t
+		end
 		
 		vx0 = x0
 		vy0 = y0
@@ -593,12 +597,12 @@ function Canvas:focusRect(x0, y0, x1, y1)
 	end
 	local parent = self:getParent()
 	if parent then
-		local r2 = parent:focusRect(r1 + vx0, r2 + vy0, r3 + vx1, r4 + vy1)
-		if reached then
-			reached = r2
+		local res = parent:focusRect(r1 + vx0, r2 + vy0, r3 + vx1, r4 + vy1)
+		if not moved then
+			moved = res
 		end
 	end
-	return reached
+	return moved
 end
 
 -------------------------------------------------------------------------------

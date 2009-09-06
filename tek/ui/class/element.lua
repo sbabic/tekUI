@@ -52,15 +52,16 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
 local Object = require "tek.class.object"
+local ui = require "tek.ui"
+
 local assert = assert
 local insert = table.insert
 local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 14.2"
+_VERSION = "Element 14.3"
 local Element = _M
 
 -------------------------------------------------------------------------------

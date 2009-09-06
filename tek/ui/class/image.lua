@@ -8,15 +8,17 @@
 --		Implements bitmap and vector images
 --
 
-local ui = require "tek.ui"
-local Display = ui.Display
 local Class = require "tek.class"
+
+local ui = require "tek.ui"
+local Display = ui.require("display", 19)
+
 local assert = assert
 local type = type
 
 module("tek.ui.class.image", tek.class)
 
-_VERSION = "Image 2.0"
+_VERSION = "Image 2.1"
 
 local Image = _M
 

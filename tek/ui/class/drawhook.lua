@@ -1,8 +1,9 @@
 
-local Element = require "tek.ui.class.element"
+local ui = require "tek.ui"
+local Element = ui.require("element", 14)
 
 module("tek.ui.class.drawhook", tek.ui.class.element)
-_VERSION = "DrawHook 3.0"
+_VERSION = "DrawHook 3.1"
 
 local DrawHook = _M
 

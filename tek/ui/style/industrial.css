@@ -3,7 +3,7 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Version: 1.0
+**	Version: 1.1
 */
 
 tek.ui.class.display {
@@ -15,7 +15,7 @@ tek.ui.class.display {
   rgb-detail: #fff;
   rgb-hover-detail: #0055ac;
   rgb-disabled-detail: #0055ac;
-  rgb-disabled-detail2: #fff;
+  rgb-disabled-detail-shine: #fff;
   rgb-active-detail: #000;
   rgb-focus-detail: #0055ac;
   rgb-group: #0055ac;
@@ -38,7 +38,7 @@ tek.ui.class.display {
   rgb-menu-active: #fff;
   rgb-menu-active-detail: #0055ac;
   rgb-list: #0055ac;
-  rgb-list2: #0055ac;
+  rgb-list-alt: #0055ac;
   rgb-list-detail: #fff;
   rgb-list-active: #fff;
   rgb-list-active-detail: #0055ac;

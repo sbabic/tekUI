@@ -6,16 +6,18 @@
 --
 
 local ui = require "tek.ui"
-local Gadget = ui.Gadget
+
+local Gadget = ui.require("gadget", 17)
+local Region = ui.loadLibrary("region", 8)
+
 local floor = math.floor
 local max = math.max
 local tonumber = tonumber
 local type = type
 local unpack = unpack
-local Region = require "tek.lib.region"
 
 module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 5.0"
+_VERSION = "ImageGadget 6.1"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -111,7 +113,7 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 		
 		if iw ~= rw or ih ~= rh then
 			self.Region = Region.new(x, y, r[3], r[4])
-		elseif self.Image[4] then -- transparent?
+		elseif self.Image and self.Image[4] then -- transparent?
 			self.Region = Region.new(x, y, r[3], r[4])
 		else
 			self.Region = false
@@ -147,7 +149,8 @@ function ImageGadget:draw()
 	end
 	if img then
 		local x, y, iw, ih = unpack(self.ImageData)
-		img:draw(d, x, y, x + iw - 1, y + ih - 1, 
-			self.Disabled and d.Pens[self.FGPen])
+		local pen = self.FGPen
+		img:draw(d, x, y, x + iw - 1, y + ih - 1,
+			pen ~= ui.PEN_DEFAULT and d.Pens[pen])
 	end
 end

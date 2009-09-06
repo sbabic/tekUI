@@ -147,10 +147,10 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Frame = ui.Frame
+local Frame = ui.require("frame", 12)
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 17.0"
+_VERSION = "Gadget 17.1"
 
 local Gadget = _M
 

@@ -17,8 +17,9 @@
 
 /*****************************************************************************/
 
-#define TEK_CLASS_UI_REGION_NAME "tek.lib.region*"
-#define TEK_CLASS_UI_POOL_NAME "tek.lib.pool*"
+#define TEK_LIB_REGION_VERSION "Region 8.1"
+#define TEK_LIB_REGION_NAME "tek.lib.region*"
+#define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
 
 #define MERGE_RECTS	8
 #define MAXPOOLNODES 2048
@@ -292,7 +293,7 @@ static int lib_new(lua_State *L)
 	struct Region *region = lua_newuserdata(L, sizeof(struct Region));
 	/* s: udata */
 	initrectlist(&region->rg_Rects);
-	lua_getfield(L, LUA_REGISTRYINDEX, TEK_CLASS_UI_REGION_NAME);
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_REGION_NAME);
 	/* s: udata, metatable */
 	lua_rawgeti(L, -1, 2);
 	/* s: udata, metatable, pool */
@@ -320,7 +321,7 @@ static int lib_new(lua_State *L)
 
 static int region_set(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	TINT x0 = luaL_checkinteger(L, 2);
 	TINT y0 = luaL_checkinteger(L, 3);
 	TINT x1 = luaL_checkinteger(L, 4);
@@ -335,14 +336,14 @@ static int region_set(lua_State *L)
 
 static int region_collect(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	freepool(region->rg_Pool, &region->rg_Rects);
 	return 0;
 }
 
 static int region_orrect(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	RECTINT s[4];
 
 	s[0] = luaL_checkinteger(L, 2);
@@ -371,7 +372,7 @@ static TBOOL orregion(struct Region *region, struct RectList *list)
 
 static int region_xorrect(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	struct Pool *pool = region->rg_Pool;
 	struct TNode *next, *node;
 	TBOOL success;
@@ -478,7 +479,7 @@ static TBOOL subrect(lua_State *L, struct Region *region, RECTINT s[])
 
 static int region_subrect(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	RECTINT s[4];
 	s[0] = luaL_checkinteger(L, 2);
 	s[1] = luaL_checkinteger(L, 3);
@@ -491,7 +492,7 @@ static int region_subrect(lua_State *L)
 
 static int region_checkintersect(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	struct TNode *next, *node;
 	TINT s[4];
 
@@ -535,8 +536,8 @@ static void *optudata(lua_State *L, int ud, const char *tname)
 
 static int region_subregion(lua_State *L)
 {
-	struct Region *self = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
-	struct Region *region = optudata(L, 2, TEK_CLASS_UI_REGION_NAME);
+	struct Region *self = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
+	struct Region *region = optudata(L, 2, TEK_LIB_REGION_NAME);
 	
 	if (region)
 	{
@@ -577,7 +578,7 @@ static TBOOL andrect(struct RectList *temp,
 
 static int region_andrect(lua_State *L)
 {
-	struct Region *self = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *self = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	struct RectList temp;
 	
 	initrectlist(&temp);
@@ -594,8 +595,8 @@ static int region_andrect(lua_State *L)
 
 static int region_andregion(lua_State *L)
 {
-	struct Region *dregion = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
-	struct Region *sregion = optudata(L, 2, TEK_CLASS_UI_REGION_NAME);
+	struct Region *dregion = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
+	struct Region *sregion = optudata(L, 2, TEK_LIB_REGION_NAME);
 	struct TNode *next, *node = sregion->rg_Rects.rl_List.tlh_Head;
 	TBOOL success = TTRUE;
 	struct RectList temp;
@@ -617,7 +618,7 @@ static int region_andregion(lua_State *L)
 
 static int region_foreach(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
 	int narg = lua_gettop(L) - 3;
 	int i;
@@ -641,7 +642,7 @@ static int region_foreach(lua_State *L)
 
 static int region_trans(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	lua_Number sx = luaL_checknumber(L, 2);
 	lua_Number sy = luaL_checknumber(L, 3);	
 	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
@@ -660,7 +661,7 @@ static int region_trans(lua_State *L)
 
 static int region_isnull(lua_State *L)
 {
-	struct Region *region = luaL_checkudata(L, 1, TEK_CLASS_UI_REGION_NAME);
+	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	lua_pushboolean(L, TISLISTEMPTY(&region->rg_Rects.rl_List));
 	return 1;
 }
@@ -669,7 +670,7 @@ static int region_isnull(lua_State *L)
 
 static int pool_collect(lua_State *L)
 {
-	struct Pool *pool = luaL_checkudata(L, 1, TEK_CLASS_UI_POOL_NAME);
+	struct Pool *pool = luaL_checkudata(L, 1, TEK_LIB_REGION_POOL_NAME);
 	struct TNode *next, *node = pool->p_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 		TExecFree(pool->p_ExecBase, node);
@@ -714,6 +715,10 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 	
 	luaL_register(L, "tek.lib.region", tek_lib_region_funcs);
 	/* s: libtab */
+	
+	lua_pushstring(L, TEK_LIB_REGION_VERSION);
+	lua_setfield(L, -2, "_VERSION");
+	
 	lua_pop(L, 1);
 	/* s: */
 
@@ -729,7 +734,7 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 	lua_remove(L, -2);
 	/* s: execbase */
 
-	luaL_newmetatable(L, TEK_CLASS_UI_REGION_NAME);
+	luaL_newmetatable(L, TEK_LIB_REGION_NAME);
 	/* s: execbase, metatable */
 	luaL_register(L, NULL, tek_lib_region_methods);
 	/* s: execbase, metatable */
@@ -744,7 +749,7 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 	initrectlist(&pool->p_Rects);
 	pool->p_ExecBase = *(TAPTR *) lua_touserdata(L, -4);
 	/* s: execbase, metatable, metatable, pool */
-	luaL_newmetatable(L, TEK_CLASS_UI_POOL_NAME);
+	luaL_newmetatable(L, TEK_LIB_REGION_POOL_NAME);
 	/* s: execbase, metatable, metatable, pool, poolmt */
 	luaL_register(L, NULL, tek_lib_region_poolmethods);
 	lua_setmetatable(L, -2);

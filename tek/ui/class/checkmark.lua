@@ -37,13 +37,15 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Text = ui.Text
+
+local Text = ui.require("text", 20)
+
 local floor = math.floor
 local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 5.0"
+_VERSION = "CheckMark 5.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:

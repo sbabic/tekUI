@@ -35,10 +35,10 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Text = ui.Text
+local Text = ui.require("text", 20)
 
 module("tek.ui.class.button", tek.ui.class.text)
-_VERSION = "Button 1.4"
+_VERSION = "Button 1.5"
 
 -------------------------------------------------------------------------------
 --	Class implementation:

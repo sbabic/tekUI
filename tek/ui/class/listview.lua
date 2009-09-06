@@ -35,19 +35,21 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
 local List = require "tek.class.list"
-local Canvas = ui.Canvas
-local Gadget = ui.Gadget
-local Group = ui.Group
-local ListGadget = ui.ListGadget
-local ScrollBar = ui.ScrollBar
-local ScrollGroup = ui.ScrollGroup
+local ui = require "tek.ui"
+
+local Canvas = ui.require("canvas", 20)
+local Gadget = ui.require("gadget", 12)
+local Group = ui.require("group", 22)
+local ListGadget = ui.require("listgadget", 22)
+local ScrollBar = ui.require("scrollbar", 9)
+local ScrollGroup = ui.require("scrollgroup", 11)
+
 local Text = ui.Text
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 5.0"
+_VERSION = "ListView 5.1"
 
 -------------------------------------------------------------------------------
 --	HeadItem:

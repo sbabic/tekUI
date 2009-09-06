@@ -4,7 +4,7 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Version: 1.3
+**	Version: 1.4
 */
 
 tek.ui.class.display {
@@ -16,7 +16,7 @@ tek.ui.class.display {
   rgb-detail: #fff;
   rgb-hover-detail: #000;
   rgb-disabled-detail: #000;
-  rgb-disabled-detail2: #fff;
+  rgb-disabled-detail-shine: #fff;
   rgb-active-detail: #fff;
   rgb-focus-detail: #000;
   rgb-group: #000;
@@ -39,7 +39,7 @@ tek.ui.class.display {
   rgb-menu-active: #fff;
   rgb-menu-active-detail: #000;
   rgb-list: #000;
-  rgb-list2: #000;
+  rgb-list-alt: #000;
   rgb-list-detail: #fff;
   rgb-list-active: #fff;
   rgb-list-active-detail: #000;

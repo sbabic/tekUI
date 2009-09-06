@@ -54,7 +54,8 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Gadget = ui.Gadget
+
+local Gadget = ui.require("gadget", 17)
 
 local floor = math.floor
 local max = math.max
@@ -62,7 +63,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.numeric", tek.ui.class.gadget)
-_VERSION = "Numeric 1.5"
+_VERSION = "Numeric 1.6"
 
 -------------------------------------------------------------------------------
 -- Data:

@@ -66,9 +66,10 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Gadget = ui.Gadget
-local Region = require "tek.lib.region"
-local Numeric = ui.Numeric
+local Gadget = ui.require("gadget", 17)
+local Numeric = ui.require("numeric", 1)
+local Region = ui.loadLibrary("region", 8)
+
 local floor = math.floor
 local max = math.max
 local min = math.min
@@ -76,7 +77,7 @@ local freeRegion = ui.freeRegion
 local reuseRegion = ui.reuseRegion
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 15.0"
+_VERSION = "Slider 15.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -533,13 +534,15 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:setCapture(onoff)
-	if onoff and not self.Captured then
-		self.Window:addInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
-	elseif not onoff and self.Captured then
-		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
+	if self:checkFocus() then
+		if onoff and not self.Captured then
+			self.Window:addInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
+		elseif not onoff and self.Captured then
+			self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
+		end
+		self.Captured = onoff
+		self:setState()
 	end
-	self.Captured = onoff
-	self:setState()
 end
 
 -------------------------------------------------------------------------------

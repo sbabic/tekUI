@@ -90,12 +90,12 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Area = ui.Area
+local Area = ui.require("area", 28)
 local allocRegion = ui.allocRegion
 local freeRegion = ui.freeRegion
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 12.0"
+_VERSION = "Frame 12.1"
 
 local Frame = _M
 

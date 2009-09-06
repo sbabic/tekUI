@@ -310,6 +310,11 @@ LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req)
 	#endif
 
 	TRemove(&v->node);
+	if (TISLISTEMPTY(&mod->x11_vlist))
+	{
+		/* last window closed - clear global fullscreen state */
+		mod->x11_FullScreen = TFALSE;
+	}
 
 	x11_freeimage(mod, v);
 	TFree(v->tempbuf);

@@ -10,8 +10,58 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<h3>
+			0.8h:
+		</h3>
 		<blockquote>
 			<ul>
+				<li>
+					Window, Application: Hotkeys are now actuated on keydown, not on keyup
+				</li>
+				<li>
+					Area, UI, Theme, internal stylesheet: PEN_PARENTGROUP renamed to
+					PEN_DEFAULT, &quot;parent-group&quot; pseudo-color renamed to &quot;default&quot;, the default
+					color is now also evaluated for the foreground color
+				</li>
+				<li>
+					ImageGadget: Now supports PEN_DEFAULT for not using a single pen for
+					rendering its imagery. This allows control over the greying-out behaviour
+					of images in style sheets. Crashed when no image was set; corrected
+				</li>
+				<li>
+					UI, Display, Theme: Added symbolic pens PAPER and INK, DISABLEDDETAIL2
+					renamed to DISABLEDDETAILSHINE, LIST2 renamed to LISTALT, symbolic color
+					keys &quot;disabled-detail2&quot; renamed to &quot;disabled-detail-shine&quot;, &quot;list2&quot; to
+					&quot;list-alt&quot;
+				</li>
+				<li>
+					Display: more symbolic colors added (black, white, fuchsia, ...),
+					changed cursor color
+				</li>
+				<li>
+					Theme, internal stylesheet: added &quot;field&quot; class
+				</li>
+				<li>
+					ScrollBar: Implementation of arrow button and slider <a href="manual.html#checkFocus"><code>checkFocus()</code></a> was
+					broken, corrected, added AcceptFocus attribute
+				</li>
+				<li>
+					ScrollGroup: AcceptFocus attribute added
+				</li>
+				<li>
+					dark.css stylesheet added
+				</li>
+				<li>
+					UI: <a href="manual.html#loadLibrary"><code>loadLibrary()</code></a>, <a href="manual.html#require"><code>require()</code></a> added, removed pattern argument from
+					<a href="manual.html#loadClass"><code>loadClass()</code></a>, minimum version requirements are now enforced in most classes
+				</li>
+				<li>
+					Slider: now checks if it is allowed to receive the focus before it enters
+					capture mode
+				</li>
+				<li>
+					<a href="manual.html#Class:checkDescend"><code>Class:checkDescend()</code></a> renamed to <a href="manual.html#instanceOf"><code>instanceOf()</code></a> 
+				</li>
 				<li>
 					<a href="manual.html#Group:onActivateGroup"><code>Group:onActivateGroup()</code></a> added
 				</li>
@@ -26,62 +76,67 @@
 					UTF8String: <a href="manual.html#find"><code>find()</code></a>, <a href="manual.html#chars"><code>chars()</code></a> added
 				</li>
 				<li>
-					Canvas: added SmoothFactor attribute and incremental scroll
-					positioning in <a href="manual.html#focusRect"><code>focusRect()</code></a> 
+					Canvas: <a href="manual.html#focusRect"><code>focusRect()</code></a> now has an optional &quot;smooth&quot; scroll positioning
+					argument, sanity check added
 				</li>
 				<li>
-					ListGadget: fixed regression: the cursor border, if unset in a
-					stylesheet, was initialized to zero width, changed to 1;
-				</li>
-				<li>
-					Text: now uses the &quot;IgnoreAltShift&quot; peudo qualifier for Keycode
-					shortcuts
+					Text: now uses the &quot;IgnoreAltShift&quot; peudo qualifier for Keycode shortcuts,
+					KeyCode attribute was lost during repeated invocations of <a href="manual.html#setup"><code>setup()</code></a>, corrected
 				</li>
 				<li>
 					Raw Framebuffer display driver: added
 				</li>
 				<li>
-					64bit fixes and source code maintenance adjustments merged in from
-					TEKlib
+					64bit fixes and source code maintenance adjustments merged in from TEKlib
 				</li>
 				<li>
-					X11 driver: Now using the XVid extension and a more sophisticated
-					window opening procedure to much better support fullscreen applications
+					X11 Display: Now using the XVid extension and a more sophisticated window
+					opening procedure to much better support fullscreen applications
 				</li>
 				<li>
-					Visual, displays, Drawable: Added TVCMD_FLUSH command to TVRequest,
-					a <a href="manual.html#flush"><code>flush()</code></a> method and a dirty flag indicating window changes
+					Visual, displays, Drawable: Added TVCMD_FLUSH command to TVRequest, a
+					<a href="manual.html#flush"><code>flush()</code></a> method and a dirty flag indicating visual changes
 				</li>
 				<li>
 					Visual, Lua bindings: Added length argument to <a href="manual.html#textSize"><code>textSize()</code></a> 
 				</li>
 				<li>
-					Args: Partly rewritten, now handles missing keywords correctly in
-					/M/K modifiers
+					Args: Partly rewritten, now handles missing keywords correctly in /M/K
+					modifiers
 				</li>
 				<li>
 					Region: added <a href="manual.html#trans"><code>trans()</code></a>, <a href="manual.html#isNull"><code>isNull()</code></a> 
 				</li>
 				<li>
-					Application: fixed initial double refresh bug
+					Region, Visual: Added _VERSION
+				</li>
+				<li>
+					Application: fixed initial double refresh bug, <a href="manual.html#requestFile"><code>requestFile()</code></a> now supports
+					an additional FocusElement argument, <a href="manual.html#setLastKey"><code>setLastKey()</code></a> added, requesters receive
+					the style class &quot;app-dialog&quot;, <a href="manual.html#addMember"><code>addMember()</code></a> now connects children recursively,
+					<a href="manual.html#getModalWindow"><code>getModalWindow()</code></a> added
 				</li>
 				<li>
 					<a href="manual.html#Area:layout"><code>Area:layout()</code></a> now handles blits in transposed drawing contexts
 				</li>
 				<li>
-					DirList: Added AutoWidth attribute
+					DirList: Added AutoWidth and FocusElement attributes, location field now
+					advances to the action button when Return is pressed
 				</li>
 				<li>
-					<a href="manual.html#Drawable:getClipRect"><code>Drawable:getClipRect()</code></a> added
+					<a href="manual.html#Drawable:getClipRect"><code>Drawable:getClipRect()</code></a> added, any number of symbolic colors can now be
+					allocated
 				</li>
 				<li>
 					<a href="manual.html#Frame:layoutBorder"><code>Frame:layoutBorder()</code></a> split off from <a href="manual.html#layout"><code>layout()</code></a> 
 				</li>
 				<li>
-					ListGadget: fixedto work in absence of a style sheet
+					ListGadget: fixed to work in absence of a style sheet
 				</li>
 				<li>
-					<a href="manual.html#Window:addBlit"><code>Window:addBlit()</code></a> added, <a href="manual.html#update"><code>update()</code></a> now calls <a href="manual.html#flush"><code>flush()</code></a> after repaints
+					<a href="manual.html#Window:addBlit"><code>Window:addBlit()</code></a> added, <a href="manual.html#update"><code>update()</code></a> now calls <a href="manual.html#flush"><code>flush()</code></a> after repaints, the
+					KEYDOWN message handler now checks if a popup to which this event may have
+					been forwarded collapsed already, improved key repeat/retrigger handling
 				</li>
 			</ul>
 		</blockquote>

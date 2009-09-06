@@ -5,14 +5,14 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="20-Aug-2009" />
+		<meta name="created" content="06-Sep-2009" />
 	</head>
 	<body>
 		<h1>
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8g
+			Version 0.8h
 		</p>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -213,7 +213,7 @@
 			</blockquote>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v6.3)</a></h2>
+		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v7.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -233,9 +233,6 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Class:checkDescend"><code>Class:checkDescend()</code></a> - Checks if an object descends from a class
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Class:getClass"><code>Class:getClass()</code></a> - Returns the class of an object, or the super
 							class of a class
 						</li>
@@ -244,6 +241,9 @@
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Class:getSuper"><code>Class:getSuper()</code></a> - Returns the super class of an object or class
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Class:instanceOf"><code>Class:instanceOf()</code></a> - Checks if an object descends from a class
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> - Creates and returns a new object
@@ -259,17 +259,6 @@
 				</blockquote>
 				<hr />
 			</div>
-		</div>
-		<div class="node"><h3><a name="Class:checkDescend" id="Class:checkDescend"><code>is_descendant = object:checkDescend(class)</code></a></h3>
-			<p>
-				Returns <strong>true</strong> if <code>object</code> is an instance of a class descending
-				from the specified <code>class</code>. It is also possible to apply this function
-				to a class instead of an object, e.g.:
-			</p>
-<pre>
-Class.checkDescend(Button, Area)
-</pre>
-			<hr />
 		</div>
 		<div class="node"><h3><a name="Class:getClass" id="Class:getClass"><code>class = object:getClass()</code></a></h3>
 			<p>
@@ -297,6 +286,17 @@ superclass = Class.getClass(class)
 			</p>
 <pre>
 self:getSuper().method(self, ...)
+</pre>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Class:instanceOf" id="Class:instanceOf"><code>is_descendant = object:instanceOf(class)</code></a></h3>
+			<p>
+				Returns <strong>true</strong> if <code>object</code> is an instance of a class descending
+				from the specified <code>class</code>. It is also possible to apply this function
+				to a class instead of an object, e.g.:
+			</p>
+<pre>
+Class.instanceOf(Button, Area)
 </pre>
 			<hr />
 		</div>
@@ -888,7 +888,7 @@ method(object, arg1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.utf8string" id="tek.class.utf8string">UTF8String (v3.0)</a></h2>
+		<div class="node"><h2><a name="tek.class.utf8string" id="tek.class.utf8string">UTF8String (v3.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -1370,7 +1370,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v8.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<p>
 					This library implements the management of regions, which are collections
@@ -1526,7 +1526,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v24.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v26.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1568,10 +1568,16 @@ ui.Application:new { ...
 							<a href="#ui:loadImage"><code>ui.loadImage()</code></a> - Loads an image (possibly from an image cache)
 						</li>
 						<li style="list-style-type: none">
+							<a href="#ui:loadLibrary"><code>ui.loadLibrary()</code></a> - Loads a library
+						</li>
+						<li style="list-style-type: none">
 							<a href="#ui:loadStyleSheet"><code>ui.loadStyleSheet()</code></a> - Loads and parse a style sheet file
 						</li>
 						<li style="list-style-type: none">
 							<a href="#ui:loadTable"><code>ui.loadTable()</code></a> - Tries to load a table from standard paths
+						</li>
+						<li style="list-style-type: none">
+							<a href="#ui:require"><code>ui.require()</code></a> - Loads a user interface class
 						</li>
 						<li style="list-style-type: none">
 							<a href="#ui:resolveKeyCode"><code>ui.resolveKeyCode()</code></a> - Converts a keycode into keys and qualifiers
@@ -1863,12 +1869,13 @@ ui.Application:new { ...
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:loadClass" id="ui:loadClass"><code>class = loadClass(domain, classname)</code></a></h3>
+		<div class="node"><h3><a name="ui:loadClass" id="ui:loadClass"><code>class = loadClass(domain, classname[, min_version])</code></a></h3>
 			<p>
-				Loads a class of the specified <code>domain</code> and the given <code>classname</code>.
+				Loads a class of the given <code>classname</code> from the specified <code>domain</code>,
+				optionally with a minimum version requirement.
 				Returns the loaded class or <strong>false</strong> if the class or domain name is
-				unknown or if an error was detected in the module. Possible values for
-				<code>domain</code>, as currently defined, are:
+				unknown, if the (major) version cannot be satisfied, or if an error
+				occured in the module. Currently defined values for <code>domain</code> are:
 			</p>
 			<blockquote>
 				<ul>
@@ -1876,7 +1883,7 @@ ui.Application:new { ...
 						<code>&quot;border&quot;</code> - border classes
 					</li>
 					<li style="list-style-type: none">
-						<code>&quot;class&quot;</code> - user interface classes
+						<code>&quot;class&quot;</code> - user interface element classes
 					</li>
 					<li style="list-style-type: none">
 						<code>&quot;hook&quot;</code> - drawing hook classes
@@ -1899,6 +1906,13 @@ ui.Application:new { ...
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="ui:loadLibrary" id="ui:loadLibrary"><code>loadLibrary(name[, version])</code></a></h3>
+			<p>
+				Loads a library with at least the specified
+				major version, from a local or global path starting with <code>tek/lib</code>.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="ui:loadStyleSheet" id="ui:loadStyleSheet"><code>properties, msg = loadStyleSheet(name)</code></a></h3>
 			<p>
 				This function loads a style sheet
@@ -1914,6 +1928,14 @@ ui.Application:new { ...
 				the various possible locations as defined by <code>ui.LocalPath</code>, interpretes
 				it is as Lua source, and returns its contents as keys and values of a
 				table. If unsuccessful, returns <strong>nil</strong> followed by an error message.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="ui:require" id="ui:require"><code>require(name[, version])</code></a></h3>
+			<p>
+				Loads an user interface class with at least the
+				specified major version. This function is a shortcut for
+				<code>ui.loadClass(&quot;class&quot;, ...)</code> - see <a href="#ui:loadClass"><code>ui.loadClass()</code></a> for more details.
 			</p>
 			<hr />
 		</div>
@@ -1943,7 +1965,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v24.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v27.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -2279,6 +2301,10 @@ message = function(object, message)
 						<code>Center</code> - Boolean, whether requester should be opened centered
 					</li>
 					<li style="list-style-type: none">
+						<code>FocusElement</code> - What element to place the initial focus on;
+						see <a href="#tek.ui.class.dirlist">DirList</a> for possible values
+					</li>
+					<li style="list-style-type: none">
 						<code>Height</code> - Height of the requester window
 					</li>
 					<li style="list-style-type: none">
@@ -2322,6 +2348,15 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Application:setLastKey" id="Application:setLastKey"><code>retrig = setLastKey([newkey])</code></a></h3>
+			<p>
+				Sets <code>newkey</code> as the key that was last
+				pressed in the application. If no new key is given, the current key is
+				unset. Returns a boolean indicating whether it is the same as the
+				previously registered key.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Application:suspend" id="Application:suspend"><code>suspend([window])</code></a></h3>
 			<p>
 				Suspends the caller (which must be running
@@ -2336,7 +2371,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v27.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v29.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2996,13 +3031,13 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:focusRect" id="Area:focusRect"><code>reached = focusRect([x0, y0, x1, y1])</code></a></h3>
+		<div class="node"><h3><a name="Area:focusRect" id="Area:focusRect"><code>moved = focusRect([x0, y0, x1, y1])</code></a></h3>
 			<p>
 				Tries to shift any Canvas
 				containing the element into a position that makes the element fully
 				visible. Optionally, a rectangle can be specified that is to be made
-				visible. If the return value is not <strong>true</strong>, the destination rectangle
-				cannot be reached or has not been reached (yet).
+				visible. If the return value (a boolean) indicates whether some kind
+				of repositioning has taken place.
 			</p>
 			<hr />
 		</div>
@@ -3184,7 +3219,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3229,7 +3264,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v21.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3482,7 +3517,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v5.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v5.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3557,7 +3592,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v13.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v14.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3590,6 +3625,15 @@ end
 									Tells the directory lister to adapt its contents dynamically to
 									the width of the element. By default, the column widths remain
 									adjusted to the initial width.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>FocusElement &#091;I&#093;</code> (string)
+							<blockquote>
+								<p>
+									What element to focus initially: <code>&quot;path&quot;</code>, <code>&quot;location&quot;</code>,
+									<code>&quot;list&quot;</code>. Default: <code>&quot;list&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -3816,7 +3860,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v20.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -3963,7 +4007,7 @@ end
 							<code>rgb-disabled-detail</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-disabled-detail2</code> 
+							<code>rgb-disabled-detail-shine</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-fill</code> 
@@ -4002,7 +4046,7 @@ end
 							<code>rgb-list-detail</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>rgb-list2</code> 
+							<code>rgb-list-alt</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-menu</code> 
@@ -4118,7 +4162,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v20.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v21.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4290,7 +4334,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v14.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v14.3)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4502,7 +4546,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.family" id="tek.ui.class.family">Family (v2.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.family" id="tek.ui.class.family">Family (v2.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4566,7 +4610,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v12.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -4712,7 +4756,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v12.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5048,7 +5092,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v17.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v17.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5547,7 +5591,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v8.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5615,7 +5659,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v22.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v23.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5776,7 +5820,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v3.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v3.5)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -5831,25 +5875,34 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v1.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v6.1)</a></h2>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Input:getLineRect" id="Input:getLineRect"><code>x0, y0, x1, y1 = getLineRect(line[, xstart[, xend]])</code></a></h3>
 			<p>
-				Gets a text line's
-				rectangle on the screen.
+				Gets a line's
+				rectangle on the screen. If <code>xend</code> is less than <code>0</code>, it is added to
+				the character position past the end the string. If <code>xend</code> is omitted,
+				returns the right edge of the canvas.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Input:newtext" id="Input:newtext"><code>newtext(text)</code></a></h3>
+			<p>
+				Initialize text from a string or a table of strings.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Input:setCursor" id="Input:setCursor"><code>setCursor(blink, cx, cy, follow)</code></a></h3>
 			<p>
 				blink=1 cursor on, blink=0 cursor off,
-				blink=-1 cursor on in next frame, blink=false no change, blink=-2
-				cursor on in next frame if something changed
+				blink=-1 cursor on in next frame, blink=false no change. follow:
+				false=do not follow cursor, 1=visible area jumps to the cursor
+				immediately, 1=visible area moves gradually (if enabled)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v22.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v23.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6226,7 +6279,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v5.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v5.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6288,7 +6341,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v7.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6344,7 +6397,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v1.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v1.6)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6502,7 +6555,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v12.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v12.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6598,7 +6651,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v11.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6716,7 +6769,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v8.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v9.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6816,7 +6869,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v4.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v4.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6858,7 +6911,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v4.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v4.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6898,7 +6951,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v9.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v10.1)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -6925,6 +6978,16 @@ end
 			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<code>AcceptFocus &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									If <strong>false</strong>, the elements inside the scrollbar (slider, arrows)
+									abstain from receiving the input focus, which means that they can
+									only be operated with the mouse. Default: <strong>true</strong> 
+								</p>
+							</blockquote>
+						</li>
 						<li style="list-style-type: none">
 							<code>Integer &#091;IG&#093;</code> (boolean)
 							<blockquote>
@@ -7045,7 +7108,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v11.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v12.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7073,6 +7136,15 @@ end
 			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<code>AcceptFocus &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									This attribute is passed to the scrollbar elements inside the
+									scroll group. See <a href="#tek.ui.class.scrollbar">ScrollBar</a> 
+								</p>
+							</blockquote>
+						</li>
 						<li style="list-style-type: none">
 							<code>Child &#091;IG&#093;</code> (<a href="#tek.ui.class.canvas">Canvas</a>)
 							<blockquote>
@@ -7165,7 +7237,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v15.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v15.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7333,7 +7405,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v1.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v1.7)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7369,7 +7441,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v20.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v21.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7615,7 +7687,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v13.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v14.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7820,7 +7892,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v7.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v9.0)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -7868,7 +7940,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v22.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v23.2)</a></h2>
 			<div class="definition"><dfn>LINEAGE</dfn>
 				<blockquote>
 					<p>
@@ -8289,7 +8361,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 			<p>
-				Document generated on Thu Aug 20 23:47:25 2009
+				Document generated on Sun Sep  6 21:53:17 2009
 			</p>
 		</div>
 	</body>

@@ -23,6 +23,9 @@
 --			Tells the directory lister to adapt its contents dynamically to
 --			the width of the element. By default, the column widths remain
 --			adjusted to the initial width.
+--		- {{FocusElement [I]}} (string)
+--			What element to focus initially: {{"path"}}, {{"location"}},
+--			{{"list"}}. Default: {{"list"}}
 --		- {{Kind [IG]}} (string)
 --			The visual appearance (or purpose) of the lister, which will
 --			determine the presence and arrangement of some interface elements:
@@ -68,13 +71,13 @@
 
 local db = require "tek.lib.debug"
 local _, lfs = pcall(require, "lfs")
-local ui = require "tek.ui"
 local List = require "tek.class.list"
+local ui = require "tek.ui"
 
-local Group = ui.Group
-local ListGadget = ui.ListGadget
-local Text = ui.Text
-local TextInput = ui.TextInput
+local Group = ui.require("group", 22)
+local ListGadget = ui.require("listgadget", 22)
+local Text = ui.require("text", 20)
+local TextInput = ui.require("textinput", 13)
 
 local insert = table.insert
 local pairs = pairs
@@ -82,7 +85,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 13.0"
+_VERSION = "DirList 14.1"
 
 local DirList = _M
 
@@ -166,6 +169,7 @@ function DirList.new(class, self)
 	self.AutoWidth = self.AutoWidth or false
 	self.Path = self.Path or ""
 	self.Location = self.Location or ""
+	self.FocusElement = self.FocusElement or "list"
 
 	self.Locale = self.Locale or
 		ui.getLocale("dirlist-class", "schulze-mueller.de")
@@ -191,6 +195,7 @@ function DirList.new(class, self)
 		Text = self.Path,
 		KeyCode = "d",
 		Height = "fill",
+		InitialFocus = self.FocusElement == "path",
 	}
 
 	self.PathField:addNotify("Enter", ui.NOTIFY_ALWAYS,
@@ -211,6 +216,8 @@ function DirList.new(class, self)
 		Text = self.Location,
 		KeyCode = "f",
 		Height = "fill",
+		InitialFocus = self.FocusElement == "location",
+		EnterNext = true,
 	}
 
 	self.LocationField:addNotify("Enter", ui.NOTIFY_ALWAYS,
@@ -516,7 +523,9 @@ function DirList:scanDir(path)
 
 			obj:repaint()
 			obj:setValue("CursorLine", selectline)
-			obj:setValue("Focus", true)
+			if self.FocusElement == "list" then
+				obj:setValue("Focus", true)
+			end
 			self:showStats()
 			self:finishScanDir(path)
 		
