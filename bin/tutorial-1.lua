@@ -4,7 +4,7 @@ ui = require "tek.ui"
 
 ui.Application:new
 {
-	Theme = "tutorial",
+	AuthorStyleSheets = "tutorial",
 	Children =
 	{
 		ui.Window:new

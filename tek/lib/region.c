@@ -17,7 +17,7 @@
 
 /*****************************************************************************/
 
-#define TEK_LIB_REGION_VERSION "Region 8.1"
+#define TEK_LIB_REGION_VERSION "Region 9.0"
 #define TEK_LIB_REGION_NAME "tek.lib.region*"
 #define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
 
@@ -640,7 +640,7 @@ static int region_foreach(lua_State *L)
 
 /*****************************************************************************/
 
-static int region_trans(lua_State *L)
+static int region_shift(lua_State *L)
 {
 	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	lua_Number sx = luaL_checknumber(L, 2);
@@ -659,7 +659,7 @@ static int region_trans(lua_State *L)
 
 /*****************************************************************************/
 
-static int region_isnull(lua_State *L)
+static int region_isempty(lua_State *L)
 {
 	struct Region *region = luaL_checkudata(L, 1, TEK_LIB_REGION_NAME);
 	lua_pushboolean(L, TISLISTEMPTY(&region->rg_Rects.rl_List));
@@ -698,8 +698,8 @@ static const luaL_Reg tek_lib_region_methods[] =
 	{ "andRect", region_andrect },
 	{ "andRegion", region_andregion },
 	{ "forEach", region_foreach },
-	{ "trans", region_trans },
-	{ "isNull", region_isnull },
+	{ "shift", region_shift },
+	{ "isEmpty", region_isempty },
 	{ NULL, NULL }
 };
 

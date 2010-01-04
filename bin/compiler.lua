@@ -63,7 +63,7 @@ local function compile(fname, arg)
 			break
 		end
 	end
-	
+
 	if m + 2 <= n then
 		b = { "local t=package.preload;" }
 	else
@@ -76,7 +76,7 @@ local function compile(fname, arg)
 		table.insert(b, mod)
 		arg[i] = string.sub(string.dump(assert(loadfile(fname))), 13)
 	end
-	
+
 	table.insert(b, "t='" .. MARK .. "'")
 
 	for i = 1, m do
@@ -106,9 +106,9 @@ local function sample(fname)
 	local f = io.open(".luac_sample.lua", "wb")
 	local mods = { }
 	if f then
-	
+
 		fname = fname:gsub("\\", "\\\\")
-	
+
 		f:write([[
 arg[0] = "]] .. fname .. [["
 local p = loadfile("]] .. fname .. [[")
@@ -133,9 +133,9 @@ for pkg in pairs(package.loaded) do
 end
 ]])
 		f:close()
-		
+
 		os.execute("lua .luac_sample.lua")
-		
+
 		f = io.open(".luac_sample.txt")
 		if f then
 			for line in f:lines() do
@@ -144,7 +144,7 @@ end
 			f:close()
 			table.sort(mods)
 		end
-		
+
 		os.remove(".luac_sample.lua")
 		os.remove(".luac_sample.txt")
 	end
@@ -179,7 +179,7 @@ end
 
 function strip(outname)
 	local tmpname = outname .. ".tmp"
-	local cmd = ('luac -s -o "%s" "%s"'):format(tmpname:gsub("\\", "\\\\"), 
+	local cmd = ('luac -s -o "%s" "%s"'):format(tmpname:gsub("\\", "\\\\"),
 		outname:gsub("\\", "\\\\"))
 	if os.execute(cmd) == 0 and stat(tmpname, "mode") == "file" then
 		os.remove(outname)
@@ -238,7 +238,6 @@ local function addmodule(app, classname, filename)
 	local filefield = ui.TextInput:new
 	{
 		Text = filename,
-		TextHAlign = "left",
 		Width = "free",
 		VAlign = "center",
 	}
@@ -255,16 +254,15 @@ local function addmodule(app, classname, filename)
 			if status == "selected" and select[1] then
 				app.Settings.ModulePath = path
 				filefield:setValue("Enter", addpath(path, select[1]))
-				self.Application:setStatus("Module selected.")				
+				self.Application:setStatus("Module selected.")
 			end
 		end,
-	}			
+	}
 	local checkmark = ui.CheckMark:new
 	{
 		Width = "fill",
 		Selected = true,
 		Text = classname,
-		TextHAlign = "left",
 		onSelect = function(self, selected)
 			ui.CheckMark.onSelect(self, selected)
 			filefield:setValue("Disabled", not selected)
@@ -303,14 +301,14 @@ end
 -------------------------------------------------------------------------------
 
 local function gui_compile(self)
-	
+
 	local app = self.Application
 	app:addCoroutine(function()
-		
+
 		local savemode = -- 1 = binary, 2 == source
 			app:getById("popitem-savemode").SelectedLine
 		local ext = savemode == 1 and ".luac" or ".c"
-		
+
 		local srcname = app:getById("text-filename").Text
 		local outname = app.Settings.OutFileName
 		if outname == "" then
@@ -321,31 +319,31 @@ local function gui_compile(self)
 			srcfile = (srcfile:match("^(.*)%.lua$") or srcfile) .. ext
 			outname = addpath(outpath, srcfile)
 		end
-		
+
 		local path, part = splitpath(outname)
-		
+
 		local status, path, select = app:requestFile
 		{
 			Title = "Select File to Save...",
-			Path = path, 
+			Path = path,
 			Location = part,
 			SelectText = "_Save",
 		}
-		
+
 		if status == "selected" and select[1] then
-			
+
 			outname = addpath(path, select[1])
-			
+
 			local success, msg = true
-			
+
 			if io.open(outname) then
 				success = app:easyRequest("Overwrite File",
 					("%s\nalready exists. Overwrite it?"):format(outname),
 					"_Overwrite", "_Cancel") == 1
 			end
-			
+
 			if success then
-			
+
 				local group = app:getById("group-modules")
 				local mods = { }
 				local modgroup = group.Children
@@ -365,15 +363,15 @@ local function gui_compile(self)
 								"Error loading module " .. classname .. ":\n" ..
 								text,
 								"_Abort", "_Continue Anyway") == 1
-						end							
+						end
 					end
 					if not success then
 						break
 					end
 				end
-			
+
 				if success then
-					success, msg = pcall(compile, outname, 
+					success, msg = pcall(compile, outname,
 						{ srcname, "-L", unpack(mods) })
 					if not success then
 						app:easyRequest("Error",
@@ -403,9 +401,9 @@ local function gui_compile(self)
 				end
 			end
 		end
-		
+
 		app.Settings.OutFileName = outname
-	
+
 	end)
 end
 
@@ -432,29 +430,29 @@ local from, to, mods = args["-f"], args["-o"], args["-l"]
 if from or (to and mods) then
 	local ext = args["-c"] and ".c" or ".luac"
 	to = to or (from:match("^(.*)%.lua$") or from) .. ext
-	
+
 	local t = { }
 	if from then
 		table.insert(t, from)
 	end
-	
+
 	if mods then
 		table.insert(t, "-L")
 		for _, m in ipairs(mods) do
 			table.insert(t, m)
-		end		
+		end
 	end
-	
+
 	compile(to, t)
-	
+
 	if args["-s"] then
 		strip(to)
 	end
-	
+
 	if args["-c"] then
 		tocsource(to)
 	end
-	
+
 	return
 end
 
@@ -466,7 +464,7 @@ local app = ui.Application:new
 {
 	ApplicationId = APP_ID,
 	Domain = DOMAIN,
-	
+
 	Settings =
 	{
 		OutFileName = "",
@@ -474,12 +472,12 @@ local app = ui.Application:new
 		TekUIPath = "/work/tekui/dev",
 		LuaPath = "/work/lua-5.1.4",
 	},
-	
+
 	setStatus = function(self, text, ...)
-		self.Application:getById("text-status"):setValue("Text", 
+		self.Application:getById("text-status"):setValue("Text",
 			text:format(...))
 	end,
-	
+
 	deleteModules = function(self, mode)
 		local g = self:getById("group-modules")
 		local n, nd = 0, 0
@@ -509,7 +507,7 @@ local app = ui.Application:new
 		self.Application:selectModules()
 		return nd
 	end,
-	
+
 	selectModules = function(self, mode)
 		local g = self:getById("group-modules")
 		local n = 0
@@ -543,7 +541,7 @@ local app = ui.Application:new
 			Title = "About Compiler",
 			Children =
 			{
-				ui.Text:new 
+				ui.Text:new
 				{
 					Text = "About Lua Compiler",
 					Style = "font: ui-large"
@@ -595,14 +593,14 @@ local app = ui.Application:new
 				}
 			}
 		},
-	
+
 		ui.Window:new
 		{
 			Id = "window-main",
 			Title = "Lua compiler and module linker",
 			Orientation = "vertical",
 			HideOnEscape = true,
-			
+
 			onHide = function(self)
 				local app = self.Application
 				app:addCoroutine(function()
@@ -614,7 +612,7 @@ local app = ui.Application:new
 					end
 				end)
 			end,
-			
+
 			Children =
 			{
 				ui.Group:new
@@ -654,7 +652,7 @@ local app = ui.Application:new
 						}
 					}
 				},
-			
+
 				ui.Group:new
 				{
 					Legend = "Compile and save to bytecode",
@@ -670,15 +668,15 @@ local app = ui.Application:new
 								{
 									Text = "_Lua Source:",
 									Class = "caption",
-									Width = "auto",
+									Width = "fill",
+									MaxWidth = 0,
 									KeyCode = true,
 								},
 								ui.TextInput:new
 								{
 									Id = "text-filename",
 									Height = "fill",
-									TextHAlign = "left",
-									KeepMinWidth = true,
+									Style = "text-align: right",
 									onEnter = function(self, text)
 										ui.TextInput.onEnter(self, text)
 										local notexist = io.open(text) == nil
@@ -711,7 +709,7 @@ local app = ui.Application:new
 								}
 							}
 						},
-						
+
 						ui.Group:new
 						{
 							Width = "fill",
@@ -719,6 +717,7 @@ local app = ui.Application:new
 							{
 								ui.Group:new
 								{
+									MaxWidth = 0,
 									Orientation = "vertical",
 									Children =
 									{
@@ -726,7 +725,6 @@ local app = ui.Application:new
 										{
 											Id = "check-strip",
 											Text = "Strip _Debug Information",
-											Width = "auto",
 										},
 										ui.Group:new
 										{
@@ -736,7 +734,6 @@ local app = ui.Application:new
 												{
 													Class = "caption",
 													Text = "Save _Format",
-													Width = "auto",
 													KeyCode = true,
 												},
 												ui.PopList:new
@@ -758,7 +755,7 @@ local app = ui.Application:new
 										}
 									}
 								},
-		
+
 								ui.Button:new
 								{
 									Id = "button-compile",
@@ -776,7 +773,7 @@ local app = ui.Application:new
 						}
 					}
 				},
-				
+
 				ui.Group:new
 				{
 					Legend = "Modules to link",
@@ -801,7 +798,7 @@ local app = ui.Application:new
 										end
 									end
 								},
-								
+
 								ui.PopItem:new
 								{
 									Id = "button-add",
@@ -835,9 +832,9 @@ local app = ui.Application:new
 										}
 									}
 								},
-								
+
 								ui.Spacer:new { },
-								
+
 								ui.Button:new
 								{
 									Id = "button-all",
@@ -850,7 +847,7 @@ local app = ui.Application:new
 										end
 									end
 								},
-								
+
 								ui.Button:new
 								{
 									Id = "button-none",
@@ -863,7 +860,7 @@ local app = ui.Application:new
 										end
 									end
 								},
-								
+
 								ui.Button:new
 								{
 									Id = "button-invert",
@@ -876,7 +873,7 @@ local app = ui.Application:new
 										end
 									end
 								},
-								
+
 								ui.Button:new
 								{
 									Id = "button-delete",
@@ -887,11 +884,11 @@ local app = ui.Application:new
 										if press == false then
 											local app = self.Application
 											local n = app:selectModules()
-											local text = n == 1 and "one module" or 
+											local text = n == 1 and "one module" or
 												("%d modules"):format(n)
 											app:addCoroutine(function()
 												if app:easyRequest("Delete Modules",
-													"Are you sure that you want to\n" .. 
+													"Are you sure that you want to\n" ..
 														"delete " .. text .. " from the list?",
 													"_Delete", "_Cancel") == 1 then
 													local n = self.Application:deleteModules("selected")
@@ -901,12 +898,12 @@ local app = ui.Application:new
 										end
 									end
 								}
-								
+
 							}
 						},
 						ui.ScrollGroup:new
 						{
-							VSliderMode = "on",
+							VSliderMode = "auto",
 							HSliderMode = "auto",
 							Child = ui.Canvas:new
 							{
@@ -924,14 +921,14 @@ local app = ui.Application:new
 						}
 					}
 				},
-				
+
 				ui.Text:new
 				{
 					Id = "text-status",
 					Text = "Please select a Lua source.",
 					KeepMinWidth = true,
 				}
-				
+
 			}
 		}
 	}

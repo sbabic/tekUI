@@ -18,8 +18,7 @@ local window = ui.Window:new
 	Orientation = "vertical",
 	Status = "hide",
 	HideOnEscape = true,
-	Width = "auto",
-	Height = "auto",
+	Width = "fill",
 	Children =
 	{
 		Group:new
@@ -31,7 +30,7 @@ local window = ui.Window:new
 				{
 					Orientation = "vertical",
 					Legend = L.BUTTONS_CAPTION_STYLE,
-					Style = "height: fill",
+					Height = "fill",
 					Children =
 					{
 						Text:new { Class = "caption", Text = "Small",
@@ -50,7 +49,7 @@ local window = ui.Window:new
 				{
 					Orientation = "vertical",
 					Legend = L.BUTTONS_NORMAL_STYLE,
-					Style = "height: fill",
+					Height = "fill",
 					Children =
 					{
 						Text:new { Text = "Small",
@@ -69,7 +68,7 @@ local window = ui.Window:new
 				{
 					Orientation = "vertical",
 					Legend = L.BUTTONS_BUTTON,
-					Style = "height: fill",
+					Height = "fill",
 					Children =
 					{
 						Button:new { Text = "Small", Style = "font: ui-small" },
@@ -83,7 +82,7 @@ local window = ui.Window:new
 				{
 					Orientation = "vertical",
 					Legend = L.BUTTONS_COLORS,
-					Style = "height: fill",
+					Height = "fill",
 					Children =
 					{
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: dark; color: shine" },
@@ -98,7 +97,7 @@ local window = ui.Window:new
 				{
 					Orientation = "vertical",
 					Legend = L.BUTTONS_TEXT_ALIGNMENTS,
-					Style = "height: fill",
+					Height = "fill",
 					SameSize = "height",
 					Children =
 					{
@@ -112,7 +111,8 @@ local window = ui.Window:new
 		Group:new
 		{
 			Legend = L.GADGET_MODES,
-			Children = 
+			SameSize = true,
+			Children =
 			{
 				Button:new
 				{
@@ -139,7 +139,6 @@ local window = ui.Window:new
 				Button:new
 				{
 					Id = "buttons-unselect",
-					Width = "auto",
 					Disabled = true,
 					Text = "« " .. L.GADGET_UNSELECT,
 					onPress = function(self, pressed)

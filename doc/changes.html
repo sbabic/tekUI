@@ -11,6 +11,185 @@
 			tekUI Changelog
 		</h2>
 		<h3>
+			0.8i:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					Display, Visual: Removed numerical pens, all pens are symbolic now,
+					Display: removed RGBTab and FontTab
+				</li>
+				<li>
+					added ui.support library with functions operating on flag fields
+				</li>
+				<li>
+					added Fixed layouter
+				</li>
+				<li>
+					added Dynamic, Fixed and LayoutHook and improved some demos
+				</li>
+				<li>
+					<a href="manual.html#Element:addStyleClass"><code>Element:addStyleClass()</code></a> added, Properties attribute added, removed
+					<a href="manual.html#getProperty"><code>getProperty()</code></a> and <a href="manual.html#getProperties"><code>getProperties()</code></a>, style sheet properties, direct formattings
+					and hardcoded class properties are now decoded into a metatable graph
+				</li>
+				<li>
+					EditWindow: localizations added
+				</li>
+				<li>
+					Application: added Style and Preload attributes, removed Theme attribute,
+					renamed Styles to AuthorStyles, added AutorStyleSheets
+				</li>
+				<li>
+					<a href="manual.html#Drawable:getAttrs"><code>Drawable:getAttrs()</code></a> split into <a href="manual.html#getWH"><code>getWH()</code></a> and <a href="manual.html#getXY"><code>getXY()</code></a> 
+				</li>
+				<li>
+					PopItem: Now also elements descending from CheckMark collapse in popups,
+					no longer uses a &quot;popup-children&quot; style class if an element has children,
+					instead a style class &quot;popup-child&quot; is appended to all children during
+					<a href="manual.html#connectPopItem"><code>connectPopItem()</code></a> 
+				</li>
+				<li>
+					CheckMark: in <a href="manual.html#setState"><code>setState()</code></a>, precedence of the &quot;Hilite&quot; attribute over
+					&quot;Selected&quot; is now also considered for the foreground color
+				</li>
+				<li>
+					MenuItem: a predefined class &quot;menuitem&quot; is now appended to the element's
+					style classes during <a href="manual.html#init"><code>init()</code></a> 
+				</li>
+				<li>
+					Internal theme: use of menu colors corrected, removed &quot;internal&quot; style
+					sheet, added the respective properties in the &quot;desktop&quot; style sheet.
+				</li>
+				<li>
+					style sheets: 'parent-group' pseudo pen renamed to 'transparent',
+					'background-position' renamed to 'background-attachment'
+				</li>
+				<li>
+					<a href="manual.html#ui:loadStyleSheet"><code>ui.loadStyleSheet()</code></a> can now operate on open filehandles
+				</li>
+				<li>
+					RadioImage now paints a back pane
+				</li>
+				<li>
+					ImageGadget: did not implement vertical and right alignments, corrected
+				</li>
+				<li>
+					Input: setting the cursor with the mouse now also updates the LockCursorX
+					attribute, visual cursor position reporting corrected
+				</li>
+				<li>
+					Visual API: Window MaxWidth/MaxHeight wasn't unset when passing 'false',
+					corrected
+				</li>
+				<li>
+					Area: removed <a href="manual.html#relayout"><code>relayout()</code></a> function, <a href="manual.html#rethinkLayout"><code>rethinkLayout()</code></a> now has an additional
+					updateminmax argument, added <a href="manual.html#drawBegin"><code>drawBegin()</code></a> and <a href="manual.html#drawEnd"><code>drawEnd()</code></a> functions, removed
+					<a href="manual.html#refresh"><code>refresh()</code></a>, layout logic improved for growing elements, added Flag attribute,
+					removed Redraw attribute, removed BGColor, BGPosition, Margin, Padding,
+					<a href="manual.html#getProperties"><code>getProperties()</code></a>, FL_CHANGED is now set in <a href="manual.html#rethinkLayout"><code>rethinkLayout()</code></a>, added <a href="manual.html#getPadding"><code>getPadding()</code></a>,
+					renamed MarginAndBorder to Margin, renamed former 'grid-align' properties to
+					'halign' and 'valign'
+				</li>
+				<li>
+					FloatText: <a href="manual.html#layout"><code>layout()</code></a> took an existing Redraw into account, removed
+				</li>
+				<li>
+					Frame: phased out an additional <a href="manual.html#newBorderObject"><code>newBorderObject()</code></a> function, removed
+					RedrawBorder attribute, removed Border and BorderClass attributes, these are
+					created on the fly during border creation and isolated in the border object
+				</li>
+				<li>
+					Group: the Layout argument can now be a class name, not just a layouter
+					instance, <a href="manual.html#calcWeights"><code>calcWeights()</code></a> is now called when a changed layout is notified,
+					<a href="manual.html#addMember"><code>addMember()</code></a>/<a href="manual.html#remMember"><code>remMember()</code></a> are more solid now, removed <a href="manual.html#getStructure"><code>getStructure()</code></a>,
+					<a href="manual.html#getSameSize"><code>getSameSize()</code></a> and <a href="manual.html#calcWeights"><code>calcWeights()</code></a>, these are now isolated in the default
+					layouter, removed <a href="manual.html#onActivateGroup"><code>onActivateGroup()</code></a>, groups are no longer repainted
+					completely, but only when a fixed background-attachment is indicated
+				</li>
+				<li>
+					Handle: now calls <a href="manual.html#rethinkLayout"><code>rethinkLayout()</code></a> as it is supposed to, Orientation is now
+					determined during <a href="manual.html#setup"><code>setup()</code></a> 
+				</li>
+				<li>
+					ListGadget: Removed BGAlt, CursorBorder, CursorBorderClass attributes
+				</li>
+				<li>
+					PageGroup: simplified, now accepts a custom Layout
+				</li>
+				<li>
+					ScrollBar, Slider: <a href="manual.html#updateSlider"><code>updateSlider()</code></a> is no longer a local function and
+					forwards the call to its super class
+				</li>
+				<li>
+					ScrollGroup: internal sliders are handled more efficiently now, causing a
+					notification in their parent class now only when really needed
+				</li>
+				<li>
+					Slider, Gauge: MaxWidth, Width, MaxHeight and Height are now determined
+					during <a href="manual.html#setup"><code>setup()</code></a> 
+				</li>
+				<li>
+					Spacer: Orientation is now determined during <a href="manual.html#setup"><code>setup()</code></a> 
+				</li>
+				<li>
+					Text: Removed FGDisabled2, Font, TextHAlign, TextVAlign attributes
+				</li>
+				<li>
+					TextInput: Removed FGCursor and BGCursor attributes
+				</li>
+				<li>
+					<a href="manual.html#Window:relayout"><code>Window:relayout()</code></a> changed and no longer descends from Area but is now
+					rooted in the Window class, <a href="manual.html#calcWeights"><code>calcWeights()</code></a> is now under the control of the
+					Group class
+				</li>
+				<li>
+					UI: <a href="manual.html#freeRegion"><code>freeRegion()</code></a> and <a href="manual.html#testFlags"><code>testFlags()</code></a> removed, added element flags FL_REDRAW,
+					FL_REDRAWBORDER, FL_LAYOUT etc., simplified and renamed <a href="manual.html#prepareStyleSheet"><code>prepareStyleSheet()</code></a> 
+					to <a href="manual.html#unpackStyleSheet"><code>unpackStyleSheet()</code></a>, added <a href="manual.html#unpackProperty"><code>unpackProperty()</code></a> for direct formattings,
+					<a href="manual.html#loadStyleSheet"><code>loadStyleSheet()</code></a> now unpacks properties and merges pseudo class attributes
+					on the fly, removed NULLOFFS, new ui.ThemeName is &quot;default desktop&quot;
+				</li>
+				<li>
+					Layout base class added
+				</li>
+				<li>
+					Default layouter: Now uses the Layout base class in an upvalue to <a href="manual.html#new"><code>new()</code></a>,
+					added version string, handles weights internally when a change of a group's
+					contents or weights is indicated using the FL_CHANGED flag, bugs in the
+					SameSize calculation corrected, removed the &quot;auto&quot; state for Width and
+					Height, the logic is now more concise and faster
+				</li>
+				<li>
+					Theme: The internal style sheet is now more minimal and has been renamed
+					to &quot;minimal&quot;, many properties have been relocated to the new &quot;default&quot; style
+					sheet
+				</li>
+				<li>
+					Renamed 'check' and 'radio' images to 'checkmark' and 'radiobutton',
+					respectively
+				</li>
+				<li>
+					<a href="manual.html#Region:trans"><code>Region:trans()</code></a> renamed to <a href="manual.html#shift"><code>shift()</code></a>, <a href="manual.html#isNull"><code>isNull()</code></a> to <a href="manual.html#isEmpty"><code>isEmpty()</code></a> 
+				</li>
+				<li>
+					Makefiles updated to install new classes, args.lua, fixed layouter, new
+					style sheets
+				</li>
+				<li>
+					Markup: Tables produced erroneous HTML - now pop the current block from the
+					stack
+				</li>
+				<li>
+					Documentation generator: added macro support, added child class macro,
+					tables did not break out of the current block, corrected
+				</li>
+				<li>
+					improved documentation generator, documentation, stylesheet, README
+				</li>
+			</ul>
+		</blockquote>
+		<h3>
 			0.8h:
 		</h3>
 		<blockquote>
@@ -81,7 +260,8 @@
 				</li>
 				<li>
 					Text: now uses the &quot;IgnoreAltShift&quot; peudo qualifier for Keycode shortcuts,
-					KeyCode attribute was lost during repeated invocations of <a href="manual.html#setup"><code>setup()</code></a>, corrected
+					KeyCode attribute was lost during repeated invocations of <a href="manual.html#setup"><code>setup()</code></a>, corrected,
+					'color2' style property renamed to 'color-disabled'
 				</li>
 				<li>
 					Raw Framebuffer display driver: added

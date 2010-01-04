@@ -5,14 +5,14 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="13-Sep-2009" />
+		<meta name="created" content="04-Jan-2010" />
 	</head>
 	<body>
 		<h1>
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8h
+			Version 0.8i
 		</p>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -179,10 +179,20 @@
 									<a href="#tek.class.utf8string">UTF8String</a> 
 								</li>
 								<li>
-									<a href="#tek.ui.class.theme">Theme</a> 
+									<a href="#tek.ui.class.layout">Layout</a> 
+									<blockquote>
+										<ul>
+											<li>
+												<a href="#tek.ui.layout.default">DefaultLayout</a> 
+											</li>
+											<li>
+												<a href="#tek.ui.layout.fixed">FixedLayout</a> 
+											</li>
+										</ul>
+									</blockquote>
 								</li>
 								<li>
-									<a href="#tek.ui.layout.default">Layout</a> 
+									<a href="#tek.ui.class.theme">Theme</a> 
 								</li>
 							</ul>
 						</blockquote>
@@ -211,15 +221,11 @@
 			<hr class="page-break" />
 		</div>
 		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v7.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
-				<blockquote>
-					<p>
-						<a href="#ClassOverview">ClassOverview</a> : Class
-					</p>
-				</blockquote>
-			</div>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> : Class / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">6 subclasses</option><option value="#tek.class.list">List</option><option value="#tek.class.markup">Markup</option><option value="#tek.class.object">Object</option><option value="#tek.class.utf8string">UTF8String</option><option value="#tek.ui.class.layout">Layout</option><option value="#tek.ui.class.theme">Theme</option></select>
+					</p>
 					<p>
 						This module implements inheritance and the creation of objects
 						from classes.
@@ -288,9 +294,9 @@ self:getSuper().method(self, ...)
 		</div>
 		<div class="node"><h3><a name="Class:instanceOf" id="Class:instanceOf"><code>is_descendant = object:instanceOf(class)</code></a></h3>
 			<p>
-				Returns <strong>true</strong> if <code>object</code> is an instance of a class descending
-				from the specified <code>class</code>. It is also possible to apply this function
-				to a class instead of an object, e.g.:
+				Returns <strong>true</strong> if <code>object</code> is an instance of or descends from the
+				specified <code>class</code>. It is also possible to apply this function to a class
+				instead of an object, e.g.:
 			</p>
 <pre>
 Class.instanceOf(Button, Area)
@@ -333,16 +339,12 @@ class = superclass()
 			<hr class="page-break" />
 		</div>
 		<div class="node"><h2><a name="tek.class.list" id="tek.class.list">List (v3.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
-						<a href="#tek.class">Class</a> / List
+						<a href="#tek.class">Class</a> / List 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a list container.
 					</p>
@@ -437,17 +439,13 @@ class = superclass()
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.markup" id="tek.class.markup">Markup (v3.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.class.markup" id="tek.class.markup">Markup (v3.2)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
-						<a href="#tek.class">Class</a> / Markup
+						<a href="#tek.class">Class</a> / Markup 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a markup parser and converter for producing
 						feature-rich XHTML 1.0 from plain text with special formattings.
@@ -685,16 +683,13 @@ class = superclass()
 			<hr class="page-break" />
 		</div>
 		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v10.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
-						<a href="#tek.class">Class</a> / Object
+						<a href="#tek.class">Class</a> /
+						Object / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">3 subclasses</option><option value="#tek.ui.class.drawable">Drawable</option><option value="#tek.ui.class.element">Element</option><option value="#tek.ui.class.family">Family</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements notifications.
 					</p>
@@ -780,7 +775,7 @@ Notifications =
 				<code>object</code> denotes the target of the notification, i.e. the <code>self</code> 
 				that will be passed to the <code>method</code> as its first argument.
 				<code>ui.NOTIFY_SELF</code> is a placeholder for the object causing the
-				notification. (See below for the additional placeholders <code>ui.NOTIFY_ID</code>,
+				notification (see below for the additional placeholders <code>ui.NOTIFY_ID</code>,
 				<code>ui.NOTIFY_WINDOW</code>, and <code>ui.NOTIFY_APPLICATION</code>). <code>method</code> can be
 				either a string denoting the name of a function in the addressed object,
 				or <code>ui.NOTIFY_FUNCTION</code> followed by a function value. The following
@@ -844,7 +839,7 @@ method(object, arg1, ...)
 			<p>
 				The optional <code>pos</code> argument allows for insertion at the specified
 				position in the list of notifications. By default, notifications are
-				added at the end, and the only reasonable value for <code>pos</code> is <code>1</code>.
+				added at the end. The only reasonable value for <code>pos</code> is probably <code>1</code>.
 			</p>
 			<p>
 				If the destination object or addressed method cannot be determined,
@@ -861,8 +856,7 @@ method(object, arg1, ...)
 				This function is called during <a href="#Object:new"><code>Object.new()</code></a> 
 				before passing control to <code>superclass.new()</code>. By convention, <code>new()</code> 
 				is used to claim resources (e.g. to create tables), whereas the <code>init()</code> 
-				function is used to initialize them. Calling <code>init()</code> separately from
-				<code>new()</code> can be reasonable for reinitializing and reusing objects.
+				function is used to initialize them with defaults.
 			</p>
 			<hr />
 		</div>
@@ -886,17 +880,13 @@ method(object, arg1, ...)
 			<hr class="page-break" />
 		</div>
 		<div class="node"><h2><a name="tek.class.utf8string" id="tek.class.utf8string">UTF8String (v3.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
-						UTF8String
+						UTF8String 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class supports the manipulation of UTF-8 encoded strings.
 					</p>
@@ -1059,19 +1049,18 @@ end
 						template. Arguments in the template are separated by commas. Each
 						argument in the template consists of a keyword, optionally followed by
 						one or more aliases delimited by equal signs, and an optional set of
-						modifiers delimited by slashes. Modifiers denote a) the expected
-						datatype, b) if the argument is mandatory and c) whether a keyword
-						must precede its value to form a valid argument. Example argument
-						template:
+						modifiers delimited by slashes. Modifiers denote the expected
+						data type, if the argument is mandatory and whether a keyword must
+						precede its value to form a valid argument. Example argument template:
 					</p>
 <pre>
 SOURCE=-s/A/M,DEST=-d/A/K
 </pre>
 					<p>
-						This template would require one or more arguments to satisfy
-						<code>SOURCE</code>, and exactly one argument to satisfy <code>DEST</code>. Neither
-						can be omitted. Either <code>-d</code> or <code>DEST</code> must precede a value to be
-						accepted as the second argument. Examples:
+						This template requires one or more arguments to satisfy <code>SOURCE</code>,
+						and exactly one argument to satisfy <code>DEST</code>. Neither can be omitted.
+						Either <code>-d</code> (or its alias <code>DEST</code>) must precede the value to be
+						accepted as the second argument. Example command lines:
 					</p>
 					<table>
 						<tr>
@@ -1142,7 +1131,7 @@ SOURCE=-s/A/M,DEST=-d/A/K
 								value.
 							</li>
 							<li>
-								<code>/A</code> - <em>Required</em>; This argument cannot be omitted.
+								<code>/A</code> - <em>Always required</em>; This argument cannot be omitted.
 							</li>
 							<li>
 								<code>/M</code> - <em>Multiple</em>; Any number of strings will be accepted,
@@ -1162,6 +1151,15 @@ SOURCE=-s/A/M,DEST=-d/A/K
 					</p>
 				</blockquote>
 			</div>
+			<div class="definition"><dfn>FUNCTIONS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#args:read"><code>args.read()</code></a> - Parses a string or table through an argument template
+						</li>
+					</ul>
+				</blockquote>
+			</div>
 			<div class="definition"><dfn>TODO</dfn>
 				<blockquote>
 					<p>
@@ -1171,7 +1169,7 @@ SOURCE=-s/A/M,DEST=-d/A/K
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="args:read" id="args:read"><code>res, msg = read(template, args)</code></a></h3>
+		<div class="node"><h3><a name="args:read" id="args:read"><code>res, msg = args.read(template, args)</code></a></h3>
 			<p>
 				Parses <code>args</code> according to
 				<code>template</code>. <code>args</code> can be a string or a table of strings. If the
@@ -1186,82 +1184,84 @@ SOURCE=-s/A/M,DEST=-d/A/K
 		</div>
 		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v4.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
-				<p>
-					Debug library - implements debug output and debug levels:
-				</p>
-				<table>
-					<tr>
-						<td class="column1">
-							2
-						</td>
-						<td class="column2">
-							TRACE
-						</td>
-						<td class="column3">
-							used for tracking bugs
-						</td>
-					</tr>
-					<tr>
-						<td class="column1">
-							4
-						</td>
-						<td class="column2">
-							INFO
-						</td>
-						<td class="column3">
-							informational messages
-						</td>
-					</tr>
-					<tr>
-						<td class="column1">
-							5
-						</td>
-						<td class="column2">
-							WARN
-						</td>
-						<td class="column3">
-							something unexpected happened
-						</td>
-					</tr>
-					<tr>
-						<td class="column1">
-							10
-						</td>
-						<td class="column2">
-							ERROR
-						</td>
-						<td class="column3">
-							something went wrong, e.g. resource unavailable
-						</td>
-					</tr>
-					<tr>
-						<td class="column1">
-							20
-						</td>
-						<td class="column2">
-							FAIL
-						</td>
-						<td class="column3">
-							something went wrong that can't be coped with
-						</td>
-					</tr>
-				</table>
-				<p>
-					The default debug level is 5 <code>WARN</code>. To set the debug level
-					globally, e.g.:
-				</p>
+				<blockquote>
+					<p>
+						Debug library - implements debug output and debug levels:
+					</p>
+					<table>
+						<tr>
+							<td class="column1">
+								2
+							</td>
+							<td class="column2">
+								TRACE
+							</td>
+							<td class="column3">
+								used for trace messages
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								4
+							</td>
+							<td class="column2">
+								INFO
+							</td>
+							<td class="column3">
+								informational messages, notices
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								5
+							</td>
+							<td class="column2">
+								WARN
+							</td>
+							<td class="column3">
+								something unexpected happened
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								10
+							</td>
+							<td class="column2">
+								ERROR
+							</td>
+							<td class="column3">
+								something went wrong, e.g. resource unavailable
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								20
+							</td>
+							<td class="column2">
+								FAIL
+							</td>
+							<td class="column3">
+								something went wrong that cannot be coped with
+							</td>
+						</tr>
+					</table>
+					<p>
+						The default debug level is <code>WARN</code>. To set the debug level
+						globally, e.g.:
+					</p>
 <pre>
 db = require &quot;tek.lib.debug&quot;
 db.level = db.INFO
 </pre>
-				<p>
-					The default debug output stream is <code>stderr</code>.
-					To override it globally, e.g.:
-				</p>
+					<p>
+						The default debug output stream is <code>stderr</code>.
+						To override it globally, e.g.:
+					</p>
 <pre>
 db = require &quot;tek.lib.debug&quot;
 db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 </pre>
+				</blockquote>
 			</div>
 			<div class="definition"><dfn>FUNCTIONS</dfn>
 				<blockquote>
@@ -1296,83 +1296,112 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 						<li style="list-style-type: none">
 							<a href="#debug:warn"><code>debug.warn()</code></a> - Prints a text in the <code>WARN</code> debug level
 						</li>
+						<li style="list-style-type: none">
+							<a href="#debug:wrout"><code>debug.wrout()</code></a> - Output function
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>VALUES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<code>level</code> - Debug level, default 5 (<code>WARN</code>)
+						</li>
+						<li style="list-style-type: none">
+							<code>out</code> - Output stream, default <code>io.stderr</code> 
+						</li>
 					</ul>
 				</blockquote>
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="debug:console" id="debug:console"><code>console()</code></a></h3>
+		<div class="node"><h3><a name="debug:console" id="debug:console"><code>debug.console()</code></a></h3>
 			<p>
-				Enter the debug console.
+				Enters debug console.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:dump" id="debug:dump"><code>dump(table)</code></a></h3>
+		<div class="node"><h3><a name="debug:dump" id="debug:dump"><code>debug.dump(table[, outfunc])</code></a></h3>
 			<p>
-				Dump a table as Lua source using <code>out</code> as the output
-				stream. Cyclic references are silently dropped.
+				Dumps a table as Lua source using
+				<code>outfunc</code>. Cyclic references are silently dropped. The default output
+				function is <a href="#debug:wrout"><code>debug.wrout()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:error" id="debug:error"><code>error(msg, ...)</code></a></h3>
+		<div class="node"><h3><a name="debug:error" id="debug:error"><code>debug.error(msg, ...)</code></a></h3>
 			<p>
-				Prints formatted debug info with <code>ERROR</code> level
+				Prints formatted debug info with <code>ERROR</code> debug
+				level
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:execute" id="debug:execute"><code>execute(lvl, func, ...)</code></a></h3>
+		<div class="node"><h3><a name="debug:execute" id="debug:execute"><code>debug.execute(lvl, func, ...)</code></a></h3>
 			<p>
-				Executes the specified function if the global
-				debug library is less or equal the specified level.
+				Executes the specified function if the
+				global debug level is less or equal the specified level.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:fail" id="debug:fail"><code>fail(msg, ...)</code></a></h3>
+		<div class="node"><h3><a name="debug:fail" id="debug:fail"><code>debug.fail(msg, ...)</code></a></h3>
 			<p>
-				Prints formatted debug info with <code>FAIL</code> level
+				Prints formatted debug info with <code>FAIL</code> debug level
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:info" id="debug:info"><code>info(msg, ...)</code></a></h3>
+		<div class="node"><h3><a name="debug:info" id="debug:info"><code>debug.info(msg, ...)</code></a></h3>
 			<p>
-				Prints formatted debug info with <code>INFO</code> level
+				Prints formatted debug info with <code>INFO</code> debug level
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:print" id="debug:print"><code>print(lvl, msg, ...)</code></a></h3>
+		<div class="node"><h3><a name="debug:print" id="debug:print"><code>debug.print(lvl, msg, ...)</code></a></h3>
 			<p>
 				Prints formatted text if the global debug level
 				is less or equal the specified level.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:stacktrace" id="debug:stacktrace"><code>stacktrace(debuglevel, stacklevel)</code></a></h3>
+		<div class="node"><h3><a name="debug:stacktrace" id="debug:stacktrace"><code>debug.stacktrace(debuglevel[, stacklevel])</code></a></h3>
 			<p>
 				Prints a stacktrace starting at
-				the function of the given <code>level</code> on the stack (excluding the
+				the function of the given level on the stack (excluding the
 				<code>stracktrace</code> function itself) if the global debug level is less
 				or equal the specified <code>debuglevel</code>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:trace" id="debug:trace"><code>trace(msg, ...)</code></a></h3>
+		<div class="node"><h3><a name="debug:trace" id="debug:trace"><code>debug.trace(msg, ...)</code></a></h3>
 			<p>
-				Prints formatted debug info with <code>TRACE</code> level
+				Prints formatted debug info with <code>TRACE</code> debug
+				level
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:warn" id="debug:warn"><code>warn(msg, ...)</code></a></h3>
+		<div class="node"><h3><a name="debug:warn" id="debug:warn"><code>debug.warn(msg, ...)</code></a></h3>
 			<p>
-				Prints formatted debug info with <code>WARN</code> level
+				Prints formatted debug info with <code>WARN</code> debug level
 			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="debug:wrout" id="debug:wrout"><code>debug.wrout(...)</code></a></h3>
+			<p>
+				Debug output function, by default
+			</p>
+<pre>
+function(...) out:write(...) end
+</pre>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v8.1)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v9.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
-				<p>
-					This library implements the management of regions, which are collections
-					of non-overlapping rectangles.
-				</p>
+				<blockquote>
+					<p>
+						This library implements the management of regions, which are
+						collections of non-overlapping rectangles.
+					</p>
+				</blockquote>
 			</div>
 			<div class="definition"><dfn>FUNCTIONS</dfn>
 				<blockquote>
@@ -1384,10 +1413,16 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 							<a href="#Region:andRegion"><code>Region:andRegion()</code></a> - <em>And</em>s a region to a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:checkOverlap"><code>Region:checkOverlap()</code></a> - Checks if a rectangle intersects a region
+							<a href="#Region:checkIntersect"><code>Region:checkIntersect()</code></a> - Checks if a rectangle intersects a region
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:forEach"><code>Region:forEach()</code></a> - Calls a function for each rectangle in a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:intersect"><code>Region.intersect()</code></a> - Returns the intersection of two rectangles
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:isEmpty"><code>Region:isEmpty()</code></a> - Checks if a Region is empty
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:new"><code>Region.new()</code></a> - Creates a new Region
@@ -1399,13 +1434,10 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 							<a href="#Region:orRegion"><code>Region:orRegion()</code></a> - <em>Or</em>s a region to a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:intersect"><code>Region.intersect()</code></a> - Returns an intersection of two rectangles
+							<a href="#Region:setRect"><code>Region:setRect()</code></a> - Resets a region to the given rectangle
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:isNull"><code>Region.isNull()</code></a> - Checks if a Region is Null
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Region:setRect"><code>Region:setRect()</code></a> - Resets a region to a single rectangle
+							<a href="#Region:shift"><code>Region:shift()</code></a> - Displaces a region
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:subRect"><code>Region:subRect()</code></a> - Subtracts a rectangle from a region
@@ -1414,11 +1446,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 							<a href="#Region:subRegion"><code>Region:subRegion()</code></a> - Subtracts a region from a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:trans"><code>Region:trans()</code></a> - Transposes a region
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Region:xorRect"><code>Region:xorRect()</code></a> - <em>Exclusive Or</em>s a rectangle to a region
-							region with a rectangle
 						</li>
 					</ul>
 				</blockquote>
@@ -1437,7 +1465,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:checkOverlap" id="Region:checkOverlap"><code>success = region:checkOverlap(x0, y0, x1, y1)</code></a></h3>
+		<div class="node"><h3><a name="Region:checkIntersect" id="Region:checkIntersect"><code>success = region:checkIntersect(x0, y0, x1, y1)</code></a></h3>
 			<p>
 				Returns a boolean
 				indicating whether a rectangle specified by its coordinates overlaps
@@ -1467,9 +1495,9 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:isNull" id="Region:isNull"><code>region:isNull()</code></a></h3>
+		<div class="node"><h3><a name="Region:isEmpty" id="Region:isEmpty"><code>region:isEmpty()</code></a></h3>
 			<p>
-				Returns <strong>true</strong> if a region is null.
+				Returns <strong>true</strong> if a region is empty.
 			</p>
 			<hr />
 		</div>
@@ -1494,8 +1522,14 @@ func(obj, x0, y0, x1, y1, ...)
 		</div>
 		<div class="node"><h3><a name="Region:setRect" id="Region:setRect"><code>self = region:setRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
-				Overwrites an existing region
-				with the specified coordinates.
+				Resets an existing region
+				to the specified rectangle.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:shift" id="Region:shift"><code>region:shift(dx, dy)</code></a></h3>
+			<p>
+				Shifts a region by delta x and y.
 			</p>
 			<hr />
 		</div>
@@ -1511,28 +1545,22 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:trans" id="Region:trans"><code>region:trans(dx, dy)</code></a></h3>
-			<p>
-				Transposes a region by delta x and y.
-			</p>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="Region:xorRect" id="Region:xorRect"><code>region:xorRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Logical <em>xor</em>s a rectange to a region
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v26.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v30.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						This module is the user interface toolkit's base library. It implements
-						a class loader and provides a central place for various toolkit
-						constants and defaults. To invoke the class loader, simply aquire a
-						class from the <code>tek.ui</code> table, e.g. this will load the
-						<a href="#tek.ui.class.application">tek.ui.class.application</a> class (as well as all subsequently
-						needed classes):
+						a class loader and support functions, and it provides a central place
+						for various constants and defaults. To invoke the class loader, simply
+						aquire a class from the <code>tek.ui</code> table, e.g. this will load the
+						<a href="#tek.ui.class.application">tek.ui.class.application</a> class, as well as all subsequently
+						needed classes:
 					</p>
 <pre>
 local ui = require &quot;tek.ui&quot;
@@ -1562,28 +1590,25 @@ ui.Application:new { ...
 							<a href="#ui:loadClass"><code>ui.loadClass()</code></a> - Loads a named class
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ui:loadImage"><code>ui.loadImage()</code></a> - Loads an image (possibly from an image cache)
+							<a href="#ui:loadImage"><code>ui.loadImage()</code></a> - Retrieves an image (possibly from an image cache)
 						</li>
 						<li style="list-style-type: none">
 							<a href="#ui:loadLibrary"><code>ui.loadLibrary()</code></a> - Loads a library
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ui:loadStyleSheet"><code>ui.loadStyleSheet()</code></a> - Loads and parse a style sheet file
+							<a href="#ui:loadStyleSheet"><code>ui.loadStyleSheet()</code></a> - Loads and parses a style sheet file
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ui:loadTable"><code>ui.loadTable()</code></a> - Tries to load a table from standard paths
+							<a href="#ui:loadTable"><code>ui.loadTable()</code></a> - Loads a table from some standard path
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ui:require"><code>ui.require()</code></a> - Loads a user interface class
+							<a href="#ui:require"><code>ui.require()</code></a> - Loads an user interface class
 						</li>
 						<li style="list-style-type: none">
 							<a href="#ui:resolveKeyCode"><code>ui.resolveKeyCode()</code></a> - Converts a keycode into keys and qualifiers
 						</li>
 						<li style="list-style-type: none">
 							<a href="#ui:sourceTable"><code>ui.sourceTable()</code></a> - Loads a file as a Lua source, returning a table
-						</li>
-						<li style="list-style-type: none">
-							<a href="#ui:testFlag"><code>ui.testFlag()</code></a> - Tests a bit in a flags field
 						</li>
 					</ul>
 				</blockquote>
@@ -1596,19 +1621,9 @@ ui.Application:new { ...
 							<blockquote>
 								<ul>
 									<li style="list-style-type: none">
-										This constant is used to express a &quot;huge&quot; spatial extent on a
-										given axis, e.g. <code>Width = ui.HUGE</code>.
-									</li>
-								</ul>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>NULLOFFS</code> 
-							<blockquote>
-								<ul>
-									<li style="list-style-type: none">
-										A table with the contents <code> { 0, 0, 0, 0 } </code> (read-only),
-										used e.g. for <em>Null</em> borders, margins and paddings.
+										This constant is used to express a 'huge' spatial extent on a
+										given axis, e.g. <code>Width = ui.HUGE</code> indicates that you wish no
+										specific size limit on the X axis.
 									</li>
 								</ul>
 							</blockquote>
@@ -1817,62 +1832,60 @@ ui.Application:new { ...
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="ui:createHook" id="ui:createHook"><code>hookobject = createHook(domain, classname, parent[, object])</code></a></h3>
+		<div class="node"><h3><a name="ui:createHook" id="ui:createHook"><code>hookobject = ui.createHook(realm, classname, parent[, table])</code></a></h3>
 			<p>
 				Loads a
-				class of the given <code>domain</code> and <code>classname</code>, instantiates it
-				(optionally passing it <code>object</code> for initialization), connects it to
-				the specified <code>parent</code> element, and initializes it using its
-				<code>setup()</code> method. If <code>classname</code> is the pre-defined name <code>&quot;none&quot;</code>,
-				this function returns <strong>false</strong>. Refer also to <a href="#loadClass"><code>loadClass()</code></a> for
-				further details.
+				class of the given <code>realm</code> and <code>classname</code>, instantiates it (optionally
+				passing it <code>table</code> for initialization), connects it to the specified
+				<code>parent</code> element, and calls its <code>setup()</code> method. If <code>classname</code> is
+				the pre-defined name <code>&quot;none&quot;</code>, this function returns <strong>false</strong>. Refer
+				also to <a href="#ui:loadClass"><code>ui.loadClass()</code></a> for further details.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:destroyHook" id="ui:destroyHook"><code>false = destroyHook([hookobject])</code></a></h3>
+		<div class="node"><h3><a name="ui:destroyHook" id="ui:destroyHook"><code>false = ui.destroyHook([hookobject])</code></a></h3>
 			<p>
-				Destroys a hook object by invoking its
-				<code>cleanup()</code> and <code>disconnect()</code> methods. Always returns <strong>false</strong>.
+				Destroys a hook object by invoking
+				its <code>cleanup()</code> and <code>disconnect()</code> methods. Always returns <strong>false</strong>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:extractKeyCode" id="ui:extractKeyCode"><code>extractKeyCode(string[, shortcutmark])</code></a></h3>
+		<div class="node"><h3><a name="ui:extractKeyCode" id="ui:extractKeyCode"><code>ui.extractKeyCode(string[, shortcutmark])</code></a></h3>
 			<p>
 				Extract a shortcut character
 				from a string. The default shortcut marker is an underscore.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:getLocale" id="ui:getLocale"><code>catalog = getLocale(appid[, vendordomain[, deflang[, language]]])</code></a></h3>
+		<div class="node"><h3><a name="ui:getLocale" id="ui:getLocale"><code>catalog = ui.getLocale(appid[, vendordomain[, deflang[, language]]])</code></a></h3>
 			<p>
-				Returns
-				a table of locale strings for the given application Id and vendor domain.
-				<code>deflang</code> (default: &quot;en&quot;) is used as the default language code if a
-				catalog for the requested language is unavailable. If no <code>language</code> 
-				code is specified, then the preferred language will be obtained from the
-				operating system or desktop environment. If no catalog file was found
-				or otherwise non-existent keys are used to access the resulting catalog,
-				the key will be mirrored with underscores turned into spaces; for
+				Returns a table of locale strings for the given application Id and vendor
+				domain. <code>deflang</code> (default: <code>&quot;en&quot;</code>) is used as the default language
+				code if a catalog for the requested language is unavailable. If no
+				<code>language</code> code is specified, then the preferred language will be
+				obtained from the operating system or desktop environment. If no catalog
+				file was found or non-existent keys are used to access the resulting
+				catalog, the key will be echoed with underscores turned into spaces; for
 				example, if <code>catalog</code> contained no string for the given key, accessing
-				<code>catalog.HELLO_WORLD</code> would return the string &quot;HELLO WORLD&quot;.
+				<code>catalog.HELLO_WORLD</code> would return the string <code>&quot;HELLO WORLD&quot;</code>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:getStockImage" id="ui:getStockImage"><code>imgobject = getStockImage(name, ...)</code></a></h3>
+		<div class="node"><h3><a name="ui:getStockImage" id="ui:getStockImage"><code>imgobject = ui.getStockImage(name, ...)</code></a></h3>
 			<p>
-				Creates an image object of a named
-				class, corresponding to classes found in <code>tek/ui/image</code>. Extra arguments
-				are passed on as <code>imageclass:new(...)</code>.
+				Creates an image object of a
+				named class, corresponding to classes found in <code>tek/ui/image</code>. Extra
+				arguments are passed on as <code>imageclass:new(...)</code>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:loadClass" id="ui:loadClass"><code>class = loadClass(domain, classname[, min_version])</code></a></h3>
+		<div class="node"><h3><a name="ui:loadClass" id="ui:loadClass"><code>class = ui.loadClass(realm, classname[, min_version])</code></a></h3>
 			<p>
-				Loads a class of the given <code>classname</code> from the specified <code>domain</code>,
-				optionally with a minimum version requirement.
-				Returns the loaded class or <strong>false</strong> if the class or domain name is
-				unknown, if the (major) version cannot be satisfied, or if an error
-				occured in the module. Currently defined values for <code>domain</code> are:
+				Loads a class of the given <code>classname</code> from the specified <code>realm</code>,
+				and optionally with a minimum version requirement.
+				Returns the loaded class or <strong>false</strong> if the class or realm is
+				unknown, if the version requirement cannot be satisfied, or if an error
+				occured in the module. Currently defined values for <code>realm</code> are:
 			</p>
 			<blockquote>
 				<ul>
@@ -1895,7 +1908,7 @@ ui.Application:new { ...
 			</blockquote>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:loadImage" id="ui:loadImage"><code>imgobject = loadImage(name)</code></a></h3>
+		<div class="node"><h3><a name="ui:loadImage" id="ui:loadImage"><code>imgobject = ui.loadImage(name)</code></a></h3>
 			<p>
 				Loads an image from a file or retrieves
 				it from the image cache. Note that currently only the PPM file format is
@@ -1903,23 +1916,25 @@ ui.Application:new { ...
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:loadLibrary" id="ui:loadLibrary"><code>loadLibrary(name[, version])</code></a></h3>
+		<div class="node"><h3><a name="ui:loadLibrary" id="ui:loadLibrary"><code>ui.loadLibrary(name[, version])</code></a></h3>
 			<p>
-				Loads a library with at least the specified
-				major version, from a local or global path starting with <code>tek/lib</code>.
+				Loads a library with at least the
+				specified major version, from a local or global path starting with
+				<code>tek/lib</code>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:loadStyleSheet" id="ui:loadStyleSheet"><code>properties, msg = loadStyleSheet(name)</code></a></h3>
+		<div class="node"><h3><a name="ui:loadStyleSheet" id="ui:loadStyleSheet"><code>properties, msg = ui.loadStyleSheet(file)</code></a></h3>
 			<p>
-				This function loads a style sheet
-				and parses it into a table of style classes with properties. If
-				parsing failed, the return value is <strong>false</strong> and <code>msg</code> contains
-				an error message.
+				This function loads a style
+				sheet from the specified file (which can be a name or an open file handle),
+				and parses it into a table of style classes with properties. If parsing
+				failed, the return value is <strong>false</strong> and <code>msg</code> contains an error
+				message.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:loadTable" id="ui:loadTable"><code>table, msg = loadTable(fname)</code></a></h3>
+		<div class="node"><h3><a name="ui:loadTable" id="ui:loadTable"><code>table, msg = ui.loadTable(fname)</code></a></h3>
 			<p>
 				This function tries to load a file from
 				the various possible locations as defined by <code>ui.LocalPath</code>, interpretes
@@ -1928,55 +1943,45 @@ ui.Application:new { ...
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:require" id="ui:require"><code>require(name[, version])</code></a></h3>
+		<div class="node"><h3><a name="ui:require" id="ui:require"><code>ui.require(name[, version])</code></a></h3>
 			<p>
-				Loads an user interface class with at least the
-				specified major version. This function is a shortcut for
+				Loads an user interface class with at least
+				the specified major version. This function is a shortcut for
 				<code>ui.loadClass(&quot;class&quot;, ...)</code> - see <a href="#ui:loadClass"><code>ui.loadClass()</code></a> for more details.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:resolveKeyCode" id="ui:resolveKeyCode"><code>key, quals = resolveKeyCode(code)</code></a></h3>
+		<div class="node"><h3><a name="ui:resolveKeyCode" id="ui:resolveKeyCode"><code>key, quals = ui.resolveKeyCode(code)</code></a></h3>
 			<p>
 				Resolves a combined keycode specifier
 				(e.g. <code>&quot;Ctrl+Shift+Q&quot;</code>) into a key string and a table of qualifier codes.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ui:sourceTable" id="ui:sourceTable"><code>table, msg = sourceTable(file[, environment])</code></a></h3>
+		<div class="node"><h3><a name="ui:sourceTable" id="ui:sourceTable"><code>table, msg = ui.sourceTable(file[, environment])</code></a></h3>
 			<p>
-				Interprete a file as a Lua
-				source, containing the keys and values forming a table. If <code>file</code> is a
-				string, it will be used for opening and reading the named file, otherwise
+				Interprete a file as a
+				Lua source, containing the keys and values forming a table. If <code>file</code> is
+				a string, it will be used for opening and reading the named file, otherwise
 				it will be assumed to be an open file handle. Either way, the file will
 				be read using the <code>file:read(&quot;*a&quot;)</code> method and closed afterwards.
 				By default, the source will be executed in an empty environment, unless
 				an environment is specified. The resulting table is returned to the
 				caller, or <strong>nil</strong> followed by an error message.
 			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="ui:testFlag" id="ui:testFlag"><code>testFlag(flag, field)</code></a></h3>
-			<p>
-				Test a bit flag in a flags field
-			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v27.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v29.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
 						<a href="#tek.ui.class.family">Family</a> /
-						Application
+						Application 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
-						This class implements the framework's entrypoint and main loop.
+						This class implements tekUI's application, entrypoint and main loop.
 					</p>
 				</blockquote>
 			</div>
@@ -2021,6 +2026,29 @@ ui.Application:new {
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
+							<code>AuthorStyles &#091;IG&#093;</code> (string)
+							<blockquote>
+								<p>
+									A string containing style sheet notation, overlaying all other
+									properties, including those retrieved using the
+									<code>AuthorStyleSheets</code> attribute.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>AuthorStyleSheets &#091;IG&#093;</code> (string)
+							<blockquote>
+								<p>
+									A string containing the names of author style sheet files
+									overlaying user and user agent styles. Multiple style
+									sheets are separated by spaces. The last style sheet has the
+									highest precedence, e.g. <code>&quot;desktop texture&quot;</code> would load the
+									style sheets <code>desktop.css</code> and <code>texture.css</code>, placing
+									<code>texture.css</code> on top of the cascade.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>Copyright &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
@@ -2044,7 +2072,7 @@ ui.Application:new {
 								<p>
 									An uniquely identifying domain name of the vendor, organization
 									or author manufacturing the application (preferrably without
-									domain parts like <code>&quot;www.&quot;</code> if they are insignificant for
+									domain parts like <code>&quot;www.&quot;</code> if they are not significant for
 									identification). Default is <code>&quot;unknown&quot;</code>.
 								</p>
 							</blockquote>
@@ -2054,12 +2082,11 @@ ui.Application:new {
 							<blockquote>
 								<p>
 									The application can perform a garbage collection of the specified
-									type immediately before going to sleep waiting for input. If set
+									type directly before getting suspended waiting for input. If set
 									to <strong>false</strong>, no explicit garbage collection is initiated. If
 									the value is <strong>true</strong> or <code>&quot;step&quot;</code>, the application performs a
-									single garbage collection <em>step</em>. Other values (e.g.
-									<code>&quot;collect&quot;</code>) are passed unmodified to <code>collectgarbage()</code>.
-									Default: <strong>true</strong> 
+									single garbage collection step. Other values (e.g. <code>&quot;collect&quot;</code>)
+									are passed unmodified to <code>collectgarbage()</code>. Default: <strong>true</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -2074,37 +2101,11 @@ ui.Application:new {
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Status &#091;G&#093;</code> (string) (string)
+							<code>Status &#091;G&#093;</code> (string)
 							<blockquote>
 								<p>
 									Status of the application, can be <code>&quot;init&quot;</code>, <code>&quot;error&quot;</code>,
 									<code>&quot;run&quot;</code>, <code>&quot;quit&quot;</code>.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Theme &#091;IG&#093;</code> (string)
-							<blockquote>
-								<p>
-									Name of a theme, which usually maps to an equally named
-									style sheet file (with the extension &quot;.css&quot;) under
-									<code>tek/ui/style/</code>.
-									Themes with reserved meaning are:
-								</p>
-								<blockquote>
-									<ul>
-										<li style="list-style-type: none">
-											<code>&quot;internal&quot;</code>: Uses the hardcoded internal style properties
-											and does not try to load a style sheet file.
-										</li>
-										<li style="list-style-type: none">
-											<code>&quot;desktop&quot;</code>: Tries to import the desktop's color scheme,
-											besides trying to load a style sheet named <code>&quot;desktop.css&quot;</code>.
-										</li>
-									</ul>
-								</blockquote>
-								<p>
-									Default: <code>&quot;desktop&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -2368,19 +2369,20 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v29.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v36.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
 						<a href="#tek.class.object">Object</a> /
-						<a href="#tek.ui.class.element">Element</a> / Area
+						<a href="#tek.ui.class.element">Element</a> /
+						Area / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.class.floattext">FloatText</option><option value="#tek.ui.class.frame">Frame</option></select>
 					</p>
 					<p>
 						This is the base class of all visible user interface elements.
-						It implements an outer margin, layouting, drawing, and the
-						relationships to its neighbours.
+						It implements an outer margin, layouting, painting, and the
+						relationships to its neighbour elements.
 					</p>
 				</blockquote>
 			</div>
@@ -2392,50 +2394,26 @@ message = function(object, message)
 							<blockquote>
 								<p>
 									When the element receives the focus, this flag instructs it to
-									position itself automatically into the visible area of any Canvas
+									automatically position itself into the visible area of any Canvas
 									that may contain it. An affected <a href="#tek.ui.class.canvas">Canvas</a> 
 									must have its <code>AutoPosition</code> attribute enabled as well for this
-									option to take effect, but unlike the Area class, the Canvas
-									disables it by default.
+									option to take effect (but unlike the Area class, in a Canvas it
+									is disabled by default).
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>BGColor &#091;IG&#093;</code> (color specification)
+							<code>BGPen &#091;G&#093;</code> (color specification)
 							<blockquote>
 								<p>
-									A color specification for painting the background of the element.
-									Valid are predefined color numbers (e.g. <code>ui.PEN_DETAIL</code>),
-									predefined color names (e.g. <code>&quot;detail&quot;</code>, see also
-									<a href="#tek.ui.class.display">Display</a> for more), or a direct
-									hexadecimal RGB specification (e.g. <code>&quot;#334455&quot;</code>, <code>&quot;#f0f&quot;</code>.
-									This attribute is controllable via the <code>background-color</code> style
-									property.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>BGPosition &#091;IG&#093;</code> (boolean or string)
-							<blockquote>
-								<p>
-									Kind of anchoring for a possible background image or texture:
-								</p>
-								<blockquote>
-									<ul>
-										<li>
-											<code>&quot;scollable&quot;</code> or <strong>false</strong> - The texture is anchored to
-											the element and during scrolling moves with it.
-										</li>
-										<li>
-											<code>&quot;fixed&quot;</code> - The texture is anchored to the Window.
-										</li>
-									</ul>
-								</blockquote>
-								<p>
-									Note that repainting elements with <code>&quot;fixed&quot;</code> anchoring can be
-									expensive. This variant should be used sparingly, and some classes
-									may implement it incompletely or incorrectly. This attribute can
-									be controlled using the <code>background-position</code> attribute.
+									The current color (or texture) for painting the element's
+									background. This value is set in <a href="#Area:setState"><code>Area:setState()</code></a>, where it is
+									derived from the element's current state and the
+									<em>background-color</em> style property. Valid are color names (e.g.
+									<code>&quot;detail&quot;</code>, <code>&quot;fuchsia&quot;</code>, see also
+									<a href="#tek.ui.class.display">Display</a> for more), a hexadecimal RGB
+									specification (e.g. <code>&quot;#334455&quot;</code>, <code>&quot;#f0f&quot;</code>), or an image URL
+									in the form <code>&quot;url(...)&quot;</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -2457,13 +2435,53 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
+							<code>Drawable &#091;G&#093;</code> (<a href="#tek.ui.class.drawable">Drawable</a>)
+							<blockquote>
+								<p>
+									The Drawable for rendering, set during <a href="#Area:show"><code>Area:show()</code></a> and cleared
+									during <a href="#Area:hide"><code>Area:hide()</code></a>.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>EraseBG &#091;IG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element's background is painted automatically
 									using the <a href="#Area:erase"><code>Area:erase()</code></a> method. Set this attribute to <strong>false</strong> to
-									indicate that you wish to paint the background yourself.
+									indicate that you wish to paint the background yourself in the
+									<a href="#Area:draw"><code>Area:draw()</code></a> method.
 								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Flags &#091;SG&#093;</code> (Flags field)
+							<blockquote>
+								<p>
+									This attribute holds various status flags:
+								</p>
+								<ul>
+									<li style="list-style-type: none">
+										<code>FL_SETUP</code> - Set in <a href="#Area:setup"><code>Area:setup()</code></a> and cleared in <a href="#Area:cleanup"><code>Area:cleanup()</code></a> 
+									</li>
+									<li style="list-style-type: none">
+										<code>FL_LAYOUT</code> - Set in <a href="#Area:layout"><code>Area:layout()</code></a>, cleared in <a href="#Area:cleanup"><code>Area:cleanup()</code></a> 
+									</li>
+									<li style="list-style-type: none">
+										<code>FL_SHOW</code> - Set in <a href="#Area:show"><code>Area:show()</code></a>, cleared in <a href="#Area:hide"><code>Area:hide()</code></a> 
+									</li>
+									<li style="list-style-type: none">
+										<code>FL_REDRAW</code> - Set in <a href="#Area:layout"><code>Area:layout()</code></a>, <a href="#Area:damage"><code>Area:damage()</code></a>,
+										<a href="#Area:setState"><code>Area:setState()</code></a> and possibly other places to indicate that the
+										element needs to be repainted. Cleared in <a href="#Area:draw"><code>Area:draw()</code></a>.
+									</li>
+									<li style="list-style-type: none">
+										<code>FL_CHANGED</code> - This flag indicates that the contents of an
+										element have changed, i.e. when children were added to a group,
+										or when setting a new text or image should cause a recalculation
+										of its size.
+									</li>
+								</ul>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
@@ -2472,8 +2490,9 @@ message = function(object, message)
 								<p>
 									If <strong>true</strong>, the element has the input focus. This attribute
 									is handled by the <a href="#tek.ui.class.gadget">Gadget</a> class. Note:
-									The <code>Focus</code> attribute cannot be initialized; see also the
-									<a href="#tek.ui.class.gadget">InitialFocus</a> attribute.
+									The <code>Focus</code> attribute represents the current state, if you want
+									to place the initial focus on an element, use the <code>InitialFocus</code> 
+									attribute in the <a href="#tek.ui.class.gadget">Gadget</a> class.
 								</p>
 							</blockquote>
 						</li>
@@ -2482,13 +2501,12 @@ message = function(object, message)
 							<blockquote>
 								<p>
 									Horizontal alignment of the element in its group. This attribute
-									can be controlled using the <code>horizontal-grid-align</code> attribute.
+									can be controlled using the <code>halign</code> attribute.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Height &#091;IG&#093;</code> (number, <strong>false</strong>, <code>&quot;auto&quot;</code>, <code>&quot;fill&quot;</code>,
-							<code>&quot;free&quot;</code>)
+							<code>Height &#091;IG&#093;</code> (number, <strong>false</strong>, <code>&quot;fill&quot;</code>, <code>&quot;free&quot;</code>)
 							<blockquote>
 								<p>
 									Height of the element, in pixels, or
@@ -2500,16 +2518,11 @@ message = function(object, message)
 											default will be used
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;auto&quot;</code> - Reserves the minimal height needed for the
-											element.
-										</li>
-										<li style="list-style-type: none">
 											<code>&quot;free&quot;</code> - Allows the element's height to grow to any size.
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;fill&quot;</code> - Completely fills up the height that other
-											elements in the same group have left, but does not claim more.
-											This value is useful only once per group.
+											<code>&quot;fill&quot;</code> - Completely fills up the height that is available
+											in the group, but does not claim more.
 										</li>
 									</ul>
 								</blockquote>
@@ -2526,17 +2539,6 @@ message = function(object, message)
 									If <strong>true</strong>, the element is in highlighted state. This
 									attribute is handled by the <a href="#tek.ui.class.gadget">Gadget</a> 
 									class.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Margin &#091;IG&#093;</code> (table)
-							<blockquote>
-								<p>
-									An array of four offsets for the element's outer margin in the
-									order left, right, top, bottom &#091;pixels&#093;. If unspecified during
-									initialization, the class' default margins are used. This
-									attribute is controllable via the <code>margin</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -2581,18 +2583,6 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Padding &#091;IG&#093;</code> (table)
-							<blockquote>
-								<p>
-									An array of four offsets for the element's inner padding in the
-									order left, right, top, bottom &#091;pixels&#093;. If unspecified during
-									initialization, the class' default paddings are used.
-									This attribute is controllable via the <code>padding</code> style
-									property.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
 							<code>Selected &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
@@ -2607,7 +2597,7 @@ message = function(object, message)
 								<p>
 									If <strong>true</strong>, the element collects intra-area damages in a
 									<a href="#tek.lib.region">Region</a> named <code>DamageRegion</code>, which can be
-									used by class writers to implement minimally invasive repaints.
+									used by class writers to implement minimally invasive repainting.
 									Default: <strong>false</strong>, the element is repainted in its entirety.
 								</p>
 							</blockquote>
@@ -2617,7 +2607,7 @@ message = function(object, message)
 							<blockquote>
 								<p>
 									Vertical alignment of the element in its group. This attribute
-									can be controlled using the <code>vertical-grid-align</code> attribute.
+									can be controlled using the <code>valign</code> attribute.
 								</p>
 							</blockquote>
 						</li>
@@ -2632,8 +2622,7 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Width &#091;IG&#093;</code> (number, <strong>false</strong>, <code>&quot;auto&quot;</code>, <code>&quot;fill&quot;</code>,
-							<code>&quot;free&quot;</code>)
+							<code>Width &#091;IG&#093;</code> (number, <strong>false</strong>, <code>&quot;fill&quot;</code>, <code>&quot;free&quot;</code>)
 							<blockquote>
 								<p>
 									Width of the element, in pixels, or
@@ -2645,20 +2634,17 @@ message = function(object, message)
 											default will be used
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;auto&quot;</code> - Reserves the minimal width needed for the
-											element
-										</li>
-										<li style="list-style-type: none">
 											<code>&quot;free&quot;</code> - Allows the element's width to grow to any size
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;fill&quot;</code> - Completely fills up the width that other
-											elements in the same group have left, but does not claim more.
+											<code>&quot;fill&quot;</code> - Completely fills up the width that is available
+											in the group, but does not claim more.
 										</li>
 									</ul>
 								</blockquote>
 								<p>
-									Note: Normally, &quot;fill&quot; is useful only once per group.
+									This attribute can be controlled using the <code>width</code> style
+									property.
 								</p>
 							</blockquote>
 						</li>
@@ -2666,212 +2652,168 @@ message = function(object, message)
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<ul>
-					<li style="list-style-type: none">
-						<table>
-							<tr>
-								<td class="column1">
-									<em>background-color</em> 
-								</td>
-								<td class="column2">
-									controls the <code>Area.BGColor</code> attribute
-								</td>
-							</tr>
-							<ul>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>background-position</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.BGPosition</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>height</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Height</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>horizontal-grid-align</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.HAlign</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>margin</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Margin</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>margin-bottom</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Margin</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>margin-left</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Margin</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>margin-right</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Margin</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>margin-top</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Margin</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>max-height</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.MaxHeight</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>max-width</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.MaxWidth</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>min-height</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.MinHeight</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>min-width</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.MinWidth</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>padding</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Padding</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>padding-bottom</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Padding</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>padding-left</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Padding</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>padding-right</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Padding</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>padding-top</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Padding</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>vertical-grid-align</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.VAlign</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>width</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Area.Width</code> attribute
-										</td>
-									</tr>
-								</li>
-							</ul>
-						</table>
-					</li>
-				</ul>
+				<blockquote>
+					<table>
+						<tr>
+							<td class="column1">
+								<em>background-attachment</em> 
+							</td>
+							<td class="column2">
+								<code>&quot;scollable&quot;</code> or <code>&quot;fixed&quot;</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>background-color</em> 
+							</td>
+							<td class="column2">
+								Controls <code>Area.BGPen</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>fixed</em> 
+							</td>
+							<td class="column2">
+								fixed layouter coordinates: <code>&quot;left top right bottom&quot;</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>halign</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Area.HAlign</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>height</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Area.Height</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>margin-bottom</em> 
+							</td>
+							<td class="column2">
+								the element's bottom margin, in pixels
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>margin-left</em> 
+							</td>
+							<td class="column2">
+								the element's left margin, in pixels
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>margin-right</em> 
+							</td>
+							<td class="column2">
+								the element's right margin, in pixels
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>margin-top</em> 
+							</td>
+							<td class="column2">
+								the element's top margin, in pixels
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>max-height</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Area.MaxHeight</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>max-width</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Area.MaxWidth</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>min-height</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Area.MinHeight</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>min-width</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Area.MinWidth</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>padding-bottom</em> 
+							</td>
+							<td class="column2">
+								the element's bottom padding
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>padding-left</em> 
+							</td>
+							<td class="column2">
+								the element's left padding
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>padding-right</em> 
+							</td>
+							<td class="column2">
+								the element's right padding
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>padding-top</em> 
+							</td>
+							<td class="column2">
+								the element's top padding
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>valign</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Area.VAlign</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>width</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Area.Width</code> attribute
+							</td>
+						</tr>
+					</table>
+					<p>
+						Note that repainting elements with a <code>&quot;fixed&quot;</code> 
+						<em>background-attachment</em> can be expensive. This variant should be
+						used sparingly, and some classes may implement it incompletely or
+						incorrectly.
+					</p>
+				</blockquote>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
@@ -2890,6 +2832,12 @@ message = function(object, message)
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:draw"><code>Area:draw()</code></a> - Paints the element
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> - Prepares the rendering context
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:drawEnd"><code>Area:drawEnd()</code></a> - Reverts the changes made in <a href="#drawBegin"><code>drawBegin()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:erase"><code>Area:erase()</code></a> - Erases the element's background
@@ -2914,6 +2862,9 @@ message = function(object, message)
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getNext"><code>Area:getNext()</code></a> - Gets the element's successor in its group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getPadding"><code>Area:getPadding()</code></a> - Gets the element's paddings
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getParent"><code>Area:getParent()</code></a> - Gets the element's parent element
@@ -2941,19 +2892,13 @@ message = function(object, message)
 							<a href="#tek.lib.region">Region</a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> - Repaints the element if necessary
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:relayout"><code>Area:relayout()</code></a> - Relayouts the element if necessary
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:rethinkLayout"><code>Area:rethinkLayout()</code></a> - Causes a relayout of the element and its group
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> - Sets the background attribute of an element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:show"><code>Area:show()</code></a> - Connects the element to a Drawable
+							<a href="#Area:show"><code>Area:show()</code></a> - Connects the element to a Drawable, prepares drawing
 						</li>
 					</ul>
 				</blockquote>
@@ -2963,9 +2908,6 @@ message = function(object, message)
 					<ul>
 						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
@@ -2981,73 +2923,131 @@ message = function(object, message)
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Area:askMinMax" id="Area:askMinMax"><code>minw, minh, maxw, maxh = askMinMax(minw, minh, maxw, maxh)</code></a></h3>
+		<div class="node"><h3><a name="Area:askMinMax" id="Area:askMinMax"><code>minw, minh, maxw, maxh = Area:askMinMax(minw, minh, maxw, maxh)</code></a></h3>
 			<p>
 				This
 				method is called during the layouting process for adding the required
-				spatial extents (width and height) of this object to the min/max values
-				passed from a child class, before passing them on to its super class.
-				<code>minw</code>, <code>minh</code> are cumulative of the minimal size of the element,
-				while <code>maxw</code>, <code>maxw</code> collect the size the element is allowed to
-				expand to. Use <code>ui.HUGE</code> to indicate a (practically) unlimited size.
+				width and height to the minimum and maximum size of this object, before
+				passing the result on to its super class. <code>minw</code>, <code>minh</code> are
+				cumulative of the minimal size of the element, while <code>maxw</code>, <code>maxw</code> 
+				collect the size the element is allowed to expand to.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:checkFocus" id="Area:checkFocus"><code>can_receive = checkFocus()</code></a></h3>
+		<div class="node"><h3><a name="Area:checkFocus" id="Area:checkFocus"><code>can_receive = Area:checkFocus()</code></a></h3>
 			<p>
 				Returns <strong>true</strong> if this element can
 				receive the input focus.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:checkHover" id="Area:checkHover"><code>can_hover = checkHover()</code></a></h3>
+		<div class="node"><h3><a name="Area:checkHover" id="Area:checkHover"><code>can_hover = Area:checkHover()</code></a></h3>
 			<p>
 				Returns <strong>true</strong> if this element can
 				react on being hovered over by the pointing device.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:damage" id="Area:damage"><code>damage(x0, y0, x1, y1)</code></a></h3>
+		<div class="node"><h3><a name="Area:cleanup" id="Area:cleanup"><code>Area:cleanup()</code></a></h3>
+			<p>
+				Clears all temporary layouting data and the <code>FL_LAYOUT</code> 
+				and <code>FL_SETUP</code> flags, before passing on the call to <a href="#Element:cleanup"><code>Element:cleanup()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:damage" id="Area:damage"><code>Area:damage(x0, y0, x1, y1)</code></a></h3>
 			<p>
 				If the element overlaps with the given
-				rectangle, this function marks it as damaged.
+				rectangle, this function marks it as damaged by setting <code>ui.FL_REDRAW</code> 
+				in the element's <code>Flag</code> field. Additionally, if the element's
+				<code>TrackDamage</code> attribute is <strong>true</strong>, intra-area damage rectangles are
+				collected in <code>DamageRegion</code>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:draw" id="Area:draw"><code>draw()</code></a></h3>
+		<div class="node"><h3><a name="Area:draw" id="Area:draw"><code>success = Area:draw()</code></a></h3>
 			<p>
-				Draws the element into the rectangle assigned to it by
-				the layouter; the coordinates can be found in the element's <code>Rect</code> 
-				table. Note: Applications are not allowed to call this function directly.
+				If the element is slated for a repaint (indicated
+				by the presence of the flag <code>ui.FL_REDRAW</code> in the <code>Flags</code> field),
+				draws the element into the rectangle that was assigned to it by the
+				layouter, clears <code>ui.FL_REDRAW</code>, and returns <strong>true</strong>. If the
+				atttribute <code>EraseBG</code> is set, this function also clears the element's
+				background by calling <a href="#Area:erase"><code>Area:erase()</code></a>.
 			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Area:erase" id="Area:erase"><code>erase()</code></a></h3>
 			<p>
-				Clears the element's background.
+				When overriding this function, the control flow is roughly as follows:
+			</p>
+<pre>
+function ElementClass:draw()
+  if SuperClass.draw(self) then
+    -- your rendering here
+    return true
+  end
+end
+</pre>
+			<p>
+				There are rare occasions in which a class modifies the drawing context,
+				e.g. by setting a coordinate displacement. Such modifications must
+				be performed in <a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> and undone in <a href="#Area:drawEnd"><code>Area:drawEnd()</code></a>. Then, the
+				control flow looks like this:
+			</p>
+<pre>
+function ElementClass:draw()
+  if SuperClass.draw(self) and self:drawBegin() then
+    -- your rendering here
+    self:drawEnd()
+    return true
+  end
+end
+</pre>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:drawBegin" id="Area:drawBegin"><code>can_draw = Area:drawBegin()</code></a></h3>
+			<p>
+				Prepares the drawing context, returning a
+				boolean indicating success. This function must be overridden if a class
+				wishes to modify the drawing context, e.g. by installing a coordinate
+				displacement.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:focusRect" id="Area:focusRect"><code>moved = focusRect([x0, y0, x1, y1])</code></a></h3>
+		<div class="node"><h3><a name="Area:drawEnd" id="Area:drawEnd"><code>Area:drawEnd()</code></a></h3>
+			<p>
+				Reverts the changes made to the drawing context during
+				<a href="#Area:drawBegin"><code>Area:drawBegin()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:erase" id="Area:erase"><code>Area:erase()</code></a></h3>
+			<p>
+				Clears the element's background. This method is invoked by
+				<a href="#Area:draw"><code>Area:draw()</code></a> if the <code>EraseBG</code> attribute is set, and when a repaint is
+				both possible and necessary. <a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> has been called already
+				when this function is called, and <a href="#Area:drawEnd"><code>Area:drawEnd()</code></a> will be called afterwards.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:focusRect" id="Area:focusRect"><code>moved = Area:focusRect([x0, y0, x1, y1])</code></a></h3>
 			<p>
 				Tries to shift any Canvas
 				containing the element into a position that makes the element fully
 				visible. Optionally, a rectangle can be specified that is to be made
-				visible. If the return value (a boolean) indicates whether some kind
-				of repositioning has taken place.
+				visible. Returns <strong>true</strong> to indicate that some kind of repositioning
+				has taken place.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getBG" id="Area:getBG"><code>bgpen[, tx, ty] = getBG()</code></a></h3>
+		<div class="node"><h3><a name="Area:getBG" id="Area:getBG"><code>bgpen[, tx, ty] = Area:getBG()</code></a></h3>
 			<p>
 				Gets the element's background properties.
-				<code>bgpen</code> is the background pen (which may be a texture). If the element
-				background is scrollable, then <code>tx</code> and <code>ty</code> are the coordinates of
-				the texture origin, otherwise (if the background is fixed) <strong>nil</strong>.
+				<code>bgpen</code> is the background pen (which may be a texture). If the element's
+				<em>background-attachment</em> is <code>&quot;scrollable&quot;</code>, then <code>tx</code> and <code>ty</code> are
+				the coordinates of the texture origin, otherwise (if the attachment is
+				<code>&quot;fixed&quot;</code>) <strong>nil</strong>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getBGElement" id="Area:getBGElement"><code>element = getBGElement()</code></a></h3>
+		<div class="node"><h3><a name="Area:getBGElement" id="Area:getBGElement"><code>element = Area:getBGElement()</code></a></h3>
 			<p>
 				Returns the element that is responsible for
 				painting the surroundings (or the background) of the element. This
@@ -3056,33 +3056,35 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getByXY" id="Area:getByXY"><code>self = getByXY(x, y)</code></a></h3>
+		<div class="node"><h3><a name="Area:getByXY" id="Area:getByXY"><code>self = Area:getByXY(x, y)</code></a></h3>
 			<p>
 				Returns <code>self</code> if the element covers
 				the specified coordinate.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getChildren" id="Area:getChildren"><code>element = getChildren(init)</code></a></h3>
+		<div class="node"><h3><a name="Area:getChildren" id="Area:getChildren"><code>element = Area:getChildren(init)</code></a></h3>
 			<p>
 				Returns a table containing the element's
-				children, or <strong>nil</strong> if this element cannot have children. If the
-				optional <code>init</code> argument is <strong>true</strong>, this signals that this function
-				is called during initialization or deinitialization.
+				children, or <strong>nil</strong> if this element cannot have children. The optional
+				argument <code>init</code> is <strong>true</strong> when this function is called during
+				initialization or deinitialization - this can be used by some classes
+				that prefer hiding their children until they are needed. &#091;TODO&#093;
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getGroup" id="Area:getGroup"><code>element = getGroup(parent)</code></a></h3>
+		<div class="node"><h3><a name="Area:getGroup" id="Area:getGroup"><code>element = Area:getGroup(parent)</code></a></h3>
 			<p>
-				Returns the element's closest
-				<a href="#tek.ui.class.group">Group</a> containing it. If the <code>parent</code> argument
-				is <strong>true</strong>, this function will start looking for the closest group at
-				its parent (otherwise it returns itself if it is a group already). Returns
-				<strong>nil</strong> if the element is not currently connected.
+				Returns the closest
+				<a href="#tek.ui.class.group">Group</a> containing the element. If the <code>parent</code> 
+				argument is <strong>true</strong>, this function will start looking for the closest
+				group at its parent - otherwise, the element itself is returned if it is
+				a group already. Returns <strong>nil</strong> if the element is not currently
+				connected.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getNext" id="Area:getNext"><code>element = getNext()</code></a></h3>
+		<div class="node"><h3><a name="Area:getNext" id="Area:getNext"><code>table = Area:getNext()</code></a></h3>
 			<p>
 				Returns the next element in the group, or, if
 				the element has no successor, the next element in the parent group (and
@@ -3091,14 +3093,21 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getParent" id="Area:getParent"><code>element = getParent()</code></a></h3>
+		<div class="node"><h3><a name="Area:getPadding" id="Area:getPadding"><code>left, top, right, bottom = Area:getPadding()</code></a></h3>
+			<p>
+				Returns the element's
+				padding style properties.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getParent" id="Area:getParent"><code>element = Area:getParent()</code></a></h3>
 			<p>
 				Returns the element's parent element, or
 				<strong>false</strong> if it currently has no parent.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getPrev" id="Area:getPrev"><code>element = getPrev()</code></a></h3>
+		<div class="node"><h3><a name="Area:getPrev" id="Area:getPrev"><code>element = Area:getPrev()</code></a></h3>
 			<p>
 				Returns the previous element in the group, or,
 				if the element has no predecessor, the next element in the parent group
@@ -3107,31 +3116,31 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getRect" id="Area:getRect"><code>x0, y0, x1, y1 = getRect()</code></a></h3>
+		<div class="node"><h3><a name="Area:getRect" id="Area:getRect"><code>x0, y0, x1, y1, drawable = Area:getRect()</code></a></h3>
 			<p>
 				This function returns the
-				rectangle which the element has been layouted to, or <strong>false</strong> 
+				rectangle which the element has been layouted to, or <strong>nil</strong> 
 				if the element has not been layouted yet.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getSiblings" id="Area:getSiblings"><code>element = getSiblings()</code></a></h3>
+		<div class="node"><h3><a name="Area:getSiblings" id="Area:getSiblings"><code>table = Area:getSiblings()</code></a></h3>
 			<p>
 				Returns a table containing the element's
-				siblings (including the element itself). Returns <strong>nil</strong> if the element
-				is not currently connected. Note: The returned table must be treated
-				read-only.
+				siblings, which includes the element itself. Returns <strong>nil</strong> if the
+				element is not currently connected. Note: The returned table must be
+				treated read-only.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:hide" id="Area:hide"><code>hide()</code></a></h3>
+		<div class="node"><h3><a name="Area:hide" id="Area:hide"><code>Area:hide()</code></a></h3>
 			<p>
-				Clears a drawable from an element. Override this method to free
-				all display-related resources previously allocated in <a href="#Area:show"><code>Area:show()</code></a>.
+				Clears a drawable from an element. Override this method to
+				free all display-related resources previously allocated in <a href="#Area:show"><code>Area:show()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:layout" id="Area:layout"><code>changed = layout(x0, y0, x1, y1[, markdamage])</code></a></h3>
+		<div class="node"><h3><a name="Area:layout" id="Area:layout"><code>changed = Area:layout(x0, y0, x1, y1[, markdamage])</code></a></h3>
 			<p>
 				Layouts the element
 				into the specified rectangle. If the element's (or any of its childrens')
@@ -3140,7 +3149,7 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:passMsg" id="Area:passMsg"><code>msg = passMsg(msg)</code></a></h3>
+		<div class="node"><h3><a name="Area:passMsg" id="Area:passMsg"><code>msg = Area:passMsg(msg)</code></a></h3>
 			<p>
 				This function filters the specified input
 				message. After processing, it is free to return the message unmodified
@@ -3152,55 +3161,41 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:punch" id="Area:punch"><code>punch(region)</code></a></h3>
+		<div class="node"><h3><a name="Area:punch" id="Area:punch"><code>Area:punch(region)</code></a></h3>
 			<p>
-				Subtracts the element from (punching a
-				hole into) the specified Region. This function is called by the layouter.
+				Subtracts the element from (by punching a hole into)
+				the specified Region. This function is called by the layouter.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:refresh" id="Area:refresh"><code>refresh()</code></a></h3>
+		<div class="node"><h3><a name="Area:rethinkLayout" id="Area:rethinkLayout"><code>Area:rethinkLayout([repaint[, check_size]])</code></a></h3>
 			<p>
-				Redraws the element (and all possible children)
-				if they are marked as damaged. This function is called in the Window's
-				update procedure.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Area:relayout" id="Area:relayout"><code>found[, changed] = relayout(element, x0, y0, x1, y1)</code></a></h3>
-			<p>
-				Traverses the element tree searching for the specified element, and if
-				this class (or the class of one of its children) is responsible for it,
-				layouts it to the specified rectangle. Returns <strong>true</strong> if the element
-				was found and its layout updated. A secondary return value of <strong>true</strong> 
-				indicates whether relayouting actually caused a change, i.e. a damage to
-				the object.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Area:rethinkLayout" id="Area:rethinkLayout"><code>rethinkLayout([damage])</code></a></h3>
-			<p>
-				This method causes a relayout of the element and
-				possibly the <a href="#tek.ui.class.group">Group</a> in which it resides (and even
-				parent groups thereof if necessary). The optional numeric argument
-				<code>damage</code> indicates the kind of damage to apply to the element:
+				Slates an element (and its
+				children) for relayouting, which will occur during the next Window update
+				cycle. If the element's coordinates change, this will cause it to be
+				repainted. The parent element (usually a Group) will be checked as well,
+				so that it has the opportunity to update its FreeRegion.
+				The optional argument <code>repaint</code> can be used to specify additional hints:
 			</p>
 			<blockquote>
 				<ul>
 					<li style="list-style-type: none">
-						<code>0</code> - do not mark the element as damaged
+						<code>1</code> - marks the element for repainting unconditionally (not
+						implying possible children)
 					</li>
 					<li style="list-style-type: none">
-						<code>1</code> - slate the group (not its contents) for repaint &#091;default&#093;
-					</li>
-					<li style="list-style-type: none">
-						<code>2</code> - mark the whole group and its contents as damaged
+						<code>2</code> - marks the element (and all possible children) for repainting
+						unconditionally
 					</li>
 				</ul>
 			</blockquote>
+			<p>
+				The optional argument <code>check_size</code> (a boolean) can be used to
+				recalculate the element's minimum and maximum size requirements.
+			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:setState" id="Area:setState"><code>setState(bg)</code></a></h3>
+		<div class="node"><h3><a name="Area:setState" id="Area:setState"><code>Area:setState(bg)</code></a></h3>
 			<p>
 				Sets the <code>BGPen</code> attribute according to
 				the state of the element, and if it changed, slates the element
@@ -3208,7 +3203,16 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:show" id="Area:show"><code>show(drawable)</code></a></h3>
+		<div class="node"><h3><a name="Area:setup" id="Area:setup"><code>Area:setup(app, win)</code></a></h3>
+			<p>
+				After passing the call on and returning from
+				<a href="#Element:setup"><code>Element:setup()</code></a>, initializes fields which are being used by <a href="#Area:layout"><code>Area:layout()</code></a>,
+				and sets <code>FL_SETUP</code> in the <code>Flags</code> field to indicate that the element
+				underwent its setup procedure.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:show" id="Area:show"><code>Area:show(drawable)</code></a></h3>
 			<p>
 				This function passes an element the
 				<a href="#tek.ui.class.drawable">Drawable</a> that it will be rendered to. This
@@ -3216,8 +3220,8 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.5)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.6)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -3228,12 +3232,8 @@ message = function(object, message)
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
-						Button
+						Button 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						The Button class implements a Text element with a <em>button mode</em> 
 						(behavior) and <em>button class</em> (appearance). In addition to that,
@@ -3261,8 +3261,8 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v21.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v25.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -3271,12 +3271,8 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.area">Frame</a> /
-						Canvas
+						Canvas 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a scrollable area acting as a managing container
 						for a child element. Currently, this class is used exclusively for
@@ -3473,9 +3469,6 @@ end
 							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:relayout"><code>Area:relayout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -3514,8 +3507,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v5.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v7.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -3526,12 +3519,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
-						CheckMark
+						CheckMark / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">1 subclasses</option><option value="#tek.ui.class.radiobutton">RadioButton</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						Specialization of the <a href="#tek.ui.class.text">Text</a> class,
 						implementing a toggle button with a graphical check mark.
@@ -3589,8 +3578,8 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v14.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v15.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -3601,12 +3590,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
-						DirList
+						DirList 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a directory lister.
 					</p>
@@ -3857,19 +3842,15 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v20.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v21.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
 						<a href="#tek.class.object">Object</a> /
-						Display
+						Display 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class manages a display.
 					</p>
@@ -4159,19 +4140,15 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v21.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v23.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
 						<a href="#tek.class.object">Object</a> /
-						Drawable
+						Drawable 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a graphical context that can be painted on.
 					</p>
@@ -4206,6 +4183,12 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:getTextSize"><code>Drawable:getTextSize()</code></a> - Determines the width and height of text
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Drawable:getWH"><code>Drawable:getWH()</code></a> - Gets the drawable's width and height
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Drawable:getXY"><code>Drawable:getXY()</code></a> - Gets the drawable's position
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Drawable:popClipRect"><code>Drawable:popClipRect()</code></a> - Pops the topmost cliprect from the drawable
@@ -4305,6 +4288,18 @@ end
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Drawable:getWH" id="Drawable:getWH"><code>w, h = Drawable:getWH()</code></a></h3>
+			<p>
+				Returns the drawable's width and height.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Drawable:getXY" id="Drawable:getXY"><code>x, y = Drawable:getXY()</code></a></h3>
+			<p>
+				Returns the drawable's x and y position.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Drawable:popClipRect" id="Drawable:popClipRect"><code>Drawable:popClipRect()</code></a></h3>
 			<p>
 				Pop the topmost cliprect from the Drawable.
@@ -4331,19 +4326,15 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v14.3)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v16.1)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
 						<a href="#tek.class.object">Object</a> /
-						Element
+						Element / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.class.area">Area</option><option value="#tek.ui.class.display">Display</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements the connection to a global environment and
 						the registration by Id.
@@ -4392,6 +4383,17 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
+							<code>Properties &#091;G&#093;</code> (table)
+							<blockquote>
+								<p>
+									A table of properties, resulting from element and user style
+									classes, overlaid with individual and direct formattings, and
+									finally from hardcoded element properties. This table is set up
+									during <a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a>.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>Style &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
@@ -4419,10 +4421,16 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Element:addStyleClass"><code>Element:addStyleClass()</code></a> - Appends a style class to an element
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> - Unlinks the element from its environment
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:connect"><code>Element:connect()</code></a> - Connects the element to a parent element
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a> - Decode the element's style properties
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:disconnect"><code>Element:disconnect()</code></a> - Disconnects the element from its parent
@@ -4432,15 +4440,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:getById"><code>Element:getById()</code></a> - Get Id of any registered element
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:getNumProperty"><code>Element:getNumProperty()</code></a> - Retrieves a numerical style property
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> - Retrieves an element's style properties
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:getProperty"><code>Element:getProperty()</code></a> - Retrieves a single style property
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> - Links the element to its environment
@@ -4475,6 +4474,13 @@ end
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Element:decodeProperties" id="Element:decodeProperties"><code>Element:decodeProperties(stylesheets)</code></a></h3>
+			<p>
+				This function decodes the element's
+				style properties and places them in the <code>Properties</code> table.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Element:disconnect" id="Element:disconnect"><code>Element:disconnect()</code></a></h3>
 			<p>
 				Disconnects the element from its parent.
@@ -4500,41 +4506,6 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Element:getNumProperty" id="Element:getNumProperty"><code>value = Element:getNumProperty(properties, pseudoclass, attribute)</code></a></h3>
-			<p>
-				Gets a
-				property and converts it to a number value. See also <a href="#Element:getProperty"><code>Element:getProperty()</code></a>.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Element:getProperties" id="Element:getProperties"><code>Element:getProperties(properties, pseudoclass)</code></a></h3>
-			<p>
-				This function is called
-				after connecting the element, for retrieving style properties from a
-				style sheet or from decoding the element's <code>Style</code> attribute
-				(<em>direct formatting</em>). It can be invoked multiple times with different
-				<code>properties</code> and pseudo classes.
-				When overriding this function, among the reasonable things to do is to
-				query properties using the <a href="#Element:getProperty"><code>Element:getProperty()</code></a> function, passing it the
-				<code>properties</code> and <code>pseudoclass</code> arguments. First recurse into your
-				super class with the pseudo classes your class defines (if any), and
-				finally pass the call to your super class with the <code>pseudoclass</code> you
-				received.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Element:getProperty" id="Element:getProperty"><code>value = Element:getProperty(properties, pseudoclass, attribute)</code></a></h3>
-			<p>
-				Returns
-				the value of a style <code>attribute</code> from the specified <code>properties</code> 
-				table, or <strong>false</strong> if the attribute is undefined. <code>pseudoclass</code> can
-				be the name of a pseudo class, <strong>false</strong> if no pseudo class is used, or
-				<strong>true</strong> for looking up the <code>attribute</code> in the <code>properties</code> table
-				directly (rather than in a sub table determined by the element's class -
-				this is used for direct formattings).
-			</p>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="Element:setup" id="Element:setup"><code>Element:setup(app, window)</code></a></h3>
 			<p>
 				This function is used to pass the element the
@@ -4544,18 +4515,14 @@ end
 			<hr class="page-break" />
 		</div>
 		<div class="node"><h2><a name="tek.ui.class.family" id="tek.ui.class.family">Family (v2.5)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
 						<a href="#tek.class.object">Object</a> /
-						Family
+						Family / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">1 subclasses</option><option value="#tek.ui.class.application">Application</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a container for child objects.
 					</p>
@@ -4607,8 +4574,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v12.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v16.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -4616,12 +4583,8 @@ end
 						<a href="#tek.class.object">Object</a> /
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
-						FloatText
+						FloatText 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						Implements a scrollable text display. An object of this class is
 						normally the immediate <code>Child</code> of a
@@ -4685,14 +4648,24 @@ end
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
 				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>color</code> - controls the <code>FloatText.FGColor</code> attribute
-						</li>
-						<li style="list-style-type: none">
-							<code>font</code> - controls the <code>FloatText.Font</code> attribute
-						</li>
-					</ul>
+					<table>
+						<tr>
+							<td class="column1">
+								<code>color</code> 
+							</td>
+							<td class="column2">
+								controls the <code>FloatText.FGColor</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<code>font</code> 
+							</td>
+							<td class="column2">
+								controls the <code>FloatText.Font</code> attribute
+							</td>
+						</tr>
+					</table>
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>OVERRIDES</dfn>
@@ -4711,9 +4684,6 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -4721,9 +4691,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
@@ -4753,8 +4720,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v12.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v16.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -4762,12 +4729,8 @@ end
 						<a href="#tek.class.object">Object</a> /
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
-						Frame
+						Frame / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">3 subclasses</option><option value="#tek.ui.class.canvas">Canvas</option><option value="#tek.ui.class.gadget">Gadget</option><option value="#tek.ui.class.spacer">Spacer</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements an element's borders. The <em>default</em> border
 						class handles up to three sub borders:
@@ -4787,12 +4750,11 @@ end
 							</li>
 							<li>
 								The <em>focus</em> border (in addition to the element's focus
-								highlighting style) can be used to visualize that the element
-								is currently receiving the input. This border is designed as
-								the outermost of the three sub borders. When the element is
-								in unfocused state, this border often appears in the same color
-								as the surrounding group, which makes it indistinguishable from
-								the background.
+								highlighting style) can be used to visualize that the element is
+								currently receiving the input. This border is the outermost of the
+								three sub borders. When the element is in unfocused state, this
+								border often appears in the same color as the surrounding group,
+								which makes it indistinguishable from the background.
 							</li>
 						</ul>
 					</blockquote>
@@ -4852,182 +4814,146 @@ end
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<ul>
-					<li style="list-style-type: none">
-						<table>
-							<tr>
-								<td class="column1">
-									<em>border-bottom-color</em> 
-								</td>
-								<td class="column2">
-									controls the <em>default</em> border class
-								</td>
-							</tr>
-							<ul>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-bottom-width</em> 
-										</td>
-										<td class="column2">
-											controls <code>Frame.Border</code> 
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-class</em> 
-										</td>
-										<td class="column2">
-											controls <code>Frame.BorderClass</code> 
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-color</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-focus-color</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-focus-width</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-left-color</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-left-width</em> 
-										</td>
-										<td class="column2">
-											controls <code>Frame.Border</code> 
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-legend-font</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-right-color</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-right-width</em> 
-										</td>
-										<td class="column2">
-											controls <code>Frame.Border</code> 
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-rim-color</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-rim-width</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-style</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-top-color</em> 
-										</td>
-										<td class="column2">
-											controls the <em>default</em> border class
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-top-width</em> 
-										</td>
-										<td class="column2">
-											controls <code>Frame.Border</code> 
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>border-width</em> 
-										</td>
-										<td class="column2">
-											controls <code>Frame.Border</code> 
-										</td>
-									</tr>
-								</li>
-							</ul>
-						</table>
-					</li>
-				</ul>
+				<blockquote>
+					<table>
+						<tr>
+							<td class="column1">
+								<em>border-bottom-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-bottom-width</em> 
+							</td>
+							<td class="column2">
+								controls <code>Frame.Border</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-class</em> 
+							</td>
+							<td class="column2">
+								controls <code>Frame.BorderClass</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-focus-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-focus-width</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-left-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-left-width</em> 
+							</td>
+							<td class="column2">
+								controls <code>Frame.Border</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-legend-font</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-right-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-right-width</em> 
+							</td>
+							<td class="column2">
+								controls <code>Frame.Border</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-rim-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-rim-width</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-style</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-top-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-top-width</em> 
+							</td>
+							<td class="column2">
+								controls <code>Frame.Border</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>border-width</em> 
+							</td>
+							<td class="column2">
+								controls <code>Frame.Border</code> 
+							</td>
+						</tr>
+					</table>
+				</blockquote>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
@@ -5054,9 +4980,6 @@ end
 							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -5064,9 +4987,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:punch"><code>Area:punch()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
@@ -5082,15 +5002,15 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>border = Frame:getBorder()</code></a></h3>
+		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>b1, b2, b3, b4 = Frame:getBorder()</code></a></h3>
 			<p>
-				Returns an element's border widths in the
-				order left, top, right, bottom.
+				Returns an element's border widths in
+				the order left, top, right, bottom.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v17.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v19.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -5099,12 +5019,8 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						Gadget
+						Gadget / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">4 subclasses</option><option value="#tek.ui.class.group">Group</option><option value="#tek.ui.class.handle">Handle</option><option value="#tek.ui.class.numeric">Numeric</option><option value="#tek.ui.class.text">Text</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements interactions with the user.
 					</p>
@@ -5306,170 +5222,136 @@ end
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<ul>
-					<li style="list-style-type: none">
-						<table>
-							<tr>
-								<td class="column1">
-									<em>color</em> 
-								</td>
-								<td class="column2">
-									controls the <code>Gadget.FGColor</code> attribute
-								</td>
-							</tr>
-							<ul>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-class</em> 
-										</td>
-										<td class="column2">
-											controls the <code>Gadget.EffectClass</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-color</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-color2</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-kind</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-maxnum</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-maxnum2</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-orientation</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-padding</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-ratio</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>effect-ratio2</em> 
-										</td>
-										<td class="column2">
-											controls the <em>ripple</em> effect hook
-										</td>
-									</tr>
-								</li>
-							</ul>
-						</table>
-					</li>
-				</ul>
+				<blockquote>
+					<table>
+						<tr>
+							<td class="column1">
+								<em>color</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Gadget.FGColor</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-class</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Gadget.EffectClass</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-color2</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-kind</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-maxnum</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-maxnum2</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-orientation</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-padding</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-ratio</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-ratio2</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+					</table>
+				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PSEUDO CLASSES</dfn>
-				<ul>
-					<li style="list-style-type: none">
-						<table>
-							<tr>
-								<td class="column1">
-									<em>active</em> 
-								</td>
-								<td class="column2">
-									for elements in active state
-								</td>
-							</tr>
-							<ul>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>disabled</em> 
-										</td>
-										<td class="column2">
-											for elements in disabled state
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>focus</em> 
-										</td>
-										<td class="column2">
-											for elements that have the focus
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>hover</em> 
-										</td>
-										<td class="column2">
-											for elements that are being hovered by the mouse
-										</td>
-									</tr>
-								</li>
-							</ul>
-						</table>
-					</li>
-				</ul>
+				<blockquote>
+					<table>
+						<tr>
+							<td class="column1">
+								<em>active</em> 
+							</td>
+							<td class="column2">
+								for elements in active state
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>disabled</em> 
+							</td>
+							<td class="column2">
+								for elements in disabled state
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>focus</em> 
+							</td>
+							<td class="column2">
+								for elements that have the focus
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>hover</em> 
+							</td>
+							<td class="column2">
+								for elements that are being hovered by the mouse
+							</td>
+						</tr>
+					</table>
+				</blockquote>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
@@ -5511,9 +5393,6 @@ end
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -5521,9 +5400,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
@@ -5588,8 +5464,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v8.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v12.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -5600,12 +5476,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.numeric">Numeric</a> /
-						Gauge
+						Gauge 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a gauge for the visualization of
 						numerical values.
@@ -5637,12 +5509,6 @@ end
 							<a href="#Numeric:onSetValue"><code>Numeric:onSetValue()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:relayout"><code>Area:relayout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -5656,8 +5522,8 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v23.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v27.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -5667,12 +5533,8 @@ end
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
-						Group
+						Group / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">6 subclasses</option><option value="#tek.ui.class.dirlist">DirList</option><option value="#tek.ui.class.listview">ListView</option><option value="#tek.ui.class.pagegroup">PageGroup</option><option value="#tek.ui.class.scrollbar">ScrollBar</option><option value="#tek.ui.class.scrollgroup">ScrollGroup</option><option value="#tek.ui.class.window">Window</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a container for child elements and
 						various layouting options.
@@ -5707,6 +5569,15 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
+							<code>Layout &#091;IG&#093;</code> (string or <a href="#tek.ui.class.layout">Layout</a>)
+							<blockquote>
+								<p>
+									The name of a layouter class (or a Layouter object) used for
+									layouting the element's children. Default: <code>&quot;default&quot;</code> 
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>Orientation &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
@@ -5715,15 +5586,15 @@ end
 								<blockquote>
 									<ul>
 										<li style="list-style-type: none">
-											&quot;horizontal&quot; - The elements are layouted horizontally
+											<code>&quot;horizontal&quot;</code> - The elements are layouted horizontally
 										</li>
 										<li style="list-style-type: none">
-											&quot;vertical&quot; - The elements are layouted vertically
+											<code>&quot;vertical&quot;</code> - The elements are layouted vertically
 										</li>
 									</ul>
 								</blockquote>
 								<p>
-									Default: &quot;horizontal&quot;
+									Default: <code>&quot;horizontal&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -5736,12 +5607,12 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>SameSize &#091;IG&#093;</code> (boolean/string)
+							<code>SameSize &#091;IG&#093;</code> (boolean, <code>&quot;width&quot;</code>, <code>&quot;height&quot;</code>)
 							<blockquote>
 								<p>
 									<strong>true</strong> indicates that the same width and height should
-									be reserved for all elements in the group; <code>&quot;width&quot;</code> 
-									and <code>&quot;height&quot;</code> specify that only the same width or
+									be reserved for all elements in the group; the keywords
+									<code>&quot;width&quot;</code> and <code>&quot;height&quot;</code> specify that only the same width or
 									height should be reserved, respectively. Default: <strong>false</strong> 
 								</p>
 							</blockquote>
@@ -5771,10 +5642,28 @@ end
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:damage"><code>Area:damage()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:erase"><code>Area:erase()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getBGElement"><code>Area:getBGElement()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getChildren"><code>Area:getChildren()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getGroup"><code>Area:getGroup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
@@ -5786,28 +5675,13 @@ end
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:damage"><code>Area:damage()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Class:new"><code>Class.new()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:punch"><code>Area:punch()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:relayout"><code>Area:relayout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:setState"><code>Area:setState()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:show"><code>Area:show()</code></a> 
@@ -5817,8 +5691,8 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v3.5)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v4.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -5828,14 +5702,10 @@ end
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
-						Handle
+						Handle 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
-						Implements a handle that can be dragged on the axis of the Group's
+						Implements a handle that can be dragged along the axis of the Group's
 						orientation. It reassigns Weights to its flanking elements.
 					</p>
 				</blockquote>
@@ -5872,8 +5742,57 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v23.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.layout" id="tek.ui.class.layout">Layout (v1.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> :
+						<a href="#tek.class">Class</a> /
+						Layout / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.layout.default">DefaultLayout</option><option value="#tek.ui.layout.fixed">FixedLayout</option></select>
+					</p>
+					<p>
+						A layouter implements a group's
+						layouting strategy. The <code>&quot;default&quot;</code> layouter implements a dynamic,
+						scalable layout, which adapts to the free space available to the
+						group.
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>IMPLEMENTS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Layout:layout"><code>Layout:layout()</code></a> - Layouts the group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Layout:askMinMax"><code>Layout:askMinMax()</code></a> - Queries the group's minimum and maximum
+							size requirements
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="Layout:askMinMax" id="Layout:askMinMax"><code>minw, minh, maxw, maxh = Layout:askMinMax(group, minw, minh, maxw, maxh)</code></a></h3>
+			<p>
+				This function queries the specified <a href="#tek.ui.class.group">Group</a> for
+				its size requirements.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Layout:layout" id="Layout:layout"><code>Layout:layout(group, x0, y0, x1, y1[, markdamage])</code></a></h3>
+			<p>
+				Layouts the <a href="#tek.ui.class.group">Group</a> into the specified
+				rectangle and calculates the new sizes and positions of all of its
+				children. The optional boolean <code>markdamage</code> is passed to subsequent
+				invocations of <a href="#Area:layout">child:layout()</a>. This function will
+				also call the <a href="#Area:punch">punch()</a> method on each child for
+				subtracting their new outlines from the group's <code>FreeRegion</code>.
+			</p>
+			<hr class="page-break" />
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v26.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -5884,12 +5803,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.gadget">Text</a> /
-						ListGadget
+						ListGadget 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a scrollable list or table. Each item in the
 						list is a table consisting of the following elements:
@@ -6249,8 +6164,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v5.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v5.2)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6261,12 +6176,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
-						ListView
+						ListView 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a <a href="#tek.ui.class.group">Group</a> containing
 						a <a href="#tek.ui.class.scrollgroup">ScrollGroup</a> and optionally a
@@ -6311,8 +6222,8 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v7.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v8.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6324,12 +6235,8 @@ end
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						<a href="#tek.ui.class.popitem">PopItem</a> /
-						MenuItem
+						MenuItem 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements basic, recursive items for window and popup
 						menus with a typical menu look; in particular, it displays the
@@ -6368,7 +6275,7 @@ end
 			</div>
 		</div>
 		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v1.6)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6378,12 +6285,8 @@ end
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
-						Numeric
+						Numeric / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.class.gauge">Gauge</option><option value="#tek.ui.class.slider">Slider</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements the management of numerical
 						values. Without further specialization it has hardly any real-life
@@ -6525,8 +6428,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v12.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v16.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6537,12 +6440,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
-						PageGroup
+						PageGroup 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						Implements a group whose children are layouted in individual
 						pages.
@@ -6621,8 +6520,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v11.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v15.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6633,12 +6532,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
-						PopItem
+						PopItem / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.class.menuitem">MenuItem</option><option value="#tek.ui.class.poplist">PopList</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class provides an anchorage for popups. This also works
 						recursively, i.e. elements of the PopItem class may contain other
@@ -6739,8 +6634,8 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v9.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v10.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6752,12 +6647,8 @@ end
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						<a href="#tek.ui.class.popitem">PopItem</a> /
-						PopList
+						PopList 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class is a specialization of a PopItem allowing the user
 						to choose an item from a list.
@@ -6839,8 +6730,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v4.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v4.2)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6852,12 +6743,8 @@ end
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
 						<a href="#tek.ui.class.group">Window</a> /
-						PopupWindow
+						PopupWindow 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class specializes a Window for the use by a
 						<a href="#tek.ui.class.popitem">PopItem</a>.
@@ -6882,7 +6769,7 @@ end
 			</div>
 		</div>
 		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v4.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6894,16 +6781,11 @@ end
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						<a href="#tek.ui.class.checkmark">CheckMark</a> /
-						RadioButton
+						RadioButton 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						Specialization of a <a href="#tek.ui.class.checkmark">CheckMark</a> to
-						implement mutually exclusive 'radio buttons'; they really make
-						sense only if more than one of their kind are grouped together.
+						implement mutually exclusive 'radio buttons'.
 					</p>
 				</blockquote>
 			</div>
@@ -6921,8 +6803,8 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v10.1)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v10.3)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -6932,13 +6814,9 @@ end
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
-						<a href="#tek.ui.class.group:">Group</a> /
-						ScrollBar
+						<a href="#tek.ui.class.group">Group</a> /
+						ScrollBar 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						Implements a group containing a
 						<a href="#tek.ui.class.slider">Slider</a> and arrow buttons.
@@ -7078,8 +6956,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v12.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v15.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -7090,12 +6968,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
-						ScrollGroup
+						ScrollGroup 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a group containing a scrollable
 						container and accompanying elements such as horizontal and vertical
@@ -7194,12 +7068,6 @@ end
 							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:relayout"><code>Area:relayout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
 					</ul>
@@ -7207,8 +7075,8 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v15.2)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v19.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -7219,12 +7087,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.numeric">Numeric</a> /
-						Slider
+						Slider 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a slider for adjusting a numerical value.
 					</p>
@@ -7343,12 +7207,6 @@ end
 							<a href="#Gadget:onHold"><code>Gadget:onHold()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:relayout"><code>Area:relayout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -7375,8 +7233,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v1.7)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v2.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -7385,12 +7243,8 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						Spacer
+						Spacer 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a separator that helps to arrange elements in
 						a group.
@@ -7401,18 +7255,15 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:show"><code>Area:show()</code></a> 
+							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v21.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v24.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -7422,12 +7273,8 @@ end
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
-						Text
+						Text / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">5 subclasses</option><option value="#tek.ui.class.button">Button</option><option value="#tek.ui.class.checkmark">CheckMark</option><option value="#tek.ui.class.listgadget">ListGadget</option><option value="#tek.ui.class.popitem">PopItem</option><option value="#tek.ui.class.textinput">TextInput</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements gadgets with text.
 					</p>
@@ -7436,49 +7283,6 @@ end
 			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
-						<li style="list-style-type: none">
-							<code>Font &#091;IG&#093;</code> (string)
-							<blockquote>
-								<p>
-									A font specification in the form
-								</p>
-<pre>
-&quot;&#091;fontname1,fontname2,...&#093;&#091;:&#093;&#091;size&#093;&quot;
-</pre>
-								<p>
-									Font names, if specified, will be probed in the order of their
-									occurence in the string; the first font that can be opened will be
-									used. For the font names, the following placeholders with
-									predefined meanings are supported:
-								</p>
-								<blockquote>
-									<ul>
-										<li>
-											<em>ui-fixed</em> - The default fixed font
-										</li>
-										<li>
-											<em>ui-main</em> or an empty string - The default main font,
-											e.g. for buttons and menus
-										</li>
-										<li>
-											<em>ui-small</em> - The default small font, e.g. for group
-											captions
-										</li>
-										<li>
-											<em>ui-large</em> - The default 'large' font
-										</li>
-										<li>
-											<em>ui-huge</em> - The default 'huge' font
-										</li>
-									</ul>
-								</blockquote>
-								<p>
-									If no font name is specified, the main font will be used.
-									The size specification (in pixels) is optional as well; if absent,
-									the respective font's default size will be used.
-								</p>
-							</blockquote>
-						</li>
 						<li style="list-style-type: none">
 							<code>KeepMinHeight &#091;IG&#093;</code> (boolean)
 							<blockquote>
@@ -7510,82 +7314,94 @@ end
 								</p>
 							</blockquote>
 						</li>
-						<li style="list-style-type: none">
-							<code>TextHAlign &#091;IG&#093;</code> (<code>&quot;left&quot;</code>, <code>&quot;center&quot;</code>, <code>&quot;right&quot;</code>)
-							<blockquote>
-								<p>
-									The text's horizontal alignment, which will be used in
-									<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a>. If unspecified at initialization,
-									the class' default will be used.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>TextVAlign &#091;IG&#093;</code> (<code>&quot;top&quot;</code>, <code>&quot;center&quot;</code>, <code>&quot;bottom&quot;</code>)
-							<blockquote>
-								<p>
-									The text's vertical alignment, which will be used in
-									<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a>. If unspecified during initialization, the
-									class' default will be used.
-								</p>
-							</blockquote>
-						</li>
 					</ul>
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<ul>
-					<li style="list-style-type: none">
-						<table>
-							<tr>
-								<td class="column1">
-									<em>color2</em> 
-								</td>
-								<td class="column2">
-									Secondary color for rendering text in disabled state
-								</td>
-							</tr>
-							<ul>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>font</em> 
-										</td>
-										<td class="column2">
-											Controls the <code>Text.Font</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>text-align</em> 
-										</td>
-										<td class="column2">
-											Controls the <code>Text.TextHAlign</code> attribute
-										</td>
-									</tr>
-								</li>
-								<li style="list-style-type: none">
-									<tr>
-										<td class="column1">
-											<em>vertical-align</em> 
-										</td>
-										<td class="column2">
-											Controls the <code>Text.TextVAlign</code> attribute
-										</td>
-									</tr>
-								</li>
-							</ul>
-						</table>
-					</li>
-				</ul>
+				<blockquote>
+					<table>
+						<tr>
+							<td class="column1">
+								<em>color-disabled</em> 
+							</td>
+							<td class="column2">
+								Secondary color for text in disabled state
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>font</em> 
+							</td>
+							<td class="column2">
+								Font specification, see below
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>text-align</em> 
+							</td>
+							<td class="column2">
+								<code>&quot;left&quot;</code>, <code>&quot;center&quot;</code>, <code>&quot;right&quot;</code> 
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>vertical-align</em> 
+							</td>
+							<td class="column2">
+								<code>&quot;top&quot;</code>, <code>&quot;center&quot;</code>, <code>&quot;bottom&quot;</code> 
+							</td>
+						</tr>
+					</table>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>FONT SPECIFICATION</dfn>
+				<blockquote>
+					<p>
+						A font is specified in the form
+					</p>
+<pre>
+&quot;&#091;fontname1,fontname2,...&#093;&#091;:&#093;&#091;size&#093;&quot;
+</pre>
+					<p>
+						Font names, if specified, will be probed in the order of their
+						occurrence in the string; the first font that can be opened will
+						be used. For the font names, the following predefined named are
+						supported:
+					</p>
+					<blockquote>
+						<ul>
+							<li>
+								<em>ui-fixed</em> - The default fixed font
+							</li>
+							<li>
+								<em>ui-main</em> (or an empty string) - The default main font,
+								e.g. for buttons and menus
+							</li>
+							<li>
+								<em>ui-small</em> - The default small font, e.g. for group
+								captions
+							</li>
+							<li>
+								<em>ui-large</em> - The default 'large' font
+							</li>
+							<li>
+								<em>ui-huge</em> - The default 'huge' font
+							</li>
+						</ul>
+					</blockquote>
+					<p>
+						If no font name is specified, the main font will be used.
+						The size specification (in pixels) is optional as well; if absent,
+						the respective font's default size will be used.
+					</p>
+				</blockquote>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Text:getTextSize"><code>Text:getTextSize()</code></a> - Gets the total extents of text records
+							<a href="#Text:getTextSize"><code>Text:getTextSize()</code></a> - Gets the total extents of all text records
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Text:makeTextRecords"><code>Text:makeTextRecords()</code></a> - Breaks text into multiple line records
@@ -7609,9 +7425,6 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:getProperties"><code>Element:getProperties()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -7625,15 +7438,17 @@ end
 		<div class="node"><h3><a name="Text:getTextSize" id="Text:getTextSize"><code>width, height = getTextSize([textrecord])</code></a></h3>
 			<p>
 				This function calculates
-				the total space occupied by the object's text records. Optionally, the
-				user can pass a table of text records which are to be evaluated.
+				the total width and height required by the object's text records.
+				Optionally, it can be passed a table of text records which are to be
+				evaluated.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Text:makeTextRecords" id="Text:makeTextRecords"><code>makeTextRecords(text)</code></a></h3>
 			<p>
-				This function parses a string and breaks it
-				along the encountered newline characters into single-line records.
+				This function parses the given <code>text</code>, breaks it
+				along the encountered newline characters into single-line records, and
+				places the resulting table in the element's <code>TextRecords</code> field.
 				Each record has the form
 			</p>
 <pre>
@@ -7657,8 +7472,8 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v14.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v15.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -7669,12 +7484,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
-						TextInput
+						TextInput 
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a gadget for entering and editing text.
 					</p>
@@ -7862,13 +7673,13 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v9.0)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v11.2)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
-						Theme
+						Theme 
 					</p>
 				</blockquote>
 			</div>
@@ -7883,35 +7694,32 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Theme:getStyleSheet" id="Theme:getStyleSheet"><code>stylesheet = Theme.getStyleSheet([themename])</code></a></h3>
+		<div class="node"><h3><a name="Theme:getStyleSheet" id="Theme:getStyleSheet"><code>properties, errmsg = Theme.getStyleSheet([name])</code></a></h3>
 			<p>
-				Returns a style sheet for a
-				named theme. Theme names currently defined are:
+				Aquires a style sheet
+				from memory, by loading it from disk, or by determining properties at
+				runtime. Predefined names are:
 			</p>
 			<blockquote>
 				<ul>
 					<li style="list-style-type: none">
-						<code>&quot;empty&quot;</code> - returns an empty style sheet
+						<code>&quot;minimal&quot;</code> - the hardcoded internal <em>user agent</em> style sheet
 					</li>
 					<li style="list-style-type: none">
-						<code>&quot;internal&quot;</code> - the hardcoded internal style sheet
-					</li>
-					<li style="list-style-type: none">
-						<code>&quot;desktop&quot;</code> - The &quot;desktop&quot; external style sheet (or hardcoded
-						internal style sheet if a desktop style sheet file is unavailable),
-						overlaying the user's desktop colors (if that is possible)
+						<code>&quot;desktop&quot;</code> - An external style sheet named &quot;desktop.css&quot;,
+						overlayed with the color scheme (and possibly other properties) of
+						the running desktop (if applicable)
 					</li>
 				</ul>
 			</blockquote>
 			<p>
-				Any other theme name will cause this function to try to load an equally
-				named style sheet, falling back to the hardcoded internal style sheet if
-				unavailable. The default for <code>themename</code> is <code>&quot;default&quot;</code>.
+				Any other name will cause this function to attempt to load an equally
+				named style sheet file.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v23.2)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v27.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
@@ -7922,12 +7730,8 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.gadget">Gadget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
-						Window
+						Window / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">1 subclasses</option><option value="#tek.ui.class.popupwindow">PopupWindow</option></select>
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
 						This class implements a <a href="#tek.ui.class.group">Group</a> which
 						fills up a window on the <a href="#tek.ui.class.display">Display</a>.
@@ -8126,9 +7930,6 @@ end
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:rethinkLayout"><code>Area:rethinkLayout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -8269,70 +8070,85 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">Layout (v3.7)</a></h2>
-			<div class="definition"><dfn>LINEAGE</dfn>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v7.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
-						Layout
+						<a href="#tek.ui.class.layout">Layout</a> /
+						DefaultLayout
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
 					<p>
-						Implements a <a href="#tek.ui.class.group">Groups</a>'s standard layouting
-						strategy. It is designed as a plug-in so that it can be replaced
-						easily and on a per-Group-basis
+						This class implements a <a href="#tek.ui.class.group">Group</a>'s <em>default</em> 
+						layouting strategy. The standard strategy is to adapt a Group's
+						contents dynamically to the free space available. It takes into
+						account an element's <code>HAlign</code>, <code>VAlign</code>, <code>Width</code>, and <code>Height</code> 
+						attributes.
 					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>IMPLEMENTS</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<a href="#Layout:layout"><code>Layout:layout()</code></a> - Layouts the group
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Layout:askMinMax"><code>Layout:askMinMax()</code></a> - Queries the group's minimum and maximum
-							dimensions
-						</li>
-					</ul>
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>OVERRIDES</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Layout:askMinMax"><code>Layout:askMinMax()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Layout:layout"><code>Layout:layout()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
-				<hr />
+				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Layout:askMinMax" id="Layout:askMinMax"><code>minw, minh, maxw, maxh = askMinMax(group, minw, minh, maxw, maxh)</code></a></h3>
-			<p>
-				This function queries the specified <a href="#tek.ui.class.group">Group</a> for
-				its size requirements, which will subsequently invoke
-				<a href="#Area:askMinMax">child:askMinMax()</a> on all of its children.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Layout:layout" id="Layout:layout"><code>layout(group, x0, y0, x1, y1[, markdamage])</code></a></h3>
-			<p>
-				Layouts the <a href="#tek.ui.class.group">Group</a> into the specified
-				rectangle and calculates the sizes and positions of all of its
-				children. The optional boolean <code>markdamage</code> is passed to subsequent
-				invocations of <a href="#Area:layout">child:layout()</a>. This function will
-				also call the <a href="#Area:punch">punch()</a> method on each child for
-				subtracting their new outlines from the group's <code>FreeRegion</code>.
-			</p>
-			<hr class="page-break" />
-			<p>
-				Document generated on Sun Sep 13 09:46:41 2009
-			</p>
+		<div class="node"><h2><a name="tek.ui.layout.fixed" id="tek.ui.layout.fixed">FixedLayout (v2.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> :
+						<a href="#tek.class">Class</a> /
+						<a href="#tek.ui.class.layout">Layout</a> /
+						FixedLayout
+					</p>
+					<p>
+						This class implements a <a href="#tek.ui.class.group">Group</a>'s <em>fixed</em> 
+						layouting strategy. Using the fixed layouter, the size and position of
+						individual elements in a group is predetermined by the contents of
+						their <em>fixed</em> style property, with the coordinates of the rectangle
+						in the order left, top, right, bottom, e.g.:
+					</p>
+<pre>
+ui.Window:new {
+  Layout = &quot;fixed&quot;, Width = 400, Height = 400,
+  Children = {
+    ui.Button:new {
+      Style = &quot;fixed: 10 280 60 320&quot;
+    }
+  }
+}
+</pre>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>OVERRIDES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Layout:askMinMax"><code>Layout:askMinMax()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Layout:layout"><code>Layout:layout()</code></a> 
+						</li>
+					</ul>
+				</blockquote>
+				<hr class="page-break" />
+				<p>
+					Document generated on Mon Jan  4 10:27:07 2010
+				</p>
+			</div>
 		</div>
 	</body>
 </html>

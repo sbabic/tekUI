@@ -728,10 +728,8 @@ tek_lib_visual_drawimage(lua_State *L)
 				tags[0].tti_Value = pen_override->pen_Pen;
 			else
 			{
-				lua_Integer pnr = lua_tonumber(L, -1);
-				lua_rawgeti(L, 7, pnr);
+				lua_gettable(L, 7);
 				tags[0].tti_Value = ((TEKPen *) checkpenptr(L, -1))->pen_Pen;
-				lua_pop(L, 1);
 			}
 		}
 		
@@ -826,48 +824,35 @@ tek_lib_visual_getuserdata(lua_State *L)
 
 /*****************************************************************************/
 
+static TTAGITEM *getminmax(lua_State *L, TTAGITEM *tp, const char *keyname,
+	TTAG tag)
+{
+	TBOOL isfalse, isnil;
+	lua_getfield(L, 2, keyname);
+	isfalse = lua_isboolean(L, -1) && !lua_toboolean(L, -1);
+	isnil = lua_isnil(L, -1);
+	if (lua_isnumber(L, -1) || isnil || isfalse)
+	{
+		TINT val = isnil || isfalse ? -1 : lua_tointeger(L, -1);
+		lua_pop(L, 1);
+		tp->tti_Tag = tag;
+		tp->tti_Value = val;
+		tp++;
+	}
+	return tp;
+}
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_setattrs(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
 	TTAGITEM tags[7], *tp = tags;
 
-	lua_getfield(L, 2, "MinWidth");
-	if (lua_isnumber(L, -1) || lua_isnil(L, -1))
-	{
-		tp->tti_Tag = (TTAG) TVisual_MinWidth;
-		tp->tti_Value = (TTAG) lua_isnil(L, -1) ? -1 : lua_tointeger(L, -1);
-		tp++;
-		lua_pop(L, 1);
-	}
-
-	lua_getfield(L, 2, "MinHeight");
-	if (lua_isnumber(L, -1) || lua_isnil(L, -1))
-	{
-		tp->tti_Tag = (TTAG) TVisual_MinHeight;
-		tp->tti_Value = (TTAG) lua_isnil(L, -1) ? -1 : lua_tointeger(L, -1);
-		tp++;
-		lua_pop(L, 1);
-	}
-
-	lua_getfield(L, 2, "MaxWidth");
-	if (lua_isnumber(L, -1) || lua_isnil(L, -1))
-	{
-		tp->tti_Tag = (TTAG) TVisual_MaxWidth;
-		tp->tti_Value = (TTAG) lua_isnil(L, -1) ? -1 : lua_tointeger(L, -1);
-		tp++;
-		lua_pop(L, 1);
-	}
-
-	lua_getfield(L, 2, "MaxHeight");
-	if (lua_isnumber(L, -1) || lua_isnil(L, -1))
-	{
-		tp->tti_Tag = (TTAG) TVisual_MaxHeight;
-		tp->tti_Value = (TTAG) lua_isnil(L, -1) ? -1 : lua_tointeger(L, -1);
-		tp++;
-		lua_pop(L, 1);
-	}
-
+	tp = getminmax(L, tp, "MinWidth", TVisual_MinWidth);
+	tp = getminmax(L, tp, "MinHeight", TVisual_MinHeight);
+	tp = getminmax(L, tp, "MaxWidth", TVisual_MaxWidth);
+	tp = getminmax(L, tp, "MaxHeight", TVisual_MaxHeight);
+	
 	tp->tti_Tag = TTAG_DONE;
 	lua_pushnumber(L, TVisualSetAttrs(vis->vis_Visual, tags));
 

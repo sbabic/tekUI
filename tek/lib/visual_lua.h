@@ -117,7 +117,7 @@ typedef struct
 
 /*****************************************************************************/
 
-#define TEK_LIB_VISUAL_VERSION "Visual 2.1"
+#define TEK_LIB_VISUAL_VERSION "Visual 2.2"
 #define TEK_LIB_VISUAL_BASECLASSNAME "tek.lib.visual.base*"
 #define TEK_LIB_VISUAL_CLASSNAME "tek.lib.visual*"
 #define TEK_LIB_VISUALPEN_CLASSNAME "tek.lib.visual.pen*"

@@ -9,7 +9,10 @@ ABOUT_APPLICATION_INFORMATION = "Anwendungsinformation";
 ABOUT_LICENSE = "_Lizenz";
 ABOUT_SYSTEM = "_System";
 ABOUT_TEKUI = "Über tekUI";
+ALIGNMENT_BEGIN = "Anfang";
+ALIGNMENT_BOTTOM = "Unten";
 ALIGNMENT_BUTTON = "Ausrichtung";
+ALIGNMENT_CENTER = "Mitte";
 ALIGNMENT_DESCRIPTION = [[
 » Bestimmte Attribute legen fest, wie Elemente ausgerichtet werden, wenn Sie den Platz in ihrer Gruppe (auf einer gegebenen Achse) nicht vollständig ausnutzen.
 
@@ -19,9 +22,13 @@ ALIGNMENT_DESCRIPTION = [[
 
 » Der Unterschied wird klarer ersichtlich, wenn man die Größe des Fensters verändert.
 ]];
+ALIGNMENT_GROUP = "Gruppe";
+ALIGNMENT_HORIZONTAL = "Ausrichtung Horizontal";
+ALIGNMENT_LEFT = "Links";
+ALIGNMENT_RIGHT = "Rechts";
 ALIGNMENT_TITLE = "Ausrichtung";
-ALIGN_HORIZONTAL = "Ausrichtung Horizontal";
-ALIGN_VERTICAL = "Ausrichtung Vertikal";
+ALIGNMENT_TOP = "Oben";
+ALIGNMENT_VERTICAL = "Ausrichtung Vertikal";
 ANIMATIONS_BUTTON = "Animationen";
 ANIMATIONS_DESCRIPTION = [[
 » tekUI unterstützt einen Zeitgeber, an den sich jedes GUI-Element binden kann.
@@ -38,17 +45,13 @@ ANIMATIONS_START = "_Start";
 ANIMATIONS_STOP = "Sto_p";
 ANIMATIONS_TITLE = "Animationen";
 AVAILABLE_DEMOS = "Verfügbare Demos";
-BEGIN = "Anfang";
-BORDERS_BUTTON = "Rahmen";
-BORDERS_DESCRIPTION = [[
+BORDER_BUTTON = "Rahmen";
+BORDER_CAPTION = "Rahmentitel";
+BORDER_DESCRIPTION = [[
 » Der obere Teil zeigt die grundlegenden Rahmenstile: Solide, Eingedrückt, Hervorspringend, Kerbe und Relief.
 
-» Was gemeinhin als Rahmen bezeichnet wird, ist in Wirklichkeit eine Komposition aus drei Unterrahmen: Dem Haupt-, Fassungs- und dem Fokusrahmen.
+» Was gemeinhin als Rahmen bezeichnet wird, ist in Wirklichkeit eine Komposition aus drei Teilrahmen: Dem Haupt-, Fassungs- und dem Fokusrahmen.
 ]];
-BORDERS_SUB = "Unterrahmen";
-BORDERS_TITLE = "Rahmen";
-BORDER_CAPTION = "Rahmentitel";
-BORDER_DYNAMIC_THICKNESS = "Dynamische Stärke";
 BORDER_FOCUS = "Fokusrahmen";
 BORDER_GROOVE = "Kerbe";
 BORDER_INDIVIDUAL_STYLE = "Individueller Rahmenstil";
@@ -59,9 +62,9 @@ BORDER_OUTSET = "Hervorspringend";
 BORDER_RIDGE = "Relief";
 BORDER_RIM = "Fassung";
 BORDER_SOLID = "Solide";
-BORDER_STYLES = "Borderstile";
-BORDER_WATCH = "Rahmen beobachten";
-BOTTOM = "Unten";
+BORDER_STYLES = "Rahmenstile";
+BORDER_SUB = "Teilrahmen";
+BORDER_TITLE = "Rahmen";
 BUTTONS_BUTTON = "Knopf";
 BUTTONS_CAPTION_STYLE = "Beschriftung";
 BUTTONS_CENTER = "Mitte";
@@ -81,7 +84,6 @@ BUTTONS_TEXT_ALIGNMENTS = "Textausrichtung";
 BUTTONS_TITLE = "Knöpfe";
 BUTTONS_TOP_LEFT = "Oben\nLinks";
 CANCEL = "Abbruch";
-CENTER = "Mitte";
 CHOICES_BEER = "Bier";
 CHOICES_COFFEE = "Kaffee";
 CHOICES_DESCRIPTION = [[
@@ -124,7 +126,7 @@ DEBUG_CONSOLE = "Debugkonsole";
 DEBUG_LEVEL = "Debug-Level";
 DEBUG_OPTIONS = "Debug-Optionen";
 DEMO_TEXT = [[
-» Willkommen zum tekUI-Demo.
+» Willkommen beim tekUI-Demo.
 
 » Benutzen Sie die Knöpfe auf der linken Seite, um einzelne Demos auszuwählen, oder verwenden Sie das Menü, um alle Demos auf einmal zu öffnen.
 
@@ -160,7 +162,6 @@ GRAPHICS_DESCRIPTION = [[
 ]];
 GRAPHICS_RADIOBUTTONS = "Radioknöpfe";
 GRAPHICS_TITLE = "Grafiken";
-GROUP = "Gruppe";
 HELLO = "Hallo";
 HELLO_WORLD = "Hallo, Welt!";
 INTERPRETER_VERSION = "Interpreterversion: %s";
@@ -179,7 +180,6 @@ LAYOUT_GRID = "Gitter";
 LAYOUT_RELATIVE_SIZES = "Relative Größe";
 LAYOUT_SAME_SIZES = "Einheitliche Größe";
 LAYOUT_TITLE = "Layout";
-LEFT = "Links";
 LIST_DESCRIPTION = [[
 » Listen können eine beliebige Anzahl Zeilen und Spalten haben. Ihre Breite und Höhe kann festgelegt oder adaptiv sein.
 
@@ -220,7 +220,6 @@ PRESENTATION_TITLE = "Präsentation";
 PROPERTY = "Eigenschaft";
 QUIT = "Beenden";
 REVOKED = "Widerrufen";
-RIGHT = "Rechts";
 SELECTED = "Gewählt";
 SLIDER_CONNECTIONS = "Verbindungen";
 SLIDER_CONTINUOUS = "Fließend";
@@ -250,5 +249,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.]];
 TEKUI_DEMO = "tekUI Demo";
 TEKUI_LICENSE = "tekUI Lizenzbestimmungen";
-TOP = "Oben";
 VALUE = "Wert";

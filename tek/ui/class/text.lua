@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -12,29 +12,11 @@
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
---		Text
+--		Text ${subclasses(Text)}
 --
---	OVERVIEW::
 --		This class implements gadgets with text.
 --
 --	ATTRIBUTES::
---		- {{Font [IG]}} (string)
---			A font specification in the form
---					"[fontname1,fontname2,...][:][size]"
---			Font names, if specified, will be probed in the order of their
---			occurence in the string; the first font that can be opened will be
---			used. For the font names, the following placeholders with
---			predefined meanings are supported:
---				* ''ui-fixed'' - The default fixed font
---				* ''ui-main'' or an empty string - The default main font,
---				e.g. for buttons and menus
---				* ''ui-small'' - The default small font, e.g. for group
---				captions
---				* ''ui-large'' - The default 'large' font
---				* ''ui-huge'' - The default 'huge' font
---			If no font name is specified, the main font will be used.
---			The size specification (in pixels) is optional as well; if absent,
---			the respective font's default size will be used.
 --		- {{KeepMinHeight [IG]}} (boolean)
 --			After the initial size calculation, keep the minimal height of
 --			the element and do not rethink the layout in response to a
@@ -48,23 +30,33 @@
 --			The text that will be displayed on the element; it may span
 --			multiple lines (see also Text:makeTextRecords()). Setting this
 --			attribute invokes the Text:onSetText() method.
---		- {{TextHAlign [IG]}} ({{"left"}}, {{"center"}}, {{"right"}})
---			The text's horizontal alignment, which will be used in
---			Text:makeTextRecords(). If unspecified at initialization,
---			the class' default will be used.
---		- {{TextVAlign [IG]}} ({{"top"}}, {{"center"}}, {{"bottom"}})
---			The text's vertical alignment, which will be used in
---			Text:makeTextRecords(). If unspecified during initialization, the
---			class' default will be used.
 --
 --	STYLE PROPERTIES::
---		- ''color2'' || Secondary color for rendering text in disabled state
---		- ''font'' || Controls the {{Text.Font}} attribute
---		- ''text-align'' || Controls the {{Text.TextHAlign}} attribute
---		- ''vertical-align'' || Controls the {{Text.TextVAlign}} attribute
+--		''color-disabled'' || Secondary color for text in disabled state
+--		''font'' || Font specification, see below
+--		''text-align'' || {{"left"}}, {{"center"}}, {{"right"}}
+--		''vertical-align'' || {{"top"}}, {{"center"}}, {{"bottom"}}
+--
+--	FONT SPECIFICATION::
+--		A font is specified in the form
+--				"[fontname1,fontname2,...][:][size]"
+--		Font names, if specified, will be probed in the order of their
+--		occurrence in the string; the first font that can be opened will 
+--		be used. For the font names, the following predefined named are
+--		supported:
+--			* ''ui-fixed'' - The default fixed font
+--			* ''ui-main'' (or an empty string) - The default main font,
+--			e.g. for buttons and menus
+--			* ''ui-small'' - The default small font, e.g. for group
+--			captions
+--			* ''ui-large'' - The default 'large' font
+--			* ''ui-huge'' - The default 'huge' font
+--		If no font name is specified, the main font will be used.
+--		The size specification (in pixels) is optional as well; if absent,
+--		the respective font's default size will be used.
 --
 --	IMPLEMENTS::
---		- Text:getTextSize() - Gets the total extents of text records
+--		- Text:getTextSize() - Gets the total extents of all text records
 --		- Text:makeTextRecords() - Breaks text into multiple line records
 --		- Text:onSetText() - Handler for changes of the {{Text}} attribute
 --
@@ -72,15 +64,15 @@
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Area:draw()
---		- Element:getProperties()
 --		- Object.init()
 --		- Element:setup()
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Gadget = ui.require("gadget", 17)
+local Gadget = ui.require("gadget", 19)
 
 local floor = math.floor
 local insert = table.insert
@@ -90,48 +82,27 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 21.0"
+_VERSION = "Text 24.0"
+local Text = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
+local FL_CHANGED = ui.FL_CHANGED
 local NOTIFY_SETTEXT = { ui.NOTIFY_SELF, "onSetText", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-local Text = _M
-
 function Text.init(self)
-	self.FGDisabled2 = self.FGDisabled2 or false
-	self.Font = self.Font or false
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
 	self.Mode = self.Mode or "inert"
 	self.Text = self.Text or ""
-	self.TextHAlign = self.TextHAlign or false
 	self.TextRecords = self.TextRecords or false
-	self.TextVAlign = self.TextVAlign or false
 	return Gadget.init(self)
-end
-
--------------------------------------------------------------------------------
---	getProperties:
--------------------------------------------------------------------------------
-
-function Text:getProperties(p, pclass)
-	if not pclass then
-		self.FGDisabled2 = self.FGDisabled2 or
-			self:getProperty(p, "disabled", "color2")
-	end
-	self.Font = self.Font or self:getProperty(p, pclass, "font")
-	self.TextHAlign = self.TextHAlign or
-		self:getProperty(p, pclass, "text-align")
-	self.TextVAlign = self.TextVAlign or
-		self:getProperty(p, pclass, "vertical-align")
-	Gadget.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -139,8 +110,6 @@ end
 -------------------------------------------------------------------------------
 
 function Text:setup(app, window)
-	self.TextHAlign = self.TextHAlign or "center"
-	self.TextVAlign = self.TextVAlign or "center"
 	if self.KeyCode == true then
 		local sc = ui.ShortcutMark
 		local keycode = self.Text:match("^[^" .. sc .. "]*" .. sc .. "(.)")
@@ -165,8 +134,9 @@ end
 
 -------------------------------------------------------------------------------
 --	width, height = getTextSize([textrecord]): This function calculates
---	the total space occupied by the object's text records. Optionally, the
---	user can pass a table of text records which are to be evaluated.
+--	the total width and height required by the object's text records.
+--	Optionally, it can be passed a table of text records which are to be
+--	evaluated.
 -------------------------------------------------------------------------------
 
 function Text:getTextSize(tr)
@@ -193,7 +163,6 @@ end
 -------------------------------------------------------------------------------
 
 function Text:askMinMax(m1, m2, m3, m4)
-	local p = self.Padding
 	local w, h = self:getTextSize()
 	local minw, minh = w, h
 	if self.KeepMinWidth then
@@ -231,12 +200,13 @@ end
 function Text:layoutText()
 	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
-		local p = self.Padding
+		local props = self.Properties
+		local p1, p2, p3, p4 = self:getPadding()
 		local w0, h0 = self:getTextSize()
-		local w = r3 - r1 + 1 - p[3] - p[1]
-		local h = r4 - r2 + 1 - p[4] - p[2]
-		local x0 = aligntext(self.TextHAlign, "right", r1 + p[1], w, w0)
-		local y0 = aligntext(self.TextVAlign, "bottom", r2 + p[2], h, h0)
+		local w = r3 - r1 + 1 - p3 - p1
+		local h = r4 - r2 + 1 - p4 - p2
+		local x0 = aligntext(props["text-align"], "right", r1 + p1, w, w0)
+		local y0 = aligntext(props["vertical-align"], "bottom", r2 + p2, h, h0)
 		local tr = self.TextRecords
 		for i = 1, #tr do
 			local t = tr[i]
@@ -253,7 +223,9 @@ end
 
 function Text:layout(x0, y0, x1, y1, markdamage)
 	local res = Gadget.layout(self, x0, y0, x1, y1, markdamage)
-	self:layoutText()
+	if self.Flags:checkClear(FL_CHANGED) or res then
+		self:layoutText()
+	end
 	return res
 end
 
@@ -262,34 +234,42 @@ end
 -------------------------------------------------------------------------------
 
 function Text:draw()
-	Gadget.draw(self)
-	local d = self.Drawable
-	local r = self.Rect
-	local p = self.Padding
-	d:pushClipRect(r[1] + p[1], r[2] + p[2], r[3] - p[3], r[4] - p[4])
-	local fp = d.Pens[self.FGPen]
-	local tr = self.TextRecords
-	for i = 1, #tr do
-		local t = tr[i]
-		local x, y = t[15], t[16]
-		d:setFont(t[2])
-		if self.Disabled then
-			local fp2 = d.Pens[self.FGDisabled2 or ui.PEN_DISABLEDDETAILSHINE]
-			d:drawText(x + 2, y + 2, x + t[9] + 1, y + t[10] + 1, t[1], fp2)
-			if t[11] then
-				-- draw underline:
-				d:fillRect(x + t[11] + 2, y + t[12] + 2,
-					x + t[11] + t[13] + 1, y + t[12] + t[14] + 1, fp2)
+	if Gadget.draw(self) then
+		local r1, r2, r3, r4 = self:getRect()
+		local d = self.Drawable
+		local p1, p2, p3, p4 = self:getPadding()
+		d:pushClipRect(r1 + p1, r2 + p2, r3 - p3, r4 - p4)
+		local fp = d.Pens[self.FGPen]
+		local tr = self.TextRecords
+		for i = 1, #tr do
+			local t = tr[i]
+			local x, y = t[15], t[16]
+			if x then
+				d:setFont(t[2])
+				if self.Disabled then
+					local fp2 = d.Pens[self.Properties["color-shadow:disabled"]
+						or "disabled-detail-shine"]
+					d:drawText(x + 2, y + 2, x + t[9] + 1, y + t[10] + 1, t[1],
+						fp2)
+					if t[11] then
+						-- draw underline:
+						d:fillRect(x + t[11] + 2, y + t[12] + 2,
+							x + t[11] + t[13] + 1, y + t[12] + t[14] + 1, fp2)
+					end
+				end
+				d:drawText(x + 1, y + 1, x + t[9], y + t[10], t[1], fp)
+				if t[11] then
+					-- draw underline:
+					d:fillRect(x + t[11] + 1, y + t[12] + 1,
+						x + t[11] + t[13], y + t[12] + t[14], fp)
+				end
+			else
+				db.warn("text not layouted")
 			end
 		end
-		d:drawText(x + 1, y + 1, x + t[9], y + t[10], t[1], fp)
-		if t[11] then
-			-- draw underline:
-			d:fillRect(x + t[11] + 1, y + t[12] + 1,
-				x + t[11] + t[13], y + t[12] + t[14], fp)
-		end
+		d:popClipRect()
+		return true
 	end
-	d:popClipRect()
 end
 
 -------------------------------------------------------------------------------
@@ -334,13 +314,14 @@ end
 function Text:setTextRecord(pos, ...)
 	local record, keycode = self:newTextRecord(...)
 	self.TextRecords[pos] = record
-	self:layoutText()
+	self.Flags:set(FL_CHANGED)
 	return record, keycode
 end
 
 -------------------------------------------------------------------------------
---	makeTextRecords(text): This function parses a string and breaks it
---	along the encountered newline characters into single-line records.
+--	makeTextRecords(text): This function parses the given {{text}}, breaks it
+--	along the encountered newline characters into single-line records, and
+--	places the resulting table in the element's {{TextRecords}} field.
 --	Each record has the form
 --			{ [1]=text, [2]=font, [3]=align-horizontal, [4]=align-vertical,
 --			  [5]=margin-left, [6]=margin-right, [7]=margin-top,
@@ -353,14 +334,15 @@ end
 -------------------------------------------------------------------------------
 
 function Text:makeTextRecords(text)
+	local props = self.Properties
 	text = text or ""
 	local tr = { }
 	self.TextRecords = tr
 	local y, nl = 0, 0
-	local font = self.Application.Display:openFont(self.Font)
+	local font = self.Application.Display:openFont(self.Properties["font"])
 	for line in (text .. "\n"):gmatch("([^\n]*)\n") do
-		local r = self:addTextRecord(line, font, self.TextHAlign,
-			self.TextVAlign, 0, y, 0, 0)
+		local r = self:addTextRecord(line, font, props["text-align"],
+			props["vertical-align"], 0, y, 0, 0)
 		y = y + r[10]
 		nl = nl + 1
 	end
@@ -378,6 +360,7 @@ end
 
 function Text:onSetText(text)
 	self:makeTextRecords(text)
-	self.Redraw = true
-	self:rethinkLayout(self.KeepMinWidth and 0 or 1)
+	self.Flags:set(ui.FL_REDRAW)
+	local resizeable = not self.KeepMinWidth
+	self:rethinkLayout(resizeable and 1 or 0, resizeable)
 end

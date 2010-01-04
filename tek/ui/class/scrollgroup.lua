@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.group : Group]] /
---		ScrollGroup
+--		ScrollGroup ${subclasses(ScrollGroup)}
 --
---	OVERVIEW::
 --		This class implements a group containing a scrollable
 --		container and accompanying elements such as horizontal and vertical
 --		[[#tek.ui.class.scrollbar : ScrollBars]].
@@ -50,17 +49,15 @@
 --		- Element:cleanup()
 --		- Area:layout()
 --		- Class.new()
---		- Area:refresh()
---		- Area:relayout()
 --		- Element:setup()
 --
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
 
-local Group = ui.require("group", 22)
-local Region = ui.loadLibrary("region", 8)
-local ScrollBar = ui.require("scrollbar", 9)
+local Group = ui.require("group", 27)
+local Region = ui.loadLibrary("region", 9)
+local ScrollBar = ui.require("scrollbar", 10)
 
 local floor = math.floor
 local insert = table.insert
@@ -71,7 +68,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 12.0"
+_VERSION = "ScrollGroup 15.0"
 
 local ScrollGroup = _M
 
@@ -87,6 +84,8 @@ function ScrollGroup.new(class, self)
 	end
 	self.BlitList = { }
 	self.Orientation = "vertical"
+	self.HMax = -1
+	self.HRange = -1
 	self.HSliderEnabled = false
 	self.HSliderGroup = self.HSliderGroup or false
 	self.HSliderMode = self.HSliderMode or "off"
@@ -96,11 +95,13 @@ function ScrollGroup.new(class, self)
 	self.NotifyTop = { self, "onSetCanvasTop", ui.NOTIFY_VALUE }
 	self.NotifyWidth = { self, "onSetCanvasWidth", ui.NOTIFY_VALUE }
 	self.ScrollStep = self.ScrollStep or 10
-	self.VSliderMode = self.VSliderMode or "off"
+	self.VMax = -1
+	self.VRange = -1
 	self.VSliderEnabled = false
 	self.VSliderGroup = self.VSliderGroup or false
+	self.VSliderMode = self.VSliderMode or "off"
 	self.VSliderNotify = { self, "onSetSliderTop", ui.NOTIFY_VALUE }
-
+	
 	local hslider, vslider
 
 	if self.HSliderMode ~= "off" and not self.HSliderGroup then
@@ -149,8 +150,8 @@ end
 
 function ScrollGroup:askMinMax(m1, m2, m3, m4)
 	m1, m2, m3, m4 = Group.askMinMax(self, m1, m2, m3, m4)
-	local cb = self.Child.MarginAndBorder
-	local b = self.MarginAndBorder
+	local cb = self.Child.Margin
+	local b = self.Margin
 	if self.HSliderMode == "auto" and self.Child.MinWidth == 0 then
 		local n1 = self.Child:askMinMax(0, 0, 0, 0)
 		self.Child.MinWidth = n1 - cb[1] - cb[3] - b[1] - b[3]
@@ -251,8 +252,14 @@ function ScrollGroup:onSetCanvasWidth(w)
 			or self.HSliderMode == "auto" and (sw < w))
 		local g = self.HSliderGroup
 		if g then
-			g.Slider:setValue("Range", w)
-			g.Slider:setValue("Max", w - sw)
+			if self.HRange ~= w then
+				self.HRange = w
+				g.Slider:setValue("Range", w)
+			end
+			if self.HMax ~= w - sw then
+				self.HMax = w - sw
+				g.Slider:setValue("Max", w - sw)
+			end
 		end
 	end
 end
@@ -271,8 +278,14 @@ function ScrollGroup:onSetCanvasHeight(h)
 			or self.VSliderMode == "auto" and (sh < h))
 		local g = self.VSliderGroup
 		if g then
-			g.Slider:setValue("Range", h)
-			g.Slider:setValue("Max", h - sh)
+			if self.VRange ~= h then
+				self.VRange = h
+				g.Slider:setValue("Range", h)
+			end
+			if self.VMax ~= h - sh then
+				self.VMax = h - sh
+				g.Slider:setValue("Max", h - sh)
+			end
 		end
 	end
 end
@@ -356,22 +369,10 @@ function ScrollGroup:layout(r1, r2, r3, r4, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	relayout: overrides
+--	draw: overrides
 -------------------------------------------------------------------------------
 
-function ScrollGroup:relayout(e, r1, r2, r3, r4)
-	local res, changed = self.Child:relayout(e, r1, r2, r3, r4)
-	if res then
-		return res, changed
-	end
-	return Group.relayout(self, e, r1, r2, r3, r4)
-end
-
--------------------------------------------------------------------------------
---	refresh: overrides
--------------------------------------------------------------------------------
-
-function ScrollGroup:refresh()
+function ScrollGroup:draw()
 
 	-- handle scrolling:
 	local cs = self.Window.CanvasStack
@@ -459,9 +460,11 @@ function ScrollGroup:refresh()
 
 	-- refresh group contents (including damages caused by scrolling):
 
-	Group.refresh(self)
+	local res = Group.draw(self)
 
 	remove(cs)
+	
+	return res
 end
 
 -------------------------------------------------------------------------------

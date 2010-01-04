@@ -13,16 +13,14 @@ local window = ui.Window:new
 {
 	Orientation = "vertical",
 	Id = "borders-window",
-	Title = L.BORDERS_TITLE,
+	Title = L.BORDER_TITLE,
 	Status = "hide",
-	Height = "auto",
 	HideOnEscape = true,
-	Style = "Width: 400",
+	Width = "fill",
 	Children =
 	{
 		Group:new
 		{
-			Height = "auto",
 			Legend = L.BORDER_STYLES,
 			Children =
 			{
@@ -172,136 +170,128 @@ local window = ui.Window:new
 		},
 		Group:new
 		{
-			Legend = L.BORDERS_SUB,
+			Legend = L.BORDER_SUB,
 			Columns = 6,
 			Children =
 			{
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "caption",
-					Width = "fill",
-					TextHAlign = "right",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "caption",
 					Text = "0",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "caption",
 					Text = "1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "caption",
 					Text = "2",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "caption",
 					Text = "3",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "caption",
 					Text = "5",
 				},
-				
-				ui.Text:new 
+
+				ui.Text:new
 				{
 					Class = "caption",
 					Text = L.BORDER_MAIN,
-					Width = "fill",
-					TextHAlign = "right",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
-					Style = "border-width: 2; border-rim-width: 1; border-focus-width: 1", 
+					Style = "border-width: 2; border-rim-width: 1; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
-					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1", 
+					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 4; border-rim-width: 1; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 5; border-rim-width: 1; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 7; border-rim-width: 1; border-focus-width: 1",
 				},
-				
-				ui.Text:new 
+
+				ui.Text:new
 				{
 					Class = "caption",
 					Text = L.BORDER_RIM,
-					Width = "fill",
-					TextHAlign = "right",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
-					Style = "border-width: 2; border-rim-width: 0; border-focus-width: 1", 
+					Style = "border-width: 2; border-rim-width: 0; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
-					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1", 
+					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 4; border-rim-width: 2; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 5; border-rim-width: 3; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 7; border-rim-width: 5; border-focus-width: 1",
 				},
-				
-				ui.Text:new 
+
+				ui.Text:new
 				{
 					Class = "caption",
 					Text = L.BORDER_FOCUS,
-					Width = "fill",
-					TextHAlign = "right",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
-					Style = "border-width: 2; border-rim-width: 1; border-focus-width: 0", 
+					Style = "border-width: 2; border-rim-width: 1; border-focus-width: 0",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
-					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1", 
+					Style = "border-width: 3; border-rim-width: 1; border-focus-width: 1",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 4; border-rim-width: 1; border-focus-width: 2",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 5; border-rim-width: 1; border-focus-width: 3",
 				},
-				ui.Text:new 
+				ui.Text:new
 				{
 					Class = "button", Mode = "button", Height = "fill",
 					Style = "border-width: 7; border-rim-width: 1; border-focus-width: 5",
@@ -343,7 +333,7 @@ else
 	return
 	{
 		Window = window,
-		Name = L.BORDERS_BUTTON,
-		Description = L.BORDERS_DESCRIPTION
+		Name = L.BORDER_BUTTON,
+		Description = L.BORDER_DESCRIPTION
 	}
 end

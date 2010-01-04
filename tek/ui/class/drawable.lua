@@ -4,13 +4,12 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
---		Drawable
+--		Drawable ${subclasses(Drawable)}
 --
---	OVERVIEW::
 --		This class implements a graphical context that can be painted on.
 --
 --	IMPLEMENTS::
@@ -23,6 +22,8 @@
 --		- Drawable:getMsg() - Gets the next pending input message
 --		- Drawable:getShift() - Gets the current coordinate displacement
 --		- Drawable:getTextSize() - Determines the width and height of text
+--		- Drawable:getWH() - Gets the drawable's width and height
+--		- Drawable:getXY() - Gets the drawable's position
 --		- Drawable:popClipRect() - Pops the topmost cliprect from the drawable
 --		- Drawable:pushClipRect() - Pushes a new cliprect on the drawable
 --		- Drawable:setFont() - Sets a font
@@ -36,7 +37,7 @@
 local db = require "tek.lib.debug"
 local Object = require "tek.class.object"
 local ui = require "tek.ui"
-local Region = ui.loadLibrary("region", 8)
+local Region = ui.loadLibrary("region", 9)
 
 local assert = assert
 local insert = table.insert
@@ -48,7 +49,7 @@ local unpack = unpack
 local HUGE = ui.HUGE
 
 module("tek.ui.class.drawable", tek.class.object)
-_VERSION = "Drawable 21.0"
+_VERSION = "Drawable 23.0"
 
 DEBUG_DELAY = 3
 
@@ -131,7 +132,7 @@ function Drawable:open(userdata, title, w, h, minw, minh, maxw, maxh, x, y,
 						pm = self.Display.getPixmap(fname)
 					end
 				end
-				pm = pm or tab[ui.PEN_BACKGROUND]
+				pm = pm or tab["background"]
 				tab[key] = pm
 				return pm
 			end
@@ -158,7 +159,7 @@ end
 
 function Drawable:close()
 	if self.Visual then
-		self:getAttrs()
+		self:updateRect()
 		self.Visual:close()
 		self.Visual = false
 		self.Pens = false
@@ -257,14 +258,40 @@ function Drawable:getMsg(msg)
 	return self.Visual:getmsg(msg)
 end
 
+-------------------------------------------------------------------------------
+--	setAttrs() - pass attributes to the underlying visual
+-------------------------------------------------------------------------------
+
 function Drawable:setAttrs(...)
 	self.Visual:setattrs(...)
 end
 
-function Drawable:getAttrs()
-	self.Width, self.Height, self.Left, self.Top =
-		self.Visual:getattrs()
-	return self.Width, self.Height, self.Left, self.Top
+-------------------------------------------------------------------------------
+--	updateRect() - Retrieves and stores the visual's size and position
+-------------------------------------------------------------------------------
+
+function Drawable:updateRect()
+	local w, h, x, y = self.Visual:getattrs()
+	self.Width, self.Height, self.Left, self.Top = w, h, x, y
+	return w, h, x, y
+end
+
+-------------------------------------------------------------------------------
+--	x, y = Drawable:getXY(): Returns the drawable's x and y position.
+-------------------------------------------------------------------------------
+
+function Drawable:getXY()
+	local _, _, x, y = self:updateRect()
+	return x, y
+end
+
+-------------------------------------------------------------------------------
+--	w, h = Drawable:getWH(): Returns the drawable's width and height.
+-------------------------------------------------------------------------------
+
+function Drawable:getWH()
+	local w, h = self:updateRect()
+	return w, h
 end
 
 -------------------------------------------------------------------------------

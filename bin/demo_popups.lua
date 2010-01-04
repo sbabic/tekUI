@@ -118,10 +118,13 @@ local window = Window:new
 						MenuItem:new { Text = "Select all" },
 						MenuItem:new { Text = "Deselect", Disabled = true },
 						Spacer:new { },
-						ui.CheckMark:new { Width = "fill", Text = "Checkmark" },
+						ui.CheckMark:new { Text = "Checkmark", Class = "menuitem" },
+						ui.CheckMark:new { Text = "Fomp", Class = "menuitem" },
+						ui.CheckMark:new { Text = "Disabled", Class = "menuitem", Disabled = true },
 						Spacer:new { },
-						ui.RadioButton:new { Width = "fill", Text = "One" },
-						ui.RadioButton:new { Width = "fill", Text = "Two" },
+						ui.RadioButton:new { Text = "One", Class = "menuitem" },
+						ui.RadioButton:new { Text = "Two", Class = "menuitem" },
+						ui.RadioButton:new { Text = "Three", Disabled = true, Class = "menuitem" },
 					}
 				}
 			}
@@ -133,20 +136,15 @@ local window = Window:new
 				Group:new
 				{
 					Orientation = "vertical",
-					Width = "free",
-					Height = "free",
 					Children =
 					{
 						Group:new
 						{
-							Width = "free",
-							Height = "auto",
 							Children =
 							{
 								PopItem:new
 								{
 									Text = "_Normal Popups",
-									Width = "auto",
 									-- these children are not connected initially:
 									Children =
 									{
@@ -173,7 +171,7 @@ local window = Window:new
 													{
 														PopItem:new { Text = "_Uno" },
 														PopItem:new { Text = "_Dos" },
-														PopItem:new { Text = "_Tres" },
+														PopItem:new { Text = "_Tres", Disabled = true },
 														PopItem:new { Text = "_Cuatro" },
 													}
 												}
@@ -192,7 +190,7 @@ local window = Window:new
 														MenuItem:new { Text = "_Un" },
 														MenuItem:new { Text = "_Deux" },
 														MenuItem:new { Text = "_Trois" },
-														MenuItem:new { Text = "_Quatre" },
+														MenuItem:new { Text = "_Quatre", Disabled = true },
 													}
 												},
 												MenuItem:new
@@ -224,21 +222,16 @@ local window = Window:new
 								PopItem:new
 								{
 									Text = "_Special Popups",
-									Width = "auto",
 									Children =
 									{
-										ui.Tunnel:new
-										{
-											Width = "fill",
-										}
+										ui.Tunnel:new { }
 									}
 								},
 								ui.PopList:new
 								{
 									Id = "euro-combo",
 									Text = "_Combo Box",
-									KeepMinWidth = true,
-									Width = "fill",
+									Width = "free",
 									ListObject = List:new
 									{
 										Items =
@@ -270,9 +263,6 @@ local window = Window:new
 -- 									Text = "日本語",
 -- 									-- Class = "japanese",
 -- 									Style = "font:kochi mincho",
--- 									KeepMinWidth = true,
--- 									Width = "fill",
--- 									Height = "fill",
 -- 									MinWidth = 80,
 -- 									ListObject = List:new
 -- 									{
@@ -309,7 +299,6 @@ local window = Window:new
 										ui.Text:new
 										{
 											Height = "free",
-											Width = "free",
 											Text = "",
 											Style = "font: ui-huge:48",
 											Id = "popup-show",

@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -12,10 +12,9 @@
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
---		Handle
+--		Handle ${subclasses(Handle)}
 --
---	OVERVIEW::
---		Implements a handle that can be dragged on the axis of the Group's
+--		Implements a handle that can be dragged along the axis of the Group's
 --		orientation. It reassigns Weights to its flanking elements.
 --
 --	OVERRIDES::
@@ -31,7 +30,7 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Gadget = ui.require("gadget", 17)
+local Gadget = ui.require("gadget", 19)
 
 local floor = math.floor
 local insert = table.insert
@@ -40,7 +39,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.gadget)
-_VERSION = "Handle 3.5"
+_VERSION = "Handle 4.0"
 
 local Handle = _M
 
@@ -53,21 +52,28 @@ function Handle.init(self)
 	self.Mode = self.Mode or "button"
 	self.Move0 = false
 	self.MoveMinMax = { }
-	self.Orientation = self.Orientation or 1
+	self.Orientation = false
 	self.SizeList = false
 	return Gadget.init(self)
 end
 
 -------------------------------------------------------------------------------
---	askMinMax: overrides
+--	setup: overrides
 -------------------------------------------------------------------------------
 
-function Handle:askMinMax(m1, m2, m3, m4)
-	local o = self:getGroup():getStructure()
+function Handle:setup(app, win)
+	Gadget.setup(self, app, win)
+	local o = self:getGroup().Orientation == "horizontal"
 	self.Orientation = o
-	m3 = o == 1 and 0 or m3
-	m4 = o == 2 and 0 or m4
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
+	if o then
+		self.MaxWidth = 0
+		self.MaxHeight = ui.HUGE
+		self.Height = false
+	else
+		self.MaxWidth = ui.HUGE
+		self.MaxHeight = 0
+		self.Width = false
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -78,7 +84,7 @@ function Handle:startMove(x, y)
 
 	local g = self:getGroup()
 	local i1, i3
-	if self.Orientation == 1 then
+	if self.Orientation then
 		i1, i3 = 1, 3
 		self.Move0 = x
 	else
@@ -96,7 +102,7 @@ function Handle:startMove(x, y)
 		local mf = 0 -- max free
 		if e.MinMax[i3] > e.MinMax[i1] then
 			local er = e.Rect
-			local emb = e.MarginAndBorder
+			local emb = e.Margin
 			if e.Weight then
 				tw = tw + e.Weight
 			else
@@ -117,7 +123,6 @@ function Handle:startMove(x, y)
 			free0 = free1
 			-- max0 = max1
 		end
-		prev = e
 	end
 	free1 = free1 - free0
 	-- max1 = max1 - max0
@@ -173,7 +178,8 @@ end
 function Handle:doMove(x, y)
 
 	local g = self:getGroup()
-	local xy = (self.Orientation == 1 and x or y) - self.Move0
+	local xy = (self.Orientation and x or y) - 
+		self.Move0
 
 	if xy < self.MoveMinMax[1] then
 		xy = self.MoveMinMax[1]
@@ -220,7 +226,7 @@ function Handle:doMove(x, y)
 			e.Weight = nw
 		end
 	end
-	self.Window:addLayoutGroup(g, 1)
+	g:rethinkLayout(1, true)
 end
 
 -------------------------------------------------------------------------------

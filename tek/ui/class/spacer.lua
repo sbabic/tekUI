@@ -4,30 +4,28 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		Spacer
+--		Spacer ${subclasses(Spacer)}
 --
---	OVERVIEW::
 --		This class implements a separator that helps to arrange elements in
 --		a group.
 --
 --	OVERRIDES::
---		- Area:askMinMax()
---		- Area:show()
+--		- Element:setup()
 --
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Frame = ui.require("frame", 12)
+local Frame = ui.require("frame", 16)
 
 module("tek.ui.class.spacer", tek.ui.class.frame)
-_VERSION = "Spacer 1.7"
+_VERSION = "Spacer 2.0"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -36,17 +34,18 @@ _VERSION = "Spacer 1.7"
 local Spacer = _M
 
 -------------------------------------------------------------------------------
---	askMinMax:
+--	setup: overrides
 -------------------------------------------------------------------------------
 
-function Spacer:askMinMax(m1, m2, m3, m4)
-	local o = self:getGroup():getStructure()
-	if o == 1 then
+function Spacer:setup(app, win)
+	Frame.setup(self, app, win)
+	if self:getGroup().Orientation == "horizontal" then
+		self.MaxWidth = 0
+		self.MaxHeight = ui.HUGE
 		self.Height = "fill"
-		self.Width = "auto"
 	else
+		self.MaxWidth = ui.HUGE
+		self.MaxHeight = 0
 		self.Width = "fill"
-		self.Height = "auto"
 	end
-	return Frame.askMinMax(self, m1, m2, m3, m4)
 end

@@ -4,6 +4,14 @@ local ui = require "tek.ui"
 
 ui.Application:new
 {
+	AuthorStyles = [[
+		.huge { 
+			width: free; 
+			height: free; 
+			font: ui-huge; 
+		}
+	]],
+
 	Children =
 	{
 		ui.Window:new
@@ -15,8 +23,6 @@ ui.Application:new
 				ui.ScrollGroup:new
 				{
 					Legend = "Virtual Group",
-					Width = 500,
-					Height = 500,
 					HSliderMode = "on",
 					VSliderMode = "on",
 					Child = ui.Canvas:new
@@ -31,14 +37,16 @@ ui.Application:new
 							Columns = 2,
 							Children =
 							{
-								ui.Button:new { Width = "free", Height = "free", Text = "foo" },
-								ui.Button:new { Width = "free", Height = "free", Text = "foo" },
-								ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+								ui.Button:new { Text = "Foo", Class = "huge" },
+								ui.Button:new { Text = "Bar", Class = "huge" },
+								ui.Button:new { Text = "Baz", Class = "huge" },
 								ui.ScrollGroup:new
 								{
 									Legend = "Virtual Group",
 									Width = 500,
 									Height = 500,
+									MinWidth = 0,
+									MinHeight = 0,
 									HSliderMode = "on",
 									VSliderMode = "on",
 									Child = ui.Canvas:new
@@ -51,14 +59,16 @@ ui.Application:new
 											Columns = 2,
 											Children =
 											{
-												ui.Button:new { Width = "free", Height = "free", Text = "foo" },
-												ui.Button:new { Width = "free", Height = "free", Text = "foo" },
-												ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+												ui.Button:new { Text = "Red", Class = "huge" },
+												ui.Button:new { Text = "Green", Class = "huge" },
+												ui.Button:new { Text = "Blue", Class = "huge" },
 												ui.ScrollGroup:new
 												{
 													Legend = "Virtual Group",
 													Width = 500,
 													Height = 500,
+													MinWidth = 0,
+													MinHeight = 0,
 													HSliderMode = "on",
 													VSliderMode = "on",
 													Child = ui.Canvas:new
@@ -71,10 +81,10 @@ ui.Application:new
 															Columns = 2,
 															Children =
 															{
-																ui.Button:new { Width = "free", Height = "free", Text = "foo" },
-																ui.Button:new { Width = "free", Height = "free", Text = "foo" },
-																ui.Button:new { Width = "free", Height = "free", Text = "foo" },
-																ui.Button:new { Width = "free", Height = "free", Text = "foo" },
+																ui.Button:new { Text = "One", Class = "huge" },
+																ui.Button:new { Text = "Two", Class = "huge" },
+																ui.Button:new { Text = "Three", Class = "huge" },
+																ui.Button:new { Text = "Four", Class = "huge" },
 															}
 														}
 													}

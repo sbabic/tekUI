@@ -4,13 +4,12 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
---		Element
+--		Element ${subclasses(Element)}
 --
---	OVERVIEW::
 --		This class implements the connection to a global environment and
 --		the registration by Id.
 --
@@ -28,6 +27,11 @@
 --		- {{Parent [G]}} (object)
 --			Parent object of the element. This attribute is set during
 --			Element:connect().
+--		- {{Properties [G]}} (table)
+--			A table of properties, resulting from element and user style
+--			classes, overlaid with individual and direct formattings, and
+--			finally from hardcoded element properties. This table is set up
+--			during Element:decodeProperties().
 --		- {{Style [IG]}} (string)
 --			Direct style formattings of the element, overriding class-wide
 --			formattings in a style sheet. Example:
@@ -37,14 +41,13 @@
 --			attribute is set during Element:setup().
 --
 --	IMPLEMENTS::
+--		- Element:addStyleClass() - Appends a style class to an element
 --		- Element:cleanup() - Unlinks the element from its environment
 --		- Element:connect() - Connects the element to a parent element
+--		- Element:decodeProperties() - Decode the element's style properties
 --		- Element:disconnect() - Disconnects the element from its parent
 --		- Element:getAttr() - Gets an attribute from an element
 --		- Element:getById() - Get Id of any registered element
---		- Element:getNumProperty() - Retrieves a numerical style property
---		- Element:getProperties() - Retrieves an element's style properties
---		- Element:getProperty() - Retrieves a single style property
 --		- Element:setup() - Links the element to its environment
 --
 --	OVERRIDES::
@@ -54,14 +57,20 @@
 
 local Object = require "tek.class.object"
 local ui = require "tek.ui"
+local db = require "tek.lib.debug"
 
 local assert = assert
+local concat = table.concat
+local getmetatable = getmetatable
 local insert = table.insert
+local pairs = pairs
+local setmetatable = setmetatable
+local sort = table.sort
 local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 14.3"
+_VERSION = "Element 16.1"
 local Element = _M
 
 -------------------------------------------------------------------------------
@@ -101,6 +110,7 @@ function Element.init(self)
 	self.Class = self.Class or false
 	self.Id = self.Id or false
 	self.Parent = false
+	self.Properties = false
 	self.Style = self.Style or false
 	self.Window = false
 	return Object.init(self)
@@ -126,25 +136,143 @@ function Element:disconnect()
 end
 
 -------------------------------------------------------------------------------
---	Element:decodeProperties(props) - Invokes the element's
---	Element:getProperties() function, possibly multiple times, passing it
---	(in turn) the decoded properties from the element's {{Style}} attribute,
---	and global properties from one or more style sheets. [internal]
+--	Element:connectProperties: Connect an element's element style properties
 -------------------------------------------------------------------------------
 
-function Element:decodeProperties(props)
-	if self.Style then
-		-- properties for direct formatting:
-		local props = { }
-		for key, val in self.Style:gmatch("%s*([^;:]+)%s*:%s*([^;]+);?") do
-			props[key:lower()] = val
+function Element:connectProperties(stylesheets)
+	local class = self:getClass()
+	local ups
+	local topclass
+	while class ~= Element do
+		for i = 1, #stylesheets do
+			local s = stylesheets[i][class._NAME]
+			if s then
+				if not topclass then
+					topclass = s
+				end
+				if ups then
+					if getmetatable(ups) == s then
+						-- already connected
+						return topclass
+					else
+						setmetatable(ups, s)
+						s.__index = s
+					end
+				end
+				ups = s
+			end
 		end
-		ui.prepareProperties { props }
-		-- 'true' is the marker for direct formatting:
-		self:getProperties(props, true)
+		class = class:getSuper()
 	end
-	-- global properties:
-	self:getProperties(props)
+	return topclass
+end
+
+-------------------------------------------------------------------------------
+--	Element:decodeUserClasses:
+-------------------------------------------------------------------------------
+
+local function mergeprops(source, dest)
+	if source then
+		for key, val in pairs(source) do
+			if not dest[key] then
+				dest[key] = val
+			end
+		end
+	end
+end
+
+function Element:decodeUserClasses(stylesheets, props)
+	local class = self.Class
+	if class then
+		local classname = self._NAME
+		local cachekey = classname .. "." .. class
+		-- do we have a this combination in our cache?
+		local record = stylesheets[0][cachekey]
+		if not record then
+			-- create new record and cache it:
+			record = { }
+			stylesheets[0][cachekey] = record
+			-- elementclass.class is more specific than just .class,
+			-- so they must be treated in that order:
+			class:gsub("(%S+)", function(c)
+				for i = 1, #stylesheets, 1 do
+					mergeprops(stylesheets[i][classname .. "." .. c], record)
+				end
+			end)
+			class:gsub("(%S+)", function(c)
+				for i = 1, #stylesheets, 1 do
+					mergeprops(stylesheets[i]["." .. c], record)
+				end
+			end)
+			record.__index = record
+		end
+		if props then
+			props = setmetatable(record, props)
+		else
+			props = record
+		end
+	end
+	return props
+end
+
+-------------------------------------------------------------------------------
+--	Element:decodeIndividualFormats:
+-------------------------------------------------------------------------------
+
+function Element:decodeIndividualFormats(stylesheets, props)
+	local individual_formats
+	local id = self.Id
+	if id then
+		individual_formats = { }
+		for i = #stylesheets, 1, -1 do
+			local s = stylesheets[i]["#" .. id]
+			if s then
+				for key, val in pairs(s) do
+					individual_formats[key] = val
+				end
+			end
+		end
+	end
+	if self.Style then
+		individual_formats = individual_formats or { }
+		for key, val in self.Style:gmatch("%s*([^;:]+)%s*:%s*([^;]+);?") do
+			ui.unpackProperty(individual_formats, key, val, "")
+		end
+	end
+	if individual_formats then
+		if props then
+			props = setmetatable(individual_formats, props)
+		else
+			props = individual_formats
+		end
+	end
+	return props
+end
+
+-------------------------------------------------------------------------------
+--	Element:decodeProperties(stylesheets): This function decodes the element's
+--	style properties and places them in the {{Properties}} table.
+-------------------------------------------------------------------------------
+
+local empty = { }
+
+function Element:decodeProperties(stylesheets)
+	-- connect element style classes:
+	local props = self:connectProperties(stylesheets)
+	if props then
+		props.__index = props
+	end
+	-- overlay with user classes:
+	props = self:decodeUserClasses(stylesheets, props)
+	-- overlay with individual and direct formattings:
+	props = self:decodeIndividualFormats(stylesheets, props)
+	-- hardcoded class properties:
+	local cprops = self:getClass().Properties
+	if cprops then
+		props.__index = props
+		props = setmetatable(cprops, props or empty)
+	end
+	self.Properties = props or empty
 end
 
 -------------------------------------------------------------------------------
@@ -154,7 +282,12 @@ end
 -------------------------------------------------------------------------------
 
 function Element:setup(app, window)
-	assert(not self.Application)
+-- 	assert(app and app:instanceOf(ui.Application), "No Application")
+-- 	assert(window and window:instanceOf(ui.Window), "No Window")
+-- 	assert(not self.Application, 
+-- 		("%s: Application already set"):format(self:getClassName()))
+-- 	assert(not self.Window,
+-- 		("%s: Window already set"):format(self:getClassName()))
 	self.Application = app
 	self.Window = window
 	if self.Id then
@@ -169,116 +302,11 @@ end
 -------------------------------------------------------------------------------
 
 function Element:cleanup()
-	assert(self.Application)
 	if self.Id then
 		self.Application:remElement(self)
 	end
 	self.Application = false
 	self.Window = false
-end
-
--------------------------------------------------------------------------------
---	value = Element:getProperty(properties, pseudoclass, attribute): Returns
---	the value of a style {{attribute}} from the specified {{properties}}
---	table, or '''false''' if the attribute is undefined. {{pseudoclass}} can
---	be the name of a pseudo class, '''false''' if no pseudo class is used, or
---	'''true''' for looking up the {{attribute}} in the {{properties}} table
---	directly (rather than in a sub table determined by the element's class -
---	this is used for direct formattings).
--------------------------------------------------------------------------------
-
-function Element:getProperty(props, pclass, attr)
-
-	if pclass == true then
-		-- direct formatting:
-		return props[attr] or false
-	end
-
-	local id = self.Id
-	local classname = self._NAME
-	local styleclass = self.Class
-	local key
-	if pclass then
-		if id then
-			key = props[classname .. "#" .. id .. ":" .. pclass]
-			if key and key[attr] then return key[attr] end
-			key = props[classname .. "#" .. id]
-			if key and key[attr] then return key[attr] end
-			key = props["#" .. id .. ":" .. pclass]
-			if key and key[attr] then return key[attr] end
-			key = props["#" .. id]
-			if key and key[attr] then return key[attr] end		
-		end
-		if styleclass then
-			for class in styleclass:gmatch("%S+") do
-				key = props[classname .. "." .. class .. ":" .. pclass]
-				if key and key[attr] then return key[attr] end
-				key = props[classname .. "." .. class]
-				if key and key[attr] then return key[attr] end
-				key = props["." .. class .. ":" .. pclass]
-				if key and key[attr] then return key[attr] end
-				key = props["." .. class]
-				if key and key[attr] then return key[attr] end
-			end
-		end
-		local class = self:getClass()
-		while class ~= Element do
-			local n = class._NAME
-			key = props[n .. ":" .. pclass]
-			if key and key[attr] then return key[attr] end
-			key = props[n]
-			if key and key[attr] then return key[attr] end
-			class = class:getSuper()
-		end
-	else
-		if id then
-			key = props[classname .. "#" .. id]
-			if key and key[attr] then return key[attr] end
-			key = props["#" .. id]
-			if key and key[attr] then return key[attr] end
-		end
-		if styleclass then
-			for class in styleclass:gmatch("%S+") do
-				key = props[classname .. "." .. class]
-				if key and key[attr] then return key[attr] end
-				key = props["." .. class]
-				if key and key[attr] then return key[attr] end
-			end
-		end
-		local class = self:getClass()
-		while class ~= Element do
-			key = props[class._NAME]
-			if key and key[attr] then return key[attr] end
-			class = class:getSuper()
-		end
-	end
-	return false
-end
-
--------------------------------------------------------------------------------
---	value = Element:getNumProperty(properties, pseudoclass, attribute): Gets a
---	property and converts it to a number value. See also Element:getProperty().
--------------------------------------------------------------------------------
-
-function Element:getNumProperty(props, pclass, attr)
-	return tonumber(self:getProperty(props, pclass, attr))
-end
-
--------------------------------------------------------------------------------
---	Element:getProperties(properties, pseudoclass): This function is called
---	after connecting the element, for retrieving style properties from a
---	style sheet or from decoding the element's {{Style}} attribute
---	(''direct formatting''). It can be invoked multiple times with different
---	{{properties}} and pseudo classes.
---	When overriding this function, among the reasonable things to do is to
---	query properties using the Element:getProperty() function, passing it the
---	{{properties}} and {{pseudoclass}} arguments. First recurse into your
---	super class with the pseudo classes your class defines (if any), and
---	finally pass the call to your super class with the {{pseudoclass}} you
---	received.
--------------------------------------------------------------------------------
-
-function Element:getProperties(p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -301,4 +329,24 @@ end
 -------------------------------------------------------------------------------
 
 function Element:getAttr()
+end
+
+-------------------------------------------------------------------------------
+--	Element:addStyleClass(styleclass) - Appends a style class to an element's
+--	{{Class}} attribute, if it is not already present.
+-------------------------------------------------------------------------------
+
+function Element:addStyleClass(styleclass)
+	local class = self.Class
+	if class then
+		for c in class:gmatch("%S+") do
+			if c == styleclass then
+				return
+			end
+		end
+		class = class .. " " .. styleclass
+	else
+		class = styleclass
+	end
+	self.Class = class
 end

@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.group : Group]] /
---		PageGroup
+--		PageGroup ${subclasses(PageGroup)}
 --
---	OVERVIEW::
 --		Implements a group whose children are layouted in individual
 --		pages.
 --
@@ -44,11 +43,11 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Frame = ui.require("frame", 12)
-local Gadget = ui.require("gadget", 17)
-local Group = ui.require("group", 22)
-local Region = ui.loadLibrary("region", 8)
-local Text = ui.require("text", 20)
+local Frame = ui.require("frame", 16)
+local Gadget = ui.require("gadget", 19)
+local Group = ui.require("group", 27)
+local Region = ui.loadLibrary("region", 9)
+local Text = ui.require("text", 24)
 
 local assert = assert
 local insert = table.insert
@@ -60,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 12.1"
+_VERSION = "PageGroup 16.0"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -80,15 +79,6 @@ function PageContainerGroup.init(self)
 	self.PageElement = self.PageElement or false
 	self.PageNumber = self.PageNumber or 1
 	return Group.init(self)
-end
-
--------------------------------------------------------------------------------
---	getProperties: overrides
--------------------------------------------------------------------------------
-
-function PageContainerGroup:getProperties(p, pclass)
-	Gadget.getProperties(self, p, pclass)
-	self.PageElement:getProperties(p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -115,18 +105,11 @@ end
 
 function PageContainerGroup:damage(r1, r2, r3, r4)
 	Gadget.damage(self, r1, r2, r3, r4)
-	self.Redraw = self.Redraw or self.FreeRegion and
-		self.FreeRegion:checkIntersect(r1, r2, r3, r4)
+	local f = self.FreeRegion
+	if f and f:checkIntersect(r1, r2, r3, r4) then
+		self.Flags:set(ui.FL_REDRAW)
+	end
 	self.PageElement:damage(r1, r2, r3, r4)
-end
-
--------------------------------------------------------------------------------
---	refresh: overrides
--------------------------------------------------------------------------------
-
-function PageContainerGroup:refresh()
-	Gadget.refresh(self)
-	self.PageElement:refresh()
 end
 
 -------------------------------------------------------------------------------
@@ -142,8 +125,11 @@ end
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:askMinMax(m1, m2, m3, m4)
-	m1, m2, m3, m4 = self.PageElement:askMinMax(m1, m2, m3, m4)
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
+	local c = self.Children
+	self.Children = { self.PageElement }
+	m1, m2, m3, m4 = Group.askMinMax(self, m1, m2, m3, m4)
+	self.Children = c
+	return m1, m2, m3, m4
 end
 
 -------------------------------------------------------------------------------
@@ -151,6 +137,7 @@ end
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:punch(region)
+	Group.punch(self, region)
 	self.PageElement:punch(region)
 end
 
@@ -159,34 +146,11 @@ end
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:layout(r1, r2, r3, r4, markdamage)
-	Gadget.layout(self, r1, r2, r3, r4, markdamage)
-	local f = self:getGroup(true).FreeRegion
-	self.FreeRegion = f
-	local m = self.Margin
-	local b = Region.new(r1 + m[1], r2 + m[2], r3 - m[3], r4 - m[4])
-	local q1, q2, q3, q4 = self:getBorder()
-	b:subRect(r1 + m[1] + q1, r2 + m[2] + q2, r3 - m[3] - q3, r4 - m[4] - q4)
-	f:subRegion(b)
-	local p = self.Padding
-	local m = self.MarginAndBorder
-	return self.PageElement:layout(
-		r1 + p[1] + m[1],
-		r2 + p[2] + m[2],
-		r3 - p[3] - m[3],
-		r4 - p[4] - m[4],
-		markdamage)
-end
-
--------------------------------------------------------------------------------
---	relayout: overrides
--------------------------------------------------------------------------------
-
-function PageContainerGroup:relayout(e, r1, r2, r3, r4)
-	local res, changed = Gadget.relayout(self, e, r1, r2, r3, r4)
-	if res then
-		return res, changed
-	end
-	return self.PageElement:relayout(e, r1, r2, r3, r4)
+	local c = self.Children
+	self.Children = { self.PageElement }
+	local res = Group.layout(self, r1, r2, r3, r4, markdamage)
+	self.Children = c
+	return res
 end
 
 -------------------------------------------------------------------------------
@@ -261,13 +225,7 @@ function PageContainerGroup:changeTab(pagebuttons, tabnr)
 		local d = self.Drawable
 		if d then
 			self.PageElement:show(d)
-			local m = self.MarginAndBorder
-			self:askMinMax(0, 0, self.MaxWidth, self.MaxHeight)
-			local r = self.Rect
-			local m = self.MarginAndBorder
-			self:relayout(self, r[1] - m[1], r[2] - m[2], r[3] + m[3],
-				r[4] + m[4])
-			self.PageElement:rethinkLayout(2)
+			self:getParent():rethinkLayout(2, true)
 		else
 			db.error("pagegroup not connected to display")
 		end
@@ -299,7 +257,9 @@ function PageGroup.new(class, self)
 		PageElement = pageelement,
 		Width = self.Width,
 		Height = self.Height,
+		Layout = self.Layout
 	}
+	self.Layout = false
 
 	self.PageCaptions = self.PageCaptions or false
 
@@ -327,7 +287,7 @@ function PageGroup.new(class, self)
 			{
 				Class = "page-button",
 				Mode = "inert",
-				Width = "auto",
+				MaxWidth = 0,
 			})
 		else
 			if self.PageCaptions then
@@ -341,7 +301,7 @@ function PageGroup.new(class, self)
 						{
 							Class = "page-button",
 							Mode = "touch",
-							Width = "auto",
+							MaxWidth = 0,
 							Text = text,
 							KeyCode = true
 						}

@@ -12,17 +12,16 @@
 --		template. Arguments in the template are separated by commas. Each
 --		argument in the template consists of a keyword, optionally followed by
 --		one or more aliases delimited by equal signs, and an optional set of
---		modifiers delimited by slashes. Modifiers denote a) the expected
---		datatype, b) if the argument is mandatory and c) whether a keyword
---		must precede its value to form a valid argument. Example argument
---		template:
+--		modifiers delimited by slashes. Modifiers denote the expected
+--		data type, if the argument is mandatory and whether a keyword must
+--		precede its value to form a valid argument. Example argument template:
 --
 --				SOURCE=-s/A/M,DEST=-d/A/K
 --
---		This template would require one or more arguments to satisfy
---		{{SOURCE}}, and exactly one argument to satisfy {{DEST}}. Neither
---		can be omitted. Either {{-d}} or {{DEST}} must precede a value to be
---		accepted as the second argument. Examples:
+--		This template requires one or more arguments to satisfy {{SOURCE}},
+--		and exactly one argument to satisfy {{DEST}}. Neither can be omitted.
+--		Either {{-d}} (or its alias {{DEST}}) must precede the value to be
+--		accepted as the second argument. Example command lines:
 --
 --		{{SOURCE one two three DEST foo}} || valid
 --		{{DEST foo -s one}}               || valid
@@ -40,7 +39,7 @@
 --			* {{/N}} - ''Number''; the value will be converted to a number.
 --			* {{/K}} - ''Keyword''; the keyword (or an alias) must precede its
 --			value.
---			* {{/A}} - ''Required''; This argument cannot be omitted.
+--			* {{/A}} - ''Always required''; This argument cannot be omitted.
 --			* {{/M}} - ''Multiple''; Any number of strings will be accepted,
 --			and all values that cannot be assigned to other arguments will
 --			show up in this argument. No more than one {{/M}} modifier may
@@ -51,6 +50,9 @@
 --		Quoting and escaping: Double quotes can be used to enclose arguments
 --		containing equal signs and spaces.
 --
+--	FUNCTIONS::
+--		- args.read() - Parses a string or table through an argument template
+--	
 --	TODO::
 --		Backslashes for escaping quotes, spaces and themselves
 --
@@ -136,7 +138,7 @@ local function items(rest)
 end
 
 -------------------------------------------------------------------------------
---	res, msg = read(template, args): Parses {{args}} according to
+--	res, msg = args.read(template, args): Parses {{args}} according to
 --	{{template}}. {{args}} can be a string or a table of strings. If the
 --	arguments can be successfully matched against the template, the result
 --	will be a table of parsed arguments, indexed by both keywords and

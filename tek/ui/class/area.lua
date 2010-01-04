@@ -8,76 +8,77 @@
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
---		[[#tek.ui.class.element : Element]] / Area
+--		[[#tek.ui.class.element : Element]] / 
+--		Area ${subclasses(Area)}
 --
 --		This is the base class of all visible user interface elements.
---		It implements an outer margin, layouting, drawing, and the
---		relationships to its neighbours.
+--		It implements an outer margin, layouting, painting, and the
+--		relationships to its neighbour elements.
 --
 --	ATTRIBUTES::
 --		- {{AutoPosition [IG]}} (boolean)
 --			When the element receives the focus, this flag instructs it to
---			position itself automatically into the visible area of any Canvas
+--			automatically position itself into the visible area of any Canvas
 --			that may contain it. An affected [[#tek.ui.class.canvas : Canvas]]
 --			must have its {{AutoPosition}} attribute enabled as well for this
---			option to take effect, but unlike the Area class, the Canvas
---			disables it by default.
---		- {{BGColor [IG]}} (color specification)
---			A color specification for painting the background of the element.
---			Valid are predefined color numbers (e.g. {{ui.PEN_DETAIL}}),
---			predefined color names (e.g. {{"detail"}}, see also 
---			[[#tek.ui.class.display : Display]] for more), or a direct
---			hexadecimal RGB specification (e.g. {{"#334455"}}, {{"#f0f"}}.
---			This attribute is controllable via the {{background-color}} style
---			property.
---		- {{BGPosition [IG]}} (boolean or string)
---			Kind of anchoring for a possible background image or texture:
---				* {{"scollable"}} or '''false''' - The texture is anchored to
---				the element and during scrolling moves with it.
---				* {{"fixed"}} - The texture is anchored to the Window.
---			Note that repainting elements with {{"fixed"}} anchoring can be
---			expensive. This variant should be used sparingly, and some classes
---			may implement it incompletely or incorrectly. This attribute can
---			be controlled using the {{background-position}} attribute.
+--			option to take effect (but unlike the Area class, in a Canvas it
+--			is disabled by default).
+--		- {{BGPen [G]}} (color specification)
+--			The current color (or texture) for painting the element's
+--			background. This value is set in Area:setState(), where it is
+--			derived from the element's current state and the
+--			''background-color'' style property. Valid are color names (e.g. 
+--			{{"detail"}}, {{"fuchsia"}}, see also
+--			[[#tek.ui.class.display : Display]] for more), a hexadecimal RGB
+--			specification (e.g. {{"#334455"}}, {{"#f0f"}}), or an image URL
+--			in the form {{"url(...)"}}.
 --		- {{DamageRegion [G]}} ([[#tek.lib.region : Region]])
 --			see {{TrackDamage}}
 --		- {{Disabled [ISG]}} (boolean)
 --			If '''true''', the element is in disabled state. This attribute is
 --			handled by the [[#tek.ui.class.gadget : Gadget]] class.
+--		- {{Drawable [G]}} ([[#tek.ui.class.drawable : Drawable]])
+--			The Drawable for rendering, set during Area:show() and cleared
+--			during Area:hide().
 --		- {{EraseBG [IG]}} (boolean)
 --			If '''true''', the element's background is painted automatically
 --			using the Area:erase() method. Set this attribute to '''false''' to
---			indicate that you wish to paint the background yourself.
+--			indicate that you wish to paint the background yourself in the
+--			Area:draw() method.
+--		- {{Flags [SG]}} (Flags field)
+--			This attribute holds various status flags:
+--			- {{FL_SETUP}} - Set in Area:setup() and cleared in Area:cleanup()
+--			- {{FL_LAYOUT}} - Set in Area:layout(), cleared in Area:cleanup()
+--			- {{FL_SHOW}} - Set in Area:show(), cleared in Area:hide()
+--			- {{FL_REDRAW}} - Set in Area:layout(), Area:damage(),
+--			Area:setState() and possibly other places to indicate that the
+--			element needs to be repainted. Cleared in Area:draw().
+--			- {{FL_CHANGED}} - This flag indicates that the contents of an
+--			element have changed, i.e. when children were added to a group,
+--			or when setting a new text or image should cause a recalculation
+--			of its size.
 --		- {{Focus [SG]}} (boolean)
 --			If '''true''', the element has the input focus. This attribute
 --			is handled by the [[#tek.ui.class.gadget : Gadget]] class. Note:
---			The {{Focus}} attribute cannot be initialized; see also the
---			[[#tek.ui.class.gadget : InitialFocus]] attribute.
+--			The {{Focus}} attribute represents the current state, if you want
+--			to place the initial focus on an element, use the {{InitialFocus}}
+--			attribute in the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{HAlign [IG]}} ({{"left"}}, {{"center"}}, {{"right"}})
 --			Horizontal alignment of the element in its group. This attribute
---			can be controlled using the {{horizontal-grid-align}} attribute.
---		- {{Height [IG]}} (number, '''false''', {{"auto"}}, {{"fill"}}, 
---		{{"free"}})
+--			can be controlled using the {{halign}} attribute.
+--		- {{Height [IG]}} (number, '''false''', {{"fill"}}, {{"free"}})
 --			Height of the element, in pixels, or
 --				- '''false''' - unspecified; during initialization, the class'
 --				default will be used
---				- {{"auto"}} - Reserves the minimal height needed for the
---				element.
 --				- {{"free"}} - Allows the element's height to grow to any size.
---				- {{"fill"}} - Completely fills up the height that other
---				elements in the same group have left, but does not claim more.
---				This value is useful only once per group.
+--				- {{"fill"}} - Completely fills up the height that is available
+--				in the group, but does not claim more.
 --			This attribute can be controlled using the {{height}} style
 --			property.
 --		- {{Hilite [SG]}} (boolean)
 --			If '''true''', the element is in highlighted state. This
 --			attribute is handled by the [[#tek.ui.class.gadget : Gadget]]
 --			class.
---		- {{Margin [IG]}} (table)
---			An array of four offsets for the element's outer margin in the
---			order left, right, top, bottom [pixels]. If unspecified during
---			initialization, the class' default margins are used. This
---			attribute is controllable via the {{margin}} style property.
 --		- {{MaxHeight [IG]}} (number)
 --			Maximum height of the element, in pixels [default: {{ui.HUGE}}].
 --			This attribute is controllable via the {{max-height}} style
@@ -94,60 +95,56 @@
 --			Minimum width of the element, in pixels [default: 0].
 --			This attribute is controllable via the {{min-width}} style
 --			property.
---		- {{Padding [IG]}} (table)
---			An array of four offsets for the element's inner padding in the
---			order left, right, top, bottom [pixels]. If unspecified during
---			initialization, the class' default paddings are used.
---			This attribute is controllable via the {{padding}} style
---			property.
 --		- {{Selected [ISG]}} (boolean)
 --			If '''true''', the element is in selected state. This attribute
 --			is handled by the [[#tek.ui.class.gadget : Gadget]] class.
 --		- {{TrackDamage [IG]}} (boolean)
 --			If '''true''', the element collects intra-area damages in a
 --			[[#tek.lib.region : Region]] named {{DamageRegion}}, which can be
---			used by class writers to implement minimally invasive repaints.
+--			used by class writers to implement minimally invasive repainting.
 --			Default: '''false''', the element is repainted in its entirety.
 --		- {{VAlign [IG]}} ({{"top"}}, {{"center"}}, {{"bottom"}})
 --			Vertical alignment of the element in its group. This attribute
---			can be controlled using the {{vertical-grid-align}} attribute.
+--			can be controlled using the {{valign}} attribute.
 --		- {{Weight [IG]}} (number)
 --			Determines the weight that is attributed to the element relative
 --			to its siblings in its group. Note: By recommendation, the weights
 --			in a group should sum up to 0x10000.
---		- {{Width [IG]}} (number, '''false''', {{"auto"}}, {{"fill"}},
---		{{"free"}})
+--		- {{Width [IG]}} (number, '''false''', {{"fill"}}, {{"free"}})
 --			Width of the element, in pixels, or
 --				- '''false''' - unspecified; during initialization, the class'
 --				default will be used
---				- {{"auto"}} - Reserves the minimal width needed for the
---				element
 --				- {{"free"}} - Allows the element's width to grow to any size
---				- {{"fill"}} - Completely fills up the width that other
---				elements in the same group have left, but does not claim more.
---			Note: Normally, "fill" is useful only once per group.
+--				- {{"fill"}} - Completely fills up the width that is available
+--				in the group, but does not claim more.
+--			This attribute can be controlled using the {{width}} style
+--			property.
 --
 --	STYLE PROPERTIES::
---		- ''background-color'' || controls the {{Area.BGColor}} attribute
---		- ''background-position'' || controls the {{Area.BGPosition}} attribute
---		- ''height'' || controls the {{Area.Height}} attribute
---		- ''horizontal-grid-align'' || controls the {{Area.HAlign}} attribute
---		- ''margin'' || controls the {{Area.Margin}} attribute
---		- ''margin-bottom'' || controls the {{Area.Margin}} attribute
---		- ''margin-left'' || controls the {{Area.Margin}} attribute
---		- ''margin-right'' || controls the {{Area.Margin}} attribute
---		- ''margin-top'' || controls the {{Area.Margin}} attribute
---		- ''max-height'' || controls the {{Area.MaxHeight}} attribute
---		- ''max-width'' || controls the {{Area.MaxWidth}} attribute
---		- ''min-height'' || controls the {{Area.MinHeight}} attribute
---		- ''min-width'' || controls the {{Area.MinWidth}} attribute
---		- ''padding'' || controls the {{Area.Padding}} attribute
---		- ''padding-bottom'' || controls the {{Area.Padding}} attribute
---		- ''padding-left'' || controls the {{Area.Padding}} attribute
---		- ''padding-right'' || controls the {{Area.Padding}} attribute
---		- ''padding-top'' || controls the {{Area.Padding}} attribute
---		- ''vertical-grid-align'' || controls the {{Area.VAlign}} attribute
---		- ''width'' || controls the {{Area.Width}} attribute
+--		''background-attachment'' || {{"scollable"}} or {{"fixed"}}
+--		''background-color'' || Controls {{Area.BGPen}}
+--		''fixed'' || fixed layouter coordinates: {{"left top right bottom"}}
+--		''halign'' || controls the {{Area.HAlign}} attribute
+--		''height'' || controls the {{Area.Height}} attribute
+--		''margin-bottom'' || the element's bottom margin, in pixels
+--		''margin-left'' || the element's left margin, in pixels
+--		''margin-right'' || the element's right margin, in pixels
+--		''margin-top'' || the element's top margin, in pixels
+--		''max-height'' || controls the {{Area.MaxHeight}} attribute
+--		''max-width'' || controls the {{Area.MaxWidth}} attribute
+--		''min-height'' || controls the {{Area.MinHeight}} attribute
+--		''min-width'' || controls the {{Area.MinWidth}} attribute
+--		''padding-bottom'' || the element's bottom padding
+--		''padding-left'' || the element's left padding
+--		''padding-right'' || the element's right padding
+--		''padding-top'' || the element's top padding
+--		''valign'' || controls the {{Area.VAlign}} attribute
+--		''width'' || controls the {{Area.Width}} attribute
+--
+--		Note that repainting elements with a {{"fixed"}}
+--		''background-attachment'' can be expensive. This variant should be
+--		used sparingly, and some classes may implement it incompletely or
+--		incorrectly.
 --
 --	IMPLEMENTS::
 --		- Area:askMinMax() - Queries element's minimum and maximum dimensions
@@ -155,6 +152,8 @@
 --		- Area:checkHover() - Checks if the element can be hovered over
 --		- Area:damage() - Notifies the element of a damage
 --		- Area:draw() - Paints the element
+--		- Area:drawBegin() - Prepares the rendering context
+--		- Area:drawEnd() - Reverts the changes made in drawBegin()
 --		- Area:erase() - Erases the element's background
 --		- Area:focusRect() - Make the element fully visible
 --		- Area:getBG() - Gets the element's background properties
@@ -163,6 +162,7 @@
 --		- Area:getByXY() - Checks if the element covers a coordinate
 --		- Area:getGroup() - Gets the element's group
 --		- Area:getNext() - Gets the element's successor in its group
+--		- Area:getPadding() - Gets the element's paddings
 --		- Area:getParent() - Gets the element's parent element
 --		- Area:getPrev() - Gets the element's predecessor in its group
 --		- Area:getRect() - Returns the element's layouted coordinates
@@ -172,15 +172,12 @@
 --		- Area:passMsg() - Passes an input message to the element
 --		- Area:punch() - Subtracts the outline of the element from a
 --		[[#tek.lib.region : Region]]
---		- Area:refresh() - Repaints the element if necessary
---		- Area:relayout() - Relayouts the element if necessary
 --		- Area:rethinkLayout() - Causes a relayout of the element and its group
 --		- Area:setState() - Sets the background attribute of an element
---		- Area:show() - Connects the element to a Drawable
+--		- Area:show() - Connects the element to a Drawable, prepares drawing
 --
 --	OVERRIDES::
 --		- Element:cleanup()
---		- Element:getProperties()
 --		- Object.init()
 --		- Class.new()
 --		- Element:setup()
@@ -189,21 +186,30 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
+local Element = ui.require("element", 16)
+local Region = ui.loadLibrary("region", 9)
 
-local Element = ui.require("element", 14)
-local Region = ui.loadLibrary("region", 8)
-
-local freeRegion = ui.freeRegion
+local assert = assert
+local newFlags = ui.newFlags
 local intersect = Region.intersect
 local max = math.max
 local min = math.min
 local newRegion = ui.newRegion
 local tonumber = tonumber
+local type = type
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 29.0"
+_VERSION = "Area 36.0"
 local Area = _M
+
+local FL_REDRAW = ui.FL_REDRAW
+local FL_LAYOUT = ui.FL_LAYOUT
+local FL_SETUP = ui.FL_SETUP
+local FL_SHOW = ui.FL_SHOW
+local FL_CHANGED = ui.FL_CHANGED
+
+local HUGE = ui.HUGE
 
 -------------------------------------------------------------------------------
 --	new:
@@ -212,7 +218,7 @@ local Area = _M
 function Area.new(class, self)
 	self = self or { }
 	-- Combined margin and border offsets of the element:
-	self.MarginAndBorder = { }
+	self.Margin = { }
 	-- Calculated minimum/maximum sizes of the element:
 	self.MinMax = { }
 	-- The layouted rectangle of the element on the display:
@@ -229,25 +235,21 @@ function Area.init(self)
 		self.AutoPosition = true
 	end
 	self.BGPen = false
-	self.BGColor = self.BGColor or false
-	self.BGPosition = false
 	self.DamageRegion = false
 	self.Disabled = self.Disabled or false
 	self.Drawable = false
 	if self.EraseBG == nil then
 		self.EraseBG = true
 	end
+	self.Flags = newFlags()
 	self.Focus = false
 	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
 	self.Hilite = false
-	self.Margin = self.Margin or { }
 	self.MaxHeight = self.MaxHeight or false
 	self.MaxWidth = self.MaxWidth or false
 	self.MinHeight = self.MinHeight or false
 	self.MinWidth = self.MinWidth or false
-	self.Padding = self.Padding or { }
-	self.Redraw = false
 	self.Selected = self.Selected or false
 	self.TrackDamage = self.TrackDamage or false
 	self.VAlign = self.VAlign or false
@@ -257,82 +259,63 @@ function Area.init(self)
 end
 
 -------------------------------------------------------------------------------
---	getProperties: overrides
--------------------------------------------------------------------------------
-
-function Area:getProperties(p, pclass)
-	self.BGPosition = self.BGPosition or
-		self:getProperty(p, pclass, "background-position")
-	self.BGColor = self.BGColor or 
-		self:getProperty(p, pclass, "background-color")
-	self.HAlign = self.HAlign or
-		self:getProperty(p, pclass, "horizontal-grid-align")
-	self.VAlign = self.VAlign or
-		self:getProperty(p, pclass, "vertical-grid-align")
-	self.Width = self.Width or self:getProperty(p, pclass, "width")
-	self.Height = self.Height or self:getProperty(p, pclass, "height")
-
-	local m = self.Margin
-	m[1] = m[1] or self:getNumProperty(p, pclass, "margin-left")
-	m[2] = m[2] or self:getNumProperty(p, pclass, "margin-top")
-	m[3] = m[3] or self:getNumProperty(p, pclass, "margin-right")
-	m[4] = m[4] or self:getNumProperty(p, pclass, "margin-bottom")
-
-	self.MaxHeight = self.MaxHeight or
-		self:getProperty(p, pclass, "max-height")
-	self.MaxWidth = self.MaxWidth or self:getProperty(p, pclass, "max-width")
-	self.MinHeight = self.MinHeight or
-		self:getProperty(p, pclass, "min-height")
-	self.MinWidth = self.MinWidth or self:getProperty(p, pclass, "min-width")
-
-	local q = self.Padding
-	q[1] = q[1] or self:getNumProperty(p, pclass, "padding-left")
-	q[2] = q[2] or self:getNumProperty(p, pclass, "padding-top")
-	q[3] = q[3] or self:getNumProperty(p, pclass, "padding-right")
-	q[4] = q[4] or self:getNumProperty(p, pclass, "padding-bottom")
-
-	Element.getProperties(self, p, pclass)
-end
-
--------------------------------------------------------------------------------
---	setup: overrides
+--	Area:setup(app, win): After passing the call on and returning from
+--	Element:setup(), initializes fields which are being used by Area:layout(),
+--	and sets {{FL_SETUP}} in the {{Flags}} field to indicate that the element
+--	underwent its setup procedure.
 -------------------------------------------------------------------------------
 
 function Area:setup(app, win)
 	Element.setup(self, app, win)
-	-- consolidation of properties:
-	self.Width = tonumber(self.Width) or self.Width
-	self.Height = tonumber(self.Height) or self.Height
-	local m, p = self.Margin, self.Padding
-	m[1], m[2], m[3], m[4] = m[1] or 0, m[2] or 0, m[3] or 0, m[4] or 0
-	p[1], p[2], p[3], p[4] = p[1] or 0, p[2] or 0, p[3] or 0, p[4] or 0
-	if not self.MaxHeight then
-		self.MaxHeight = ui.HUGE
+	local props = self.Properties
+	self.HAlign = self.HAlign or props["halign"] or false
+	self.VAlign = self.VAlign or props["valign"] or false
+	local w = self.Width or props["width"]
+	local h = self.Height or props["height"]
+	local minw = self.MinWidth or props["min-width"]
+	local minh = self.MinHeight or props["min-height"]
+	local maxw = self.MaxWidth or props["max-width"]
+	local maxh = self.MaxHeight or props["max-height"]
+	if maxw == "none" then
+		maxw = HUGE
 	end
-	if not self.MaxWidth then
-		self.MaxWidth = ui.HUGE
+	if maxh == "none" then
+		maxh = HUGE
 	end
-	self.MinHeight = self.MinHeight or 0
-	self.MinWidth = self.MinWidth or 0
-	-- initialize margin_and_border:
-	local d, s = self.MarginAndBorder, self.Margin
-	d[1], d[2], d[3], d[4] = s[1], s[2], s[3], s[4]
+	minw = tonumber(minw) or tonumber(w) or minw
+	minh = tonumber(minh) or tonumber(h) or minh
+	maxw = tonumber(maxw) or tonumber(w) or maxw
+	maxh = tonumber(maxh) or tonumber(h) or maxh
+	self.Width = tonumber(w) or w or false
+	self.Height = tonumber(h) or h or false
+	self.MinWidth = tonumber(minw) or 0
+	self.MinHeight = tonumber(minh) or 0
+	self.MaxWidth = tonumber(maxw) or HUGE
+	self.MaxHeight = tonumber(maxh) or HUGE
+	local m = self.Margin
+	m[1] = tonumber(props["margin-left"]) or 0
+	m[2] = tonumber(props["margin-top"]) or 0
+	m[3] = tonumber(props["margin-right"]) or 0
+	m[4] = tonumber(props["margin-bottom"]) or 0
+	self.Flags:set(FL_SETUP)
 end
 
 -------------------------------------------------------------------------------
---	cleanup: overrides
+--	Area:cleanup(): Clears all temporary layouting data and the {{FL_LAYOUT}}
+--	and {{FL_SETUP}} flags, before passing on the call to Element:cleanup().
 -------------------------------------------------------------------------------
 
 function Area:cleanup()
-	self.MarginAndBorder = { }
-	self.DamageRegion = freeRegion(self.DamageRegion)
+	self.Margin = { }
+	self.DamageRegion = false
 	self.MinMax = { }
 	self.Rect = { }
+	self.Flags:clear(FL_LAYOUT + FL_SETUP + FL_REDRAW)
 	Element.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
---	show(drawable): This function passes an element the
+--	Area:show(drawable): This function passes an element the
 --	[[#tek.ui.class.drawable : Drawable]] that it will be rendered to. This
 --	function is called when the element's window is opened.
 -------------------------------------------------------------------------------
@@ -340,56 +323,61 @@ end
 function Area:show(drawable)
 	self:setState()
 	self.Drawable = drawable
+	self.Flags:set(FL_SHOW)
 end
 
 -------------------------------------------------------------------------------
---	hide(): Clears a drawable from an element. Override this method to free
---	all display-related resources previously allocated in Area:show().
+--	Area:hide(): Clears a drawable from an element. Override this method to
+--	free all display-related resources previously allocated in Area:show().
 -------------------------------------------------------------------------------
 
 function Area:hide()
 	self.Drawable = false
+	self.Flags:clear(FL_SHOW)
 end
 
 -------------------------------------------------------------------------------
---	rethinkLayout([damage]): This method causes a relayout of the element and
---	possibly the [[#tek.ui.class.group : Group]] in which it resides (and even
---	parent groups thereof if necessary). The optional numeric argument
---	{{damage}} indicates the kind of damage to apply to the element:
---		- {{0}} - do not mark the element as damaged
---		- {{1}} - slate the group (not its contents) for repaint [default]
---		- {{2}} - mark the whole group and its contents as damaged
+--	Area:rethinkLayout([repaint[, check_size]]): Slates an element (and its
+--	children) for relayouting, which will occur during the next Window update
+--	cycle. If the element's coordinates change, this will cause it to be
+--	repainted. The parent element (usually a Group) will be checked as well,
+--	so that it has the opportunity to update its FreeRegion.
+--	The optional argument {{repaint}} can be used to specify additional hints:
+--		- {{1}} - marks the element for repainting unconditionally (not
+--		implying possible children)
+--		- {{2}} - marks the element (and all possible children) for repainting
+--		unconditionally
+--	The optional argument {{check_size}} (a boolean) can be used to
+--	recalculate the element's minimum and maximum size requirements.
 -------------------------------------------------------------------------------
 
-function Area:rethinkLayout(damage)
-	-- must be on a display and layouted previously:
-	if self.Drawable and self.Rect[1] then
-		local pgroup = self:getGroup(true) -- get parent group
-		self.Window:addLayoutGroup(pgroup, damage or 1)
-		-- cause the rethink to bubble up until it reaches the Window:
-		pgroup:rethinkLayout(0)
-	else
-		db.info("%s : Cannot rethink layout - not connected/layouted",
-			self:getClassName())
+function Area:rethinkLayout(repaint, check_size)
+	if self.Flags:check(FL_SETUP) then
+		if check_size then
+			-- indicate possible change of group structure:
+			self:getGroup().Flags:set(FL_CHANGED)
+		end
+		self.Window:addLayout(self, repaint or 0, check_size or false)
 	end
 end
 
 -------------------------------------------------------------------------------
---	minw, minh, maxw, maxh = askMinMax(minw, minh, maxw, maxh): This
+--	minw, minh, maxw, maxh = Area:askMinMax(minw, minh, maxw, maxh): This
 --	method is called during the layouting process for adding the required
---	spatial extents (width and height) of this object to the min/max values
---	passed from a child class, before passing them on to its super class.
---	{{minw}}, {{minh}} are cumulative of the minimal size of the element,
---	while {{maxw}}, {{maxw}} collect the size the element is allowed to
---	expand to. Use {{ui.HUGE}} to indicate a (practically) unlimited size.
+--	width and height to the minimum and maximum size of this object, before
+--	passing the result on to its super class. {{minw}}, {{minh}} are
+--	cumulative of the minimal size of the element, while {{maxw}}, {{maxw}}
+--	collect the size the element is allowed to expand to.
 -------------------------------------------------------------------------------
 
 function Area:askMinMax(m1, m2, m3, m4)
-	local p, m, mm = self.Padding, self.MarginAndBorder, self.MinMax
-	m1 = max(self.MinWidth, m1 + p[1] + p[3])
-	m2 = max(self.MinHeight, m2 + p[2] + p[4])
-	m3 = max(min(self.MaxWidth, m3 + p[1] + p[3]), m1)
-	m4 = max(min(self.MaxHeight, m4 + p[2] + p[4]), m2)
+	assert(self.Flags:check(FL_SETUP), "Element not set up")
+	local p1, p2, p3, p4 = self:getPadding()
+	local m, mm = self.Margin, self.MinMax
+	m1 = max(self.MinWidth, m1 + p1 + p3)
+	m2 = max(self.MinHeight, m2 + p2 + p4)
+	m3 = max(min(self.MaxWidth, m3 + p1 + p3), m1)
+	m4 = max(min(self.MaxHeight, m4 + p2 + p4), m2)
 	m1 = m1 + m[1] + m[3]
 	m2 = m2 + m[2] + m[4]
 	m3 = m3 + m[1] + m[3]
@@ -399,7 +387,7 @@ function Area:askMinMax(m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
---	changed = layout(x0, y0, x1, y1[, markdamage]): Layouts the element
+--	changed = Area:layout(x0, y0, x1, y1[, markdamage]): Layouts the element
 --	into the specified rectangle. If the element's (or any of its childrens')
 --	coordinates change, returns '''true''' and marks the element as damaged,
 --	unless the optional argument {{markdamage}} is set to '''false'''.
@@ -408,7 +396,7 @@ end
 function Area:layout(x0, y0, x1, y1, markdamage)
 
 	local r = self.Rect
-	local m = self.MarginAndBorder
+	local m = self.Margin
 
 	x0 = x0 + m[1]
 	y0 = y0 + m[2]
@@ -422,11 +410,14 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	end
 
 	r[1], r[2], r[3], r[4] = x0, y0, x1, y1
+	self.Flags:set(FL_LAYOUT)
 	markdamage = markdamage ~= false
 
 	if not r1 then
 		-- this is the first layout:
-		self.Redraw = self.Redraw or markdamage
+		if markdamage then
+			self.Flags:set(FL_REDRAW)
+		end
 		return true
 	end
 
@@ -435,22 +426,23 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	local dy = y0 - r2
 	local dw = x1 - x0 - r3 + r1
 	local dh = y1 - y0 - r4 + r2
-	
+
 	-- get element transposition:
-	local sx, sy = self.Drawable:getShift()
+	local d = self.Drawable
+	local sx, sy = d:getShift()
 	local win = self.Window
-	
+
 	local samesize = dw == 0 and dh == 0
 	local validmove = (dx == 0) ~= (dy == 0)
-	
+
 	-- refresh element by copying if:
 	-- * shifting occurs only on one axis
 	-- * size is unchanged OR TrackDamage enabled
 	-- * object is not already slated for copying
-	
+
 	if validmove and (samesize or self.TrackDamage) and
 		not win.BlitObjects[self] then
-		
+
 		-- get source rect, incl. border:
 		local s1 = x0 - dx - m[1]
 		local s2 = y0 - dy - m[2]
@@ -458,19 +450,19 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 		local s4 = y1 - dy + m[4]
 
 		local can_copy
-		
-		local c1, c2, c3, c4 = self.Drawable:getClipRect()
+
+		local c1, c2, c3, c4 = d:getClipRect()
 		if c1 then
 			-- if we have a cliprect, check if parts become visible that
 			-- were previously obscured (including borders and shift):
 			local r = newRegion(r1 + sx - m[1], r2 + sy - m[2], r3 + sx + m[3],
 				r4 + sy + m[4])
 			r:subRect(c1, c2, c3, c4)
-			r:trans(dx, dy)
+			r:shift(dx, dy)
 			r:andRect(c1, c2, c3, c4)
-			if r:isNull() then
+			if r:isEmpty() then
 				-- completely visible before and after:
-				can_copy = true 
+				can_copy = true
 			elseif self.TrackDamage then
 				db.warn("partially visible (masked by cliprect)")
 			end
@@ -483,7 +475,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 			win:addBlit(s1 + sx, s2 + sy, s3 + sx, s4 + sy, dx, dy,
 				c1, c2, c3, c4)
 			if samesize then
-				-- something changed, no Redraw. second value: border_ok hack
+				-- something changed, no redraw. second value: border_ok hack
 				return true, true
 			end
 			r1 = r1 + dx
@@ -492,45 +484,30 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 			r4 = r4 + dy
 		end
 	end
-	
+
 	if x0 == r1 and y0 == r2 then
 		-- did not move, size changed:
 		if markdamage and self.TrackDamage then
 			-- if damage is to be marked and can be tracked:
 			local r = newRegion(x0, y0, x1, y1):subRect(r1, r2, r3, r4)
-			local d = self.DamageRegion
-			if d then
-				r:forEach(d.orRect, d)
-				freeRegion(r)
-			else
-				self.DamageRegion = r
+			-- clip new damage through current cliprect, correct by shift:
+			local c1, c2, c3, c4 = d:getClipRect()
+			if c1 then
+				r:andRect(c1 - sx, c2 - sy, c3 - sx, c4 - sy)
 			end
+			r:forEach(self.damage, self)
 		end
 	end
-	
-	self.Redraw = self.Redraw or markdamage -- mark damage (if requested)
+
+	if markdamage then
+		self.Flags:set(FL_REDRAW)
+	end
 	return true
 end
 
 -------------------------------------------------------------------------------
---	found[, changed] = relayout(element, x0, y0, x1, y1):
---	Traverses the element tree searching for the specified element, and if
---	this class (or the class of one of its children) is responsible for it,
---	layouts it to the specified rectangle. Returns '''true''' if the element
---	was found and its layout updated. A secondary return value of '''true'''
---	indicates whether relayouting actually caused a change, i.e. a damage to
---	the object.
--------------------------------------------------------------------------------
-
-function Area:relayout(e, r1, r2, r3, r4)
-	if self == e then
-		return true, self:layout(r1, r2, r3, r4)
-	end
-end
-
--------------------------------------------------------------------------------
---	punch(region): Subtracts the element from (punching a
---	hole into) the specified Region. This function is called by the layouter.
+--	Area:punch(region): Subtracts the element from (by punching a hole into)
+--	the specified Region. This function is called by the layouter.
 -------------------------------------------------------------------------------
 
 function Area:punch(region)
@@ -538,57 +515,96 @@ function Area:punch(region)
 end
 
 -------------------------------------------------------------------------------
---	damage(x0, y0, x1, y1): If the element overlaps with the given
---	rectangle, this function marks it as damaged.
+--	Area:damage(x0, y0, x1, y1): If the element overlaps with the given
+--	rectangle, this function marks it as damaged by setting {{ui.FL_REDRAW}}
+--	in the element's {{Flag}} field. Additionally, if the element's
+--	{{TrackDamage}} attribute is '''true''', intra-area damage rectangles are
+--	collected in {{DamageRegion}}.
 -------------------------------------------------------------------------------
 
 function Area:damage(r1, r2, r3, r4)
-	if self.TrackDamage or not self.Redraw then
+	if self.Flags:check(FL_LAYOUT) then
 		local s1, s2, s3, s4 = self:getRect()
-		if s1 then
-			r1, r2, r3, r4 = intersect(r1, r2, r3, r4, s1, s2, s3, s4)
-			if r1 then
-				self.Redraw = true
-				if self.DamageRegion then
-					self.DamageRegion:orRect(r1, r2, r3, r4)
-				elseif self.TrackDamage then
-					self.DamageRegion = newRegion(r1, r2, r3, r4)
-				end
+		r1, r2, r3, r4 = intersect(r1, r2, r3, r4, s1, s2, s3, s4)
+		local track = self.TrackDamage
+		if r1 and (track or not self.Flags:check(FL_REDRAW)) then
+			local dr = self.DamageRegion
+			if dr then
+				dr:orRect(r1, r2, r3, r4)
+			elseif track then
+				self.DamageRegion = newRegion(r1, r2, r3, r4)			
 			end
+			self.Flags:set(FL_REDRAW)
 		end
 	end
 end
 
 -------------------------------------------------------------------------------
---	draw(): Draws the element into the rectangle assigned to it by
---	the layouter; the coordinates can be found in the element's {{Rect}}
---	table. Note: Applications are not allowed to call this function directly.
+--	success = Area:draw(): If the element is slated for a repaint (indicated
+--	by the presence of the flag {{ui.FL_REDRAW}} in the {{Flags}} field),
+--	draws the element into the rectangle that was assigned to it by the
+--	layouter, clears {{ui.FL_REDRAW}}, and returns '''true'''. If the
+--	atttribute {{EraseBG}} is set, this function also clears the element's
+--	background by calling Area:erase().
+--
+--	When overriding this function, the control flow is roughly as follows:
+--
+--			function ElementClass:draw()
+--			  if SuperClass.draw(self) then
+--			    -- your rendering here
+--			    return true
+--			  end
+--			end
+--
+--	There are rare occasions in which a class modifies the drawing context,
+--	e.g. by setting a coordinate displacement. Such modifications must
+--	be performed in Area:drawBegin() and undone in Area:drawEnd(). Then, the
+--	control flow looks like this:
+--
+--			function ElementClass:draw()
+--			  if SuperClass.draw(self) and self:drawBegin() then
+--			    -- your rendering here
+--			    self:drawEnd()
+--			    return true
+--			  end
+--			end
 -------------------------------------------------------------------------------
 
+local FL_REDRAW_OK = FL_LAYOUT + FL_SHOW + FL_SETUP + FL_REDRAW
+
 function Area:draw()
-	if self.EraseBG then
-		self:erase()
+	-- check layout, show, setup, redraw, and clear redraw:
+	if self.Flags:checkClear(FL_REDRAW_OK, FL_REDRAW) then
+		if self.EraseBG and self:drawBegin() then
+			self:erase()
+			self:drawEnd()
+		end
+		self.DamageRegion = false
+		return true
 	end
 end
 
 -------------------------------------------------------------------------------
---	bgpen[, tx, ty] = getBG(): Gets the element's background properties.
---	{{bgpen}} is the background pen (which may be a texture). If the element
---	background is scrollable, then {{tx}} and {{ty}} are the coordinates of
---	the texture origin, otherwise (if the background is fixed) '''nil'''.
+--	bgpen[, tx, ty] = Area:getBG(): Gets the element's background properties.
+--	{{bgpen}} is the background pen (which may be a texture). If the element's
+--	''background-attachment'' is {{"scrollable"}}, then {{tx}} and {{ty}} are
+--	the coordinates of the texture origin, otherwise (if the attachment is
+--	{{"fixed"}}) '''nil'''.
 -------------------------------------------------------------------------------
 
 function Area:getBG()
-	local bgpen = self.BGPen
-	if self.BGPosition ~= "fixed" then
-		local r = self.Rect
-		return bgpen, r[1], r[2]
+	local r1, r2 = self:getRect()
+	if r1 then
+		local bgpen = self.BGPen
+		if self.Properties["background-attachment"] ~= "fixed" then
+			return bgpen, r1, r2
+		end
+		return bgpen
 	end
-	return bgpen
-end	
+end
 
 -------------------------------------------------------------------------------
---	element = getBGElement(): Returns the element that is responsible for
+--	element = Area:getBGElement(): Returns the element that is responsible for
 --	painting the surroundings (or the background) of the element. This
 --	information is useful for painting transparent or translucent parts of
 --	the element, e.g. an inactive focus border.
@@ -599,7 +615,10 @@ function Area:getBGElement()
 end
 
 -------------------------------------------------------------------------------
---	erase(): Clears the element's background.
+--	Area:erase(): Clears the element's background. This method is invoked by
+--	Area:draw() if the {{EraseBG}} attribute is set, and when a repaint is
+--	both possible and necessary. Area:drawBegin() has been called already
+--	when this function is called, and Area:drawEnd() will be called afterwards.
 -------------------------------------------------------------------------------
 
 function Area:erase()
@@ -611,27 +630,13 @@ function Area:erase()
 		-- repaint intra-area damagerects:
 		dr:forEach(d.fillRect, d, bgpen, tx, ty)
 	else
-		local r = self.Rect
-		d:fillRect(r[1], r[2], r[3], r[4], bgpen, tx, ty)
+		local r1, r2, r3, r4 = self:getRect()
+		d:fillRect(r1, r2, r3, r4, bgpen, tx, ty)
 	end
 end
 
 -------------------------------------------------------------------------------
---	refresh(): Redraws the element (and all possible children)
---	if they are marked as damaged. This function is called in the Window's
---	update procedure.
--------------------------------------------------------------------------------
-
-function Area:refresh()
-	if self.Redraw then
-		self:draw()
-		self.Redraw = false
-		self.DamageRegion = freeRegion(self.DamageRegion)
-	end
-end
-
--------------------------------------------------------------------------------
---	self = getByXY(x, y): Returns {{self}} if the element covers
+--	self = Area:getByXY(x, y): Returns {{self}} if the element covers
 --	the specified coordinate.
 -------------------------------------------------------------------------------
 
@@ -643,7 +648,7 @@ function Area:getByXY(x, y)
 end
 
 -------------------------------------------------------------------------------
---	msg = passMsg(msg): This function filters the specified input
+--	msg = Area:passMsg(msg): This function filters the specified input
 --	message. After processing, it is free to return the message unmodified
 --	(thus passing it on to the next message handler), to return a copy that
 --	has certain fields in the message modified, or to 'swallow' the message
@@ -657,24 +662,25 @@ function Area:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
---	setState(bg): Sets the {{BGPen}} attribute according to
+--	Area:setState(bg): Sets the {{BGPen}} attribute according to
 --	the state of the element, and if it changed, slates the element
 --	for repainting.
 -------------------------------------------------------------------------------
 
 function Area:setState(bg, fg)
-	bg = bg or self.BGColor or ui.PEN_BACKGROUND
-	if bg == ui.PEN_DEFAULT then
+	local props = self.Properties
+	bg = bg or props["background-color"] or "background"
+	if bg == "transparent" then
 		bg = self:getBGElement().BGPen
 	end
 	if bg ~= self.BGPen then
 		self.BGPen = bg
-		self.Redraw = true
+		self.Flags:set(FL_REDRAW)
 	end
 end
 
 -------------------------------------------------------------------------------
---	can_receive = checkFocus(): Returns '''true''' if this element can
+--	can_receive = Area:checkFocus(): Returns '''true''' if this element can
 --	receive the input focus.
 -------------------------------------------------------------------------------
 
@@ -682,7 +688,7 @@ function Area:checkFocus()
 end
 
 -------------------------------------------------------------------------------
---	can_hover = checkHover(): Returns '''true''' if this element can
+--	can_hover = Area:checkHover(): Returns '''true''' if this element can
 --	react on being hovered over by the pointing device.
 -------------------------------------------------------------------------------
 
@@ -690,7 +696,7 @@ function Area:checkHover()
 end
 
 -------------------------------------------------------------------------------
---	element = getNext(): Returns the next element in the group, or, if
+--	table = Area:getNext(): Returns the next element in the group, or, if
 --	the element has no successor, the next element in the parent group (and
 --	so forth, until it reaches the topmost group). Returns '''nil''' if the
 --	element is not currently connected.
@@ -719,7 +725,7 @@ function Area:getNext()
 end
 
 -------------------------------------------------------------------------------
---	element = getPrev(): Returns the previous element in the group, or,
+--	element = Area:getPrev(): Returns the previous element in the group, or,
 --	if the element has no predecessor, the next element in the parent group
 --	(and so forth, until it reaches the topmost group). Returns '''nil''' if
 --	the element is not currently connected.
@@ -736,11 +742,12 @@ function Area:getPrev()
 end
 
 -------------------------------------------------------------------------------
---	element = getGroup(parent): Returns the element's closest
---	[[#tek.ui.class.group : Group]] containing it. If the {{parent}} argument
---	is '''true''', this function will start looking for the closest group at
---	its parent (otherwise it returns itself if it is a group already). Returns
---	'''nil''' if the element is not currently connected.
+--	element = Area:getGroup(parent): Returns the closest
+--	[[#tek.ui.class.group : Group]] containing the element. If the {{parent}}
+--	argument is '''true''', this function will start looking for the closest
+--	group at its parent - otherwise, the element itself is returned if it is
+--	a group already. Returns '''nil''' if the element is not currently
+--	connected.
 -------------------------------------------------------------------------------
 
 function Area:getGroup()
@@ -754,10 +761,10 @@ function Area:getGroup()
 end
 
 -------------------------------------------------------------------------------
---	element = getSiblings(): Returns a table containing the element's
---	siblings (including the element itself). Returns '''nil''' if the element
---	is not currently connected. Note: The returned table must be treated
---	read-only. 
+--	table = Area:getSiblings(): Returns a table containing the element's
+--	siblings, which includes the element itself. Returns '''nil''' if the
+--	element is not currently connected. Note: The returned table must be
+--	treated read-only.
 -------------------------------------------------------------------------------
 
 function Area:getSiblings()
@@ -766,7 +773,7 @@ function Area:getSiblings()
 end
 
 -------------------------------------------------------------------------------
---	element = getParent(): Returns the element's parent element, or
+--	element = Area:getParent(): Returns the element's parent element, or
 --	'''false''' if it currently has no parent.
 -------------------------------------------------------------------------------
 
@@ -775,35 +782,34 @@ function Area:getParent()
 end
 
 -------------------------------------------------------------------------------
---	element = getChildren(init): Returns a table containing the element's
---	children, or '''nil''' if this element cannot have children. If the
---	optional {{init}} argument is '''true''', this signals that this function
---	is called during initialization or deinitialization.
+--	element = Area:getChildren(init): Returns a table containing the element's
+--	children, or '''nil''' if this element cannot have children. The optional
+--	argument {{init}} is '''true''' when this function is called during
+--	initialization or deinitialization - this can be used by some classes
+--	that prefer hiding their children until they are needed. [TODO]
 -------------------------------------------------------------------------------
 
 function Area:getChildren()
 end
 
 -------------------------------------------------------------------------------
---	x0, y0, x1, y1 = getRect(): This function returns the
---	rectangle which the element has been layouted to, or '''false'''
+--	x0, y0, x1, y1, drawable = Area:getRect(): This function returns the
+--	rectangle which the element has been layouted to, or '''nil'''
 --	if the element has not been layouted yet.
 -------------------------------------------------------------------------------
 
 function Area:getRect()
-	if self.Drawable then
+	if self.Flags:check(FL_LAYOUT + FL_SHOW + FL_SETUP) then
 		return unpack(self.Rect)
 	end
-	db.info("Layout not available")
-	return false
 end
 
 -------------------------------------------------------------------------------
---	moved = focusRect([x0, y0, x1, y1]): Tries to shift any Canvas
+--	moved = Area:focusRect([x0, y0, x1, y1]): Tries to shift any Canvas
 --	containing the element into a position that makes the element fully
 --	visible. Optionally, a rectangle can be specified that is to be made
---	visible. If the return value (a boolean) indicates whether some kind
---	of repositioning has taken place.
+--	visible. Returns '''true''' to indicate that some kind of repositioning
+--	has taken place.
 -------------------------------------------------------------------------------
 
 function Area:focusRect(r1, r2, r3, r4)
@@ -812,11 +818,39 @@ function Area:focusRect(r1, r2, r3, r4)
 	end
 	local parent = self:getParent()
 	if r1 and parent then
-		local m = self.MarginAndBorder
-		r1 = r1 - m[1]
-		r2 = r2 - m[2]
-		r3 = r3 + m[3]
-		r4 = r4 + m[4]
-		return parent:focusRect(r1, r2, r3, r4)
+		local m = self.Margin
+		return parent:focusRect(r1 - m[1], r2 - m[2], r3 - m[3], r4 - m[4])
 	end
+end
+
+-------------------------------------------------------------------------------
+--	can_draw = Area:drawBegin(): Prepares the drawing context, returning a
+--	boolean indicating success. This function must be overridden if a class
+--	wishes to modify the drawing context, e.g. by installing a coordinate
+--	displacement.
+-------------------------------------------------------------------------------
+
+function Area:drawBegin()
+	return self.Flags:check(FL_LAYOUT + FL_SHOW + FL_SETUP)
+end
+
+-------------------------------------------------------------------------------
+--	Area:drawEnd(): Reverts the changes made to the drawing context during
+--	Area:drawBegin().
+-------------------------------------------------------------------------------
+
+function Area:drawEnd()
+end
+
+-------------------------------------------------------------------------------
+--	left, top, right, bottom = Area:getPadding(): Returns the element's
+--	padding style properties.
+-------------------------------------------------------------------------------
+
+function Area:getPadding()
+	local props = self.Properties
+	return tonumber(props["padding-left"]) or 0,
+		tonumber(props["padding-top"]) or 0,
+		tonumber(props["padding-right"]) or 0, 
+		tonumber(props["padding-bottom"]) or 0
 end

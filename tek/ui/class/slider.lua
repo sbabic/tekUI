@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.numeric : Numeric]] /
---		Slider
+--		Slider ${subclasses(Slider)}
 --
---	OVERVIEW::
 --		This class implements a slider for adjusting a numerical value.
 --
 --	ATTRIBUTES::
@@ -55,8 +54,6 @@
 --		- Area:passMsg()
 --		- Gadget:onFocus()
 --		- Gadget:onHold()
---		- Area:refresh()
---		- Area:relayout()
 --		- Area:setState()
 --		- Element:setup()
 --		- Area:show()
@@ -66,22 +63,23 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Gadget = ui.require("gadget", 17)
+local Gadget = ui.require("gadget", 19)
 local Numeric = ui.require("numeric", 1)
-local Region = ui.loadLibrary("region", 8)
+local Region = ui.loadLibrary("region", 9)
 
 local floor = math.floor
 local max = math.max
 local min = math.min
-local freeRegion = ui.freeRegion
 local reuseRegion = ui.reuseRegion
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 15.2"
+_VERSION = "Slider 19.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
+
+local FL_REDRAW = ui.FL_REDRAW
 
 local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
 local NOTIFY_HOLD = { ui.NOTIFY_SELF, "onHold", ui.NOTIFY_VALUE }
@@ -100,19 +98,19 @@ function Slider.init(self)
 		self.AutoFocus = false
 	end
 	self.BGRegion = false
-	self.Integer = self.Integer or false
-	self.Kind = self.Kind or false
-	self.Orientation = self.Orientation or "horizontal"
-	self.Range = self.Range or false
 	self.Captured = false
 	self.Child = self.Child or Gadget:new {
 		Class = "knob knob-" .. (self.Kind or "normal")
 	}
 	self.ClickDirection = false
 	self.HoldXY = { }
+	self.Integer = self.Integer or false
+	self.Kind = self.Kind or false
 	self.Mode = "button"
 	self.Move0 = false
+	self.Orientation = self.Orientation or "horizontal"
 	self.Pos0 = 0
+	self.Range = self.Range or false
 	self = Numeric.init(self)
 	self.Range = max(self.Max, self.Range or self.Max)
 	return self
@@ -143,6 +141,17 @@ end
 
 function Slider:setup(app, window)
 	Numeric.setup(self, app, window)
+	
+	if self.Orientation == "horizontal" then
+		self.MaxWidth = ui.HUGE
+		self.MaxHeight = 0
+		self.Width = false
+	else
+		self.MaxWidth = 0
+		self.MaxHeight = ui.HUGE
+		self.Height = false
+	end
+	
 	self:addNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE, 1)
 	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self.Child:setup(app, window)
@@ -157,7 +166,7 @@ function Slider:cleanup()
 	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
 	self:remNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE)
 	Numeric.cleanup(self)
-	self.BGRegion = freeRegion(self.BGRegion)
+	self.BGRegion = false
 end
 
 -------------------------------------------------------------------------------
@@ -200,13 +209,13 @@ end
 function Slider:getKnobRect()
 	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
-		local p = self.Padding
-		local m = self.Child.MarginAndBorder
+		local p1, p2, p3, p4 = self:getPadding()
+		local m = self.Child.Margin
 		local km = self.Child.MinMax
-		local x0 = r1 + p[1] + m[1]
-		local y0 = r2 + p[2] + m[2]
-		local x1 = r3 - p[3] - m[3]
-		local y1 = r4 - p[4] - m[4]
+		local x0 = r1 + p1 + m[1]
+		local y0 = r2 + p2 + m[2]
+		local x1 = r3 - p3 - m[3]
+		local y1 = r4 - p4 - m[4]
 		local r = self.Range - self.Min
 		local v = self.Value
 		v = self.Integer and floor(v) or v
@@ -215,12 +224,12 @@ function Slider:getKnobRect()
 				local w = x1 - x0 - km[1] + 1
 				x0 = max(x0, x0 + floor((v - self.Min) * w / r))
 				x1 = min(x1, x0 + floor((self.Range - self.Max) * w / r) +
-					km[1] - 1)
+					km[1])
 			else
 				local h = y1 - y0 - km[2] + 1
 				y0 = max(y0, y0 + floor((v - self.Min) * h / r))
 				y1 = min(y1, y0 + floor((self.Range - self.Max) * h / r) +
-					km[2] - 1)
+					km[2])
 			end
 		end
 		return x0 - m[1], y0 - m[2], x1 + m[3], y1 + m[4]
@@ -246,33 +255,15 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:layout(r1, r2, r3, r4, markdamage)
-	if Numeric.layout(self, r1, r2, r3, r4, markdamage) then
-		local x0, y0, x1, y1 = self:getKnobRect()
-		self.Child:layout(x0, y0, x1, y1, markdamage)
-		self:updateBGRegion()
-		return true
+	local res = Numeric.layout(self, r1, r2, r3, r4, markdamage)
+	local x0, y0, x1, y1 = self:getKnobRect()
+	if x0 then
+		local res2 = self.Child:layout(x0, y0, x1, y1, markdamage)
+		if res or res2 then
+			self:updateBGRegion()
+			return true
+		end	
 	end
-end
-
--------------------------------------------------------------------------------
---	relayout: overrides
--------------------------------------------------------------------------------
-
-function Slider:relayout(e, r1, r2, r3, r4)
-	local res, changed = Numeric.relayout(self, e, r1, r2, r3, r4)
-	if res then
-		return res, changed
-	end
-	return self.Child:relayout(e, r1, r2, r3, r4)
-end
-
--------------------------------------------------------------------------------
---	refresh: overrides
--------------------------------------------------------------------------------
-
-function Slider:refresh()
-	Numeric.refresh(self)
-	self.Child:refresh()
 end
 
 -------------------------------------------------------------------------------
@@ -285,13 +276,26 @@ function Slider:damage(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
+--	erase: overrides
+-------------------------------------------------------------------------------
+
+function Slider:erase()
+	local bg = self.BGRegion
+	if bg then
+		local d = self.Drawable
+		local bgpen, tx, ty = self:getBG()
+		bg:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
+	end
+end
+
+-------------------------------------------------------------------------------
 --	draw: overrides
 -------------------------------------------------------------------------------
 
 function Slider:draw()
-	local d = self.Drawable
-	local bgpen, tx, ty = self:getBG()
-	self.BGRegion:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
+	local res = Numeric.draw(self)
+	self.Child:draw()
+	return res
 end
 
 -------------------------------------------------------------------------------
@@ -357,7 +361,7 @@ end
 
 function Slider:doMove(x, y)
 	local r = self.Rect
-	local m = self.Child.MarginAndBorder
+	local m = self.Child.Margin
 	local newv
 	local km = self.Child.MinMax
 	if self.Orientation == "horizontal" then
@@ -376,25 +380,20 @@ function Slider:doMove(x, y)
 end
 
 -------------------------------------------------------------------------------
---	updateslider: internal
+--	updateSlider: internal
 -------------------------------------------------------------------------------
 
-local function updateslider(self)
-	local win = self.Window
-	if win then
-		local x0, y0, x1, y1 = self:getKnobRect()
-		if x0 then
-			local _, changed = win:relayout(self.Child, x0, y0, x1, y1)
-			if changed then
-				self:updateBGRegion()
-				if self.Redraw then
-					-- also redraw child if we're slated for redraw already:
-					self.Child.Redraw = true
-				end
-				self.Redraw = true
-			end
+function Slider:updateSlider()
+	local knob = self.Child
+	local x0, y0, x1, y1 = self:getKnobRect()
+	if x0 and self.Window:relayout(knob, x0, y0, x1, y1) then
+		self:updateBGRegion()
+		if self.Flags:check(FL_REDRAW) then
+			-- also redraw child if we're slated for redraw already:
+			knob.Flags:set(FL_REDRAW)
 		end
-	end
+		self.Flags:set(FL_REDRAW)
+	end	
 end
 
 -------------------------------------------------------------------------------
@@ -403,7 +402,7 @@ end
 
 function Slider:onSetValue(v)
 	Numeric.onSetValue(self, v)
-	updateslider(self)
+	self:updateSlider()
 end
 
 -------------------------------------------------------------------------------
@@ -412,7 +411,7 @@ end
 
 function Slider:onSetMax(m)
 	Numeric.onSetMax(self, m)
-	updateslider(self)
+	self:updateSlider()
 end
 
 -------------------------------------------------------------------------------
@@ -421,7 +420,7 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:onSetRange(r)
-	updateslider(self)
+	self:updateSlider()
 end
 
 -------------------------------------------------------------------------------
@@ -490,7 +489,7 @@ function Slider:handleInput(msg)
 		end
 		local na = not self.AutoFocus
 		local h = self.Orientation == "horizontal"
-		if msg[3] == 0xf010 and (na or h) or 
+		if msg[3] == 0xf010 and (na or h) or
 			msg[3] == 0xf012 and (na or not h) then
 			self:decrease()
 			return false
@@ -551,8 +550,7 @@ end
 
 function Slider:setState(bg, fg)
 	if not bg and self.Captured then
-		bg = self.BGSelected
+		bg = self.Properties["background-color:active"]
 	end
 	Gadget.setState(self, bg)
 end
-

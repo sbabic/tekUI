@@ -2,8 +2,8 @@
 
 local ui = require "tek.ui"
 
-local RadioImage1 = ui.getStockImage("radio")
-local RadioImage2 = ui.getStockImage("radio", 2)
+local RadioImage1 = ui.getStockImage("radiobutton")
+local RadioImage2 = ui.getStockImage("radiobutton", 2)
 local BitMapImage1 = ui.loadImage(ui.ProgDir .. "/graphics/world.ppm")
 local BitMapImage2 = ui.loadImage(ui.ProgDir .. "/graphics/locale.ppm")
 

@@ -4,13 +4,12 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
---		Display
+--		Display ${subclasses(Display)}
 --
---	OVERVIEW::
 --		This class manages a display.
 --
 --	ATTRIBUTES::
@@ -87,7 +86,7 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Element = ui.require("element", 14)
+local Element = ui.require("element", 16)
 local Visual = ui.loadLibrary("visual", 2)
 
 local floor = math.floor
@@ -97,7 +96,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 20.0"
+_VERSION = "Display 21.0"
 
 local Display = _M
 
@@ -205,10 +204,8 @@ function Display.new(class, self)
 	self = self or { }
 	self.AspectX = self.AspectX or 1
 	self.AspectY = self.AspectY or 1
-	self.RGBTab = { }
 	self.PenTab = { }
 	self.ColorNames = { }
-	self.FontTab = self.FontTab or { }
 	self.FontCache = { }
 	return Element.new(class, self)
 end
@@ -320,26 +317,9 @@ function Display:getPaletteEntry(i)
 	local color = ColorDefaults[i]
 	if color then
 		local name, defrgb = color[1], color[2]
-		local rgb = self.RGBTab[i] or defrgb
+		local rgb = self.Properties["rgb-" .. color[1]] or defrgb
 		return name, self:colorToRGB(rgb, defrgb)
 	end
-end
-
--------------------------------------------------------------------------------
---	getProperties: overrides
--------------------------------------------------------------------------------
-
-function Display:getProperties(p, pclass)
-	for i = 1, #ColorDefaults do
-		local color = ColorDefaults[i]
-		self.RGBTab[i] = self.RGBTab[i] or
-			self:getProperty(p, pclass, "rgb-" .. color[1])
-	end
-	local ft = self.FontTab
-	for cfname, font in pairs(FontDefaults) do
-		ft[cfname] = ft[cfname] or self:getProperty(p, pclass, font[1])
-	end
-	Element.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -351,8 +331,8 @@ function Display:openFont(fname)
 	local fname = fname or ""
 	if not self.FontCache[fname] then
 		local name, size = fname:match("^([^:]*):?(%d*)$")
-		local deff = self.FontTab[name] or
-			FontDefaults[name] and FontDefaults[name][2]
+		local defname = FontDefaults[name]
+		local deff = defname and (self.Properties[defname[1]] or defname[2])
 		if deff then
 			local nname, nsize = deff:match("^([^:]*):?(%d*)$")
 			if size == "" then

@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.gadget : Text]] /
---		ListGadget
+--		ListGadget ${subclasses(ListGadget)}
 --
---	OVERVIEW::
 --		This class implements a scrollable list or table. Each item in the
 --		list is a table consisting of the following elements:
 --
@@ -112,11 +111,12 @@
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local List = require "tek.class.list"
 local ui = require "tek.ui"
-local Region = ui.loadLibrary("region", 8)
-local ScrollGroup = ui.require("scrollgroup", 11)
-local Text = ui.require("text", 20)
+local Region = ui.loadLibrary("region", 9)
+local ScrollGroup = ui.require("scrollgroup", 15)
+local Text = ui.require("text", 24)
 
 local assert = assert
 local floor = math.floor
@@ -127,21 +127,41 @@ local max = math.max
 local min = math.min
 local pairs = pairs
 local sort = table.sort
+local tonumber = tonumber
 local tostring = tostring
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 23.0"
+_VERSION = "ListGadget 26.0"
 local ListGadget = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
+local FL_LAYOUT = ui.FL_LAYOUT
+
 local NOTIFY_CURSOR = { ui.NOTIFY_SELF, "onSetCursor", ui.NOTIFY_VALUE }
 local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE }
 local NOTIFY_DBLCLICK = { ui.NOTIFY_SELF, "onDoubleClick", ui.NOTIFY_VALUE }
+
+-------------------------------------------------------------------------------
+--	Class style properties:
+-------------------------------------------------------------------------------
+
+Properties = {
+	["border-top-width"] = 0,
+	["border-right-width"] = 0,
+	["border-bottom-width"] = 0,
+	["border-left-width"] = 0,
+	["border-rim-width"] = 0,
+	["border-focus-width"] = 0,
+	["margin-top"] = 0,
+	["margin-right"] = 0,
+	["margin-bottom"] = 0,
+	["margin-left"] = 0,
+}
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -153,16 +173,12 @@ function ListGadget.init(self)
 	self.AlignElement = self.AlignElement or false
 	self.BackPens = { }
 	-- alternative list background pen:
-	self.BGAlt = self.BGAlt or false
-	self.Border = ui.NULLOFFS
 	self.BorderStyle = "" -- fixed
 	self.Canvas = false -- fixed
 	self.CanvasHeight = false -- !!
 	self.ColumnPadding = self.ColumnPadding or false
 	self.ColumnPositions = { 0 }
 	self.ColumnWidths = { 0 }
-	self.CursorBorder = { }
-	self.CursorBorderClass = self.CursorBorderClass or false
 	self.CursorLine = self.CursorLine or 0
 	self.CursorObject = false
 	self.FHeight = false
@@ -170,13 +186,11 @@ function ListGadget.init(self)
 	self.FontHandle = false
 	self.FWidth = false
 	self.HeaderGroup = self.HeaderGroup or false
-	self.Margin = ui.NULLOFFS -- fixed
 	self.Mode = "button"
 	self.LineHeight = false
 	self.ListObject = self.ListObject or List:new()
 	self.NumColumns = 1
 	self.NumSelectedLines = 0
-	self.Padding = ui.NULLOFFS -- fixed
 	self.RenderData = { }
 	self.SelectedLines = false
 	self.SelectedLine = self.SelectedLine or 0
@@ -198,23 +212,6 @@ function ListGadget:connect(parent)
 end
 
 -------------------------------------------------------------------------------
---	getProperties:
--------------------------------------------------------------------------------
-
-function ListGadget:getProperties(p, pclass)
-	self.BGAlt = self.BGAlt or
-		self:getProperty(p, pclass, "background-color2")
-	self.CursorBorderClass = self.CursorBorderClass or
-		self:getProperty(p, pclass, "border-class")
-	local b = self.CursorBorder
-	b[1] = b[1] or self:getNumProperty(p, pclass, "border-left-width") or 1
-	b[2] = b[2] or self:getNumProperty(p, pclass, "border-top-width") or 1
-	b[3] = b[3] or self:getNumProperty(p, pclass, "border-right-width") or 1
-	b[4] = b[4] or self:getNumProperty(p, pclass, "border-bottom-width") or 1
-	Text.getProperties(self, p, pclass)
-end
-
--------------------------------------------------------------------------------
 --	setup: overrides
 -------------------------------------------------------------------------------
 
@@ -224,12 +221,17 @@ function ListGadget:setup(app, window)
 	self:addNotify("CursorLine", ui.NOTIFY_ALWAYS, NOTIFY_CURSOR)
 	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
 	self:addNotify("DblClick", ui.NOTIFY_ALWAYS, NOTIFY_DBLCLICK, 1)
-	self.CursorObject = ui.createHook("border",
-		self.CursorBorderClass or "default", self,
-			{ Border = self.CursorBorder })
+
+	local props = self.Properties
+	local b = tonumber(props["cursor-width"]) or 1
+
+	self.CursorObject = ui.createHook("border", "default", self,
+		{ Border = { b, b, b, b } })
 	local f = self.Application.Display:openFont(self.Font)
 	self.FontHandle = f
 	self.FWidth, self.FHeight = f:getTextSize("x")
+
+
 	local _, b2, _, b4 = self.CursorObject:getBorder()
 	self.LineHeight = self.FHeight + b2 + b4
 	self.ColumnPadding = self.ColumnPadding or self.FWidth
@@ -520,12 +522,12 @@ function ListGadget:prepare(damage)
 			if hg then
 				local e = hg.Children[i]
 				if e then
-					local p = e.Padding
+-- 					local p = e.Padding
 					e.MinWidth = w	-- - p[1] - p[3]
 					if i == nc then
-						e.Width = "fill"
+						e.MaxWidth = ui.HUGE
 					else
-						e.Width = "auto"
+						e.MaxWidth = 0
 					end
 				end
 			end
@@ -542,7 +544,7 @@ function ListGadget:prepare(damage)
 		if self:layout(0, 0, c.CanvasWidth - 1, c.CanvasHeight - 1, damage)
 			or damage then
 			c:rethinkLayout(1)
-			self.Redraw = true
+			self.Flags:set(ui.FL_REDRAW)
 		end
 
 		if damage then
@@ -560,19 +562,21 @@ function ListGadget:draw()
 	local lo, dr = self.ListObject, self.DamageRegion
 	if lo and dr then
 		-- repaint intra-area damagerects:
+		local props = self.Properties
 		local d = self.Drawable
 		local t = self.RenderData
 		local _, tx, ty = self:getBG()
 		local pens = d.Pens
-		local bgcol = self.BGColor or ui.PEN_BACKGROUND
+		local bgcol = props["background-color"] or "background"
 		t[6] = pens[bgcol] -- background pen
-		t[7] = pens[self.BGAlt or bgcol] -- background pen, alternate
+		t[7] = pens[props["background-color2"] or bgcol] -- background pen, alternate
 		d:setFont(self.FontHandle)
-		dr:forEach(self.drawPatch, self, t, d, lo, self.LineHeight, 
+		local props = self.Properties
+		dr:forEach(self.drawPatch, self, t, d, lo, self.LineHeight,
 			self.Canvas.CanvasWidth - 1,
-			pens[self.FGColor or ui.PEN_LISTDETAIL], -- foreground pen
-			pens[self.BGSelected or ui.PEN_LISTACTIVE], -- cursor pen
-			pens[self.FGSelected or ui.PEN_LISTACTIVEDETAIL], -- f+c pen
+			pens[props["color"] or "list-detail"], -- foreground pen
+			pens[props["background-color:active"] or "list-active"], -- foreground pen
+			pens[props["color:active"] or "list-active-detail"], -- foreground pen
 			tx, ty)
 		self.DamageRegion = false
 	end
@@ -639,7 +643,7 @@ function ListGadget:layout(r1, r2, r3, r4, markdamage)
 	local c = self.Canvas
 	local ch = self.CanvasHeight
 	local cw = c.CanvasWidth
-	local m = self.MarginAndBorder
+	local m = self.Margin
 	local x0 = r1 + m[1]
 	local y0 = r2 + m[2]
 	local x1 = r3 - m[3]
@@ -649,6 +653,7 @@ function ListGadget:layout(r1, r2, r3, r4, markdamage)
 		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
 		c:setValue("CanvasHeight", ch)
 		self:layoutCursor()
+		self.Flags:set(FL_LAYOUT)
 		res = true
 	end
 	if markdamage then
@@ -674,7 +679,7 @@ end
 -------------------------------------------------------------------------------
 
 function ListGadget:setState(bg, fg)
-	bg = bg or self.BGColor
+	bg = bg or self.Properties["background-color"]
 	Text.setState(self, bg, fg)
 end
 

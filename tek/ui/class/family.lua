@@ -4,13 +4,12 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
---		Family
+--		Family ${subclasses(Family)}
 --
---	OVERVIEW::
 --		This class implements a container for child objects.
 --
 --	ATTRIBUTES::

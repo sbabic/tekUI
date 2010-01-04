@@ -4,11 +4,10 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
---		[[#ClassOverview]] :
---		[[#tek.class : Class]] / Markup
---
 --	OVERVIEW::
+--		[[#ClassOverview]] :
+--		[[#tek.class : Class]] / Markup ${subclasses(Markup)}
+--
 --		This class implements a markup parser and converter for producing
 --		feature-rich XHTML 1.0 from plain text with special formattings.
 --
@@ -221,7 +220,7 @@ local ipairs = ipairs
 
 module("tek.class.markup", tek.class)
 
-_VERSION = "Markup 3.1"
+_VERSION = "Markup 3.2"
 local Markup = _M
 
 -------------------------------------------------------------------------------
@@ -786,7 +785,7 @@ function Markup:run()
 		if feature["t"] then
 			self.istabline = line:find("||", 1, 1) or false
 			if self.istabline then
-				self.indentlevel = self.previndent
+				popif("block")
 			end
 			if self.in_table then
 				popuntil("row")

@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -14,12 +14,10 @@
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		[[#tek.ui.class.checkmark : CheckMark]] /
---		RadioButton
+--		RadioButton ${subclasses(RadioButton)}
 --
---	OVERVIEW::
 --		Specialization of a [[#tek.ui.class.checkmark : CheckMark]] to
---		implement mutually exclusive 'radio buttons'; they really make
---		sense only if more than one of their kind are grouped together.
+--		implement mutually exclusive 'radio buttons'.
 --
 --	OVERRIDES::
 --		- Object.init()
@@ -28,7 +26,7 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local CheckMark = ui.require("checkmark", 5)
+local CheckMark = ui.require("checkmark", 7)
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
 _VERSION = "RadioButton 4.1"
@@ -37,8 +35,8 @@ _VERSION = "RadioButton 4.1"
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local RadioImage1 = ui.getStockImage("radio")
-local RadioImage2 = ui.getStockImage("radio", 2)
+local RadioImage1 = ui.getStockImage("radiobutton")
+local RadioImage2 = ui.getStockImage("radiobutton", 2)
 
 -------------------------------------------------------------------------------
 --	Class implementation:

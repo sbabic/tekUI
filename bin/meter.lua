@@ -75,8 +75,8 @@ function MyGraph1:drawGraph()
 	local w = g[3] - g[1] + 1
 	local h = g[4] - g[2] + 1
 	local d = self.Drawable
-	d:drawLine(g[1], g[2] + h/2, g[3], g[2] + h/2, d.Pens[ui.PEN_USER4])
-	d:drawLine(g[1] + w/2, g[2], g[1] + w/2, g[4], d.Pens[ui.PEN_USER4])
+	d:drawLine(g[1], g[2] + h/2, g[3], g[2] + h/2, d.Pens["user4"])
+	d:drawLine(g[1] + w/2, g[2], g[1] + w/2, g[4], d.Pens["user4"])
 	ui.Meter.drawGraph(self)
 end
 
@@ -129,7 +129,7 @@ function MyGraph2:drawGraph()
 	local y0 = g[2]
 	for i = 1, 5 do
 		local y = y0 + (i - 1) * h / 4
-		d:drawLine(g[1], y, g[3], y, d.Pens[ui.PEN_USER4])
+		d:drawLine(g[1], y, g[3], y, d.Pens["user4"])
 	end
 	ui.Meter.drawGraph(self)
 end
@@ -146,7 +146,7 @@ print "# bin/gendata.lua | bin/meter.lua"
 
 ui.Application:new
 {
-	Theme = "industrial",
+	AuthorStyleSheets = "industrial",
 	Display = ui.Display:new
 	{
 		Style = [[
@@ -169,13 +169,13 @@ ui.Application:new
 				MyGraph1:new { 
 					NumSamples = 256,
 					Curves = { sintab, { } },
-					GraphBGColor = ui.PEN_USER1,
-					GraphColor = ui.PEN_USER2,
-					GraphColor2 = ui.PEN_USER3
+					GraphBGColor = "user1",
+					GraphColor = "user2",
+					GraphColor2 = "user3"
 				},
 				MyGraph2:new { 
 					NumSamples = 128,
-					GraphColor = ui.PEN_USER3
+					GraphColor = "user3"
 				},
 			}
 		}

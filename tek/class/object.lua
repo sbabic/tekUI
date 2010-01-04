@@ -4,11 +4,11 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
---		[[#ClassOverview]] :
---		[[#tek.class : Class]] / Object
---
 --	OVERVIEW::
+--		[[#ClassOverview]] :
+--		[[#tek.class : Class]] / 
+--		Object ${subclasses(Object)}
+--
 --		This class implements notifications.
 --
 --	ATTRIBUTES::
@@ -92,8 +92,7 @@ end
 --	object = Object.init(object): This function is called during Object.new()
 --	before passing control to {{superclass.new()}}. By convention, {{new()}}
 --	is used to claim resources (e.g. to create tables), whereas the {{init()}}
---	function is used to initialize them. Calling {{init()}} separately from
---	{{new()}} can be reasonable for reinitializing and reusing objects.
+--	function is used to initialize them with defaults.
 -------------------------------------------------------------------------------
 
 function Object.init(self)
@@ -172,7 +171,7 @@ end
 --	{{object}} denotes the target of the notification, i.e. the {{self}}
 --	that will be passed to the {{method}} as its first argument.
 --	{{ui.NOTIFY_SELF}} is a placeholder for the object causing the
---	notification. (See below for the additional placeholders {{ui.NOTIFY_ID}},
+--	notification (see below for the additional placeholders {{ui.NOTIFY_ID}},
 --	{{ui.NOTIFY_WINDOW}}, and {{ui.NOTIFY_APPLICATION}}). {{method}} can be
 --	either a string denoting the name of a function in the addressed object,
 --	or {{ui.NOTIFY_FUNCTION}} followed by a function value. The following
@@ -200,7 +199,7 @@ end
 --			method(object, arg1, ...)
 --	The optional {{pos}} argument allows for insertion at the specified
 --	position in the list of notifications. By default, notifications are
---	added at the end, and the only reasonable value for {{pos}} is {{1}}.
+--	added at the end. The only reasonable value for {{pos}} is probably {{1}}.
 --
 --	If the destination object or addressed method cannot be determined,
 --	nothing else besides setting the attribute will happen.

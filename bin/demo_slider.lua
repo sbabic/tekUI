@@ -127,6 +127,7 @@ local window = ui.Window:new
 		{
 			Legend = L.SLIDER_SLIDERS,
 			Columns = 3,
+			Width = "fill",
 			Children =
 			{
 				Text:new
@@ -142,6 +143,7 @@ local window = ui.Window:new
 					Text = "  0.00  ",
 					KeepMinWidth = true,
 				},
+				
 				Text:new
 				{
 					Text = L.SLIDER_INTEGER_STEP,
@@ -155,6 +157,7 @@ local window = ui.Window:new
 					Text = "  0  ",
 					KeepMinWidth = true,
 				},
+				
 				Text:new
 				{
 					Text = L.SLIDER_RANGE,
@@ -186,8 +189,6 @@ local window = ui.Window:new
 
 		Group:new
 		{
-			Width = "free",
-			Height = "free",
 			Legend = L.SLIDER_CONNECTIONS,
 			Children =
 			{
@@ -196,7 +197,6 @@ local window = ui.Window:new
 				Group:new
 				{
 					Orientation = "vertical",
-					Height = "auto",
 					VAlign = "center",
 					Children =
 					{

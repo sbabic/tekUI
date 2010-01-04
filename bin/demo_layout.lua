@@ -52,13 +52,32 @@ local window = ui.Window:new
 		Group:new
 		{
 			Legend = L.LAYOUT_BALANCING_GROUP,
+			Orientation = "vertical",
 			Children =
 			{
-				Text:new { Text = "free", Style = "height: fill" },
+				Group:new
+				{
+					Children =
+					{
+						Text:new { Text = "free", Style = "height: fill" },
+						ui.Handle:new { },
+						Text:new { Text = "free", Style = "height: fill" },
+						ui.Handle:new { },
+						Text:new { Text = "free", Style = "height: fill" },
+					}
+				},
 				ui.Handle:new { },
-				Text:new { Text = "free", Style = "height: fill" },
-				ui.Handle:new { },
-				Text:new { Text = "free", Style = "height: fill" },
+				Group:new
+				{
+					Children =
+					{
+						Text:new { Text = "free", Style = "height: fill" },
+						ui.Handle:new { },
+						Text:new { Text = "free", Style = "height: fill" },
+						ui.Handle:new { },
+						Text:new { Text = "free", Style = "height: fill" },
+					}
+				},
 			}
 		},
 		Group:new

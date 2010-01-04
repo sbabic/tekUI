@@ -4,10 +4,9 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
---		[[#ClassOverview]] : Class
---
 --	OVERVIEW::
+--		[[#ClassOverview]] : Class ${subclasses(Class)}
+--
 --		This module implements inheritance and the creation of objects
 --		from classes.
 --
@@ -170,9 +169,9 @@ end
 
 -------------------------------------------------------------------------------
 --	is_descendant = object:instanceOf(class):
---	Returns '''true''' if {{object}} is an instance of a class descending
---	from the specified {{class}}. It is also possible to apply this function
---	to a class instead of an object, e.g.:
+--	Returns '''true''' if {{object}} is an instance of or descends from the
+--	specified {{class}}. It is also possible to apply this function to a class
+--	instead of an object, e.g.:
 --			Class.instanceOf(Button, Area)
 -------------------------------------------------------------------------------
 

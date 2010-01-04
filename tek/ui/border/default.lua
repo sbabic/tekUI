@@ -5,58 +5,21 @@ local assert = assert
 local floor = math.floor
 local max = math.max
 local min = math.min
+local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 5.0"
-
-local PEN_SHINE = ui.PEN_BORDERSHINE
-local PEN_SHADOW = ui.PEN_BORDERSHADOW
-local PEN_RIM = ui.PEN_BORDERRIM
-local PEN_FOCUS = ui.PEN_BORDERFOCUS
-local PEN_BORDERLEGEND = ui.PEN_BORDERLEGEND
+_VERSION = "DefaultBorder 6.0"
 
 local DefaultBorder = _M
 
 function DefaultBorder.init(self)
-	self.Params = { }
 	self.Border = self.Border or false
-	self.BorderStyle = false
-	self.BorderStyleActive = false
 	self.Legend = self.Legend or false
-	self.LegendFontName = false
 	self.LegendFont = false
 	self.LegendWidth = false
 	self.LegendHeight = false
 	return Border.init(self)
-end
-
-function DefaultBorder:getProperties(props, pclass)
-	local e = self.Parent
-	local p = self.Params
-	self.BorderStyle = self.BorderStyle or
-		e:getProperty(props, pclass, "border-style")
-	self.LegendFontName = e:getProperty(props, pclass, "border-legend-font")
-	p[1] = p[1] or e:getProperty(props, pclass, "border-left-color")
-	p[2] = p[2] or e:getProperty(props, pclass, "border-top-color")
-	p[3] = p[3] or e:getProperty(props, pclass, "border-right-color")
-	p[4] = p[4] or e:getProperty(props, pclass, "border-bottom-color")
-	self.BorderStyleActive = self.BorderStyleActive or
-		e:getProperty(props, pclass or "active", "border-style")
-	p[5] = p[5] or
-		e:getProperty(props, pclass or "active", "border-left-color")
-	p[6] = p[6] or
-		e:getProperty(props, pclass or "active", "border-top-color")
-	p[7] = p[7] or
-		e:getProperty(props, pclass or "active", "border-right-color")
-	p[8] = p[8] or
-		e:getProperty(props, pclass or "active", "border-bottom-color")
-	p[9] = p[9] or e:getProperty(props, pclass, "border-rim-color")
-	p[10] = p[10] or e:getProperty(props, pclass, "border-focus-color")
-	p[11] = p[11] or e:getProperty(props, pclass, "border-rim-width")
-	p[12] = p[12] or e:getProperty(props, pclass, "border-focus-width")
-	p[13] = p[13] or e:getProperty(props, pclass, "border-legend-color")
-	return Border.getProperties(self, p, pclass)
 end
 
 function DefaultBorder:setup(app, win)
@@ -64,57 +27,57 @@ function DefaultBorder:setup(app, win)
 	Border.setup(self, app, win)
 	
 	local e = self.Parent
-	local p = self.Params
+	local b = self.Border
 	
 	-- consolidation of properties:
-
+	local props = e.Properties
 	local p1, p2, p3, p4
 
-	local bs = self.BorderStyle
+	local bs = props["border-style"]
 	if bs == "outset" or bs == "groove" then
-		p1, p3 = PEN_SHINE, PEN_SHADOW
+		p1, p3 = "border-shine", "border-shadow"
 		p2, p4 = p1, p3
 	elseif bs == "inset" or bs == "ridge" then
-		p1, p3 = PEN_SHADOW, PEN_SHINE
+		p1, p3 = "border-shadow", "border-shine"
 		p2, p4 = p1, p3
 	else -- solid / default
-		p1 = PEN_SHADOW
+		p1 = "border-shadow"
 		p2, p3, p4 = p1, p1, p1
 	end
 
-	p[1] = p[1] or p1
-	p[2] = p[2] or p2
-	p[3] = p[3] or p3
-	p[4] = p[4] or p4
+	b[5] = props["border-left-color"] or p1
+	b[6] = props["border-top-color"] or p2
+	b[7] = props["border-right-color"] or p3
+	b[8] = props["border-bottom-color"] or p4
 
-	bs = self.BorderStyleActive
+	local bs = props["border-style:active"]
 	if bs == "outset" or bs == "groove" then
-		p1, p3 = PEN_SHINE, PEN_SHADOW
+		p1, p3 = "border-shine", "border-shadow"
 		p2, p4 = p1, p3
 	elseif bs == "inset" or bs == "ridge" then
-		p1, p3 = PEN_SHADOW, PEN_SHINE
+		p1, p3 = "border-shadow", "border-shine"
 		p2, p4 = p1, p3
 	else -- solid / default
-		p1 = PEN_SHADOW
+		p1 = "border-shadow"
 		p2, p3, p4 = p1, p1, p1
 	end
-	p[5] = p[5] or p1
-	p[6] = p[6] or p2
-	p[7] = p[7] or p3
-	p[8] = p[8] or p4
+	b[9] = props["border-left-color:active"] or p1
+	b[10] = props["border-top-color:active"] or p2
+	b[11] = props["border-right-color:active"] or p3
+	b[12] = props["border-bottom-color:active"] or p4
 
-	p[9] = p[9] or PEN_RIM
-	p[10] = p[10] or PEN_FOCUS
-	p[11] = p[11] or 0
-	p[12] = p[12] or 0
-	p[13] = p[13] or PEN_BORDERLEGEND
+	b[13] = props["border-rim-color"] or "border-rim"
+	b[14] = props["border-focus-color"] or "border-focus"
+	b[15] = tonumber(props["border-rim-width"]) or 0
+	b[16] = tonumber(props["border-focus-width"]) or 0
+	b[17] = props["border-legend-color"] or "border-legend"
 
 	-- p[14]...p[17]: temp rect
 	-- p[18]...p[21]: temp border
 
 	local l = self.Legend
 	if l then
-		local f = app.Display:openFont(self.LegendFontName)
+		local f = app.Display:openFont(props["border-legend-font"])
 		self.LegendFont = f
 		self.LegendWidth, self.LegendHeight = f:getTextSize(l)
 	end
@@ -132,40 +95,44 @@ function DefaultBorder:getBorder()
 	return b[1], b[2] + (self.LegendHeight or 0), b[3], b[4]
 end
 
-local function drawBorderRect(d, p, b1, b2, b3, b4, p1, p2, p3, p4, tx, ty)
+local function drawBorderRect(d, b, b1, b2, b3, b4, p1, p2, p3, p4, tx, ty)
 	if b1 > 0 then
-		d:fillRect(p[14] - b1, p[15], p[14] - 1, p[17], p1, tx, ty)
+		d:fillRect(b[18] - b1, b[19], b[18] - 1, b[21], p1, tx, ty)
 	end
 	if b2 > 0 then
-		d:fillRect(p[14] - b1, p[15] - b2, p[16] + b3, p[15] - 1, p2, tx, ty)
+		d:fillRect(b[18] - b1, b[19] - b2, b[20] + b3, b[19] - 1, p2, tx, ty)
 	end
 	if b3 > 0 then
-		d:fillRect(p[16] + 1, p[15], p[16] + b3, p[17], p3, tx, ty)
+		d:fillRect(b[20] + 1, b[19], b[20] + b3, b[21], p3, tx, ty)
 	end
 	if b4 > 0 then
-		d:fillRect(p[14] - b1, p[17] + 1, p[16] + b3, p[17] + b4, p4, tx, ty)
-		p[17] = p[17] + b4
-		p[21] = p[21] - b4
+		d:fillRect(b[18] - b1, b[21] + 1, b[20] + b3, b[21] + b4, p4, tx, ty)
+		b[21] = b[21] + b4
+		b[25] = b[25] - b4
 	end
-	p[14] = p[14] - b1
-	p[18] = p[18] - b1
-	p[15] = p[15] - b2
-	p[19] = p[19] - b2
-	p[16] = p[16] + b3
-	p[20] = p[20] - b3
--- 	p[17] = p[17] + b4
--- 	p[21] = p[21] - b4
+	b[18] = b[18] - b1
+	b[22] = b[22] - b1
+	b[19] = b[19] - b2
+	b[23] = b[23] - b2
+	b[20] = b[20] + b3
+	b[24] = b[24] - b3
+-- 	b[21] = b[21] + b4
+-- 	b[25] = b[25] - b4
 end
 
 function DefaultBorder:draw()
-	local p = self.Params
 	local e = self.Parent
 	local d = e.Drawable
 	local pens = d.Pens
-	local rw = p[11]
+	local b = self.Border
+	local rw = b[15]
 
-	p[14], p[15], p[16], p[17] = unpack(self.Rect)
-	p[18], p[19], p[20], p[21] = unpack(self.Border)
+	b[18], b[19], b[20], b[21] = unpack(self.Rect)
+	if not b[18] then
+		return
+	end
+	
+	b[22], b[23], b[24], b[25] = unpack(self.Border, 1, 4)
 	local _, ox, oy = e:getBG()
 	local gb, gox, goy = e:getBGElement():getBG()
 	
@@ -174,53 +141,53 @@ function DefaultBorder:draw()
 	local tw = self.LegendWidth
 	if tw then
 		local th = self.LegendHeight
-		local w = p[16] - p[14] + 1
-		local tx = p[14] + max(floor((w - tw) / 2), 0)
-		local y0 = p[15] - th - p[19]
+		local w = b[20] - b[18] + 1
+		local tx = b[18] + max(floor((w - tw) / 2), 0)
+		local y0 = b[19] - th - b[23]
 		d:setFont(self.LegendFont)
-		d:pushClipRect(p[14] - p[18], y0, p[16] + p[20], p[15] - p[19] - 1)
+		d:pushClipRect(b[18] - b[22], y0, b[20] + b[24], b[19] - b[23] - 1)
 		d:drawText(tx, y0, tx + tw - 1, y0 + th - 1, self.Legend,
-			pens[p[13]], gb, gox, goy)
+			pens[b[17]], gb, gox, goy)
 		d:popClipRect()
 	end
 
-	local i = e.Selected and 5 or 1
+	local i = e.Selected and 9 or 5
 
 	-- thickness of outer borders:
-	local t = rw + p[12]
+	local t = rw + b[16]
 
-	local bs = e.Selected and self.BorderStyleActive or self.BorderStyle
+	local bs = e.Selected and e.Properties["border-style:active"] or
+		e.Properties["border-style"]
+	local p1, p2, p3, p4 = pens[b[i]], pens[b[i + 1]], pens[b[i + 2]],
+		pens[b[i + 3]]
 
-	local p1, p2, p3, p4 = pens[p[i]], pens[p[i + 1]], pens[p[i + 2]],
-		pens[p[i + 3]]
-
-	local d1 = max(p[18] - t, 0)
-	local d2 = max(p[19] - t, 0)
-	local d3 = max(p[20] - t, 0)
-	local d4 = max(p[21] - t, 0)
+	local d1 = max(b[22] - t, 0)
+	local d2 = max(b[23] - t, 0)
+	local d3 = max(b[24] - t, 0)
+	local d4 = max(b[25] - t, 0)
 
 	if bs == "ridge" or bs == "groove" then
 		local e1, e2, e3, e4 =
 			floor(d1 / 2), floor(d2 / 2), floor(d3 / 2), floor(d4 / 2)
-		drawBorderRect(d, p, e1, e2, e3, e4, p1, p2, p3, p4, ox, oy)
-		drawBorderRect(d, p, d1 - e1, d2 - e2, d3 - e3, d4 - e4,
+		drawBorderRect(d, b, e1, e2, e3, e4, p1, p2, p3, p4, ox, oy)
+		drawBorderRect(d, b, d1 - e1, d2 - e2, d3 - e3, d4 - e4,
 			p3, p4, p1, p2, ox, oy)
 	else
-		drawBorderRect(d, p, d1, d2, d3, d4, p1, p2, p3, p4, ox, oy)
+		drawBorderRect(d, b, d1, d2, d3, d4, p1, p2, p3, p4, ox, oy)
 	end
 
-	local pen = pens[p[9]]
-	drawBorderRect(d, p,
-		min(p[18], rw), min(p[19], rw), min(p[20], rw), min(p[21], rw),
+	local pen = pens[b[13]]
+	drawBorderRect(d, b,
+		min(b[22], rw), min(b[23], rw), min(b[24], rw), min(b[25], rw),
 		pen, pen, pen, pen, ox, oy)
 
-	pen = e.Focus and pens[p[10]] or gb
-	drawBorderRect(d, p, p[18], p[19], p[20], p[21], pen, pen, pen, pen, 
+	pen = e.Focus and pens[b[14]] or gb
+	drawBorderRect(d, b, b[22], b[23], b[24], b[25], pen, pen, pen, pen, 
 		gox, goy)
 end
 
 function DefaultBorder:getRegion(b)
-	local b1, b2, b3, b4 = unpack(self.Border)
+	local b1, b2, b3, b4 = unpack(self.Border, 1, 4)
 	local x0, y0, x1, y1 = self:layout()
 	b:setRect(x0 - b1, y0 - b2, x1 + b3, y1 + b4)
 	b:subRect(x0, y0, x1, y1)

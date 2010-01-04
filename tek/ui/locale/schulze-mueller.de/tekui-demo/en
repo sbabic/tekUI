@@ -9,7 +9,10 @@ ABOUT_APPLICATION_INFORMATION = "Application Information";
 ABOUT_LICENSE = "_License";
 ABOUT_SYSTEM = "_System";
 ABOUT_TEKUI = "About tekUI";
+ALIGNMENT_BEGIN = "Begin";
+ALIGNMENT_BOTTOM = "Bottom";
 ALIGNMENT_BUTTON = "Alignment";
+ALIGNMENT_CENTER = "Center";
 ALIGNMENT_DESCRIPTION = [[
 » Alignment attributes determine how elements are adjusted if they do not fill up the space inside their group on a given axis.
 
@@ -19,9 +22,13 @@ ALIGNMENT_DESCRIPTION = [[
 
 » The difference may become more apparent when the window is getting resized.
 ]];
+ALIGNMENT_GROUP = "Group";
+ALIGNMENT_HORIZONTAL = "Align Horizontal";
+ALIGNMENT_LEFT = "Left";
+ALIGNMENT_RIGHT = "Right";
 ALIGNMENT_TITLE = "Alignment";
-ALIGN_HORIZONTAL = "Align Horizontal";
-ALIGN_VERTICAL = "Align Vertical";
+ALIGNMENT_TOP = "Top";
+ALIGNMENT_VERTICAL = "Align Vertical";
 ANIMATIONS_BUTTON = "Animations";
 ANIMATIONS_DESCRIPTION = [[
 » tekUI supports an interval timer, which any GUI element can attach itself to. 
@@ -38,17 +45,13 @@ ANIMATIONS_START = "_Start";
 ANIMATIONS_STOP = "Sto_p";
 ANIMATIONS_TITLE = "Animations";
 AVAILABLE_DEMOS = "Available Demos";
-BEGIN = "Begin";
-BORDERS_BUTTON = "Borders";
-BORDERS_DESCRIPTION = [[
+BORDER_BUTTON = "Borders";
+BORDER_CAPTION = "Border Caption";
+BORDER_DESCRIPTION = [[
 » The upper part shows the basic border styles: Solid, Inset, Outset, Groove, and Ridge.
 
 » What is commonly referred to as a border is actually a composition of three sub border components: Main, Rim, and Focus.
 ]];
-BORDERS_SUB = "Sub Borders";
-BORDERS_TITLE = "Borders";
-BORDER_CAPTION = "Border Caption";
-BORDER_DYNAMIC_THICKNESS = "Dynamic Thickness";
 BORDER_FOCUS = "Focus";
 BORDER_GROOVE = "Groove";
 BORDER_INDIVIDUAL_STYLE = "Individual Border Style";
@@ -60,8 +63,8 @@ BORDER_RIDGE = "Ridge";
 BORDER_RIM = "Rim";
 BORDER_SOLID = "Solid";
 BORDER_STYLES = "Border Styles";
-BORDER_WATCH = "Watch Border";
-BOTTOM = "Bottom";
+BORDER_SUB = "Sub Borders";
+BORDER_TITLE = "Borders";
 BUTTONS_BUTTON = "Button";
 BUTTONS_CAPTION_STYLE = "Captions";
 BUTTONS_CENTER = "Center";
@@ -81,7 +84,6 @@ BUTTONS_TEXT_ALIGNMENTS = "Text Alignments";
 BUTTONS_TITLE = "Buttons";
 BUTTONS_TOP_LEFT = "Top\nLeft";
 CANCEL = "_Cancel";
-CENTER = "Center";
 CHOICES_BEER = "_Beer";
 CHOICES_COFFEE = "_Coffee";
 CHOICES_DESCRIPTION = [[
@@ -160,7 +162,6 @@ GRAPHICS_DESCRIPTION = [[
 ]];
 GRAPHICS_RADIOBUTTONS = "Radio Buttons";
 GRAPHICS_TITLE = "Graphics";
-GROUP = "Group";
 HELLO = "Hello";
 HELLO_WORLD = "Hello, World!";
 INTERPRETER_VERSION = "Interpreter Version: %s";
@@ -179,7 +180,6 @@ LAYOUT_GRID = "Grid";
 LAYOUT_RELATIVE_SIZES = "Relative Sizes";
 LAYOUT_SAME_SIZES = "Same Sizes";
 LAYOUT_TITLE = "Layout";
-LEFT = "Left";
 LIST_DESCRIPTION = [[
 » Lists can contain any number of rows and columns. Their widths and heights can be fixed or adaptive.
 
@@ -220,7 +220,6 @@ PRESENTATION_TITLE = "Presentation";
 PROPERTY = "Property";
 QUIT = "_Quit";
 REVOKED = "Revoked";
-RIGHT = "Right";
 SELECTED = "Selected";
 SLIDER_CONNECTIONS = "Connections";
 SLIDER_CONTINUOUS = "Continuous";
@@ -250,5 +249,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.]];
 TEKUI_DEMO = "tekUI Demo";
 TEKUI_LICENSE = "tekUI License";
-TOP = "Top";
 VALUE = "Value";

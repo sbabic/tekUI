@@ -12,11 +12,11 @@
   - 2.1. [[#features : General features]]
   - 2.2. [[#uielements : Supported user interface elements]]
   - 2.3. [[#deployment : Deployment]]
-  - 2.4. [[#themes : Themes]]
+  - 2.4. [[#themes : Style sheets and themes]]
   - 2.5. [[#clibrary : C library]]
   - 2.6. [[#objectmodel : Lua, C and object model]]
   - 2.7. [[#documentation : Documentation system]]
-  - 2.8. [[#embedded : Notes on uses in embedded systems]]
+  - 2.8. [[#embedded : Fitness for the use in embedded systems]]
 
  - 3. [[#buildinstall : Building and installing]]
   - 3.1. [[#requirements : Requirements]]
@@ -35,71 +35,73 @@
   - 4.3. [[#adhocclasses : Ad-hoc setup of classes]]
 
  - 5. [[#developersguide : Developer's Guide]]
-  - 5.1. [[#debug : Debug library]]
-  - 5.2. [[#proxied : Proxied object model]]
-  - 5.3. [[#classsetup : Class setup]]
-  - 5.4. [[#classdoc : Class documentation system]]
+  - 5.1. [[#lifecycle : The lifecycle of an element]]
+  - 5.2. [[#debug : Debug library]]
+  - 5.3. [[#proxied : Proxied object model]]
+  - 5.4. [[#classsetup : Class setup]]
+  - 5.5. [[#classdoc : Class documentation system]]
 
- - 6. [[manual.html : Class Reference Manual]]
- 
- - 7. [[changes.html : Changelog]]
+=== Links ===
 
-The entrypoint to the toolkit is the [[tek.ui][manual.html#tek.ui]]
-module. See there for a quick start.
+ * [[manual.html : Class Reference Manual]] – The entrypoint is the
+ [[tek.ui][manual.html#tek.ui]] module. See there for a quick start.
+ * [[changes.html : Changelog]]
 
 ---------------------------------------------------------------------
 
 =( about : 1. About tekUI )=
 
-tekUI is a small, freestanding and portable graphical user interface
-(GUI) toolkit written in Lua and C. It was developed initially for
-the X Window System and can serve as a general-purpose GUI library
-for desktop applications.
+TekUI is a small, freestanding and portable graphical user interface
+(GUI) toolkit written in Lua and C. It was developed for the X Window
+System initially and has been ported to DirectFB, Windows, Nano-X and
+a raw framebuffer since.
 
-Its main focus is on rapid development of applications for
-custom-made devices, often with a custom appearance and under
-resource-constrained conditions, such as for embedded devices with a
-display controller.
+Its main focus is the rapid development of custom-made applications
+with a custom appearance, such as for embedded devices with a display
+controller (see also
+[[#embedded : fitness for the use in embedded systems]]). In the long
+term, it is intended to feature a class library supporting regular,
+general-purpose desktop and mobile applications.
 
 Being mostly written in the
-[[Lua scripting language][http://www.lua.org/]], it is easily
-extensible with new user interface elements, which can be rewritten
-in C later. The creation of new styles and themes and fitting the
-software to a new device are equally simple.
+[[Lua scripting language][http://www.lua.org/]] and using a simple
+inheritance scheme and class library, tekUI is easily extensible with
+new user interface elements. New controls can be written in Lua and
+ported to C later. The creation of new styles and themes and fitting
+the software to a new device are equally simple.
 
 See below for a more detailed technical [[#overview]].
 
 ==( license : 1.1. License )==
 
 TekUI is free software under the same license as Lua itself: It can
-be used for both academic and commercial purposes at no cost, it
+be used for both academic and commercial purposes at no cost. It
 qualifies as Open Source software, and its license is compatible with
-the GPL. Note: The commercially supported version contains additional
-components which may be licensed differently.
-See [[copyright][copyright.html]].
+the GPL – see [[copyright][copyright.html]]. Additional components
+are available under a commercial license – see
+[[support and services]].
 
 ==( status : 1.2. Status, requirements )==
 
 TekUI is in early stage of development. It is available for the
-Linux, Windows, and FreeBSD platforms. Display drivers are available
-for X11, Windows, DirectFB, Nano-X, and a ''raw framebuffer''. See
-also [[TODO][todo.html]] for a list of known bugs and missing
-features, and [[#requirements]] for a list of the required packages.
+Linux, Windows, and FreeBSD platforms. Display drivers are included
+for X11, Windows, and DirectFB. See also [[TODO][todo.html]] for a
+list of known bugs and missing features, and [[#requirements]] for a
+list of the required libraries.
 
 ==( development : 1.3. Development model )==
 
-If you find this software useful, you have probably arranged to fit
-it to a certain device or application – submit your additions and we
-will check them for inclusion to the public source code repository.
-Regular developers are welcome also.
+Bug fixes and additions are welcome. Submit your patches, and we will
+check them for inclusion to the public source code repository.
+Regular contributors are welcome also.
 
 ==( support : 1.4. Support and services )==
 
-Vendors of commercial products can help advance the development by
-assigning projects based on tekUI, or license our commercially
-supported version. Support and services for the integration of
-tekUI as well as special versions, new display drivers, custom
-classes etc. are available from the authors – see below.
+Special adaptations, custom display drivers, new user interface
+elements, and support and services for the integration of tekUI into
+your products are available from the authors – see below. A
+commercial version with additional components (such as the Nano-X and
+raw framebuffer drivers, XML support) is available on request.
 
 ==( authors : 1.5. Authors and contact )==
 
@@ -110,11 +112,11 @@ Authors:
 Open source project website:
  - http://tekui.teklib.org/
 
+Product website:
+ - http://www.schulze-mueller.de/products.html
+
 Public mailing list:
  - http://lists.neoscientists.org/mailman/listinfo/tekui-devel
-
-Commercial product website:
- - http://www.schulze-mueller.de/products.html
 
 ---------------------------------------------------------------------
 
@@ -135,34 +137,36 @@ stable yet, so be prepared for structural and API changes.
  * Automatic layouting and scalability
  * Font-sensitivity, support for antialiased fonts
  * Full Unicode (UTF-8) support
- * Themes, cascading style sheets (CSS) support
+ * Support for cascading style sheets (CSS) and themes
  * Allows for multi-windowed, tabbed and fullscreen applications
  * Fully incremental refresh logic, backbuffers are not required
  * Concurrency thanks to inbuilt support for dispatching to
  coroutines
- * Works with stock (double precision), single precision and
- integer versions of the Lua VM
+ * Works unmodified with stock (double precision), single precision
+ and integer versions of the Lua VM
  * Supplied with a documentation system supporting tekUI's object
  model
 
 ==( uielements : 2.2. Supported interface elements )==
 
- * Canvas (smoothly scrolling)
+ * Canvas
  * Checkmark
- * Directory lister (file requester included)
+ * Directory lister
+ * File requester
  * Floating text
  * Gauge
  * Group (horizontal, vertical, grids, in pages, scrollable)
- * Handle, for group balancing
+ * Handle for group balancing
  * Images
- * List, also multi-column and multi-selection
+ * Lister, also multi-column and multi-selection
  * Menu (popup and window), also nested
  * Popup item, also nested
  * Popup list ('combo box')
- * Radio button
+ * Radiobutton
+ * Scrollgroup
  * Slider
  * Spacer
- * Text gadget (and label), also multi-line
+ * Text button (and label), also multi-line
  * Text input (single line)
 
 ==( deployment : 2.3. Deployment )==
@@ -172,6 +176,8 @@ Lua, and application programmers will have to use existing Lua
 modules or create their own C bindings for communicating with their
 host. Creating C bindings is an easy and well-documented task in Lua,
 and the tekUI package contains numerous examples.
+
+==== Future plans ====
 
 The next development goal is to fold the tekUI framework into a
 freestanding C library, which enables applications to create
@@ -191,17 +197,19 @@ Lua would continue to act as the toolkit's internal scripting
 language, which can be used for complex interconnections
 between GUI elements as well as many application tasks.
 
-==( themes : 2.4. Themes )==
+==( themes : 2.4. Style sheets and themes )==
 
 The only admission to a more common appearance is that tekUI tries to
 import the color scheme found in a GTK+ configuration file. It can be
-created conveniently in the KDE configuration panel; thus, if you are
+created in the KDE configuration panel conveniently; thus, if you are
 using KDE and check the appropriate option, KDE, GTK+ and tekUI can
 all share the same color scheme.
 
-The current default theme tries to be as conservative and minimal as
-possible. Custom themes can be created by modifying (or deriving
-from) the Theme class.
+tekUI comes with a cascading style sheets (CSS) engine for the
+import of properties for element classes, custom classes, pseudo
+classes, as well as for individual and direct formattings. tekUI's
+default theme is hardcoded in the Theme class and also available as
+an external style sheet file.
 
 ==( clibrary : 2.5. C library )==
 
@@ -210,29 +218,30 @@ middleware project. All required modules are contained in tekUI's
 source code distribution, to reduce the hassle of building and
 installing the software.
 
-The C library isolates from the host and provides a few
-performance-critical routines. Rendering and input handling are
-provided in the form of display drivers, which allow for easy
-exchangeability. Display drivers currently supported are for X11,
-Windows, [[DirectFB][http://www.directfb.org/]],
-[[Nano-X][http://www.nano-x.org/]], and a raw framebuffer.
+The C library isolates from the host and provides
+performance-critical routines (e.g. the region management and the
+default layouter). Rendering and input handling are implemented as
+display drivers, which allow for easy exchangeability.
 
-Aside from the display driver interface, the C library features
-OS-like facilities such as portable threads, a timer device and
-virtual filesystem interfaces. Depending on your application and
-its kind of deployment, it can be extended with more input drivers,
-file format codecs, etc.
+Aside from the display driver interface, the C library implements
+OS-like facilities such as portable threads, a timer device and a
+virtual filesystem interface.
 
 ==( objectmodel : 2.6. Lua, C and object model )==
 
-Regardless whether classes are written in Lua or C, they share a
+Regardless of whether classes are written in Lua or C, they share a
 common, single-inheritance object model, which is determined by the
 Lua virtual machine and provides a referencing scheme and automatic
 memory management.
 
-Most user interface elements are currently implemented in Lua, which
-is beneficial for fast prototyping of custom classes and styles, for
-heavy customization, and generally in early stages of development.
+Classes can be written in Lua and C interchangeably, meaning that
+they can inherit from each other regardless of the language they are
+written in. This makes it possible to prototype an application
+quickly, and, should the need arise, to replace
+performance-crititcal classes with their counterparts in C. When
+porting classes to C, there is a certain degree of freedom in how
+much reliance on the Lua VM and its automatic resource management
+is desired.
 
 ==( documentation : 2.7. Documentation system )==
 
@@ -247,21 +256,21 @@ Note that you need
 [[LuaFileSystem][http://www.keplerproject.org/luafilesystem/]] for
 the document generator to process the file system hierarchy.
 
-==( embedded : 2.8. Notes on uses in embedded systems )==
+==( embedded : 2.8. Fitness for the use in embedded systems )==
 
-Complete solutions based on tekUI are well in the reach of 512kB of
-ROM/Flash: A typical application and the modules that it requires,
-if compiled to Lua bytecode, can fit into 256kB. Add to that approx.
+Complete solutions based on tekUI are in the reach of 512kB ROM or
+flash memory: A typical application and the required modules, if
+compiled to Lua bytecode, can fit into 256kB. Add to that approx.
 128kB for the C modules and another 128kB for the Lua virtual
 machine.
 
-The generic, unmodified version of tekUI has been deployed on PPC and
+Generic, unmodified versions of tekUI have been deployed on PPC and
 ARM based microcontrollers with clock rates as low as 200MHz, while
 maintaining good reactivity and a pleasant look & feel. Lower clock
 rates are workable with some adaptations, namely by disabling
-expensive features like style sheet support, porting certain classes
-to C, using display drivers which are more tightly connected to the
-hardware, etc.
+expensive features like style sheet support, by porting certain
+classes to C, using display drivers which are more tightly connected
+to the hardware, etc.
 
 ---------------------------------------------------------------------
 
@@ -278,7 +287,7 @@ this writing) are given below:
  * >=fontconfig-2.5.0 (for the x11 driver)
  * >=freetype-2.3.5 (for the x11 and directfb drivers)
  * >=DirectFB-0.9.25.1 (for the directfb driver)
- * MingW (for the Windows platform)
+ * MinGW (for the Windows platform)
  * microwindows-0.91 (for the Nano-X driver)
 
 LibXft and fontconfig are needed for building the x11 driver, but
@@ -329,26 +338,23 @@ unrelated problems with Xft in the meantime.
 
 ===( notenanox : 3.2.3. Nano-X notes )===
 
-The Nano-X driver is available as part of the commercially supported
-version. You will almost certainly have to adjust the {{config}}
-file. Due to some limitations of Nano-X, tekUI applications will
-probably make sense only when running in fullscreen mode without a
-window manager. See also {{tek/ui/style/nanox.css}} for more
-information. Example:
+For the Nano-X driver you will almost certainly have to adjust the
+{{config}} file. Due to some limitations of Nano-X, tekUI
+applications will probably make sense only when running in fullscreen
+mode without a window manager. See also {{tek/ui/style/nanox.css}}
+for more information. Example:
 
   # nano-X & THEME=nanox FULLSCREEN=true bin/demo_custom.lua
 
 ===( noterawfb : 3.2.4. Raw framebuffer notes )===
 
-The raw framebuffer driver is available as part of the commercially
-supported version. Drawing primitives, clipping, and antialiased
-fonts are provided, and rendering can be targeted to user-supplied
-memory. This driver implements no input and serves as a template
-(or skeleton) for specializations in a target context, like custom
-hardware or a 3D game or simulation. For testing and debugging, the
-raw framebuffer driver is recursive; by plugging in another display
-driver, an instant visualization device and input source can be
-provided.
+Drawing primitives, clipping, and antialiased fonts are provided,
+and rendering can be targeted to user-supplied memory. This driver
+implements no input and serves as a template (or skeleton) for
+specializations in a target context, like custom hardware or a 3D
+game or simulation. For testing and debugging, the raw framebuffer
+driver is recursive; by plugging in another display driver, an
+instant visualization device and input source can be provided.
 
 ==( building : 3.3. Building )==
 
@@ -362,10 +368,10 @@ The regular build procedure is invoked with
 
 ==( installation : 3.4. Installation )==
 
-A system-wide installation of tekUI is not strictly required (in so
+A system-wide installation of tekUI is not strictly required – in so
 far as the majority of display drivers is concerned. The DirectFB
 driver, in contrast, looks up fonts and cursors globally and must be
-installed in any case).
+installed in any case.
 
 Once tekUI is built, it can be worked with and developed against, as
 long as you stay in the top-level directory of the distribution; all
@@ -390,11 +396,17 @@ conveniently invoked with
 ==( envvariables : 3.5. Environment variables )==
 
  * {{NOCURSOR}} - {{"true"}} to disable the mouse pointer over a
- tekUI application
- * {{FULLSCREEN}} - {{"true"}} to force opening an application in
- full screen mode
- * {{THEME}} - Name of a theme corresponding to a style sheet file in
- {{tek/ui/style/}}
+ tekUI application. This may be useful when running on a touch
+ screen.
+ * {{FULLSCREEN}} - {{"true"}} to try opening an application in
+ fullscreen mode. Fullscreen support varies and depends largely on
+ the display driver in use.
+ * {{THEME}} - Theme names corresponding to style sheet files in
+ {{tek/ui/style/}}. Multiple themes can be separated by spaces.
+ The default is {{"default desktop"}}. The ''desktop'' theme tries
+ to import the color scheme found in a GTK2 configuration file.
+ * {{GTK2_RC_FILES}} - Possible locations of a gtkrc-2.0
+ configuration file.
 
 ---------------------------------------------------------------------
 
@@ -450,7 +462,7 @@ World" button. The simplest method is to place an {{onPress}}
 function into the Text object, which will overwrite the handler
 reacting on setting the {{Pressed}} variable. This variable is set
 to '''true''' when a [[manual.html#tek.ui.class.gadget : Gadget]]
-is hit with the left mouse button, and to '''false''' when it is 
+is hit with the left mouse button, and to '''false''' when it is
 getting released:
 
   ui = require "tek.ui"
@@ -481,7 +493,7 @@ getting released:
   }:run()
 
 When overwriting a method like {{onPress}}, also forward the call to
-the original implementation of the same method. 
+the original implementation of the same method.
 
 For regular applications, it is normally sufficient to stick to
 overwriting the available handlers as in the previous example. But
@@ -577,7 +589,7 @@ Text class whereever you see fit:
 
   local Button = ui.Text:newClass { _NAME = "_button" }
 
-''ad-hoc'' classes may be named arbitrarily, but their names should 
+''ad-hoc'' classes may be named arbitrarily, but their names should
 be prefixed with an underscore to distinguish them from global
 classes. You can even do without a name, as tekUI will create one
 for you if necessary (but you will find it difficult to reference
@@ -607,7 +619,65 @@ the [[#classsetup : Class setup]] section for further information.
 
 =( developersguide : 5. Developer's Guide )=
 
-==( debug : 5.1. Debug library )==
+==( lifecycle : 5.1. The lifecycle of an element )==
+
+A GUI element is set up in several stages, all of which are initiated
+by the tekUI framework. Normally, you do not call any of these
+methods yourself (aside from passing a call on to the same method in
+your super class):
+
+ - 1. [[Object.init()][manual.html#Object:init]] - gets called when
+ an element is created
+ - 2. [[Element:connect()][manual.html#Element:connect]] - connects
+ the element with a parent element
+ - 3. The element's properties are decoded.
+ - 4. [[Element:setup()][manual.html#Element:setup]] - registers the
+ element with the application
+ - 5. [[Area:askMinMax()][manual.html#Area:askMinMax]] - queries the
+ element's minimal and maximal dimensions
+ - 6. The window is opened.
+ - 7. [[Area:show()][manual.html#Area:show]] - gets called when the
+ element is about to be shown
+ - 8. [[Area:layout()][manual.html#Area:layout]] - layouts the
+ element into a rectangle
+ - 9. [[Area:draw()][manual.html#Area:draw]] - paints the element
+ onto the screen
+ - 10. [[Area:hide()][manual.html#Area:hide]] - gets called when the
+ element is about to hide
+ - 11. The window is closed.
+ - 12. [[Element:cleanup()][manual.html#Element:cleanup]] -
+ unregisters the element
+ - 13. [[Element:disconnect()][manual.html#Element:disconnect]] -
+ disconnects the element from its parent
+
+=== Drawing an element ===
+
+In the drawing method, the control flow is roughly as follows:
+
+  function ElementClass:draw()
+    if SuperClass.draw(self) then
+      -- your rendering here
+      return true
+    end
+  end
+
+There are rare cases in which a class modifies the drawing context,
+e.g. by setting a coordinate displacement. Such modifications must
+be performed in [[Area:drawBegin()][manual.Area:drawBegin]] and
+reverted in [[Area:drawEnd()][manual.Area:drawEnd]], and the
+control flow looks like this:
+
+  function ElementClass:draw()
+    if SuperClass.draw(self) then
+      if self:drawBegin() then
+        -- your rendering here
+        self:drawEnd()
+      end
+      return true
+    end
+  end
+
+==( debug : 5.2. Debug library )==
 
 The debug library used throughout tekUI is
 [[tek.lib.debug][manual.html#tek.lib.debug]]. The default debug
@@ -620,7 +690,7 @@ setting it after including the module:
 
 See also the module's documentation for redirecting the output.
 
-==( proxied : 5.2. Proxied object model )==
+==( proxied : 5.3. Proxied object model )==
 
 If you plan on extending existing classes or develop your own, you
 are advised to set the following configurable parameters in
@@ -651,7 +721,7 @@ Once your application is tested and ready for deployment, you can
 disable {{PROXY}}, as this will improve performance and reduce memory
 consumption.
 
-==( classsetup : 5.3. Class setup )==
+==( classsetup : 5.4. Class setup )==
 
 A class is usually set up in a prologue like this:
 
@@ -682,7 +752,7 @@ an implicit {{self}}):
 Also, don't forget to add a {{_VERSION}} variable, as it will be used
 by the documentation system – see also the next section.
 
-==( classdoc : 5.4. Class documentation system )==
+==( classdoc : 5.5. Class documentation system )==
 
 Don't stray off too far from the class setup described in the
 previous section, as it contains valuable informations for tekUI's

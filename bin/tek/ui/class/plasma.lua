@@ -17,7 +17,7 @@ local sin = math.sin
 local unpack = unpack
 
 module("tek.ui.class.plasma", tek.ui.class.frame)
-_VERSION = "Plasma 3.0"
+_VERSION = "Plasma 5.0"
 
 local WIDTH = 80
 local HEIGHT = 60
@@ -48,6 +48,7 @@ end
 
 function Plasma.new(class, self)
 	self = self or { }
+	self.EraseBG = false
 	self.Screen = { }
 	self.Palette = { }
 	self.PalIndex = 0
@@ -91,40 +92,41 @@ function Plasma:hide()
 end
 
 function Plasma:draw()
-
-	local sintab = self.SinTab
-	local palette = self.Palette
-	local screen = self.Screen
-	local pscale = #self.Palette / 10
-	local p = self.Params
-	local xp1, xp2, yp1, yp2, yp3 = unpack(p)
-	local yc1, yc2, yc3 = yp1, yp2, yp3
-	local c
-
-	local dxc1 = floor(self.DeltaX1)
-	local dxc2 = floor(self.DeltaX2)
-	local dyc1 = floor(self.DeltaY1)
-	local dyc2 = floor(self.DeltaY2)
-	local dyc3 = floor(self.DeltaY3)
-
-	for y = 0, HEIGHT - 1 do
-		local xc1, xc2 = xp1, xp2
-		local ysin = sintab[yc1] + sintab[yc2] + sintab[yc3] + 5
-		for x = y * WIDTH, (y + 1) * WIDTH - 1 do
-			c = sintab[xc1] + sintab[xc2] + ysin
-			screen[x] = palette[floor(c * pscale)]
-			xc1 = (xc1 + dxc1) % 1024
-			xc2 = (xc2 + dxc2) % 1024
+	if Frame.draw(self) then
+		local r1, r2, r3, r4 = self:getRect()
+		local sintab = self.SinTab
+		local palette = self.Palette
+		local screen = self.Screen
+		local pscale = #self.Palette / 10
+		local p = self.Params
+		local xp1, xp2, yp1, yp2, yp3 = unpack(p)
+		local yc1, yc2, yc3 = yp1, yp2, yp3
+		local c
+	
+		local dxc1 = floor(self.DeltaX1)
+		local dxc2 = floor(self.DeltaX2)
+		local dyc1 = floor(self.DeltaY1)
+		local dyc2 = floor(self.DeltaY2)
+		local dyc3 = floor(self.DeltaY3)
+	
+		for y = 0, HEIGHT - 1 do
+			local xc1, xc2 = xp1, xp2
+			local ysin = sintab[yc1] + sintab[yc2] + sintab[yc3] + 5
+			for x = y * WIDTH, (y + 1) * WIDTH - 1 do
+				c = sintab[xc1] + sintab[xc2] + ysin
+				screen[x] = palette[floor(c * pscale)]
+				xc1 = (xc1 + dxc1) % 1024
+				xc2 = (xc2 + dxc2) % 1024
+			end
+			yc1 = (yc1 + dyc1) % 1024
+			yc2 = (yc2 + dyc2) % 1024
+			yc3 = (yc3 + dyc3) % 1024
 		end
-		yc1 = (yc1 + dyc1) % 1024
-		yc2 = (yc2 + dyc2) % 1024
-		yc3 = (yc3 + dyc3) % 1024
+	
+		local d = self.Drawable
+		d:drawRGB(r1, r2, screen, WIDTH, HEIGHT, PIXWIDTH, PIXHEIGHT)
+		return true
 	end
-
-	local d = self.Drawable
-	local r = self.Rect
-	d:drawRGB(r[1], r[2], screen, WIDTH, HEIGHT, PIXWIDTH, PIXHEIGHT)
-
 end
 
 function Plasma:updateInterval(msg)
@@ -136,6 +138,6 @@ function Plasma:updateInterval(msg)
 	xp1 = (xp1 + self.SpeedX1) % 1024
 	xp2 = (xp2 + self.SpeedX2) % 1024
 	p[1], p[2], p[3], p[4], p[5] = xp1, xp2, yp1, yp2, yp3
-	self.Redraw = true
+	self.Flags:set(ui.FL_REDRAW)
 	return msg
 end

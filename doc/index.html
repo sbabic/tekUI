@@ -11,7 +11,7 @@
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8h
+			Version 0.8i
 		</p>
 		<hr />
 		<h2>
@@ -55,7 +55,7 @@
 								2.3. <a href="#deployment">Deployment</a> 
 							</li>
 							<li style="list-style-type: none">
-								2.4. <a href="#themes">Themes</a> 
+								2.4. <a href="#themes">Style sheets and themes</a> 
 							</li>
 							<li style="list-style-type: none">
 								2.5. <a href="#clibrary">C library</a> 
@@ -67,7 +67,7 @@
 								2.7. <a href="#documentation">Documentation system</a> 
 							</li>
 							<li style="list-style-type: none">
-								2.8. <a href="#embedded">Notes on uses in embedded systems</a> 
+								2.8. <a href="#embedded">Fitness for the use in embedded systems</a> 
 							</li>
 						</ul>
 					</blockquote>
@@ -131,52 +131,62 @@
 					<blockquote>
 						<ul>
 							<li style="list-style-type: none">
-								5.1. <a href="#debug">Debug library</a> 
+								5.1. <a href="#lifecycle">The lifecycle of an element</a> 
 							</li>
 							<li style="list-style-type: none">
-								5.2. <a href="#proxied">Proxied object model</a> 
+								5.2. <a href="#debug">Debug library</a> 
 							</li>
 							<li style="list-style-type: none">
-								5.3. <a href="#classsetup">Class setup</a> 
+								5.3. <a href="#proxied">Proxied object model</a> 
 							</li>
 							<li style="list-style-type: none">
-								5.4. <a href="#classdoc">Class documentation system</a> 
+								5.4. <a href="#classsetup">Class setup</a> 
+							</li>
+							<li style="list-style-type: none">
+								5.5. <a href="#classdoc">Class documentation system</a> 
 							</li>
 						</ul>
 					</blockquote>
 				</li>
-				<li style="list-style-type: none">
-					6. <a href="manual.html">Class Reference Manual</a> 
+			</ul>
+		</blockquote>
+		<h3>
+			Links
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					<a href="manual.html">Class Reference Manual</a> &#8211; The entrypoint is the
+					<a href="manual.html#tek.ui">tek.ui</a> module. See there for a quick start.
 				</li>
-				<li style="list-style-type: none">
-					7. <a href="changes.html">Changelog</a> 
+				<li>
+					<a href="changes.html">Changelog</a> 
 				</li>
 			</ul>
 		</blockquote>
-		<p>
-			The entrypoint to the toolkit is the <a href="manual.html#tek.ui">tek.ui</a> 
-			module. See there for a quick start.
-		</p>
 		<hr />
 		<div class="node"><h1><a name="about" id="about">1. About tekUI</a></h1>
 			<p>
-				tekUI is a small, freestanding and portable graphical user interface
-				(GUI) toolkit written in Lua and C. It was developed initially for
-				the X Window System and can serve as a general-purpose GUI library
-				for desktop applications.
+				TekUI is a small, freestanding and portable graphical user interface
+				(GUI) toolkit written in Lua and C. It was developed for the X Window
+				System initially and has been ported to DirectFB, Windows, Nano-X and
+				a raw framebuffer since.
 			</p>
 			<p>
-				Its main focus is on rapid development of applications for
-				custom-made devices, often with a custom appearance and under
-				resource-constrained conditions, such as for embedded devices with a
-				display controller.
+				Its main focus is the rapid development of custom-made applications
+				with a custom appearance, such as for embedded devices with a display
+				controller (see also
+				<a href="#embedded">fitness for the use in embedded systems</a>). In the long
+				term, it is intended to feature a class library supporting regular,
+				general-purpose desktop and mobile applications.
 			</p>
 			<p>
 				Being mostly written in the
-				<a href="http://www.lua.org/">Lua scripting language</a>, it is easily
-				extensible with new user interface elements, which can be rewritten
-				in C later. The creation of new styles and themes and fitting the
-				software to a new device are equally simple.
+				<a href="http://www.lua.org/">Lua scripting language</a> and using a simple
+				inheritance scheme and class library, tekUI is easily extensible with
+				new user interface elements. New controls can be written in Lua and
+				ported to C later. The creation of new styles and themes and fitting
+				the software to a new device are equally simple.
 			</p>
 			<p>
 				See below for a more detailed technical <a href="#overview">overview</a>.
@@ -185,37 +195,36 @@
 		<div class="node"><h2><a name="license" id="license">1.1. License</a></h2>
 			<p>
 				TekUI is free software under the same license as Lua itself: It can
-				be used for both academic and commercial purposes at no cost, it
+				be used for both academic and commercial purposes at no cost. It
 				qualifies as Open Source software, and its license is compatible with
-				the GPL. Note: The commercially supported version contains additional
-				components which may be licensed differently.
-				See <a href="copyright.html">copyright</a>.
+				the GPL &#8211; see <a href="copyright.html">copyright</a>. Additional components
+				are available under a commercial license &#8211; see
+				<a href="support and services">support and services</a>.
 			</p>
 		</div>
 		<div class="node"><h2><a name="status" id="status">1.2. Status, requirements</a></h2>
 			<p>
 				TekUI is in early stage of development. It is available for the
-				Linux, Windows, and FreeBSD platforms. Display drivers are available
-				for X11, Windows, DirectFB, Nano-X, and a <em>raw framebuffer</em>. See
-				also <a href="todo.html">TODO</a> for a list of known bugs and missing
-				features, and <a href="#requirements">requirements</a> for a list of the required packages.
+				Linux, Windows, and FreeBSD platforms. Display drivers are included
+				for X11, Windows, and DirectFB. See also <a href="todo.html">TODO</a> for a
+				list of known bugs and missing features, and <a href="#requirements">requirements</a> for a
+				list of the required libraries.
 			</p>
 		</div>
 		<div class="node"><h2><a name="development" id="development">1.3. Development model</a></h2>
 			<p>
-				If you find this software useful, you have probably arranged to fit
-				it to a certain device or application &#8211; submit your additions and we
-				will check them for inclusion to the public source code repository.
-				Regular developers are welcome also.
+				Bug fixes and additions are welcome. Submit your patches, and we will
+				check them for inclusion to the public source code repository.
+				Regular contributors are welcome also.
 			</p>
 		</div>
 		<div class="node"><h2><a name="support" id="support">1.4. Support and services</a></h2>
 			<p>
-				Vendors of commercial products can help advance the development by
-				assigning projects based on tekUI, or license our commercially
-				supported version. Support and services for the integration of
-				tekUI as well as special versions, new display drivers, custom
-				classes etc. are available from the authors &#8211; see below.
+				Special adaptations, custom display drivers, new user interface
+				elements, and support and services for the integration of tekUI into
+				your products are available from the authors &#8211; see below. A
+				commercial version with additional components (such as the Nano-X and
+				raw framebuffer drivers, XML support) is available on request.
 			</p>
 		</div>
 		<div class="node"><h2><a name="authors" id="authors">1.5. Authors and contact</a></h2>
@@ -243,22 +252,22 @@
 				</ul>
 			</blockquote>
 			<p>
+				Product website:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<a href="http://www.schulze-mueller.de/products.html">http://www.schulze-mueller.de/products.html</a> 
+					</li>
+				</ul>
+			</blockquote>
+			<p>
 				Public mailing list:
 			</p>
 			<blockquote>
 				<ul>
 					<li style="list-style-type: none">
 						<a href="http://lists.neoscientists.org/mailman/listinfo/tekui-devel">http://lists.neoscientists.org/mailman/listinfo/tekui-devel</a> 
-					</li>
-				</ul>
-			</blockquote>
-			<p>
-				Commercial product website:
-			</p>
-			<blockquote>
-				<ul>
-					<li style="list-style-type: none">
-						<a href="http://www.schulze-mueller.de/products.html">http://www.schulze-mueller.de/products.html</a> 
 					</li>
 				</ul>
 			</blockquote>
@@ -290,7 +299,7 @@
 						Full Unicode (UTF-8) support
 					</li>
 					<li>
-						Themes, cascading style sheets (CSS) support
+						Support for cascading style sheets (CSS) and themes
 					</li>
 					<li>
 						Allows for multi-windowed, tabbed and fullscreen applications
@@ -303,8 +312,8 @@
 						coroutines
 					</li>
 					<li>
-						Works with stock (double precision), single precision and
-						integer versions of the Lua VM
+						Works unmodified with stock (double precision), single precision
+						and integer versions of the Lua VM
 					</li>
 					<li>
 						Supplied with a documentation system supporting tekUI's object
@@ -317,13 +326,16 @@
 			<blockquote>
 				<ul>
 					<li>
-						Canvas (smoothly scrolling)
+						Canvas
 					</li>
 					<li>
 						Checkmark
 					</li>
 					<li>
-						Directory lister (file requester included)
+						Directory lister
+					</li>
+					<li>
+						File requester
 					</li>
 					<li>
 						Floating text
@@ -335,13 +347,13 @@
 						Group (horizontal, vertical, grids, in pages, scrollable)
 					</li>
 					<li>
-						Handle, for group balancing
+						Handle for group balancing
 					</li>
 					<li>
 						Images
 					</li>
 					<li>
-						List, also multi-column and multi-selection
+						Lister, also multi-column and multi-selection
 					</li>
 					<li>
 						Menu (popup and window), also nested
@@ -353,7 +365,10 @@
 						Popup list ('combo box')
 					</li>
 					<li>
-						Radio button
+						Radiobutton
+					</li>
+					<li>
+						Scrollgroup
 					</li>
 					<li>
 						Slider
@@ -362,7 +377,7 @@
 						Spacer
 					</li>
 					<li>
-						Text gadget (and label), also multi-line
+						Text button (and label), also multi-line
 					</li>
 					<li>
 						Text input (single line)
@@ -378,6 +393,9 @@
 				host. Creating C bindings is an easy and well-documented task in Lua,
 				and the tekUI package contains numerous examples.
 			</p>
+			<h4>
+				Future plans
+			</h4>
 			<p>
 				The next development goal is to fold the tekUI framework into a
 				freestanding C library, which enables applications to create
@@ -408,18 +426,20 @@
 				between GUI elements as well as many application tasks.
 			</p>
 		</div>
-		<div class="node"><h2><a name="themes" id="themes">2.4. Themes</a></h2>
+		<div class="node"><h2><a name="themes" id="themes">2.4. Style sheets and themes</a></h2>
 			<p>
 				The only admission to a more common appearance is that tekUI tries to
 				import the color scheme found in a GTK+ configuration file. It can be
-				created conveniently in the KDE configuration panel; thus, if you are
+				created in the KDE configuration panel conveniently; thus, if you are
 				using KDE and check the appropriate option, KDE, GTK+ and tekUI can
 				all share the same color scheme.
 			</p>
 			<p>
-				The current default theme tries to be as conservative and minimal as
-				possible. Custom themes can be created by modifying (or deriving
-				from) the Theme class.
+				tekUI comes with a cascading style sheets (CSS) engine for the
+				import of properties for element classes, custom classes, pseudo
+				classes, as well as for individual and direct formattings. tekUI's
+				default theme is hardcoded in the Theme class and also available as
+				an external style sheet file.
 			</p>
 		</div>
 		<div class="node"><h2><a name="clibrary" id="clibrary">2.5. C library</a></h2>
@@ -430,32 +450,33 @@
 				installing the software.
 			</p>
 			<p>
-				The C library isolates from the host and provides a few
-				performance-critical routines. Rendering and input handling are
-				provided in the form of display drivers, which allow for easy
-				exchangeability. Display drivers currently supported are for X11,
-				Windows, <a href="http://www.directfb.org/">DirectFB</a>,
-				<a href="http://www.nano-x.org/">Nano-X</a>, and a raw framebuffer.
+				The C library isolates from the host and provides
+				performance-critical routines (e.g. the region management and the
+				default layouter). Rendering and input handling are implemented as
+				display drivers, which allow for easy exchangeability.
 			</p>
 			<p>
-				Aside from the display driver interface, the C library features
-				OS-like facilities such as portable threads, a timer device and
-				virtual filesystem interfaces. Depending on your application and
-				its kind of deployment, it can be extended with more input drivers,
-				file format codecs, etc.
+				Aside from the display driver interface, the C library implements
+				OS-like facilities such as portable threads, a timer device and a
+				virtual filesystem interface.
 			</p>
 		</div>
 		<div class="node"><h2><a name="objectmodel" id="objectmodel">2.6. Lua, C and object model</a></h2>
 			<p>
-				Regardless whether classes are written in Lua or C, they share a
+				Regardless of whether classes are written in Lua or C, they share a
 				common, single-inheritance object model, which is determined by the
 				Lua virtual machine and provides a referencing scheme and automatic
 				memory management.
 			</p>
 			<p>
-				Most user interface elements are currently implemented in Lua, which
-				is beneficial for fast prototyping of custom classes and styles, for
-				heavy customization, and generally in early stages of development.
+				Classes can be written in Lua and C interchangeably, meaning that
+				they can inherit from each other regardless of the language they are
+				written in. This makes it possible to prototype an application
+				quickly, and, should the need arise, to replace
+				performance-crititcal classes with their counterparts in C. When
+				porting classes to C, there is a certain degree of freedom in how
+				much reliance on the Lua VM and its automatic resource management
+				is desired.
 			</p>
 		</div>
 		<div class="node"><h2><a name="documentation" id="documentation">2.7. Documentation system</a></h2>
@@ -474,22 +495,22 @@
 				the document generator to process the file system hierarchy.
 			</p>
 		</div>
-		<div class="node"><h2><a name="embedded" id="embedded">2.8. Notes on uses in embedded systems</a></h2>
+		<div class="node"><h2><a name="embedded" id="embedded">2.8. Fitness for the use in embedded systems</a></h2>
 			<p>
-				Complete solutions based on tekUI are well in the reach of 512kB of
-				ROM/Flash: A typical application and the modules that it requires,
-				if compiled to Lua bytecode, can fit into 256kB. Add to that approx.
+				Complete solutions based on tekUI are in the reach of 512kB ROM or
+				flash memory: A typical application and the required modules, if
+				compiled to Lua bytecode, can fit into 256kB. Add to that approx.
 				128kB for the C modules and another 128kB for the Lua virtual
 				machine.
 			</p>
 			<p>
-				The generic, unmodified version of tekUI has been deployed on PPC and
+				Generic, unmodified versions of tekUI have been deployed on PPC and
 				ARM based microcontrollers with clock rates as low as 200MHz, while
 				maintaining good reactivity and a pleasant look &amp; feel. Lower clock
 				rates are workable with some adaptations, namely by disabling
-				expensive features like style sheet support, porting certain classes
-				to C, using display drivers which are more tightly connected to the
-				hardware, etc.
+				expensive features like style sheet support, by porting certain
+				classes to C, using display drivers which are more tightly connected
+				to the hardware, etc.
 			</p>
 			<hr />
 		</div>
@@ -521,7 +542,7 @@
 						&gt;=DirectFB-0.9.25.1 (for the directfb driver)
 					</li>
 					<li>
-						MingW (for the Windows platform)
+						MinGW (for the Windows platform)
 					</li>
 					<li>
 						microwindows-0.91 (for the Nano-X driver)
@@ -594,12 +615,11 @@
 		</div>
 		<div class="node"><h3><a name="notenanox" id="notenanox">3.2.3. Nano-X notes</a></h3>
 			<p>
-				The Nano-X driver is available as part of the commercially supported
-				version. You will almost certainly have to adjust the <code>config</code> 
-				file. Due to some limitations of Nano-X, tekUI applications will
-				probably make sense only when running in fullscreen mode without a
-				window manager. See also <code>tek/ui/style/nanox.css</code> for more
-				information. Example:
+				For the Nano-X driver you will almost certainly have to adjust the
+				<code>config</code> file. Due to some limitations of Nano-X, tekUI
+				applications will probably make sense only when running in fullscreen
+				mode without a window manager. See also <code>tek/ui/style/nanox.css</code> 
+				for more information. Example:
 			</p>
 <pre>
 # nano-X &amp; THEME=nanox FULLSCREEN=true bin/demo_custom.lua
@@ -607,15 +627,13 @@
 		</div>
 		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.4. Raw framebuffer notes</a></h3>
 			<p>
-				The raw framebuffer driver is available as part of the commercially
-				supported version. Drawing primitives, clipping, and antialiased
-				fonts are provided, and rendering can be targeted to user-supplied
-				memory. This driver implements no input and serves as a template
-				(or skeleton) for specializations in a target context, like custom
-				hardware or a 3D game or simulation. For testing and debugging, the
-				raw framebuffer driver is recursive; by plugging in another display
-				driver, an instant visualization device and input source can be
-				provided.
+				Drawing primitives, clipping, and antialiased fonts are provided,
+				and rendering can be targeted to user-supplied memory. This driver
+				implements no input and serves as a template (or skeleton) for
+				specializations in a target context, like custom hardware or a 3D
+				game or simulation. For testing and debugging, the raw framebuffer
+				driver is recursive; by plugging in another display driver, an
+				instant visualization device and input source can be provided.
 			</p>
 		</div>
 		<div class="node"><h2><a name="building" id="building">3.3. Building</a></h2>
@@ -634,10 +652,10 @@
 		</div>
 		<div class="node"><h2><a name="installation" id="installation">3.4. Installation</a></h2>
 			<p>
-				A system-wide installation of tekUI is not strictly required (in so
+				A system-wide installation of tekUI is not strictly required &#8211; in so
 				far as the majority of display drivers is concerned. The DirectFB
 				driver, in contrast, looks up fonts and cursors globally and must be
-				installed in any case).
+				installed in any case.
 			</p>
 			<p>
 				Once tekUI is built, it can be worked with and developed against, as
@@ -677,15 +695,23 @@
 				<ul>
 					<li>
 						<code>NOCURSOR</code> - <code>&quot;true&quot;</code> to disable the mouse pointer over a
-						tekUI application
+						tekUI application. This may be useful when running on a touch
+						screen.
 					</li>
 					<li>
-						<code>FULLSCREEN</code> - <code>&quot;true&quot;</code> to force opening an application in
-						full screen mode
+						<code>FULLSCREEN</code> - <code>&quot;true&quot;</code> to try opening an application in
+						fullscreen mode. Fullscreen support varies and depends largely on
+						the display driver in use.
 					</li>
 					<li>
-						<code>THEME</code> - Name of a theme corresponding to a style sheet file in
-						<code>tek/ui/style/</code> 
+						<code>THEME</code> - Theme names corresponding to style sheet files in
+						<code>tek/ui/style/</code>. Multiple themes can be separated by spaces.
+						The default is <code>&quot;default desktop&quot;</code>. The <em>desktop</em> theme tries
+						to import the color scheme found in a GTK2 configuration file.
+					</li>
+					<li>
+						<code>GTK2_RC_FILES</code> - Possible locations of a gtkrc-2.0
+						configuration file.
 					</li>
 				</ul>
 			</blockquote>
@@ -930,7 +956,100 @@ button = Button:new { Text = &quot;_Hello, World!&quot; }
 		</div>
 		<div class="node"><h1><a name="developersguide" id="developersguide">5. Developer's Guide</a></h1>
 		</div>
-		<div class="node"><h2><a name="debug" id="debug">5.1. Debug library</a></h2>
+		<div class="node"><h2><a name="lifecycle" id="lifecycle">5.1. The lifecycle of an element</a></h2>
+			<p>
+				A GUI element is set up in several stages, all of which are initiated
+				by the tekUI framework. Normally, you do not call any of these
+				methods yourself (aside from passing a call on to the same method in
+				your super class):
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						1. <a href="manual.html#Object:init">Object.init()</a> - gets called when
+						an element is created
+					</li>
+					<li style="list-style-type: none">
+						2. <a href="manual.html#Element:connect">Element:connect()</a> - connects
+						the element with a parent element
+					</li>
+					<li style="list-style-type: none">
+						3. The element's properties are decoded.
+					</li>
+					<li style="list-style-type: none">
+						4. <a href="manual.html#Element:setup">Element:setup()</a> - registers the
+						element with the application
+					</li>
+					<li style="list-style-type: none">
+						5. <a href="manual.html#Area:askMinMax">Area:askMinMax()</a> - queries the
+						element's minimal and maximal dimensions
+					</li>
+					<li style="list-style-type: none">
+						6. The window is opened.
+					</li>
+					<li style="list-style-type: none">
+						7. <a href="manual.html#Area:show">Area:show()</a> - gets called when the
+						element is about to be shown
+					</li>
+					<li style="list-style-type: none">
+						8. <a href="manual.html#Area:layout">Area:layout()</a> - layouts the
+						element into a rectangle
+					</li>
+					<li style="list-style-type: none">
+						9. <a href="manual.html#Area:draw">Area:draw()</a> - paints the element
+						onto the screen
+					</li>
+					<li style="list-style-type: none">
+						10. <a href="manual.html#Area:hide">Area:hide()</a> - gets called when the
+						element is about to hide
+					</li>
+					<li style="list-style-type: none">
+						11. The window is closed.
+					</li>
+					<li style="list-style-type: none">
+						12. <a href="manual.html#Element:cleanup">Element:cleanup()</a> -
+						unregisters the element
+					</li>
+					<li style="list-style-type: none">
+						13. <a href="manual.html#Element:disconnect">Element:disconnect()</a> -
+						disconnects the element from its parent
+					</li>
+				</ul>
+			</blockquote>
+			<h3>
+				Drawing an element
+			</h3>
+			<p>
+				In the drawing method, the control flow is roughly as follows:
+			</p>
+<pre>
+function ElementClass:draw()
+  if SuperClass.draw(self) then
+    -- your rendering here
+    return true
+  end
+end
+</pre>
+			<p>
+				There are rare cases in which a class modifies the drawing context,
+				e.g. by setting a coordinate displacement. Such modifications must
+				be performed in <a href="manual.Area:drawBegin">Area:drawBegin()</a> and
+				reverted in <a href="manual.Area:drawEnd">Area:drawEnd()</a>, and the
+				control flow looks like this:
+			</p>
+<pre>
+function ElementClass:draw()
+  if SuperClass.draw(self) then
+    if self:drawBegin() then
+      -- your rendering here
+      self:drawEnd()
+    end
+    return true
+  end
+end
+</pre>
+		</div>
+		<div class="node"><h2><a name="debug" id="debug">5.2. Debug library</a></h2>
 			<p>
 				The debug library used throughout tekUI is
 				<a href="manual.html#tek.lib.debug">tek.lib.debug</a>. The default debug
@@ -946,7 +1065,7 @@ db.level = db.INFO
 				See also the module's documentation for redirecting the output.
 			</p>
 		</div>
-		<div class="node"><h2><a name="proxied" id="proxied">5.2. Proxied object model</a></h2>
+		<div class="node"><h2><a name="proxied" id="proxied">5.3. Proxied object model</a></h2>
 			<p>
 				If you plan on extending existing classes or develop your own, you
 				are advised to set the following configurable parameters in
@@ -982,7 +1101,7 @@ local DEBUG = true
 				consumption.
 			</p>
 		</div>
-		<div class="node"><h2><a name="classsetup" id="classsetup">5.3. Class setup</a></h2>
+		<div class="node"><h2><a name="classsetup" id="classsetup">5.4. Class setup</a></h2>
 			<p>
 				A class is usually set up in a prologue like this:
 			</p>
@@ -1019,7 +1138,7 @@ end
 				by the documentation system &#8211; see also the next section.
 			</p>
 		</div>
-		<div class="node"><h2><a name="classdoc" id="classdoc">5.4. Class documentation system</a></h2>
+		<div class="node"><h2><a name="classdoc" id="classdoc">5.5. Class documentation system</a></h2>
 			<p>
 				Don't stray off too far from the class setup described in the
 				previous section, as it contains valuable informations for tekUI's

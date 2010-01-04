@@ -9,17 +9,18 @@
 #include <lauxlib.h>
 #include <lualib.h>
 #include <string.h>
-#include <tek/type.h>
+#include <tek/lib/tekui.h>
 
 /* Name of superclass: */
-#define SUPERCLASS_NAME "tek.class"
+#define SUPERCLASS_NAME "tek.ui.class.layout"
 
 /* Name of this class: */
 #define CLASS_NAME "tek.ui.layout.default"
 
-/*****************************************************************************/
+/* Version: */
+#define TEK_UI_CLASS_LAYOUT_DEFAULT_VERSION "Default Layout 7.0"
 
-#define HUGE 1000000
+/*****************************************************************************/
 
 static const char *ALIGN[2][6] =
 {
@@ -34,8 +35,122 @@ static const int INDICES[2][6] =
 };
 
 /*****************************************************************************/
+
+static int layout_getsamesize(lua_State *L, int groupindex, int axis)
+{
+	lua_getfield(L, groupindex, "SameSize");
+	int res;
+	if (lua_isboolean(L, -1) && lua_toboolean(L, -1))
+		res = 1;
+	else
+	{
+		const char *key = lua_tostring(L, -1);
+		res = key && ((axis == 1 && key[0] == 'w') ||
+			(axis == 2 && key[0] == 'h'));
+	}
+	lua_pop(L, 1);
+	return res;
+}
+
+/*****************************************************************************/
+
+typedef struct { int orientation, width, height; } layout_struct;
+
+static layout_struct layout_getstructure(lua_State *L, int group)
+{
+	layout_struct res;
+	
+	size_t nc;
+	int gw, gh;
+	lua_getfield(L, group, "Columns");
+	gw = lua_isnumber(L, -1) ? lua_tointeger(L, -1) : 0;
+	lua_getfield(L, group, "Rows");
+	gh = lua_isnumber(L, -1) ? lua_tointeger(L, -1) : 0;
+	lua_getfield(L, group, "Children");
+	nc = lua_objlen(L, -1);
+	lua_pop(L, 3);
+	
+	if (gw)
+	{
+		res.orientation = 1;
+		res.width = gw;
+		res.height = (nc + gw - 1) / gw;
+	}
+	else if (gh)
+	{
+		res.orientation = 2;
+		res.width = (nc + gh - 1) / gh;
+		res.height = gh;
+	}
+	else
+	{
+		const char *key;
+		lua_getfield(L, group, "Orientation");
+		key = lua_tostring(L, -1);
+		if (key && key[0] == 'h') /* "horizontal" */
+		{
+			res.orientation = 1;
+			res.width = nc;
+			res.height = 1;
+		}
+		else
+		{
+			res.orientation = 2;
+			res.width = 1;
+			res.height = nc;
+		}
+		lua_pop(L, 1);
+	}
+	
+	return res;
+}
+
+/*****************************************************************************/
+
+static void layout_calcweights(lua_State *L, layout_struct *lstruct)
+{
+	int cidx = 1;
+	int y, x;
+	lua_getfield(L, 1, "Weights");
+	lua_newtable(L);
+	lua_newtable(L);
+	lua_getfield(L, 2, "Children");
+	for (y = 1; y <= lstruct->height; ++y)
+	{
+		for (x = 1; x <= lstruct->width; ++x)
+		{
+			lua_rawgeti(L, -1, cidx);
+			if (lua_isnil(L, -1))
+			{
+				lua_pop(L, 1);
+				break;
+			}
+			lua_getfield(L, -1, "Weight");
+			if (lua_isnumber(L, -1))
+			{
+				lua_Integer w = lua_tointeger(L, -1);
+				lua_rawgeti(L, -5, x);
+				lua_rawgeti(L, -5, y);
+				lua_pushinteger(L, luaL_optint(L, -2, 0) + w);
+				lua_rawseti(L, -8, x);
+				lua_pushinteger(L, luaL_optint(L, -1, 0) + w);
+				lua_rawseti(L, -7, y);
+				lua_pop(L, 4);
+			}
+			else
+				lua_pop(L, 2);
+			cidx++;
+		}
+	}
+	lua_pop(L, 1);
+	lua_rawseti(L, -3, 2);
+	lua_rawseti(L, -2, 1);
+	lua_pop(L, 1);
+}
+
+/*****************************************************************************/
 /*
-**	list = layoutAxis(self, group, free, i1, i3, n, isgrid)
+**	list = layoutAxis(self, group, free, i1, i3, n, isgrid, pad)
 */
 
 static int layout_layoutaxis(lua_State *L)
@@ -61,7 +176,8 @@ static int layout_layoutaxis(lua_State *L)
 	lua_rawgeti(L, -1, i1);
 	lua_rawgeti(L, -2, i3);
 	lua_remove(L, -3);
-	lua_getfield(L, 2, "Weights");
+	
+	lua_getfield(L, 1, "Weights");
 	lua_rawgeti(L, -1, i1);
 	lua_remove(L, -2);
 
@@ -115,28 +231,22 @@ static int layout_layoutaxis(lua_State *L)
 	tw = tw0 / 0x100;
 	fw = fw0 / 0x100;
 
-	lua_getfield(L, 2, "getSameSize");
-	lua_pushvalue(L, 2);
-	lua_pushinteger(L, i1);
-	lua_call(L, 2, 1);
-	ssb = lua_toboolean(L, -1);
-	lua_pop(L, 1);
+	ssb = layout_getsamesize(L, 2, i1);
 	if (ssb)
 	{
 		lua_getfield(L, 2, "MinMax");
 		lua_rawgeti(L, -1, i1);
-		lua_getfield(L, 2, "MarginAndBorder");
+		lua_getfield(L, 2, "Margin");
 		lua_rawgeti(L, -1, i1);
 		lua_rawgeti(L, -2, i3);
-		lua_getfield(L, 2, "Padding");
-		lua_rawgeti(L, -1, i1);
-		lua_rawgeti(L, -2, i3);
-		ssn = lua_tonumber(L, -7);
-		ssn -= lua_tonumber(L, -5);
+		lua_rawgeti(L, 8, i1);
+		lua_rawgeti(L, 8, i3);
+		ssn = lua_tonumber(L, -6);
 		ssn -= lua_tonumber(L, -4);
+		ssn -= lua_tonumber(L, -3);
 		ssn -= lua_tonumber(L, -2);
 		ssn -= lua_tonumber(L, -1);
-		lua_pop(L, 8);
+		lua_pop(L, 7);
 		ssn /= n;
 	}
 
@@ -223,7 +333,7 @@ static int layout_layoutaxis(lua_State *L)
 			newfree -= delta;
 			rest -= delta;
 
-			if (!lua_toboolean(L, -1) || lua_tointeger(L, -1) >= HUGE ||
+			if (!lua_toboolean(L, -1) || lua_tointeger(L, -1) >= TEKUI_HUGE ||
 				lua_tointeger(L, -3) < lua_tointeger(L, -1))
 			{
 				/* redo in next iteration: */
@@ -258,14 +368,11 @@ static int layout_layoutaxis(lua_State *L)
 
 static int layout_layout(lua_State *L)
 {
-	lua_Integer ori, gs1, gs2;
-	lua_getfield(L, 2, "getStructure");
-	lua_pushvalue(L, 2);
-	lua_call(L, 1, 3);
-	ori = lua_tointeger(L, -3);
-	gs1 = lua_tointeger(L, -2);
-	gs2 = lua_tointeger(L, -1);
-	lua_pop(L, 3);
+	layout_struct lstruct = layout_getstructure(L, 2);
+	int ori = lstruct.orientation;
+	int gs1 = lstruct.width;
+	int gs2 = lstruct.height;
+	tekui_flags *f, of;
 
 	if (gs1 > 0 && gs2 > 0)
 	{
@@ -298,14 +405,31 @@ static int layout_layout(lua_State *L)
 			r4 = lua_tointeger(L, 6);
 		}
 
-		lua_getfield(L, 2, "MarginAndBorder");
+		lua_getfield(L, 2, "Margin");
 		lua_getfield(L, 2, "Rect");
-		lua_getfield(L, 2, "Padding");
+		
+		lua_createtable(L, 4, 0);
+		lua_getfield(L, 2, "getPadding");
+		lua_pushvalue(L, 2);
+		lua_call(L, 1, 4);
+		lua_rawseti(L, -5, 4);
+		lua_rawseti(L, -4, 3);
+		lua_rawseti(L, -3, 2);
+		lua_rawseti(L, -2, 1);
+		
 		lua_rawgeti(L, -1, i1);
 		lua_rawgeti(L, -4, i1);
 		goffs = lua_tonumber(L, -1) + lua_tonumber(L, -2);
 		lua_pop(L, 2);
 		lua_createtable(L, 5, 0);
+
+		lua_getfield(L, 2, "Flags");
+		f = luaL_checkudata(L, -1, TEK_UI_SUPPORT_NAME);
+		of = *f;
+		*f &= ~TEKUI_FL_CHANGED;
+		if (of & TEKUI_FL_CHANGED)
+			layout_calcweights(L, &lstruct);
+		lua_pop(L, 1);
 
 		lua_getfield(L, 2, "MinMax");
 		lua_getfield(L, 1, "layoutAxis");
@@ -406,13 +530,7 @@ static int layout_layout(lua_State *L)
 				s = lua_tostring(L, -1);
 				if (s)
 				{
-					if (strcmp(s, "auto") == 0)
-					{
-						lua_rawgeti(L, -2, i1);
-						m3 = lua_tointeger(L, -1);
-						lua_pop(L, 1);
-					}
-					else if (strcmp(s, "free") == 0 || strcmp(s, "fill") == 0)
+					if (s[0] == 'f') /* "free" or "fill" */
 					{
 						lua_rawgeti(L, -9, i3);
 						lua_rawgeti(L, -10, i1);
@@ -459,16 +577,10 @@ static int layout_layout(lua_State *L)
 				/* outer size: */
 				lua_getfield(L, -2, A[5]);
 				s = lua_tostring(L, -1);
-				if (s && (strcmp(s, "fill") == 0 || strcmp(s, "free") == 0))
+				if (s && s[0] == 'f') /* "free" or "fill" */
 					osz = oszmax;
 				else
 				{
-					if (s && strcmp(s, "auto") == 0)
-					{
-						lua_rawgeti(L, -2, i2);
-						m4 = lua_tointeger(L, -1);
-						lua_pop(L, 1);
-					}
 					lua_rawgeti(L, -6, oidx);
 					lua_rawgeti(L, -1, 5);
 					osz = lua_tointeger(L, -1);
@@ -572,28 +684,16 @@ static int layout_layout(lua_State *L)
 static int layout_askMinMax(lua_State *L)
 {
 	int m[5] = { 0, 0, 0, 0, 0 };
-	int ori, gw, gh;
-
-	lua_getfield(L, 2, "getStructure");
-	lua_pushvalue(L, 2);
-	lua_call(L, 1, 3);
-	ori = lua_tointeger(L, -3);
-	gw = lua_tointeger(L, -2);
-	gh = lua_tointeger(L, -1);
-	lua_pop(L, 3);
+	layout_struct lstruct = layout_getstructure(L, 2);
+	int ori = lstruct.orientation;
+	int gw = lstruct.width;
+	int gh = lstruct.height;
 
 	if (gw > 0 && gh > 0)
 	{
-		int gss, i1, gs, y, x;
+		int i1, gs, y, x;
 		int cidx = 1;
-
-		lua_getfield(L, 2, "getSameSize");
-		lua_pushvalue(L, 2);
-		lua_pushinteger(L, ori);
-		lua_call(L, 2, 1);
-		gss = lua_toboolean(L, -1);
-		lua_pop(L, 1);
-
+		
 		lua_createtable(L, 4, 0);
 		lua_pushvalue(L, -1);
 		lua_setfield(L, 1, "TempMinMax");
@@ -637,12 +737,10 @@ static int layout_askMinMax(lua_State *L)
 				s = lua_tostring(L, -1);
 				if (s)
 				{
-					if (strcmp(s, "auto") == 0)
-						mm3 = mm1;
-					else if (strcmp(s, "fill") == 0)
+					if (strcmp(s, "fill") == 0)
 						mm3 = -1; /* nil */
 					else if (strcmp(s, "free") == 0)
-						mm3 = HUGE;
+						mm3 = TEKUI_HUGE;
 				}
 				lua_pop(L, 1);
 
@@ -650,26 +748,12 @@ static int layout_askMinMax(lua_State *L)
 				s = lua_tostring(L, -1);
 				if (s)
 				{
-					if (strcmp(s, "auto") == 0)
-						mm4 = mm2;
-					else if (strcmp(s, "fill") == 0)
+					if (strcmp(s, "fill") == 0)
 						mm4 = -1; /* nil */
 					else if (strcmp(s, "free") == 0)
-						mm4 = HUGE;
+						mm4 = TEKUI_HUGE;
 				}
 				lua_pop(L, 2);
-
-				lua_getfield(L, 2, "Width");
-				s = lua_tostring(L, -1);
-				if (s && strcmp(s, "auto") == 0)
-					mm3 = gss ? -1 : mm1;
-				lua_pop(L, 1);
-
-				lua_getfield(L, 2, "Height");
-				s = lua_tostring(L, -1);
-				if (s && strcmp(s, "auto") == 0)
-					mm4 = gss ? -1 : mm2;
-				lua_pop(L, 1);
 
 				if (mm3 < 0 && ori == 2)
 					mm3 = mm1;
@@ -724,43 +808,54 @@ static int layout_askMinMax(lua_State *L)
 		gs = gw;
 		for (i1 = 1; i1 <= 2; i1++)
 		{
-			int t1, ss, n;
+			int mins, maxs, ss, n;
 			int i3 = i1 + 2;
-			lua_getfield(L, 2, "getSameSize");
-			lua_pushvalue(L, 2);
-			lua_pushinteger(L, i1);
-			lua_call(L, 2, 1);
-			ss = lua_toboolean(L, -1);
-			lua_pop(L, 1);
+			int numfree = 0;
+			int remainder = 0;
+			
+			ss = layout_getsamesize(L, 2, i1);
 
 			for (n = 1; n <= gs; ++n)
 			{
 				lua_rawgeti(L, -1, i1);
 				lua_rawgeti(L, -1, n);
-				t1 = lua_tointeger(L, -1);
-				m[i1] = ss ? TMAX(m[i1], t1) : m[i1] + t1;
-				lua_pop(L, 2);
-
-				lua_rawgeti(L, -1, i3);
+				mins = lua_tointeger(L, -1);
+				lua_rawgeti(L, -3, i3);
 				lua_rawgeti(L, -1, n);
-				if (!lua_isnil(L, -1))
+				maxs = lua_isnil(L, -1) ? -1 : lua_tointeger(L, -1);
+				
+				if (ss)
 				{
-					int t2 = lua_tointeger(L, -1); /* tmm[i3][n] */
-					lua_pushinteger(L, TMAX(t2, t1));
+					if (maxs < 0 || maxs > mins)
+						numfree++;
+					else
+						remainder += mins;
+					m[i1] = TMAX(m[i1], mins);
+				}
+				else
+					m[i1] += mins;
+				
+				if (maxs >= 0)
+				{
+					maxs = TMAX(maxs, mins);
+					lua_pushinteger(L, maxs);
 					lua_rawseti(L, -3, n);
-					m[i3] = TMAX(m[i3], 0) + t2;
+					m[i3] = TMAX(m[i3], 0) + maxs;
 				}
 				else if (ori == i1)
 				{
-					/* if on primary axis, we must reserve at least min: */
-					m[i3] = TMAX(m[i3], 0) + t1;
+					m[i3] = TMAX(m[i3], 0) + mins;
 				}
-				lua_pop(L, 2);
+				
+				lua_pop(L, 4);
 			}
 
 			if (ss)
 			{
-				m[i1] *= gs;
+				if (numfree == 0)
+					m[i1] *= gs;
+				else
+					m[i1] = m[i1] * numfree + remainder;
 				if (m[i3] >= 0 && m[i1] > m[i3])
 					m[i3] = m[i1];
 			}
@@ -782,15 +877,17 @@ static int layout_askMinMax(lua_State *L)
 
 static int layout_new(lua_State *L)
 {
-	lua_newtable(L);
-	lua_setfield(L, 2, "TempMinMax");
-	lua_getglobal(L, "require");
-	lua_pushliteral(L, SUPERCLASS_NAME);
-	lua_call(L, 1, 1);
+	lua_pushvalue(L, lua_upvalueindex(1));
+	/* s: Layout */
 	lua_getfield(L, -1, "new");
 	lua_remove(L, -2);
 	lua_pushvalue(L, 1);
 	lua_pushvalue(L, 2);
+	/* s: Layout.new, class, self */
+	lua_newtable(L);
+	lua_setfield(L, -2, "TempMinMax");
+	lua_newtable(L);
+	lua_setfield(L, -2, "Weights");
 	lua_call(L, 2, 1);
 	return 1;
 }
@@ -816,7 +913,16 @@ TMODENTRY int luaopen_tek_ui_layout_default(lua_State *L)
 	/* s: superclass */
 	lua_pushvalue(L, -1);
 	/* s: superclass, superclass */
-	luaL_register(L, CLASS_NAME, tek_ui_layout_default_funcs);
+	lua_getglobal(L, "require");
+	/* s: superclass, superclass, <require> */
+	lua_pushliteral(L, SUPERCLASS_NAME);
+	/* s: superclass, superclass, <require>, "superclass" */
+	lua_call(L, 1, 1);
+	/* s: superclass, superclass, Layout: */
+	lua_pushstring(L, TEK_UI_CLASS_LAYOUT_DEFAULT_VERSION);
+	lua_setfield(L, -2, "_VERSION");
+	/* s: superclass, superclass, Layout - Layout is upvalue: */
+	luaI_openlib(L, CLASS_NAME, tek_ui_layout_default_funcs, 1);
 	/* s: superclass, superclass, class */
 	lua_call(L, 1, 1);
 	/* s: superclass, class */

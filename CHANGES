@@ -1,6 +1,97 @@
 
 == tekUI Changelog ==
 
+=== 0.8i: ===
+ 
+ * Display, Visual: Removed numerical pens, all pens are symbolic now, 
+ Display: removed RGBTab and FontTab
+ * added ui.support library with functions operating on flag fields
+ * added Fixed layouter
+ * added Dynamic, Fixed and LayoutHook and improved some demos
+ * Element:addStyleClass() added, Properties attribute added, removed
+ getProperty() and getProperties(), style sheet properties, direct formattings
+ and hardcoded class properties are now decoded into a metatable graph
+ * EditWindow: localizations added
+ * Application: added Style and Preload attributes, removed Theme attribute,
+ renamed Styles to AuthorStyles, added AutorStyleSheets
+ * Drawable:getAttrs() split into getWH() and getXY()
+ * PopItem: Now also elements descending from CheckMark collapse in popups,
+ no longer uses a "popup-children" style class if an element has children,
+ instead a style class "popup-child" is appended to all children during
+ connectPopItem()
+ * CheckMark: in setState(), precedence of the "Hilite" attribute over
+ "Selected" is now also considered for the foreground color
+ * MenuItem: a predefined class "menuitem" is now appended to the element's
+ style classes during init()
+ * Internal theme: use of menu colors corrected, removed "internal" style
+ sheet, added the respective properties in the "desktop" style sheet.
+ * style sheets: 'parent-group' pseudo pen renamed to 'transparent',
+ 'background-position' renamed to 'background-attachment'
+ * ui.loadStyleSheet() can now operate on open filehandles
+ * RadioImage now paints a back pane
+ * ImageGadget: did not implement vertical and right alignments, corrected
+ * Input: setting the cursor with the mouse now also updates the LockCursorX
+ attribute, visual cursor position reporting corrected
+ * Visual API: Window MaxWidth/MaxHeight wasn't unset when passing 'false',
+ corrected
+ * Area: removed relayout() function, rethinkLayout() now has an additional
+ updateminmax argument, added drawBegin() and drawEnd() functions, removed
+ refresh(), layout logic improved for growing elements, added Flag attribute,
+ removed Redraw attribute, removed BGColor, BGPosition, Margin, Padding,
+ getProperties(), FL_CHANGED is now set in rethinkLayout(), added getPadding(),
+ renamed MarginAndBorder to Margin, renamed former 'grid-align' properties to
+ 'halign' and 'valign'
+ * FloatText: layout() took an existing Redraw into account, removed
+ * Frame: phased out an additional newBorderObject() function, removed
+ RedrawBorder attribute, removed Border and BorderClass attributes, these are
+ created on the fly during border creation and isolated in the border object
+ * Group: the Layout argument can now be a class name, not just a layouter
+ instance, calcWeights() is now called when a changed layout is notified,
+ addMember()/remMember() are more solid now, removed getStructure(),
+ getSameSize() and calcWeights(), these are now isolated in the default
+ layouter, removed onActivateGroup(), groups are no longer repainted
+ completely, but only when a fixed background-attachment is indicated
+ * Handle: now calls rethinkLayout() as it is supposed to, Orientation is now
+ determined during setup()
+ * ListGadget: Removed BGAlt, CursorBorder, CursorBorderClass attributes
+ * PageGroup: simplified, now accepts a custom Layout
+ * ScrollBar, Slider: updateSlider() is no longer a local function and
+ forwards the call to its super class
+ * ScrollGroup: internal sliders are handled more efficiently now, causing a
+ notification in their parent class now only when really needed
+ * Slider, Gauge: MaxWidth, Width, MaxHeight and Height are now determined
+ during setup()
+ * Spacer: Orientation is now determined during setup()
+ * Text: Removed FGDisabled2, Font, TextHAlign, TextVAlign attributes
+ * TextInput: Removed FGCursor and BGCursor attributes
+ * Window:relayout() changed and no longer descends from Area but is now
+ rooted in the Window class, calcWeights() is now under the control of the
+ Group class
+ * UI: freeRegion() and testFlags() removed, added element flags FL_REDRAW,
+ FL_REDRAWBORDER, FL_LAYOUT etc., simplified and renamed prepareStyleSheet()
+ to unpackStyleSheet(), added unpackProperty() for direct formattings,
+ loadStyleSheet() now unpacks properties and merges pseudo class attributes
+ on the fly, removed NULLOFFS, new ui.ThemeName is "default desktop"
+ * Layout base class added
+ * Default layouter: Now uses the Layout base class in an upvalue to new(),
+ added version string, handles weights internally when a change of a group's
+ contents or weights is indicated using the FL_CHANGED flag, bugs in the
+ SameSize calculation corrected, removed the "auto" state for Width and
+ Height, the logic is now more concise and faster
+ * Theme: The internal style sheet is now more minimal and has been renamed
+ to "minimal", many properties have been relocated to the new "default" style
+ sheet
+ * Renamed 'check' and 'radio' images to 'checkmark' and 'radiobutton',
+ respectively
+ * Region:trans() renamed to shift(), isNull() to isEmpty()
+ * Makefiles updated to install new classes, args.lua, fixed layouter, new
+ style sheets
+ * Markup: Tables produced erroneous HTML - now pop the current block from the
+ stack
+ * Documentation generator: added macro support, added child class macro,
+ tables did not break out of the current block, corrected
+ * improved documentation generator, documentation, stylesheet, README
+
 === 0.8h: ===
 
  * Window, Application: Hotkeys are now actuated on keydown, not on keyup
@@ -34,7 +125,8 @@
  * Canvas: focusRect() now has an optional "smooth" scroll positioning
  argument, sanity check added
  * Text: now uses the "IgnoreAltShift" peudo qualifier for Keycode shortcuts,
- KeyCode attribute was lost during repeated invocations of setup(), corrected
+ KeyCode attribute was lost during repeated invocations of setup(), corrected,
+ 'color2' style property renamed to 'color-disabled'
  * Raw Framebuffer display driver: added
  * 64bit fixes and source code maintenance adjustments merged in from TEKlib
  * X11 Display: Now using the XVid extension and a more sophisticated window

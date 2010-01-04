@@ -379,6 +379,20 @@ function dumpclasstree(state, tab, indent)
 		end
 
 		insert(state.classdiagram, head)
+		
+		local set = { }
+		for k, v in pairs(sub) do
+			local data = getmetatable(v)
+			if not data.Unknown and data.Documentation then
+				insert(set, { cmp = tostring(k):lower(),
+					name = data.ShortName or data.ClassName,
+					path = data.ClassName, data = data })
+			end
+		end
+		if #set > 0 then
+			sort(set, function(a, b) return a.cmp < b.cmp end)
+			state.subclasses[name] = set
+		end
 
 		dumpclasstree(state, sub, indent + 1)
 	end
@@ -411,6 +425,7 @@ function processtree(state)
 	state.documentation = { }
 	state.miscindex = state.miscindex or { }
 	state.documents = { }
+	state.subclasses = { }
 
 	state.showtree = true
 
@@ -548,12 +563,41 @@ function DocMarkup:link(link)
 end
 
 -------------------------------------------------------------------------------
+--	text = resolvefuncs(text, macrotable, state)
+-------------------------------------------------------------------------------
+
+function resolvefuncs(text, macros, state)
+	return text:gsub("%$%{(%a+)%((.-)%)%}", function(funcname, arg)
+		local res
+		if macros[funcname] then
+			res = macros[funcname](state, funcname, arg)
+		end
+		return res or ""
+	end)
+end
+
+function macro_subclasses(state, funcname, arg)
+	local c = state.subclasses[arg]
+	if c then
+		local t = { }
+		local parent
+		for key, rec in pairs(c) do
+			insert(t, ('<option value="#%s">%s</option>'):format(rec.path, rec.name))
+		end
+		if #t > 0 then
+			insert(t, 1, ('<option value="">%s subclasses</option>'):format(#t))
+			return '/ <select onchange="if (this.value != \'\') window.location.href = this.value; this.selectedIndex = 0;">' .. concat(t) .. "</select>"
+		end
+	end
+end
+
+-------------------------------------------------------------------------------
 --	main
 -------------------------------------------------------------------------------
 
 local template = "-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S," ..
 	"-e=EMPTY/S,--heading/K,--header/K/M,--author/K,--created/K," ..
-	"--adddate/S,-r=REFDOC/K,-n=NAME/K"
+	"--adddate/S,-r=REFDOC/K,-n=NAME/K,--nomacros/S"
 
 local args = Args.read(template, arg)
 
@@ -567,12 +611,13 @@ if not args or args["-h"] then
 	print("  -p=PLAIN/S     generate formatted plain text instead of HTML")
 	print("  -e=EMPTY/S     also show empty (undocumented) modules in index")
 	print("  --heading/K    single-line document heading")
-	print("  --header/K/M   read header(s) from the specified file(s)")
+	print("  --header/K/M   ead header(s) from the specified file(s)")
 	print("  --author/K     document author (HTML generator metadata)")
 	print("  --created/K    creation date (HTML generator metadata)")
 	print("  --adddate/S    add creation date (HTML generator metadata)")
 	print("  -r=REFDOC/K    document implicitely referenced by functions")
 	print("  -n=NAME/K      document name (rest of arguments will be used)")
+	print("  --nomacros/S   macros produce empty strings")
 	print("If a path is specified, it is scanned for files with the extension")
 	print(".lua. From these files, a HTML document is generated containing a")
 	print("class tree, library index and function reference from specially")
@@ -618,9 +663,14 @@ else
 		state.textdoc = state.textdoc .. concat(state.documentation)
 	end
 
+	local macros = { }
 	if state.plain then
-		print(state.textdoc)
+		local t = resolvefuncs(state.textdoc, macros, state)
+		print(t)
 	else
+		if not args["--nomacros"] then
+			macros = { subclasses = macro_subclasses }
+		end
 		DocMarkup:new 
 		{ 
 			input = state.textdoc, 
@@ -628,7 +678,12 @@ else
 			refdoc = args["-r"] or false,
 			author = args["--author"],
 			created = state.created,
-			indentchar = string.char(args["-i"] or 9) 
+			indentchar = string.char(args["-i"] or 9),
+			wrfunc = function(...)
+				local t = concat { ... }
+				t = resolvefuncs(t, macros, state)
+				io.stdout:write(t)
+			end
 		}:run()
 	end
 

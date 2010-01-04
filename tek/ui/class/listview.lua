@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.group : Group]] /
---		ListView
+--		ListView ${subclasses(ListView)}
 --
---	OVERVIEW::
 --		This class implements a [[#tek.ui.class.group : Group]] containing
 --		a [[#tek.ui.class.scrollgroup : ScrollGroup]] and optionally a
 --		group of column headers; its main purpose is to automate the somewhat
@@ -38,18 +37,18 @@
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 
-local Canvas = ui.require("canvas", 20)
-local Gadget = ui.require("gadget", 12)
-local Group = ui.require("group", 22)
-local ListGadget = ui.require("listgadget", 22)
-local ScrollBar = ui.require("scrollbar", 9)
-local ScrollGroup = ui.require("scrollgroup", 11)
+local Canvas = ui.require("canvas", 25)
+local Gadget = ui.require("gadget", 19)
+local Group = ui.require("group", 27)
+local ListGadget = ui.require("listgadget", 26)
+local ScrollBar = ui.require("scrollbar", 10)
+local ScrollGroup = ui.require("scrollgroup", 15)
 
 local Text = ui.Text
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 5.1"
+_VERSION = "ListView 5.2"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -59,11 +58,8 @@ local HeadItem = Text:newClass { _NAME = "_listview-headitem" }
 
 function HeadItem.init(self)
 	self = self or { }
-	self.Border = ui.NULLOFFS
-	self.Margin = ui.NULLOFFS
 	self.Mode = "inert"
-	self.TextHAlign = "left"
-	self.Width = "auto"
+	self.MaxWidth = 0
 	return Text.init(self)
 end
 
@@ -148,10 +144,8 @@ function ListView.new(class, self)
 		{
 			ScrollGroup:new
 			{
-				Margin = ui.NULLOFFS,
 				VSliderMode = "off",
 				HSliderMode = self.HSliderMode,
-				KeepMinHeight = true,
 				Child = LVCanvas:new
 				{
 					AutoHeight = true,
@@ -164,8 +158,6 @@ function ListView.new(class, self)
 							self.HeaderGroup,
 							LVScrollGroup:new
 							{
-								Margin = ui.NULLOFFS,
-
 								-- our own sliders are always off:
 								VSliderMode = "off",
 								HSliderMode = "off",
@@ -178,8 +170,6 @@ function ListView.new(class, self)
 
 								Child = Canvas:new
 								{
-									Margin = ui.NULLOFFS,
-									Border = ui.NULLOFFS,
 									Child = self.Child
 								}
 							}

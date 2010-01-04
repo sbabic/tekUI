@@ -4,7 +4,7 @@ ui = require "tek.ui"
 
 ui.Application:new
 {
-	Theme = "tutorial",
+	AuthorStyleSheets = "tutorial",
 	Children =
 	{
 		ui.Window:new
@@ -18,7 +18,7 @@ ui.Application:new
 					Legend = "Output",
 					Id = "output",
 					Height = "free",
-					Font = ":100",
+					Style = "font: :100",
 				},
 
 				ui.Slider:new
@@ -46,17 +46,13 @@ ui.Application:new
 						ui.Text:new
 						{
 							Text = "0",
-							Width = "auto",
+							Style = "text-align: left",
 							Class = "caption",
-						},
-						ui.Area:new
-						{
-							Height = "auto"
 						},
 						ui.Text:new
 						{
 							Text = "100",
-							Width = "auto",
+							Style = "text-align: right",
 							Class = "caption",
 						},
 					}

@@ -4,10 +4,10 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
---		Theme
+--		Theme ${subclasses(Theme)}
 --
 --	IMPLEMENTS::
 --		- Theme.getStyleSheet() - Gets a style sheet for a named theme
@@ -27,390 +27,89 @@ local pairs = pairs
 local tonumber = tonumber
 
 module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 9.0"
+_VERSION = "Theme 11.2"
 local Theme = _M
 
-local DEF_STYLESHEET = ui.prepareProperties
+-------------------------------------------------------------------------------
+--	Internal default stylesheet:
+-------------------------------------------------------------------------------
+
+local DEF_STYLESHEET_DEFAULT =
 {
-	--
-	--	element classes:
-	--
-
-	["tek.ui.class.area"] = {
-		["background-position"] = "scroll",
-		["margin"] = 1,
-	},
-
 	["tek.ui.class.checkmark"] = {
-		["padding"] = 1,
-		["margin"] = 0,
-		["background-position"] = "fixed",
-		["border-width"] = 1,
-		["border-focus-width"] = 1,
 		["text-align"] = "left",
-		["vertical-align"] = "center",
-		["vertical-grid-align"] = "center",
-		["background-color"] = "default",
+		["valign"] = "center",
+		["background-color"] = "transparent",
+		["border-width"] = 0,
 	},
-	
-	["tek.ui.class.checkmark:hover"] = {
-		["background-color"] = "hover",
-	},
-
-	["tek.ui.class.floattext"] = {
-		["background-color"] = "list",
-	},
-
 	["tek.ui.class.frame"] = {
 		["border-width"] = 2,
-		["border-style"] = "inset",
+		["border-style"] = "solid",
 	},
-
 	["tek.ui.class.gadget"] = {
-		["border-width"] = 3,
 		["border-style"] = "outset",
-		["border-focus-width"] = 1,
+		["border-style:active"] = "inset",
 	},
-
-	["tek.ui.class.gadget:active"] = {
-		["border-style"] = "inset",
-		["background-color"] = "active",
-		["color"] = "active-detail",
-	},
-
-	["tek.ui.class.gadget:disabled"] = {
-		["background-color"] = "disabled",
-		["color"] = "disabled-detail",
-	},
-
-	["tek.ui.class.gadget:focus"] = {
-		["background-color"] = "focus",
-		["color"] = "focus-detail",
-	},
-
-	["tek.ui.class.gadget:hover"] = {
-		["background-color"] = "hover",
-		["color"] = "hover-detail",
-	},
-
-	["tek.ui.class.gadget.knob-scrollbar"] = {
-		["effect-class"] = "ripple",
-		["effect-orientation"] = "inline",
-		["effect-kind"] = "dot",
-	},
-
 	["tek.ui.class.gauge"] = {
-		["padding"] = 0,
-		["border-style"] = "inset",
-		["height"] = "auto",
-		["vertical-grid-align"] = "center",
+		["height"] = "fill",
 	},
-
 	["tek.ui.class.group"] = {
-		["margin"] = 0,
-		["background-color"] = "group",
-		["background-position"] = "fixed",
 		["border-width"] = 0,
-		["border-focus-width"] = 0,
 	},
-
 	["tek.ui.class.handle"] = {
-		["effect-class"] = "ripple",
-		["effect-orientation"] = "across",
-		["effect-kind"] = "slant",
-		["border-width"] = 0,
-		["background-color"] = "default",
-		["padding"] = 4,
-		["margin"] = 0,
+		["padding"] = 3,
 	},
-
-	["tek.ui.class.handle:active"] = {
-		["border-style"] = "outset",
-		["background-color"] = "hover",
-	},
-
-	["tek.ui.class.handle:hover"] = {
-		["background-color"] = "hover",
-	},
-
 	["tek.ui.class.imagegadget"] = {
-		["color"] = "default",
+		["color"] = "transparent",
 	},
-	
-	["tek.ui.class.imagegadget:disabled"] = {
-		["color"] = "disabled-detail",
-	},
-	
-	["tek.ui.class.input"] = {
-		["background-color"] = "paper",
-		["color"] = "ink",
-	},
-	
 	["tek.ui.class.listgadget"] = {
-		["background-color"] = "list",
-		["background-color2"] = "list-alt",
-		["border-width"] = 1,
-		["border-focus-width"] = 0,
-		["border-rim-width"] = 0,
 		["border-style"] = "solid",
-		["border-color"] = "detail",
-		["color"] = "list-detail",
+		["border-style:active"] = "solid",
 	},
-
-	["tek.ui.class.listgadget:active"] = {
-		["background-color"] = "list-active",
-		["color"] = "list-active-detail",
-	},
-
 	["tek.ui.class.menuitem"] = {
-		["background-position"] = "fixed",
-		["font"] = "ui-menu",
-		["border-width"] = 0,
-		["margin"] = 0,
-		["width"] = "fill",
+		["text-align"] = "left",
 	},
-
-	["tek.ui.class.menuitem:active"] = {
-		["background-color"] = "menu-active",
-		["color"] = "menu-active-detail",
+	["tek.ui.class.poplist"] = {
+		["text-align"] = "left",
 	},
-
-	["tek.ui.class.menuitem:hover"] = {
-		["background-color"] = "menu-active",
-		["color"] = "menu-active-detail",
-	},
-
-	["tek.ui.class.menuitem:focus"] = {
-		["background-color"] = "menu-active",
-		["color"] = "menu-active-detail",
-	},
-
-	["tek.ui.class.menuitem.popup-root"] = {
-		["margin"] = 2,
-		["width"] = "auto",
-	},
-
 	["tek.ui.class.popitem"] = {
-		["border-width"] = 4,
-		["border-style"] = "outset",
-		["border-focus-width"] = 1,
-		["border-rim-width"] = 1,
 		["width"] = "fill",
 	},
-
-	["tek.ui.class.popitem:active"] = {
-		["background-color"] = "hover",
-	},
-
-	["tek.ui.class.popupwindow"] = {
-		["background-color"] = "background",
-		["border-width"] = 1,
-		["border-style"] = "solid",
-		["border-color"] = "dark",
-		["padding"] = 0,
-	},
-
 	["tek.ui.class.scrollbar"] = {
-		["vertical-grid-align"] = "center",
+		["valign"] = "center",
 	},
-
 	["tek.ui.class.slider"] = {
-		["padding"] = 0,
-		["border-style"] = "inset",
 		["width"] = "fill",
 		["height"] = "fill",
 	},
-
-	["tek.ui.class.slider:active"] = {
-		["border-style"] = "inset",
-	},
-
 	["tek.ui.class.spacer"] = {
-		["border-style"] = "inset",
 		["border-width"] = 1,
 	},
-
 	["tek.ui.class.text"] = {
-		["border-style"] = "inset",
-		["padding"] = "2 5 2 5",
-		["height"] = "auto",
+		["max-height"] = 0,
 	},
-
 	["tek.ui.class.textinput"] = {
 		["font"] = "ui-fixed",
-		["border-style"] = "inset",
-		["background-color"] = "list",
 	},
-	["tek.ui.class.textinput:disabled"] = {
-		["background-color"] = "disabled",
-	},
-
-	["tek.ui.class.window"] = {
-		["padding"] = 0,
-		["margin"] = 0,
-	},
-
-	--
-	--	pre-defined classes:
-	--
-
-	[".button"] = {
-		["border-style"] = "outset",
-		["border-width"] = 4,
-		["border-rim-width"] = 1,
-	},
-
-	[".button:active"] = {
-		["border-style"] = "inset",
-	},
-
 	[".caption"] = {
-		["border-width"] = 0,
-		["background-color"] = "default",
-		["background-position"] = "fixed",
-		["text-align"] = "center",
-		["vertical-align"] = "center",
-		["horizontal-grid-align"] = "center",
-		["vertical-grid-align"] = "center",
+		["valign"] = "center",
 	},
-
-	[".field"] = {
-		["border-style"] = "inset",
-		["padding"] = 1,
-	},
-	
-	[".gauge-fill"] = {
-		["border-style"] = "solid",
-		["border-color"] = "dark",
-		["border-width"] = 1,
-		["background-color"] = "fill",
-		["padding"] = 5,
-	},
-
 	[".knob"] = {
-		["border-width"] = 3,
-		["border-focus-width"] = 0,
-		["border-rim-width"] = 1,
-		["margin"] = 0,
 		["padding"] = 5,
 	},
-
 	[".legend"] = {
-		["border-legend-font"] = "ui-small",
 		["border-style"] = "groove",
 		["border-width"] = 2,
-		["margin"] = 2,
-		["padding"] = 1,
 	},
-
-	[".menubar"] = {
-		["margin"] = 0,
-		["border-style"] = "solid",
-		["border-width"] = "0 0 1 0",
-		["padding"] = 0,
-		["background-color"] = "background",
+	[".menuitem"] = {
 		["width"] = "fill",
-		["height"] = "auto",
 	},
-
-	[".message"] = {
-		["padding"] = 12,
+	[".gauge-fill"] = {
+		["padding"] = 5,
 	},
-	
-	[".page-button"] = {
-		["border-style"] = "inset",
-		["border-width"] = "2 0 2 2",
-		["border-focus-width"] = 0,
-		["margin"] = 0,
-	},
-
-	[".page-button:active"] = {
-		["border-style"] = "outset",
-		["border-bottom-color"] = "group",
-	},
-
-	[".page-button:focus"] = {
-		["background-color"] = "hover",
-	},
-
-	[".page-button:hover"] = {
-		["background-color"] = "hover",
-	},
-
-	[".page-button-fill"] = {
-		["border-style"] = "inset",
-		["border-width"] = "0 0 2 2",
-		["border-focus-width"] = 0,
-		["background-color"] = "default",
-		["background-position"] = "fixed",
-		["margin"] = 0,
-	},
-
-	[".page-button-group"] = {
-		["margin"] = "4 2 0 0",
-		["padding-left"] = 2,
-		["background-position"] = "fixed",
-	},
-
-	[".page-container"] = {
-		["border-width"] = "0 2 2 2",
-		["margin"] = "0 2 2 2",
-		["padding"] = 2,
-	},
-
-	[".poplist-canvas"] =
-	{
-		["margin"] = 0,
-		["border-width"] = 0,
-	},
-
-	[".scrollbar-arrowup"] =
-	{
-		["padding"] = 1,
-		["margin-bottom"] = 0,
-		["border-width"] = 3,
-	},
-
-	[".scrollbar-arrowdown"] =
-	{
-		["padding"] = 1,
-		["margin-top"] = 0,
-		["border-width"] = 3,
-	},
-
-	[".scrollbar-arrowleft"] =
-	{
-		["padding"] = 1,
-		["margin-right"] = 0,
-		["border-width"] = 3,
-	},
-
-	[".scrollbar-arrowright"] =
-	{
-		["padding"] = 1,
-		["margin-left"] = 0,
-		["border-width"] = 3,
-	},
-
-	--
-	--	internal classes:
-	--
-
-	["_listview-headitem"] = {
-		["background-color"] = "active",
-		["padding"] = 0,
-	},
-
 	["_scrollbar-arrow"] = {
-		["margin"] = 0,
-		["border-width"] = 4,
-		["border-rim-width"] = 1,
-		["min-width"] = 12,
-		["min-height"] = 12,
-	},
-
-	["_scrollbar-slider"] = {
-		["margin"] = 0,
+		["min-width"] = 10,
+		["min-height"] = 10,
 	},
 }
 
@@ -473,6 +172,7 @@ local function importGTKConfig(def_s)
 						if style == "default" then
 							found = true
 							if color == "bg[NORMAL]" then
+								d["rgb-menu"] = c
 								d["rgb-background"] = fmtrgb(r, g, b, 0.91)
 								d["rgb-group"] = fmtrgb(r, g, b, 0.985)
 								d["rgb-shadow"] = fmtrgb(r, g, b, 0.45)
@@ -495,6 +195,7 @@ local function importGTKConfig(def_s)
 
 							elseif color == "fg[NORMAL]" then
 								d["rgb-detail"] = c
+								d["rgb-menu-detail"] = c
 								d["rgb-border-legend"] = c
 							elseif color == "fg[INSENSITIVE]" then
 								d["rgb-disabled-detail"] = c
@@ -535,13 +236,13 @@ local function importGTKConfig(def_s)
 				f:close()
 				if found then
 					setclass(s, ".page-button", "background-color", "active")
-					setclass(s, ".page-button:active", "background-color",
+					setclass(s, ".page-button", "background-color:active", 
 						"group")
 					setclass(s, "tek.ui.class.display", "rgb-border-rim",
 						"#000")
-					setclass(s, ".page-button:hover", "background-color",
+					setclass(s, ".page-button", "background-color:hover",
 						"hover")
-					setclass(s, ".page-button:focus", "background-color",
+					setclass(s, ".page-button", "background-color:focus",
 						"hover")
 					return s
 				end
@@ -552,52 +253,24 @@ local function importGTKConfig(def_s)
 end
 
 -------------------------------------------------------------------------------
---	stylesheet = Theme.getStyleSheet([themename]): Returns a style sheet for a
---	named theme. Theme names currently defined are:
---		- {{"empty"}} - returns an empty style sheet
---		- {{"internal"}} - the hardcoded internal style sheet
---		- {{"desktop"}} - The "desktop" external style sheet (or hardcoded
---		internal style sheet if a desktop style sheet file is unavailable),
---		overlaying the user's desktop colors (if that is possible)
---	Any other theme name will cause this function to try to load an equally
---	named style sheet, falling back to the hardcoded internal style sheet if
---	unavailable. The default for {{themename}} is {{"default"}}.
+--	properties, errmsg = Theme.getStyleSheet([name]): Aquires a style sheet
+--	from memory, by loading it from disk, or by determining properties at
+--	runtime. Predefined names are:
+--		- {{"minimal"}} - the hardcoded internal ''user agent'' style sheet
+--		- {{"desktop"}} - An external style sheet named "desktop.css",
+--		overlayed with the color scheme (and possibly other properties) of
+--		the running desktop (if applicable)
+--	Any other name will cause this function to attempt to load an equally
+--	named style sheet file.
 -------------------------------------------------------------------------------
 
-local function copyprops(dest, source)
-	for classkey, sprops in pairs(source) do
-		local dclass = dest[classkey]
-		if not dclass then
-			dclass = { }
-			dest[classkey] = dclass
-		end
-		for key, val in pairs(sprops) do
-			dclass[key] = val
-		end
-	end
-	return dest
-end
-
 function Theme.getStyleSheet(themename)
-	local props
-	themename = themename or "default"
-	if themename == "empty" then
-		return { }
-	elseif themename == "internal" then
-		return DEF_STYLESHEET
-	elseif themename == "desktop" then
-		props = importGTKConfig()
+	if not themename or themename == "minimal" then
+		return ui.unpackStyleSheet(DEF_STYLESHEET_DEFAULT)
 	end
-	local fname = ("tek/ui/style/%s.css"):format(themename)
-	local s = ui.loadStyleSheet(fname)
-	if s then
-		if props then
-			copyprops(props, s)
-		else
-			props = s
-		end
-	else
-		db.warn("failed to load style sheet '%s'", fname)
+	local s, msg = ui.loadStyleSheet(themename)
+	if themename == "desktop" then
+		importGTKConfig(s)
 	end
-	return props
+	return s, msg
 end

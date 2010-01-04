@@ -4,12 +4,11 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
---		UTF8String
+--		UTF8String ${subclasses(UTF8String)}
 --
---	OVERVIEW::
 --		This class supports the manipulation of UTF-8 encoded strings.
 --
 --	IMPLEMENTS::

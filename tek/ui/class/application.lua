@@ -4,14 +4,13 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.ui.class.family : Family]] /
---		Application
+--		Application ${subclasses(Application)}
 --
---	OVERVIEW::
---		This class implements the framework's entrypoint and main loop.
+--		This class implements tekUI's application, entrypoint and main loop.
 --
 --	EXAMPLE::
 --		A tekUI application can be written in a single, nested expression:
@@ -33,6 +32,17 @@
 --			{{"unknown"}}.
 --		- {{Author [IG]}} (string)
 --			Names of the application's authors. Default: {{"unknown"}}
+--		- {{AuthorStyles [IG]}} (string)
+--			A string containing style sheet notation, overlaying all other
+--			properties, including those retrieved using the
+--			{{AuthorStyleSheets}} attribute.
+--		- {{AuthorStyleSheets [IG]}} (string)
+--			A string containing the names of author style sheet files
+--			overlaying user and user agent styles. Multiple style
+--			sheets are separated by spaces. The last style sheet has the
+--			highest precedence, e.g. {{"desktop texture"}} would load the
+--			style sheets {{desktop.css}} and {{texture.css}}, placing
+--			{{texture.css}} on top of the cascade.
 --		- {{Copyright [IG]}} (string)
 --			Copyright notice applying to the application, default
 --			{{"unknown"}}
@@ -42,33 +52,22 @@
 --		- {{Domain [IG]}} (string)
 --			An uniquely identifying domain name of the vendor, organization
 --			or author manufacturing the application (preferrably without
---			domain parts like {{"www."}} if they are insignificant for
+--			domain parts like {{"www."}} if they are not significant for
 --			identification). Default is {{"unknown"}}.
 --		- {{GCControl [IG]}} (boolean or string)
 --			The application can perform a garbage collection of the specified
---			type immediately before going to sleep waiting for input. If set
+--			type directly before getting suspended waiting for input. If set
 --			to '''false''', no explicit garbage collection is initiated. If
 --			the value is '''true''' or {{"step"}}, the application performs a
---			single garbage collection ''step''. Other values (e.g.
---			{{"collect"}}) are passed unmodified to {{collectgarbage()}}.
---			Default: '''true'''
+--			single garbage collection step. Other values (e.g. {{"collect"}})
+--			are passed unmodified to {{collectgarbage()}}. Default: '''true'''
 --		- {{ProgramName [IG]}} (string)
 --			Name of the application, as displayed to the user. This is
 --			also the fallback for the {{Title}} attribute in windows.
 --			If unset, the default will be {{"tekUI"}}.
---		- {{Status [G]}} (string) (string)
+--		- {{Status [G]}} (string)
 --			Status of the application, can be {{"init"}}, {{"error"}},
 --			{{"run"}}, {{"quit"}}.
---		- {{Theme [IG]}} (string)
---			Name of a theme, which usually maps to an equally named
---			style sheet file (with the extension ".css") under
---			{{tek/ui/style/}}.
---			Themes with reserved meaning are:
---				- {{"internal"}}: Uses the hardcoded internal style properties
---				and does not try to load a style sheet file.
---				- {{"desktop"}}: Tries to import the desktop's color scheme,
---				besides trying to load a style sheet named {{"desktop.css"}}.
---			Default: {{"desktop"}}
 --		- {{Vendor [IG]}} (string)
 --			Name of the vendor or organization responsible for producing
 --			the application, as displayed to the user. Default {{"unknown"}}.
@@ -107,11 +106,9 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Display = ui.require("display", 19)
+local Display = ui.require("display", 21)
 local Family = ui.require("family", 2)
-local Group = ui.require("group", 22)
-local Text = ui.require("text", 20)
-local Window = ui.require("window", 22)
+local Theme = ui.require("theme", 11)
 
 local assert = assert
 local cocreate = coroutine.create
@@ -124,17 +121,22 @@ local floor = math.floor
 local insert = table.insert
 local max = math.max
 local min = math.min
+local newFlags = ui.newFlags
 local remove = table.remove
 local select = select
-local testflag = ui.testFlag
 local traceback = debug.traceback
 local unpack = unpack
 
-local MSG_USER = ui.MSG_USER
-
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 27.0"
+_VERSION = "Application 29.0"
 local Application = _M
+
+-------------------------------------------------------------------------------
+--	Constants & Class data:
+-------------------------------------------------------------------------------
+
+local MSG_USER = ui.MSG_USER
+local MSGTYPES = { MSG_USER }
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -158,7 +160,12 @@ function Application.new(class, self)
 	}
 	-- Check linkage of members, connect and setup them recursively:
 	if self:connect() then
-		self.Display = self.Display or Display:new { }
+		local d = self.Display
+		if not d then
+			d = Display:new()
+			self.Display = d
+		end
+		d:decodeProperties(self.Properties)
 		self:decodeProperties()
 		self:setup()
 	else
@@ -190,19 +197,68 @@ function Application.init(self)
 	self.ModalWindows = { } -- stack of
 	self.MsgDispatch = false
 	self.OpenWindows = { }
+	if self.Preload then
+		ui.require("group", 22)
+		ui.require("text", 20)
+		ui.require("window", 22)
+		ui.require("dirlist", 14)
+	end
 	self.ProgramName = self.ProgramName or self.Title or "tekUI"
-	self.Properties = { ui.Theme.getStyleSheet("internal") }
+	local props = { [0] = { } }
+	self.Properties = props
 	self.Status = "init"
-	self.Theme = self.Theme or ui.ThemeName or "desktop"
+	local authorstyles = self.AuthorStyles or false
+	self.AuthorStyles = authorstyles
+	local authorstylesheets = self.AuthorStyleSheets or false
+	self.AuthorStyleSheets = authorstylesheets
 	self.Vendor = self.Vendor or "unknown"
-	
-	if self.Theme and self.Theme ~= "internal" then
-		local s = ui.prepareProperties(ui.Theme.getStyleSheet(self.Theme))
-		if s then
-			insert(self.Properties, 1, s)
+
+	-- 'user agent' stylesheet:
+	local s = Theme.getStyleSheet("minimal")
+	if s then
+		insert(props, 1, s)
+	end
+
+	-- 'user' stylsheet(s):
+	ui.ThemeName:gsub("%S+", function(theme)
+		if theme ~= "minimal" then
+			local s, msg = Theme.getStyleSheet(theme)
+			if s then
+				insert(props, 1, s)
+			else
+				db.warn("failed to decode user stylesheet: %s", msg)
+			end
 		end
+	end)
+
+	-- 'author' stylsheet(s):
+	if authorstylesheets then
+		authorstylesheets:gsub("%S+", function(theme)
+			local s, msg = ui.loadStyleSheet(theme)
+			if s then
+				insert(props, 1, s)
+			else
+				db.warn("failed to decode author stylesheet: %s", msg)
+			end
+		end)
 	end
 	
+	if authorstyles then
+		local offs = 0
+		local s, msg = ui.loadStyleSheet { read = function()
+			if offs then
+				local old = offs
+				offs = authorstyles:find("\n", offs + 1, true)
+				return authorstyles:sub(old + 1, offs and offs - 1)
+			end
+		end }
+		if s then
+			insert(props, 1, s)
+		else
+			db.warn("failed to decode author stylesheet: %s", msg)
+		end
+	end
+
 	return Family.init(self)
 end
 
@@ -298,18 +354,13 @@ end
 -------------------------------------------------------------------------------
 
 function Application:decodeProperties(child)
-	local app = self.Application
 	local props = self.Properties
-	for i = 1, #props do
-		local p = props[i]
-		self.Display:decodeProperties(p)
-		if child then
-			child:decodeProperties(p)
-		else
-			local c = self.Children
-			for i = 1, #c do
-				c[i]:decodeProperties(p)
-			end
+	if child then
+		child:decodeProperties(props)
+	else
+		local c = self.Children
+		for i = 1, #c do
+			c[i]:decodeProperties(props)
 		end
 	end
 end
@@ -506,12 +557,12 @@ function Application:run()
 	-- the main loop:
 
 	while self.Status == "run" do
-		
+
 		-- dispatch input messages:
 		while d:getMsg(msg) do
 			msgdispatch[msg[2]](self, msg)
 		end
-		
+
 		if #ow == 0 then
 			self.Status = "quit"
 			break
@@ -572,7 +623,7 @@ function Application:run()
 	end
 
 	self:hide()
-	
+
 	return true, self.Status
 end
 
@@ -689,13 +740,17 @@ function Application:requestFile(args)
 		center = true
 	end
 
-	local window = Window:new
+	local window = ui.Window:new
 	{
 		Class = "app-dialog",
 		Title = args.Title or dirlist.Locale.SELECT_FILE_OR_DIRECTORY,
 		Modal = true,
 		Width = args.Width or 400,
 		Height = args.Height or 500,
+		MinWidth = 0,
+		MinHeight = 0,
+		MaxWidth = ui.HUGE,
+		MaxHeight = ui.HUGE,
 		Center = center,
 		Children = { dirlist },
 		HideOnEscape = true
@@ -749,7 +804,7 @@ function Application:easyRequest(title, text, ...)
 
 	local numb = select("#", ...)
 	for i = 1, numb do
-		local button = Text:new
+		local button = ui.Text:new
 		{
 			Class = "button",
 			Mode = "button",
@@ -760,7 +815,7 @@ function Application:easyRequest(title, text, ...)
 					result = i
 					window:setValue("Status", "hide")
 				end
-				Text.onPress(self, pressed)
+				ui.Text.onPress(self, pressed)
 			end
 		}
 		if i == numb then
@@ -769,20 +824,18 @@ function Application:easyRequest(title, text, ...)
 		insert(buttons, button)
 	end
 
-	window = Window:new
+	window = ui.Window:new
 	{
 		Class = "app-dialog",
 		Title = title or self.ProgramName,
 		Modal = true,
 		Center = true,
-		Width = 0,
-		Height = 0,
 		Orientation = "vertical",
 		HideOnEscape = true,
 		Children =
 		{
-			Text:new { Class = "message", Width = "fill", Text = text },
-			Group:new { Width = "fill", SameSize = true,
+			ui.Text:new { Class = "message", Width = "fill", Text = text },
+			ui.Group:new { Width = "fill", SameSize = true,
 				Children = buttons }
 		}
 	}
@@ -836,15 +889,14 @@ end
 --	See also Window:addInputHandler() for more information.
 -------------------------------------------------------------------------------
 
-local MSGTYPES = { MSG_USER }
-
 function Application:addInputHandler(msgtype, object, func)
+	local flags = newFlags(msgtype)
 	local hnd = { object, func }
 	for i = 1, #MSGTYPES do
 		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
 		if ih then
-			if testflag(msgtype, mask) then
+			if flags:check(mask) then
 				insert(ih, 1, hnd)
 			end
 		end
@@ -857,11 +909,12 @@ end
 -------------------------------------------------------------------------------
 
 function Application:remInputHandler(msgtype, object, func)
+	local flags = newFlags(msgtype)
 	for i = 1, #MSGTYPES do
 		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
 		if ih then
-			if testflag(msgtype, mask) then
+			if flags:check(mask) then
 				for i = 1, #ih do
 					local h = ih[i]
 					if h[1] == object and h[2] == func then

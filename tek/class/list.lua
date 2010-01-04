@@ -4,11 +4,10 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
---		[[#ClassOverview]] :
---		[[#tek.class : Class]] / List
---
 --	OVERVIEW::
+--		[[#ClassOverview]] :
+--		[[#tek.class : Class]] / List ${subclasses(List)}
+--
 --		This class implements a list container.
 --
 --	IMPLEMENTS::

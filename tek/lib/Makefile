@@ -83,7 +83,7 @@ install:
 	$(INSTALL) -s $(MODS) $(LUA_LIB)/tek/lib
 	$(INSTALL) -s $(DISPLAYS) $(LUA_LIB)/tek/lib/display
 	$(INSTALL) -d $(LUA_SHARE)/tek/lib
-	$(INSTALL) debug.lua $(LUA_SHARE)/tek/lib
+	$(INSTALL) debug.lua args.lua $(LUA_SHARE)/tek/lib
 
 clean: FORCE
 	-$(RM) $(MODS) $(DISPLAYS) $(LIBS)

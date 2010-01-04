@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.text : Text]] /
---		PopItem
+--		PopItem ${subclasses(PopItem)}
 --
---	OVERVIEW::
 --		This class provides an anchorage for popups. This also works
 --		recursively, i.e. elements of the PopItem class may contain other
 --		PopItems as their children. The most notable child class of the
@@ -59,8 +58,9 @@
 local db = require "tek.lib.debug"
 
 local ui = require "tek.ui"
+local CheckMark = ui.require("checkmark", 7)
 local PopupWindow = ui.require("popupwindow", 4)
-local Text = ui.require("text", 20)
+local Text = ui.require("text", 24)
 
 local floor = math.floor
 local ipairs = ipairs
@@ -68,7 +68,7 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 11.0"
+_VERSION = "PopItem 15.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -91,7 +91,6 @@ local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate", ui.NOTIFY_VALUE }
 local PopItem = _M
 
 function PopItem.init(self)
-	self.EraseBG = false
 	self.Image = self.Image or false
 	self.ImageRect = self.ImageRect or false
 	self.PopupBase = false
@@ -120,9 +119,8 @@ end
 
 function PopItem:connect(parent)
 	if not self.PopupBase then
-		self.Class = self.Class or "popup-root"
-	elseif self.Children then
-		self.Class = self.Class or "popup-children"
+		-- this is a root item of a popup tree:
+		self:addStyleClass("popup-root")
 	end
 	return Text.connect(self, parent)
 end
@@ -169,10 +167,10 @@ end
 function PopItem:askMinMax(m1, m2, m3, m4)
 	local n1, n2, n3, n4 = Text.askMinMax(self, m1, m2, m3, m4)
 	if self.Image then
-		local p = self.Padding
-		local m = self.MarginAndBorder
-		local iw = n1 - m1 - p[3] - p[1] - m[3] - m[1] + 1
-		local ih = n2 - m2 - p[4] - p[2] - m[4] - m[2] + 1
+		local p1, p2, p3, p4 = self:getPadding()
+		local m = self.Margin
+		local iw = n1 - m1 - p3 - p1 - m[3] - m[1] + 1
+		local ih = n2 - m2 - p4 - p2 - m[4] - m[2] + 1
 		iw, ih = self.Application.Display:fitMinAspect(iw, ih, 1, 1, 0)
 		n1 = n1 + iw
 		n3 = n3 + ih
@@ -188,13 +186,13 @@ function PopItem:layout(x0, y0, x1, y1, markdamage)
 	if Text.layout(self, x0, y0, x1, y1, markdamage) then
 		if self.Image then
 			local r = self.Rect
-			local p = self.Padding
-			local iw = r[3] - r[1] - p[3] - p[1] + 1
-			local ih = r[4] - r[2] - p[4] - p[2] + 1
+			local p1, p2, p3, p4 = self:getPadding()
+			local iw = r[3] - r[1] - p3 - p1 + 1
+			local ih = r[4] - r[2] - p4 - p2 + 1
 			iw, ih = self.Application.Display:fitMinAspect(iw, ih, 1, 1, 0)
 			-- use half the padding that was granted for the right edge:
-			local x = r[3] - floor(p[3] / 2) - iw
-			local y = r[2] + p[2]
+			local x = r[3] - floor(p3 / 2) - iw
+			local y = r[2] + p2
 			local i = self.ImageRect
 			i[1], i[2], i[3], i[4] = x, y, x + iw - 1, y + ih - 1
 		end
@@ -203,34 +201,21 @@ function PopItem:layout(x0, y0, x1, y1, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	refresh: overrides
--------------------------------------------------------------------------------
-
-function PopItem:refresh()
-	--	Store the item's absolute coordinates (needed if the popitem
-	--	rests in a canvas):
-	self.ShiftX, self.ShiftY = self.Drawable:getShift()
-	return Text.refresh(self)
-end
-
--------------------------------------------------------------------------------
 --	draw: overrides
 -------------------------------------------------------------------------------
 
 function PopItem:draw()
-	self:erase()
-	local i = self.Image
-	if i then
-		local d = self.Drawable
-		local r = self.Rect
-		local ir = self.ImageRect
-		d:pushClipRect(r[1], r[2], ir[1], r[4])
-		Text.draw(self)
-		d:popClipRect()
-		local x0, y0, x1, y1 = unpack(ir)
-		i:draw(d, x0, y0, x1, y1, d.Pens[self.FGPen])
-	else
-		Text.draw(self)
+	self.ShiftX, self.ShiftY = self.Drawable:getShift()
+	if Text.draw(self) then
+		local i = self.Image
+		if i then
+			local d = self.Drawable
+			local r = self.Rect
+			local ir = self.ImageRect
+			local x0, y0, x1, y1 = unpack(ir)
+			i:draw(d, x0, y0, x1, y1, d.Pens[self.FGPen])
+		end
+		return true
 	end
 end
 
@@ -239,7 +224,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:calcPopup()
-	local _, _, x, y = self.Drawable:getAttrs()
+	local x, y = self.Drawable:getXY()
 	local w
 	local r = self.Rect
 	local sx, sy = self.ShiftX, self.ShiftY
@@ -387,7 +372,7 @@ function PopItem:selectPopup()
 		end
 		if self.PopupBase then
 			self.Selected = false
-			self.Redraw = true
+			self.Flags:set(ui.FL_REDRAW)
 		end
 	end
 end
@@ -408,6 +393,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:connectPopItems(app, window)
+	local addhandlers
 	if self:instanceOf(PopItem) then
 		db.info("adding %s", self:getClassName())
 		local c = self:getChildren(true)
@@ -416,18 +402,22 @@ function PopItem:connectPopItems(app, window)
 			self:addNotify("Selected", true, NOTIFY_ONSELECT)
 			self:addNotify("Selected", false, NOTIFY_ONUNSELECT)
 			for i = 1, #c do
+				c[i]:addStyleClass("popup-child")
 				PopItem.connectPopItems(c[i], app, window)
 			end
 		else
 			if self.Shortcut then
 				window:addKeyShortcut("IgnoreCase+" .. self.Shortcut, self)
 			end
-			-- TODO: why not connect()?
-			self.Application = app
-			self.Window = window
-			self:addNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
-			self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
+			addhandlers = true
 		end
+	end
+	if addhandlers or self:instanceOf(CheckMark) then
+		-- TODO: why not connect()?
+		self.Application = app
+		self.Window = window
+		self:addNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
+		self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
 	end
 end
 
@@ -436,6 +426,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:disconnectPopItems(window)
+	local remhandlers
 	if self:instanceOf(PopItem) then
 		db.info("removing popitem %s", self:getClassName())
 		local c = self:getChildren(true)
@@ -450,10 +441,13 @@ function PopItem:disconnectPopItems(window)
 			if self.Shortcut then
 				window:remKeyShortcut(self.Shortcut, self)
 			end
-			self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-			self:remNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
-			-- TODO: why not disconnect()?
+			remhandlers = true
 		end
+	end
+	if remhandlers or self:instanceOf(CheckMark) then
+		self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
+		self:remNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
+		-- TODO: why not disconnect()?
 	end
 end
 

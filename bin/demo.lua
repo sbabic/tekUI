@@ -59,7 +59,6 @@ function loaddemos(app)
 			Id = demo.Window.Id .. "-button",
 			Text = demo.Name,
 			Mode = "toggle",
-			Width = "free",
 			Class = "button",
 			UserData = demo.Window
 		}
@@ -87,7 +86,12 @@ app = ui.Application:new
 	{
 		ui.Window:new
 		{
-			Style = "width: 400; height: 500",
+			Width = 400,
+			Height = 500,
+			MaxWidth = "none",
+			MaxHeight = "none";
+			MinWidth = 0,
+			MinHeight = 0;
 			HideOnEscape = true,
 
 			UserData =
@@ -97,7 +101,7 @@ app = ui.Application:new
 				MinMem = false,
 				MaxMem = false,
 			},
-			
+
 			updateInterval = function(self, msg)
 				local data = self.UserData
 				data.MemRefreshTickCount = data.MemRefreshTickCount - 1
@@ -195,7 +199,6 @@ app = ui.Application:new
 											VSliderMode = "auto",
 											Child = ui.Canvas:new
 											{
-												KeepMinHeight = true,
 												AutoWidth = true,
 												Child = ui.FloatText:new
 												{
@@ -209,7 +212,6 @@ app = ui.Application:new
 											VSliderMode = "auto",
 											Child = ui.Canvas:new
 											{
-												KeepMinHeight = true,
 												AutoWidth = true,
 												Child = ui.FloatText:new
 												{
@@ -223,7 +225,6 @@ app = ui.Application:new
 											VSliderMode = "auto",
 											Child = ui.Canvas:new
 											{
-												KeepMinHeight = true,
 												AutoWidth = true,
 												Child = ui.FloatText:new
 												{
@@ -258,7 +259,7 @@ app = ui.Application:new
 												}
 											}
 										},
-										
+
 										ui.Group:new
 										{
 											Legend = L.LUA_VIRTUAL_MACHINE,
@@ -280,7 +281,7 @@ app = ui.Application:new
 														ui.Gauge:new { Id = "about-mem-gauge" },
 													}
 												},
-												
+
 												ui.Text:new
 												{
 													Text = L.GARBAGE_COLLECTOR,
@@ -300,7 +301,7 @@ app = ui.Application:new
 														},
 														ui.ScrollBar:new
 														{
-															Style = "width: free",
+															Width = "free",
 															Min = 1,
 															Max = 300,
 															Integer = true,
@@ -332,7 +333,7 @@ app = ui.Application:new
 														},
 														ui.ScrollBar:new
 														{
-															Style = "width: free",
+															Width = "free",
 															Min = 1,
 															Max = 300,
 															Integer = true,
@@ -358,11 +359,11 @@ app = ui.Application:new
 														},
 													}
 												},
-												
-												
+
+
 											}
 										},
-										
+
 										ui.Group:new
 										{
 											Legend = L.DEBUGGING,
@@ -378,7 +379,6 @@ app = ui.Application:new
 												ui.ScrollBar:new
 												{
 													ArrowOrientation = "vertical",
-													Width = "free",
 													Min = 1,
 													Max = 20,
 													Value = db.level,
@@ -453,7 +453,7 @@ app = ui.Application:new
 		{
 			Id = "window-main",
 			HideOnEscape = true,
-			
+
 			onHide = function(self)
 				local app = self.Application
 				app:addCoroutine(function()
@@ -463,7 +463,7 @@ app = ui.Application:new
 					end
 				end)
 			end,
-		
+
 			Orientation = "vertical",
 			onChangeStatus = function(self, status)
 				ui.Window.onChangeStatus(self, status)

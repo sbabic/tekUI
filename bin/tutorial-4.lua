@@ -4,7 +4,7 @@ ui = require "tek.ui"
 
 ui.Application:new
 {
-	Theme = "tutorial",
+	AuthorStyleSheets = "tutorial",
 	Children =
 	{
 		ui.Window:new
@@ -15,7 +15,7 @@ ui.Application:new
 				ui.Button:new
 				{
 					Text = "Hello",
-					Width = "auto",
+					MaxWidth = 0,
 
 					onPress = function(self, pressed)
 						local button = self.Application:getById("output")
@@ -33,7 +33,7 @@ ui.Application:new
 					Legend = "Output",
 					Id = "output",
 					Height = "free",
-					Font = ":100",
+					Style = "font: :100",
 				}
 			}
 		}

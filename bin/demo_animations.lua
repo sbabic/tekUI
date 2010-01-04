@@ -14,13 +14,11 @@ local Coefficient = Group:newClass { _NAME = "_coefficient-group" }
 
 function Coefficient.new(class, self)
 	local group = self -- for building a closure with the group
-	self.Width = "fill"
 	self.Children =
 	{
-		Text:new { Class = "caption", Text = self.Key1, Width = "auto" },
+		Text:new { Class = "caption", Text = self.Key1, MaxWidth = 0 },
 		Slider:new
 		{
-			Width = "free",
 			Min = 0,
 			Max = 31,
 			Value = self.Value1,
@@ -32,10 +30,9 @@ function Coefficient.new(class, self)
 				p:setValue(group.Key1, self.Value)
 			end,
 		},
-		Text:new { Class = "caption", Text = self.Key2, Width = "auto" },
+		Text:new { Class = "caption", Text = self.Key2, MaxWidth = 0 },
 		Slider:new
 		{
-			Width = "free",
 			Min = -16,
 			Max = 15,
 			Value = self.Value2,
@@ -57,7 +54,6 @@ end
 
 local slider1 = ui.Slider:new
 {
-	Width = "free",
 	Min = 1,
 	Max = 19,
 	Value = 8,
@@ -69,7 +65,6 @@ slider1:addNotify("Value", ui.NOTIFY_ALWAYS,
 
 local slider2 = ui.Slider:new
 {
-	Width = "free",
 	Min = 0x10,
 	Max = 0x1ff,
 	Value = 0x50,
@@ -81,7 +76,6 @@ slider2:addNotify("Value", ui.NOTIFY_ALWAYS,
 
 local slider3 = ui.Slider:new 
 {
-	Width = "free",
 	Min = 1,
 	Max = 19,
 	Value = 6,
@@ -102,7 +96,10 @@ stopbutton:addNotify("Pressed", false,
 local window = ui.Window:new
 {
 	Orientation = "vertical",
-	Width = 400, Height = 400,
+	Width = 400,
+	MinWidth = 0,
+	MaxWidth = "none", 
+	MaxHeight = "none",
 	Id = "anims-window",
 	Title = L.ANIMATIONS_TITLE,
 	Status = "hide",
@@ -126,12 +123,9 @@ local window = ui.Window:new
 								ui.Tunnel:new
 								{
 									Id = "the-tunnel",
-									HAlign = "center",
 								},
 								Group:new
 								{
-									Width = "fill",
-									Height = "auto",
 									Legend = L.ANIMATIONS_PARAMETERS,
 									Columns = 2,
 									Children =
@@ -215,7 +209,6 @@ local window = ui.Window:new
 				},
 				Group:new
 				{
-					Height = "fill",
 					Orientation = "vertical",
 					Children =
 					{

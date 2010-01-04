@@ -1,38 +1,33 @@
 
 /*
-**	tek/ui/style/internal.css - tekUI internal stylesheet
-**	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
-**	See copyright notice in COPYRIGHT
+**	tek/ui/style/default.css
 **
-**	Note: This style sheet represents the hardcoded internal defaults in
-**	tek.ui.class.theme. It has been included for illustration purposes only.
-**
-**	Version: 2.2
-*/
-
-/*
-**	element classes:
+**	Version: 2.0
 */
 
 tek.ui.class.area {
-	background-position: scroll;
 	margin: 1;
 }
 
 tek.ui.class.checkmark {
 	padding: 1;
 	margin: 0;
-	background-position: fixed;
 	border-width: 1;
+	border-rim-width: 0;
 	border-focus-width: 1;
 	text-align: left;
-	vertical-align: center;
-	vertical-grid-align: center;
-	background-color: default;
 }
-
+tek.ui.class.checkmark:active {
+	background-color: transparent;
+}
+tek.ui.class.checkmark:disabled {
+	background-color: transparent;
+}
+tek.ui.class.checkmark:focus {
+	background-color: transparent;
+}
 tek.ui.class.checkmark:hover {
-	background-color: hover;
+	background-color: transparent;
 }
 
 tek.ui.class.floattext {
@@ -49,74 +44,56 @@ tek.ui.class.gadget {
 	border-style: outset;
 	border-focus-width: 1;
 }
-
 tek.ui.class.gadget:active {
-	border-style: inset;
 	background-color: active;
 	color: active-detail;
+	border-style: inset;
 }
-
 tek.ui.class.gadget:disabled {
 	background-color: disabled;
 	color: disabled-detail;
 }
-
 tek.ui.class.gadget:focus {
 	background-color: focus;
 	color: focus-detail;
 }
-
 tek.ui.class.gadget:hover {
 	background-color: hover;
 	color: hover-detail;
 }
 
-tek.ui.class.gadget.knob-scrollbar {
-	effect-class: ripple;
-	effect-orientation: inline;
-	effect-kind: dot;
-}
-
 tek.ui.class.gauge {
-	padding: 0;
-	border-style: inset;
-	height: auto;
-	vertical-grid-align: center;
+	height: 0;
 }
 
 tek.ui.class.group {
 	margin: 0;
 	background-color: group;
-	background-position: fixed;
 	border-width: 0;
 	border-focus-width: 0;
 }
 
 tek.ui.class.handle {
 	effect-class: ripple;
-	effect-orientation: across;
 	effect-kind: slant;
-	border-width: 0;
-	background-color: default;
+	effect-orientation: across;
+	background-color: transparent;
 	padding: 4;
 	margin: 0;
+	border-width: 0;
 }
-
 tek.ui.class.handle:active {
-	border-style: outset;
 	background-color: hover;
 }
 
-tek.ui.class.handle:hover {
-	background-color: hover;
+tek.ui.class.imagegadget:active {
+	color: transparent;
 }
-
-tek.ui.class.imagegadget {
-	color: default;
+tek.ui.class.imagegadget:hover {
+	color: transparent;
 }
-
-tek.ui.class.imagegadget:disabled {
-	color: disabled-detail;
+tek.ui.class.imagegadget:focus {
+	color: transparent;
 }
 
 tek.ui.class.input {
@@ -127,45 +104,24 @@ tek.ui.class.input {
 tek.ui.class.listgadget {
 	background-color: list;
 	background-color2: list-alt;
-	border-width: 1;
-	border-focus-width: 0;
-	border-rim-width: 0;
-	border-style: solid;
-	border-color: detail;
 	color: list-detail;
+	border-color: detail;
 }
-
 tek.ui.class.listgadget:active {
 	background-color: list-active;
-	color: list-active-detail;
-}
-
-tek.ui.class.menuitem {
-	background-position: fixed;
-	font: ui-menu;
-	border-width: 0;
-	margin: 0;
-	width: fill;
-}
-
-tek.ui.class.menuitem:active {
-	background-color: menu-active;
-	color: menu-active-detail;
-}
-
-tek.ui.class.menuitem:hover {
-	background-color: menu-active;
-	color: menu-active-detail;
-}
-
-tek.ui.class.menuitem:focus {
-	background-color: menu-active;
-	color: menu-active-detail;
+	border-color: detail;
 }
 
 tek.ui.class.menuitem.popup-root {
 	margin: 2;
-	width: auto;
+	width: 0;
+}
+
+tek.ui.class.numeric {
+	padding: 0;
+	border-style: inset;
+	border-width: 3;
+	border-rim-width: 0;
 }
 
 tek.ui.class.popitem {
@@ -173,30 +129,17 @@ tek.ui.class.popitem {
 	border-style: outset;
 	border-focus-width: 1;
 	border-rim-width: 1;
-	width: fill;
-}
-
-tek.ui.class.popitem:active {
-	background-color: hover;
 }
 
 tek.ui.class.popupwindow {
-	background-color: background;
 	border-width: 1;
+	border-focus-width: 0;
 	border-style: solid;
 	border-color: dark;
-	padding: 0;
-}
-
-tek.ui.class.scrollbar {
-	vertical-grid-align: center;
 }
 
 tek.ui.class.slider {
-	padding: 0;
-	border-style: inset;
-	width: fill;
-	height: fill;
+	height: 0;
 }
 
 tek.ui.class.slider:active {
@@ -211,15 +154,12 @@ tek.ui.class.spacer {
 tek.ui.class.text {
 	border-style: inset;
 	padding: 2 5 2 5;
-	height: auto;
 }
 
 tek.ui.class.textinput {
-	font: ui-fixed;
 	border-style: inset;
 	background-color: list;
 }
-
 tek.ui.class.textinput:disabled {
 	background-color: disabled;
 }
@@ -229,33 +169,50 @@ tek.ui.class.window {
 	margin: 0;
 }
 
-/*
-**	pre-defined classes:
-*/
+/***************************************/
+
+tek.ui.class.checkmark.menuitem:active {
+	background-color: menu;
+	color: menu-detail;
+}
+tek.ui.class.checkmark.menuitem:hover {
+	background-color: menu-active;
+	color: menu-active-detail;
+}
+tek.ui.class.checkmark.menuitem:focus {
+	background-color: menu-active;
+	color: menu-active-detail;
+}
+
+tek.ui.class.radiobutton.menuitem:active {
+	background-color: menu;
+	color: menu-detail;
+}
+tek.ui.class.radiobutton.menuitem:hover {
+	background-color: menu-active;
+	color: menu-active-detail;
+}
+tek.ui.class.radiobutton.menuitem:focus {
+	background-color: menu-active;
+	color: menu-active-detail;
+}
+
+/***************************************/
 
 .button {
 	border-style: outset;
 	border-width: 4;
 	border-rim-width: 1;
 }
-
 .button:active {
 	border-style: inset;
 }
 
 .caption {
 	border-width: 0;
-	background-color: default;
-	background-position: fixed;
+	background-color: transparent;
 	text-align: center;
 	vertical-align: center;
-	horizontal-grid-align: center;
-	vertical-grid-align: center;
-}
-
-.field {
-	border-style: inset;
-	padding: 1;
 }
 
 .gauge-fill {
@@ -263,7 +220,6 @@ tek.ui.class.window {
 	border-color: dark;
 	border-width: 1;
 	background-color: fill;
-	padding: 5;
 }
 
 .knob {
@@ -272,6 +228,12 @@ tek.ui.class.window {
 	border-rim-width: 1;
 	margin: 0;
 	padding: 5;
+}
+
+.knob-scrollbar {
+	effect-class: ripple;
+	effect-orientation: inline;
+	effect-kind: dot;
 }
 
 .legend {
@@ -287,9 +249,28 @@ tek.ui.class.window {
 	border-style: solid;
 	border-width: 0 0 1 0;
 	padding: 0;
-	background-color: background;
+	background-color: menu;
 	width: fill;
-	height: auto;
+}
+
+.menuitem {
+	margin: 0;
+	background-color: menu;
+	border-width: 0;
+	color: menu-detail;
+	font: ui-menu;
+}
+.menuitem:active {
+	background-color: menu-active;
+	color: menu-active-detail;
+}
+.menuitem:hover {
+	background-color: menu-active;
+	color: menu-active-detail;
+}
+.menuitem:focus {
+	background-color: menu-active;
+	color: menu-active-detail;
 }
 
 .message {
@@ -297,87 +278,69 @@ tek.ui.class.window {
 }
 
 .page-button {
+	max-width: 0;
 	border-style: inset;
 	border-width: 2 0 2 2;
 	border-focus-width: 0;
 	margin: 0;
 }
-
 .page-button:active {
 	border-style: outset;
 	border-bottom-color: group;
+	background-color: group;
 }
-
-.page-button:focus {
-	background-color: hover;
-}
-
-.page-button:hover {
-	background-color: hover;
-}
-
 .page-button-fill {
 	border-style: inset;
 	border-width: 0 0 2 2;
 	border-focus-width: 0;
-	background-color: default;
-	background-position: fixed;
+	background-color: transparent;
 	margin: 0;
 }
-
 .page-button-group {
 	margin: 4 2 0 0;
 	padding-left: 2;
-	background-position: fixed;
 }
-
 .page-container {
 	border-width: 0 2 2 2;
 	margin: 0 2 2 2;
 	padding: 2;
 }
 
+.poplist-canvas {
+	margin: 0;
+	border-width: 0;
+}
+
 .scrollbar-arrowup {
-	padding: 1;
 	margin-bottom: 0;
-	border-width: 3;
 }
-
-.scrollbar-arrowdown {
-	padding: 1;
-	margin-top: 0;
-	border-width: 3;
-}
-
-.scrollbar-arrowleft {
-	padding: 1;
-	margin-right: 0;
-	border-width: 3;
-}
-
 .scrollbar-arrowright {
-	padding: 1;
 	margin-left: 0;
-	border-width: 3;
+}
+.scrollbar-arrowdown {
+	margin-top: 0;
+}
+.scrollbar-arrowleft {
+	margin-right: 0;
 }
 
-/*
-**	internal classes:
-*/
+/***************************************/
 
 _listview-headitem {
-	background-color: active;
 	padding: 0;
+	margin: 0;
+	border-width: 0;
+	text-align: left;
 }
 
 _scrollbar-arrow {
-	margin: 0;
-	border-width: 4;
+	border-width: 3;
 	border-rim-width: 1;
 	min-width: 12;
 	min-height: 12;
+	margin: 0;
+	padding: 1;
 }
-
 _scrollbar-slider {
 	margin: 0;
 }

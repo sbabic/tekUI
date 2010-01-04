@@ -1,15 +1,24 @@
 
+tek.ui.class.area {
+	background-attachment: scroll;
+}
+
 tek.ui.class.checkmark {
-	background-color: parent-group;
+	background-attachment: fixed;
 }
 
 tek.ui.class.floattext {
 	color: shine;
-	background-color: url(bin/graphics/steel.ppm);
+	background-image: url(bin/graphics/steel.ppm);
 }
 
 tek.ui.class.group {
+	background-attachment: fixed;
 	background-image: url(bin/graphics/heated.ppm);
+}
+
+tek.ui.class.handle {
+	background-attachment: fixed;
 }
 
 tek.ui.class.imagegadget {
@@ -57,11 +66,23 @@ tek.ui.class.text {
 	background-image: url(bin/graphics/brushed2.ppm);
 }
 
-.page-button {
-	background-image: url(bin/graphics/heated.ppm);
-	background-position: fixed;
+.menubar {
+	background-attachment: fixed;
 }
 
+.page-button {
+	background-image: url(bin/graphics/heated.ppm);
+	background-attachment: fixed;
+}
 .page-button:active {
 	border-bottom-color: url(bin/graphics/heated.ppm);
+}
+
+.page-button-fill {
+	background-attachment: fixed;
+	background-color: transparent;
+}
+
+.page-button-group {
+	background-attachment: fixed;
 }

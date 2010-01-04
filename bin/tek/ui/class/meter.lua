@@ -23,18 +23,28 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 4.0"
+_VERSION = "Meter 6.1"
+local Meter = _M
+
+-------------------------------------------------------------------------------
+--	Class style properties:
+-------------------------------------------------------------------------------
+
+Properties = {
+	["padding-top"] = 0,
+	["padding-right"] = 0,
+	["padding-bottom"] = 0,
+	["padding-left"] = 0,
+}
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-local Meter = _M
-
 function Meter.init(self)
 	self.NumSamples = self.NumSamples or 256
-	self.GraphBGColor = self.GraphBGColor or ui.PEN_DARK
-	self.GraphColor = self.GraphColor or ui.PEN_SHINE
+	self.GraphBGColor = self.GraphBGColor or "dark"
+	self.GraphColor = self.GraphColor or "shine"
 	self.GraphColor2 = self.GraphColor2 or self.GraphColor
 	self.GraphColor3 = self.GraphColor3 or self.GraphColor
 	self.GraphColor4 = self.GraphColor4 or self.GraphColor
@@ -59,20 +69,20 @@ function Meter.init(self)
 		{ pri = 100, text = "1.0" },
 	}
 	self.Curves = self.Curves or { { } }
-	self.EraseBG = false
 	self.Font = "ui-small"
 	self.GraphRect = false
-	self.Height = self.Height or "free"
-	self.Padding = ui.NULLOFFS
+	self.MaxHeight = self.MaxHeight or "none"
+	self.MaxWidth = self.MaxWidth or "none"
 	self.RedrawGraph = false
-	self.TextHAlign = "left"
 	self.TextRecordsX = false
 	self.TextRecordsY = false
 	self.TextRegion = false
-	self.TextVAlign = "bottom"
-	self.Width = self.Width or "free"
 	return Text.init(self)
 end
+
+-------------------------------------------------------------------------------
+--	layout: overrides
+-------------------------------------------------------------------------------
 
 function Meter:layout(x0, y0, x1, y1, markdamage)
 	local res = Text.layout(self, x0, y0, x1, y1, markdamage)
@@ -194,6 +204,10 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 	end
 end
 
+-------------------------------------------------------------------------------
+--	drawGraph:
+-------------------------------------------------------------------------------
+
 function Meter:drawGraph()
 	local d = self.Drawable
 	local r = self.Rect
@@ -230,27 +244,36 @@ function Meter:drawGraph()
 	end
 end
 
+-------------------------------------------------------------------------------
+--	eraseGraphBG:
+-------------------------------------------------------------------------------
+
 function Meter:eraseGraphBG()
 	local x0, y0, x1, y1 = unpack(self.GraphRect)
 	local d = self.Drawable
 	d:fillRect(x0, y0, x1, y1, d.Pens[self.GraphBGColor])
 end
 
-function Meter:draw()
+-------------------------------------------------------------------------------
+--	erase: overrides
+-------------------------------------------------------------------------------
+
+function Meter:erase()
 	local d = self.Drawable
 	local bgpen, tx, ty = self:getBG()
 	self.TextRegion:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
-	Text.draw(self)
-	local r = self.Rect
-	self:eraseGraphBG()
-	self:drawGraph()
 end
 
-function Meter:refresh()
-	Text.refresh(self)
-	if self.RedrawGraph then
+-------------------------------------------------------------------------------
+--	draw: overrides
+-------------------------------------------------------------------------------
+
+function Meter:draw()
+	local res = Text.draw(self)
+	if res or self.RedrawGraph then
 		self:eraseGraphBG()
 		self:drawGraph()
 		self.RedrawGraph = false
 	end
+	return res
 end

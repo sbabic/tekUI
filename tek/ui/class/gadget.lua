@@ -4,16 +4,15 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		Gadget
+--		Gadget ${subclasses(Gadget)}
 --
---	OVERVIEW::
 --		This class implements interactions with the user.
 --
 --	ATTRIBUTES::
@@ -104,23 +103,23 @@
 --			Gadget:onSelect().
 --
 --	STYLE PROPERTIES::
---		- ''color'' || controls the {{Gadget.FGColor}} attribute
---		- ''effect-class'' || controls the {{Gadget.EffectClass}} attribute
---		- ''effect-color'' || controls the ''ripple'' effect hook
---		- ''effect-color2'' || controls the ''ripple'' effect hook
---		- ''effect-kind'' || controls the ''ripple'' effect hook
---		- ''effect-maxnum'' || controls the ''ripple'' effect hook
---		- ''effect-maxnum2'' || controls the ''ripple'' effect hook
---		- ''effect-orientation'' || controls the ''ripple'' effect hook
---		- ''effect-padding'' || controls the ''ripple'' effect hook
---		- ''effect-ratio'' || controls the ''ripple'' effect hook
---		- ''effect-ratio2'' || controls the ''ripple'' effect hook
+--		''color'' || controls the {{Gadget.FGColor}} attribute
+--		''effect-class'' || controls the {{Gadget.EffectClass}} attribute
+--		''effect-color'' || controls the ''ripple'' effect hook
+--		''effect-color2'' || controls the ''ripple'' effect hook
+--		''effect-kind'' || controls the ''ripple'' effect hook
+--		''effect-maxnum'' || controls the ''ripple'' effect hook
+--		''effect-maxnum2'' || controls the ''ripple'' effect hook
+--		''effect-orientation'' || controls the ''ripple'' effect hook
+--		''effect-padding'' || controls the ''ripple'' effect hook
+--		''effect-ratio'' || controls the ''ripple'' effect hook
+--		''effect-ratio2'' || controls the ''ripple'' effect hook
 --
 --	STYLE PSEUDO CLASSES::
---		- ''active'' || for elements in active state
---		- ''disabled'' || for elements in disabled state
---		- ''focus'' || for elements that have the focus
---		- ''hover'' || for elements that are being hovered by the mouse
+--		''active'' || for elements in active state
+--		''disabled'' || for elements in disabled state
+--		''focus'' || for elements that have the focus
+--		''hover'' || for elements that are being hovered by the mouse
 --
 --	IMPLEMENTS::
 --		- Gadget:onActivate() - Handler for {{Active}}
@@ -135,28 +134,30 @@
 --		- Area:checkFocus()
 --		- Area:checkHover()
 --		- Element:cleanup()
---		- Element:getProperties()
 --		- Object.init()
 --		- Area:layout()
 --		- Area:passMsg()
---		- Area:refresh()
 --		- Area:setState()
 --		- Element:setup()
 --		- Area:show()
 --
 -------------------------------------------------------------------------------
 
+local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Frame = ui.require("frame", 12)
+local Frame = ui.require("frame", 16)
 
 module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 17.1"
+_VERSION = "Gadget 19.0"
 
 local Gadget = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
+
+local FL_REDRAW = ui.FL_REDRAW
+local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
 
 local NOTIFY_HOVER = { ui.NOTIFY_SELF, "onHover", ui.NOTIFY_VALUE }
 local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate", ui.NOTIFY_VALUE }
@@ -172,18 +173,8 @@ local NOTIFY_FOCUS = { ui.NOTIFY_SELF, "onFocus", ui.NOTIFY_VALUE }
 
 function Gadget.init(self)
 	self.Active = false
-	self.BGDisabled = self.BGDisabled or false
-	self.BGFocus = self.BGFocus or false
-	self.BGHilite = self.BGHilite or false
-	self.BGSelected = self.BGSelected or false
 	self.DblClick = false
 	self.EffectHook = false
-	self.EffectClass = self.EffectClass or false
-	self.FGColor = self.FGColor or false
-	self.FGDisabled = self.FGDisabled or false
-	self.FGFocus = self.FGFocus or false
-	self.FGHilite = self.FGHilite or false
-	self.FGSelected = self.FGSelected or false
 	self.FGPen = false
 	self.Hold = false
 	self.Hover = false
@@ -193,33 +184,6 @@ function Gadget.init(self)
 	self.OldActive = false
 	self.Pressed = false
 	return Frame.init(self)
-end
-
--------------------------------------------------------------------------------
---	getProperties: overrides
--------------------------------------------------------------------------------
-
-function Gadget:getProperties(p, pclass)
-	self.EffectClass = self.EffectClass or 
-		self:getProperty(p, pclass, "effect-class")
-	self.FGColor = self.FGColor or self:getProperty(p, pclass, "color")
-	self.BGDisabled = self.BGDisabled or
-		self:getProperty(p, pclass or "disabled", "background-color")
-	self.BGSelected = self.BGSelected or
-		self:getProperty(p, pclass or "active", "background-color")
-	self.BGHilite = self.BGHilite or
-		self:getProperty(p, pclass or "hover", "background-color")
-	self.BGFocus = self.BGFocus or
-		self:getProperty(p, pclass or "focus", "background-color")
-	self.FGDisabled = self.FGDisabled or
-		self:getProperty(p, pclass or "disabled", "color")
-	self.FGSelected = self.FGSelected or
-		self:getProperty(p, pclass or "active", "color")
-	self.FGHilite = self.FGHilite or
-		self:getProperty(p, pclass or "hover", "color")
-	self.FGFocus = self.FGFocus or
-		self:getProperty(p, pclass or "focus", "color")
-	Frame.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -237,8 +201,8 @@ function Gadget:setup(app, window)
 	self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
 	self:addNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
 	-- create effect hook:
-	self.EffectHook = ui.createHook("hook", self.EffectClass, self,
-		{ Style = self.Style })
+	self.EffectHook = ui.createHook("hook", self.Properties["effect-class"],
+		self, { Style = self.Style })
 	local interactive = self.Mode ~= "inert"
 	local keycode = self.KeyCode
 	if interactive and keycode then
@@ -289,14 +253,16 @@ function Gadget:layout(x0, y0, x1, y1, markdamage)
 end
 
 -------------------------------------------------------------------------------
---	refresh: overrides
+--	draw: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:refresh()
-	local redraw = self.EffectHook and self.Redraw
-	Frame.refresh(self)
-	if redraw then
-		self.EffectHook:draw(self.Drawable)
+function Gadget:draw()
+	if Frame.draw(self) then
+		local e = self.EffectHook
+		if e then
+			e:draw()
+		end
+		return true
 	end
 end
 
@@ -372,7 +338,7 @@ function Gadget:onDisable(disabled)
 	if disabled and self.Focus and win then
 		win:setFocusElement()
 	end
-	self.Redraw = true
+	self.Flags:set(FL_REDRAW)
 	self:setState()
 end
 
@@ -394,7 +360,7 @@ function Gadget:onSelect(selected)
 	-- 	end
 	-- end
 
-	self.RedrawBorder = true
+	self.Flags:set(FL_REDRAWBORDER)
 	self:setState()
 end
 
@@ -420,34 +386,39 @@ end
 -------------------------------------------------------------------------------
 
 function Gadget:setState(bg, fg)
-	if not bg then
-		if self.Disabled then
-			bg = self.BGDisabled
-		elseif self.Selected then
-			bg = self.BGSelected
-		elseif self.Hilite then
-			bg = self.BGHilite
-		elseif self.Focus then
-			bg = self.BGFocus
+	local props = self.Properties
+	if props then
+		if not bg then
+			if self.Disabled then
+				bg = props["background-color:disabled"]
+			elseif self.Selected then
+				bg = props["background-color:active"]
+			elseif self.Hilite then
+				bg = props["background-color:hover"]
+			elseif self.Focus then
+				bg = props["background-color:focus"]
+			end
 		end
-	end
-	if not fg then
-		if self.Disabled then
-			fg = self.FGDisabled
-		elseif self.Selected then
-			fg = self.FGSelected
-		elseif self.Hilite then
-			fg = self.FGHilite
-		elseif self.Focus then
-			fg = self.FGFocus
+		if not fg then
+			if self.Disabled then
+				fg = props["color:disabled"]
+			elseif self.Selected then
+				fg = props["color:active"]
+			elseif self.Hilite then
+				fg = props["color:hover"]
+			elseif self.Focus then
+				fg = props["color:focus"]
+			end
 		end
+		fg = fg or props["color"] or "detail"
+		if fg ~= self.FGPen then
+			self.FGPen = fg
+			self.Flags:set(FL_REDRAW)
+		end
+		Frame.setState(self, bg)
+	else
+		db.warn("%s : no properties", self:getClassName())
 	end
-	fg = fg or self.FGColor or ui.PEN_DETAIL
-	if fg ~= self.FGPen then
-		self.FGPen = fg
-		self.Redraw = true
-	end
-	Frame.setState(self, bg)
 end
 
 -------------------------------------------------------------------------------
@@ -513,6 +484,6 @@ function Gadget:onFocus(focused)
 		self:focusRect()
 	end
 	self.Window:setFocusElement(focused and self)
-	self.RedrawBorder = true
+	self.Flags:set(FL_REDRAWBORDER)
 	self:setState()
 end

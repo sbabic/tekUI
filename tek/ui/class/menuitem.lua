@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -14,9 +14,8 @@
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		[[#tek.ui.class.popitem : PopItem]] /
---		MenuItem
+--		MenuItem ${subclasses(MenuItem)}
 --
---	OVERVIEW::
 --		This class implements basic, recursive items for window and popup
 --		menus with a typical menu look; in particular, it displays the
 --		[[#tek.ui.class.popitem : PopItem]]'s {{Shortcut}} string and an
@@ -35,13 +34,13 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local PopItem = ui.require("popitem", 10)
+local PopItem = ui.require("popitem", 15)
 
 local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 7.1"
+_VERSION = "MenuItem 8.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -50,7 +49,7 @@ _VERSION = "MenuItem 7.1"
 local ArrowImage = ui.Image:new
 {
 	{ 0x7000,0x4000, 0x7000,0xc000, 0xb000,0x8000 }, false, false, true,
-	{ { 0x1000, 3, { 1, 2, 3 }, ui.PEN_MENUDETAIL } },
+	{ { 0x1000, 3, { 1, 2, 3 }, "menu-detail" } },
 }
 
 -------------------------------------------------------------------------------
@@ -61,20 +60,16 @@ local MenuItem = _M
 
 function MenuItem.new(class, self)
 	self = self or { }
-	-- prevent superclass from filling in text records:
-	self.TextRecords = self.TextRecords or { }
-	return PopItem.new(class, self)
-end
-
-function MenuItem.init(self)
-	self.MaxHeight = self.MaxHeight or 0
 	if self.Children then
 		self.Mode = "toggle"
 	else
 		self.Mode = "button"
 	end
-	self.TextHAlign = "left"
-	return PopItem.init(self)
+	-- prevent superclass from filling in text records:
+	self.TextRecords = self.TextRecords or { }
+	self = PopItem.new(class, self)
+	self:addStyleClass("menuitem")
+	return self
 end
 
 function MenuItem:setup(app, win)
@@ -85,7 +80,7 @@ function MenuItem:setup(app, win)
 		end
 	end
 	PopItem.setup(self, app, win)
-	local font = self.Application.Display:openFont(self.Font)
+	local font = self.Application.Display:openFont(self.Properties["font"])
 	self:setTextRecord(1, self.Text, font, "left")
 	if self.Shortcut and not self.Children then
 		self:setTextRecord(2, self.Shortcut, font, "left")

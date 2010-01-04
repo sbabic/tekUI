@@ -15,7 +15,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.boing", tek.ui.class.frame)
-_VERSION = "Boing 3.0"
+_VERSION = "Boing 4.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -36,6 +36,7 @@ function Boing.init(self)
 	self.Boing[4] = 0x472
 	self.XPos = 0
 	self.YPos = 0
+	self.EraseBG = false
 	self.OldRect = { }
 	self.TrackDamage = true
 	self.Running = self.Running or false
@@ -66,41 +67,33 @@ function Boing:hide()
 end
 
 function Boing:draw()
-
-	local d = self.Drawable
-	local bgpen = d.Pens[ui.PEN_DARK]
 	local dr = self.DamageRegion
-	local o = self.OldRect
-	local r = self.Rect
-
-	if not o[1] then
-		d:fillRect(r[1], r[2], r[3], r[4], bgpen)
-	elseif dr then
-		-- repaint intra-area damagerects:
-		dr:forEach(d.fillRect, d, bgpen)
-		self.DamageRegion = false
+	if Frame.draw(self) then
+		local d = self.Drawable
+		local bgpen = d.Pens["dark"]
+		if dr then
+			-- repaint intra-area damagerects:
+			dr:forEach(d.fillRect, d, bgpen)
+		end
+		local r1, r2, r3, r4 = self:getRect()
+		local o = self.OldRect
+		local w = r3 - r1 + 1
+		local h = r4 - r2 + 1
+		local w2 = w - w / 20
+		local h2 = h - h / 20
+		local x0 = (self.Boing[1] * w2) / 0x10000 + r1
+		local y0 = (self.Boing[2] * h2) / 0x10000 + r2
+		if o[1] then
+			d:fillRect(o[1], o[2], o[3], o[4], bgpen)
+		end
+		d:fillRect(x0, y0, x0 + w/20 - 1, y0 + h/20 - 1,
+			d.Pens["shine"])
+		o[1] = x0
+		o[2] = y0
+		o[3] = x0 + w/20 - 1
+		o[4] = y0 + h/20 - 1
+		return true
 	end
-
-	local w = r[3] - r[1] + 1
-	local h = r[4] - r[2] + 1
-	local x0, y0, x1, y1
-	local w2 = w - w / 20
-	local h2 = h - h / 20
-	x0 = (self.Boing[1] * w2) / 0x10000 + self.Rect[1]
-	y0 = (self.Boing[2] * h2) / 0x10000 + self.Rect[2]
-
-	if o[1] then
-		d:fillRect(o[1], o[2], o[3], o[4], bgpen)
-	end
-
-	d:fillRect(x0, y0, x0 + w/20 - 1, y0 + h/20 - 1,
-		d.Pens[ui.PEN_SHINE])
-
-	o[1] = x0
-	o[2] = y0
-	o[3] = x0 + w/20 - 1
-	o[4] = y0 + h/20 - 1
-
 end
 
 function Boing:updateInterval(msg)
@@ -116,7 +109,7 @@ function Boing:updateInterval(msg)
 			b[4] = -b[4]
 			b[2] = b[2] + b[4]
 		end
-		self.Redraw = true
+		self.Flags:set(ui.FL_REDRAW)
 		self:setValue("XPos", b[1])
 		self:setValue("YPos", b[2])
 	end

@@ -20,7 +20,6 @@ local window = ui.Window:new
 {
 	Status = "hide",
 	Id = "graphics-window",
-	Style = "Width: auto; Height: auto",
 	Title = L.GRAPHICS_TITLE,
 	Width = "fill",
 	Height = "fill",

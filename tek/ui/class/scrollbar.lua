@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -12,10 +12,9 @@
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
---		[[#tek.ui.class.group: : Group]] /
---		ScrollBar
+--		[[#tek.ui.class.group : Group]] /
+--		ScrollBar ${subclasses(ScrollBar)}
 --
---	OVERVIEW::
 --		Implements a group containing a
 --		[[#tek.ui.class.slider : Slider]] and arrow buttons.
 --
@@ -57,15 +56,15 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Group = ui.require("group", 22)
-local ImageGadget = ui.require("imagegadget", 5)
-local Slider = ui.require("slider", 15)
+local Group = ui.require("group", 27)
+local ImageGadget = ui.require("imagegadget", 9)
+local Slider = ui.require("slider", 19)
 
 local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 10.1"
+_VERSION = "ScrollBar 10.3"
 
 local ScrollBar = _M
 
@@ -99,7 +98,7 @@ function ArrowButton.init(self)
 end
 
 function ArrowButton:checkFocus()
-	if self.Parent.AcceptFocus then
+	if self.ScrollBar.AcceptFocus then
 		return ImageGadget.checkFocus(self)
 	end
 	return false
@@ -135,7 +134,7 @@ end
 local SBSlider = Slider:newClass { _NAME = "_scrollbar-slider" }
 
 function SBSlider:checkFocus()
-	if self.Parent.AcceptFocus then
+	if self.ScrollBar.AcceptFocus then
 		return Slider.checkFocus(self)
 	end
 	return false
@@ -146,7 +145,8 @@ function SBSlider:onSetValue(v)
 	self.ScrollBar:setValue("Value", self.Value)
 end
 
-local function updateSlider(self)
+function SBSlider:updateSlider()
+	Slider.updateSlider(self)
 	local disabled = self.Min == self.Max
 	local sb = self.ScrollBar.Children
 	if disabled ~= sb[1].Disabled then
@@ -159,19 +159,16 @@ end
 function SBSlider:onSetRange(r)
 	Slider.onSetRange(self, r)
 	self.ScrollBar:setValue("Range", self.Range)
-	updateSlider(self)
 end
 
 function SBSlider:onSetMin(m)
 	Slider.onSetMin(self, m)
 	self.ScrollBar:setValue("Min", self.Min)
-	updateSlider(self)
 end
 
 function SBSlider:onSetMax(m)
 	Slider.onSetMax(self, m)
 	self.ScrollBar:setValue("Max", self.Max)
-	updateSlider(self)
 end
 
 -------------------------------------------------------------------------------
@@ -237,6 +234,7 @@ function ScrollBar.new(class, self)
 		Class = class1,
 		Slider = self.Slider,
 		Increase = -increase,
+		ScrollBar = self,
 	}
 	self.ArrowButton2 = ArrowButton:new
 	{
@@ -244,6 +242,7 @@ function ScrollBar.new(class, self)
 		Class = class2,
 		Slider = self.Slider,
 		Increase = increase,
+		ScrollBar = self,
 	}
 
 	if self.ArrowOrientation ~= self.Orientation then
@@ -252,6 +251,8 @@ function ScrollBar.new(class, self)
 			self.Slider,
 			Group:new
 			{
+				Width = "fill",
+				Height = "fill",
 				Orientation = "horizontal" and "vertical" or self.Orientation,
 				Children =
 				{
@@ -277,17 +278,16 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollBar:setup(app, window)
-
 	Group.setup(self, app, window)
-
 	if self.Orientation == "vertical" then
-		self.Width = self.Width or "auto"
+		self.MaxWidth = 0
+		self.MaxHeight = ui.HUGE
 		self.Height = self.Height or "fill"
 	else
+		self.MaxWidth = ui.HUGE
+		self.MaxHeight = 0
 		self.Width = self.Width or "fill"
-		self.Height = self.Height or "auto"
 	end
-
 	self:addNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE, 1)
 	self:addNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN, 1)
 	self:addNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX, 1)

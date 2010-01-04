@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -14,9 +14,8 @@
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.group : Group]] /
 --		[[#tek.ui.class.group : Window]] /
---		PopupWindow
+--		PopupWindow ${subclasses(PopupWindow)}
 --
---	OVERVIEW::
 --		This class specializes a Window for the use by a
 --		[[#tek.ui.class.popitem : PopItem]].
 --
@@ -28,12 +27,12 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Window = ui.require("window", 22)
+local Window = ui.require("window", 27)
 
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 4.1"
+_VERSION = "PopupWindow 4.2"
 
 local PopupWindow = _M
 
@@ -46,7 +45,6 @@ function PopupWindow.init(self)
 	self.BeginPopupTicks = 0
 	self.DelayedBeginPopup = false
 	self.DelayedEndPopup = false
-	self.Margin = self.Margin or ui.NULLOFFS
 	self.MaxWidth = self.MaxWidth or 0
 	self.MaxHeight = self.MaxHeight or 0
 	self = Window.init(self)

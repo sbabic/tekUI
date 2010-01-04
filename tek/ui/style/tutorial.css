@@ -4,7 +4,7 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Version: 1.0
+**	Version: 1.2
 */
 
 tek.ui.class.display {
@@ -59,13 +59,15 @@ tek.ui.class.window {
 **	pre-defined classes:
 */
 
+.button {
+	border-width: 10;
+}
+
 .caption {
 	border-width: 0;
-	background-color: parent-group;
+	background-color: transparent;
 	text-align: center;
 	vertical-align: center;
-	horizontal-grid-align: center;
-	vertical-grid-align: center;
 }
 
 .gauge-fill {

@@ -25,6 +25,7 @@ CLASSES = \
 	class/handle.lua \
 	class/image.lua \
 	class/imagegadget.lua \
+	class/layout.lua \
 	class/listgadget.lua \
 	class/listview.lua \
 	class/menuitem.lua \
@@ -49,15 +50,16 @@ IMAGES = \
 	image/arrowleft.lua \
 	image/arrowright.lua \
 	image/arrowup.lua \
-	image/check.lua \
+	image/checkmark.lua \
 	image/file.lua \
-	image/radio.lua
+	image/radiobutton.lua
 STYLES = \
-	style/internal.css \
-	style/monochrome.css \
-	style/tutorial.css \
+	style/dark.css \
+	style/desktop.css \
 	style/industrial.css \
-	style/desktop.css
+	style/default.css \
+	style/monochrome.css \
+	style/tutorial.css
 FONTS = \
 	font/Vera.ttf \
 	font/VeraMono.ttf
@@ -71,13 +73,19 @@ CATALOGS2 = \
 
 ###############################################################################
 
-MODS = layout/default$(DLLEXT)
+MODS = layout/default$(DLLEXT) support$(DLLEXT)
 
 layout/default$(DLLEXT): $(OBJDIR)/default.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/default.lo $(LUA_DLLS)
 
+support$(DLLEXT): $(OBJDIR)/support.lo
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/support.lo $(LUA_DLLS)
+
 $(OBJDIR)/default.lo: layout/default.c
 	$(CC) $(LIBCFLAGS) -o $@ -c layout/default.c
+
+$(OBJDIR)/support.lo: support.c
+	$(CC) $(LIBCFLAGS) -o $@ -c support.c
 
 ###############################################################################
 
@@ -96,6 +104,8 @@ install:
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
 	$(INSTALL) -d $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
 	$(INSTALL) -s layout/default$(DLLEXT) $(LUA_LIB)/tek/ui/layout
+	$(INSTALL) -s support$(DLLEXT) $(LUA_LIB)/tek/ui
+	$(INSTALL) layout/fixed.lua $(LUA_SHARE)/tek/ui/layout
 	$(INSTALL) $(CLASSES) $(LUA_SHARE)/tek/ui/class
 	$(INSTALL) $(BORDERS) $(LUA_SHARE)/tek/ui/border
 	$(INSTALL) $(HOOKS) $(LUA_SHARE)/tek/ui/hook

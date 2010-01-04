@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.group : Group]] /
---		Window
+--		Window ${subclasses(Window)}
 --
---	OVERVIEW::
 --		This class implements a [[#tek.ui.class.group : Group]] which
 --		fills up a window on the [[#tek.ui.class.display : Display]].
 --
@@ -80,7 +79,6 @@
 --		- Object.init()
 --		- Area:layout()
 --		- Area:passMsg()
---		- Area:refresh()
 --		- Area:rethinkLayout()
 --		- Element:setup()
 --		- Area:show()
@@ -90,28 +88,27 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Drawable = ui.require("drawable", 20)
-local Gadget = ui.require("gadget", 17)
-local Group = ui.require("group", 22)
-local Region = ui.loadLibrary("region", 8)
+local Drawable = ui.require("drawable", 23)
+local Gadget = ui.require("gadget", 19)
+local Group = ui.require("group", 27)
+local Region = ui.loadLibrary("region", 9)
 
 local assert = assert
 local floor = math.floor
-local freeRegion = ui.freeRegion
 local insert = table.insert
 local intersect = Region.intersect
 local max = math.max
 local min = math.min
+local newFlags = ui.newFlags
 local newRegion = ui.newRegion
 local pairs = pairs
 local remove = table.remove
 local sort = table.sort
-local testflag = ui.testFlag
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 23.2"
+_VERSION = "Window 27.0"
 local Window = _M
 
 -------------------------------------------------------------------------------
@@ -126,8 +123,10 @@ local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, ui.MSG_MOUSEMOVE, ui.MSG_MOUSEBUTTON,
 	ui.MSG_INTERVAL, ui.MSG_KEYUP }
 
+local FL_REDRAW = ui.FL_REDRAW
+
 -------------------------------------------------------------------------------
---	Class implementation:
+--	init: overrides
 -------------------------------------------------------------------------------
 
 function Window.init(self)
@@ -140,8 +139,8 @@ function Window.init(self)
 	self.Center = self.Center or false
 	self.DblClickElement = false
 	self.DblClickCheckInfo = { } -- check_element, sec, usec, mousex, mousey
-	self.DblClickJitter = self.DblClickJitter or DEF_DBLCLICKJITTER
-	self.DblClickTimeout = self.DblClickTimeout or DEF_DBLCLICKTIMELIMIT
+	self.DblClickJitter = self.DblClickJitter or ui.DBLCLICKJITTER
+	self.DblClickTimeout = self.DblClickTimeout or ui.DBLCLICKTIME
 	self.FocusElement = false
 	self.FullScreen = self.FullScreen or ui.FullScreen == "true"
 	self.HideOnEscape = self.HideOnEscape or false
@@ -179,7 +178,6 @@ function Window.init(self)
 	}
 	self.IntervalCount = 0
 	self.KeyShortcuts = { }
-	self.LayoutGroup = { }
 	self.Left = self.Left or false
 	self.Modal = self.Modal or false
 	self.MouseX = false
@@ -215,6 +213,7 @@ function Window.init(self)
 		[5] = 0,
 		[6] = 0,
 	}
+	self.Relayouts = { }
 	self.Status = self.Status or "initializing"
 	self.Title = self.Title or false
 	self.Top = self.Top or false
@@ -254,16 +253,13 @@ function Window:show()
 	self.Status = "show"
 	if not self.Visible then
 		self.Visible = true
+		local m1, m2, m3, m4, x, y, w, h = self:getWindowDimensions()
 		local d = self.Drawable
-		local m1, m2, m3, m4, x, y, w, h = self:askMinMax()
 		d:open(self, self.Title or self.Application.ProgramName,
 			w, h, m1, m2, m3, m4, x, y, self.Center, self.FullScreen)
-		local wm = self.WindowMinMax
-		wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
 		self.Application:openWindow(self)
 		Group.show(self, d)
 		self:layout()
-		self:addLayoutGroup(self, 2)
 	end
 end
 
@@ -297,12 +293,13 @@ end
 -------------------------------------------------------------------------------
 
 function Window:addInputHandler(msgtype, object, func)
+	local flags = newFlags(msgtype)
 	local hnd = { object, func }
 	for i = 1, #MSGTYPES do
 		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
 		if ih then
-			if testflag(msgtype, mask) then
+			if flags:check(mask) then
 				insert(ih, 1, hnd)
 				if mask == ui.MSG_INTERVAL and #ih == 1 then
 					self:addInterval()
@@ -319,11 +316,12 @@ end
 -------------------------------------------------------------------------------
 
 function Window:remInputHandler(msgtype, object, func)
+	local flags = newFlags(msgtype)
 	for i = 1, #MSGTYPES do
 		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
 		if ih then
-			if testflag(msgtype, mask) then
+			if flags:check(mask) then
 				for i = 1, #ih do
 					local h = ih[i]
 					if h[1] == object and h[2] == func then
@@ -398,6 +396,12 @@ function Window:askMinMax()
 	self.MinHeight = mh
 	m1, m2 = max(mw, m1), max(mh, m2)
 	local x, y, w, h = self.Left, self.Top, self.Width, self.Height
+	if w == "fill" then
+		w = m1
+	end
+	if h == "fill" then
+		h = m2
+	end
 	w = type(w) == "number" and max(w, m1)
 	h = type(h) == "number" and max(h, m2)
 	m3 = (m3 and m3 > 0 and m3 < HUGE) and m3
@@ -408,28 +412,28 @@ function Window:askMinMax()
 end
 
 -------------------------------------------------------------------------------
---	rethinkLayout: overrides
+--	m1, m2, m3, m4, x, y, w, h = getWindowDimensions(update)
 -------------------------------------------------------------------------------
 
-function Window:rethinkLayout()
-	if self.Status == "show" then
-		local wm = self.WindowMinMax
-		local m1, m2, m3, m4 = self:askMinMax()
-		if m1 ~= wm[1] or m2 ~= wm[2] or m3 ~= wm[3] or m4 ~= wm[4] then
-			wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
-			db.trace("New window minmax: %d %d %d %d", m1, m2, m3, m4)
-			local w, h = self.Drawable:getAttrs()
-			if (m1 and w < m1) or (m2 and h < m2) then
+function Window:getWindowDimensions(update)
+	local m1, m2, m3, m4, x, y, w, h = self:askMinMax()
+	local wm = self.WindowMinMax
+	if m1 ~= wm[1] or m2 ~= wm[2] or m3 ~= wm[3] or m4 ~= wm[4] then
+		wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
+		if update then
+			local drawable = self.Drawable
+			local w, h = drawable:getWH()
+			if (m1 and w < m1) or (m2 and h < m2) then -- TODO: m1, m2?
 				-- window needs to grow; mark new region as damaged:
 				w = max(w, m1 or w)
 				h = max(h, m2 or h)
 				self:damage(0, 0, w - 1, h - 1)
 			end
-			self.Drawable:setAttrs { MinWidth = m1, MinHeight = m2,
+			drawable:setAttrs { MinWidth = m1, MinHeight = m2,
 				MaxWidth = m3, MaxHeight = m4 }
-			return true
 		end
 	end
+	return m1, m2, m3, m4, x, y, w, h
 end
 
 -------------------------------------------------------------------------------
@@ -501,7 +505,7 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_NEWSIZE] = function(self, msg)
-		self:addLayoutGroup(self, 0)
+		self:addLayout(self, 0, false)
 		return msg
 	end,
 	[ui.MSG_REFRESH] = function(self, msg)
@@ -538,12 +542,12 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_KEYDOWN] = function(self, msg)
-		
+
 		if not self.Application then
 			db.warn("*** window already collapsed!")
 			return msg
 		end
-		
+
 		self.MouseX, self.MouseY = msg[4], msg[5]
 		-- pass message to active popup element:
 		if self.ActivePopup then
@@ -557,7 +561,7 @@ local MsgHandlers =
 		local fe = self.FocusElement
 		local key = msg[3]
 		local retrig = key ~= 0 and self.Application:setLastKey(key)
-		
+
 		-- activate window:
 		self:setValue("Active", true)
 		if key == 27 and not retrig then
@@ -581,7 +585,7 @@ local MsgHandlers =
 		elseif key == 61458 or key == 61456 then -- cursor up, left:
 			self:setFocusElement(self:getNextElement(fe, true))
 			return
-		elseif key == 13 or key == 32 and not retrig then 
+		elseif key == 13 or key == 32 and not retrig then
 			if fe and not fe.Active then
 				self:setHiliteElement(fe)
 				self:setActiveElement(fe)
@@ -619,7 +623,7 @@ local MsgHandlers =
 			self:setActiveElement()
 			self:setHiliteElement(self.HoverElement)
 		end
-		
+
 		return msg
 	end,
 	[ui.MSG_MOUSEMOVE] = function(self, msg)
@@ -647,30 +651,30 @@ function Window:getHoverElementByXY(mx, my)
 end
 
 -------------------------------------------------------------------------------
---	addLayoutGroup: mark a group for relayout
---	markdamage = 0: do not mark as damaged
---	markdamage = 1: mark as damaged only if coodinates changed
---	markdamage = 2: unconditionally mark as damaged
+--	addLayout: marks an element for relayout during the next update
+--	cycle. See Area:rethinkLayout() for details on the damage argument.
 -------------------------------------------------------------------------------
 
-function Window:addLayoutGroup(group, markdamage)
-	if group:getGroup() == group then
-		local record = self.LayoutGroup[group]
-		if not record then
-			record = { group, markdamage }
-			self.LayoutGroup[group] = record
-			insert(self.LayoutGroup, record)
-		elseif markdamage > record[2] then
-			-- increase damage level in already existing group:
-			record[2] = markdamage
-		end
-	else
-		db.warn("Attempt to relayout non-group: %s", group:getClassName())
+function Window:addLayout(element, damage, askminmax)
+	askminmax = askminmax or false
+	local r = self.Relayouts
+	local e = r[element]
+	if not e then
+		e = { element, damage, askminmax }
+		insert(r, e)
+		r[element] = e
+		return
+	end
+	if damage > e[2] then
+		e[2] = damage
+	end
+	if not e[3] then
+		e[3] = askminmax
 	end
 end
 
 -------------------------------------------------------------------------------
---	refresh: overrides
+--	draw:
 -------------------------------------------------------------------------------
 
 local function sortcopies(a, b) return a[1] > b[1] end
@@ -683,7 +687,7 @@ local function insertblity(t, r1, r2, r3, r4, dir, e)
 	insert(t, { r2 * dir, r1, r2, r3, r4, e })
 end
 
-function Window:refresh()
+function Window:draw()
 	-- handle copies:
 	local ca = self.Blits
 	local t = { }
@@ -694,7 +698,6 @@ function Window:refresh()
 		else
 			region:forEach(insertblity, t, dy > 0 and 1 or -1, e)
 		end
-		freeRegion(region)
 		ca[key] = nil
 	end
 	sort(t, sortcopies)
@@ -716,7 +719,7 @@ function Window:refresh()
 		end
 	end
 	self.BlitObjects = { }
-	Group.refresh(self)
+	Group.draw(self, true)
 	d:flush()
 end
 
@@ -728,35 +731,64 @@ function Window:update()
 
 	if self.Status == "show" then
 
-		if #self.LayoutGroup > 0 then
+		if #self.Relayouts > 0 then
 
-			-- Handle partial relayouts. Note that new partial relayouts
-			-- might be added while we process them
+			local updateminmax
+			repeat
 
-			while #self.LayoutGroup > 0 do
-				local lg = self.LayoutGroup
-				self.LayoutGroup = { }
-				for i = 1, #lg do
-					local record = lg[i]
-					local group = record[1]
-					local markdamage = record[2]
-					group:calcWeights()
-					local r1, r2, r3, r4 = group:getRect()
-					if r1 then
-						local m = group.MarginAndBorder
-						self:relayout(group, r1 - m[1], r2 - m[2],
-							r3 + m[3], r4 + m[4])
-					else
-						db.warn("%s : layout not available",
-							group:getClassName())
+				local rl = self.Relayouts
+				local nrl = { }
+				self.Relayouts = nrl
+
+				for i = #rl, 1, -1 do
+					local e = rl[i]
+					local damage = e[2]
+					if e[3] then
+						updateminmax = true
 					end
-					if markdamage == 1 then
-						group.Redraw = true
-					elseif markdamage == 2 then
-						group:damage(r1, r2, r3, r4)
+					if damage == 0 then
+						remove(rl, i)
+					else
+						-- remember old coordinates:
+						e[3], e[4], e[5], e[6] = e[1]:getRect()
 					end
 				end
-			end
+
+				if updateminmax then
+					self:getWindowDimensions(true)
+				end
+
+				self:layout()
+
+				while #rl > 0 do
+					local r = remove(rl)
+					local e = r[1]
+					local damage = r[2]
+					local r1, r2, r3, r4 = e:getRect()
+					local changed = r1 and
+						(r[3] ~= r1 or r[4] ~= r2 or r[5] ~= r3 or r[6] ~= r4)
+					if changed then
+						local pg = e:getGroup(true)
+						if pg then
+							pg.Flags:set(FL_REDRAW)
+						end
+					end
+
+					if damage == 1 then
+						 -- unconditionally slate the element for repaint:
+						e.Flags:set(FL_REDRAW)
+					elseif damage == 2 then
+						 -- unconditionally slate the element and all its
+						 -- children for repaint:
+						e:damage(r1, r2, r3, r4)
+					end
+				end
+
+				-- if layout changes during layouting, we need another turn.
+				-- Next time make sure that minmax values are updated:
+				updateminmax = true
+
+			until #nrl == 0
 
 			-- mouse could point to a different element now:
 			if self.HoverElement then
@@ -766,7 +798,7 @@ function Window:update()
 
 		end
 
-		self:refresh()
+		self:draw()
 
 	end
 
@@ -779,8 +811,31 @@ end
 
 function Window:layout(_, _, _, _, markdamage)
 	self.FreeRegion = false
-	local w, h = self.Drawable:getAttrs()
+	local w, h = self.Drawable:getWH()
 	return Group.layout(self, 0, 0, w - 1, h - 1, markdamage)
+end
+
+-------------------------------------------------------------------------------
+--	relayout:
+-------------------------------------------------------------------------------
+
+function Window:relayout(e, x0, y0, x1, y1, markdamage)
+	local temp = { e }
+	while not e:instanceOf(Window) do
+		e = e:getParent()
+		insert(temp, e)
+	end
+	for i = #temp, 2, -1 do
+		local e = temp[i]
+		if not e:drawBegin() then
+			db.error("%s : cannot draw", e:getClassName())
+		end
+	end
+	local res = temp[1]:layout(x0, y0, x1, y1, markdamage)
+	for i = 2, #temp do
+		temp[i]:drawEnd()
+	end
+	return res
 end
 
 -------------------------------------------------------------------------------
@@ -1077,7 +1132,7 @@ end
 -------------------------------------------------------------------------------
 --	onHide(): This handler is invoked when the window's close button
 --	is clicked (or the Escape key is pressed and the {{HideOnEscape}} flag
---	is set). The standard behavior is to hide the window by setting the 
+--	is set). The standard behavior is to hide the window by setting the
 --	{{Status}} field to {{"hide"}}. When the last window is closed, the
 --	application is closed down.
 -------------------------------------------------------------------------------

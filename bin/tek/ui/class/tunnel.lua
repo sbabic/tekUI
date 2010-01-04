@@ -16,7 +16,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 2.0"
+_VERSION = "Tunnel 4.0"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -35,6 +35,8 @@ function Tunnel:setViewZ(val)
 end
 
 function Tunnel.init(self)
+
+	self.EraseBG = false
 
 	self.MinWidth = self.MinWidth or 128
 	self.MinHeight = self.MinHeight or 128
@@ -71,37 +73,40 @@ function Tunnel:hide()
 end
 
 function Tunnel:draw()
-	local d = self.Drawable
-	local p0, p1 = d.Pens[ui.PEN_DARK], d.Pens[ui.PEN_SHINE]
-	local r = self.Rect
-
-	d:fillRect(r[1], r[2], r[3], r[4], p0)
-
-	local sx = floor((r[1] + r[3]) / 2)
-	local sy = floor((r[2] + r[4]) / 2)
-
-	local z = self.z + self.viewz
-	local cx = self.cx
-	local cy = self.cy
-
-	for i = 1, self.numseg do
-
-		local x = self.size[1] * self.viewz / z
-		local y = self.size[2] * self.viewz / z
-
-		local dx = self.dx[cx] * z / 256
-		local dy = self.dx[cy] * z / 256
-
-		local x0 = min(max(sx - x + dx, r[1]), r[3])
-		local y0 = min(max(sy - y + dy, r[2]), r[4])
-		local x1 = min(max(sx + x + dx, r[1]), r[3])
-		local	y1 = min(max(sy + y + dy, r[2]), r[4])
-		if x0 ~= r[1] or x1 ~= r[3] or y0 ~= r[2] or y1 ~= r[4] then
-			d:drawRect(x0, y0, x1, y1, p1)
+	if Frame.draw(self) then
+		local r1, r2, r3, r4 = self:getRect()
+		local d = self.Drawable
+		local p0, p1 = d.Pens["dark"], d.Pens["shine"]
+	
+		d:fillRect(r1, r2, r3, r4, p0)
+	
+		local sx = floor((r1 + r3) / 2)
+		local sy = floor((r2 + r4) / 2)
+	
+		local z = self.z + self.viewz
+		local cx = self.cx
+		local cy = self.cy
+	
+		for i = 1, self.numseg do
+	
+			local x = self.size[1] * self.viewz / z
+			local y = self.size[2] * self.viewz / z
+	
+			local dx = self.dx[cx] * z / 256
+			local dy = self.dx[cy] * z / 256
+	
+			local x0 = min(max(sx - x + dx, r1), r3)
+			local y0 = min(max(sy - y + dy, r2), r4)
+			local x1 = min(max(sx + x + dx, r1), r3)
+			local	y1 = min(max(sy + y + dy, r2), r4)
+			if x0 ~= r1 or x1 ~= r3 or y0 ~= r2 or y1 ~= r4 then
+				d:drawRect(x0, y0, x1, y1, p1)
+			end
+			z = z + self.dist
+			cx = cx == self.ndx and 1 or cx + 1
+			cy = cy == self.ndx and 1 or cy + 1
 		end
-		z = z + self.dist
-		cx = cx == self.ndx and 1 or cx + 1
-		cy = cy == self.ndx and 1 or cy + 1
+		return true
 	end
 end
 
@@ -112,6 +117,6 @@ function Tunnel:updateInterval(msg)
 		self.cx = self.cx == self.ndx and 1 or self.cx + 1
 		self.cy = self.cy == self.ndx and 1 or self.cy + 1
 	end
-	self.Redraw = true
+	self.Flags:set(ui.FL_REDRAW)
 	return msg
 end

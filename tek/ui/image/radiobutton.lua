@@ -1,16 +1,16 @@
 -------------------------------------------------------------------------------
 --
---	tek.ui.image.radio
+--	tek.ui.image.radiobutton
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	Version 2.0
+--	Version 2.2
 --
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
 local Image = ui.Image
-module("tek.ui.image.radio", tek.ui.class.image)
+module("tek.ui.image.radiobutton", tek.ui.class.image)
 
 local coords =
 {
@@ -31,18 +31,21 @@ local coords =
 local points1 = { 7,8,1,2,3,4 }
 local points2 = { 3,4,5,6,7,8 }
 local points3 = { 9,10,12,11 }
+local points4 = { 2,4,8,6 }
 
 local primitives1 =
 {
-	{ 0x1000, 6, points1, ui.PEN_BORDERSHINE },
-	{ 0x1000, 6, points2, ui.PEN_BORDERSHADOW },
+	{ 0x1000, 6, points1, "border-shine" },
+	{ 0x1000, 6, points2, "border-shadow" },
+	{ 0x1000, 4, points4, "background" },
 }
 
 local primitives2 =
 {
-	{ 0x1000, 6, points1, ui.PEN_BORDERSHADOW },
-	{ 0x1000, 6, points2, ui.PEN_BORDERSHINE },
-	{ 0x1000, 4, points3, ui.PEN_DETAIL },
+	{ 0x1000, 6, points1, "border-shadow" },
+	{ 0x1000, 6, points2, "border-shine" },
+	{ 0x1000, 4, points4, "background" },
+	{ 0x1000, 4, points3, "detail" },
 }
 
 function new(class, num)

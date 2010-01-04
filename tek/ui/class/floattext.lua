@@ -4,15 +4,14 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
---		FloatText
+--		FloatText ${subclasses(FloatText)}
 --
---	OVERVIEW::
 --		Implements a scrollable text display. An object of this class is
 --		normally the immediate {{Child}} of a
 --		[[#tek.ui.class.canvas : Canvas]].
@@ -36,19 +35,17 @@
 --		- FloatText:onSetText() - Handler called when {{Text}} is changed
 --
 --	STYLE PROPERTIES::
---		- {{color}} - controls the {{FloatText.FGColor}} attribute
---		- {{font}} - controls the {{FloatText.Font}} attribute
+--		{{color}} || controls the {{FloatText.FGColor}} attribute
+--		{{font}} || controls the {{FloatText.Font}} attribute
 --
 --	OVERRIDES::
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Area:damage()
 --		- Area:draw()
---		- Element:getProperties()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
---		- Area:refresh()
 --		- Area:setState()
 --		- Element:setup()
 --		- Area:show()
@@ -57,8 +54,8 @@
 
 local ui = require "tek.ui"
 
-local Area = ui.require("area", 28)
-local Region = ui.loadLibrary("region", 8)
+local Area = ui.require("area", 36)
+local Region = ui.loadLibrary("region", 9)
 
 local concat = table.concat
 local insert = table.insert
@@ -67,13 +64,16 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 12.1"
+_VERSION = "FloatText 16.0"
 
 local FloatText = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
+
+local FL_REDRAW = ui.FL_REDRAW
+local FL_LAYOUT = ui.FL_LAYOUT
 
 local NOTIFY_TEXT = { ui.NOTIFY_SELF, "onSetText" }
 
@@ -84,9 +84,7 @@ local NOTIFY_TEXT = { ui.NOTIFY_SELF, "onSetText" }
 function FloatText.init(self)
 	self.Canvas = false
 	self.CanvasHeight = false
-	self.FGColor = self.FGColor or false
 	self.FHeight = false
-	self.Font = self.Font or false
 	self.FontHandle = false
 	self.FGPen = false
 	self.FWidth = false
@@ -103,16 +101,6 @@ function FloatText.init(self)
 end
 
 -------------------------------------------------------------------------------
---	getProperties: overrides
--------------------------------------------------------------------------------
-
-function FloatText:getProperties(p, pclass)
-	self.FGColor = self.FGColor or self:getProperty(p, pclass, "color")
-	self.Font = self.Font or self:getProperty(p, pclass, "font")
-	Area.getProperties(self, p, pclass)
-end
-
--------------------------------------------------------------------------------
 --	setup: overrides
 -------------------------------------------------------------------------------
 
@@ -120,7 +108,7 @@ function FloatText:setup(app, window)
 	self.Canvas = self:getParent()
 	Area.setup(self, app, window)
 	self:addNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_TEXT)
-	local f = self.Application.Display:openFont(self.Font)
+	local f = self.Application.Display:openFont(self.Properties["font"])
 	self.FontHandle = f
 	self.FWidth, self.FHeight = f:getTextSize("W")
 	self:prepareText()
@@ -138,36 +126,30 @@ function FloatText:cleanup()
 end
 
 -------------------------------------------------------------------------------
---	refresh: overrides
+--	erase: overrides
 -------------------------------------------------------------------------------
 
-function FloatText:refresh()
-	Area.refresh(self)
+function FloatText:erase()
 	self.Reposition = false
-end
-
--------------------------------------------------------------------------------
---	draw: overrides
--------------------------------------------------------------------------------
-
-function FloatText:draw()
+	local dr = self.DamageRegion
+	-- repaint intra-area damagerects:
 	local d = self.Drawable
 	local p = d.Pens
 	local bp, tx, ty = self:getBG()
-	-- repaint intra-area damagerects:
-	local dr = self.DamageRegion
-	if dr then
-		-- determine visible rectangle:
-		local ca = self.Canvas
-		local x0 = ca and ca.CanvasLeft or 0
-		local x1 = ca and x0 + ca.CanvasWidth - 1 or self.Rect[3]
-		local fp = p[self.FGPen]
-		d:setFont(self.FontHandle)
-		dr:forEach(self.drawPatch, self, d, x0, y0, x1, fp, d.Pens[bp], tx, ty)
-	end
+	-- determine visible rectangle:
+	local ca = self.Canvas
+	local x0 = ca and ca.CanvasLeft or 0
+	local x1 = ca and x0 + ca.CanvasWidth - 1 or self.Rect[3]
+	local fp = p[self.FGPen]
+	d:setFont(self.FontHandle)
+	dr:forEach(self.drawPatch, self, d, x0, x1, fp, d.Pens[bp], tx, ty)
 end
 
-function FloatText:drawPatch(r1, r2, r3, r4, d, x0, y0, x1, fp, bp, tx, ty)
+-------------------------------------------------------------------------------
+--	drawPatch: draw a single patch
+-------------------------------------------------------------------------------
+
+function FloatText:drawPatch(r1, r2, r3, r4, d, x0, x1, fp, bp, tx, ty)
 	d:pushClipRect(r1, r2, r3, r4)
 	local lines = self.Lines
 	for lnr = 1, #lines do
@@ -300,14 +282,14 @@ end
 
 function FloatText:layout(r1, r2, r3, r4, markdamage)
 
-	local m = self.MarginAndBorder
-	local redraw = self.Redraw
+	local m = self.Margin
 	local width = r3 - r1 + 1 - m[1] - m[3]
 	local ch = self.CanvasHeight
 	local r = self.Rect
 	local x0 = r1 + m[1]
 	local y0 = r2 + m[2]
 	local x1 = r3 - m[3]
+	local redraw
 
 	if not ch or (not r[1] or r[3] - r[1] + 1 ~= width) then
 		self.Lines, ch = self:layoutText(r1 + m[1], r2 + m[2], width)
@@ -331,7 +313,7 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 			self.DamageRegion:subRect(r[1], r[2], r[3], r[4])
 		end
 		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
-		self.Redraw = true
+		self.Flags:set(FL_REDRAW + FL_LAYOUT)
 		return true
 	end
 
@@ -342,10 +324,10 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:setState(bg, fg)
-	fg = fg or self.FGColor or ui.PEN_LISTDETAIL	
+	fg = fg or self.Properties["color"] or "list-detail"
 	if fg ~= self.FGPen then
 		self.FGPen = fg
-		self.Redraw = true
+		self.Flags:set(FL_REDRAW)
 	end
 	Area.setState(self, bg)
 end

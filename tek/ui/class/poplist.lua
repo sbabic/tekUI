@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -14,9 +14,8 @@
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		[[#tek.ui.class.popitem : PopItem]] /
---		PopList
+--		PopList ${subclasses(PopList)}
 --
---	OVERVIEW::
 --		This class is a specialization of a PopItem allowing the user
 --		to choose an item from a list.
 --
@@ -45,19 +44,19 @@ local db = require "tek.lib.debug"
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 
-local Canvas = ui.require("canvas", 20)
-local Gadget = ui.require("gadget", 17)
-local ListGadget = ui.require("listgadget", 22)
-local PopItem = ui.require("popitem", 10)
-local ScrollGroup = ui.require("scrollgroup", 11)
-local Text = ui.require("text", 20)
+local Canvas = ui.require("canvas", 25)
+local Gadget = ui.require("gadget", 19)
+local ListGadget = ui.require("listgadget", 26)
+local PopItem = ui.require("popitem", 15)
+local ScrollGroup = ui.require("scrollgroup", 15)
+local Text = ui.require("text", 24)
 
 local assert = assert
 local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 9.0"
+_VERSION = "PopList 10.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -66,7 +65,7 @@ _VERSION = "PopList 9.0"
 local ArrowImage = ui.Image:new
 {
 	{ 0x2000,0xa000, 0xe000,0xa000, 0x8000,0x4000 }, false, false, true,
-	{ { 0x1000, 3, { 1, 2, 3 }, ui.PEN_MENUDETAIL } },
+	{ { 0x1000, 3, { 1, 2, 3 }, "menu-detail" } },
 }
 
 local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE }
@@ -131,7 +130,6 @@ local PopList = _M
 function PopList.init(self)
 	self.ImageRect = { 0, 0, 0, 0 }
 	self.Image = self.Image or ArrowImage
-	self.TextHAlign = self.TextHAlign or "left"
 	self.Width = self.Width or "fill"
 	self.SelectedLine = self.SelectedLine or 0
 	return PopItem.init(self)
@@ -146,7 +144,7 @@ function PopList.new(class, self)
 	{
 		ScrollGroup:new
 		{
-			-- VSliderMode = "auto",
+-- 			VSliderMode = "auto",
 			Child = Canvas:new
 			{
 				Class = "poplist-canvas",
@@ -179,11 +177,12 @@ function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
 	if lo and not self.KeepMinWidth then
 		local tr = { }
-		local font = self.Application.Display:openFont(self.Font)
+		local props = self.ListGadget.Properties
+		local font = self.Application.Display:openFont(props["font"])
 		for lnr = 1, lo:getN() do
 			local entry = lo:getItem(lnr)
-			local t = self:newTextRecord(entry[1][1], font, self.TextHAlign,
-				self.TextVAlign, 0, 0, 0, 0)
+			local t = self:newTextRecord(entry[1][1], font, props["text-align"],
+				props["vertical-align"], 0, 0, 0, 0)
 			insert(tr, t)
 		end
 		local lw = self:getTextSize(tr) -- max width of items in list
@@ -224,10 +223,10 @@ function PopList:setList(listobject)
 end
 
 -------------------------------------------------------------------------------
---	getProperties: overrides
+--	decodeProperties: overrides
 -------------------------------------------------------------------------------
 
-function PopList:getProperties(p, pclass)
-	self.ListGadget:getProperties(p, pclass)
-	PopItem.getProperties(self, p, pclass)
+function PopList:decodeProperties(p)
+	self.ListGadget:decodeProperties(p)
+	PopItem.decodeProperties(self, p)
 end

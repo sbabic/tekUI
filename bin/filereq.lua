@@ -29,9 +29,10 @@ app = ui.Application:new
 						ui.Text:new
 						{
 							Text = L.PATH,
-							Width = "auto",
 							Class = "caption",
-							HAlign = "right",
+							Style = "text-align: right",
+							Width = "fill",
+							MaxWidth = 0,
 							KeyCode = true,
 						},
 						ui.TextInput:new
@@ -43,9 +44,10 @@ app = ui.Application:new
 						ui.Text:new
 						{
 							Text = L.SELECTED,
-							Width = "auto",
 							Class = "caption",
-							HAlign = "right",
+							Style = "text-align: right",
+							Width = "fill",
+							MaxWidth = 0,
 							KeyCode = true,
 						},
 						ui.TextInput:new
@@ -55,36 +57,37 @@ app = ui.Application:new
 						ui.Text:new
 						{
 							Text = L.STATUS,
-							Width = "auto",
 							Class = "caption",
-							HAlign = "right",
+							Style = "text-align: right",
+							Width = "fill",
+							MaxWidth = 0,
 							KeyCode = true,
 						},
 						ui.Text:new
 						{
 							Id = "statusfield",
-							TextHAlign = "left",
+							Style = "text-align: left",
 						},
 						ui.Text:new
 						{
 							Text = L.MULTISELECT,
-							Width = "auto",
 							Class = "caption",
-							HAlign = "right",
+							Style = "text-align: right",
+							Width = "fill",
+							MaxWidth = 0,
 							KeyCode = true,
 						},
 						ui.CheckMark:new
 						{
 							Id = "multiselect",
 							KeyCode = ui.extractKeyCode(L.MULTISELECT),
-							VAlign = "center",
 						},
 					}
 				},
 				ui.Button:new
 				{
 					Text = L.CHOOSE_FILE,
-					Width = "auto",
+					MaxWidth = 0,
 					HAlign = "right",
 
 					onPress = function(self, pressed)

@@ -11,7 +11,7 @@
 local Class = require "tek.class"
 
 local ui = require "tek.ui"
-local Display = ui.require("display", 19)
+local Display = ui.require("display", 21)
 
 local assert = assert
 local type = type

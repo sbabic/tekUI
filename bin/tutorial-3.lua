@@ -4,7 +4,7 @@ ui = require "tek.ui"
 
 ui.Application:new
 {
-	Theme = "tutorial",
+	AuthorStyleSheets = "tutorial",
 	Children =
 	{
 		ui.Window:new
@@ -15,12 +15,11 @@ ui.Application:new
 				ui.Button:new
 				{
 					Text = "Hello",
-					Width = "auto",
+					MaxWidth = 0,
 				},
 				ui.Button:new
 				{
 					Text = "world",
-					Height = "free",
 				},
 			}
 		}

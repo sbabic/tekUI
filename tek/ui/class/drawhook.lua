@@ -1,6 +1,6 @@
 
 local ui = require "tek.ui"
-local Element = ui.require("element", 14)
+local Element = ui.require("element", 16)
 
 module("tek.ui.class.drawhook", tek.ui.class.element)
 _VERSION = "DrawHook 3.1"

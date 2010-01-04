@@ -5,23 +5,23 @@
 --	See copyright notice in COPYRIGHT
 --
 --	OVERVIEW::
---	Debug library - implements debug output and debug levels:
+--		Debug library - implements debug output and debug levels:
 --
---	2  || TRACE || used for tracking bugs
---	4  || INFO  || informational messages
---	5  || WARN  || something unexpected happened
---	10 || ERROR || something went wrong, e.g. resource unavailable
---	20 || FAIL  || something went wrong that can't be coped with
+--		2  || TRACE || used for trace messages
+--		4  || INFO  || informational messages, notices
+--		5  || WARN  || something unexpected happened
+--		10 || ERROR || something went wrong, e.g. resource unavailable
+--		20 || FAIL  || something went wrong that cannot be coped with
 --
---	The default debug level is 5 {{WARN}}. To set the debug level
---	globally, e.g.:
---			db = require "tek.lib.debug"
---			db.level = db.INFO
+--		The default debug level is {{WARN}}. To set the debug level
+--		globally, e.g.:
+--				db = require "tek.lib.debug"
+--				db.level = db.INFO
 --
---	The default debug output stream is {{stderr}}.
---	To override it globally, e.g.:
---			db = require "tek.lib.debug"
---			db.out = io.open("logfile", "w")
+--		The default debug output stream is {{stderr}}.
+--		To override it globally, e.g.:
+--				db = require "tek.lib.debug"
+--				db.out = io.open("logfile", "w")
 --
 --	FUNCTIONS::
 --		- debug.console() - Enters the debug console
@@ -34,6 +34,11 @@
 --		- debug.stacktrace() - Prints a stacktrace in the specified debug level
 --		- debug.trace() - Prints a text in the {{TRACE}} debug level
 --		- debug.warn() - Prints a text in the {{WARN}} debug level
+--		- debug.wrout() - Output function
+--
+--	VALUES::
+--		- {{level}} - Debug level, default 5 ({{WARN}})
+--		- {{out}} - Output stream, default {{io.stderr}}
 --
 -------------------------------------------------------------------------------
 
@@ -64,10 +69,16 @@ FAIL = 20
 
 level = WARN
 out = stderr
+
+-------------------------------------------------------------------------------
+--	debug.wrout(...): Debug output function, by default
+--			function(...) out:write(...) end
+-------------------------------------------------------------------------------
+
 wrout = function(...) out:write(...) end
 
 -------------------------------------------------------------------------------
---	print(lvl, msg, ...): Prints formatted text if the global debug level
+--	debug.print(lvl, msg, ...): Prints formatted text if the global debug level
 --	is less or equal the specified level.
 -------------------------------------------------------------------------------
 
@@ -85,8 +96,8 @@ function print(lvl, msg, ...)
 end
 
 -------------------------------------------------------------------------------
---	execute(lvl, func, ...): Executes the specified function if the global
---	debug library is less or equal the specified level.
+--	debug.execute(lvl, func, ...): Executes the specified function if the
+--	global debug level is less or equal the specified level.
 -------------------------------------------------------------------------------
 
 function execute(lvl, func, ...)
@@ -96,33 +107,40 @@ function execute(lvl, func, ...)
 end
 
 -------------------------------------------------------------------------------
---	trace(msg, ...): Prints formatted debug info with {{TRACE}} level
+--	debug.trace(msg, ...): Prints formatted debug info with {{TRACE}} debug
+--	level
 -------------------------------------------------------------------------------
+
 function trace(msg, ...) print(2, msg, ...) end
 
 -------------------------------------------------------------------------------
---	info(msg, ...): Prints formatted debug info with {{INFO}} level
+--	debug.info(msg, ...): Prints formatted debug info with {{INFO}} debug level
 -------------------------------------------------------------------------------
+
 function info(msg, ...) print(4, msg, ...) end
 
 -------------------------------------------------------------------------------
---	warn(msg, ...): Prints formatted debug info with {{WARN}} level
+--	debug.warn(msg, ...): Prints formatted debug info with {{WARN}} debug level
 -------------------------------------------------------------------------------
+
 function warn(msg, ...) print(5, msg, ...) end
 
 -------------------------------------------------------------------------------
---	error(msg, ...): Prints formatted debug info with {{ERROR}} level
+--	debug.error(msg, ...): Prints formatted debug info with {{ERROR}} debug
+--	level
 -------------------------------------------------------------------------------
+
 function error(msg, ...) print(10, msg, ...) end
 
 -------------------------------------------------------------------------------
---	fail(msg, ...): Prints formatted debug info with {{FAIL}} level
+--	debug.fail(msg, ...): Prints formatted debug info with {{FAIL}} debug level
 -------------------------------------------------------------------------------
+
 function fail(msg, ...) print(20, msg, ...) end
 
 -------------------------------------------------------------------------------
---	stacktrace(debuglevel, stacklevel): Prints a stacktrace starting at
---	the function of the given {{level}} on the stack (excluding the
+--	debug.stacktrace(debuglevel[, stacklevel]): Prints a stacktrace starting at
+--	the function of the given level on the stack (excluding the
 --	{{stracktrace}} function itself) if the global debug level is less
 --	or equal the specified {{debuglevel}}.
 -------------------------------------------------------------------------------
@@ -132,22 +150,23 @@ function stacktrace(lvl, level)
 end
 
 -------------------------------------------------------------------------------
---	console(): Enter the debug console.
+--	debug.console(): Enters debug console.
 -------------------------------------------------------------------------------
 
 function console()
-	stderr:write('Entering the debug console.\n')
-	stderr:write('To redirect the output, e.g.:\n')
-	stderr:write('  tek.lib.debug.out = io.open("logfile", "w")\n')
-	stderr:write('To dump a table, e.g.:\n')
-	stderr:write('  tek.lib.debug.dump(app)\n')
-	stderr:write('Use "cont" to continue.\n')
+	wrout('Entering the debug console.\n')
+	wrout('To redirect the output, e.g.:\n')
+	wrout('  tek.lib.debug.out = io.open("logfile", "w")\n')
+	wrout('To dump a table, e.g.:\n')
+	wrout('  tek.lib.debug.dump(app)\n')
+	wrout('Use "cont" to continue.\n')
 	debug.debug()
 end
 
 -------------------------------------------------------------------------------
---	dump(table): Dump a table as Lua source using {{out}} as the output
---	stream. Cyclic references are silently dropped.
+--	debug.dump(table[, outfunc]): Dumps a table as Lua source using
+--	{{outfunc}}. Cyclic references are silently dropped. The default output
+--	function is debug.wrout().
 -------------------------------------------------------------------------------
 
 local function encodenonascii(c)

@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.text : Text]] /
---		CheckMark
+--		CheckMark ${subclasses(CheckMark)}
 --
---	OVERVIEW::
 --		Specialization of the [[#tek.ui.class.text : Text]] class,
 --		implementing a toggle button with a graphical check mark.
 --
@@ -38,21 +37,21 @@
 
 local ui = require "tek.ui"
 
-local Text = ui.require("text", 20)
+local Text = ui.require("text", 24)
 
 local floor = math.floor
 local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 5.1"
+_VERSION = "CheckMark 7.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local CheckImage1 = ui.getStockImage("check")
-local CheckImage2 = ui.getStockImage("check", 2)
+local CheckImage1 = ui.getStockImage("checkmark")
+local CheckImage2 = ui.getStockImage("checkmark", 2)
 
 local DEF_IMAGEMINHEIGHT = 18
 
@@ -112,12 +111,12 @@ function CheckMark:layout(x0, y0, x1, y1, markdamage)
 	if Text.layout(self, x0, y0, x1, y1, markdamage) then
 		local i = self.ImageRect
 		local r = self.Rect
-		local p = self.Padding
-		local eh = r[4] - r[2] - p[4] - p[2] + 1
+		local p1, p2, p3, p4 = self:getPadding()
+		local eh = r[4] - r[2] - p4 - p2 + 1
 		local iw = self.ImageWidth
 		local ih = self.ImageHeight
-		i[1] = r[1] + p[1]
-		i[2] = r[2] + p[2] + floor((eh - ih) / 2)
+		i[1] = r[1] + p1
+		i[2] = r[2] + p2 + floor((eh - ih) / 2)
 		i[3] = i[1] + iw - 1
 		i[4] = i[2] + ih - 1
 		return true
@@ -129,10 +128,12 @@ end
 -------------------------------------------------------------------------------
 
 function CheckMark:draw()
-	Text.draw(self)
-	local img = self.Selected and self.SelectImage or self.Image
-	if img then
-		img:draw(self.Drawable, unpack(self.ImageRect))
+	if Text.draw(self) then
+		local img = self.Selected and self.SelectImage or self.Image
+		if img then
+			img:draw(self.Drawable, unpack(self.ImageRect))
+		end
+		return true
 	end
 end
 
@@ -141,13 +142,27 @@ end
 -------------------------------------------------------------------------------
 
 function CheckMark:setState(bg, fg)
+	local props = self.Properties
+
+	-- in checkmarks, Hilite has precedence over Selected:
 	if not bg and self.Hilite then
-		-- in checkmarks, Hilite has precedence over Selected:
-		bg = self.BGHilite
+		bg = props["background-color:hover"]
 	end
+	if not fg and self.Hilite then
+		fg = props["color:hover"]
+	end
+
+	if not bg and self.Focus then
+		bg = props["background-color:focus"]
+	end
+	if not fg and self.Focus then
+		fg = props["color:focus"]
+	end
+
+
 	if self.Selected ~= self.OldSelected then
 		self.OldSelected = self.Selected
-		self.Redraw = true
+		self.Flags:set(ui.FL_REDRAW)
 	end
 	Text.setState(self, bg, fg)
 end

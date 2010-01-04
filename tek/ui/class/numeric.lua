@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -12,9 +12,8 @@
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
---		Numeric
+--		Numeric ${subclasses(Numeric)}
 --
---	OVERVIEW::
 --		This class implements the management of numerical
 --		values. Without further specialization it has hardly any real-life
 --		use and may be considered an abstract class. See also
@@ -55,7 +54,7 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Gadget = ui.require("gadget", 17)
+local Gadget = ui.require("gadget", 19)
 
 local floor = math.floor
 local max = math.max

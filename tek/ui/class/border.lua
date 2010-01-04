@@ -1,7 +1,7 @@
 
 local ui = require "tek.ui"
 local DrawHook = ui.require("drawhook", 3)
-local Region = ui.loadLibrary("region", 8)
+local Region = ui.loadLibrary("region", 9)
 local unpack = unpack
 
 module("tek.ui.class.border", tek.ui.class.drawhook)

@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.group : Group]] /
---		DirList
+--		DirList ${subclasses(DirList)}
 --
---	OVERVIEW::
 --		This class implements a directory lister.
 --
 --	ATTRIBUTES::
@@ -74,10 +73,10 @@ local _, lfs = pcall(require, "lfs")
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 
-local Group = ui.require("group", 22)
-local ListGadget = ui.require("listgadget", 22)
-local Text = ui.require("text", 20)
-local TextInput = ui.require("textinput", 13)
+local Group = ui.require("group", 27)
+local ListGadget = ui.require("listgadget", 26)
+local Text = ui.require("text", 24)
+local TextInput = ui.require("textinput", 15)
 
 local insert = table.insert
 local pairs = pairs
@@ -85,7 +84,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 14.1"
+_VERSION = "DirList 15.0"
 
 local DirList = _M
 
@@ -184,10 +183,10 @@ function DirList.new(class, self)
 
 	self.ScanMode = false
 	self.DirList = false
-	
+
 	self.SelectMode = self.SelectMode or false
 	self.SelectText = self.SelectText or L.OPEN
-	
+
 	self.Preselect = self.Preselect or self.Location or false
 
 	self.PathField = TextInput:new
@@ -204,7 +203,7 @@ function DirList.new(class, self)
 	self.ParentButton = newButton
 	{
 		Text = L.PARENT,
-		Width = "auto",
+		MaxWidth = 0,
 		Height = "fill",
 	}
 
@@ -226,7 +225,7 @@ function DirList.new(class, self)
 	self.ReloadButton = newButton
 	{
 		Text = L.RELOAD,
-		Width = "auto",
+		MaxWidth = 0,
 		Height = "fill",
 	}
 
@@ -300,10 +299,9 @@ function DirList.new(class, self)
 	self.DirectoryCaption = Text:new
 	{
 		Text = L.DIRECTORY,
-		Width = "auto",
+		Width = "fill",
+		MaxWidth = 0,
 		Class = "caption",
-		TextHAlign = "right",
-		KeepMinWidth = true,
 	}
 
 	self.Orientation = "vertical"
@@ -338,9 +336,9 @@ function DirList.new(class, self)
 							Text:new
 							{
 								Text = L.LOCATION,
-								Width = "auto",
+								Width = "fill",
+								MaxWidth = 0,
 								Class = "caption",
-								Height = "fill",
 							},
 							self.LocationField,
 						}
@@ -390,7 +388,7 @@ function DirList.new(class, self)
 
 	self:addNotify("Path", ui.NOTIFY_ALWAYS,
 		{ self.PathField, "setValue", "Enter", ui.NOTIFY_VALUE })
-	
+
 	return self
 end
 
@@ -461,16 +459,16 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:scanDir(path)
-	
+
 	local app = self.Application
-	
+
 	self.Path = path
 	if path == "" then
 		path = self:getCurrentDir()
 		self.Path = path
 		self.PathField:setValue("Enter", path)
 	end
-	
+
 	local diri = self:getDirIterator(path)
 
 	app:addCoroutine(function()
@@ -499,9 +497,9 @@ function DirList:scanDir(path)
 						return
 					end
 				end
-				
+
 				n = n + 1
-				
+
 				insert(list, { self:scanEntry(path, name, n) })
 			end
 
@@ -528,7 +526,7 @@ function DirList:scanDir(path)
 			end
 			self:showStats()
 			self:finishScanDir(path)
-		
+
 		end
 
 		self.ScanMode = false

@@ -28,35 +28,35 @@ local window = Window:new
 			Orientation = "vertical",
 			Width = "free",
 			Height = "free",
-			Legend = L.ALIGN_HORIZONTAL,
+			Legend = L.ALIGNMENT_HORIZONTAL,
 			Children =
 			{
 				Button:new
 				{
-					Text = L.LEFT,
-					Width = "auto",
-					Height = "free",
-					HAlign = "left", -- Style = "horizontal-grid-align: left",
+					Text = L.ALIGNMENT_LEFT,
+					MaxWidth = 0,
+					MaxHeight = "none",
+					HAlign = "left"
 				},
 				Button:new
 				{
-					Text = L.CENTER,
-					Width = "auto",
-					Height = "free",
-					HAlign = "center", -- Style = "horizontal-grid-align: center",
+					Text = L.ALIGNMENT_CENTER,
+					MaxWidth = 0,
+					MaxHeight = "none",
+					HAlign = "center"
 				},
 				Group:new
 				{
-					Legend = L.GROUP,
-					Width = "auto",
-					Height = "free",
-					HAlign = "right", -- Style = "horizontal-grid-align: right",
+					Legend = L.ALIGNMENT_GROUP,
+					MaxWidth = 0,
+					MaxHeight = "none",
+					HAlign = "right",
 					Children =
 					{
 						Button:new
 						{
-							Text = L.RIGHT,
-							Height = "free"
+							Text = L.ALIGNMENT_RIGHT,
+							MaxHeight = "none",
 						}
 					}
 				}
@@ -64,29 +64,30 @@ local window = Window:new
 		},
 		Group:new
 		{
+			Width = "free",
 			Height = "free",
-			Legend = L.ALIGN_VERTICAL,
+			Legend = L.ALIGNMENT_VERTICAL,
 			Children =
 			{
 				Button:new
 				{
-					Text = L.TOP,
-					VAlign = "top", -- Style = "vertical-grid-align: top",
+					Text = L.ALIGNMENT_TOP,
+					VAlign = "top"
 				},
 				Button:new
 				{
-					Text = L.CENTER,
-					VAlign = "center", -- Style = "vertical-grid-align: center",
+					Text = L.ALIGNMENT_CENTER,
+					VAlign = "center"
 				},
 				Group:new
 				{
-					Legend = L.GROUP,
-					VAlign = "bottom", -- Style = "vertical-grid-align: bottom",
+					Legend = L.ALIGNMENT_GROUP,
+					VAlign = "bottom",
 					Children =
 					{
 						Button:new
 						{
-							Text = L.BOTTOM,
+							Text = L.ALIGNMENT_BOTTOM,
 						}
 					}
 				}

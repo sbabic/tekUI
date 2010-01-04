@@ -1,16 +1,16 @@
 -------------------------------------------------------------------------------
 --
---	tek.ui.image.check
+--	tek.ui.image.checkmark
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	Version 1.2
+--	Version 1.3
 --
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
 local Image = ui.Image
-module("tek.ui.image.check", tek.ui.class.image)
+module("tek.ui.image.checkmark", tek.ui.class.image)
 
 local coords =
 {
@@ -38,17 +38,17 @@ local points3 = { 8,10,14,12 }
 
 local primitives1 =
 {
-	{ 0x1000, 6, points21, ui.PEN_BORDERSHADOW },
-	{ 0x1000, 6, points22, ui.PEN_BORDERSHINE },
-	{ 0x1000, 4, points3, ui.PEN_BACKGROUND },
+	{ 0x1000, 6, points21, "border-shadow" },
+	{ 0x1000, 6, points22, "border-shine" },
+	{ 0x1000, 4, points3, "background" },
 }
 
 local primitives2 =
 {
-	{ 0x1000, 6, points21, ui.PEN_BORDERSHADOW },
-	{ 0x1000, 6, points22, ui.PEN_BORDERSHINE },
-	{ 0x1000, 4, points3, ui.PEN_BACKGROUND },
-	{ 0x2000, 6, points1, ui.PEN_DETAIL },
+	{ 0x1000, 6, points21, "border-shadow" },
+	{ 0x1000, 6, points22, "border-shine" },
+	{ 0x1000, 4, points3, "background" },
+	{ 0x2000, 6, points1, "detail" },
 }
 
 function new(class, num)

@@ -3,7 +3,7 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Version: 1.1
+**	Version: 1.2
 */
 
 tek.ui.class.display {
@@ -101,7 +101,7 @@ tek.ui.class.text {
 	border-style: inset;
 	border-width: 0 0 2 2;
 	border-focus-width: 0;
-	background-color: parent-group;
+	background-color: default;
 	margin: 0;
 }
 

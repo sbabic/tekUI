@@ -9,7 +9,7 @@ local min = math.min
 local type = type
 
 module("tek.ui.hook.ripple", tek.ui.class.drawhook)
-_VERSION = "RippleHook 3.0"
+_VERSION = "RippleHook 4.0"
 
 local RippleHook = _M
 
@@ -17,7 +17,6 @@ function RippleHook.init(self)
 	self.Defs = { } -- offset, ratio1, ratio2, max1, max2
 	self.Orientation = self.Orientation or false
 	self.Params = { } -- n, m, x, y, dx, dy, dx2, dy2
-	self.Kind = self.Kind or false
 	self.DrawDotFunc = false
 	return DrawHook.init(self)
 end
@@ -27,29 +26,20 @@ function RippleHook:connect(parent)
 	return DrawHook.connect(self, parent)
 end
 
-function RippleHook:getProperties(p, pclass)
-	local e = self.Parent
-	local d = self.Defs
-	self.Orientation = self.Orientation or 
-		e:getProperty(p, pclass, "effect-orientation")
-	d[1] = e:getProperty(p, pclass, "effect-padding")
-	d[2] = e:getProperty(p, pclass, "effect-ratio")
-	d[3] = e:getProperty(p, pclass, "effect-ratio2")
-	d[4] = e:getProperty(p, pclass, "effect-maxnum")
-	d[5] = e:getProperty(p, pclass, "effect-maxnum2")
-	d[6] = e:getProperty(p, pclass, "effect-color")
-	d[7] = e:getProperty(p, pclass, "effect-color2")
-	self.Kind = self.Kind or e:getProperty(p, pclass, "effect-kind")
-	DrawHook.getProperties(self, p, pclass)
-end
-
 function RippleHook:setup(app, win)
 	local e = self.Parent
 	local d = self.Defs
-	d[6] = d[6] or ui.PEN_BORDERSHINE
-	d[7] = d[7] or ui.PEN_BORDERSHADOW
+	local props = e.Properties
 	
-	local o = self.Orientation
+	d[1] = props["effect-padding"]
+	d[2] = props["effect-ratio"]
+	d[3] = props["effect-ratio2"]
+	d[4] = props["effect-maxnum"]
+	d[5] = props["effect-maxnum2"]
+	d[6] = props["effect-color"] or "border-shine"
+	d[7] = props["effect-color2"] or "border-shadow"
+	
+	local o = self.Orientation or props["effect-orientation"]
 	if o == false or o == "inline" then
 		o = e.Parent.Orientation == "horizontal"
 	elseif o == "across" then
@@ -58,9 +48,7 @@ function RippleHook:setup(app, win)
 		o = o ~= "vertical"
 	end
 	self.Orientation = o and "horizontal" or "vertical"
-	
-	self.Kind = self.Kind or "dot"
-	if self.Kind == "slant" then
+	if props["effect-kind"] == "slant" then
 		d[1], d[2], d[3], d[4], d[5] =
 			d[1] or 9, d[2] or 0x44, d[3] or 0xc0, d[4] or 6, d[5] or 1
 		self.DrawDotFunc = RippleHook.drawSlant

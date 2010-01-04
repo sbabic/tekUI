@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	LINEAGE::
+--	OVERVIEW::
 --		[[#ClassOverview]] :
 --		[[#tek.class : Class]] /
 --		[[#tek.class.object : Object]] /
@@ -13,9 +13,8 @@
 --		[[#tek.ui.class.frame : Frame]] /
 --		[[#tek.ui.class.gadget : Gadget]] /
 --		[[#tek.ui.class.text : Text]] /
---		TextInput
+--		TextInput ${subclasses(TextInput)}
 --
---	OVERVIEW::
 --		This class implements a gadget for entering and editing text.
 --
 --	ATTRIBUTES::
@@ -64,9 +63,9 @@
 local db = require "tek.lib.debug"
 local UTF8String = require "tek.class.utf8string"
 local ui = require "tek.ui"
-local Area = ui.require("area", 28)
-local Gadget = ui.require("gadget", 17)
-local Text = ui.require("text", 20)
+local Area = ui.require("area", 36)
+local Gadget = ui.require("gadget", 19)
+local Text = ui.require("text", 24)
 
 local char = string.char
 local floor = math.floor
@@ -76,11 +75,13 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 14.0"
+_VERSION = "TextInput 15.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
+
+local FL_REDRAW = ui.FL_REDRAW
 
 local NOTIFY_ENTER = { ui.NOTIFY_SELF, "onEnter", ui.NOTIFY_VALUE }
 
@@ -91,14 +92,12 @@ local NOTIFY_ENTER = { ui.NOTIFY_SELF, "onEnter", ui.NOTIFY_VALUE }
 local TextInput = _M
 
 function TextInput.init(self)
-	self.BGCursor = false
 	self.BlinkState = false
 	self.BlinkTick = false
 	self.BlinkTickInit = false
 	self.Editing = false
 	self.Enter = false
 	self.EnterNext = self.EnterNext or false
-	self.FGCursor = false
 	self.FontHeight = false
 	self.FontWidth = false
 	self.Mode = "touch"
@@ -114,16 +113,6 @@ function TextInput.init(self)
 	-- max. visible width in characters:
 	self.TextWidth = false
 	return Text.init(self)
-end
-
--------------------------------------------------------------------------------
---	getProperties: overrides
--------------------------------------------------------------------------------
-
-function TextInput:getProperties(p, pclass)
-	self.FGCursor = self:getProperty(p, pclass, "cursor-color")
-	self.BGCursor = self:getProperty(p, pclass, "cursor-background-color")
-	Text.getProperties(self, p, pclass)
 end
 
 -------------------------------------------------------------------------------
@@ -183,11 +172,10 @@ function TextInput:layoutText()
 	if r1 then
 		
 		self:setCursor(self:getCursor())
-		
-		local p = self.Padding
+		local p1, p2, p3, p4 = self:getPadding()
 		local r = self.Rect
-		local w = r[3] - r[1] + 1 - p[1] - p[3]
-		local h = r[4] - r[2] + 1 - p[2] - p[4]
+		local w = r[3] - r[1] + 1 - p1 - p3
+		local h = r[4] - r[2] + 1 - p2 - p4
 		local fw, fh = self.FontWidth, self.FontHeight
 		
 		local len = self.TextBuffer:len()
@@ -202,8 +190,8 @@ function TextInput:layoutText()
 	
 		-- visible text rect, left aligned:
 		local tr = self.TextRect
-		tr[1] = r[1] + p[1] -- centered: + (w - tw) / 2
-		tr[2] = r[2] + p[2] + floor((h - fh) / 2)
+		tr[1] = r[1] + p1 -- centered: + (w - tw) / 2
+		tr[2] = r[2] + p2 + floor((h - fh) / 2)
 		tr[3] = tr[1] + tw - 1
 		tr[4] = tr[2] + fh - 1
 	end
@@ -225,44 +213,41 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:draw()
-
-	local d = self.Drawable
-	local pens = d.Pens
-	local tr = self.TextRect
-	local to = self.TextOffset
-	local tc = self.TextCursor
-	local fw = self.FontWidth
-	local x, y = tr[1], tr[2]
-	local tw = self.TextWidth
-
-	local text = self.TextRecords[1]
-	d:setFont(text[2])
-	text = self.TextBuffer:sub(to + 1, to + tw)
-
-	self:erase()
-	
-	if self.Disabled then
-		d:drawText(x + 1, y + 1, tr[3] + 1, tr[4] + 1, text,
-			d.Pens[self.FGDisabled2 or ui.PEN_DISABLEDDETAILSHINE])
-	end
-	
-	local pen = pens[self.FGPen]
-	d:drawText(x, y, tr[3], tr[4], text, pen)
-	
-	if not self.Disabled and self.Editing then
-		local s = self.TextBuffer:sub(tc + to + 1, tc + to + 1)
-		s = s == "" and " " or s
-		if self.BlinkState == 1 then
-			d:drawText(tr[1] + tc * fw, tr[2], 
-				tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
-				s,
-				pens[self.FGCursor or ui.PEN_CURSORDETAIL],
-				pens[self.BGCursor or ui.PEN_CURSOR])
-		else
-			d:drawText(tr[1] + tc * fw, tr[2],
-				tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
-				s, pen)
+	if Gadget.draw(self) then
+		local d = self.Drawable
+		local pens = d.Pens
+		local tr = self.TextRect
+		local to = self.TextOffset
+		local tc = self.TextCursor
+		local fw = self.FontWidth
+		local x, y = tr[1], tr[2]
+		local tw = self.TextWidth
+		local text = self.TextRecords[1]
+		d:setFont(text[2])
+		text = self.TextBuffer:sub(to + 1, to + tw)
+		if self.Disabled then
+			d:drawText(x + 1, y + 1, tr[3] + 1, tr[4] + 1, text,
+				d.Pens[self.Properties["color-shadow:disabled"] or 
+				"disabled-detail-shine"])
 		end
+		local pen = pens[self.FGPen]
+		d:drawText(x, y, tr[3], tr[4], text, pen)
+		if not self.Disabled and self.Editing then
+			local s = self.TextBuffer:sub(tc + to + 1, tc + to + 1)
+			s = s == "" and " " or s
+			if self.BlinkState == 1 then
+				d:drawText(tr[1] + tc * fw, tr[2], 
+					tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
+					s,
+					pens["cursor-detail"],
+					pens["cursor"])
+			else
+				d:drawText(tr[1] + tc * fw, tr[2],
+					tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
+					s, pen)
+			end
+		end
+		return true
 	end
 end
 
@@ -337,7 +322,7 @@ function TextInput:updateInterval(msg)
 		local bs = ((self.BlinkState == 1) and 0) or 1
 		if bs ~= self.BlinkState then
 			self.BlinkState = bs
-			self.Redraw = true
+			self.Flags:set(FL_REDRAW)
 		end
 	end
 	return msg
@@ -548,7 +533,7 @@ function TextInput:onSetText(text)
 	self:makeTextRecords(text)
 	self.TextBuffer = UTF8String:new(text)
 	self:layoutText()
-	self.Redraw = true
+	self.Flags:set(FL_REDRAW)
 end
 
 -------------------------------------------------------------------------------

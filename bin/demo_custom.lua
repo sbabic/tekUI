@@ -64,7 +64,7 @@ function NumberInput.new(class, self)
 		KeyButton:new { Text = "3", Group = self, Disabled = true },
 		KeyButton:new { Text = "0", Group = self, Disabled = true },
 		KeyButton:new { Text = ",", Group = self, Disabled = true },
-		KeyButton:new { Text = "«", Group = self, Disabled = true, KeyCode = 0xf010, Height = "auto" },
+		KeyButton:new { Text = "«", Group = self, Disabled = true, KeyCode = 0xf010, MaxHeight = 0 },
 	}
 	self.Buttons2 = {
 		KeyButton:new { Text = "Ret", Group = self, Disabled = true, KeyCode = 13, Height = "fill" },
@@ -81,7 +81,7 @@ function NumberInput.new(class, self)
 		Group:new
 		{
 			Height = "fill",
-			Width = "auto",
+			MaxWidth = 0,
 			Orientation = "vertical",
 			Children = self.Buttons2
 		}
@@ -263,7 +263,7 @@ local window = ui.Window:new
 							Columns = 2,
 							Children =
 							{
-								Text:new { Text = L.CUSTOMCLASS_ADDRESS, Class = "caption", Width = "auto", HAlign = "right" },
+								Text:new { Text = L.CUSTOMCLASS_ADDRESS, Class = "caption", Width = "fill", Style="text-align:right" },
 								NetworkInput:new { Id = "input-address", EnterNext = true, Disabled = true,
 									ActivateId = "number-input",
 									onEnter = function(self, text)
@@ -275,15 +275,15 @@ local window = ui.Window:new
 										NetworkInput.onEnter(self, text)
 									end,
 								},
-								Text:new { Text = L.CUSTOMCLASS_NETMASK, Class = "caption", Width = "auto", HAlign = "right" },
+								Text:new { Text = L.CUSTOMCLASS_NETMASK, Class = "caption", Width = "fill", Style="text-align:right" },
 								NetworkInput:new { Id = "input-netmask", EnterNext = true, Disabled = true,
 									ActivateId = "number-input",
 								},
-								Text:new { Text = L.CUSTOMCLASS_GATEWAY, Class = "caption", Width = "auto", HAlign = "right" },
+								Text:new { Text = L.CUSTOMCLASS_GATEWAY, Class = "caption", Width = "fill", Style="text-align:right" },
 								NetworkInput:new { Id = "input-gateway", EnterNext = true, Disabled = true,
 									ActivateId = "number-input",
 								},
-								Text:new { Text = L.CUSTOMCLASS_DNS, Class = "caption", Width = "auto", HAlign = "right" },
+								Text:new { Text = L.CUSTOMCLASS_DNS, Class = "caption", Width = "fill", Style="text-align:right" },
 								NetworkInput:new { Id = "input-dns", Disabled = true,
 									ActivateId = "number-input",
 								}
