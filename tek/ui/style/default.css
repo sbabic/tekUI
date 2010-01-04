@@ -2,7 +2,7 @@
 /*
 **	tek/ui/style/default.css
 **
-**	Version: 2.0
+**	Version: 2.1
 */
 
 tek.ui.class.area {
@@ -108,6 +108,7 @@ tek.ui.class.listgadget {
 	border-color: detail;
 }
 tek.ui.class.listgadget:active {
+	color: list-active-detail;
 	background-color: list-active;
 	border-color: detail;
 }

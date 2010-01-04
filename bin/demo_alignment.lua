@@ -15,11 +15,9 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 
 local window = Window:new
 {
-	Orientation = "vertical",
-	Id = "alignment-window",
 	Title = L.ALIGNMENT_TITLE,
-	Status = "hide",
 	Orientation = "vertical",
+	Status = "hide",
 	HideOnEscape = true,
 	Children =
 	{
@@ -27,7 +25,6 @@ local window = Window:new
 		{
 			Orientation = "vertical",
 			Width = "free",
-			Height = "free",
 			Legend = L.ALIGNMENT_HORIZONTAL,
 			Children =
 			{
@@ -64,7 +61,6 @@ local window = Window:new
 		},
 		Group:new
 		{
-			Width = "free",
 			Height = "free",
 			Legend = L.ALIGNMENT_VERTICAL,
 			Children =

@@ -20,6 +20,7 @@ ui.Application:new
 				ui.Button:new
 				{
 					Text = "world",
+					MaxHeight = "none",
 				},
 			}
 		}
