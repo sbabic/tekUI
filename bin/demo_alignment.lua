@@ -16,6 +16,7 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 local window = Window:new
 {
 	Title = L.ALIGNMENT_TITLE,
+	Id = "alignment-window",
 	Orientation = "vertical",
 	Status = "hide",
 	HideOnEscape = true,
