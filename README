@@ -58,10 +58,10 @@ a raw framebuffer since.
 
 Its main focus is the rapid development of custom-made applications
 with a custom appearance, such as for embedded devices with a display
-controller (see also
-[[#embedded : fitness for the use in embedded systems]]). In the long
-term, it is intended to feature a class library supporting regular,
-general-purpose desktop and mobile applications.
+controller 
+(see also [[#embedded : fitness for the use in embedded systems]]).
+In the long term, it is intended to feature a class library
+supporting regular, general-purpose desktop and mobile applications.
 
 Being mostly written in the
 [[Lua scripting language][http://www.lua.org/]] and using a simple
@@ -78,8 +78,7 @@ TekUI is free software under the same license as Lua itself: It can
 be used for both academic and commercial purposes at no cost. It
 qualifies as Open Source software, and its license is compatible with
 the GPL – see [[copyright][copyright.html]]. Additional components
-are available under a commercial license – see
-[[support and services]].
+are available under a commercial license – see [[#support]].
 
 ==( status : 1.2. Status, requirements )==
 
@@ -100,8 +99,8 @@ Regular contributors are welcome also.
 Special adaptations, custom display drivers, new user interface
 elements, and support and services for the integration of tekUI into
 your products are available from the authors – see below. A
-commercial version with additional components (such as the Nano-X and
-raw framebuffer drivers, XML support) is available on request.
+commercial version with additional components (such as a Nano-X and
+raw framebuffer driver and XML support) is available on request.
 
 ==( authors : 1.5. Authors and contact )==
 
@@ -115,7 +114,7 @@ Open source project website:
 Product website:
  - http://www.schulze-mueller.de/products.html
 
-Public mailing list:
+Mailing list:
  - http://lists.neoscientists.org/mailman/listinfo/tekui-devel
 
 ---------------------------------------------------------------------
@@ -207,9 +206,8 @@ all share the same color scheme.
 
 tekUI comes with a cascading style sheets (CSS) engine for the
 import of properties for element classes, custom classes, pseudo
-classes, as well as for individual and direct formattings. tekUI's
-default theme is hardcoded in the Theme class and also available as
-an external style sheet file.
+classes, as well as for individual, direct and hardcoded class
+formattings.
 
 ==( clibrary : 2.5. C library )==
 
@@ -224,8 +222,8 @@ default layouter). Rendering and input handling are implemented as
 display drivers, which allow for easy exchangeability.
 
 Aside from the display driver interface, the C library implements
-OS-like facilities such as portable threads, a timer device and a
-virtual filesystem interface.
+OS-like facilities such as portable threads, a timer device and the
+possibility of a virtual filesystem interface.
 
 ==( objectmodel : 2.6. Lua, C and object model )==
 
@@ -236,7 +234,7 @@ memory management.
 
 Classes can be written in Lua and C interchangeably, meaning that
 they can inherit from each other regardless of the language they are
-written in. This makes it possible to prototype an application
+written in. This makes it possible to prototype applications
 quickly, and, should the need arise, to replace
 performance-crititcal classes with their counterparts in C. When
 porting classes to C, there is a certain degree of freedom in how
@@ -301,7 +299,7 @@ package is recommended.
 '''Linux note''': By popular request, these are the names of packages
 required to compile and run tekUI on Ubuntu Linux: {{lua5.1}},
 {{liblua5.1-0-dev}}, {{liblua5.1-filesystem0}}, {{libfreetype6-dev}},
-{{libxft-dev}}, {{libxext-dev}}.
+{{libxft-dev}}, {{libxext-dev}}, {{libxxf86vm-dev}}.
 
 ==( buildenv : 3.2. Adjusting the build environment )==
 

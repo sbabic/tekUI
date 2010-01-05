@@ -46,9 +46,5 @@ docs:
 	bin/gendoc.lua CHANGES -i 32 -r manual.html -n "tekUI Changelog" > doc/changes.html
 	bin/gendoc.lua tek/ --header VERSION --adddate -n "tekUI Class Reference Manual" > doc/manual.html
 
-
 kdiff:
 	-(a=$$(mktemp -du) && hg clone $$PWD $$a && kdiff3 $$a $$PWD; rm -rf $$a)
-
-web-docs:
-	@bin/gendoc.lua tek/ -p -n tekUI Reference manual | tr "\t" " "
