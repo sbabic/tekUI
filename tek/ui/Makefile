@@ -13,20 +13,19 @@ CLASSES = \
 	class/checkmark.lua \
 	class/dirlist.lua \
 	class/display.lua \
-	class/drawable.lua \
 	class/drawhook.lua \
 	class/element.lua \
 	class/family.lua \
 	class/floattext.lua \
 	class/frame.lua \
-	class/gadget.lua \
+	class/widget.lua \
 	class/gauge.lua \
 	class/group.lua \
 	class/handle.lua \
 	class/image.lua \
-	class/imagegadget.lua \
+	class/imagewidget.lua \
 	class/layout.lua \
-	class/listgadget.lua \
+	class/lister.lua \
 	class/listview.lua \
 	class/menuitem.lua \
 	class/numeric.lua \
@@ -41,7 +40,6 @@ CLASSES = \
 	class/spacer.lua \
 	class/text.lua \
 	class/textinput.lua \
-	class/theme.lua \
 	class/window.lua
 BORDERS = border/default.lua
 HOOKS = hook/ripple.lua
@@ -59,7 +57,8 @@ STYLES = \
 	style/industrial.css \
 	style/default.css \
 	style/monochrome.css \
-	style/tutorial.css
+	style/tutorial.css \
+	style/desktop.lua
 FONTS = \
 	font/Vera.ttf \
 	font/VeraMono.ttf

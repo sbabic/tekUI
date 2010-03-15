@@ -18,7 +18,7 @@ local type = type
 
 module("tek.ui.class.image", tek.class)
 
-_VERSION = "Image 2.1"
+_VERSION = "Image 2.2"
 
 local Image = _M
 
@@ -34,9 +34,9 @@ function Image.new(class, image)
 	return Class.new(class, image)
 end
 
-function Image:draw(d, r1, r2, r3, r4, pen_override)
+function Image:draw(d, r1, r2, r3, r4, pen)
 	if self[5] then
-		d:drawImage(self, r1, r2, r3, r4, pen_override or d.Pens)
+		d:drawImage(self, r1, r2, r3, r4, pen)
 	else
 		d:drawPixmap(self[1], r1, r2, r3, r4)
 	end

@@ -12,23 +12,23 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 
 local VerboseCheckMark = ui.CheckMark:newClass { _NAME = "_vbcheckmark" }
 
-function VerboseCheckMark:onSelect(selected)
+function VerboseCheckMark:onSelect()
+	ui.CheckMark.onSelect(self)
 	local tw = self:getById("text-window")
-	local text = selected and L.SELECTED or L.REVOKED
+	local text = self.Selected and L.SELECTED or L.REVOKED
 	text = text .. ": " .. self.Text:gsub("_", "")
 	tw:appendLine(text, true)
-	ui.CheckMark.onSelect(self, selected)
 end
 
 local VerboseRadioButton = ui.RadioButton:newClass { _NAME = "_vbradiobutton" }
 
-function VerboseRadioButton:onSelect(selected)
-	if selected == true then
+function VerboseRadioButton:onSelect()
+	ui.RadioButton.onSelect(self)
+	if self.Selected then
 		local tw = self:getById("text-window")
 		local text = L.SELECTED .. ": " .. self.Text:gsub("_", "")
 		tw:appendLine(text, true)
 	end
-	ui.RadioButton.onSelect(self, selected)
 end
 
 -------------------------------------------------------------------------------
@@ -57,8 +57,9 @@ local window = ui.Window:new
 					Text = L.CHOICES_COFFEE,
 					Id = "drink-coffee",
 					Selected = true,
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseRadioButton.onSelect(self)
+						if self.Selected then
 							self:getById("drink-hot"):setValue("Selected", true)
 							self:getById("drink-hot"):setValue("Disabled", false)
 							self:getById("drink-ice"):setValue("Disabled", false)
@@ -67,15 +68,15 @@ local window = ui.Window:new
 							self:getById("drink-stirred"):setValue("Selected", false)
 							self:getById("drink-stirred"):setValue("Disabled", false)
 						end
-						VerboseRadioButton.onSelect(self, active)
 					end,
 				},
 				VerboseRadioButton:new
 				{
 					Text = L.CHOICES_JUICE,
 					Id = "drink-juice",
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseRadioButton.onSelect(self)
+						if self.Selected then
 							self:getById("drink-hot"):setValue("Selected", false)
 							self:getById("drink-hot"):setValue("Disabled", true)
 							self:getById("drink-ice"):setValue("Disabled", false)
@@ -83,15 +84,15 @@ local window = ui.Window:new
 							self:getById("drink-shaken"):setValue("Disabled", false)
 							self:getById("drink-stirred"):setValue("Disabled", false)
 						end
-						VerboseRadioButton.onSelect(self, active)
 					end,
 				},
 				VerboseRadioButton:new
 				{
 					Text = L.CHOICES_MANGO_LASSI,
 					Id = "drink-lassi",
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseRadioButton.onSelect(self)
+						if self.Selected then
 							self:getById("drink-hot"):setValue("Selected", false)
 							self:getById("drink-hot"):setValue("Disabled", true)
 							self:getById("drink-ice"):setValue("Disabled", false)
@@ -102,15 +103,15 @@ local window = ui.Window:new
 							self:getById("drink-stirred"):setValue("Disabled", true)
 							self:getById("drink-stirred"):setValue("Selected", true)
 						end
-						VerboseRadioButton.onSelect(self, active)
 					end,
 				},
 				VerboseRadioButton:new
 				{
 					Text = L.CHOICES_BEER,
 					Id = "drink-beer",
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseRadioButton.onSelect(self)
+						if self.Selected then
 							self:getById("drink-hot"):setValue("Selected", false)
 							self:getById("drink-hot"):setValue("Disabled", true)
 							self:getById("drink-ice"):setValue("Selected", false)
@@ -122,15 +123,15 @@ local window = ui.Window:new
 							self:getById("drink-stirred"):setValue("Selected", false)
 							self:getById("drink-stirred"):setValue("Disabled", true)
 						end
-						VerboseRadioButton.onSelect(self, active)
 					end,
 				},
 				VerboseRadioButton:new
 				{
 					Text = L.CHOICES_WHISKY,
 					Id = "drink-whisky",
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseRadioButton.onSelect(self)
+						if self.Selected then
 							self:getById("drink-hot"):setValue("Selected", false)
 							self:getById("drink-hot"):setValue("Disabled", true)
 							self:getById("drink-ice"):setValue("Disabled", false)
@@ -138,7 +139,6 @@ local window = ui.Window:new
 							self:getById("drink-shaken"):setValue("Disabled", false)
 							self:getById("drink-stirred"):setValue("Disabled", false)
 						end
-						VerboseRadioButton.onSelect(self, active)
 					end,
 				},
 				VerboseCheckMark:new
@@ -146,61 +146,61 @@ local window = ui.Window:new
 					Text = L.CHOICES_HOT,
 					Id = "drink-hot",
 					Selected = true,
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseCheckMark.onSelect(self)
+						if self.Selected then
 							self:getById("drink-ice"):setValue("Selected", false)
 							self:getById("drink-straw"):setValue("Selected", false)
 							self:getById("drink-shaken"):setValue("Selected", false)
 						end
-						VerboseCheckMark.onSelect(self, active)
 					end,
 				},
 				VerboseCheckMark:new
 				{
 					Text = L.CHOICES_WITH_ICE,
 					Id = "drink-ice",
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseCheckMark.onSelect(self)
+						if self.Selected then
 							self:getById("drink-hot"):setValue("Selected", false)
 							self:getById("drink-straw"):setValue("Selected", true)
 						end
-						VerboseCheckMark.onSelect(self, active)
 					end,
 				},
 				VerboseCheckMark:new
 				{
 					Text = L.CHOICES_STIRRED,
 					Id = "drink-stirred",
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseCheckMark.onSelect(self)
+						if self.Selected then
 							self:getById("drink-shaken"):setValue("Selected", false)
 						end
-						VerboseCheckMark.onSelect(self, active)
 					end,
 				},
 				VerboseCheckMark:new
 				{
 					Text = L.CHOICES_SHAKEN,
 					Id = "drink-shaken",
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseCheckMark.onSelect(self)
+						if self.Selected then
 							self:getById("drink-stirred"):setValue("Selected", false)
 							self:getById("drink-hot"):setValue("Selected", false)
 							self:getById("drink-ice"):setValue("Selected", true)
 						end
-						VerboseCheckMark.onSelect(self, active)
 					end,
 				},
 				VerboseCheckMark:new
 				{
 					Text = L.CHOICES_DRINKING_STRAW,
 					Id = "drink-straw",
-					onSelect = function(self, active)
-						if active then
+					onSelect = function(self)
+						VerboseCheckMark.onSelect(self)
+						if self.Selected then
 							self:getById("drink-hot"):setValue("Selected", false)
 							self:getById("drink-ice"):setValue("Selected", true)
 						end
-						VerboseCheckMark.onSelect(self, active)
 					end,
 				}
 			}

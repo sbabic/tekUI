@@ -20,11 +20,10 @@
 --
 --	IMPLEMENTS::
 --		- Display:closeFont() - Closes font
---		- Display:colorToRGB() - Converts a symbolic color name to RGB
 --		- Display.createPixMap() - Creates a pixmap from picture file data
 --		- Display:getFontAttrs() - Gets font attributes
---		- Display:getPaletteEntry() - Gets an entry from the symbolic palette
 --		- Display.getPixmap() - Gets a a pixmap from the cache
+--		- Display:colorToRGB() - Converts a color specification to RGB
 --		- Display:getTime() - Gets system time
 --		- Display.loadPixmap() - Loads a pixmap from the file system
 --		- Display:openFont() - Opens a named font
@@ -86,8 +85,8 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Element = ui.require("element", 16)
-local Visual = ui.loadLibrary("visual", 2)
+local Element = ui.require("element", 17)
+local Visual = ui.loadLibrary("visual", 4)
 
 local floor = math.floor
 local open = io.open
@@ -96,7 +95,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 21.0"
+_VERSION = "Display 25.1"
 
 local Display = _M
 
@@ -122,64 +121,64 @@ local DEF_HUGEFONT  = "sans-serif,utopia,arial,Vera:24"
 
 local ColorDefaults =
 {
-	{ "background", DEF_RGB_BACK },
-	{ "dark", DEF_RGB_DETAIL },
-	{ "outline", DEF_RGB_SHINE },
-	{ "fill", DEF_RGB_FILL },
-	{ "active", DEF_RGB_HALFSHADOW },
-	{ "focus", DEF_RGB_BACK },
-	{ "hover", DEF_RGB_HALFSHINE },
-	{ "disabled", DEF_RGB_BACK },
-	{ "detail", DEF_RGB_DETAIL },
-	{ "active-detail", DEF_RGB_DETAIL },
-	{ "focus-detail", DEF_RGB_DETAIL },
-	{ "hover-detail", DEF_RGB_DETAIL },
-	{ "disabled-detail", DEF_RGB_SHADOW },
-	{ "disabled-detail-shine", DEF_RGB_HALFSHINE },
-	{ "border-shine", DEF_RGB_HALFSHINE },
-	{ "border-shadow", DEF_RGB_SHADOW },
-	{ "border-rim", DEF_RGB_DETAIL },
-	{ "border-focus", DEF_RGB_FOCUS },
-	{ "border-legend", DEF_RGB_DETAIL },
-	{ "menu", DEF_RGB_BACK },
-	{ "menu-detail", DEF_RGB_DETAIL },
-	{ "menu-active", DEF_RGB_FILL },
-	{ "menu-active-detail", DEF_RGB_SHINE },
-	{ "list", DEF_RGB_BACK },
-	{ "list-alt", DEF_RGB_HALFSHINE },
-	{ "list-detail", DEF_RGB_DETAIL },
-	{ "list-active", DEF_RGB_FILL },
-	{ "list-active-detail", DEF_RGB_SHINE },
-	{ "cursor", DEF_RGB_FILL },
-	{ "cursor-detail", DEF_RGB_SHINE },
-	{ "group", DEF_RGB_HALFSHADOW },
-	{ "shadow", DEF_RGB_SHADOW },
-	{ "shine", DEF_RGB_SHINE },
-	{ "half-shadow", DEF_RGB_HALFSHADOW },
-	{ "half-shine", DEF_RGB_HALFSHINE },
-	{ "paper", DEF_RGB_SHINE },
-	{ "ink", DEF_RGB_DETAIL },
-	{ "user1", DEF_RGB_DETAIL },
-	{ "user2", DEF_RGB_DETAIL },
-	{ "user3", DEF_RGB_DETAIL },
-	{ "user4", DEF_RGB_DETAIL },
-	{ "black",   "#000" },
-	{ "red",     "#f00" },
-	{ "lime",    "#0f0" },
-	{ "yellow",  "#ff0" },
-	{ "blue",    "#00f" },
-	{ "fuchsia", "#f0f" },
-	{ "aqua",    "#0ff" },
-	{ "white",   "#fff" },
-	{ "gray",    "#808080" },
-	{ "maroon",  "#800000" },
-	{ "green",   "#008000" },
-	{ "olive",   "#808000" },
-	{ "navy",    "#000080" },
-	{ "purple",  "#800080" },
-	{ "teal",    "#008080" },
-	{ "silver",  "#c0c0c0" },
-	{ "orange",  "#ffa500" },
+	["background"] = DEF_RGB_BACK,
+	["dark"] = DEF_RGB_DETAIL,
+	["outline"] = DEF_RGB_SHINE,
+	["fill"] = DEF_RGB_FILL,
+	["active"] = DEF_RGB_HALFSHADOW,
+	["focus"] = DEF_RGB_BACK,
+	["hover"] = DEF_RGB_HALFSHINE,
+	["disabled"] = DEF_RGB_BACK,
+	["detail"] = DEF_RGB_DETAIL,
+	["active-detail"] = DEF_RGB_DETAIL,
+	["focus-detail"] = DEF_RGB_DETAIL,
+	["hover-detail"] = DEF_RGB_DETAIL,
+	["disabled-detail"] = DEF_RGB_SHADOW,
+	["disabled-detail-shine"] = DEF_RGB_HALFSHINE,
+	["border-shine"] = DEF_RGB_HALFSHINE,
+	["border-shadow"] = DEF_RGB_SHADOW,
+	["border-rim"] = DEF_RGB_DETAIL,
+	["border-focus"] = DEF_RGB_FOCUS,
+	["border-legend"] = DEF_RGB_DETAIL,
+	["menu"] = DEF_RGB_BACK,
+	["menu-detail"] = DEF_RGB_DETAIL,
+	["menu-active"] = DEF_RGB_FILL,
+	["menu-active-detail"] = DEF_RGB_SHINE,
+	["list"] = DEF_RGB_BACK,
+	["list-alt"] = DEF_RGB_HALFSHINE,
+	["list-detail"] = DEF_RGB_DETAIL,
+	["list-active"] = DEF_RGB_FILL,
+	["list-active-detail"] = DEF_RGB_SHINE,
+	["cursor"] = DEF_RGB_FILL,
+	["cursor-detail"] = DEF_RGB_SHINE,
+	["group"] = DEF_RGB_HALFSHADOW,
+	["shadow"] = DEF_RGB_SHADOW,
+	["shine"] = DEF_RGB_SHINE,
+	["half-shadow"] = DEF_RGB_HALFSHADOW,
+	["half-shine"] = DEF_RGB_HALFSHINE,
+	["paper"] = DEF_RGB_SHINE,
+	["ink"] = DEF_RGB_DETAIL,
+	["user1"] = DEF_RGB_DETAIL,
+	["user2"] = DEF_RGB_DETAIL,
+	["user3"] = DEF_RGB_DETAIL,
+	["user4"] = DEF_RGB_DETAIL,
+	["black"] =   "#000",
+	["red"] =     "#f00",
+	["lime"] =    "#0f0",
+	["yellow"] =  "#ff0",
+	["blue"] =    "#00f",
+	["fuchsia"] = "#f0f",
+	["aqua"] =    "#0ff",
+	["white"] =   "#fff",
+	["gray"] =    "#808080",
+	["maroon"] =  "#800000",
+	["green"] =   "#008000",
+	["olive"] =   "#808000",
+	["navy"] =    "#000080",
+	["purple"] =  "#800080",
+	["teal"] =    "#008080",
+	["silver"] =  "#c0c0c0",
+	["orange"] =  "#ffa500",
 }
 
 local FontDefaults =
@@ -197,26 +196,12 @@ FontDefaults[""] = FontDefaults["ui-main"]
 local PixmapCache = { }
 
 -------------------------------------------------------------------------------
---	Class implementation:
--------------------------------------------------------------------------------
-
-function Display.new(class, self)
-	self = self or { }
-	self.AspectX = self.AspectX or 1
-	self.AspectY = self.AspectY or 1
-	self.PenTab = { }
-	self.ColorNames = { }
-	self.FontCache = { }
-	return Element.new(class, self)
-end
-
--------------------------------------------------------------------------------
 --	image, width, height, transparency = Display.createPixmap(picture):
 --	Creates a pixmap object from data in a picture file format. Currently
 --	only the PPM file format is recognized.
 -------------------------------------------------------------------------------
 
-Display.createPixmap = Visual.createpixmap
+Display.createPixmap = Visual.createPixmap
 
 -------------------------------------------------------------------------------
 --	image, width, height, transparency = Display.loadPixmap(filename): Creates
@@ -256,6 +241,74 @@ function Display.getPixmap(fname)
 end
 
 -------------------------------------------------------------------------------
+--	a, r, g, b = hexToRGB(colspec) - Converts a hexadecimal string color
+--	specification to RGB and an opacity in the range from 0 to 255.
+--	Valid color specifications are {{#rrggbb}}, {{#aarrggbb}} (each component
+--	is noted in 8 bit hexadecimal) and {{#rgb}} (each color component is noted
+--	in 4 bit hexadecimal).
+-------------------------------------------------------------------------------
+
+function Display.hexToRGB(col)
+	local r, g, b = col:match("^%s*%#(%x%x)(%x%x)(%x%x)%s*$")
+	if r then
+		return 255, tonumber(r, 16), tonumber(g, 16), tonumber(b, 16)
+	end
+	r, g, b = col:match("^%s*%#(%x)(%x)(%x)%s*$")
+	if r then
+		r, g, b = tonumber(r, 16), tonumber(g, 16), tonumber(b, 16)
+		return 255, r * 16 + r, g * 16 + g, b * 16 + b
+	end
+	local a
+	a, r, g, b = col:match("^%s*%#(%x%x)(%x%x)(%x%x)(%x%x)%s*$")
+	if a then
+		return tonumber(r, 16), tonumber(r, 16), tonumber(g, 16), 
+			tonumber(b, 16)
+	end
+end
+
+-------------------------------------------------------------------------------
+--	wait:
+-------------------------------------------------------------------------------
+
+Display.wait = Visual.wait
+
+-------------------------------------------------------------------------------
+--	getMsg:
+-------------------------------------------------------------------------------
+
+Display.getMsg = Visual.getMsg
+
+-------------------------------------------------------------------------------
+--	sleep:
+-------------------------------------------------------------------------------
+
+Display.sleep = Visual.sleep
+
+-------------------------------------------------------------------------------
+--	Display:getTime(): Gets the system time.
+-------------------------------------------------------------------------------
+
+Display.getTime = Visual.getTime
+
+-------------------------------------------------------------------------------
+--	Display:openDrawable(): Open a drawable
+-------------------------------------------------------------------------------
+
+Display.openDrawable = Visual.open
+
+-------------------------------------------------------------------------------
+--	Class implementation:
+-------------------------------------------------------------------------------
+
+function Display.new(class, self)
+	self = self or { }
+	self.AspectX = self.AspectX or 1
+	self.AspectY = self.AspectY or 1
+	self.FontCache = { }
+	return Element.new(class, self)
+end
+
+-------------------------------------------------------------------------------
 --	w, h = fitMinAspect(w, h, iw, ih[, evenodd]) - Fit to size, considering
 --	the display's aspect ratio. If the optional {{evenodd}} is {{0}}, even
 --	numbers are returned, if it is {{1}}, odd numbers are returned.
@@ -275,51 +328,13 @@ function Display:fitMinAspect(w, h, iw, ih, round)
 end
 
 -------------------------------------------------------------------------------
---	r, g, b = colorToRGB(colspec[, defcolspec]): Converts a color
---	specification to RGB. If {{colspec}} is not a valid color, the optional
---	{{defcolspec}} can be used as a fallback. Valid color specifications are
---	{{#rrggbb}} (each color component is noted in 8 bit hexadecimal) and
---	{{#rgb}} (each color component is noted in 4 bit hexadecimal).
+--	a, r, g, b = colorToRGB(key): Gets the r, g, b values of a color. The color
+--	can be a hexadecimal RGB specification or a symbolic name.
 -------------------------------------------------------------------------------
 
-function Display:colorToRGB(col, def)
-	for i = 1, 2 do
-		local r, g, b = col:match("%#(%x%x)(%x%x)(%x%x)")
-		if r then
-			r, g, b = tonumber("0x" .. r), tonumber("0x" .. g),
-				tonumber("0x" .. b)
-			return r, g, b
-		end
-		r, g, b = col:match("%#(%x)(%x)(%x)")
-		if r then
-			r, g, b = tonumber("0x" .. r), tonumber("0x" .. g),
-				tonumber("0x" .. b)
-			r = r * 16 + r
-			g = g * 16 + g
-			b = b * 16 + b
-			return r, g, b
-		end
-		col = def
-		if not col then
-			return
-		end
-		-- retry with default color
-	end
-end
-
--------------------------------------------------------------------------------
---	name, r, g, b = getPaletteEntry(index): Gets the {{name}} and red, green,
---	blue components of a color of the given {{index}} in the Display's
---	symbolic color palette.
--------------------------------------------------------------------------------
-
-function Display:getPaletteEntry(i)
-	local color = ColorDefaults[i]
-	if color then
-		local name, defrgb = color[1], color[2]
-		local rgb = self.Properties["rgb-" .. color[1]] or defrgb
-		return name, self:colorToRGB(rgb, defrgb)
-	end
+function Display:colorToRGB(key)
+	return self.hexToRGB(self.Properties["rgb-" .. key] or
+		ColorDefaults[key] or key)
 end
 
 -------------------------------------------------------------------------------
@@ -330,7 +345,7 @@ end
 function Display:openFont(fname)
 	local fname = fname or ""
 	if not self.FontCache[fname] then
-		local name, size = fname:match("^([^:]*):?(%d*)$")
+		local name, size = fname:match("^([^:]*)%s*:?%s*(%d*)$")
 		local defname = FontDefaults[name]
 		local deff = defname and (self.Properties[defname[1]] or defname[2])
 		if deff then
@@ -346,9 +361,9 @@ function Display:openFont(fname)
 				name = FontDefaults[""][2]:match("^([^:,]*),?[^:]*:?(%d*)$")
 			end
 			db.info("Open font: '%s' -> '%s:%d'", fname, name, size or -1)
-			local font = Visual.openfont(name, size)
+			local font = Visual.openFont(name, size)
 			if font then
-				local r = { font, font:getattrs { }, fname, name }
+				local r = { font, font:getAttrs { }, fname, name }
 				self.FontCache[fname] = r
 				self.FontCache[font] = r
 				return font
@@ -360,7 +375,7 @@ function Display:openFont(fname)
 end
 
 -------------------------------------------------------------------------------
---	closeFont(font): Closes the specified font, and always returns '''false'''.
+--	closeFont(font): Closes the specified font. Always returns '''false'''.
 -------------------------------------------------------------------------------
 
 function Display:closeFont(display, font)
@@ -375,44 +390,4 @@ end
 function Display:getFontAttrs(font)
 	local a = self.FontCache[font][2]
 	return a.Height, a.UlPosition, a.UlThickness
-end
-
--------------------------------------------------------------------------------
---	wait:
--------------------------------------------------------------------------------
-
-function Display:wait()
-	return Visual.wait()
-end
-
--------------------------------------------------------------------------------
---	getMsg:
--------------------------------------------------------------------------------
-
-function Display:getMsg(...)
-	return Visual.getmsg(...)
-end
-
--------------------------------------------------------------------------------
---	sleep:
--------------------------------------------------------------------------------
-
-function Display.sleep(...)
-	return Visual.sleep(...)
-end
-
--------------------------------------------------------------------------------
---	Display:getTime(): Gets the system time.
--------------------------------------------------------------------------------
-
-function Display:getTime(...)
-	return Visual.gettime(...)
-end
-
--------------------------------------------------------------------------------
---	openVisual:
--------------------------------------------------------------------------------
-
-function Display:openVisual(...)
-	return Visual.open(...)
 end

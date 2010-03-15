@@ -2,7 +2,7 @@
 /*
 **	tek/ui/style/default.css
 **
-**	Version: 2.1
+**	Version: 2.4
 */
 
 tek.ui.class.area {
@@ -39,25 +39,25 @@ tek.ui.class.frame {
 	border-style: inset;
 }
 
-tek.ui.class.gadget {
+tek.ui.class.widget {
 	border-width: 3;
 	border-style: outset;
 	border-focus-width: 1;
 }
-tek.ui.class.gadget:active {
+tek.ui.class.widget:active {
 	background-color: active;
 	color: active-detail;
 	border-style: inset;
 }
-tek.ui.class.gadget:disabled {
+tek.ui.class.widget:disabled {
 	background-color: disabled;
 	color: disabled-detail;
 }
-tek.ui.class.gadget:focus {
+tek.ui.class.widget:focus {
 	background-color: focus;
 	color: focus-detail;
 }
-tek.ui.class.gadget:hover {
+tek.ui.class.widget:hover {
 	background-color: hover;
 	color: hover-detail;
 }
@@ -73,6 +73,10 @@ tek.ui.class.group {
 	border-focus-width: 0;
 }
 
+tek.ui.class.group:disabled {
+	background-color: group;
+}
+
 tek.ui.class.handle {
 	effect-class: ripple;
 	effect-kind: slant;
@@ -86,13 +90,13 @@ tek.ui.class.handle:active {
 	background-color: hover;
 }
 
-tek.ui.class.imagegadget:active {
+tek.ui.class.imagewidget:active {
 	color: transparent;
 }
-tek.ui.class.imagegadget:hover {
+tek.ui.class.imagewidget:hover {
 	color: transparent;
 }
-tek.ui.class.imagegadget:focus {
+tek.ui.class.imagewidget:focus {
 	color: transparent;
 }
 
@@ -101,13 +105,13 @@ tek.ui.class.input {
 	color: ink;
 }
 
-tek.ui.class.listgadget {
+tek.ui.class.lister {
 	background-color: list;
 	background-color2: list-alt;
 	color: list-detail;
 	border-color: detail;
 }
-tek.ui.class.listgadget:active {
+tek.ui.class.lister:active {
 	color: list-active-detail;
 	background-color: list-active;
 	border-color: detail;
@@ -137,6 +141,7 @@ tek.ui.class.popupwindow {
 	border-focus-width: 0;
 	border-style: solid;
 	border-color: dark;
+	background-color: menu;
 }
 
 tek.ui.class.slider {
@@ -173,7 +178,7 @@ tek.ui.class.window {
 /***************************************/
 
 tek.ui.class.checkmark.menuitem:active {
-	background-color: menu;
+	background-color: transparent;
 	color: menu-detail;
 }
 tek.ui.class.checkmark.menuitem:hover {
@@ -186,7 +191,7 @@ tek.ui.class.checkmark.menuitem:focus {
 }
 
 tek.ui.class.radiobutton.menuitem:active {
-	background-color: menu;
+	background-color: transparent;
 	color: menu-detail;
 }
 tek.ui.class.radiobutton.menuitem:hover {
@@ -256,7 +261,7 @@ tek.ui.class.radiobutton.menuitem:focus {
 
 .menuitem {
 	margin: 0;
-	background-color: menu;
+	background-color: transparent;
 	border-width: 0;
 	color: menu-detail;
 	font: ui-menu;
@@ -289,6 +294,9 @@ tek.ui.class.radiobutton.menuitem:focus {
 	border-style: outset;
 	border-bottom-color: group;
 	background-color: group;
+}
+.page-button:focus {
+	background-color: hover;
 }
 .page-button-fill {
 	border-style: inset;

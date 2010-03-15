@@ -11,10 +11,10 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		Text ${subclasses(Text)}
 --
---		This class implements gadgets with text.
+--		This class implements widgets with text.
 --
 --	ATTRIBUTES::
 --		- {{KeepMinHeight [IG]}} (boolean)
@@ -33,8 +33,8 @@
 --
 --	STYLE PROPERTIES::
 --		''color-disabled'' || Secondary color for text in disabled state
---		''font'' || Font specification, see below
---		''text-align'' || {{"left"}}, {{"center"}}, {{"right"}}
+--		''font''           || Font specification, see below
+--		''text-align''     || {{"left"}}, {{"center"}}, {{"right"}}
 --		''vertical-align'' || {{"top"}}, {{"center"}}, {{"bottom"}}
 --
 --	FONT SPECIFICATION::
@@ -61,10 +61,12 @@
 --		- Text:onSetText() - Handler for changes of the {{Text}} attribute
 --
 --	OVERRIDES::
+--		- Object.addClassNotifications()
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Area:draw()
 --		- Object.init()
+--		- Element:onSetStyle()
 --		- Element:setup()
 --
 -------------------------------------------------------------------------------
@@ -72,7 +74,7 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Gadget = ui.require("gadget", 19)
+local Widget = ui.require("widget", 25)
 
 local floor = math.floor
 local insert = table.insert
@@ -81,19 +83,29 @@ local min = math.min
 local remove = table.remove
 local type = type
 
-module("tek.ui.class.text", tek.ui.class.gadget)
-_VERSION = "Text 24.0"
+module("tek.ui.class.text", tek.ui.class.widget)
+_VERSION = "Text 28.0"
 local Text = _M
 
 -------------------------------------------------------------------------------
---	Constants & Class data:
+--	constants & class data:
 -------------------------------------------------------------------------------
 
 local FL_CHANGED = ui.FL_CHANGED
-local NOTIFY_SETTEXT = { ui.NOTIFY_SELF, "onSetText", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
---	Class implementation:
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function Text.addClassNotifications(proto)
+	addNotify(proto, "Text", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetText" })
+	return Widget.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
+
+-------------------------------------------------------------------------------
+--	init: overrides
 -------------------------------------------------------------------------------
 
 function Text.init(self)
@@ -102,7 +114,7 @@ function Text.init(self)
 	self.Mode = self.Mode or "inert"
 	self.Text = self.Text or ""
 	self.TextRecords = self.TextRecords or false
-	return Gadget.init(self)
+	return Widget.init(self)
 end
 
 -------------------------------------------------------------------------------
@@ -115,8 +127,7 @@ function Text:setup(app, window)
 		local keycode = self.Text:match("^[^" .. sc .. "]*" .. sc .. "(.)")
 		self.KeyCode = keycode and "IgnoreAltShift+" .. keycode or true
 	end
-	Gadget.setup(self, app, window)
-	self:addNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_SETTEXT)
+	Widget.setup(self, app, window)
 	if not self.TextRecords then
 		self:makeTextRecords(self.Text)
 	end
@@ -127,9 +138,8 @@ end
 -------------------------------------------------------------------------------
 
 function Text:cleanup()
-	self:remNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_SETTEXT)
 	self.TextRecords = false
-	Gadget.cleanup(self)
+	Widget.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
@@ -181,7 +191,7 @@ function Text:askMinMax(m1, m2, m3, m4)
 	m2 = m2 + minh
 	m3 = m3 + w
 	m4 = m4 + h
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
+	return Widget.askMinMax(self, m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
@@ -222,7 +232,7 @@ function Text:layoutText()
 end
 
 function Text:layout(x0, y0, x1, y1, markdamage)
-	local res = Gadget.layout(self, x0, y0, x1, y1, markdamage)
+	local res = Widget.layout(self, x0, y0, x1, y1, markdamage)
 	if self.Flags:checkClear(FL_CHANGED) or res then
 		self:layoutText()
 	end
@@ -234,12 +244,12 @@ end
 -------------------------------------------------------------------------------
 
 function Text:draw()
-	if Gadget.draw(self) then
+	if Widget.draw(self) then
 		local r1, r2, r3, r4 = self:getRect()
-		local d = self.Drawable
+		local d = self.Window.Drawable
 		local p1, p2, p3, p4 = self:getPadding()
 		d:pushClipRect(r1 + p1, r2 + p2, r3 - p3, r4 - p4)
-		local fp = d.Pens[self.FGPen]
+		local fp = self.FGPen
 		local tr = self.TextRecords
 		for i = 1, #tr do
 			local t = tr[i]
@@ -247,8 +257,8 @@ function Text:draw()
 			if x then
 				d:setFont(t[2])
 				if self.Disabled then
-					local fp2 = d.Pens[self.Properties["color-shadow:disabled"]
-						or "disabled-detail-shine"]
+					local fp2 = self.Properties["color-shadow:disabled"]
+						or "disabled-detail-shine"
 					d:drawText(x + 2, y + 2, x + t[9] + 1, y + t[10] + 1, t[1],
 						fp2)
 					if t[11] then
@@ -339,7 +349,7 @@ function Text:makeTextRecords(text)
 	local tr = { }
 	self.TextRecords = tr
 	local y, nl = 0, 0
-	local font = self.Application.Display:openFont(self.Properties["font"])
+	local font = self.Application.Display:openFont(props["font"])
 	for line in (text .. "\n"):gmatch("([^\n]*)\n") do
 		local r = self:addTextRecord(line, font, props["text-align"],
 			props["vertical-align"], 0, y, 0, 0)
@@ -354,13 +364,22 @@ function Text:makeTextRecords(text)
 end
 
 -------------------------------------------------------------------------------
---	onSetText(text): This handler is invoked when the element's {{Text}}
+--	onSetText(): This handler is invoked when the element's {{Text}}
 --	attribute has changed.
 -------------------------------------------------------------------------------
 
-function Text:onSetText(text)
-	self:makeTextRecords(text)
+function Text:onSetText()
+	self:makeTextRecords(self.Text)
 	self.Flags:set(ui.FL_REDRAW)
 	local resizeable = not self.KeepMinWidth
 	self:rethinkLayout(resizeable and 1 or 0, resizeable)
+end
+
+-------------------------------------------------------------------------------
+--	onSetStyle: overrides
+-------------------------------------------------------------------------------
+
+function Text:onSetStyle()
+	Widget.onSetStyle(self)
+	self:makeTextRecords(self.Text)
 end

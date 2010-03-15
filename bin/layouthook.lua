@@ -26,17 +26,15 @@ function RandomLayout:layout(group, r1, r2, r3, r4, markdamage)
 	local freeregion = group.FreeRegion
 	
 	local region = Region.new()
-	local x = group.Rect[1]
-	local y = group.Rect[2]
-	local w = group.Rect[3] - x + 1
-	local h = group.Rect[4] - y + 1
+	local x, y, x1, y1 = group:getRect()
+	local w = x1 - x + 1
+	local h = y1 - y + 1
 	
 	math.randomseed(self.Seed)
 	
 	for i = 1, #children do
 		local c = children[i]
-		local minw = c.MinMax[1]
-		local minh = c.MinMax[2]
+		local minw, minh = c.MinMax:get()
 		local x0, y0, x1, y1
 		repeat
 			x0 = math.random(0, w - 1 - minw)
@@ -88,22 +86,19 @@ win:addMember(group)
 
 for i = 1, #Texts do
 	group:addMember(ui.Button:new { Text = Texts[i],
-		onPress = function(self, pressed)
-			ui.Button.onPress(self, pressed)
-			if pressed == false then
-				if i == Order then
-					if Order == #Texts then
-						Order = 1
-						Layouter:newLayout()
-						group:rethinkLayout(1)
-					else
-						Order = Order + 1
-					end
-				else
+		onClick = function(self)
+			if i == Order then
+				if Order == #Texts then
 					Order = 1
+					Layouter:newLayout()
+					group:rethinkLayout(1)
+				else
+					Order = Order + 1
 				end
+			else
+				Order = 1
 			end
-		end,
+		end
 	})
 end
 

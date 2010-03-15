@@ -110,7 +110,7 @@ local window = ui.Window:new
 		},
 		Group:new
 		{
-			Legend = L.GADGET_MODES,
+			Legend = L.WIDGET_MODES,
 			SameSize = true,
 			Children =
 			{
@@ -130,22 +130,20 @@ local window = ui.Window:new
 				{
 					Id = "buttons-touch",
 					Font = "ui-fixed", Text = "touch", Mode = "touch",
-					onSelect = function(self, selected)
-						Button.onSelect(self, selected)
+					onSelect = function(self)
+						Button.onSelect(self)
 						self:getById("buttons-unselect"):
-							setValue("Disabled", not selected)
+							setValue("Disabled", not self.Selected)
 					end
 				},
 				Button:new
 				{
 					Id = "buttons-unselect",
 					Disabled = true,
-					Text = "« " .. L.GADGET_UNSELECT,
-					onPress = function(self, pressed)
-						if pressed == false then
-							self:getById("buttons-touch"):
-								setValue("Selected", false)
-						end
+					Text = "« " .. L.WIDGET_UNSELECT,
+					onClick = function(self)
+						self:getById("buttons-touch"):
+							setValue("Selected", false)
 					end
 				}
 			}

@@ -24,8 +24,8 @@ function KeyButton.init(self)
 	return ui.Text.init(self)
 end
 
-function KeyButton:onPress(pressed)
-	if pressed == true then
+function KeyButton:onPress()
+	if self.Pressed == true then
 		local pe = self.Group.Element
 		if pe then
 			local w = self.Window
@@ -89,7 +89,8 @@ function NumberInput.new(class, self)
 	return Group.new(class, self)
 end
 
-function NumberInput:onDisable(disable)
+function NumberInput:onDisable()
+	local disable = self.Disabled
 	for k, e in ipairs(self.Buttons1) do
 		e:setValue("Disabled", disable)
 	end
@@ -99,7 +100,7 @@ function NumberInput:onDisable(disable)
 	if disable then
 		self.Buttons2[1]:setValue("Selected", false)
 	end
-	return Group.onDisable(self, disable)
+	return Group.onDisable(self)
 end
 
 -------------------------------------------------------------------------------
@@ -115,7 +116,8 @@ function NetworkInput.init(self)
 	return TextInput.init(self)
 end
 
-function NetworkInput:onSelect(selected)
+function NetworkInput:onSelect()
+	local selected = self.Selected
 	local e = self:getById(self.ActivateId)
 	if e then
 		if selected then
@@ -125,17 +127,18 @@ function NetworkInput:onSelect(selected)
 			e:setValue("Disabled", true)
 		end
 	end
-	TextInput.onSelect(self, selected)
+	TextInput.onSelect(self)
 end
 
-function NetworkInput:onDisable(disabled)
+function NetworkInput:onDisable()
+	local disabled = self.Disabled
 	if disabled then
 		local e = self:getById(self.ActivateId)
 		if e then
 			e:setValue("Disabled", true)
 		end
 	end
-	TextInput.onDisable(self, disabled)
+	TextInput.onDisable(self)
 end
 
 function NetworkInput:moveCursorRight()
@@ -247,8 +250,9 @@ local window = ui.Window:new
 					Children =
 					{
 						ui.CheckMark:new { Text = L.CUSTOMCLASS_DHCP, Selected = true,
-							onSelect = function(self, selected)
-								ui.CheckMark.onSelect(self, selected)
+							onSelect = function(self)
+								ui.CheckMark.onSelect(self)
+								local selected = self.Selected
 								self:getById("input-address"):setValue("Disabled", selected)
 								self:getById("input-netmask"):setValue("Disabled", selected)
 								self:getById("input-gateway"):setValue("Disabled", selected)
@@ -266,13 +270,14 @@ local window = ui.Window:new
 								Text:new { Text = L.CUSTOMCLASS_ADDRESS, Class = "caption", Width = "fill", Style="text-align:right" },
 								NetworkInput:new { Id = "input-address", EnterNext = true, Disabled = true,
 									ActivateId = "number-input",
-									onEnter = function(self, text)
+									onEnter = function(self)
+										NetworkInput.onEnter(self)
+										local text = self.Text
 										local a, b, c = text:match("^(%d+)%.(%d+)%.(%d+)%.%d+$")
 										local mask = c and tonumber(c) ~= 0 and "255.255.0.0" or "255.255.255.0"
 										self:getById("input-netmask"):setValue("Text", mask)
 										self:getById("input-gateway"):setValue("Text", ("%d.%d.0.0"):format(a, b))
 										self:getById("input-dns"):setValue("Text", ("%d.%d.0.0"):format(a, b))
-										NetworkInput.onEnter(self, text)
 									end,
 								},
 								Text:new { Text = L.CUSTOMCLASS_NETMASK, Class = "caption", Width = "fill", Style="text-align:right" },

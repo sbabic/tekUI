@@ -233,10 +233,10 @@ dfb_allocpen(DFBDISPLAY *mod, struct TVRequest *req)
 		sizeof(struct DFBPen));
 	if (pen)
 	{
+		pen->a = rgb >> 24;
 		pen->r = ((rgb >> 16) & 0xff);
 		pen->g = ((rgb >> 8) & 0xff);
-		pen->b = (rgb & 0xff);
-		pen->a = 0xff;
+		pen->b = rgb & 0xff;
 		TAddTail(&v->penlist, &pen->node);
 		req->tvr_Op.AllocPen.Pen = (TVPEN) pen;
 		return;

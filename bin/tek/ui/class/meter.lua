@@ -23,7 +23,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 6.1"
+_VERSION = "Meter 7.1"
 local Meter = _M
 
 -------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 	if res then
 	
 		local font = self.Application.Display:openFont(self.Font)
-		local r = self.Rect
+		local r1, r2, r3, r4 = self:getRect()
 		
 		local captionheight, captionwidth, _ = 0, 0
 		if #self.CaptionsX > 0 then
@@ -100,7 +100,7 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 		self.TextRecords = { }
 		
 		-- generate text records on Y axis:
-		local height = r[4] - r[2] - captionheight
+		local height = r4 - r2 - captionheight
 		local cy = 0
 		local dy = height * 0x10000 / (#self.CaptionsY - 1)
 		local tr = { }
@@ -141,7 +141,7 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 		
 		
 		-- generate text records on X axis:
-		local width = r[3] - r[1] - captionwidth
+		local width = r3 - r1 - captionwidth
 		local cx = 0
 		local dx = width * 0x10000 / (#self.CaptionsX - 1)
 		tr = { }
@@ -180,7 +180,7 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 		
 		-- create regions for areas used by captions and graph:
 		self.TextRegion = Region.new()
-		self.GraphRect = { r[1], r[2], r[3], r[4] }
+		self.GraphRect = { r1, r2, r3, r4 }
 		local tr = self.TextRecordsX
 		local tw, th, x0, y0 = ui.Text:getTextSize(tr)
 		if x0 then
@@ -197,7 +197,7 @@ function Meter:layout(x0, y0, x1, y1, markdamage)
 			self.TextRegion:orRect(x0, y0, x1, y1)
 			self.GraphRect[1] = x1 + 1
 		end
-		self.TextRegion:andRect(r[1], r[2], r[3], r[4])
+		self.TextRegion:andRect(r1, r2, r3, r4)
 		
 		self.RedrawGraph = true
 		return true
@@ -209,16 +209,16 @@ end
 -------------------------------------------------------------------------------
 
 function Meter:drawGraph()
-	local d = self.Drawable
-	local r = self.Rect
+	local d = self.Window.Drawable
+	local r1, r2, r3, r4 = self:getRect()
 	for cnr, c in ipairs(self.Curves) do
-		local pen = d.Pens[self.GraphPens[cnr]]
+		local pen = self.GraphPens[cnr]
 		local x0, y0, x1, y1 = unpack(self.GraphRect)
 		local gw = x1 - x0
 		local gh = y1 - y0
 		local n = self.NumSamples - 1
 		local dx = gw * 0x10000 / n
-		local y = r[2] + gh
+		local y = r2 + gh
 		local v0
 		for i = 0, n do
 			local v = c[i + 1]
@@ -233,10 +233,10 @@ function Meter:drawGraph()
 				local v1 = v * gh / 0x10000
 				local x1 = x0 + dx
 				local x = x0 / 0x10000
-				if x >= r[3] then
+				if x >= r3 then
 					break
 				end
-				d:drawLine(x, y - v0, min(x1 / 0x10000, r[3]), y - v1, pen)
+				d:drawLine(x, y - v0, min(x1 / 0x10000, r3), y - v1, pen)
 				x0 = x1
 				v0 = v1
 			end
@@ -250,8 +250,7 @@ end
 
 function Meter:eraseGraphBG()
 	local x0, y0, x1, y1 = unpack(self.GraphRect)
-	local d = self.Drawable
-	d:fillRect(x0, y0, x1, y1, d.Pens[self.GraphBGColor])
+	self.Window.Drawable:fillRect(x0, y0, x1, y1, self.GraphBGColor)
 end
 
 -------------------------------------------------------------------------------
@@ -259,9 +258,9 @@ end
 -------------------------------------------------------------------------------
 
 function Meter:erase()
-	local d = self.Drawable
-	local bgpen, tx, ty = self:getBG()
-	self.TextRegion:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
+	local d = self.Window.Drawable
+	d:setBGPen(self:getBG())
+	self.TextRegion:forEach(d.fillRect, d)
 end
 
 -------------------------------------------------------------------------------

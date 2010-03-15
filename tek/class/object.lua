@@ -11,31 +11,10 @@
 --
 --		This class implements notifications.
 --
---	ATTRIBUTES::
---		- {{Notifications [I]}} (table)
---			Initial set of notifications. Static initialization of
---			notifications has this form:
---
---					Notifications =
---					{
---					  ["attribute-name1"] =
---					  {
---					    [value1] =
---					    {
---					      action1,
---					      action2,
---					      ...
---					    }
---					    [value2] = ...
---					  },
---					  ["attribute-name2"] = ...
---					}
---
---			Refer to Object:addNotify() for possible placeholders
---			and a description of the action data structure.
---
 --	IMPLEMENTS::
+--		- Object.addClassNotifications - Collects class notifications
 --		- Object:addNotify() - Adds a notification to an object
+--		- Object:doNotify() - Invokes a notification in the addressed object
 --		- Object.init() - (Re-)initializes an object
 --		- Object:remNotify() - Removes a notification from an object
 --		- Object:setValue() - Sets an attribute, triggering notifications
@@ -52,39 +31,50 @@ local assert = assert
 local error = error
 local insert = table.insert
 local ipairs = ipairs
+local pairs = pairs
+local pcall = pcall
 local remove = table.remove
 local select = select
+local setmetatable = setmetatable
 local type = type
 local unpack = unpack
 
 module("tek.class.object", tek.class)
-_VERSION = "Object 10.0"
+_VERSION = "Object 13.0"
 local Object = _M
 
 -------------------------------------------------------------------------------
---	Placeholders:
+--	constants & class data:
 -------------------------------------------------------------------------------
 
 -- denotes that any value causes an object to be notified:
 NOTIFY_ALWAYS = { }
+
 -- denotes insertion of the object itself:
-NOTIFY_SELF = function(a, n, i) insert(a, a[-1]) return 1 end
+NOTIFY_SELF = function(a, n) a[a[-3]] = a[-1] return 1  end
+
 -- denotes insertion of the value that triggered the notification:
-NOTIFY_VALUE = function(a, n, i) insert(a, a[0]) return 1 end
--- denotes insertion of the value of the attribute prior to setting it:
-NOTIFY_OLDVALUE = function(a, n, i) insert(a, a[-2]) return 1 end
+NOTIFY_VALUE = function(a, n) a[a[-3]] = a[0] return 1  end
+
+-- denotes insertion of the attribute's previous value:
+NOTIFY_OLDVALUE = function(a, n) a[a[-3]] = a[-2] return 1 end
+
 -- denotes insertion of logical negation of the value:
-NOTIFY_TOGGLE = function(a, n, i) insert(a, not a[0]) return 1 end
+NOTIFY_TOGGLE = function(a, n) a[a[-3]] = not a[0] return 1 end
+
 -- denotes insertion of the value, using the next argument as format string:
-NOTIFY_FORMAT = function(a, n, i) insert(a, n[i+1]:format(a[0])) return 2 end
+NOTIFY_FORMAT = function(a, n) a[a[-3]] = n:format(a[0]) return 2 end
+
 -- denotes insertion of a function value:
-NOTIFY_FUNCTION = function(a, n, i) insert(a, n[i+1]) return 2 end
+NOTIFY_FUNCTION = function(a, n) a[a[-3]] = n return 2 end
 
 -------------------------------------------------------------------------------
---	Class implementation:
+--	new: overrides
 -------------------------------------------------------------------------------
 
 function Object.new(class, self)
+	self = self or { }
+	self.Notifications = class.ClassNotifications
 	return Class.new(class, class.init(self or { }))
 end
 
@@ -96,8 +86,24 @@ end
 -------------------------------------------------------------------------------
 
 function Object.init(self)
-	self.Notifications = self.Notifications or { }
 	return self
+end
+
+-------------------------------------------------------------------------------
+--	Object:doNotify(func, ...): Performs a notification in the object by
+--	calling the specified function and passing it the given arguments. If
+--	{{func}} is a a function value, it will be called directly. Otherwise, it
+--	will be used as a key for looking up the function.
+-------------------------------------------------------------------------------
+
+function Object:doNotify(func, ...)
+	if type(func) == "function" then
+		return func(self, ...)
+	end
+	func = self[func]
+	if type(func) == "function" then
+		return func(self, ...)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -109,36 +115,24 @@ end
 --	For details on registering notifications, see Object:addNotify().
 -------------------------------------------------------------------------------
 
-local function doNotify(self, n, key, oldval)
-	if n then
-		if not n[0] then
-			n[0] = true
-			for _, n in ipairs(n) do
-				local a = { [-2] = oldval, [-1] = self, [0] = self[key] }
-				local i, v = 1
-				while i <= #n do
-					v = n[i]
-					if type(v) == "function" then
-						i = i + v(a, n, i)
-					else
-						insert(a, v)
-						i = i + 1
-					end
-				end
-				if a[1] then
-					local func = remove(a, 2)
-					if type(func) == "string" then
-						func = a[1][func]
-					end
-					if func then
-						func(unpack(a))
-					end
-				end
+local function doNotifications(a, ...)
+	for j = 1, select("#", ...) do
+		local n = select(j, ...)
+		a[-3] = 1 -- reset argument counter
+		local i = 1
+		while i <= #n do
+			local v = n[i]
+			if type(v) == "function" then
+				i = i + v(a, n[i + 1])
+			else
+				a[a[-3]] = v
+				i = i + 1
 			end
-			n[0] = false
-		-- else
-		--	db.warn("dropping cyclic notification")
+			a[-3] = a[-3] + 1
 		end
+		local object = remove(a, 1)
+		local func = remove(a, 1)
+		object:doNotify(func, unpack(a, 1, a[-3] - 3))
 	end
 end
 
@@ -151,8 +145,15 @@ function Object:setValue(key, val, notify)
 	if n and notify ~= false then
 		if val ~= oldval or notify then
 			self[key] = val
-			doNotify(self, n[NOTIFY_ALWAYS], key, oldval)
-			doNotify(self, n[val], key, oldval)
+			local args = { [-2] = oldval, [-1] = self, [0] = val }
+			local n2 = n[NOTIFY_ALWAYS]
+			for i = 1, 2 do
+				if n2 then
+					assert(#n2 > 0)
+					doNotifications(args, unpack(n2))
+				end
+				n2 = n[val]
+			end
 		end
 	else
 		self[key] = val
@@ -160,13 +161,13 @@ function Object:setValue(key, val, notify)
 end
 
 -------------------------------------------------------------------------------
---	Object:addNotify(attr, val, dest[, pos]):
+--	Object:addNotify(attr, val, dest):
 --	Adds a notification to an object. {{attr}} is the name of an attribute to
 --	react on setting its value. {{val}} is the value that triggers the
---	notification. The placeholder {{ui.NOTIFY_ALWAYS}} can be used for
---	reacting on any change of the value.
---	{{dest}} is a table describing the action to take when the notification
---	occurs; it has the general form:
+--	notification. For {{val}}, the placeholder {{ui.NOTIFY_ALWAYS}} can be
+--	used to react on any change of the value.
+--	{{action}} is a table describing the action to take when the
+--	notification occurs; it has the general form:
 --			{ object, method, arg1, ... }
 --	{{object}} denotes the target of the notification, i.e. the {{self}}
 --	that will be passed to the {{method}} as its first argument.
@@ -197,9 +198,6 @@ end
 --		Application:addCoroutine() for further details.
 --	In any case, the {{method}} will be invoked as follows:
 --			method(object, arg1, ...)
---	The optional {{pos}} argument allows for insertion at the specified
---	position in the list of notifications. By default, notifications are
---	added at the end. The only reasonable value for {{pos}} is probably {{1}}.
 --
 --	If the destination object or addressed method cannot be determined,
 --	nothing else besides setting the attribute will happen.
@@ -208,18 +206,34 @@ end
 --	no longer needed, to reduce overhead and memory use.
 ------------------------------------------------------------------------------
 
-function Object:addNotify(attr, val, dest, pos)
-	if dest then
-		local n = self.Notifications
-		n[attr] = n[attr] or { }
-		n[attr][val] = n[attr][val] or { }
-		if pos then
-			insert(n[attr][val], pos, dest)
-		else
-			insert(n[attr][val], dest)
+local copytable
+
+function copytable(src, dst, depth)
+	for key, val in pairs(src) do
+		if type(val) == "table" and depth < 3 then
+			val = copytable(val, { }, depth + 1)
 		end
-	else
-		error("No notify destination given")
+		dst[key] = val
+	end
+	return dst
+end
+
+local function p_addnotify(n, attr, val, dest)
+	n[attr] = n[attr] or { }
+	local t = n[attr][val] or { }
+	n[attr][val] = t
+	t[#t + 1] = dest -- table.insert would not consider metatables
+end
+
+function Object:addNotify(attr, val, dest)
+	assert(dest)
+	local n = self.Notifications
+	if not pcall(p_addnotify, n, attr, val, dest) then
+-- 		db.warn("copy on write notifications : %s.%s=%s",
+-- 			self:getClassName(), attr, val)
+		n = copytable(n, { }, 0)
+		self.Notifications = n
+		p_addnotify(n, attr, val, dest)
 	end
 end
 
@@ -227,18 +241,20 @@ end
 --	success = Object:remNotify(attr, val, dest):
 --	Removes a notification from an object and returns '''true''' if it
 --	was found and removed successfully. You must specify the exact set of
---	arguments as for Object:addNotify() to identify a notification.
+--	arguments as for Object:addNotify() to identify a notification for removal.
 -------------------------------------------------------------------------------
 
 function Object:remNotify(attr, val, dest)
 	local n = self.Notifications
-	if n[attr] and n[attr][val] then
-		for i, v in ipairs(n[attr][val]) do
-			if v == dest then
-				remove(n[attr][val], i)
-				-- if #n[attr][val] == 0 then
-				--	n[attr][val] = nil
-				-- end
+	n = n and n[attr]
+	local n2 = n and n[val]
+	if n2 then
+		for i = 1, #n2 do
+			if n2[i] == dest then
+				remove(n2, i)
+				if #n2 == 0 then
+					n[val] = nil
+				end
 				return
 			end
 		end
@@ -246,3 +262,32 @@ function Object:remNotify(attr, val, dest)
 	db.error("Notification not found : %s[%s]", attr, val)
 	return false
 end
+
+-------------------------------------------------------------------------------
+--	Object.addClassNotifications(proto): class method for collecting the
+--	class' 'standard' notifications. Standard means that these notifications
+--	remain in place, and are not removed or replaced during runtime.
+-------------------------------------------------------------------------------
+
+local romtab = { __newindex = function() error("read-only table") end }
+
+local readonly
+
+function readonly(tab, maxdepth, depth)
+	depth = depth or 0
+	if not maxdepth or depth < maxdepth then
+		setmetatable(tab, romtab)
+		for key, val in pairs(tab) do
+			if type(val) == "table" then
+				readonly(val, maxdepth, depth + 1)
+			end
+		end
+	end
+	return tab
+end
+
+function Object.addClassNotifications(proto)
+	return readonly(proto.Notifications, 3)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }

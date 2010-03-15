@@ -79,7 +79,7 @@ app = ui.Application:new
 {
 	ProgramName = "tekUI Demo",
 	Author = "Timm S. Müller",
-	Copyright = "Copyright © 2008, 2009, Schulze-Müller GbR",
+	Copyright = "Copyright © 2008-2010, Schulze-Müller GbR",
 	ApplicationId = APP_ID,
 	Domain = VENDOR,
 	Children =
@@ -110,12 +110,12 @@ app = ui.Application:new
 					local m = collectgarbage("count")
 					data.MinMem = math.min(data.MinMem or m, m)
 					data.MaxMem = math.max(data.MaxMem or m, m)
-					local mem = self.Application:getById("about-mem-used")
+					local mem = self:getById("about-mem-used")
 					if mem then
 						mem:setValue("Text", ("%dk - min: %dk - max: %dk"):format(m,
 							data.MinMem, data.MaxMem))
 					end
-					local gauge = self.Application:getById("about-mem-gauge")
+					local gauge = self:getById("about-mem-gauge")
 					if gauge then
 						gauge:setValue("Min", data.MinMem)
 						gauge:setValue("Max", data.MaxMem)
@@ -164,7 +164,7 @@ app = ui.Application:new
 											HSliderMode = "auto",
 											VSliderMode = "auto",
 											Headers = { L.PROPERTY, L.VALUE },
-											Child = ui.ListGadget:new
+											Child = ui.Lister:new
 											{
 												SelectMode = "none",
 												ListObject = List:new
@@ -312,8 +312,9 @@ app = ui.Application:new
 																self:setValue("Value", ssm, true)
 																return ui.ScrollBar.show(self, display, drawable)
 															end,
-															onSetValue = function(self, val)
-																ui.ScrollBar.onSetValue(self, val)
+															onSetValue = function(self)
+																ui.ScrollBar.onSetValue(self)
+																local val = self.Value
 																collectgarbage("setpause", val)
 																self:getById("text-gcpause"):setValue("Text", ("  %d  "):format(val))
 															end,
@@ -344,8 +345,9 @@ app = ui.Application:new
 																self:setValue("Value", ssm, true)
 																return ui.ScrollBar.show(self, display, drawable)
 															end,
-															onSetValue = function(self, val)
-																ui.ScrollBar.onSetValue(self, val)
+															onSetValue = function(self)
+																ui.ScrollBar.onSetValue(self)
+																local val = self.Value
 																collectgarbage("setstepmul", val)
 																self:getById("text-gcstepmul"):setValue("Text", ("  %d  "):format(val))
 															end,
@@ -392,7 +394,7 @@ app = ui.Application:new
 													onSetValue = function(self, value)
 														ui.ScrollBar.onSetValue(self, value)
 														db.level = math.floor(self.Value)
-														self.Application:getById("about-system-debuglevel"):setValue("Text", db.level)
+														self:getById("about-system-debuglevel"):setValue("Text", db.level)
 													end,
 												},
 												ui.Text:new
@@ -407,22 +409,17 @@ app = ui.Application:new
 													{
 														ui.CheckMark:new
 														{
-															Selected = ui.DEBUG,
 															Text = L.SLOW_RENDERING,
-															onSelect = function(self, selected)
-																ui.CheckMark.onSelect(self, selected)
-																ui.DEBUG = selected
-																ui.Drawable.enableDebug(selected)
+															onSelect = function(self)
+																ui.CheckMark.onSelect(self)
+																self.Window.Drawable:setAttrs { Debug = self.Selected }
 															end,
 														},
 														ui.Button:new
 														{
 															Text = L.DEBUG_CONSOLE,
-															onPress = function(self, pressed)
-																if pressed == false then
-																	db.console()
-																end
-																ui.Button.onPress(self, pressed)
+															onClick = function(self)
+																db.console()
 															end
 														}
 													}
@@ -440,11 +437,8 @@ app = ui.Application:new
 					InitialFocus = true,
 					Text = L.OKAY,
 					Style = "width: fill",
-					onPress = function(self, pressed)
-						if pressed == false then
-							self.Window:setValue("Status", "hide")
-						end
-						ui.Button.onPress(self, pressed)
+					onClick = function(self)
+						self.Window:setValue("Status", "hide")
 					end,
 				}
 			}
@@ -465,9 +459,9 @@ app = ui.Application:new
 			end,
 
 			Orientation = "vertical",
-			onChangeStatus = function(self, status)
-				ui.Window.onChangeStatus(self, status)
-				if status == "hide" then
+			onChangeStatus = function(self)
+				ui.Window.onChangeStatus(self)
+				if self.Status == "hide" then
 					self.Application:setValue("Status", "quit")
 				end
 			end,
@@ -487,11 +481,8 @@ app = ui.Application:new
 								{
 									Text = L.MENU_ABOUT,
 									Shortcut = "Ctrl+?",
-									onPress = function(self, pressed)
-										ui.MenuItem.onPress(self, pressed)
-										if pressed == false then
-											self:getById("about-window"):setValue("Status", "show")
-										end
+									onClick = function(self)
+										self:getById("about-window"):setValue("Status", "show")
 									end
 								},
 								ui.Spacer:new { },
@@ -499,28 +490,22 @@ app = ui.Application:new
 								{
 									Text = L.OPEN_ALL,
 									Shortcut = "Ctrl+a",
-									onPress = function(self, pressed)
-										if pressed == false then
-											local group = self.Application:getById("demo-group")
-											for _, c in ipairs(group.Children) do
-												c:setValue("Selected", true)
-											end
+									onClick = function(self)
+										local group = self:getById("demo-group")
+										for _, c in ipairs(group.Children) do
+											c:setValue("Selected", true)
 										end
-										ui.MenuItem.onPress(self, pressed)
 									end
 								},
 								ui.MenuItem:new
 								{
 									Text = L.CLOSE_ALL,
 									Shortcut = "Ctrl+n",
-									onPress = function(self, pressed)
-										if pressed == false then
-											local group = self.Application:getById("demo-group")
-											for _, c in ipairs(group.Children) do
-												c:setValue("Selected", false)
-											end
+									onClick = function(self)
+										local group = self:getById("demo-group")
+										for _, c in ipairs(group.Children) do
+											c:setValue("Selected", false)
 										end
-										ui.MenuItem.onPress(self, pressed)
 									end
 								},
 								ui.Spacer:new { },
@@ -528,11 +513,8 @@ app = ui.Application:new
 								{
 									Text = L.MENU_QUIT,
 									Shortcut = "Ctrl+Q",
-									onPress = function(self, pressed)
-										if pressed == false then
-											self:getById("window-main"):onHide()
-										end
-										ui.MenuItem.onPress(self, pressed)
+									onClick = function(self)
+										self:getById("window-main"):onHide()
 									end,
 								}
 							}

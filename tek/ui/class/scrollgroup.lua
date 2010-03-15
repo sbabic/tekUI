@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.group : Group]] /
 --		ScrollGroup ${subclasses(ScrollGroup)}
 --
@@ -32,7 +32,7 @@
 --				- {{"on"}} - The horizontal scrollbar is displayed
 --				- {{"off"}} - The horizontal scrollbar is not displayed
 --				- {{"auto"}} - The horizontal scrollbar is displayed when
---				the ListGadget is wider than the currently visible area.
+--				the Lister is wider than the currently visible area.
 --			Note: The use of the {{"auto"}} mode is currently (v8.0)
 --			discouraged.
 --		- {{VSliderMode [IG]}} (string)
@@ -41,7 +41,7 @@
 --				- {{"on"}} - The vertical scrollbar is displayed
 --				- {{"off"}} - The vertical scrollbar is not displayed
 --				- {{"auto"}} - The vertical scrollbar is displayed when
---				the ListGadget is taller than the currently visible area.
+--				the Lister is taller than the currently visible area.
 --			Note: The use of the {{"auto"}} mode is currently (v8.0)
 --			discouraged.
 --
@@ -55,9 +55,9 @@
 
 local ui = require "tek.ui"
 
-local Group = ui.require("group", 27)
-local Region = ui.loadLibrary("region", 9)
-local ScrollBar = ui.require("scrollbar", 10)
+local Group = ui.require("group", 31)
+local Region = ui.loadLibrary("region", 10)
+local ScrollBar = ui.require("scrollbar", 13)
 
 local floor = math.floor
 local insert = table.insert
@@ -68,7 +68,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 15.0"
+_VERSION = "ScrollGroup 17.0"
 
 local ScrollGroup = _M
 
@@ -89,18 +89,18 @@ function ScrollGroup.new(class, self)
 	self.HSliderEnabled = false
 	self.HSliderGroup = self.HSliderGroup or false
 	self.HSliderMode = self.HSliderMode or "off"
-	self.HSliderNotify = { self, "onSetSliderLeft", ui.NOTIFY_VALUE }
-	self.NotifyHeight = { self, "onSetCanvasHeight", ui.NOTIFY_VALUE }
-	self.NotifyLeft = { self, "onSetCanvasLeft", ui.NOTIFY_VALUE }
-	self.NotifyTop = { self, "onSetCanvasTop", ui.NOTIFY_VALUE }
-	self.NotifyWidth = { self, "onSetCanvasWidth", ui.NOTIFY_VALUE }
+	self.HSliderNotify = { self, "onSetSliderLeft", NOTIFY_VALUE }
+	self.NotifyHeight = { self, "onSetCanvasHeight", NOTIFY_VALUE }
+	self.NotifyLeft = { self, "onSetCanvasLeft", NOTIFY_VALUE }
+	self.NotifyTop = { self, "onSetCanvasTop", NOTIFY_VALUE }
+	self.NotifyWidth = { self, "onSetCanvasWidth", NOTIFY_VALUE }
 	self.ScrollStep = self.ScrollStep or 10
 	self.VMax = -1
 	self.VRange = -1
 	self.VSliderEnabled = false
 	self.VSliderGroup = self.VSliderGroup or false
 	self.VSliderMode = self.VSliderMode or "off"
-	self.VSliderNotify = { self, "onSetSliderTop", ui.NOTIFY_VALUE }
+	self.VSliderNotify = { self, "onSetSliderTop", NOTIFY_VALUE }
 	
 	local hslider, vslider
 
@@ -150,14 +150,14 @@ end
 
 function ScrollGroup:askMinMax(m1, m2, m3, m4)
 	m1, m2, m3, m4 = Group.askMinMax(self, m1, m2, m3, m4)
-	local cb = self.Child.Margin
-	local b = self.Margin
+	local cb1, cb2, cb3, cb4 = self.Child:getMargin()
+	local b1, b2, b3, b4 = self:getMargin()
 	if self.HSliderMode == "auto" and self.Child.MinWidth == 0 then
 		local n1 = self.Child:askMinMax(0, 0, 0, 0)
-		self.Child.MinWidth = n1 - cb[1] - cb[3] - b[1] - b[3]
+		self.Child.MinWidth = n1 - cb1 - cb3 - b1 - b3
 	end
 	if self.VSliderMode == "auto" and self.Child.MinHeight == 0 then
-		self.Child.MinHeight = m2 - cb[2] - cb[4] - b[2] - b[4]
+		self.Child.MinHeight = m2 - cb2 - cb4 - b2 - b4
 	end
 	return m1, m2, m3, m4
 end
@@ -169,16 +169,16 @@ end
 function ScrollGroup:setup(app, window)
 	Group.setup(self, app, window)
 	local c = self.Child
-	c:addNotify("CanvasLeft", ui.NOTIFY_ALWAYS, self.NotifyLeft, 1)
-	c:addNotify("CanvasTop", ui.NOTIFY_ALWAYS, self.NotifyTop, 1)
-	c:addNotify("CanvasWidth", ui.NOTIFY_ALWAYS, self.NotifyWidth, 1)
-	c:addNotify("CanvasHeight", ui.NOTIFY_ALWAYS, self.NotifyHeight, 1)
+	c:addNotify("CanvasLeft", NOTIFY_ALWAYS, self.NotifyLeft)
+	c:addNotify("CanvasTop", NOTIFY_ALWAYS, self.NotifyTop)
+	c:addNotify("CanvasWidth", NOTIFY_ALWAYS, self.NotifyWidth)
+	c:addNotify("CanvasHeight", NOTIFY_ALWAYS, self.NotifyHeight)
 	if self.HSliderGroup then
-		self.HSliderGroup.Slider:addNotify("Value", ui.NOTIFY_ALWAYS,
+		self.HSliderGroup.Slider:addNotify("Value", NOTIFY_ALWAYS,
 			self.HSliderNotify)
 	end
 	if self.VSliderGroup then
-		self.VSliderGroup.Slider:addNotify("Value", ui.NOTIFY_ALWAYS,
+		self.VSliderGroup.Slider:addNotify("Value", NOTIFY_ALWAYS,
 			self.VSliderNotify)
 	end
 end
@@ -189,18 +189,18 @@ end
 
 function ScrollGroup:cleanup()
 	if self.VSliderGroup then
-		self.VSliderGroup.Slider:remNotify("Value", ui.NOTIFY_ALWAYS,
+		self.VSliderGroup.Slider:remNotify("Value", NOTIFY_ALWAYS,
 			self.VSliderNotify)
 	end
 	if self.HSliderGroup then
-		self.HSliderGroup.Slider:remNotify("Value", ui.NOTIFY_ALWAYS,
+		self.HSliderGroup.Slider:remNotify("Value", NOTIFY_ALWAYS,
 			self.HSliderNotify)
 	end
 	local c = self.Child
-	c:remNotify("CanvasHeight", ui.NOTIFY_ALWAYS, self.NotifyHeight)
-	c:remNotify("CanvasWidth", ui.NOTIFY_ALWAYS, self.NotifyWidth)
-	c:remNotify("CanvasTop", ui.NOTIFY_ALWAYS, self.NotifyTop)
-	c:remNotify("CanvasLeft", ui.NOTIFY_ALWAYS, self.NotifyLeft)
+	c:remNotify("CanvasHeight", NOTIFY_ALWAYS, self.NotifyHeight)
+	c:remNotify("CanvasWidth", NOTIFY_ALWAYS, self.NotifyWidth)
+	c:remNotify("CanvasTop", NOTIFY_ALWAYS, self.NotifyTop)
+	c:remNotify("CanvasLeft", NOTIFY_ALWAYS, self.NotifyLeft)
 	Group.cleanup(self)
 end
 
@@ -347,11 +347,11 @@ function ScrollGroup:exposeArea(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
---	copyArea:
+--	blitRect:
 -------------------------------------------------------------------------------
 
-function ScrollGroup:copyArea(...)
-	self.Drawable:copyArea(...)
+function ScrollGroup:blitRect(...)
+	self.Window.Drawable:blitRect(...)
 end
 
 -------------------------------------------------------------------------------
@@ -397,25 +397,26 @@ function ScrollGroup:draw()
 		local bx, by = 0, 0
 		for i = 1, #cs - 1 do
 			bx, by = ax, ay
-			ax = ax + cs[i].Rect[1] - cs[i].CanvasLeft
-			ay = ay + cs[i].Rect[2] - cs[i].CanvasTop
+			local r1, r2 = cs[i]:getRect()
+			ax = ax + r1 - cs[i].CanvasLeft
+			ay = ay + r2 - cs[i].CanvasTop
 		end
 
 		-- get intersection between self and parent:
-		local a1, a2, a3, a4 = unpack(canvas.Rect)
-		local b1, b2, b3, b4 = unpack(parent.Rect)
+		local a1, a2, a3, a4 = canvas:getRect()
+		local b1, b2, b3, b4 = parent:getRect()
 		a1, a2, a3, a4 = intersect(a1 + ax, a2 + ay, a3 + ax, a4 + ay,
 			b1 + bx, b2 + by, b3 + bx, b4 + by)
 		if a1 then
 
 			-- intersect with top rect:
-			a1, a2, a3, a4 = intersect(a1, a2, a3, a4, unpack(cs[1].Rect))
+			a1, a2, a3, a4 = intersect(a1, a2, a3, a4, cs[1]:getRect())
 			if a1 then
 
-				local d = self.Drawable
+				local d = self.Window.Drawable
 
 				-- make relative:
-				local sx, sy = d:getShift()
+				local sx, sy = d:setShift()
 				a1 = a1 - sx
 				a2 = a2 - sy
 				a3 = a3 - sx
@@ -424,7 +425,7 @@ function ScrollGroup:draw()
 				-- region that needs to get refreshed (relative):
 				local dr = Region.new(a1, a2, a3, a4)
 
-				local x0, y0, x1, y1 = unpack(canvas.Rect)
+				local x0, y0, x1, y1 = canvas:getRect()
 				x0, y0, x1, y1 = intersect(x0, y0, x1, y1,
 					a1 + dx, a2 + dy, a3 + dx, a4 + dy)
 				if x0 then
@@ -437,7 +438,7 @@ function ScrollGroup:draw()
 
 					local t = { }
 
-					self:copyArea(a1, a2, a3, a4, a1 + dx, a2 + dy, t)
+					self:blitRect(a1, a2, a3, a4, a1 + dx, a2 + dy, t)
 
 					-- exposures resulting from obscured areas (make relative):
 					for i = 1, #t, 4 do

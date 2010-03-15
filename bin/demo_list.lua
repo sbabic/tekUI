@@ -25,7 +25,7 @@ local window = Window:new
 			HSliderMode = "auto",
 			Child = ui.Canvas:new
 			{
-				Child = ui.ListGadget:new
+				Child = ui.Lister:new
 				{
 					Id = "the-list",
 					SelectMode = "single",

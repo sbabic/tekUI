@@ -550,9 +550,9 @@ function DocMarkup:link(link)
 	end
 	if self.refdoc then
 		local jump = link:match("^%#(.*)$")
-		if jump then
-			link = ("%s#%s"):format(self.refdoc, jump)
-		end
+-- 		if jump then
+-- 			link = ("%s#%s"):format(self.refdoc, jump)
+-- 		end
 		local func = link:match("^(.*)%(%)$")
 		if func then
 			return ('<a href="%s#%s"><code>'):format(self.refdoc, func), 
@@ -597,7 +597,7 @@ end
 
 local template = "-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S," ..
 	"-e=EMPTY/S,--heading/K,--header/K/M,--author/K,--created/K," ..
-	"--adddate/S,-r=REFDOC/K,-n=NAME/K,--nomacros/S"
+	"--adddate/S,-r=REFDOC/K,-n=NAME/K,--nomacros/S,--footer/K"
 
 local args = Args.read(template, arg)
 
@@ -611,13 +611,14 @@ if not args or args["-h"] then
 	print("  -p=PLAIN/S     generate formatted plain text instead of HTML")
 	print("  -e=EMPTY/S     also show empty (undocumented) modules in index")
 	print("  --heading/K    single-line document heading")
-	print("  --header/K/M   ead header(s) from the specified file(s)")
+	print("  --header/K/M   read header(s) from the specified file(s)")
 	print("  --author/K     document author (HTML generator metadata)")
 	print("  --created/K    creation date (HTML generator metadata)")
 	print("  --adddate/S    add creation date (HTML generator metadata)")
 	print("  -r=REFDOC/K    document implicitely referenced by functions")
 	print("  -n=NAME/K      document name (rest of arguments will be used)")
 	print("  --nomacros/S   macros produce empty strings")
+	print("  --footer/K     read footer from the specified file")
 	print("If a path is specified, it is scanned for files with the extension")
 	print(".lua. From these files, a HTML document is generated containing a")
 	print("class tree, library index and function reference from specially")
@@ -661,6 +662,11 @@ else
 		processtree(state)
 		-- render documentation:
 		state.textdoc = state.textdoc .. concat(state.documentation)
+	end
+
+	local footer = args["--footer"]
+	if footer then
+		state.textdoc = state.textdoc .. io.open(footer):read("*a")
 	end
 
 	local macros = { }

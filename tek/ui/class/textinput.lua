@@ -11,11 +11,11 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		TextInput ${subclasses(TextInput)}
 --
---		This class implements a gadget for entering and editing text.
+--		This class implements a widget for entering and editing text.
 --
 --	ATTRIBUTES::
 --		- {{Enter [SG]}} (string)
@@ -51,7 +51,7 @@
 --		- Element:hide()
 --		- Object.init()
 --		- Frame:onFocus()
---		- Gadget:onSelect()
+--		- Widget:onSelect()
 --		- Text:onSetText()
 --		- Area:passMsg()
 --		- Area:setState()
@@ -63,9 +63,9 @@
 local db = require "tek.lib.debug"
 local UTF8String = require "tek.class.utf8string"
 local ui = require "tek.ui"
-local Area = ui.require("area", 36)
-local Gadget = ui.require("gadget", 19)
-local Text = ui.require("text", 24)
+local Area = ui.require("area", 44)
+local Widget = ui.require("widget", 25)
+local Text = ui.require("text", 28)
 
 local char = string.char
 local floor = math.floor
@@ -75,21 +75,23 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.textinput", tek.ui.class.text)
-_VERSION = "TextInput 15.0"
-
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
-
-local FL_REDRAW = ui.FL_REDRAW
-
-local NOTIFY_ENTER = { ui.NOTIFY_SELF, "onEnter", ui.NOTIFY_VALUE }
-
--------------------------------------------------------------------------------
---	Class implementation:
--------------------------------------------------------------------------------
-
+_VERSION = "TextInput 18.0"
 local TextInput = _M
+
+-------------------------------------------------------------------------------
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function TextInput.addClassNotifications(proto)
+	addNotify(proto, "Enter", NOTIFY_ALWAYS, { NOTIFY_SELF, "onEnter" })
+	return Text.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
+
+-------------------------------------------------------------------------------
+--	init: overrides
+-------------------------------------------------------------------------------
 
 function TextInput.init(self)
 	self.BlinkState = false
@@ -121,7 +123,6 @@ end
 
 function TextInput:setup(app, window)
 	Text.setup(self, app, window)
-	self:addNotify("Enter", ui.NOTIFY_ALWAYS, NOTIFY_ENTER)
 	self.FontWidth, self.FontHeight = self.TextRecords[1][2]:getTextSize(" ")
 	self.TextRect = { }
 	self.TextOffset = 0
@@ -133,7 +134,6 @@ end
 
 function TextInput:cleanup()
 	self:setEditing(false)
-	self:remNotify("Enter", ui.NOTIFY_ALWAYS, NOTIFY_ENTER)
 	Text.cleanup(self)
 	self.TextOffset = 0
 	self.TextCursor = 0
@@ -144,8 +144,8 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function TextInput:show(drawable)
-	Text.show(self, drawable)
+function TextInput:show()
+	Text.show(self)
 	self.BlinkTick = 0
 	self.BlinkTickInit = 18
 end
@@ -160,7 +160,7 @@ function TextInput:askMinMax(m1, m2, m3, m4)
 	m2 = m2 + h + 1
 	m3 = m3 + w + 1
 	m4 = m4 + h + 1
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
+	return Widget.askMinMax(self, m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
@@ -170,12 +170,10 @@ end
 function TextInput:layoutText()
 	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
-		
 		self:setCursor(self:getCursor())
 		local p1, p2, p3, p4 = self:getPadding()
-		local r = self.Rect
-		local w = r[3] - r[1] + 1 - p1 - p3
-		local h = r[4] - r[2] + 1 - p2 - p4
+		local w = r3 - r1 + 1 - p1 - p3
+		local h = r4 - r2 + 1 - p2 - p4
 		local fw, fh = self.FontWidth, self.FontHeight
 		
 		local len = self.TextBuffer:len()
@@ -190,8 +188,8 @@ function TextInput:layoutText()
 	
 		-- visible text rect, left aligned:
 		local tr = self.TextRect
-		tr[1] = r[1] + p1 -- centered: + (w - tw) / 2
-		tr[2] = r[2] + p2 + floor((h - fh) / 2)
+		tr[1] = r1 + p1 -- centered: + (w - tw) / 2
+		tr[2] = r2 + p2 + floor((h - fh) / 2)
 		tr[3] = tr[1] + tw - 1
 		tr[4] = tr[2] + fh - 1
 	end
@@ -202,7 +200,7 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:layout(x0, y0, x1, y1, markdamage)
-	if Gadget.layout(self, x0, y0, x1, y1, markdamage) then
+	if Widget.layout(self, x0, y0, x1, y1, markdamage) then
 		self:layoutText()
 		return true
 	end
@@ -213,9 +211,8 @@ end
 -------------------------------------------------------------------------------
 
 function TextInput:draw()
-	if Gadget.draw(self) then
-		local d = self.Drawable
-		local pens = d.Pens
+	if Widget.draw(self) then
+		local d = self.Window.Drawable
 		local tr = self.TextRect
 		local to = self.TextOffset
 		local tc = self.TextCursor
@@ -227,10 +224,10 @@ function TextInput:draw()
 		text = self.TextBuffer:sub(to + 1, to + tw)
 		if self.Disabled then
 			d:drawText(x + 1, y + 1, tr[3] + 1, tr[4] + 1, text,
-				d.Pens[self.Properties["color-shadow:disabled"] or 
-				"disabled-detail-shine"])
+				self.Properties["color-shadow:disabled"] or 
+				"disabled-detail-shine")
 		end
-		local pen = pens[self.FGPen]
+		local pen = self.FGPen
 		d:drawText(x, y, tr[3], tr[4], text, pen)
 		if not self.Disabled and self.Editing then
 			local s = self.TextBuffer:sub(tc + to + 1, tc + to + 1)
@@ -238,9 +235,7 @@ function TextInput:draw()
 			if self.BlinkState == 1 then
 				d:drawText(tr[1] + tc * fw, tr[2], 
 					tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
-					s,
-					pens["cursor-detail"],
-					pens["cursor"])
+					s, "cursor-detail", "cursor")
 			else
 				d:drawText(tr[1] + tc * fw, tr[2],
 					tr[1] + tc * fw + fw - 1, tr[2] + self.FontHeight - 1, 
@@ -297,18 +292,18 @@ end
 --	onSelect: overrides
 -------------------------------------------------------------------------------
 
-function TextInput:onSelect(selected)
-	self:setEditing(selected)
-	Text.onSelect(self, selected)
+function TextInput:onSelect()
+	self:setEditing(self.Selected)
+	Text.onSelect(self)
 end
 
 -------------------------------------------------------------------------------
 --	onFocus: overrides
 -------------------------------------------------------------------------------
 
-function TextInput:onFocus(focused)
-	Text.onFocus(self, focused)
-	self:setEditing(focused)
+function TextInput:onFocus()
+	Text.onFocus(self)
+	self:setEditing(self.Focus)
 end
 
 -------------------------------------------------------------------------------
@@ -322,7 +317,7 @@ function TextInput:updateInterval(msg)
 		local bs = ((self.BlinkState == 1) and 0) or 1
 		if bs ~= self.BlinkState then
 			self.BlinkState = bs
-			self.Flags:set(FL_REDRAW)
+			self.Flags:set(ui.FL_REDRAW)
 		end
 	end
 	return msg
@@ -529,21 +524,22 @@ end
 --	a rethinkLayout:
 -------------------------------------------------------------------------------
 
-function TextInput:onSetText(text)
+function TextInput:onSetText()
+	local text = self.Text
 	self:makeTextRecords(text)
 	self.TextBuffer = UTF8String:new(text)
 	self:layoutText()
-	self.Flags:set(FL_REDRAW)
+	self.Flags:set(ui.FL_REDRAW)
 end
 
 -------------------------------------------------------------------------------
---	onEnter(text): This method is called when the {{Enter}} attribute is
+--	onEnter(): This method is called when the {{Enter}} attribute is
 --	set. It can be overridden for reacting on entering text by pressing
---	the return key. This method also sets the {{Text}} attribute (see
---	[[#tek.ui.class.text : Text]]).
+--	the return key. The implementation in this class also sets the {{Text}}
+--	attribute (see [[#tek.ui.class.text : Text]]).
 -------------------------------------------------------------------------------
 
-function TextInput:onEnter(text)
-	self:setValue("Text", text)
+function TextInput:onEnter()
+	self:setValue("Text", self.Enter)
 	self:setCursor("eol")
 end

@@ -24,9 +24,9 @@ function Coefficient.new(class, self)
 			Value = self.Value1,
 			Step = 3,
 			Integer = true,
-			onSetValue = function(self, val)
-				Slider.onSetValue(self, val)
-				local p = self.Application:getById("the-plasma")
+			onSetValue = function(self)
+				Slider.onSetValue(self)
+				local p = self:getById("the-plasma")
 				p:setValue(group.Key1, self.Value)
 			end,
 		},
@@ -38,9 +38,9 @@ function Coefficient.new(class, self)
 			Value = self.Value2,
 			Step = 3,
 			Integer = true,
-			onSetValue = function(self, val)
-				Slider.onSetValue(self, val)
-				local p = self.Application:getById("the-plasma")
+			onSetValue = function(self)
+				Slider.onSetValue(self)
+				local p = self:getById("the-plasma")
 				p:setValue(group.Key2, self.Value)
 			end,
 		},
@@ -51,47 +51,6 @@ end
 -------------------------------------------------------------------------------
 --	Create demo window:
 -------------------------------------------------------------------------------
-
-local slider1 = ui.Slider:new
-{
-	Min = 1,
-	Max = 19,
-	Value = 8,
-	Range = 20,
-	Step = 1
-}
-slider1:addNotify("Value", ui.NOTIFY_ALWAYS, 
-	{ ui.NOTIFY_ID, "the-tunnel", "setSpeed", ui.NOTIFY_VALUE })
-
-local slider2 = ui.Slider:new
-{
-	Min = 0x10,
-	Max = 0x1ff,
-	Value = 0x50,
-	Range = 0x200,
-	Step = 20
-}
-slider2:addNotify("Value", ui.NOTIFY_ALWAYS, 
-	{ ui.NOTIFY_ID, "the-tunnel", "setViewZ", ui.NOTIFY_VALUE })
-
-local slider3 = ui.Slider:new 
-{
-	Min = 1,
-	Max = 19,
-	Value = 6,
-	Range = 20,
-	Step = 1
-}
-slider3:addNotify("Value", ui.NOTIFY_ALWAYS, 
-	{ ui.NOTIFY_ID, "the-tunnel", "setNumSeg", ui.NOTIFY_VALUE })
-
-local startbutton = ui.Button:new { Text = L.ANIMATIONS_START }
-startbutton:addNotify("Pressed", false,
-	{ ui.NOTIFY_ID, "the-boing", "setValue", "Running", true })
-
-local stopbutton = ui.Button:new { Text = L.ANIMATIONS_STOP }
-stopbutton:addNotify("Pressed", false,
-	{ ui.NOTIFY_ID, "the-boing", "setValue", "Running", false })
 
 local window = ui.Window:new
 {
@@ -136,21 +95,54 @@ local window = ui.Window:new
 											Class = "caption",
 											Width = "fill"
 										},
-										slider1,
+										ui.Slider:new
+										{
+											Min = 1,
+											Max = 19,
+											Value = 8,
+											Range = 20,
+											Step = 1,
+											onSetValue = function(self)
+												ui.Slider.onSetValue(self)
+												self:getById("the-tunnel"):setSpeed(self.Value)
+											end
+										},
 										Text:new
 										{
 											Text = L.ANIMATIONS_FOCUS,
 											Class = "caption",
 											Width = "fill"
 										},
-										slider2,
+										ui.Slider:new
+										{
+											Min = 0x10,
+											Max = 0x1ff,
+											Value = 0x50,
+											Range = 0x200,
+											Step = 20,
+											onSetValue = function(self)
+												ui.Slider.onSetValue(self)
+												self:getById("the-tunnel"):setViewZ(self.Value)
+											end
+										},
 										Text:new
 										{
 											Text = L.ANIMATIONS_SEGMENTS,
 											Class = "caption",
 											Width = "fill"
 										},
-										slider3,
+										ui.Slider:new 
+										{
+											Min = 1,
+											Max = 19,
+											Value = 6,
+											Range = 20,
+											Step = 1,
+											onSetValue = function(self)
+												ui.Slider.onSetValue(self)
+												self:getById("the-tunnel"):setNumSeg(self.Value)
+											end
+										}
 									}
 								}
 							}
@@ -180,9 +172,9 @@ local window = ui.Window:new
 									Id = "the-boing",
 									Style = "border-width: 0; margin: 0",
 									onSetYPos = function(self, ypos)
-										local s = self.Application:getById("boing-slider")
+										local s = self:getById("boing-slider")
 										s:setValue("Value", ypos)
-										local s = self.Application:getById("boing-slider2")
+										local s = self:getById("boing-slider2")
 										s:setValue("Value", ypos)
 									end,
 								},
@@ -201,8 +193,20 @@ local window = ui.Window:new
 						{
 							Children =
 							{
-								startbutton,
-								stopbutton,
+								ui.Button:new 
+								{
+									Text = L.ANIMATIONS_START,
+									onClick = function(self)
+										self:getById("the-boing").Running = true
+									end
+								},
+								ui.Button:new 
+								{
+									Text = L.ANIMATIONS_STOP,
+									onClick = function(self)
+										self:getById("the-boing").Running = false
+									end
+								}														
 							}
 						}
 					}

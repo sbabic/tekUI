@@ -9,7 +9,7 @@ local min = math.min
 local type = type
 
 module("tek.ui.hook.ripple", tek.ui.class.drawhook)
-_VERSION = "RippleHook 4.0"
+_VERSION = "RippleHook 5.0"
 
 local RippleHook = _M
 
@@ -91,9 +91,9 @@ end
 
 function RippleHook:draw()
 	local defs = self.Defs
-	local d = self.Parent.Drawable
-	local p1 = d.Pens[defs[6]]
-	local p2 = d.Pens[defs[7]]
+	local d = self.Parent.Window.Drawable
+	local p1 = defs[6]
+	local p2 = defs[7]
 	local p = self.Params
 	local x0, y0 = p[3], p[4]
 	local draw = self.DrawDotFunc

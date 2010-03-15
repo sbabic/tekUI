@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		Button ${subclasses(Button)}
 --
@@ -34,10 +34,10 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Text = ui.require("text", 24)
+local Text = ui.require("text", 28)
 
 module("tek.ui.class.button", tek.ui.class.text)
-_VERSION = "Button 1.6"
+_VERSION = "Button 2.0"
 
 -------------------------------------------------------------------------------
 --	Class implementation:

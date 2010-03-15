@@ -19,7 +19,7 @@ local DOMAIN = "schulze-mueller.de"
 local PROGNAME = "Lua Compiler"
 local VERSION = "1.1"
 local AUTHOR = "Timm S. Müller"
-local COPYRIGHT = "© 2008, 2009, Schulze-Müller GbR"
+local COPYRIGHT = "© 2009-2010, Schulze-Müller GbR"
 
 -------------------------------------------------------------------------------
 
@@ -192,11 +192,7 @@ end
 --	FileButton class:
 -------------------------------------------------------------------------------
 
-local NOTIFY_OPEN = { ui.NOTIFY_SELF, ui.NOTIFY_COROUTINE, function(self)
-	self:doRequest()
-end }
-
-local FileButton = ui.ImageGadget:newClass()
+local FileButton = ui.ImageWidget:newClass()
 
 function FileButton.init(self)
 	self.Image = ui.getStockImage("file")
@@ -209,17 +205,13 @@ function FileButton.init(self)
 	self.ImageAspectX = 5
 	self.ImageAspectY = 7
 	self.Style = "padding: 2"
-	return ui.ImageGadget.init(self)
+	return ui.ImageWidget.init(self)
 end
 
-function FileButton:setup(app, win)
-	ui.ImageGadget.setup(self, app, win)
-	self:addNotify("Pressed", false, NOTIFY_OPEN)
-end
-
-function FileButton:cleanup()
-	self:remNotify("Pressed", false, NOTIFY_OPEN)
-	ui.ImageGadget.cleanup(self)
+function FileButton:onClick()
+	self.Application:addCoroutine(function()
+		self:doRequest()
+	end)
 end
 
 function FileButton:doRequest()
@@ -254,7 +246,7 @@ local function addmodule(app, classname, filename)
 			if status == "selected" and select[1] then
 				app.Settings.ModulePath = path
 				filefield:setValue("Enter", addpath(path, select[1]))
-				self.Application:setStatus("Module selected.")
+				app:setStatus("Module selected.")
 			end
 		end,
 	}
@@ -263,12 +255,13 @@ local function addmodule(app, classname, filename)
 		Width = "fill",
 		Selected = true,
 		Text = classname,
-		onSelect = function(self, selected)
-			ui.CheckMark.onSelect(self, selected)
+		onSelect = function(self)
+			ui.CheckMark.onSelect(self)
+			local selected = self.Selected
 			filefield:setValue("Disabled", not selected)
 			selectbutton:setValue("Disabled", not selected)
-			local n = self.Application:selectModules()
-			self.Application:setStatus("%d modules selected", n)
+			local n = app:selectModules()
+			app:setStatus("%d modules selected", n)
 		end,
 	}
 	group:addMember(checkmark)
@@ -294,7 +287,7 @@ local function gui_sample(self)
 			local classname, filename = mod:match("^(.-)%s*=%s*(.*)$")
 			n = n + addmodule(app, classname, filename)
 		end
-		self.Application:setStatus("%d modules added.", n)
+		app:setStatus("%d modules added.", n)
 	end)
 end
 
@@ -474,7 +467,7 @@ local app = ui.Application:new
 	},
 
 	setStatus = function(self, text, ...)
-		self.Application:getById("text-status"):setValue("Text",
+		self:getById("text-status"):setValue("Text",
 			text:format(...))
 	end,
 
@@ -524,7 +517,7 @@ local app = ui.Application:new
 				n = n + 1
 			end
 		end
-		self.Application:getById("button-delete"):setValue("Disabled", n == 0)
+		self:getById("button-delete"):setValue("Disabled", n == 0)
 		return n
 	end,
 
@@ -560,7 +553,7 @@ local app = ui.Application:new
 								{
 									HSliderMode = "auto",
 									VSliderMode = "auto",
-									Child = ui.ListGadget:new
+									Child = ui.Lister:new
 									{
 										SelectMode = "none",
 										ListObject = List:new
@@ -584,11 +577,8 @@ local app = ui.Application:new
 					InitialFocus = true,
 					Text = "_Okay",
 					Style = "width: fill",
-					onPress = function(self, pressed)
-						if pressed == false then
-							self.Window:setValue("Status", "hide")
-						end
-						ui.Button.onPress(self, pressed)
+					onClick = function(self)
+						self.Window:setValue("Status", "hide")
 					end,
 				}
 			}
@@ -608,7 +598,7 @@ local app = ui.Application:new
 						"Do you really want to\n" ..
 						"quit the application?",
 						"_Quit", "_Cancel") == 1 then
-						self.Application:quit()
+						app:quit()
 					end
 				end)
 			end,
@@ -629,11 +619,8 @@ local app = ui.Application:new
 								{
 									Text = "About",
 									Shortcut = "Ctrl+?",
-									onPress = function(self, pressed)
-										ui.MenuItem.onPress(self, pressed)
-										if pressed == false then
-											self:getById("window-about"):setValue("Status", "show")
-										end
+									onClick = function(self)
+										self:getById("window-about"):setValue("Status", "show")
 									end
 								},
 								ui.Spacer:new { },
@@ -641,11 +628,8 @@ local app = ui.Application:new
 								{
 									Text = "_Quit",
 									Shortcut = "Ctrl+Q",
-									onPress = function(self, pressed)
-										if pressed == false then
-											self:getById("window-main"):onHide()
-										end
-										ui.MenuItem.onPress(self, pressed)
+									onClick = function(self)
+										self:getById("window-main"):onHide()
 									end,
 								}
 							}
@@ -677,8 +661,9 @@ local app = ui.Application:new
 									Id = "text-filename",
 									Height = "fill",
 									Style = "text-align: right",
-									onEnter = function(self, text)
-										ui.TextInput.onEnter(self, text)
+									onEnter = function(self)
+										ui.TextInput.onEnter(self)
+										local text = self.Text
 										local notexist = io.open(text) == nil
 										local app = self.Application
 										app:getById("button-run"):setValue("Disabled", notexist)
@@ -763,10 +748,8 @@ local app = ui.Application:new
 									Height = "fill",
 									Text = "Compile, Link, and _Save",
 									Disabled = true,
-									onPress = function(self, pressed)
-										if pressed == false then
-											gui_compile(self)
-										end
+									onClick = function(self)
+										gui_compile(self)
 									end
 								}
 							}
@@ -790,12 +773,9 @@ local app = ui.Application:new
 									Id = "button-run",
 									Text = "_Run",
 									Disabled = true,
-									onPress = function(self, pressed)
-										ui.Button.onPress(self, pressed)
-										if pressed == false then
-											self.Application:setStatus("Running sample...")
-											gui_sample(self)
-										end
+									onClick = function(self)
+										self.Application:setStatus("Running sample...")
+										gui_sample(self)
 									end
 								},
 
@@ -819,8 +799,9 @@ local app = ui.Application:new
 												{
 													MinWidth = 200,
 													InitialFocus = true,
-													onEnter = function(self, text)
-														ui.TextInput.onEnter(self, text)
+													onEnter = function(self)
+														ui.TextInput.onEnter(self)
+														local text = self.Text
 														if text ~= "" then
 															addmodule(self.Application, text, "")
 															self.Application:setStatus("Module %s added - please select a file name for it.", text)
@@ -840,11 +821,8 @@ local app = ui.Application:new
 									Id = "button-all",
 									Text = "Select _All",
 									Disabled = true,
-									onPress = function(self, press)
-										ui.Button.onPress(self, press)
-										if press == false then
-											self.Application:selectModules("all")
-										end
+									onClick = function(self)
+										self.Application:selectModules("all")
 									end
 								},
 
@@ -853,11 +831,8 @@ local app = ui.Application:new
 									Id = "button-none",
 									Text = "Select _None",
 									Disabled = true,
-									onPress = function(self, press)
-										ui.Button.onPress(self, press)
-										if press == false then
-											self.Application:selectModules("none")
-										end
+									onClick = function(self)
+										self.Application:selectModules("none")
 									end
 								},
 
@@ -866,11 +841,8 @@ local app = ui.Application:new
 									Id = "button-invert",
 									Text = "_Invert Sel.",
 									Disabled = true,
-									onPress = function(self, press)
-										ui.Button.onPress(self, press)
-										if press == false then
-											self.Application:selectModules("toggle")
-										end
+									onClick = function(self)
+										self.Application:selectModules("toggle")
 									end
 								},
 
@@ -879,23 +851,20 @@ local app = ui.Application:new
 									Id = "button-delete",
 									Text = "Delete Sel.",
 									Disabled = true,
-									onPress = function(self, press)
-										ui.Button.onPress(self, press)
-										if press == false then
-											local app = self.Application
-											local n = app:selectModules()
-											local text = n == 1 and "one module" or
-												("%d modules"):format(n)
-											app:addCoroutine(function()
-												if app:easyRequest("Delete Modules",
-													"Are you sure that you want to\n" ..
-														"delete " .. text .. " from the list?",
-													"_Delete", "_Cancel") == 1 then
-													local n = self.Application:deleteModules("selected")
-													self.Application:setStatus("%d modules deleted from the list", n)
-												end
-											end)
-										end
+									onClick = function(self)
+										local app = self.Application
+										local n = app:selectModules()
+										local text = n == 1 and "one module" or
+											("%d modules"):format(n)
+										app:addCoroutine(function()
+											if app:easyRequest("Delete Modules",
+												"Are you sure that you want to\n" ..
+													"delete " .. text .. " from the list?",
+												"_Delete", "_Cancel") == 1 then
+												local n = self.Application:deleteModules("selected")
+												self.Application:setStatus("%d modules deleted from the list", n)
+											end
+										end)
 									end
 								}
 

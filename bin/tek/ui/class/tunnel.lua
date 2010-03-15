@@ -16,7 +16,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 4.0"
+_VERSION = "Tunnel 5.0"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -75,8 +75,8 @@ end
 function Tunnel:draw()
 	if Frame.draw(self) then
 		local r1, r2, r3, r4 = self:getRect()
-		local d = self.Drawable
-		local p0, p1 = d.Pens["dark"], d.Pens["shine"]
+		local d = self.Window.Drawable
+		local p0, p1 = "dark", "shine"
 	
 		d:fillRect(r1, r2, r3, r4, p0)
 	

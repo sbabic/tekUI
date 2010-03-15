@@ -22,10 +22,10 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Frame = ui.require("frame", 16)
+local Frame = ui.require("frame", 21)
 
 module("tek.ui.class.spacer", tek.ui.class.frame)
-_VERSION = "Spacer 2.0"
+_VERSION = "Spacer 2.1"
 
 -------------------------------------------------------------------------------
 --	Class implementation:

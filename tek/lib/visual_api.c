@@ -1,6 +1,11 @@
 
 #include "visual_lua.h"
 
+/*****************************************************************************/
+/*
+**	check userdata with classname from registry
+*/
+
 static TAPTR checkinstptr(lua_State *L, int n, const char *classname)
 {
 	TAPTR p = luaL_checkudata(L, n, classname);
@@ -8,35 +13,118 @@ static TAPTR checkinstptr(lua_State *L, int n, const char *classname)
 	return p;
 }
 
-#define getvisptr(L, n) luaL_checkudata(L, n, TEK_LIB_VISUAL_CLASSNAME)
 #define getpenptr(L, n) luaL_checkudata(L, n, TEK_LIB_VISUALPEN_CLASSNAME)
-#define getpixmapptr(L, n) luaL_checkudata(L, n, TEK_LIB_VISUALPIXMAP_CLASSNAME)
-#define checkvisptr(L, n) checkinstptr(L, n, TEK_LIB_VISUAL_CLASSNAME)
-#define checkpenptr(L, n) checkinstptr(L, n, TEK_LIB_VISUALPEN_CLASSNAME)
+#define getpixmapptr(L, n) \
+luaL_checkudata(L, n, TEK_LIB_VISUALPIXMAP_CLASSNAME)
 #define checkfontptr(L, n) checkinstptr(L, n, TEK_LIB_VISUALFONT_CLASSNAME)
-#define checkpixmapptr(L, n) checkinstptr(L, n, TEK_LIB_VISUALPIXMAP_CLASSNAME)
+
+/*****************************************************************************/
+/*
+**	check userdata with metatable from upvalue
+*/
+
+static void *checkudataupval(lua_State *L, int n, int upidx, const char *tname)
+{
+	void *p = lua_touserdata(L, n);
+	if (p)
+	{
+		if (lua_getmetatable(L, n))
+		{
+			if (lua_rawequal(L, -1, lua_upvalueindex(upidx)))
+			{
+				lua_pop(L, 1);
+				return p;
+			}
+		}
+		luaL_typerror(L, n, tname);
+	}
+	return NULL;
+}
+
+static void *checkinstupval(lua_State *L, int n, int upidx, const char *tname)
+{
+	TAPTR p = checkudataupval(L, n, upidx, tname);
+	if (p == TNULL)
+		luaL_typerror(L, n, tname);
+	return p;
+}
+
+#define checkvisptr(L, n) checkinstupval(L, n, 1, "visual")
+#define checkpenptr(L, n) checkinstupval(L, n, 2, "pen")
+#define checkpixmapptr(L, n) checkinstupval(L, n, 3, "pixmap")
 
 /*****************************************************************************/
 
-static void *luaLi_checkudata(lua_State *L, int ud, const char *tname)
+static int checkpenorpixmap(lua_State *L, int uidx, void **udata, int alsopm)
 {
-	void *p = lua_touserdata(L, ud);
-	if (p != NULL) 
+	*udata = lua_touserdata(L, uidx);
+	if (*udata)
 	{
-		if (lua_getmetatable(L, ud)) 
+		if (lua_getmetatable(L, uidx))
 		{
-			lua_getfield(L, LUA_REGISTRYINDEX, tname);
-			if (lua_rawequal(L, -1, -2))
-			{
-				lua_pop(L, 2);
-				return p;
-			}
+			int res = 0;
+			if (lua_rawequal(L, -1, lua_upvalueindex(2)))
+				res = 1;
+			if (res == 0 && alsopm && lua_rawequal(L, -1, lua_upvalueindex(3)))
+				res = 2;
 			lua_pop(L, 1);
+			if (res > 0)
+				return res;
 		}
-		lua_pop(L, 1);
+		/* userdata, but not of our type */
+		luaL_typerror(L, uidx, "pen or pixmap");
 	}
-	/* not an error: */
-	return NULL;
+	/* other type */
+	return 0;
+}
+
+static int lookuppenpixmap(lua_State *L, int refpen, int uidx,
+	void **udata, int alsopm)
+{
+	int res = checkpenorpixmap(L, uidx, udata, alsopm);
+	if (res > 0)
+		return res;
+	if (!lua_isnoneornil(L, uidx))
+	{
+		if (refpen >= 0)
+		{
+			lua_rawgeti(L, lua_upvalueindex(1), refpen); /* VIS */
+			lua_pushvalue(L, uidx);
+			lua_gettable(L, -2);
+			res = checkpenorpixmap(L, -1, udata, alsopm);
+			lua_pop(L, 2);
+		}
+	}
+	return res;
+}
+
+static void *lookuppen(lua_State *L, int refpen, int uidx)
+{
+	void *udata;
+	lookuppenpixmap(L, refpen, uidx, &udata, 0);
+	return udata;
+}
+
+static void *checklookuppen(lua_State *L, int refpen, int uidx)
+{
+	void *udata = lookuppen(L, refpen, uidx);
+	if (udata == NULL)
+		luaL_typerror(L, uidx, "pen");
+	return udata;
+}
+
+static int lookupbgpenorpixmap(lua_State *L, TEKVisual *vis, int uidx,
+	void **udata)
+{
+	int res = lookuppenpixmap(L, vis->vis_refPens, uidx, udata, 1);
+	if (res > 0)
+		return res;
+	if (vis->vis_BGPen)
+	{
+		*udata = vis->vis_BGPen;
+		return vis->vis_BGPenType;
+	}
+	return TNULL;
 }
 
 /*****************************************************************************/
@@ -447,9 +535,11 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_allocpen(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TINT r = luaL_checkinteger(L, 2);
-	TINT g = luaL_checkinteger(L, 3);
-	TINT b = luaL_checkinteger(L, 4);
+	TINT a = luaL_checkinteger(L, 2);
+	TINT r = luaL_checkinteger(L, 3);
+	TINT g = luaL_checkinteger(L, 4);
+	TINT b = luaL_checkinteger(L, 5);
+	TUINT rgb;
 	TEKPen *pen = lua_newuserdata(L, sizeof(TEKPen));
 	/* s: pendata */
 	pen->pen_Pen = TVPEN_UNDEFINED;
@@ -458,10 +548,13 @@ tek_lib_visual_allocpen(lua_State *L)
 	/* s: pendata, meta */
 	lua_setmetatable(L, -2);
 	/* s: pendata */
+	a = TCLAMP(0, a, 255);
 	r = TCLAMP(0, r, 255);
 	g = TCLAMP(0, g, 255);
 	b = TCLAMP(0, b, 255);
-	pen->pen_Pen = TVisualAllocPen(vis->vis_Visual, (r << 16) | (g << 8) | b);
+	rgb = ((TUINT)(a) << 24) | ((TUINT)(r) << 16) | ((TUINT)(g) << 8) | 
+		(TUINT)(b);
+	pen->pen_Pen = TVisualAllocPen(vis->vis_Visual, rgb);
 	pen->pen_Visual = vis;
 	return 1;
 }
@@ -483,6 +576,17 @@ tek_lib_visual_freepen(lua_State *L)
 
 /*****************************************************************************/
 
+#if defined(TEK_VISUAL_DEBUG)
+static void tek_lib_visual_debugwait(TEKVisual *vis)
+{
+	struct TExecBase *TExecBase = vis->vis_ExecBase;
+	TTIME dt = { 1800 };
+	TWaitTime(&dt, 0);
+}
+#endif
+
+/*****************************************************************************/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_rect(lua_State *L)
 {
@@ -492,7 +596,18 @@ tek_lib_visual_rect(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
 	TINT x1 = luaL_checkinteger(L, 4) + sx;
 	TINT y1 = luaL_checkinteger(L, 5) + sy;
-	TEKPen *pen = checkpenptr(L, 6);
+	TEKPen *pen = checklookuppen(L, vis->vis_refPens, 6);
+	#if defined(TEK_VISUAL_DEBUG)
+	if (vis->vis_VisBase->vis_Debug)
+	{
+		TVisualRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
+			vis->vis_DebugPen1);
+		tek_lib_visual_debugwait(vis);
+		TVisualRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
+			vis->vis_DebugPen2);
+		tek_lib_visual_debugwait(vis);
+	}
+	#endif
 	TVisualRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
 		pen->pen_Pen);
 	vis->vis_Dirty = TTRUE;
@@ -551,22 +666,39 @@ tek_lib_visual_frect(lua_State *L)
 	TINT y1 = luaL_checkinteger(L, 5) + sy;
 	TINT w = x1 - x0 + 1;
 	TINT h = y1 - y0 + 1;
-	TEKPen *pen;
-	TEKPixmap *pm;
+	void *udata;
 	
 	if (x0 > x1 || y0 > y1)
 		return 0;
-
-	if ((pen = luaLi_checkudata(L, 6, TEK_LIB_VISUALPEN_CLASSNAME)))
+	
+	#if defined(TEK_VISUAL_DEBUG)
+	if (vis->vis_VisBase->vis_Debug)
 	{
-		TVisualFRect(vis->vis_Visual, x0, y0, w, h, pen->pen_Pen);
+		TVisualFRect(vis->vis_Visual, x0, y0, w, h, vis->vis_DebugPen1);
+		tek_lib_visual_debugwait(vis);
+		TVisualFRect(vis->vis_Visual, x0, y0, w, h, vis->vis_DebugPen2);
+		tek_lib_visual_debugwait(vis);
 	}
-	else if ((pm = luaLi_checkudata(L, 6, TEK_LIB_VISUALPIXMAP_CLASSNAME)))
+	#endif
+	
+	switch (lookupbgpenorpixmap(L, vis, 6, &udata))
 	{
-		TINT ox = luaL_optinteger(L, 7, 0) + sx;
-		TINT oy = luaL_optinteger(L, 8, 0) + sy;
-		tek_lib_visual_frectpixmap(L, vis, pm, x0, y0, w, h, ox, oy);
+		case 1:
+		{
+			TEKPen *pen = udata;
+			TVisualFRect(vis->vis_Visual, x0, y0, w, h, pen->pen_Pen);
+			break;
+		}
+		case 2:
+		{
+			TEKPixmap *pm = udata;
+			TINT ox = vis->vis_TextureX + sx;
+			TINT oy = vis->vis_TextureY + sy;
+			tek_lib_visual_frectpixmap(L, vis, pm, x0, y0, w, h, ox, oy);
+			break;
+		}
 	}
+	
 	vis->vis_Dirty = TTRUE;
 	return 0;
 }
@@ -580,7 +712,16 @@ tek_lib_visual_line(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
 	TINT x1 = luaL_checkinteger(L, 4) + sx;
 	TINT y1 = luaL_checkinteger(L, 5) + sy;
-	TEKPen *pen = checkpenptr(L, 6);
+	TEKPen *pen = checklookuppen(L, vis->vis_refPens, 6);
+	#if defined(TEK_VISUAL_DEBUG)
+	if (vis->vis_VisBase->vis_Debug)
+	{
+		TVisualLine(vis->vis_Visual, x0, y0, x1, y1, vis->vis_DebugPen1);
+		tek_lib_visual_debugwait(vis);
+		TVisualLine(vis->vis_Visual, x0, y0, x1, y1, vis->vis_DebugPen2);
+		tek_lib_visual_debugwait(vis);
+	}
+	#endif
 	TVisualLine(vis->vis_Visual, x0, y0, x1, y1, pen->pen_Pen);
 	vis->vis_Dirty = TTRUE;
 	return 0;
@@ -593,7 +734,16 @@ tek_lib_visual_plot(lua_State *L)
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
 	TINT x0 = luaL_checkinteger(L, 2) + sx;
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
-	TEKPen *pen = checkpenptr(L, 4);
+	TEKPen *pen = checklookuppen(L, vis->vis_refPens, 4);
+	#if defined(TEK_VISUAL_DEBUG)
+	if (vis->vis_VisBase->vis_Debug)
+	{
+		TVisualPlot(vis->vis_Visual, x0, y0, vis->vis_DebugPen1);
+		tek_lib_visual_debugwait(vis);
+		TVisualPlot(vis->vis_Visual, x0, y0, vis->vis_DebugPen2);
+		tek_lib_visual_debugwait(vis);
+	}
+	#endif
 	TVisualPlot(vis->vis_Visual, x0, y0, pen->pen_Pen);
 	vis->vis_Dirty = TTRUE;
 	return 0;
@@ -606,24 +756,32 @@ tek_lib_visual_text(lua_State *L)
 	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
 	TINT x0 = luaL_checkinteger(L, 2) + sx;
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
-		TINT x1 = luaL_checkinteger(L, 4) + sx;
-		TINT y1 = luaL_checkinteger(L, 5) + sy;
+	TINT x1 = luaL_checkinteger(L, 4) + sx;
+	TINT y1 = luaL_checkinteger(L, 5) + sy;
 	size_t tlen;
 	TSTRPTR text = (TSTRPTR) luaL_checklstring(L, 6, &tlen);
-	TEKPen *fpen = checkpenptr(L, 7);
-	TEKPixmap *pm;
-	TEKPen *p;
-	
-	if ((pm = luaLi_checkudata(L, 8, TEK_LIB_VISUALPIXMAP_CLASSNAME)))
+	TEKPen *fpen = checklookuppen(L, vis->vis_refPens, 7);
+	void *udata;
+
+	switch (lookuppenpixmap(L, vis->vis_refPens, 8, &udata, 1))
 	{
-		TINT ox = luaL_optinteger(L, 9, 0) + sx;
-		TINT oy = luaL_optinteger(L, 10, 0) + sy;
-		tek_lib_visual_frectpixmap(L, vis, pm, x0, y0,
-			x1 - x0 + 1, y1 - y0 + 1, ox, oy);
+		case 1:
+		{
+			TEKPen *pen = udata;
+			TVisualFRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
+				pen->pen_Pen);
+			break;
+		}
+		case 2:
+		{
+			TEKPixmap *pm = udata;
+			TINT ox = vis->vis_TextureX + sx;
+			TINT oy = vis->vis_TextureY + sy;
+			tek_lib_visual_frectpixmap(L, vis, pm, x0, y0, 
+				x1 - x0 + 1, y1 - y0 + 1, ox, oy);
+			break;
+		}
 	}
-	else if ((p = luaLi_checkudata(L, 8, TEK_LIB_VISUALPEN_CLASSNAME)))
-		TVisualFRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
-			p->pen_Pen);
 	
 	TVisualText(vis->vis_Visual, x0, y0, text, tlen, fpen->pen_Pen);
 		
@@ -664,7 +822,7 @@ tek_lib_visual_drawimage(lua_State *L)
 	tags[1].tti_Tag = TTAG_DONE;
 	
 	if (lua_type(L, 7) != LUA_TTABLE)
-		pen_override = checkpenptr(L, 7);
+		pen_override = lookuppen(L, vis->vis_refPens, 7);
 	
 	rect[0] = luaL_checkinteger(L, 3);
 	rect[1] = luaL_checkinteger(L, 4);
@@ -673,10 +831,17 @@ tek_lib_visual_drawimage(lua_State *L)
 	scalex = rect[2] - rect[0];
 	scaley = rect[1] - rect[3];
 	
+	lua_getmetatable(L, 1);
+	/* vismeta */
+	lua_rawgeti(L, -1, vis->vis_refPens);
+	/* vismeta, pentab */
+	lua_remove(L, -2);
+	/* pentab */
+	
 	lua_rawgeti(L, 2, 1);
-	/* s: coords */
+	/* s: pentab, coords */
 	lua_rawgeti(L, 2, 5);
-	/* s: coords, primitives */
+	/* s: pentab, coords, primitives */
 	primcount = lua_objlen(L, -1);
 
 	for (i = 0; i < primcount; i++)
@@ -688,12 +853,12 @@ tek_lib_visual_drawimage(lua_State *L)
 		TINT *pentab;
 		
 		lua_rawgeti(L, -1, i + 1);
-		/* s: coords, primitives, prim[i] */
+		/* s: pentab, coords, primitives, prim[i] */
 		lua_rawgeti(L, -1, 1);
-		/* s: coords, primitives, prim[i], fmtcode */
+		/* s: pentab, coords, primitives, prim[i], fmtcode */
 		fmt = luaL_checkinteger(L, -1);
 		lua_rawgeti(L, -2, 2);
-		/* s: coords, primitives, prim[i], fmtcode, nump */
+		/* s: pentab, coords, primitives, prim[i], fmtcode, nump */
 		nump = luaL_checkinteger(L, -1);
 		
 		bufsize = sizeof(TINT) * 3 * nump;
@@ -714,9 +879,9 @@ tek_lib_visual_drawimage(lua_State *L)
 		coord = buf;
 		
 		lua_rawgeti(L, -3, 3);
-		/* s: coords, primitives, prim[i], fmtcode, nump, indices */
+		/* s: pentab, coords, primitives, prim[i], fmtcode, nump, indices */
 		lua_rawgeti(L, -4, 4);
-		/* s: coords, primitives, prim[i], fmtcode, nump, indices, pt */
+		/* s: pentab, coords, primitives, prim[i], fmtcode, nump, indices, pt */
 		
 		pentab = lua_type(L, -1) == LUA_TTABLE ? coord + 2 * nump : TNULL;
 		if (pentab)
@@ -728,7 +893,7 @@ tek_lib_visual_drawimage(lua_State *L)
 				tags[0].tti_Value = pen_override->pen_Pen;
 			else
 			{
-				lua_gettable(L, 7);
+				lua_gettable(L, -8);
 				tags[0].tti_Value = ((TEKPen *) checkpenptr(L, -1))->pen_Pen;
 			}
 		}
@@ -770,7 +935,7 @@ tek_lib_visual_drawimage(lua_State *L)
 	}
 	
 	vis->vis_Dirty = TTRUE;
-	lua_pop(L, 2);
+	lua_pop(L, 3);
 	return 0;
 }
 
@@ -827,18 +992,17 @@ tek_lib_visual_getuserdata(lua_State *L)
 static TTAGITEM *getminmax(lua_State *L, TTAGITEM *tp, const char *keyname,
 	TTAG tag)
 {
-	TBOOL isfalse, isnil;
+	TBOOL isfalse;
 	lua_getfield(L, 2, keyname);
 	isfalse = lua_isboolean(L, -1) && !lua_toboolean(L, -1);
-	isnil = lua_isnil(L, -1);
-	if (lua_isnumber(L, -1) || isnil || isfalse)
+	if (lua_isnumber(L, -1) || isfalse)
 	{
-		TINT val = isnil || isfalse ? -1 : lua_tointeger(L, -1);
-		lua_pop(L, 1);
+		TINT val = isfalse ? -1 : lua_tointeger(L, -1);
 		tp->tti_Tag = tag;
 		tp->tti_Value = val;
 		tp++;
 	}
+	lua_pop(L, 1);
 	return tp;
 }
 
@@ -846,16 +1010,22 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_setattrs(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TTAGITEM tags[7], *tp = tags;
+	TTAGITEM tags[5], *tp = tags;
 
 	tp = getminmax(L, tp, "MinWidth", TVisual_MinWidth);
 	tp = getminmax(L, tp, "MinHeight", TVisual_MinHeight);
 	tp = getminmax(L, tp, "MaxWidth", TVisual_MaxWidth);
 	tp = getminmax(L, tp, "MaxHeight", TVisual_MaxHeight);
-	
 	tp->tti_Tag = TTAG_DONE;
+	
+	#if defined(TEK_VISUAL_DEBUG)
+	lua_getfield(L, 2, "Debug");
+	if (lua_isboolean(L, -1))
+		vis->vis_VisBase->vis_Debug = lua_toboolean(L, -1);
+	lua_pop(L, 1);
+	#endif
+	
 	lua_pushnumber(L, TVisualSetAttrs(vis->vis_Visual, tags));
-
 	return 1;
 }
 
@@ -945,13 +1115,16 @@ tek_lib_visual_copyarea(lua_State *L)
 	struct THook hook;
 	TEKVisual *vis = checkvisptr(L, 1);
 	struct TExecBase *TExecBase = vis->vis_ExecBase;
-	TINT sx = vis->vis_ShiftX, sy = vis->vis_ShiftY;
-	TINT x = luaL_checkinteger(L, 2) + sx;
-	TINT y = luaL_checkinteger(L, 3) + sy;
-	TINT w = luaL_checkinteger(L, 4);
-	TINT h = luaL_checkinteger(L, 5);
+	TINT sx = vis->vis_ShiftX;
+	TINT sy = vis->vis_ShiftY;
+	TINT x = luaL_checkinteger(L, 2);
+	TINT y = luaL_checkinteger(L, 3);
+	TINT w = luaL_checkinteger(L, 4) - x + 1;
+	TINT h = luaL_checkinteger(L, 5) - y + 1;
 	TINT dx = luaL_checkinteger(L, 6) + sx;
 	TINT dy = luaL_checkinteger(L, 7) + sy;
+	x += sx;
+	y += sy;
 
 	if (lua_istable(L, 8))
 	{
@@ -1012,11 +1185,13 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_setshift(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TINT sx = luaL_checkinteger(L, 2);
-	TINT sy = luaL_checkinteger(L, 3);
-	vis->vis_ShiftX += sx;
-	vis->vis_ShiftY += sy;
-	return 0;
+	TINT sx = vis->vis_ShiftX;
+	TINT sy = vis->vis_ShiftY;
+	vis->vis_ShiftX = sx + (TINT) luaL_optinteger(L, 2, 0);
+	vis->vis_ShiftY = sy + (TINT) luaL_optinteger(L, 3, 0);
+	lua_pushinteger(L, sx);
+	lua_pushinteger(L, sy);
+	return 2;
 }
 
 /*****************************************************************************/
@@ -1097,5 +1272,183 @@ tek_lib_visual_drawpixmap(lua_State *L)
 	TVisualDrawBuffer(vis->vis_Visual, x0 + sx, y0 + sy, img->pxm_Data,
 		w, h, img->pxm_Width, TNULL);
 	vis->vis_Dirty = TTRUE;
+	return 0;
+}
+
+/*****************************************************************************/
+/*
+**	settextureorigin(visual, tx, ty)
+*/
+
+LOCAL LUACFUNC TINT 
+tek_lib_visual_settextureorigin(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	TINT tx = vis->vis_TextureX;
+	TINT ty = vis->vis_TextureY;
+	vis->vis_TextureX = lua_tointeger(L, 2);
+	vis->vis_TextureY = lua_tointeger(L, 3);
+	lua_pushinteger(L, tx);
+	lua_pushinteger(L, ty);
+	return 2;
+}
+
+/*****************************************************************************/
+/*
+**	pushcliprect(x0, y0, x1, y1)
+*/
+
+LOCAL LUACFUNC TINT 
+tek_lib_visual_pushcliprect(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	struct TExecBase *TExecBase = vis->vis_ExecBase;
+	TINT sx = vis->vis_ShiftX;
+	TINT sy = vis->vis_ShiftY;
+	TINT x0 = luaL_checkinteger(L, 2) + sx;
+	TINT y0 = luaL_checkinteger(L, 3) + sy;
+	TINT x1 = luaL_checkinteger(L, 4) + sx;
+	TINT y1 = luaL_checkinteger(L, 5) + sy;
+	struct RectNode *clipnode = 
+		(struct RectNode *) TRemHead(&vis->vis_FreeRects);
+	if (clipnode == TNULL)
+	{
+		clipnode = TAlloc(TNULL, sizeof(struct RectNode));
+		if (clipnode == TNULL)
+			luaL_error(L, "Out of memory");
+	}
+	clipnode->rn_Rect[0] = x0;
+	clipnode->rn_Rect[1] = y0;
+	clipnode->rn_Rect[2] = x1;
+	clipnode->rn_Rect[3] = y1;
+	TAddTail(&vis->vis_ClipStack, &clipnode->rn_Node);
+	
+	if (vis->vis_HaveClipRect)
+	{
+		TINT c0 = vis->vis_ClipRect[0];
+		TINT c1 = vis->vis_ClipRect[1];
+		TINT c2 = vis->vis_ClipRect[2];
+		TINT c3 = vis->vis_ClipRect[3];
+		if (TEK_UI_OVERLAP(x0, y0, x1, y1, c0, c1, c2, c3))
+		{
+			x0 = TMAX(x0, c0);
+			y0 = TMAX(y0, c1);
+			x1 = TMIN(x1, c2);
+			y1 = TMIN(y1, c3);
+		}
+		else
+		{
+			x0 = y0 = x1 = y1 = -1;
+		}
+	}
+	
+	vis->vis_ClipRect[0] = x0;
+	vis->vis_ClipRect[1] = y0;
+	vis->vis_ClipRect[2] = x1;
+	vis->vis_ClipRect[3] = y1;
+	vis->vis_HaveClipRect = TTRUE;
+	TVisualSetClipRect(vis->vis_Visual, x0, y0, 
+		x1 - x0 + 1, y1 - y0 + 1, TNULL);
+
+	return 0;
+}
+
+/*****************************************************************************/
+/*
+**	popcliprect():
+*/
+
+LOCAL LUACFUNC TINT 
+tek_lib_visual_popcliprect(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	TINT x0 = -1;
+	TINT y0 = -1;
+	TINT x1 = -1;
+	TINT y1 = -1;
+	TINT have_cliprect = TFALSE;
+	TAddHead(&vis->vis_FreeRects, TRemTail(&vis->vis_ClipStack));
+	if (!TISLISTEMPTY(&vis->vis_ClipStack))
+	{
+		struct TNode *next, *node = vis->vis_ClipStack.tlh_Head;
+		x0 = 0;
+		y0 = 0;
+		x1 = TEKUI_HUGE;
+		y1 = TEKUI_HUGE;
+		have_cliprect = TTRUE;
+		for (; (next = node->tln_Succ); node = next)
+		{
+			struct RectNode *rn = (struct RectNode *) node;
+			TINT c0 = rn->rn_Rect[0];
+			TINT c1 = rn->rn_Rect[1];
+			TINT c2 = rn->rn_Rect[2];
+			TINT c3 = rn->rn_Rect[3];
+			if (!TEK_UI_OVERLAP(x0, y0, x1, y1, c0, c1, c2, c3))
+			{
+				x0 = y0 = x1 = y1 = -1;
+				break;
+			}
+			x0 = TMAX(x0, c0);
+			y0 = TMAX(y0, c1);
+			x1 = TMIN(x1, c2);
+			y1 = TMIN(y1, c3);
+		}
+	}
+	vis->vis_HaveClipRect = have_cliprect;
+	vis->vis_ClipRect[0] = x0;
+	vis->vis_ClipRect[1] = y0;
+	vis->vis_ClipRect[2] = x1;
+	vis->vis_ClipRect[3] = y1;
+	if (have_cliprect)
+		TVisualSetClipRect(vis->vis_Visual, x0, y0, x1 - x0 + 1, y1 - y0 + 1,
+			TNULL);
+	else
+		TVisualUnsetClipRect(vis->vis_Visual);
+	return 0;
+}
+
+/*****************************************************************************/
+/*
+**	getcliprect:
+*/
+
+LOCAL LUACFUNC TINT 
+tek_lib_visual_getcliprect(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	if (vis->vis_HaveClipRect)
+	{
+		lua_pushinteger(L, vis->vis_ClipRect[0]);
+		lua_pushinteger(L, vis->vis_ClipRect[1]);
+		lua_pushinteger(L, vis->vis_ClipRect[2]);
+		lua_pushinteger(L, vis->vis_ClipRect[3]);
+		return 4;
+	}
+	return 0;
+}
+
+/*****************************************************************************/
+/*
+**	setpen:
+*/
+
+LOCAL LUACFUNC TINT 
+tek_lib_visual_setbgpen(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	if (vis->vis_refBGPen >= 0)
+	{
+		luaL_unref(L, lua_upvalueindex(1), vis->vis_refBGPen);
+		vis->vis_refBGPen = -1;
+	}
+	vis->vis_BGPenType = lookuppenpixmap(L, vis->vis_refPens, 2, 
+		(void **) &vis->vis_BGPen, 1);
+	if (vis->vis_BGPen)
+	{
+		lua_pushvalue(L, 2);
+		vis->vis_refBGPen = luaL_ref(L, lua_upvalueindex(1));
+	}
+	vis->vis_TextureX = lua_tointeger(L, 3);
+	vis->vis_TextureY = lua_tointeger(L, 4);
 	return 0;
 }

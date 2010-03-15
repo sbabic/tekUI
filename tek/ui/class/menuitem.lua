@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		[[#tek.ui.class.popitem : PopItem]] /
 --		MenuItem ${subclasses(MenuItem)}
@@ -34,13 +34,13 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local PopItem = ui.require("popitem", 15)
+local PopItem = ui.require("popitem", 22)
 
 local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 8.0"
+_VERSION = "MenuItem 10.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -87,15 +87,15 @@ function MenuItem:setup(app, win)
 	end
 end
 
-function MenuItem:submenu(val)
+function MenuItem:doSubMenu()
 	-- subitems are handled in baseclass:
-	PopItem.submenu(self, val)
+	PopItem.doSubMenu(self)
 	-- handle baseitem:
 	if self.Window then
 		local popup = self.Window.ActivePopup
 		if popup then
 			-- hilite over baseitem while another open popup in menubar:
-			if val == true and popup ~= self then
+			if self.Hilite == true and popup ~= self then
 				db.info("have another popup open")
 				self:beginPopup()
 				self:setValue("Selected", true)

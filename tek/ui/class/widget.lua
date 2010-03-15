@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --
---	tek.ui.class.gadget
+--	tek.ui.class.widget
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
@@ -11,65 +11,48 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		Gadget ${subclasses(Gadget)}
+--		Widget ${subclasses(Widget)}
 --
 --		This class implements interactions with the user.
 --
 --	ATTRIBUTES::
 --		- {{Active [SG]}} (boolean)
---			Signifies a change of the Gadget's activation state. While active,
---			the position of the pointing device is being verified (which is
---			also reflected by the {{Hover}} attribute, see below). When the
---			{{Active}} state changes, the Gadget's behavior depends on its
---			{{Mode}} attribute (see below):
+--			The Widget's activation state. While '''true''', the position of
+--			the pointing device is being verified (which is also reflected by
+--			the {{Hover}} attribute, see below). When the {{Active}} state
+--			variable changes, the Widget's behavior depends on its {{Mode}}
+--			attribute (see below):
 --				* in ''button'' mode, the {{Selected}} attribute is set to
---				the value of the {{Hover}} attribute. The {{Pressed}} attribute
---				is set to the value of the {{Active}} attribute, if it caused a
---				change of the {{Selected}} state.
---				* in ''toggle'' mode, the {{Selected}} attribute of the
---				Gadget is inverted logically, and the {{Pressed}} attribute is
---				set to '''true'''.
+--				the value of the {{Hover}} attribute. When the {{Selected}}
+--				state changes, the {{Pressed}} attribute is set to the value
+--				of the {{Active}} attribute.
+--				* in ''toggle'' mode, the {{Selected}} attribute is inverted
+--				logically, and the {{Pressed}} attribute is set to '''true'''.
 --				* in ''touch'' mode, the {{Selected}} and {{Pressed}}
---				attributes are set to '''true''', if the Gadget was not
+--				attributes are set to '''true''', if the Widget was not
 --				selected already.
---			Changing this attribute invokes the Gadget:onActivate() method.
+--			Changing this attribute invokes the Widget:onActivate() method.
 --		- {{DblClick [SG]}} (boolean)
---			Signifies that the element was double-clicked; it is set to
---			'''true''' when the element was double-clicked and is still being
---			held, and '''false''' when it was double-clicked and then released.
---			This attribute normally needs to get a notification handler
---			attached to it before it can be reacted on; see also
---			Object:addNotify().
---		- {{Disabled [ISG]}} (boolean)
---			Determines the Gadget's ability to interact with the user. When
---			changed, it invokes the Gadget:onDisable() method. When an element
---			is getting disabled, it loses its focus, too.
---		- {{EffectClass [IG]}} (string)
---			Name of a hook class for rendering an overlay effect. This
---			attribute is controllable via the ''effect-class'' style property.
---			A possible overlay effect is named ''ripple''. As its name
---			suggests, it can paint various ripple effects (e.g. for slider
---			knobs and bar handles). Effect hooks are loaded from
---			{{tek.ui.hook}} and may define their own style properties.
---		- {{FGColor [IG]}} (color specification)
+--			Signifies that the element is or has been double-clicked; it is
+--			set to '''true''' when the element was double-clicked and is still
+--			being held, and '''false''' when the second press has been
+--			released. Changes to this attribute cause the invocation of the
+--			Widget:onDblClick() method.
+--		- {{FGPen [IG]}} (color specification)
 --			A color specification for rendering the foreground details of the
 --			element. This attribute is controllable via the ''color'' style
 --			property.
---		- {{Hilite [SG]}} (boolean)
---			Signifies a change of the Gadget's highligting state. Invokes
---			Gadget:onHilite().
 --		- {{Hold [SG]}} (boolean)
---			Signifies that the element is being held. While being held, the
---			value is repeatedly set to '''true''' in intervals of {{n/50}}
---			seconds, with {{n}} being determined by the 
---			[[#tek.ui.class.window : Window]].HoldTickRepeat attribute.
---			When the element is getting released, this value is set to
---			'''false'''. This attribute normally needs to get a notification
---			handler attached to it before it can be reacted on; see also
---			Object:addNotify().
+--			Signifies that the element is being pressed for an extended period.
+--			While being held, the value is repeatedly set to '''true''' in
+--			intervals of {{n/50}} seconds, with {{n}} taken from the
+--			[[#tek.ui.class.window : Window]]'s {{HoldTickRepeat}} attribute.
+--			When the element is released, this attribute is set to '''false'''.
+--			Changes to this attribute cause the invocation of the
+--			Widget:onHold() method.
 --		- {{Hover [SG]}} (boolean)
---			Signifies a change of the Gadget being hovered by the pointing
---			device. Invokes Gadget:onHover().
+--			Signifies a change of the element being hovered by the pointing
+--			device. Changes to this state variable invoke Widget:onHover().
 --		- {{InitialFocus [IG]}} (boolean)
 --			Specifies that the element should receive the focus initially.
 --			If '''true''', the element will set the element's {{Focus}}
@@ -83,28 +66,25 @@
 --			{{Text}} will be examined during setup for an initiatory character
 --			(by default an underscore), and if found, the {{KeyCode}} attribute
 --			will be replaced by the character following this marker.
---		- {{Mode [IG]}} (string)
+--		- {{Mode [ISG]}} (string)
 --			The element's interaction mode:
---				* {{"inert"}}: The element does not react to input
+--				* {{"inert"}}: The element does not react on input
 --				* {{"touch"}}: The element does not rebound and keeps its
 --				{{Selected}} state; it cannot be unselected by the user and
 --				always submits '''true''' for the {{Pressed}} and {{Selected}}
 --				attributes.
 --				* {{"toggle"}}: The element does not rebound immediately
 --				and keeps its {{Selected}} state until the next activation.
---				* {{"button"}}: The element rebounds when the mouse button is
---				released or when it is no longer hovering it.
+--				* {{"button"}}: The element rebounds when the pointing device
+--				over it is being released, or when it is no longer hovering it.
 --			See also the {{Active}} attribute.
 --		- {{Pressed [SG]}} (boolean)
---			Signifies that a button was pressed or released. Invokes
---			Gadget:onPress().
---		- {{Selected [ISG]}} (boolean)
---			Signifies a change of the Gadget's selection state. Invokes
---			Gadget:onSelect().
+--			Signifies that a button was pressed or released. Changes to this
+--			state variable invoke Widget:onPress().
 --
 --	STYLE PROPERTIES::
---		''color'' || controls the {{Gadget.FGColor}} attribute
---		''effect-class'' || controls the {{Gadget.EffectClass}} attribute
+--		''color'' || controls the {{Widget.FGPen}} attribute
+--		''effect-class'' || name of an class for rendering an overlay effect
 --		''effect-color'' || controls the ''ripple'' effect hook
 --		''effect-color2'' || controls the ''ripple'' effect hook
 --		''effect-kind'' || controls the ''ripple'' effect hook
@@ -115,22 +95,31 @@
 --		''effect-ratio'' || controls the ''ripple'' effect hook
 --		''effect-ratio2'' || controls the ''ripple'' effect hook
 --
+--		A possible name for the ''effect-class'' property is {{"ripple"}}.
+--		As its name suggests, it can paint various ripple effects (e.g. for
+--		slider knobs and bar handles). Effect hooks are loaded from
+--		{{tek.ui.hook}} and may define their own style properties.
+--
 --	STYLE PSEUDO CLASSES::
 --		''active'' || for elements in active state
 --		''disabled'' || for elements in disabled state
---		''focus'' || for elements that have the focus
+--		''focus'' || for elements that have the input focus
 --		''hover'' || for elements that are being hovered by the mouse
 --
 --	IMPLEMENTS::
---		- Gadget:onActivate() - Handler for {{Active}}
---		- Gadget:onDisable() - Handler for {{Disabled}}
---		- Gadget:onFocus() - Handler for {{Focus}}
---		- Gadget:onHilite() - Handler for {{Hilite}}
---		- Gadget:onHover() - Handler for {{Hover}}
---		- Gadget:onPress() - Handler for {{Pressed}}
---		- Gadget:onSelect() - Handler for {{Selected}}
+--		- Widget:onActivate() - Handler for {{Active}}
+--		- Widget:onClick() - Gets called when the element has been clicked
+--		- Widget:onDblClick() - Handler for {{DblClick}}
+--		- Widget:onDisable() - Handler for {{Disabled}}
+--		- Widget:onFocus() - Handler for {{Focus}}
+--		- Widget:onHilite() - Handler for {{Hilite}}
+--		- Widget:onHold() - Handler for {{Hold}}
+--		- Widget:onHover() - Handler for {{Hover}}
+--		- Widget:onPress() - Handler for {{Pressed}}
+--		- Widget:onSelect() - Handler for {{Selected}}
 --
 --	OVERRIDES::
+--		- Object.addClassNotifications()
 --		- Area:checkFocus()
 --		- Area:checkHover()
 --		- Element:cleanup()
@@ -147,31 +136,42 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Frame = ui.require("frame", 16)
 
-module("tek.ui.class.gadget", tek.ui.class.frame)
-_VERSION = "Gadget 19.0"
+module("tek.ui.class.widget", tek.ui.class.frame)
+_VERSION = "Widget 25.0"
 
-local Gadget = _M
+local Widget = _M
 
 -------------------------------------------------------------------------------
---	Constants & Class data:
+--	constants & class data:
 -------------------------------------------------------------------------------
 
 local FL_REDRAW = ui.FL_REDRAW
 local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
 
-local NOTIFY_HOVER = { ui.NOTIFY_SELF, "onHover", ui.NOTIFY_VALUE }
-local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate", ui.NOTIFY_VALUE }
-local NOTIFY_HILITE = { ui.NOTIFY_SELF, "onHilite", ui.NOTIFY_VALUE }
-local NOTIFY_DISABLED = { ui.NOTIFY_SELF, "onDisable", ui.NOTIFY_VALUE }
-local NOTIFY_SELECTED = { ui.NOTIFY_SELF, "onSelect", ui.NOTIFY_VALUE }
-local NOTIFY_PRESSED = { ui.NOTIFY_SELF, "onPress", ui.NOTIFY_VALUE }
-local NOTIFY_FOCUS = { ui.NOTIFY_SELF, "onFocus", ui.NOTIFY_VALUE }
-
 -------------------------------------------------------------------------------
---	Class implementation:
+--	addClassNotifications: overrides
 -------------------------------------------------------------------------------
 
-function Gadget.init(self)
+function Widget.addClassNotifications(proto)
+	addNotify(proto, "DblClick", NOTIFY_ALWAYS, { NOTIFY_SELF, "onDblClick" })
+	addNotify(proto, "Disabled", NOTIFY_ALWAYS, { NOTIFY_SELF, "onDisable" })
+	addNotify(proto, "Hilite", NOTIFY_ALWAYS, { NOTIFY_SELF, "onHilite" })
+	addNotify(proto, "Selected", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSelect" })
+	addNotify(proto, "Hold", NOTIFY_ALWAYS, { NOTIFY_SELF, "onHold" })
+	addNotify(proto, "Hover", NOTIFY_ALWAYS, { NOTIFY_SELF, "onHover" })
+	addNotify(proto, "Active", NOTIFY_ALWAYS, { NOTIFY_SELF, "onActivate" })
+	addNotify(proto, "Pressed", NOTIFY_ALWAYS, { NOTIFY_SELF, "onPress" })
+	addNotify(proto, "Focus", NOTIFY_ALWAYS, { NOTIFY_SELF, "onFocus" })
+	return Frame.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
+
+-------------------------------------------------------------------------------
+--	init: overrides
+-------------------------------------------------------------------------------
+
+function Widget.init(self)
 	self.Active = false
 	self.DblClick = false
 	self.EffectHook = false
@@ -181,7 +181,6 @@ function Gadget.init(self)
 	self.InitialFocus = self.InitialFocus or false
 	self.KeyCode = self.KeyCode or false
 	self.Mode = self.Mode or "inert"
-	self.OldActive = false
 	self.Pressed = false
 	return Frame.init(self)
 end
@@ -190,16 +189,8 @@ end
 --	setup: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:setup(app, window)
+function Widget:setup(app, window)
 	Frame.setup(self, app, window)
-	-- add notifications:
-	self:addNotify("Disabled", ui.NOTIFY_ALWAYS, NOTIFY_DISABLED)
-	self:addNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_HILITE)
-	self:addNotify("Selected", ui.NOTIFY_ALWAYS, NOTIFY_SELECTED)
-	self:addNotify("Hover", ui.NOTIFY_ALWAYS, NOTIFY_HOVER)
-	self:addNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
-	self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-	self:addNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
 	-- create effect hook:
 	self.EffectHook = ui.createHook("hook", self.Properties["effect-class"],
 		self, { Style = self.Style })
@@ -214,16 +205,9 @@ end
 --	cleanup: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:cleanup()
+function Widget:cleanup()
 	self.EffectHook = ui.destroyHook(self.EffectHook)
 	self.Window:remKeyShortcut(self.KeyCode, self)
-	self:remNotify("Focus", ui.NOTIFY_ALWAYS, NOTIFY_FOCUS)
-	self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-	self:remNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
-	self:remNotify("Hover", ui.NOTIFY_ALWAYS, NOTIFY_HOVER)
-	self:remNotify("Selected", ui.NOTIFY_ALWAYS, NOTIFY_SELECTED)
-	self:remNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_HILITE)
-	self:remNotify("Disabled", ui.NOTIFY_ALWAYS, NOTIFY_DISABLED)
 	Frame.cleanup(self)
 end
 
@@ -231,8 +215,8 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:show(drawable)
-	Frame.show(self, drawable)
+function Widget:show()
+	Frame.show(self)
 	if self.Mode ~= "inert" and self.InitialFocus then
 		self:setValue("Focus", true)
 	end
@@ -242,11 +226,10 @@ end
 --	layout: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:layout(x0, y0, x1, y1, markdamage)
+function Widget:layout(x0, y0, x1, y1, markdamage)
 	if Frame.layout(self, x0, y0, x1, y1, markdamage) then
 		if self.EffectHook then
-			local r = self.Rect
-			self.EffectHook:layout(r[1], r[2], r[3], r[4])
+			self.EffectHook:layout(self:getRect())
 		end
 		return true
 	end
@@ -256,7 +239,7 @@ end
 --	draw: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:draw()
+function Widget:draw()
 	if Frame.draw(self) then
 		local e = self.EffectHook
 		if e then
@@ -267,11 +250,12 @@ function Gadget:draw()
 end
 
 -------------------------------------------------------------------------------
---	Gadget:onHover(hovered): This method is invoked when the Gadget's {{Hover}}
+--	Widget:onHover(): This method is invoked when the {{Hover}}
 --	attribute has changed.
 -------------------------------------------------------------------------------
 
-function Gadget:onHover(hover)
+function Widget:onHover()
+	local hover = self.Hover
 	if self.Mode == "button" then
 		self:setValue("Selected", self.Active and hover)
 	end
@@ -282,60 +266,66 @@ function Gadget:onHover(hover)
 end
 
 -------------------------------------------------------------------------------
---	Gadget:onActivate(active): This method is invoked when the Gadget's
---	{{Active}} attribute has changed.
+--	Widget:onActivate(): This method is invoked when the {{Active}}
+--	attribute has changed.
 -------------------------------------------------------------------------------
 
-function Gadget:onActivate(active)
+function Widget:onActivate()
+
+	local active = self.Active
+	local win = self.Window
+	local mode = self.Mode
+	local selected = self.Selected
+	local dbclick
 
 	-- released over a popup which was entered with the button held?
-	local win = self.Window
-	local collapse = active == false and self.OldActive == false
-		and win and win.PopupRootWindow
-	self.OldActive = active
+	local collapse = self.Flags:check(ui.FL_POPITEM) and win and
+		win.PopupRootWindow
 
-	local mode, selected, dblclick = self.Mode, self.Selected
-	if mode == "toggle" then
-		if active or collapse then
-			self:setValue("Selected", not selected)
-			self:setValue("Pressed", true, true)
-			dblclick = self
+	if win then
+		if mode == "toggle" then
+			if active or collapse then
+				self:setValue("Selected", not selected)
+			end
+		elseif mode == "touch" then
+			if (active and not selected) or collapse then
+				self:setValue("Selected", true)
+				self:setValue("Pressed", true, true)
+			end
+		elseif mode == "button" then
+			self:setValue("Selected", active and self.Hover)
+			if (not selected ~= not active) or collapse then
+				self:setValue("Pressed", active, true)
+				if collapse then
+					self:setValue("Pressed", false)
+					self:setValue("Selected", false)
+				end
+				dblclick = active and self
+			end
 		end
-	elseif mode == "touch" then
-		if (active and not selected) or collapse then
-			self:setValue("Selected", true)
-			self:setValue("Pressed", true, true)
-			dblclick = self
-		end
-	elseif mode == "button" then
-		self:setValue("Selected", active and self.Hover)
-		if (not selected ~= not active) or collapse then
-			self:setValue("Pressed", active, true)
-			dblclick = active and self
-		end
+		win = self.Window
 	end
-	
-	win = self.Window
-	
+
 	if dblclick ~= nil and win then
 		win:setDblClickElement(dblclick)
 	end
-		
+
 	if collapse and win then
 		win:finishPopup()
 	end
-	
+
 	self:setState()
 end
 
 -------------------------------------------------------------------------------
---	Gadget:onDisable(disabled): This method is invoked when the Gadget's
---	{{Disabled}} attribute has changed.
+--	Widget:onDisable(): This method is invoked when the {{Disabled}}
+--	attribute has changed. The {{Disabled}} attribute is defined in the
+--	[[#tek.ui.class.area : Area]] class.
 -------------------------------------------------------------------------------
 
-function Gadget:onDisable(disabled)
+function Widget:onDisable()
 	local win = self.Window
-	if disabled and self.Focus and win then
+	if self.Disabled and self.Focus and win then
 		win:setFocusElement()
 	end
 	self.Flags:set(FL_REDRAW)
@@ -343,11 +333,12 @@ function Gadget:onDisable(disabled)
 end
 
 -------------------------------------------------------------------------------
---	Gadget:onSelect(selected): This method is invoked when the Gadget's
---	{{Selected}} attribute has changed.
+--	Widget:onSelect(): This method is invoked when the {{Selected}}
+--	attribute has changed. The {{Selected}} attribute is defined in the
+--	[[#tek.ui.class.area : Area]] class.
 -------------------------------------------------------------------------------
 
-function Gadget:onSelect(selected)
+function Widget:onSelect()
 
 	--	HACK for better touchpad support -- unfortunately an element is
 	--	deselected also when the mouse is leaving the window, so this is
@@ -365,27 +356,40 @@ function Gadget:onSelect(selected)
 end
 
 -------------------------------------------------------------------------------
---	Gadget:onHilite(selected): This method is invoked when the Gadget's
---	{{Hilite}} attribute has changed.
+--	Widget:onHilite(): This handler is called when the {{Hilite}}
+--	attribute has changed. The {{Hilite}} attribute is defined in the
+--	[[#tek.ui.class.area : Area]] class.
 -------------------------------------------------------------------------------
 
-function Gadget:onHilite(hilite)
+function Widget:onHilite()
 	self:setState()
 end
 
 -------------------------------------------------------------------------------
---	Gadget:onPress(pressed): This method is invoked when the Gadget's
---	{{Pressed}} attribute has changed.
+--	Widget:onPress(): This handler is called when the {{Pressed}}
+--	attribute has changed.
 -------------------------------------------------------------------------------
 
-function Gadget:onPress(pressed)
+function Widget:onPress()
+	if not self.Pressed then
+		self:onClick()
+	end
+end
+
+-------------------------------------------------------------------------------
+--	Widget:onClick(): This method is called when the {{Pressed}} attribute
+--	changes from '''true''' to '''false''', indicating that the pointing
+--	device has been released over the element.
+-------------------------------------------------------------------------------
+
+function Widget:onClick()
 end
 
 -------------------------------------------------------------------------------
 --	setState: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:setState(bg, fg)
+function Widget:setState(bg, fg)
 	local props = self.Properties
 	if props then
 		if not bg then
@@ -425,7 +429,7 @@ end
 --	passMsg: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:passMsg(msg)
+function Widget:passMsg(msg)
 	local win = self.Window
 	if win then -- might be gone if in a PopupWindow
 		local he = win.HoverElement
@@ -460,7 +464,7 @@ end
 --	checkFocus: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:checkFocus()
+function Widget:checkFocus()
 	local m = self.Mode
 	return not self.Disabled and (m == "toggle" or m == "button" or
 		(m == "touch" and not self.Selected))
@@ -470,20 +474,43 @@ end
 --	checkHover: overrides
 -------------------------------------------------------------------------------
 
-function Gadget:checkHover()
+function Widget:checkHover()
 	return not self.Disabled and self.Mode ~= "inert"
 end
 
 -------------------------------------------------------------------------------
---	Gadget:onFocus(focused): This method is invoked when the element's
---	{{Focus}} attribute has changed (see also [[#tek.ui.class.area : Area]]).
+--	Widget:onFocus(): This method is invoked when the {{Focus}}
+--	attribute has changed. The {{Focus}} attribute is defined in the
+--	[[#tek.ui.class.area : Area]] class.
 -------------------------------------------------------------------------------
 
-function Gadget:onFocus(focused)
+function Widget:onFocus()
+	local focused = self.Focus
 	if focused and self.AutoPosition then
 		self:focusRect()
 	end
-	self.Window:setFocusElement(focused and self)
+	local w = self.Window
+	if w then
+		w:setFocusElement(focused and self)
+	end
 	self.Flags:set(FL_REDRAWBORDER)
 	self:setState()
+end
+
+-------------------------------------------------------------------------------
+--	Widget:onHold(): This method is invoked when the {{Hold}} attribute
+--	has changed.
+-------------------------------------------------------------------------------
+
+function Widget:onHold()
+end
+
+-------------------------------------------------------------------------------
+--	Widget:onDblClick(): This method is invoked when the {{DblClick}}
+--	attribute has changed. It is '''true''' when the double click was
+--	initiated and the mouse button is still held, and '''false''' when it has
+--	been released.
+-------------------------------------------------------------------------------
+
+function Widget:onDblClick()
 end

@@ -1,117 +1,15 @@
--------------------------------------------------------------------------------
---
---	tek.ui.class.theme
---	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
---	See copyright notice in COPYRIGHT
---
---	OVERVIEW::
---		[[#ClassOverview]] :
---		[[#tek.class : Class]] /
---		Theme ${subclasses(Theme)}
---
---	IMPLEMENTS::
---		- Theme.getStyleSheet() - Gets a style sheet for a named theme
---
--------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local Class = require "tek.class"
-local ui = require "tek.ui"
-
 local getenv = os.getenv
 local insert = table.insert
 local ipairs = ipairs
 local min = math.min
 local open = io.open
-local pairs = pairs
 local tonumber = tonumber
 
-module("tek.ui.class.theme", tek.class)
-_VERSION = "Theme 11.2"
-local Theme = _M
-
--------------------------------------------------------------------------------
---	Internal default stylesheet:
--------------------------------------------------------------------------------
-
-local DEF_STYLESHEET_DEFAULT =
-{
-	["tek.ui.class.checkmark"] = {
-		["text-align"] = "left",
-		["valign"] = "center",
-		["background-color"] = "transparent",
-		["border-width"] = 0,
-	},
-	["tek.ui.class.frame"] = {
-		["border-width"] = 2,
-		["border-style"] = "solid",
-	},
-	["tek.ui.class.gadget"] = {
-		["border-style"] = "outset",
-		["border-style:active"] = "inset",
-	},
-	["tek.ui.class.gauge"] = {
-		["height"] = "fill",
-	},
-	["tek.ui.class.group"] = {
-		["border-width"] = 0,
-	},
-	["tek.ui.class.handle"] = {
-		["padding"] = 3,
-	},
-	["tek.ui.class.imagegadget"] = {
-		["color"] = "transparent",
-	},
-	["tek.ui.class.listgadget"] = {
-		["border-style"] = "solid",
-		["border-style:active"] = "solid",
-	},
-	["tek.ui.class.menuitem"] = {
-		["text-align"] = "left",
-	},
-	["tek.ui.class.poplist"] = {
-		["text-align"] = "left",
-	},
-	["tek.ui.class.popitem"] = {
-		["width"] = "fill",
-	},
-	["tek.ui.class.scrollbar"] = {
-		["valign"] = "center",
-	},
-	["tek.ui.class.slider"] = {
-		["width"] = "fill",
-		["height"] = "fill",
-	},
-	["tek.ui.class.spacer"] = {
-		["border-width"] = 1,
-	},
-	["tek.ui.class.text"] = {
-		["max-height"] = 0,
-	},
-	["tek.ui.class.textinput"] = {
-		["font"] = "ui-fixed",
-	},
-	[".caption"] = {
-		["valign"] = "center",
-	},
-	[".knob"] = {
-		["padding"] = 5,
-	},
-	[".legend"] = {
-		["border-style"] = "groove",
-		["border-width"] = 2,
-	},
-	[".menuitem"] = {
-		["width"] = "fill",
-	},
-	[".gauge-fill"] = {
-		["padding"] = 5,
-	},
-	["_scrollbar-arrow"] = {
-		["min-width"] = 10,
-		["min-height"] = 10,
-	},
-}
+module "tek.ui.style.desktop"
+_VERSION = "Desktop Style 1.0"
+local DesktopStyle = _M
 
 -------------------------------------------------------------------------------
 --	GTK+ settings import:
@@ -139,14 +37,13 @@ local function setclass(s, class, key, val)
 	c[key] = val
 end
 
-local function importGTKConfig(def_s)
+function DesktopStyle.importConfiguration(s)
 	if 3 / 2 == 1 then
 		db.error("Need floating point support for GTK+ settings import")
-		return def_s
+		return false
 	end
 	local p = getenv("GTK2_RC_FILES")
 	if p then
-		local s = def_s or { }
 		local paths = { }
 		p:gsub("([^:]+):?", function(p)
 			insert(paths, p)
@@ -244,33 +141,10 @@ local function importGTKConfig(def_s)
 						"hover")
 					setclass(s, ".page-button", "background-color:focus",
 						"hover")
-					return s
+					return true
 				end
 			end
 		end
 	end
-	return def_s
-end
-
--------------------------------------------------------------------------------
---	properties, errmsg = Theme.getStyleSheet([name]): Aquires a style sheet
---	from memory, by loading it from disk, or by determining properties at
---	runtime. Predefined names are:
---		- {{"minimal"}} - the hardcoded internal ''user agent'' style sheet
---		- {{"desktop"}} - An external style sheet named "desktop.css",
---		overlayed with the color scheme (and possibly other properties) of
---		the running desktop (if applicable)
---	Any other name will cause this function to attempt to load an equally
---	named style sheet file.
--------------------------------------------------------------------------------
-
-function Theme.getStyleSheet(themename)
-	if not themename or themename == "minimal" then
-		return ui.unpackStyleSheet(DEF_STYLESHEET_DEFAULT)
-	end
-	local s, msg = ui.loadStyleSheet(themename)
-	if themename == "desktop" then
-		importGTKConfig(s)
-	end
-	return s, msg
+	return false
 end

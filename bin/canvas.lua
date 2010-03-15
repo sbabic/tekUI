@@ -57,50 +57,43 @@ local app = ui.Application:new
 			{
 				ui.Group:new
 				{
+					SameSize = true,
 					Children =
 					{
 						ui.Button:new
 						{
-							Text = "Element 1",
-							onPress = function(self, pressed)
-								if pressed == false then
-									self:getById("the-canvas"):setValue("Child", Frame1)
-								end
+							Text = "Element _1",
+							onClick = function(self)
+								self:getById("the-canvas"):setValue("Child", Frame1)
 							end
 						},
 						ui.Button:new
 						{
-							Text = "Element 2",
-							onPress = function(self, pressed)
-								if pressed == false then
-									self:getById("the-canvas"):setValue("Child", Frame2)
-								end
+							Text = "Element _2",
+							onClick = function(self)
+								self:getById("the-canvas"):setValue("Child", Frame2)
 							end
 						},
 						ui.Button:new
 						{
-							Text = "Element 3",
-							onPress = function(self, pressed)
-								if pressed == false then
-									self:getById("the-canvas"):setValue("Child", Frame3)
-								end
+							Text = "Element _3",
+							onClick = function(self)
+								self:getById("the-canvas"):setValue("Child", Frame3)
 							end
 						},
 						ui.Button:new
 						{
-							Text = "Clear",
-							onPress = function(self, pressed)
-								if pressed == false then
-									self:getById("the-canvas"):setValue("Child", false)
-								end
+							Text = "_Clear",
+							onClick = function(self)
+								self:getById("the-canvas"):setValue("Child", false)
 							end
 						}
 					}
 				},
 				ui.ScrollGroup:new
 				{
-					HSliderMode = "on",
-					VSliderMode = "on",
+					HSliderMode = "auto",
+					VSliderMode = "auto",
 					Child = ui.Canvas:new
 					{
 -- 						Style = "background-image: url(bin/graphics/locale.ppm)",

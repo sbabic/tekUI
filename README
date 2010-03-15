@@ -22,9 +22,10 @@
   - 3.1. [[#requirements : Requirements]]
   - 3.2. [[#buildenv : Adjusting the build environment]]
    - 3.2.1 [[#notefbsd : FreeBSD notes]]
-   - 3.2.2 [[#notex11 : X11 notes]]
-   - 3.2.3 [[#notenanox : Nano-X notes]]
-   - 3.2.4 [[#noterawfb : Raw framebuffer notes]]
+   - 3.2.2 [[#notewindows : Windows notes]]
+   - 3.2.3 [[#notex11 : X11 notes]]
+   - 3.2.4 [[#notenanox : Nano-X notes]]
+   - 3.2.5 [[#noterawfb : Raw framebuffer notes]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
@@ -32,7 +33,8 @@
  - 4. [[#usersguide : User's Guide]]
   - 4.1. [[#helloworld : Hello, World!]]
   - 4.2. [[#reactingoninput : Reacting on input]]
-  - 4.3. [[#adhocclasses : Ad-hoc setup of classes]]
+  - 4.3. [[#handlers : List of predefined handlers]]
+  - 4.4. [[#adhocclasses : Ad-hoc setup of classes]]
 
  - 5. [[#developersguide : Developer's Guide]]
   - 5.1. [[#lifecycle : The lifecycle of an element]]
@@ -198,16 +200,17 @@ between GUI elements as well as many application tasks.
 
 ==( themes : 2.4. Style sheets and themes )==
 
-The only admission to a more common appearance is that tekUI tries to
-import the color scheme found in a GTK+ configuration file. It can be
-created in the KDE configuration panel conveniently; thus, if you are
-using KDE and check the appropriate option, KDE, GTK+ and tekUI can
-all share the same color scheme.
-
 tekUI comes with a cascading style sheets (CSS) engine for the
 import of properties for element classes, custom classes, pseudo
 classes, as well as for individual, direct and hardcoded class
 formattings.
+
+The only admission to a more common appearance is that tekUI tries to
+import the color scheme found in a GTK+ configuration file, if the
+'desktop' style sheet is used (which is the default, see also
+[[environment variables][#envvariables]]). If you are using KDE and
+check the ''Apply colors to non-KDE applications'' option, KDE, GTK+
+and tekUI all share the same color scheme.
 
 ==( clibrary : 2.5. C library )==
 
@@ -282,6 +285,7 @@ this writing) are given below:
  * >=Lua-5.1.2
  * >=libX11-1.1.3 (for the x11 driver)
  * >=libXft-2.1.12 (for the x11 driver)
+  * XFree86VidMode extension (for the x11 driver)
  * >=fontconfig-2.5.0 (for the x11 driver)
  * >=freetype-2.3.5 (for the x11 and directfb drivers)
  * >=DirectFB-0.9.25.1 (for the directfb driver)
@@ -306,10 +310,10 @@ required to compile and run tekUI on Ubuntu Linux: {{lua5.1}},
 This release has been tested on and should compile and run out of the
 box on
 
- * Ubuntu Linux 8.04 and 7.10
+ * Ubuntu Linux 9.10, 8.04 and 7.10
  * Windows 2000, Wine
  * FreeBSD 7.0 (special precautions needed, see annotations below)
- * Gentoo Linux x86/2008.0, amd64/2007.0, ppc/2007.0
+ * Gentoo Linux x86/10.0, x86/2008.0, amd64/2007.0, ppc/2007.0
 
 If building fails for you, you have to adjust the build environment,
 which is located in the {{config}} file on the topmost directory
@@ -322,19 +326,27 @@ You need a Lua binary which is linked with the {{-pthread}} option,
 as tekUI is using multithreaded code in shared libraries, which are
 dynamically loaded by the interpreter.
 
-===( notex11 : 3.2.2. X11 notes )===
+===( notewindows : 3.2.2. Windows notes )===
+
+Not much time has been spent on the Windows version yet. As a result,
+this display driver is still incomplete and in an experimental state.
+For example, it is not possible to select an entry in a popup without
+releasing the mouse button first. For reasons not yet investigated,
+this display driver feels disproportionately sluggish. For adjusting
+the build environment, see the {{config}} file.
+
+===( notex11 : 3.2.3. X11 notes )===
+
+The XFree86VidMode extension is linked against by default. It can
+be disabled by removing {{-DENABLE_XVID}} from {{X11_DEFS}} in the
+config file.
 
 In case of problems with texts and labels, try removing
 {{-DENABLE_XFT}} from {{X11_DEFS}} in the config file. Some versions
 of X11 are known to not support the Composite extension and
-antialiased fonts using Xft at the same time, and we tried to work
-around this problem by falling back to the core X11 API if the
-Composite extension was detected. Recent tests indicate that this
-has been corrected in later versions of X11, and so we removed our
-workaround. Unfortunately, we got reports of other, possibly
-unrelated problems with Xft in the meantime.
+antialiased fonts using Xft at the same time.
 
-===( notenanox : 3.2.3. Nano-X notes )===
+===( notenanox : 3.2.4. Nano-X notes )===
 
 For the Nano-X driver you will almost certainly have to adjust the
 {{config}} file. Due to some limitations of Nano-X, tekUI
@@ -344,7 +356,7 @@ for more information. Example:
 
   # nano-X & THEME=nanox FULLSCREEN=true bin/demo_custom.lua
 
-===( noterawfb : 3.2.4. Raw framebuffer notes )===
+===( noterawfb : 3.2.5. Raw framebuffer notes )===
 
 Drawing primitives, clipping, and antialiased fonts are provided,
 and rendering can be targeted to user-supplied memory. This driver
@@ -412,7 +424,7 @@ conveniently invoked with
 
 ==( helloworld : 4.1. Hello, World! )==
 
-The GUI version of the "Hello, World!" program:
+The GUI version of the 'Hello, World!' program:
 
   ui = require "tek.ui"
   ui.Application:new
@@ -429,10 +441,10 @@ The GUI version of the "Hello, World!" program:
             Text = "Hello, World!",
             Class = "button",
             Mode = "button",
-          },
-        },
-      },
-    },
+          }
+        }
+      }
+    }
   }:run()
 
 As can be seen, tekUI allows a fully functional application to be
@@ -444,10 +456,10 @@ loader, so whenever a class (like
 [[manual.html#tek.ui.class.text : Text]]) is accessed for the first
 time, it will be loaded from {{tek/ui/class/}} in the file system.
 
-Note that a button class is not needed: a button is just a Text
-element behaving like a button with a frame giving it the appearance
-of a button. (We will later explain how you can write a button class
-yourself, to save you some typing.)
+Note that a button class is not strictly needed: a button is just a
+Text element behaving like a button with a frame giving it the
+appearance of a button. We will later explain how you can write a
+button class yourself, to save you some typing.
 
 To quit, click the window's close button. Closing the
 [[manual.html#tek.ui.class.application : Application]]'s last
@@ -455,13 +467,43 @@ open window will cause the {{run}} method to return to its caller.
 
 ==( reactingoninput : 4.2. Reacting on input )==
 
-There are different ways for reacting to presses on the "Hello,
-World" button. The simplest method is to place an {{onPress}}
-function into the Text object, which will overwrite the handler
-reacting on setting the {{Pressed}} variable. This variable is set
-to '''true''' when a [[manual.html#tek.ui.class.gadget : Gadget]]
-is hit with the left mouse button, and to '''false''' when it is
-getting released:
+There are different ways for reacting to presses on the 'Hello,
+World' button. The simplest form is to place an {{onClick}}
+function into the Text object:
+
+  ui = require "tek.ui"
+  ui.Application:new
+  {
+    Children =
+    {
+      ui.Window:new
+      {
+        Title = "Hello",
+        Children =
+        {
+          ui.Text:new
+          {
+            Text = "Hello, World!",
+            Class = "button",
+            Mode = "button",
+            onClick = function(self)
+              print "Hello, World!"
+            end
+          }
+        }
+      }
+    }
+  }:run()
+
+But {{onClick}} is just a convenient shortcut for the most trivial of
+all cases. To catch more events, you can override handler functions
+which react on changes to an element's state variables, like
+{{Pressed}} and {{Selected}}, to name but a few. They contain
+booleans and are indicative of the Element's state, such as: Is it in
+selected state, is it pressed down, is it hovered by the mouse, is it
+receiving the input? The {{onPress}} handler receives the current
+state of the {{Pressed}} variable as an argument, so it can be used
+to catch not only releases, but also presses of the mouse button:
 
   ui = require "tek.ui"
   ui.Application:new
@@ -479,57 +521,23 @@ getting released:
             Class = "button",
             Mode = "button",
             onPress = function(self, pressed)
-              if pressed == false then
-                print "Hello, World!"
-              end
               ui.Text.onPress(self, pressed)
-            end,
-          },
-        },
-      },
-    },
+              print("Pressed:", pressed)
+            end
+          }
+        }
+      }
+    }
   }:run()
 
-When overwriting a method like {{onPress}}, also forward the call to
-the original implementation of the same method.
+When you overwrite a handler, you should forward the call to the
+original implementation of the same method, as seen in the example.
 
-For regular applications, it is normally sufficient to stick to
-overwriting the available handlers as in the previous example. But
-the underlying mechanism to register a notification handler can be
-interesting as well, especially if you plan on creating new GUI
+For regular applications it is normally sufficient to stick to
+overwriting the available [[#handlers]] as in the previous example.
+But the underlying mechanism to register a notification handler can
+be interesting as well, especially if you plan on writing new GUI
 classes yourself:
-
-  ...
-  ui.Text:new
-  {
-    Text = "_Hello, World!",
-    Class = "button",
-    Mode = "button",
-    Notifications =
-    {
-      ["Pressed"] =
-      {
-        [false] =
-        {
-          {
-            ui.NOTIFY_SELF,
-            ui.NOTIFY_FUNCTION,
-            function(self)
-              print "Hello, World!"
-            end,
-          },
-        },
-      },
-    },
-  },
-  ...
-
-Even though notification handlers can be initialized statically
-(i.e. written in the same expression as the rest of the application),
-this is not always recommendable, as the deep levels of indentation
-are getting in the way of clarity. Notification handlers are more
-commonly added using the {{addNotify()}} method, as shown in the
-next example:
 
   ui = require "tek.ui"
   app = ui.Application:new()
@@ -547,8 +555,8 @@ next example:
       print "Hello, World!"
     end
   })
-  app:addMember(win)
   win:addMember(text)
+  app:addMember(win)
   app:run()
 
 In this example we have also set the {{HideOnEscape}} attribute for
@@ -558,10 +566,44 @@ by placing an underscore in front of a letter in its caption.
 
 See also [[Object:addNotify][manual.html#Object:addNotify]] for
 all the hairy details on notification handlers, and the
-[[manual.html#tek.ui.class.gadget : Gadget]] class for some of the
-possible actions to react on.
+[[manual.html#tek.ui.class.area : Area]] and
+[[manual.html#tek.ui.class.widget : Widget]] classes for the most
+important state variables.
 
-==( adhocclasses : 4.3. Ad-hoc setup of classes )==
+==( handlers : 4.3. List of predefined handlers )==
+
+'''Name'''                || '''Base Class'''                                     || '''Cause'''
+Widget:onActivate()       || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Active}} attribute¹ 
+Window:onChangeStatus()   || [[manual.html#tek.ui.class.window : Window]]         || change of {{Status}} attribute¹
+Widget:onClick()          || [[manual.html#tek.ui.class.widget : Widget]]         || caused when {{Pressed}} changes to '''false'''¹
+Widget:onDisable()        || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Disabled}} attribute¹
+Widget:onDblClick()       || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{DblClick}} attribute¹
+TextInput:onEnter()       || [[manual.html#tek.ui.class.textinput : TextInput]]   || change of {{Enter}} attribute¹
+Widget:onFocus()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Focus}} attribute¹
+Window:onHide()           || [[manual.html#tek.ui.class.window : Window]]         || window close button, Escape key
+Widget:onHilite()         || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hilite}} attribute¹
+Widget:onHold()           || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hold}} attribute¹
+Widget:onHover()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hover}} attribute¹
+Widget:onPress()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Pressed}} attribute¹
+Widget:onSelect()         || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Selected}} attribute¹
+DirList:onSelectEntry()   || [[manual.html#tek.ui.class.dirlist : DirList]]       || item selected by the user
+Lister:onSelectLine() || [[manual.html#tek.ui.class.lister : Lister]] || change of the {{SelectedLine}} attribute¹
+PopList:onSelectLine()    || [[manual.html#tek.ui.class.poplist : PopList]]       || change of the {{SelectedLine}} attribute¹
+Canvas:onSetChild()       || [[manual.html#tek.ui.class.canvas : Canvas]]         || change of the {{Child}} attribute¹
+Element:onSetClass()      || [[manual.html#tek.ui.class.element : Element]]       || change of the {{Class}} attribute¹
+Lister:onSetCursor()  || [[manual.html#tek.ui.class.lister : Lister]] || change of the {{CursorLine}} attribute¹
+Numeric:onSetMax()        || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Max}} attribute¹
+Numeric:onSetMin()        || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Min}} attribute¹
+PageGroup:onSetPageNumber() || [[manual.html#tek.ui.class.pagegroup : PageGroup]] || change of the {{PageNumber}} attribute¹
+Slider:onSetRange()       || [[manual.html#tek.ui.class.slider : Slider]]         || change of the {{Range}} attribute¹
+Element:onSetStyle()      || [[manual.html#tek.ui.class.element : Element]]       || change of the {{Style}} attribute¹
+Text:onSetText()          || [[manual.html#tek.ui.class.text : Text]]             || change of {{Text}} attribute¹
+FloatText:onSetText()     || [[manual.html#tek.ui.class.floattext : FloatText]]   || change of {{Text}} attribute¹
+Numeric:onSetValue()      || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Value}} attribute¹
+
+¹ using Object:setValue() and the notification mechanism
+
+==( adhocclasses : 4.4. Ad-hoc setup of classes )==
 
 To inherit properties and functionality from existing classes and to
 reuse existing code consequently, it is often desirable to create new
@@ -661,8 +703,8 @@ In the drawing method, the control flow is roughly as follows:
 
 There are rare cases in which a class modifies the drawing context,
 e.g. by setting a coordinate displacement. Such modifications must
-be performed in [[Area:drawBegin()][manual.Area:drawBegin]] and
-reverted in [[Area:drawEnd()][manual.Area:drawEnd]], and the
+be performed in [[Area:drawBegin()][manual.html#Area:drawBegin]] and
+reverted in [[Area:drawEnd()][manual.html#Area:drawEnd]], and the
 control flow looks like this:
 
   function ElementClass:draw()
@@ -723,9 +765,9 @@ consumption.
 
 A class is usually set up in a prologue like this:
 
-  local Gadget = require "tek.ui.class.gadget"
-  module("tek.ui.class.button", tek.ui.class.gadget)
-  _VERSION = "Button Gadget 1.0"
+  local Widget = require "tek.ui.class.widget"
+  module("tek.ui.class.button", tek.ui.class.widget)
+  _VERSION = "Button Widget 1.0"
   local Button = _M
 
 The second argument to {{module}} is the super class to derive the
@@ -739,12 +781,12 @@ an implicit {{self}}):
 
   function Button.new(class, self)
     ...
-    return Gadget.new(class, self)
+    return Widget.new(class, self)
   end
 
   function Button:method()
     ...
-    Gadget.method(self)
+    Widget.method(self)
   end
 
 Also, don't forget to add a {{_VERSION}} variable, as it will be used
@@ -758,7 +800,7 @@ documentation generator.
 
 Most notably, the second argument to {{module}} should be written out
 in full – in the example above, one might be tempted to use
-{{Gadget}} instead of {{tek.ui.class.gadget}}; but then, the path
+{{Widget}} instead of {{tek.ui.class.widget}}; but then, the path
 information would be lost for the source code parser, which tries to
 assemble a self-contained class hierarchy from individual class /
 child class relations.

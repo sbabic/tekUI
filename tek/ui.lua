@@ -27,7 +27,6 @@
 --		- ui.loadTable() - Loads a table from some standard path
 --		- ui.require() - Loads an user interface class
 --		- ui.resolveKeyCode() - Converts a keycode into keys and qualifiers
---		- ui.sourceTable() - Loads a file as a Lua source, returning a table
 --
 --	CONSTANTS::
 --		- {{HUGE}}
@@ -119,7 +118,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 30.1"
+_VERSION = "tekUI 34.0"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -187,7 +186,11 @@ local function requireVersion(name, version)
 			ver = 999999
 		end
 		mod._VER = ver
-		db.info("Loaded module %s, version %s", name, ver)
+		if ver then
+			db.info("Loaded module %s, version %s", name, ver)
+		else
+			db.error("Module %s: illegal version", name)
+		end
 	end
 	if version then
 		if ver < version then
@@ -237,7 +240,7 @@ function loadClass(realm, name, version, loader)
 		if success then
 			return result
 		end
-		db.error("Error loading class '%s'", name)
+		db.error("Error loading class '%s': %s", name, result)
 	end
 	return false
 end
@@ -260,28 +263,6 @@ end
 
 function loadLibrary(name, version)
 	return loadClass("lib", name, version, loadSimple)
-end
-
--------------------------------------------------------------------------------
---	allocRegion:
--------------------------------------------------------------------------------
-
-allocRegion = regionnew
-
--------------------------------------------------------------------------------
---	newRegion:
--------------------------------------------------------------------------------
-
-function newRegion(...)
-	return allocRegion():setRect(...)
-end
-
--------------------------------------------------------------------------------
---	reuseRegion:
--------------------------------------------------------------------------------
-
-function reuseRegion(r, ...)
-	return (r or allocRegion()):setRect(...)
 end
 
 -------------------------------------------------------------------------------
@@ -361,7 +342,7 @@ function encodeURL(s)
 end
 
 -------------------------------------------------------------------------------
---	table, msg = ui.sourceTable(file[, environment]): Interprete a file as a
+--	table, msg = ui.sourceTable(file[, environment]) - Interprete a file as a
 --	Lua source, containing the keys and values forming a table. If {{file}} is
 --	a string, it will be used for opening and reading the named file, otherwise
 --	it will be assumed to be an open file handle. Either way, the file will
@@ -749,6 +730,117 @@ function loadStyleSheet(file)
 end
 
 -------------------------------------------------------------------------------
+--	Internal default stylesheet:
+-------------------------------------------------------------------------------
+
+local DEF_STYLESHEET_DEFAULT =
+{
+	["tek.ui.class.checkmark"] = {
+		["text-align"] = "left",
+		["valign"] = "center",
+		["background-color"] = "transparent",
+		["border-width"] = 0,
+	},
+	["tek.ui.class.frame"] = {
+		["border-width"] = 2,
+		["border-style"] = "solid",
+	},
+	["tek.ui.class.widget"] = {
+		["border-style"] = "outset",
+		["border-style:active"] = "inset",
+	},
+	["tek.ui.class.gauge"] = {
+		["height"] = "fill",
+	},
+	["tek.ui.class.group"] = {
+		["border-width"] = 0,
+	},
+	["tek.ui.class.handle"] = {
+		["padding"] = 3,
+	},
+	["tek.ui.class.imagewidget"] = {
+		["color"] = "transparent",
+	},
+	["tek.ui.class.lister"] = {
+		["border-style"] = "solid",
+		["border-style:active"] = "solid",
+	},
+	["tek.ui.class.menuitem"] = {
+		["text-align"] = "left",
+	},
+	["tek.ui.class.poplist"] = {
+		["text-align"] = "left",
+	},
+	["tek.ui.class.popitem"] = {
+		["width"] = "fill",
+	},
+	["tek.ui.class.scrollbar"] = {
+		["valign"] = "center",
+	},
+	["tek.ui.class.slider"] = {
+		["width"] = "fill",
+		["height"] = "fill",
+	},
+	["tek.ui.class.spacer"] = {
+		["border-width"] = 1,
+	},
+	["tek.ui.class.text"] = {
+		["max-height"] = 0,
+	},
+	["tek.ui.class.textinput"] = {
+		["font"] = "ui-fixed",
+	},
+	[".caption"] = {
+		["valign"] = "center",
+	},
+	[".knob"] = {
+		["padding"] = 5,
+	},
+	[".legend"] = {
+		["border-style"] = "groove",
+		["border-width"] = 2,
+	},
+	[".menuitem"] = {
+		["width"] = "fill",
+	},
+	[".gauge-fill"] = {
+		["padding"] = 5,
+	},
+	["_scrollbar-arrow"] = {
+		["min-width"] = 10,
+		["min-height"] = 10,
+	},
+}
+
+-------------------------------------------------------------------------------
+--	properties, errmsg = ui.getStyleSheet([name]): Aquires a style sheet
+--	from memory, by loading it from disk, or by determining properties at
+--	runtime. Predefined names are:
+--		- {{"minimal"}} - the hardcoded internal ''user agent'' style sheet
+--		- {{"desktop"}} - An external style sheet named "desktop.css",
+--		overlayed with the color scheme (and possibly other properties) of
+--		the running desktop (if applicable)
+--	Any other name will cause this function to attempt to load an equally
+--	named style sheet file.
+-------------------------------------------------------------------------------
+
+function getStyleSheet(themename)
+	if not themename or themename == "minimal" then
+		return unpackStyleSheet(DEF_STYLESHEET_DEFAULT)
+	end
+	local s, msg = loadStyleSheet(themename)
+	if themename == "desktop" then
+		local success, res = pcall(int_require, "tek.ui.style.desktop")
+		if success then
+			res.importConfiguration(s)
+		else
+			db.warn("Failed to import desktop style:\n%s", res)
+		end
+	end
+	return s, msg
+end
+
+-------------------------------------------------------------------------------
 --	On-demand class loader:
 -------------------------------------------------------------------------------
 
@@ -886,7 +978,7 @@ DBLCLICKJITTER = 70 -- 3000 for touch screens
 --	Placeholders for notifications
 -------------------------------------------------------------------------------
 
-local Element = require("element", 14)
+local Element = require("element", 17)
 
 NOTIFY_ALWAYS = Element.NOTIFY_ALWAYS
 NOTIFY_VALUE = Element.NOTIFY_VALUE
@@ -915,7 +1007,7 @@ MSG_MOUSEBUTTON = 0x0400
 MSG_INTERVAL    = 0x0800
 MSG_KEYUP       = 0x1000
 MSG_USER        = 0x2000
-MSG_ALL         = 0x1f1f
+MSG_ALL         = 0x171f -- all, not including MSG_INTERVAL
 
 -------------------------------------------------------------------------------
 --	Flags:
@@ -927,3 +1019,4 @@ FL_REDRAWBORDER = 0x0004
 FL_SETUP		= 0x0008
 FL_SHOW			= 0x0010
 FL_CHANGED		= 0x0020
+FL_POPITEM      = 0x0040

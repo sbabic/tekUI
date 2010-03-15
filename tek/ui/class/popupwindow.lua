@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.group : Group]] /
 --		[[#tek.ui.class.group : Window]] /
 --		PopupWindow ${subclasses(PopupWindow)}
@@ -27,12 +27,12 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Window = ui.require("window", 27)
+local Window = ui.require("window", 33)
 
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 4.2"
+_VERSION = "PopupWindow 5.0"
 
 local PopupWindow = _M
 
@@ -83,8 +83,8 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function PopupWindow:show(drawable)
-	Window.show(self, drawable)
+function PopupWindow:show()
+	Window.show(self)
 	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 end
 

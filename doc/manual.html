@@ -5,14 +5,14 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="04-Jan-2010" />
+		<meta name="created" content="15-Mar-2010" />
 	</head>
 	<body>
 		<h1>
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8i
+			Version 0.8j
 		</p>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -33,9 +33,6 @@
 									<blockquote>
 										<ul>
 											<li>
-												<a href="#tek.ui.class.drawable">Drawable</a> 
-											</li>
-											<li>
 												<a href="#tek.ui.class.element">Element</a> 
 												<blockquote>
 													<ul>
@@ -54,7 +51,10 @@
 																					<a href="#tek.ui.class.canvas">Canvas</a> 
 																				</li>
 																				<li>
-																					<a href="#tek.ui.class.gadget">Gadget</a> 
+																					<a href="#tek.ui.class.spacer">Spacer</a> 
+																				</li>
+																				<li>
+																					<a href="#tek.ui.class.widget">Widget</a> 
 																					<blockquote>
 																						<ul>
 																							<li>
@@ -123,7 +123,7 @@
 																											</blockquote>
 																										</li>
 																										<li>
-																											<a href="#tek.ui.class.listgadget">ListGadget</a> 
+																											<a href="#tek.ui.class.lister">Lister</a> 
 																										</li>
 																										<li>
 																											<a href="#tek.ui.class.popitem">PopItem</a> 
@@ -146,9 +146,6 @@
 																							</li>
 																						</ul>
 																					</blockquote>
-																				</li>
-																				<li>
-																					<a href="#tek.ui.class.spacer">Spacer</a> 
 																				</li>
 																			</ul>
 																		</blockquote>
@@ -191,9 +188,6 @@
 										</ul>
 									</blockquote>
 								</li>
-								<li>
-									<a href="#tek.ui.class.theme">Theme</a> 
-								</li>
 							</ul>
 						</blockquote>
 					</li>
@@ -216,6 +210,9 @@
 					<li>
 						<a href="#tek.ui">ui</a> 
 					</li>
+					<li>
+						DesktopStyle
+					</li>
 				</ul>
 			</blockquote>
 			<hr class="page-break" />
@@ -224,7 +221,7 @@
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						<a href="#ClassOverview">ClassOverview</a> : Class / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">6 subclasses</option><option value="#tek.class.list">List</option><option value="#tek.class.markup">Markup</option><option value="#tek.class.object">Object</option><option value="#tek.class.utf8string">UTF8String</option><option value="#tek.ui.class.layout">Layout</option><option value="#tek.ui.class.theme">Theme</option></select>
+						<a href="#ClassOverview">ClassOverview</a> : Class / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">5 subclasses</option><option value="#tek.class.list">List</option><option value="#tek.class.markup">Markup</option><option value="#tek.class.object">Object</option><option value="#tek.class.utf8string">UTF8String</option><option value="#tek.ui.class.layout">Layout</option></select>
 					</p>
 					<p>
 						This module implements inheritance and the creation of objects
@@ -416,7 +413,7 @@ class = superclass()
 		</div>
 		<div class="node"><h3><a name="List:clear" id="List:clear"><code>List:clear()</code></a></h3>
 			<p>
-				Remove all items from the list.
+				Removes all items from the list.
 			</p>
 			<hr />
 		</div>
@@ -682,59 +679,30 @@ class = superclass()
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v10.0)</a></h2>
+		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v13.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
 						<a href="#ClassOverview">ClassOverview</a> :
 						<a href="#tek.class">Class</a> /
-						Object / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">3 subclasses</option><option value="#tek.ui.class.drawable">Drawable</option><option value="#tek.ui.class.element">Element</option><option value="#tek.ui.class.family">Family</option></select>
+						Object / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.class.element">Element</option><option value="#tek.ui.class.family">Family</option></select>
 					</p>
 					<p>
 						This class implements notifications.
 					</p>
 				</blockquote>
 			</div>
-			<div class="definition"><dfn>ATTRIBUTES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>Notifications &#091;I&#093;</code> (table)
-							<blockquote>
-								<p>
-									Initial set of notifications. Static initialization of
-									notifications has this form:
-								</p>
-<pre>
-Notifications =
-{
-  &#091;&quot;attribute-name1&quot;&#093; =
-  {
-    &#091;value1&#093; =
-    {
-      action1,
-      action2,
-      ...
-    }
-    &#091;value2&#093; = ...
-  },
-  &#091;&quot;attribute-name2&quot;&#093; = ...
-}
-</pre>
-								<p>
-									Refer to <a href="#Object:addNotify"><code>Object:addNotify()</code></a> for possible placeholders
-									and a description of the action data structure.
-								</p>
-							</blockquote>
-						</li>
-					</ul>
-				</blockquote>
-			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							Object.addClassNotifications - Collects class notifications
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Object:addNotify"><code>Object:addNotify()</code></a> - Adds a notification to an object
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Object:doNotify"><code>Object:doNotify()</code></a> - Invokes a notification in the addressed object
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> - (Re-)initializes an object
@@ -759,14 +727,22 @@ Notifications =
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Object:addNotify" id="Object:addNotify"><code>Object:addNotify(attr, val, dest[, pos])</code></a></h3>
+		<div class="node"><h3><a name="Object:addClassNotifications" id="Object:addClassNotifications"><code>Object.addClassNotifications(proto)</code></a></h3>
+			<p>
+				class method for collecting the
+				class' 'standard' notifications. Standard means that these notifications
+				remain in place, and are not removed or replaced during runtime.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Object:addNotify" id="Object:addNotify"><code>Object:addNotify(attr, val, dest)</code></a></h3>
 			<p>
 				Adds a notification to an object. <code>attr</code> is the name of an attribute to
 				react on setting its value. <code>val</code> is the value that triggers the
-				notification. The placeholder <code>ui.NOTIFY_ALWAYS</code> can be used for
-				reacting on any change of the value.
-				<code>dest</code> is a table describing the action to take when the notification
-				occurs; it has the general form:
+				notification. For <code>val</code>, the placeholder <code>ui.NOTIFY_ALWAYS</code> can be
+				used to react on any change of the value.
+				<code>action</code> is a table describing the action to take when the
+				notification occurs; it has the general form:
 			</p>
 <pre>
 { object, method, arg1, ... }
@@ -837,17 +813,21 @@ Notifications =
 method(object, arg1, ...)
 </pre>
 			<p>
-				The optional <code>pos</code> argument allows for insertion at the specified
-				position in the list of notifications. By default, notifications are
-				added at the end. The only reasonable value for <code>pos</code> is probably <code>1</code>.
-			</p>
-			<p>
 				If the destination object or addressed method cannot be determined,
 				nothing else besides setting the attribute will happen.
 			</p>
 			<p>
 				Notifications should be removed using <a href="#Object:remNotify"><code>Object:remNotify()</code></a> when they are
 				no longer needed, to reduce overhead and memory use.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Object:doNotify" id="Object:doNotify"><code>Object:doNotify(func, ...)</code></a></h3>
+			<p>
+				Performs a notification in the object by
+				calling the specified function and passing it the given arguments. If
+				<code>func</code> is a a function value, it will be called directly. Otherwise, it
+				will be used as a key for looking up the function.
 			</p>
 			<hr />
 		</div>
@@ -864,7 +844,7 @@ method(object, arg1, ...)
 			<p>
 				Removes a notification from an object and returns <strong>true</strong> if it
 				was found and removed successfully. You must specify the exact set of
-				arguments as for <a href="#Object:addNotify"><code>Object:addNotify()</code></a> to identify a notification.
+				arguments as for <a href="#Object:addNotify"><code>Object:addNotify()</code></a> to identify a notification for removal.
 			</p>
 			<hr />
 		</div>
@@ -1394,7 +1374,7 @@ function(...) out:write(...) end
 </pre>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v9.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v10.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1551,7 +1531,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v30.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v34.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1606,9 +1586,6 @@ ui.Application:new { ...
 						</li>
 						<li style="list-style-type: none">
 							<a href="#ui:resolveKeyCode"><code>ui.resolveKeyCode()</code></a> - Converts a keycode into keys and qualifiers
-						</li>
-						<li style="list-style-type: none">
-							<a href="#ui:sourceTable"><code>ui.sourceTable()</code></a> - Loads a file as a Lua source, returning a table
 						</li>
 					</ul>
 				</blockquote>
@@ -1879,6 +1856,30 @@ ui.Application:new { ...
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="ui:getStyleSheet" id="ui:getStyleSheet"><code>properties, errmsg = ui.getStyleSheet([name])</code></a></h3>
+			<p>
+				Aquires a style sheet
+				from memory, by loading it from disk, or by determining properties at
+				runtime. Predefined names are:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>&quot;minimal&quot;</code> - the hardcoded internal <em>user agent</em> style sheet
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;desktop&quot;</code> - An external style sheet named &quot;desktop.css&quot;,
+						overlayed with the color scheme (and possibly other properties) of
+						the running desktop (if applicable)
+					</li>
+				</ul>
+			</blockquote>
+			<p>
+				Any other name will cause this function to attempt to load an equally
+				named style sheet file.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="ui:loadClass" id="ui:loadClass"><code>class = ui.loadClass(realm, classname[, min_version])</code></a></h3>
 			<p>
 				Loads a class of the given <code>classname</code> from the specified <code>realm</code>,
@@ -1956,22 +1957,9 @@ ui.Application:new { ...
 				Resolves a combined keycode specifier
 				(e.g. <code>&quot;Ctrl+Shift+Q&quot;</code>) into a key string and a table of qualifier codes.
 			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="ui:sourceTable" id="ui:sourceTable"><code>table, msg = ui.sourceTable(file[, environment])</code></a></h3>
-			<p>
-				Interprete a file as a
-				Lua source, containing the keys and values forming a table. If <code>file</code> is
-				a string, it will be used for opening and reading the named file, otherwise
-				it will be assumed to be an open file handle. Either way, the file will
-				be read using the <code>file:read(&quot;*a&quot;)</code> method and closed afterwards.
-				By default, the source will be executed in an empty environment, unless
-				an environment is specified. The resulting table is returned to the
-				caller, or <strong>nil</strong> followed by an error message.
-			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v29.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v32.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2369,7 +2357,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v36.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v44.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2381,7 +2369,7 @@ message = function(object, message)
 					</p>
 					<p>
 						This is the base class of all visible user interface elements.
-						It implements an outer margin, layouting, painting, and the
+						It implements an outer margin, layouting, drawing, and the
 						relationships to its neighbour elements.
 					</p>
 				</blockquote>
@@ -2390,7 +2378,7 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>AutoPosition &#091;IG&#093;</code> (boolean)
+							<code>AutoPosition &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									When the element receives the focus, this flag instructs it to
@@ -2429,28 +2417,19 @@ message = function(object, message)
 							<code>Disabled &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									If <strong>true</strong>, the element is in disabled state. This attribute is
-									handled by the <a href="#tek.ui.class.gadget">Gadget</a> class.
+									If <strong>true</strong>, the element is in disabled state and loses its
+									ability to interact with the user. This state variable is handled
+									in the <a href="#tek.ui.class.widget">Widget</a> class.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Drawable &#091;G&#093;</code> (<a href="#tek.ui.class.drawable">Drawable</a>)
-							<blockquote>
-								<p>
-									The Drawable for rendering, set during <a href="#Area:show"><code>Area:show()</code></a> and cleared
-									during <a href="#Area:hide"><code>Area:hide()</code></a>.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>EraseBG &#091;IG&#093;</code> (boolean)
+							<code>EraseBG &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element's background is painted automatically
-									using the <a href="#Area:erase"><code>Area:erase()</code></a> method. Set this attribute to <strong>false</strong> to
-									indicate that you wish to paint the background yourself in the
-									<a href="#Area:draw"><code>Area:draw()</code></a> method.
+									using the <a href="#Area:erase"><code>Area:erase()</code></a> method. Set this attribute to <strong>false</strong> 
+									if you intend to paint the background yourself in <a href="#Area:draw"><code>Area:draw()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -2476,10 +2455,18 @@ message = function(object, message)
 										element needs to be repainted. Cleared in <a href="#Area:draw"><code>Area:draw()</code></a>.
 									</li>
 									<li style="list-style-type: none">
+										<code>FL_REDRAWBORDER</code> - To indicate a repaint of the element's
+										borders. Handled in the <a href="#tek.ui.class.frame">Frame</a> class.
+									</li>
+									<li style="list-style-type: none">
 										<code>FL_CHANGED</code> - This flag indicates that the contents of an
 										element have changed, i.e. when children were added to a group,
 										or when setting a new text or image should cause a recalculation
 										of its size.
+									</li>
+									<li style="list-style-type: none">
+										<code>FL_POPITEM</code> - Used to identify elements in popups, handled in
+										<a href="#tek.ui.class.popitem">PopItem</a>.
 									</li>
 								</ul>
 							</blockquote>
@@ -2488,11 +2475,11 @@ message = function(object, message)
 							<code>Focus &#091;SG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									If <strong>true</strong>, the element has the input focus. This attribute
-									is handled by the <a href="#tek.ui.class.gadget">Gadget</a> class. Note:
-									The <code>Focus</code> attribute represents the current state, if you want
-									to place the initial focus on an element, use the <code>InitialFocus</code> 
-									attribute in the <a href="#tek.ui.class.gadget">Gadget</a> class.
+									If <strong>true</strong>, the element has the input focus. This state variable
+									is handled by the <a href="#tek.ui.class.widget">Widget</a> class. Note:
+									This attribute represents only the current state. If you want to
+									place the initial focus on an element, use the <code>InitialFocus</code> 
+									attribute in the <a href="#tek.ui.class.widget">Widget</a> class.
 								</p>
 							</blockquote>
 						</li>
@@ -2501,7 +2488,7 @@ message = function(object, message)
 							<blockquote>
 								<p>
 									Horizontal alignment of the element in its group. This attribute
-									can be controlled using the <code>halign</code> attribute.
+									can be controlled using the <code>halign</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -2521,8 +2508,8 @@ message = function(object, message)
 											<code>&quot;free&quot;</code> - Allows the element's height to grow to any size.
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;fill&quot;</code> - Completely fills up the height that is available
-											in the group, but does not claim more.
+											<code>&quot;fill&quot;</code> - To fill up the height that other elements in the
+											same group have claimed, without claiming more.
 										</li>
 									</ul>
 								</blockquote>
@@ -2537,7 +2524,7 @@ message = function(object, message)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element is in highlighted state. This
-									attribute is handled by the <a href="#tek.ui.class.gadget">Gadget</a> 
+									state variable is handled by the <a href="#tek.ui.class.widget">Widget</a> 
 									class.
 								</p>
 							</blockquote>
@@ -2586,18 +2573,18 @@ message = function(object, message)
 							<code>Selected &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									If <strong>true</strong>, the element is in selected state. This attribute
-									is handled by the <a href="#tek.ui.class.gadget">Gadget</a> class.
+									If <strong>true</strong>, the element is in selected state. This state
+									variable is handled by the <a href="#tek.ui.class.widget">Widget</a> class.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>TrackDamage &#091;IG&#093;</code> (boolean)
+							<code>TrackDamage &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element collects intra-area damages in a
 									<a href="#tek.lib.region">Region</a> named <code>DamageRegion</code>, which can be
-									used by class writers to implement minimally invasive repainting.
+									used by class writers to implement minimally invasive repaints.
 									Default: <strong>false</strong>, the element is repainted in its entirety.
 								</p>
 							</blockquote>
@@ -2607,7 +2594,7 @@ message = function(object, message)
 							<blockquote>
 								<p>
 									Vertical alignment of the element in its group. This attribute
-									can be controlled using the <code>valign</code> attribute.
+									can be controlled using the <code>valign</code> style property.
 								</p>
 							</blockquote>
 						</li>
@@ -2615,8 +2602,8 @@ message = function(object, message)
 							<code>Weight &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
-									Determines the weight that is attributed to the element relative
-									to its siblings in its group. Note: By recommendation, the weights
+									Specifies the weight that is attributed to the element relative
+									to its siblings in the same group. By recommendation, the weights
 									in a group should sum up to 0x10000.
 								</p>
 							</blockquote>
@@ -2637,8 +2624,8 @@ message = function(object, message)
 											<code>&quot;free&quot;</code> - Allows the element's width to grow to any size
 										</li>
 										<li style="list-style-type: none">
-											<code>&quot;fill&quot;</code> - Completely fills up the width that is available
-											in the group, but does not claim more.
+											<code>&quot;fill&quot;</code> - To fill up the width that other elements in the
+											same group have claimed, without claiming more.
 										</li>
 									</ul>
 								</blockquote>
@@ -2675,7 +2662,7 @@ message = function(object, message)
 								<em>fixed</em> 
 							</td>
 							<td class="column2">
-								fixed layouter coordinates: <code>&quot;left top right bottom&quot;</code> 
+								coordinates used by the fixed layouter: <code>&quot;x0 y0 x1 y1&quot;</code> 
 							</td>
 						</tr>
 						<tr>
@@ -2819,7 +2806,7 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> - Queries element's minimum and maximum dimensions
+							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> - Queries the element's minimum and maximum size
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:checkFocus"><code>Area:checkFocus()</code></a> - Checks if the element can receive the input focus
@@ -2843,7 +2830,7 @@ message = function(object, message)
 							<a href="#Area:erase"><code>Area:erase()</code></a> - Erases the element's background
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:focusRect"><code>Area:focusRect()</code></a> - Make the element fully visible
+							<a href="#Area:focusRect"><code>Area:focusRect()</code></a> - Makes the element fully visible, if possible
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getBG"><code>Area:getBG()</code></a> - Gets the element's background properties
@@ -2859,6 +2846,12 @@ message = function(object, message)
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getGroup"><code>Area:getGroup()</code></a> - Gets the element's group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getMargin"><code>Area:getMargin()</code></a> - Gets the element's margin
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getMinMax"><code>Area:getMinMax()</code></a> - Gets the element's calculated min/max sizes
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getNext"><code>Area:getNext()</code></a> - Gets the element's successor in its group
@@ -2879,7 +2872,7 @@ message = function(object, message)
 							<a href="#Area:getSiblings"><code>Area:getSiblings()</code></a> - Gets the element's siblings
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:hide"><code>Area:hide()</code></a> - Disconnects the element from a Drawable
+							<a href="#Area:hide"><code>Area:hide()</code></a> - Gets called when the element is about to be hidden
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> - Layouts the element into a rectangle
@@ -2898,7 +2891,7 @@ message = function(object, message)
 							<a href="#Area:setState"><code>Area:setState()</code></a> - Sets the background attribute of an element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:show"><code>Area:show()</code></a> - Connects the element to a Drawable, prepares drawing
+							<a href="#Area:show"><code>Area:show()</code></a> - Gets called when the element is about to be shown
 						</li>
 					</ul>
 				</blockquote>
@@ -2916,6 +2909,9 @@ message = function(object, message)
 							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Element:onSetStyle"><code>Element:onSetStyle()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
 					</ul>
@@ -2927,10 +2923,10 @@ message = function(object, message)
 			<p>
 				This
 				method is called during the layouting process for adding the required
-				width and height to the minimum and maximum size of this object, before
-				passing the result on to its super class. <code>minw</code>, <code>minh</code> are
-				cumulative of the minimal size of the element, while <code>maxw</code>, <code>maxw</code> 
-				collect the size the element is allowed to expand to.
+				width and height to the minimum and maximum size requirements of the
+				element, before passing the result on to its super class. <code>minw</code>,
+				<code>minh</code> are cumulative of the minimal size of the element, while
+				<code>maxw</code>, <code>maxw</code> collect the size the element is allowed to expand to.
 			</p>
 			<hr />
 		</div>
@@ -2967,7 +2963,7 @@ message = function(object, message)
 		</div>
 		<div class="node"><h3><a name="Area:draw" id="Area:draw"><code>success = Area:draw()</code></a></h3>
 			<p>
-				If the element is slated for a repaint (indicated
+				If the element is marked for a repaint (indicated
 				by the presence of the flag <code>ui.FL_REDRAW</code> in the <code>Flags</code> field),
 				draws the element into the rectangle that was assigned to it by the
 				layouter, clears <code>ui.FL_REDRAW</code>, and returns <strong>true</strong>. If the
@@ -2988,8 +2984,8 @@ end
 			<p>
 				There are rare occasions in which a class modifies the drawing context,
 				e.g. by setting a coordinate displacement. Such modifications must
-				be performed in <a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> and undone in <a href="#Area:drawEnd"><code>Area:drawEnd()</code></a>. Then, the
-				control flow looks like this:
+				be performed in <a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> and undone in <a href="#Area:drawEnd"><code>Area:drawEnd()</code></a>. In this
+				case, the control flow looks like this:
 			</p>
 <pre>
 function ElementClass:draw()
@@ -3006,7 +3002,7 @@ end
 			<p>
 				Prepares the drawing context, returning a
 				boolean indicating success. This function must be overridden if a class
-				wishes to modify the drawing context, e.g. by installing a coordinate
+				wishes to modify the drawing context, e.g. for installing a coordinate
 				displacement.
 			</p>
 			<hr />
@@ -3022,8 +3018,8 @@ end
 			<p>
 				Clears the element's background. This method is invoked by
 				<a href="#Area:draw"><code>Area:draw()</code></a> if the <code>EraseBG</code> attribute is set, and when a repaint is
-				both possible and necessary. <a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> has been called already
-				when this function is called, and <a href="#Area:drawEnd"><code>Area:drawEnd()</code></a> will be called afterwards.
+				possible and necessary. <a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> has been invoked when this
+				function is called, and <a href="#Area:drawEnd"><code>Area:drawEnd()</code></a> will be called afterwards.
 			</p>
 			<hr />
 		</div>
@@ -3042,8 +3038,7 @@ end
 				Gets the element's background properties.
 				<code>bgpen</code> is the background pen (which may be a texture). If the element's
 				<em>background-attachment</em> is <code>&quot;scrollable&quot;</code>, then <code>tx</code> and <code>ty</code> are
-				the coordinates of the texture origin, otherwise (if the attachment is
-				<code>&quot;fixed&quot;</code>) <strong>nil</strong>.
+				the coordinates of the texture origin.
 			</p>
 			<hr />
 		</div>
@@ -3068,8 +3063,7 @@ end
 				Returns a table containing the element's
 				children, or <strong>nil</strong> if this element cannot have children. The optional
 				argument <code>init</code> is <strong>true</strong> when this function is called during
-				initialization or deinitialization - this can be used by some classes
-				that prefer hiding their children until they are needed. &#091;TODO&#093;
+				initialization or deinitialization.
 			</p>
 			<hr />
 		</div>
@@ -3081,6 +3075,21 @@ end
 				group at its parent - otherwise, the element itself is returned if it is
 				a group already. Returns <strong>nil</strong> if the element is not currently
 				connected.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getMargin" id="Area:getMargin"><code>left, top, right, bottom = Area:getMargin()</code></a></h3>
+			<p>
+				Returns the element's
+				margins in the order left, top, right, bottom.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getMinMax" id="Area:getMinMax"><code>minx, miny, maxx, maxy = Area:getMinMax()</code></a></h3>
+			<p>
+				Returns the element's
+				calculated minimum and maximum size requirements, which are available
+				after <a href="#Area:askMinMax"><code>Area:askMinMax()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -3110,13 +3119,13 @@ end
 		<div class="node"><h3><a name="Area:getPrev" id="Area:getPrev"><code>element = Area:getPrev()</code></a></h3>
 			<p>
 				Returns the previous element in the group, or,
-				if the element has no predecessor, the next element in the parent group
+				if the element has no predecessor, the previous element in the parent group
 				(and so forth, until it reaches the topmost group). Returns <strong>nil</strong> if
 				the element is not currently connected.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getRect" id="Area:getRect"><code>x0, y0, x1, y1, drawable = Area:getRect()</code></a></h3>
+		<div class="node"><h3><a name="Area:getRect" id="Area:getRect"><code>x0, y0, x1, y1 = Area:getRect()</code></a></h3>
 			<p>
 				This function returns the
 				rectangle which the element has been layouted to, or <strong>nil</strong> 
@@ -3135,8 +3144,8 @@ end
 		</div>
 		<div class="node"><h3><a name="Area:hide" id="Area:hide"><code>Area:hide()</code></a></h3>
 			<p>
-				Clears a drawable from an element. Override this method to
-				free all display-related resources previously allocated in <a href="#Area:show"><code>Area:show()</code></a>.
+				Override this method to free all display-related resources
+				previously allocated in <a href="#Area:show"><code>Area:show()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -3154,10 +3163,10 @@ end
 				This function filters the specified input
 				message. After processing, it is free to return the message unmodified
 				(thus passing it on to the next message handler), to return a copy that
-				has certain fields in the message modified, or to 'swallow' the message
+				has certain fields in the message modified, or to absorb the message
 				by returning <strong>false</strong>. If you override this function, you are not
-				allowed to modify any data inside the original message; to alter a
-				message, you must operate on and return a copy.
+				allowed to modify any data inside the original message; if you alter it,
+				you must return a copy.
 			</p>
 			<hr />
 		</div>
@@ -3171,7 +3180,7 @@ end
 		<div class="node"><h3><a name="Area:rethinkLayout" id="Area:rethinkLayout"><code>Area:rethinkLayout([repaint[, check_size]])</code></a></h3>
 			<p>
 				Slates an element (and its
-				children) for relayouting, which will occur during the next Window update
+				children) for relayouting, which takes place during the next Window update
 				cycle. If the element's coordinates change, this will cause it to be
 				repainted. The parent element (usually a Group) will be checked as well,
 				so that it has the opportunity to update its FreeRegion.
@@ -3198,29 +3207,27 @@ end
 		<div class="node"><h3><a name="Area:setState" id="Area:setState"><code>Area:setState(bg)</code></a></h3>
 			<p>
 				Sets the <code>BGPen</code> attribute according to
-				the state of the element, and if it changed, slates the element
+				the state of the element, and if it changed, marks the element
 				for repainting.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Area:setup" id="Area:setup"><code>Area:setup(app, win)</code></a></h3>
 			<p>
-				After passing the call on and returning from
-				<a href="#Element:setup"><code>Element:setup()</code></a>, initializes fields which are being used by <a href="#Area:layout"><code>Area:layout()</code></a>,
-				and sets <code>FL_SETUP</code> in the <code>Flags</code> field to indicate that the element
-				underwent its setup procedure.
+				After passing the call on to <a href="#Element:setup"><code>Element:setup()</code></a>,
+				initializes fields which are being used by <a href="#Area:layout"><code>Area:layout()</code></a>, and sets
+				<code>FL_SETUP</code> in the <code>Flags</code> field to indicate that the element is
+				ready for getting layouted and displayed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:show" id="Area:show"><code>Area:show(drawable)</code></a></h3>
+		<div class="node"><h3><a name="Area:show" id="Area:show"><code>Area:show()</code></a></h3>
 			<p>
-				This function passes an element the
-				<a href="#tek.ui.class.drawable">Drawable</a> that it will be rendered to. This
-				function is called when the element's window is opened.
+				This function is called when the element's window is opened.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v1.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v2.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3230,7 +3237,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						Button 
 					</p>
@@ -3261,7 +3268,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v25.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v30.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3400,16 +3407,13 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Canvas:checkArea"><code>Canvas:checkArea()</code></a> - Gets the canvas shift &#091;internal&#093;
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Canvas:damageChild"><code>Canvas:damageChild()</code></a> - Damage a child object where it is visible
+							<a href="#Canvas:damageChild"><code>Canvas:damageChild()</code></a> - Damages a child object where it is visible
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Canvas:onSetChild"><code>Canvas:onSetChild()</code></a> - Handler called when <code>Child</code> is set
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Canvas:updateUnusedRegion"><code>Canvas:updateUnusedRegion()</code></a> - Update region not covered by Child
+							<a href="#Canvas:updateUnusedRegion"><code>Canvas:updateUnusedRegion()</code></a> - Updates region not covered by Child
 						</li>
 					</ul>
 				</blockquote>
@@ -3417,6 +3421,9 @@ end
 			<div class="definition"><dfn>OVERRIDES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> 
 						</li>
@@ -3437,6 +3444,15 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:drawEnd"><code>Area:drawEnd()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:erase"><code>Element:erase()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:focusRect"><code>Area:focusRect()</code></a> 
@@ -3466,9 +3482,6 @@ end
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:refresh"><code>Area:refresh()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -3479,13 +3492,6 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Canvas:checkArea" id="Canvas:checkArea"><code>sx, sy = checkArea(x, y)</code></a></h3>
-			<p>
-				Checks if <code>x, y</code> are inside the element's
-				rectangle, and if so, returns the canvas shift by x and y &#091;internal&#093;
-			</p>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="Canvas:damageChild" id="Canvas:damageChild"><code>damageChild(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Damages the specified region in the
@@ -3493,10 +3499,10 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Canvas:onSetChild" id="Canvas:onSetChild"><code>Canvas:onSetChild(child)</code></a></h3>
+		<div class="node"><h3><a name="Canvas:onSetChild" id="Canvas:onSetChild"><code>Canvas:onSetChild()</code></a></h3>
 			<p>
 				This handler is invoked when the canvas'
-				child element has changed.
+				<code>Child</code> element has changed.
 			</p>
 			<hr />
 		</div>
@@ -3507,7 +3513,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v9.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3517,7 +3523,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						CheckMark / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">1 subclasses</option><option value="#tek.ui.class.radiobutton">RadioButton</option></select>
 					</p>
@@ -3578,7 +3584,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v15.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v16.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3588,7 +3594,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
 						DirList 
 					</p>
@@ -3842,7 +3848,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v21.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v25.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3889,19 +3895,16 @@ end
 							<a href="#Display:closeFont"><code>Display:closeFont()</code></a> - Closes font
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:colorToRGB"><code>Display:colorToRGB()</code></a> - Converts a symbolic color name to RGB
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Display:createPixMap"><code>Display.createPixMap()</code></a> - Creates a pixmap from picture file data
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Display:getFontAttrs"><code>Display:getFontAttrs()</code></a> - Gets font attributes
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:getPaletteEntry"><code>Display:getPaletteEntry()</code></a> - Gets an entry from the symbolic palette
+							<a href="#Display:getPixmap"><code>Display.getPixmap()</code></a> - Gets a a pixmap from the cache
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:getPixmap"><code>Display.getPixmap()</code></a> - Gets a a pixmap from the cache
+							<a href="#Display:colorToRGB"><code>Display:colorToRGB()</code></a> - Converts a color specification to RGB
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Display:getTime"><code>Display:getTime()</code></a> - Gets system time
@@ -4075,17 +4078,14 @@ end
 		</div>
 		<div class="node"><h3><a name="Display:closeFont" id="Display:closeFont"><code>closeFont(font)</code></a></h3>
 			<p>
-				Closes the specified font, and always returns <strong>false</strong>.
+				Closes the specified font. Always returns <strong>false</strong>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:colorToRGB" id="Display:colorToRGB"><code>r, g, b = colorToRGB(colspec[, defcolspec])</code></a></h3>
+		<div class="node"><h3><a name="Display:colorToRGB" id="Display:colorToRGB"><code>a, r, g, b = colorToRGB(key)</code></a></h3>
 			<p>
-				Converts a color
-				specification to RGB. If <code>colspec</code> is not a valid color, the optional
-				<code>defcolspec</code> can be used as a fallback. Valid color specifications are
-				<code>#rrggbb</code> (each color component is noted in 8 bit hexadecimal) and
-				<code>#rgb</code> (each color component is noted in 4 bit hexadecimal).
+				Gets the r, g, b values of a color. The color
+				can be a hexadecimal RGB specification or a symbolic name.
 			</p>
 			<hr />
 		</div>
@@ -4100,14 +4100,6 @@ end
 			<p>
 				Returns the font attributes height,
 				underline position and underline thickness.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Display:getPaletteEntry" id="Display:getPaletteEntry"><code>name, r, g, b = getPaletteEntry(index)</code></a></h3>
-			<p>
-				Gets the <code>name</code> and red, green,
-				blue components of a color of the given <code>index</code> in the Display's
-				symbolic color palette.
 			</p>
 			<hr />
 		</div>
@@ -4133,6 +4125,12 @@ end
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Display:openDrawable" id="Display:openDrawable"><code>Display:openDrawable()</code></a></h3>
+			<p>
+				Open a drawable
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Display:openFont" id="Display:openFont"><code>font = openFont(fontname)</code></a></h3>
 			<p>
 				Opens the named font. For a discussion
@@ -4140,193 +4138,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.drawable" id="tek.ui.class.drawable">Drawable (v23.0)</a></h2>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
-					<p>
-						<a href="#ClassOverview">ClassOverview</a> :
-						<a href="#tek.class">Class</a> /
-						<a href="#tek.class.object">Object</a> /
-						Drawable 
-					</p>
-					<p>
-						This class implements a graphical context that can be painted on.
-					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>IMPLEMENTS</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<a href="#Drawable:copyArea"><code>Drawable:copyArea()</code></a> - Copies a rectangular area
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:drawLine"><code>Drawable:drawLine()</code></a> - Draws a line
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:drawPoint"><code>Drawable:drawPoint()</code></a> - Draws a point
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:drawRect"><code>Drawable:drawRect()</code></a> - Draws an unfilled rectangle
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:drawText"><code>Drawable:drawText()</code></a> - Draws text
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:fillRect"><code>Drawable:fillRect()</code></a> - Draws a filled rectangle
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:getMsg"><code>Drawable:getMsg()</code></a> - Gets the next pending input message
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:getShift"><code>Drawable:getShift()</code></a> - Gets the current coordinate displacement
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:getTextSize"><code>Drawable:getTextSize()</code></a> - Determines the width and height of text
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:getWH"><code>Drawable:getWH()</code></a> - Gets the drawable's width and height
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:getXY"><code>Drawable:getXY()</code></a> - Gets the drawable's position
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:popClipRect"><code>Drawable:popClipRect()</code></a> - Pops the topmost cliprect from the drawable
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:pushClipRect"><code>Drawable:pushClipRect()</code></a> - Pushes a new cliprect on the drawable
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:setFont"><code>Drawable:setFont()</code></a> - Sets a font
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Drawable:setShift"><code>Drawable:setShift()</code></a> - Adds a coordinate displacement
-						</li>
-					</ul>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERRIDES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-					</ul>
-				</blockquote>
-				<hr />
-			</div>
-		</div>
-		<div class="node"><h3><a name="Drawable:copyArea" id="Drawable:copyArea"><code>Drawable:copyArea(x0, y0, x1, y1, deltax, deltay, exposures)</code></a></h3>
-			<p>
-				Copy the
-				specified rectangle to the position determined by the relative
-				coordinates <code>deltax</code> and <code>deltay</code>. The <code>exposures</code> argument is a
-				table for collecting the raw coordinates of rectangles getting
-				exposed as a result of the copy operation.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:drawLine" id="Drawable:drawLine"><code>Drawable:drawLine(x0, y0, x1, y1, pen)</code></a></h3>
-			<p>
-				Draws a line using the specified
-				pen.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:drawPoint" id="Drawable:drawPoint"><code>Drawable:drawPoint(x0, y0, pen)</code></a></h3>
-			<p>
-				Draws a point.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:drawRect" id="Drawable:drawRect"><code>Drawable:drawRect(x0, y0, x1, y1, pen)</code></a></h3>
-			<p>
-				Draws an unfilled rectangle.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:drawText" id="Drawable:drawText"><code>Drawable:drawText(x0, y0, text, fgpen[, bgpen])</code></a></h3>
-			<p>
-				Renders text
-				with the specified foreground pen. If the optional background pen is
-				specified, the background under the text is filled in this color.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:fillRect" id="Drawable:fillRect"><code>Drawable:fillRect(x0, y0, x1, y1, pen)</code></a></h3>
-			<p>
-				Draws a filled rectangle.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:flush" id="Drawable:flush"><code>Drawable:flush()</code></a></h3>
-			<p>
-				Flush changed window contents, if supported by the
-				underlying display driver.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:getMsg" id="Drawable:getMsg"><code>msg = Drawable:getMsg([msg])</code></a></h3>
-			<p>
-				Gets the next pending message from the
-				Drawable. Optionally, the fields of the new message are inserted into
-				the specified table.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:getShift" id="Drawable:getShift"><code>shiftx, shifty = Drawable:getShift()</code></a></h3>
-			<p>
-				Get the Drawable's current
-				coordinate displacement.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:getTextSize" id="Drawable:getTextSize"><code>width, height = Drawable:getTextSize(text)</code></a></h3>
-			<p>
-				Determines the width and height
-				of a text using the font which is currently set on the Drawable.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:getWH" id="Drawable:getWH"><code>w, h = Drawable:getWH()</code></a></h3>
-			<p>
-				Returns the drawable's width and height.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:getXY" id="Drawable:getXY"><code>x, y = Drawable:getXY()</code></a></h3>
-			<p>
-				Returns the drawable's x and y position.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:popClipRect" id="Drawable:popClipRect"><code>Drawable:popClipRect()</code></a></h3>
-			<p>
-				Pop the topmost cliprect from the Drawable.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:pushClipRect" id="Drawable:pushClipRect"><code>Drawable:pushClipRect(x0, y0, x1, y1)</code></a></h3>
-			<p>
-				Pushes a new cliprect on the top
-				of the drawable's stack of cliprects.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:setFont" id="Drawable:setFont"><code>Drawable:setFont(font)</code></a></h3>
-			<p>
-				Sets the specified font.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Drawable:setShift" id="Drawable:setShift"><code>Drawable:setShift(deltax, deltay)</code></a></h3>
-			<p>
-				Add a delta to the Drawable's
-				coordinate displacement.
-			</p>
-			<hr class="page-break" />
-		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v16.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v19.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4340,9 +4152,8 @@ end
 						the registration by Id.
 					</p>
 				</blockquote>
-				<p>
-					ATTRIBUTES:
-				</p>
+			</div>
+			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
@@ -4355,12 +4166,13 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Class &#091;IG&#093;</code> (string)
+							<code>Class &#091;ISG&#093;</code> (string)
 							<blockquote>
 								<p>
 									The name of the element's style class, which can be referenced
 									in a style sheet. Multiple classes can be specified by separating
-									them with spaces, e.g. <code>&quot;button knob warn&quot;</code> 
+									them with spaces, e.g. <code>&quot;button knob warn&quot;</code>. Setting this
+									attribute invokes the <a href="#Element:onSetClass"><code>Element:onSetClass()</code></a> method.
 								</p>
 							</blockquote>
 						</li>
@@ -4388,13 +4200,13 @@ end
 								<p>
 									A table of properties, resulting from element and user style
 									classes, overlaid with individual and direct formattings, and
-									finally from hardcoded element properties. This table is set up
-									during <a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a>.
+									finally from hardcoded element properties. This table is
+									initialized in <a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a>.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Style &#091;IG&#093;</code> (string)
+							<code>Style &#091;ISG&#093;</code> (string)
 							<blockquote>
 								<p>
 									Direct style formattings of the element, overriding class-wide
@@ -4403,6 +4215,9 @@ end
 <pre>
 &quot;background-color: #880000; color: #ffff00&quot;
 </pre>
+								<p>
+									Setting this attribute invokes the <a href="#Element:onSetStyle"><code>Element:onSetStyle()</code></a> method.
+								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
@@ -4430,19 +4245,25 @@ end
 							<a href="#Element:connect"><code>Element:connect()</code></a> - Connects the element to a parent element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a> - Decode the element's style properties
+							<a href="#Element:decodeProperties"><code>Element:decodeProperties()</code></a> - Decodes the element's style properties
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:disconnect"><code>Element:disconnect()</code></a> - Disconnects the element from its parent
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:getAttr"><code>Element:getAttr()</code></a> - Gets an attribute from an element
+							<a href="#Element:getAttr"><code>Element:getAttr()</code></a> - Gets a named attribute from an element
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:getById"><code>Element:getById()</code></a> - Get Id of any registered element
+							<a href="#Element:getById"><code>Element:getById()</code></a> - Gets a registered element by Id
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:setup"><code>Element:setup()</code></a> - Links the element to its environment
+							<a href="#Element:onSetClass"><code>Element:onSetClass()</code></a> - Gets invoked on changes of <code>Class</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:onSetStyle"><code>Element:onSetStyle()</code></a> - Gets invoked on changes of <code>Style</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:setup"><code>Element:setup()</code></a> - Links the element to an Application and Window
 						</li>
 					</ul>
 				</blockquote>
@@ -4450,6 +4271,9 @@ end
 			<div class="definition"><dfn>OVERRIDES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
@@ -4460,7 +4284,7 @@ end
 		</div>
 		<div class="node"><h3><a name="Element:cleanup" id="Element:cleanup"><code>Element:cleanup()</code></a></h3>
 			<p>
-				This function is used to unlink the element from its
+				This function unlinks the element from its
 				<a href="#tek.ui.class.application">Application</a> and
 				<a href="#tek.ui.class.window">Window</a>.
 			</p>
@@ -4469,8 +4293,8 @@ end
 		<div class="node"><h3><a name="Element:connect" id="Element:connect"><code>success = Element:connect(parent)</code></a></h3>
 			<p>
 				Attempts to connect the element to the
-				<code>parent</code> element; returns a boolean indicating whether the connection
-				succeeded.
+				given <code>parent</code> element; returns a boolean indicating whether the
+				connection succeeded.
 			</p>
 			<hr />
 		</div>
@@ -4490,10 +4314,8 @@ end
 		<div class="node"><h3><a name="Element:getAttr" id="Element:getAttr"><code>ret1, ... = Element:getAttr(attribute, ...)</code></a></h3>
 			<p>
 				This function gets a named
-				<code>attribute</code> from an element, and returns <strong>nil</strong> if it is unknown.
-				This mechanism can be used by classes for exchanging data without having
-				to add a getter method in their common base class (which may not be under
-				the author's control).
+				<code>attribute</code> from an element, returning <strong>nil</strong> if the attribute is
+				unknown.
 			</p>
 			<hr />
 		</div>
@@ -4506,11 +4328,27 @@ end
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Element:onSetClass" id="Element:onSetClass"><code>Element:onSetClass()</code></a></h3>
+			<p>
+				This method is invoked when the <code>Class</code> 
+				attribute has changed. The implementation in the Element class invokes
+				<a href="#Element:onSetStyle"><code>Element:onSetStyle()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Element:onSetStyle" id="Element:onSetStyle"><code>Element:onSetStyle()</code></a></h3>
+			<p>
+				This method is invoked when the <code>Style</code> 
+				attribute has changed.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Element:setup" id="Element:setup"><code>Element:setup(app, window)</code></a></h3>
 			<p>
-				This function is used to pass the element the
-				environment determined by an <a href="#tek.ui.class.application">Application</a> 
-				and a <a href="#tek.ui.class.window">Window</a>.
+				This function attaches an element to the
+				specified <a href="#tek.ui.class.application">Application</a> and
+				<a href="#tek.ui.class.window">Window</a>, and registers the element's Id (if any)
+				at the application.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -4574,7 +4412,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v16.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v21.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4586,8 +4424,8 @@ end
 						FloatText 
 					</p>
 					<p>
-						Implements a scrollable text display. An object of this class is
-						normally the immediate <code>Child</code> of a
+						This class implements a scrollable display of text. An object of
+						this class is normally the immediate child of a
 						<a href="#tek.ui.class.canvas">Canvas</a>.
 					</p>
 				</blockquote>
@@ -4596,7 +4434,7 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>FGColor &#091;IG&#093;</code> (userdata)
+							<code>FGPen &#091;IG&#093;</code> (userdata)
 							<blockquote>
 								<p>
 									Pen for rendering the text. This attribute is controllable via the
@@ -4654,7 +4492,7 @@ end
 								<code>color</code> 
 							</td>
 							<td class="column2">
-								controls the <code>FloatText.FGColor</code> attribute
+								controls the <code>FloatText.FGPen</code> attribute
 							</td>
 						</tr>
 						<tr>
@@ -4671,6 +4509,9 @@ end
 			<div class="definition"><dfn>OVERRIDES</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> 
 						</li>
@@ -4714,13 +4555,13 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="FloatText:onSetText" id="FloatText:onSetText"><code>onSetText(text)</code></a></h3>
+		<div class="node"><h3><a name="FloatText:onSetText" id="FloatText:onSetText"><code>onSetText()</code></a></h3>
 			<p>
 				Handler called when a new <code>Text</code> is set.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v16.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v21.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4729,7 +4570,7 @@ end
 						<a href="#tek.class.object">Object</a> /
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
-						Frame / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">3 subclasses</option><option value="#tek.ui.class.canvas">Canvas</option><option value="#tek.ui.class.gadget">Gadget</option><option value="#tek.ui.class.spacer">Spacer</option></select>
+						Frame / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">3 subclasses</option><option value="#tek.ui.class.canvas">Canvas</option><option value="#tek.ui.class.spacer">Spacer</option><option value="#tek.ui.class.widget">Widget</option></select>
 					</p>
 					<p>
 						This class implements an element's borders. The <em>default</em> border
@@ -4745,55 +4586,33 @@ end
 							</li>
 							<li>
 								The <em>rim</em> border separates the two other borders and
-								may give the composition a more contrastful appearance. This
-								border has the lowest priority.
+								may give the composition a more contrastful look. This border
+								has the lowest priority.
 							</li>
 							<li>
 								The <em>focus</em> border (in addition to the element's focus
 								highlighting style) can be used to visualize that the element is
-								currently receiving the input. This border is the outermost of the
-								three sub borders. When the element is in unfocused state, this
-								border often appears in the same color as the surrounding group,
-								which makes it indistinguishable from the background.
+								currently receiving the input. This is the outermost of the three
+								sub borders. When the element is in unfocused state, this border
+								often appears in the same color as the surrounding group, making
+								it indistinguishable from the surrounding background.
 							</li>
 						</ul>
 					</blockquote>
 					<p>
-						Border classes (which are organized as plug-ins) do not need to
-						implement all sub borders; in fact, these properties are all
-						internally handled by the <em>default</em> border class, and more (and
-						other) sub borders and properties may be defined and implemented in
-						the future (or in other border classes). As the Frame class has no
-						notion of sub borders, their respective widths are subtracted
-						from the Element's total border width, leaving only the remaining
-						width for the <em>main</em> border.
+						Border classes do not have to implement all sub borders; these
+						properties are all handled by the <em>default</em> border class internally,
+						and more (and other) sub borders and properties may be defined and
+						implemented in the future (or in other border classes). As the Frame
+						class has no notion of sub borders, their respective widths are
+						subtracted from the Element's total border width, leaving only the
+						remaining width for the <em>main</em> border.
 					</p>
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>ATTRIBUTES</dfn>
 				<blockquote>
 					<ul>
-						<li style="list-style-type: none">
-							<code>Border &#091;IG&#093;</code> (table)
-							<blockquote>
-								<p>
-									An array of four widths (in pixels) for the element's
-									border, in the order left, right, top, bottom. This attribute
-									is controllable via the <em>border-width</em> style property.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>BorderClass &#091;IG&#093;</code> (table)
-							<blockquote>
-								<p>
-									Name of the border class used to implement this element's
-									border. Border classes are loaded from <code>tek.ui.border</code>.
-									This attribute is controllable via the <em>border-class</em> style
-									property. Default: <code>&quot;default&quot;</code> 
-								</p>
-							</blockquote>
-						</li>
 						<li style="list-style-type: none">
 							<code>BorderRegion &#091;G&#093;</code> (<a href="#tek.lib.region">Region</a>)
 							<blockquote>
@@ -4977,13 +4796,22 @@ end
 							<a href="#Area:damage"><code>Area:damage()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:draw"><code>Area:draw()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Area:getMargin"><code>Area:getMargin()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Class:new"><code>Class.new()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:onSetStyle"><code>Element:onSetStyle()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:punch"><code>Area:punch()</code></a> 
@@ -5009,7 +4837,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gadget" id="tek.ui.class.gadget">Gadget (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5019,462 +4847,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						Gadget / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">4 subclasses</option><option value="#tek.ui.class.group">Group</option><option value="#tek.ui.class.handle">Handle</option><option value="#tek.ui.class.numeric">Numeric</option><option value="#tek.ui.class.text">Text</option></select>
-					</p>
-					<p>
-						This class implements interactions with the user.
-					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>ATTRIBUTES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>Active &#091;SG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Signifies a change of the Gadget's activation state. While active,
-									the position of the pointing device is being verified (which is
-									also reflected by the <code>Hover</code> attribute, see below). When the
-									<code>Active</code> state changes, the Gadget's behavior depends on its
-									<code>Mode</code> attribute (see below):
-								</p>
-								<blockquote>
-									<ul>
-										<li>
-											in <em>button</em> mode, the <code>Selected</code> attribute is set to
-											the value of the <code>Hover</code> attribute. The <code>Pressed</code> attribute
-											is set to the value of the <code>Active</code> attribute, if it caused a
-											change of the <code>Selected</code> state.
-										</li>
-										<li>
-											in <em>toggle</em> mode, the <code>Selected</code> attribute of the
-											Gadget is inverted logically, and the <code>Pressed</code> attribute is
-											set to <strong>true</strong>.
-										</li>
-										<li>
-											in <em>touch</em> mode, the <code>Selected</code> and <code>Pressed</code> 
-											attributes are set to <strong>true</strong>, if the Gadget was not
-											selected already.
-										</li>
-									</ul>
-								</blockquote>
-								<p>
-									Changing this attribute invokes the <a href="#Gadget:onActivate"><code>Gadget:onActivate()</code></a> method.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>DblClick &#091;SG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Signifies that the element was double-clicked; it is set to
-									<strong>true</strong> when the element was double-clicked and is still being
-									held, and <strong>false</strong> when it was double-clicked and then released.
-									This attribute normally needs to get a notification handler
-									attached to it before it can be reacted on; see also
-									<a href="#Object:addNotify"><code>Object:addNotify()</code></a>.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Disabled &#091;ISG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Determines the Gadget's ability to interact with the user. When
-									changed, it invokes the <a href="#Gadget:onDisable"><code>Gadget:onDisable()</code></a> method. When an element
-									is getting disabled, it loses its focus, too.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>EffectClass &#091;IG&#093;</code> (string)
-							<blockquote>
-								<p>
-									Name of a hook class for rendering an overlay effect. This
-									attribute is controllable via the <em>effect-class</em> style property.
-									A possible overlay effect is named <em>ripple</em>. As its name
-									suggests, it can paint various ripple effects (e.g. for slider
-									knobs and bar handles). Effect hooks are loaded from
-									<code>tek.ui.hook</code> and may define their own style properties.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>FGColor &#091;IG&#093;</code> (color specification)
-							<blockquote>
-								<p>
-									A color specification for rendering the foreground details of the
-									element. This attribute is controllable via the <em>color</em> style
-									property.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Hilite &#091;SG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Signifies a change of the Gadget's highligting state. Invokes
-									<a href="#Gadget:onHilite"><code>Gadget:onHilite()</code></a>.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Hold &#091;SG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Signifies that the element is being held. While being held, the
-									value is repeatedly set to <strong>true</strong> in intervals of <code>n/50</code> 
-									seconds, with <code>n</code> being determined by the
-									<a href="#tek.ui.class.window">Window</a>.HoldTickRepeat attribute.
-									When the element is getting released, this value is set to
-									<strong>false</strong>. This attribute normally needs to get a notification
-									handler attached to it before it can be reacted on; see also
-									<a href="#Object:addNotify"><code>Object:addNotify()</code></a>.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Hover &#091;SG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Signifies a change of the Gadget being hovered by the pointing
-									device. Invokes <a href="#Gadget:onHover"><code>Gadget:onHover()</code></a>.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>InitialFocus &#091;IG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Specifies that the element should receive the focus initially.
-									If <strong>true</strong>, the element will set the element's <code>Focus</code> 
-									attribute to <strong>true</strong> upon invocation of the
-									<a href="#Area:show">show</a> method.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>KeyCode &#091;IG&#093;</code> (string or boolean)
-							<blockquote>
-								<p>
-									If set, a keyboard equivalent for activating the element. See
-									<a href="#tek.ui.class.popitem">PopItem</a> for a discussion of denoting
-									keyboard qualifiers. The <a href="#tek.ui.class.text">Text</a> class allows
-									setting this attribute to <strong>true</strong>, in which case the element's
-									<code>Text</code> will be examined during setup for an initiatory character
-									(by default an underscore), and if found, the <code>KeyCode</code> attribute
-									will be replaced by the character following this marker.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Mode &#091;IG&#093;</code> (string)
-							<blockquote>
-								<p>
-									The element's interaction mode:
-								</p>
-								<blockquote>
-									<ul>
-										<li>
-											<code>&quot;inert&quot;</code>: The element does not react to input
-										</li>
-										<li>
-											<code>&quot;touch&quot;</code>: The element does not rebound and keeps its
-											<code>Selected</code> state; it cannot be unselected by the user and
-											always submits <strong>true</strong> for the <code>Pressed</code> and <code>Selected</code> 
-											attributes.
-										</li>
-										<li>
-											<code>&quot;toggle&quot;</code>: The element does not rebound immediately
-											and keeps its <code>Selected</code> state until the next activation.
-										</li>
-										<li>
-											<code>&quot;button&quot;</code>: The element rebounds when the mouse button is
-											released or when it is no longer hovering it.
-										</li>
-									</ul>
-								</blockquote>
-								<p>
-									See also the <code>Active</code> attribute.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Pressed &#091;SG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Signifies that a button was pressed or released. Invokes
-									<a href="#Gadget:onPress"><code>Gadget:onPress()</code></a>.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Selected &#091;ISG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Signifies a change of the Gadget's selection state. Invokes
-									<a href="#Gadget:onSelect"><code>Gadget:onSelect()</code></a>.
-								</p>
-							</blockquote>
-						</li>
-					</ul>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<blockquote>
-					<table>
-						<tr>
-							<td class="column1">
-								<em>color</em> 
-							</td>
-							<td class="column2">
-								controls the <code>Gadget.FGColor</code> attribute
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-class</em> 
-							</td>
-							<td class="column2">
-								controls the <code>Gadget.EffectClass</code> attribute
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-color</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-color2</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-kind</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-maxnum</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-maxnum2</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-orientation</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-padding</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-ratio</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>effect-ratio2</em> 
-							</td>
-							<td class="column2">
-								controls the <em>ripple</em> effect hook
-							</td>
-						</tr>
-					</table>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>STYLE PSEUDO CLASSES</dfn>
-				<blockquote>
-					<table>
-						<tr>
-							<td class="column1">
-								<em>active</em> 
-							</td>
-							<td class="column2">
-								for elements in active state
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>disabled</em> 
-							</td>
-							<td class="column2">
-								for elements in disabled state
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>focus</em> 
-							</td>
-							<td class="column2">
-								for elements that have the focus
-							</td>
-						</tr>
-						<tr>
-							<td class="column1">
-								<em>hover</em> 
-							</td>
-							<td class="column2">
-								for elements that are being hovered by the mouse
-							</td>
-						</tr>
-					</table>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>IMPLEMENTS</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<a href="#Gadget:onActivate"><code>Gadget:onActivate()</code></a> - Handler for <code>Active</code> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Gadget:onDisable"><code>Gadget:onDisable()</code></a> - Handler for <code>Disabled</code> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Gadget:onFocus"><code>Gadget:onFocus()</code></a> - Handler for <code>Focus</code> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Gadget:onHilite"><code>Gadget:onHilite()</code></a> - Handler for <code>Hilite</code> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Gadget:onHover"><code>Gadget:onHover()</code></a> - Handler for <code>Hover</code> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Gadget:onPress"><code>Gadget:onPress()</code></a> - Handler for <code>Pressed</code> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Gadget:onSelect"><code>Gadget:onSelect()</code></a> - Handler for <code>Selected</code> 
-						</li>
-					</ul>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERRIDES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<a href="#Area:checkFocus"><code>Area:checkFocus()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:checkHover"><code>Area:checkHover()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:setState"><code>Area:setState()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Element:setup"><code>Element:setup()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:show"><code>Area:show()</code></a> 
-						</li>
-					</ul>
-				</blockquote>
-				<hr />
-			</div>
-		</div>
-		<div class="node"><h3><a name="Gadget:onActivate" id="Gadget:onActivate"><code>Gadget:onActivate(active)</code></a></h3>
-			<p>
-				This method is invoked when the Gadget's
-				<code>Active</code> attribute has changed.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Gadget:onDisable" id="Gadget:onDisable"><code>Gadget:onDisable(disabled)</code></a></h3>
-			<p>
-				This method is invoked when the Gadget's
-				<code>Disabled</code> attribute has changed.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Gadget:onFocus" id="Gadget:onFocus"><code>Gadget:onFocus(focused)</code></a></h3>
-			<p>
-				This method is invoked when the element's
-				<code>Focus</code> attribute has changed (see also <a href="#tek.ui.class.area">Area</a>).
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Gadget:onHilite" id="Gadget:onHilite"><code>Gadget:onHilite(selected)</code></a></h3>
-			<p>
-				This method is invoked when the Gadget's
-				<code>Hilite</code> attribute has changed.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Gadget:onHover" id="Gadget:onHover"><code>Gadget:onHover(hovered)</code></a></h3>
-			<p>
-				This method is invoked when the Gadget's <code>Hover</code> 
-				attribute has changed.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Gadget:onPress" id="Gadget:onPress"><code>Gadget:onPress(pressed)</code></a></h3>
-			<p>
-				This method is invoked when the Gadget's
-				<code>Pressed</code> attribute has changed.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Gadget:onSelect" id="Gadget:onSelect"><code>Gadget:onSelect(selected)</code></a></h3>
-			<p>
-				This method is invoked when the Gadget's
-				<code>Selected</code> attribute has changed.
-			</p>
-			<hr class="page-break" />
-		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v12.0)</a></h2>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
-					<p>
-						<a href="#ClassOverview">ClassOverview</a> :
-						<a href="#tek.class">Class</a> /
-						<a href="#tek.class.object">Object</a> /
-						<a href="#tek.ui.class.element">Element</a> /
-						<a href="#tek.ui.class.area">Area</a> /
-						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.numeric">Numeric</a> /
 						Gauge 
 					</p>
@@ -5522,7 +4895,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v27.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v31.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5532,7 +4905,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						Group / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">6 subclasses</option><option value="#tek.ui.class.dirlist">DirList</option><option value="#tek.ui.class.listview">ListView</option><option value="#tek.ui.class.pagegroup">PageGroup</option><option value="#tek.ui.class.scrollbar">ScrollBar</option><option value="#tek.ui.class.scrollgroup">ScrollGroup</option><option value="#tek.ui.class.window">Window</option></select>
 					</p>
 					<p>
@@ -5691,7 +5064,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v4.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v6.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5701,7 +5074,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						Handle 
 					</p>
 					<p>
@@ -5726,7 +5099,7 @@ end
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Gadget:onHover"><code>Gadget:onHover()</code></a> 
+							<a href="#Widget:onHover"><code>Widget:onHover()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
@@ -5791,7 +5164,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listgadget" id="tek.ui.class.listgadget">ListGadget (v26.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v30.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5801,9 +5174,9 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
-						<a href="#tek.ui.class.gadget">Text</a> /
-						ListGadget 
+						<a href="#tek.ui.class.widget">Widget</a> /
+						<a href="#tek.ui.class.text">Text</a> /
+						Lister 
 					</p>
 					<p>
 						This class implements a scrollable list or table. Each item in the
@@ -5829,7 +5202,7 @@ end
 						</ul>
 					</blockquote>
 					<p>
-						The following fields are reserved for internal use by the ListGadget;
+						The following fields are reserved for internal use by the Lister;
 						you should never rely on their contents or modify them.
 					</p>
 				</blockquote>
@@ -5852,8 +5225,8 @@ end
 								<p>
 									The object determining the right edge of the list, which
 									is an information needed for the <code>AlignColumn</code> attribute.
-									By default, the ListGadget's parent <code>Canvas</code> is used, but by
-									use of this attribute it is possible to align the ListGadget to
+									By default, the Lister's parent <code>Canvas</code> is used, but by
+									use of this attribute it is possible to align the Lister to
 									something else.
 								</p>
 							</blockquote>
@@ -5871,7 +5244,7 @@ end
 							<blockquote>
 								<p>
 									The padding between columns, in pixels. By default, the
-									ListGadget's <code>Font</code> is used to determine a reasonable offset.
+									Lister's <code>Font</code> is used to determine a reasonable offset.
 								</p>
 							</blockquote>
 						</li>
@@ -5888,9 +5261,9 @@ end
 							<code>CursorLine &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
-									The line number of the ListGadget's cursor; this value may
+									The line number of the Lister's cursor; this value may
 									be <code>0</code>, in which case the cursor is invisible. Changing
-									this value will invoke the <a href="#ListGadget:onSetCursor"><code>ListGadget:onSetCursor()</code></a> method.
+									this value will invoke the <a href="#Lister:onSetCursor"><code>Lister:onSetCursor()</code></a> method.
 								</p>
 							</blockquote>
 						</li>
@@ -5907,7 +5280,7 @@ end
 							<code>HeaderGroup &#091;IG&#093;</code> (<a href="#tek.ui.class.group">Group</a>)
 							<blockquote>
 								<p>
-									A group of elements used for the table header. The ListGadget
+									A group of elements used for the table header. The Lister
 									may take these elements into account for determining the
 									initial column widths.
 								</p>
@@ -5917,8 +5290,8 @@ end
 							<code>ListObject &#091;IG&#093;</code> (<a href="#tek.class.list">List</a>)
 							<blockquote>
 								<p>
-									The List object the ListGadget operates on; if none is specified,
-									the ListGadget creates an empty one.
+									The List object the Lister operates on; if none is specified,
+									the Lister creates an empty one.
 								</p>
 							</blockquote>
 						</li>
@@ -5936,7 +5309,7 @@ end
 								<p>
 									This attribute is a (sparse) table containing the numbers of
 									selected lines in the list. Use <code>pairs()</code> to iterate it.
-									See also <a href="#ListGadget:getSelectedLines"><code>ListGadget:getSelectedLines()</code></a> for retrieving a
+									See also <a href="#Lister:getSelectedLines"><code>Lister:getSelectedLines()</code></a> for retrieving a
 									numerically indexed list.
 								</p>
 							</blockquote>
@@ -5945,11 +5318,11 @@ end
 							<code>SelectedLine &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
-									The ListGadget's current selected line; this value reflects only
+									The Lister's current selected line; this value reflects only
 									the line that was most recently selected or unselected - for
 									locating all currently selected lines, you will also need
 									the <code>SelectedLines</code> attribute. Setting this value will invoke
-									the <a href="#ListGadget:onSelectLine"><code>ListGadget:onSelectLine()</code></a> method.
+									the <a href="#Lister:onSelectLine"><code>Lister:onSelectLine()</code></a> method.
 								</p>
 							</blockquote>
 						</li>
@@ -5957,7 +5330,7 @@ end
 							<code>SelectMode &#091;IG&#093;</code> (string)
 							<blockquote>
 								<p>
-									The ListGadget's selection mode, which can be <code>&quot;none&quot;</code>,
+									The Lister's selection mode, which can be <code>&quot;none&quot;</code>,
 									<code>&quot;single&quot;</code>, or <code>&quot;multi&quot;</code>.
 								</p>
 							</blockquote>
@@ -5969,43 +5342,43 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:addItem"><code>ListGadget:addItem()</code></a> - Adds an item to the list
+							<a href="#Lister:addItem"><code>Lister:addItem()</code></a> - Adds an item to the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:changeItem"><code>ListGadget:changeItem()</code></a> - Overwrite item in the list
+							<a href="#Lister:changeItem"><code>Lister:changeItem()</code></a> - Overwrite item in the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:changeSelection"><code>ListGadget:changeSelection()</code></a> - Changes selection of the list
+							<a href="#Lister:changeSelection"><code>Lister:changeSelection()</code></a> - Changes selection of the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:clear"><code>ListGadget:clear()</code></a> - Removes all items from the list
+							<a href="#Lister:clear"><code>Lister:clear()</code></a> - Removes all items from the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:damageLine"><code>ListGadget:damageLine()</code></a> - Marks line for repainting
+							<a href="#Lister:damageLine"><code>Lister:damageLine()</code></a> - Marks line for repainting
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:getItem"><code>ListGadget:getItem()</code></a> - Returns the item at the specified line
+							<a href="#Lister:getItem"><code>Lister:getItem()</code></a> - Returns the item at the specified line
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:getN"><code>ListGadget:getN()</code></a> - Returns the number of entries in the list
+							<a href="#Lister:getN"><code>Lister:getN()</code></a> - Returns the number of entries in the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:getSelectedLines"><code>ListGadget:getSelectedLines()</code></a> - Returns a table of selected entries
+							<a href="#Lister:getSelectedLines"><code>Lister:getSelectedLines()</code></a> - Returns a table of selected entries
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:onSelectLine"><code>ListGadget:onSelectLine()</code></a> - Handler invoked for <code>SelectedLine</code> 
+							<a href="#Lister:onSelectLine"><code>Lister:onSelectLine()</code></a> - Handler invoked for <code>SelectedLine</code> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:onSetCursor"><code>ListGadget:onSetCursor()</code></a> - Handler invoked for <code>CursorLine</code> 
+							<a href="#Lister:onSetCursor"><code>Lister:onSetCursor()</code></a> - Handler invoked for <code>CursorLine</code> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:repaint"><code>ListGadget:repaint()</code></a> - Relayouts and repaints the list
+							<a href="#Lister:repaint"><code>Lister:repaint()</code></a> - Relayouts and repaints the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:remItem"><code>ListGadget:remItem()</code></a> - Removes an item from the list
+							<a href="#Lister:remItem"><code>Lister:remItem()</code></a> - Removes an item from the list
 						</li>
 						<li style="list-style-type: none">
-							<a href="#ListGadget:setList"><code>ListGadget:setList()</code></a> - Sets a new list object
+							<a href="#Lister:setList"><code>Lister:setList()</code></a> - Sets a new list object
 						</li>
 					</ul>
 				</blockquote>
@@ -6063,26 +5436,26 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="ListGadget:addItem" id="ListGadget:addItem"><code>addItem(item[, line[, quick]])</code></a></h3>
+		<div class="node"><h3><a name="Lister:addItem" id="Lister:addItem"><code>addItem(item[, line[, quick]])</code></a></h3>
 			<p>
 				Adds an item to the list. If
 				<code>line</code> is unspecified, the entry is added at the end of the list. The
 				boolean <code>quick</code> indicates that the list should not be relayouted and
 				repainted. (For relayouting and repainting the list after mass addition,
-				see also <a href="#ListGadget:repaint"><code>ListGadget:repaint()</code></a>.)
+				see also <a href="#Lister:repaint"><code>Lister:repaint()</code></a>.)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:changeItem" id="ListGadget:changeItem"><code>changeItem(item, line[, quick])</code></a></h3>
+		<div class="node"><h3><a name="Lister:changeItem" id="Lister:changeItem"><code>changeItem(item, line[, quick])</code></a></h3>
 			<p>
 				Overwrites the <code>item</code> at the
 				specified <code>line</code> in the list. The boolean <code>quick</code> indicates that
 				the list should not be relayouted and repainted. For relayouting and
-				repainting the list after mass changes, see also <a href="#ListGadget:repaint"><code>ListGadget:repaint()</code></a>.
+				repainting the list after mass changes, see also <a href="#Lister:repaint"><code>Lister:repaint()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:changeSelection" id="ListGadget:changeSelection"><code>changeSelection(mode)</code></a></h3>
+		<div class="node"><h3><a name="Lister:changeSelection" id="Lister:changeSelection"><code>changeSelection(mode)</code></a></h3>
 			<p>
 				Changes the selection of the entire
 				list; modes supported are:
@@ -6096,31 +5469,31 @@ end
 			</blockquote>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:clear" id="ListGadget:clear"><code>clear()</code></a></h3>
+		<div class="node"><h3><a name="Lister:clear" id="Lister:clear"><code>clear()</code></a></h3>
 			<p>
 				Remove all items from the list.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:damageLine" id="ListGadget:damageLine"><code>damageLine(lnr)</code></a></h3>
+		<div class="node"><h3><a name="Lister:damageLine" id="Lister:damageLine"><code>damageLine(lnr)</code></a></h3>
 			<p>
 				Marks the specified line for repainting.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:getItem" id="ListGadget:getItem"><code>getItem(line)</code></a></h3>
+		<div class="node"><h3><a name="Lister:getItem" id="Lister:getItem"><code>getItem(line)</code></a></h3>
 			<p>
 				Returns the item at the specified line.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:getN" id="ListGadget:getN"><code>getN()</code></a></h3>
+		<div class="node"><h3><a name="Lister:getN" id="Lister:getN"><code>getN()</code></a></h3>
 			<p>
 				Returns the number of lines in the list.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:getSelectedLines" id="ListGadget:getSelectedLines"><code>getSelectedLines([mode])</code></a></h3>
+		<div class="node"><h3><a name="Lister:getSelectedLines" id="Lister:getSelectedLines"><code>getSelectedLines([mode])</code></a></h3>
 			<p>
 				Returns a table of all
 				selected entries, sorted by (by default) their line number. Currently
@@ -6128,43 +5501,49 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:onSelectLine" id="ListGadget:onSelectLine"><code>onSelectLine(line)</code></a></h3>
+		<div class="node"><h3><a name="Lister:onDblClick" id="Lister:onDblClick"><code>onDblClick()</code></a></h3>
+			<p>
+				overrides
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Lister:onSelectLine" id="Lister:onSelectLine"><code>onSelectLine()</code></a></h3>
 			<p>
 				This method is invoked when the <code>SelectedLine</code> 
 				attribute is set.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:onSetCursor" id="ListGadget:onSetCursor"><code>onSetCursor(line, oldline)</code></a></h3>
+		<div class="node"><h3><a name="Lister:onSetCursor" id="Lister:onSetCursor"><code>onSetCursor()</code></a></h3>
 			<p>
 				This method is invoked when the
 				<code>CursorLine</code> attribute has changed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:remItem" id="ListGadget:remItem"><code>remItem(line[, quick])</code></a></h3>
+		<div class="node"><h3><a name="Lister:remItem" id="Lister:remItem"><code>remItem(line[, quick])</code></a></h3>
 			<p>
 				Removes the item from the list at the
 				specified line. The boolean <code>quick</code> indicates that the list should not
 				be relayouted and repainted. (For relayouting and repainting the list
-				after mass removal, see also <a href="#ListGadget:repaint"><code>ListGadget:repaint()</code></a>.)
+				after mass removal, see also <a href="#Lister:repaint"><code>Lister:repaint()</code></a>.)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:repaint" id="ListGadget:repaint"><code>repaint()</code></a></h3>
+		<div class="node"><h3><a name="Lister:repaint" id="Lister:repaint"><code>repaint()</code></a></h3>
 			<p>
 				Relayouts and repaints the list.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ListGadget:setList" id="ListGadget:setList"><code>setList(listobject)</code></a></h3>
+		<div class="node"><h3><a name="Lister:setList" id="Lister:setList"><code>setList(listobject)</code></a></h3>
 			<p>
 				Sets a new <a href="#tek.class.list">List</a> 
 				object, and relayouts and repaints the list.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v5.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v6.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6174,7 +5553,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
 						ListView 
 					</p>
@@ -6222,7 +5601,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v10.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6232,7 +5611,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						<a href="#tek.ui.class.popitem">PopItem</a> /
 						MenuItem 
@@ -6274,7 +5653,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v1.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v4.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6284,7 +5663,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						Numeric / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.class.gauge">Gauge</option><option value="#tek.ui.class.slider">Slider</option></select>
 					</p>
 					<p>
@@ -6374,6 +5753,9 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -6401,21 +5783,21 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Numeric:onSetMax" id="Numeric:onSetMax"><code>onSetMax(max)</code></a></h3>
+		<div class="node"><h3><a name="Numeric:onSetMax" id="Numeric:onSetMax"><code>onSetMax()</code></a></h3>
 			<p>
 				This handler is invoked when the Numeric's <code>Max</code> 
 				attribute has changed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Numeric:onSetMin" id="Numeric:onSetMin"><code>onSetMin(min)</code></a></h3>
+		<div class="node"><h3><a name="Numeric:onSetMin" id="Numeric:onSetMin"><code>onSetMin()</code></a></h3>
 			<p>
 				This handler is invoked when the Numeric's <code>Min</code> 
 				attribute has changed.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Numeric:onSetValue" id="Numeric:onSetValue"><code>onSetValue(val)</code></a></h3>
+		<div class="node"><h3><a name="Numeric:onSetValue" id="Numeric:onSetValue"><code>onSetValue()</code></a></h3>
 			<p>
 				This handler is invoked when the Numeric's <code>Value</code> 
 				attribute has changed.
@@ -6428,7 +5810,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v16.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6438,7 +5820,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
 						PageGroup 
 					</p>
@@ -6513,14 +5895,14 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="PageGroup:onsetPageNumber" id="PageGroup:onsetPageNumber"><code>onsetPageNumber(number)</code></a></h3>
+		<div class="node"><h3><a name="PageGroup:onSetPageNumber" id="PageGroup:onSetPageNumber"><code>onSetPageNumber()</code></a></h3>
 			<p>
 				This method is invoked when the element's
 				<code>PageNumber</code> attribute has changed.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v15.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v22.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6530,7 +5912,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						PopItem / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.class.menuitem">MenuItem</option><option value="#tek.ui.class.poplist">PopList</option></select>
 					</p>
@@ -6559,7 +5941,7 @@ end
 							<blockquote>
 								<p>
 									Keyboard shortcut for the object; unlike
-									<a href="#tek.ui.class.gadget">Gadget</a>.KeyCode, this shortcut is
+									<a href="#tek.ui.class.widget">Widget</a>.KeyCode, this shortcut is
 									also enabled while the object is invisible. By convention, only
 									combinations with a qualifier should be used here, e.g.
 									<code>&quot;Alt+C&quot;</code>, <code>&quot;Shift+Ctrl+Q&quot;</code>. Qualifiers are separated by
@@ -6612,6 +5994,9 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -6621,7 +6006,7 @@ end
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Gadget:onPress"><code>Gadget:onPress()</code></a> 
+							<a href="#Widget:onClick"><code>Widget:onClick()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
@@ -6634,7 +6019,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v10.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6644,7 +6029,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						<a href="#tek.ui.class.popitem">PopItem</a> /
 						PopList 
@@ -6716,10 +6101,10 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="PopList:onSelectLine" id="PopList:onSelectLine"><code>onSelectLine(line)</code></a></h3>
+		<div class="node"><h3><a name="PopList:onSelectLine" id="PopList:onSelectLine"><code>onSelectLine()</code></a></h3>
 			<p>
 				This method is invoked when the <code>SelectedLine</code> 
-				attribute is set.
+				attribute has changed.
 			</p>
 			<hr />
 		</div>
@@ -6730,7 +6115,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v4.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v5.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6740,7 +6125,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
 						<a href="#tek.ui.class.group">Window</a> /
 						PopupWindow 
@@ -6768,7 +6153,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v4.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v6.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6778,7 +6163,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						<a href="#tek.ui.class.checkmark">CheckMark</a> /
 						RadioButton 
@@ -6796,14 +6181,14 @@ end
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Gadget:onSelect"><code>Gadget:onSelect()</code></a> 
+							<a href="#Widget:onSelect"><code>Widget:onSelect()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v10.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v13.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6813,7 +6198,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
 						ScrollBar 
 					</p>
@@ -6915,6 +6300,9 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -6928,35 +6316,35 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="ScrollBar:onSetMax" id="ScrollBar:onSetMax"><code>onSetMax(max)</code></a></h3>
+		<div class="node"><h3><a name="ScrollBar:onSetMax" id="ScrollBar:onSetMax"><code>onSetMax()</code></a></h3>
 			<p>
 				This handler is invoked when the ScrollBar's <code>Max</code> 
 				attribute has changed. See also <a href="#Numeric:onSetMax"><code>Numeric:onSetMax()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ScrollBar:onSetMin" id="ScrollBar:onSetMin"><code>onSetMin(min)</code></a></h3>
+		<div class="node"><h3><a name="ScrollBar:onSetMin" id="ScrollBar:onSetMin"><code>onSetMin()</code></a></h3>
 			<p>
 				This handler is invoked when the ScrollBar's <code>Min</code> 
 				attribute has changed. See also <a href="#Numeric:onSetMin"><code>Numeric:onSetMin()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ScrollBar:onSetRange" id="ScrollBar:onSetRange"><code>onSetRange(range)</code></a></h3>
+		<div class="node"><h3><a name="ScrollBar:onSetRange" id="ScrollBar:onSetRange"><code>onSetRange()</code></a></h3>
 			<p>
 				This handler is invoked when the ScrollBar's <code>Range</code> 
 				attribute has changed. See also <a href="#Slider:onSetRange"><code>Slider:onSetRange()</code></a>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="ScrollBar:onSetValue" id="ScrollBar:onSetValue"><code>onSetValue(val)</code></a></h3>
+		<div class="node"><h3><a name="ScrollBar:onSetValue" id="ScrollBar:onSetValue"><code>onSetValue()</code></a></h3>
 			<p>
 				This handler is invoked when the ScrollBar's <code>Value</code> 
 				attribute has changed. See also <a href="#Numeric:onSetValue"><code>Numeric:onSetValue()</code></a>.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v15.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v17.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6966,7 +6354,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
 						ScrollGroup 
 					</p>
@@ -7015,7 +6403,7 @@ end
 										</li>
 										<li style="list-style-type: none">
 											<code>&quot;auto&quot;</code> - The horizontal scrollbar is displayed when
-											the ListGadget is wider than the currently visible area.
+											the Lister is wider than the currently visible area.
 										</li>
 									</ul>
 								</blockquote>
@@ -7042,7 +6430,7 @@ end
 										</li>
 										<li style="list-style-type: none">
 											<code>&quot;auto&quot;</code> - The vertical scrollbar is displayed when
-											the ListGadget is taller than the currently visible area.
+											the Lister is taller than the currently visible area.
 										</li>
 									</ul>
 								</blockquote>
@@ -7075,7 +6463,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v24.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7085,7 +6473,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.numeric">Numeric</a> /
 						Slider 
 					</p>
@@ -7108,11 +6496,11 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>Child &#091;IG&#093;</code> (<a href="#tek.ui.class.gadget">Gadget</a>)
+							<code>Child &#091;IG&#093;</code> (<a href="#tek.ui.class.widget">Widget</a>)
 							<blockquote>
 								<p>
-									A Gadget object for being used as the slider's knob. By default,
-									a knob gadget of the style class <code>&quot;knob&quot;</code> is created internally.
+									A Widget object for being used as the slider's knob. By default,
+									a knob widget of the style class <code>&quot;knob&quot;</code> is created internally.
 								</p>
 							</blockquote>
 						</li>
@@ -7183,6 +6571,9 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -7201,10 +6592,10 @@ end
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Gadget:onFocus"><code>Gadget:onFocus()</code></a> 
+							<a href="#Widget:onFocus"><code>Widget:onFocus()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Gadget:onHold"><code>Gadget:onHold()</code></a> 
+							<a href="#Widget:onHold"><code>Widget:onHold()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
@@ -7226,14 +6617,14 @@ end
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Slider:onSetRange" id="Slider:onSetRange"><code>onSetRange(range)</code></a></h3>
+		<div class="node"><h3><a name="Slider:onSetRange" id="Slider:onSetRange"><code>Slider:onSetRange()</code></a></h3>
 			<p>
-				This handler is invoked when the Slider's
-				<code>Range</code> attribute has changed.
+				This handler is invoked when the <code>Range</code> 
+				attribute has changed.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v2.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v2.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7262,7 +6653,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v24.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v28.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7272,11 +6663,11 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
-						Text / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">5 subclasses</option><option value="#tek.ui.class.button">Button</option><option value="#tek.ui.class.checkmark">CheckMark</option><option value="#tek.ui.class.listgadget">ListGadget</option><option value="#tek.ui.class.popitem">PopItem</option><option value="#tek.ui.class.textinput">TextInput</option></select>
+						<a href="#tek.ui.class.widget">Widget</a> /
+						Text / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">5 subclasses</option><option value="#tek.ui.class.button">Button</option><option value="#tek.ui.class.checkmark">CheckMark</option><option value="#tek.ui.class.lister">Lister</option><option value="#tek.ui.class.popitem">PopItem</option><option value="#tek.ui.class.textinput">TextInput</option></select>
 					</p>
 					<p>
-						This class implements gadgets with text.
+						This class implements widgets with text.
 					</p>
 				</blockquote>
 			</div>
@@ -7416,6 +6807,9 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -7426,6 +6820,9 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:onSetStyle"><code>Element:onSetStyle()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
@@ -7465,14 +6862,14 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Text:onSetText" id="Text:onSetText"><code>onSetText(text)</code></a></h3>
+		<div class="node"><h3><a name="Text:onSetText" id="Text:onSetText"><code>onSetText()</code></a></h3>
 			<p>
 				This handler is invoked when the element's <code>Text</code> 
 				attribute has changed.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v15.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v18.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7482,12 +6879,12 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.text">Text</a> /
 						TextInput 
 					</p>
 					<p>
-						This class implements a gadget for entering and editing text.
+						This class implements a widget for entering and editing text.
 					</p>
 				</blockquote>
 			</div>
@@ -7592,7 +6989,7 @@ end
 							<a href="#Frame:onFocus"><code>Frame:onFocus()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Gadget:onSelect"><code>Gadget:onSelect()</code></a> 
+							<a href="#Widget:onSelect"><code>Widget:onSelect()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Text:onSetText"><code>Text:onSetText()</code></a> 
@@ -7657,12 +7054,12 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="TextInput:onEnter" id="TextInput:onEnter"><code>onEnter(text)</code></a></h3>
+		<div class="node"><h3><a name="TextInput:onEnter" id="TextInput:onEnter"><code>onEnter()</code></a></h3>
 			<p>
 				This method is called when the <code>Enter</code> attribute is
 				set. It can be overridden for reacting on entering text by pressing
-				the return key. This method also sets the <code>Text</code> attribute (see
-				<a href="#tek.ui.class.text">Text</a>).
+				the return key. The implementation in this class also sets the <code>Text</code> 
+				attribute (see <a href="#tek.ui.class.text">Text</a>).
 			</p>
 			<hr />
 		</div>
@@ -7673,52 +7070,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.theme" id="tek.ui.class.theme">Theme (v11.2)</a></h2>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
-					<p>
-						<a href="#ClassOverview">ClassOverview</a> :
-						<a href="#tek.class">Class</a> /
-						Theme 
-					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>IMPLEMENTS</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<a href="#Theme:getStyleSheet"><code>Theme.getStyleSheet()</code></a> - Gets a style sheet for a named theme
-						</li>
-					</ul>
-				</blockquote>
-				<hr />
-			</div>
-		</div>
-		<div class="node"><h3><a name="Theme:getStyleSheet" id="Theme:getStyleSheet"><code>properties, errmsg = Theme.getStyleSheet([name])</code></a></h3>
-			<p>
-				Aquires a style sheet
-				from memory, by loading it from disk, or by determining properties at
-				runtime. Predefined names are:
-			</p>
-			<blockquote>
-				<ul>
-					<li style="list-style-type: none">
-						<code>&quot;minimal&quot;</code> - the hardcoded internal <em>user agent</em> style sheet
-					</li>
-					<li style="list-style-type: none">
-						<code>&quot;desktop&quot;</code> - An external style sheet named &quot;desktop.css&quot;,
-						overlayed with the color scheme (and possibly other properties) of
-						the running desktop (if applicable)
-					</li>
-				</ul>
-			</blockquote>
-			<p>
-				Any other name will cause this function to attempt to load an equally
-				named style sheet file.
-			</p>
-			<hr class="page-break" />
-		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v27.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v25.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7728,7 +7080,464 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						<a href="#tek.ui.class.gadget">Gadget</a> /
+						Widget / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">4 subclasses</option><option value="#tek.ui.class.group">Group</option><option value="#tek.ui.class.handle">Handle</option><option value="#tek.ui.class.numeric">Numeric</option><option value="#tek.ui.class.text">Text</option></select>
+					</p>
+					<p>
+						This class implements interactions with the user.
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>ATTRIBUTES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<code>Active &#091;SG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									The Widget's activation state. While <strong>true</strong>, the position of
+									the pointing device is being verified (which is also reflected by
+									the <code>Hover</code> attribute, see below). When the <code>Active</code> state
+									variable changes, the Widget's behavior depends on its <code>Mode</code> 
+									attribute (see below):
+								</p>
+								<blockquote>
+									<ul>
+										<li>
+											in <em>button</em> mode, the <code>Selected</code> attribute is set to
+											the value of the <code>Hover</code> attribute. When the <code>Selected</code> 
+											state changes, the <code>Pressed</code> attribute is set to the value
+											of the <code>Active</code> attribute.
+										</li>
+										<li>
+											in <em>toggle</em> mode, the <code>Selected</code> attribute is inverted
+											logically, and the <code>Pressed</code> attribute is set to <strong>true</strong>.
+										</li>
+										<li>
+											in <em>touch</em> mode, the <code>Selected</code> and <code>Pressed</code> 
+											attributes are set to <strong>true</strong>, if the Widget was not
+											selected already.
+										</li>
+									</ul>
+								</blockquote>
+								<p>
+									Changing this attribute invokes the <a href="#Widget:onActivate"><code>Widget:onActivate()</code></a> method.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>DblClick &#091;SG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Signifies that the element is or has been double-clicked; it is
+									set to <strong>true</strong> when the element was double-clicked and is still
+									being held, and <strong>false</strong> when the second press has been
+									released. Changes to this attribute cause the invocation of the
+									<a href="#Widget:onDblClick"><code>Widget:onDblClick()</code></a> method.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>FGPen &#091;IG&#093;</code> (color specification)
+							<blockquote>
+								<p>
+									A color specification for rendering the foreground details of the
+									element. This attribute is controllable via the <em>color</em> style
+									property.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Hold &#091;SG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Signifies that the element is being pressed for an extended period.
+									While being held, the value is repeatedly set to <strong>true</strong> in
+									intervals of <code>n/50</code> seconds, with <code>n</code> taken from the
+									<a href="#tek.ui.class.window">Window</a>'s <code>HoldTickRepeat</code> attribute.
+									When the element is released, this attribute is set to <strong>false</strong>.
+									Changes to this attribute cause the invocation of the
+									<a href="#Widget:onHold"><code>Widget:onHold()</code></a> method.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Hover &#091;SG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Signifies a change of the element being hovered by the pointing
+									device. Changes to this state variable invoke <a href="#Widget:onHover"><code>Widget:onHover()</code></a>.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>InitialFocus &#091;IG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Specifies that the element should receive the focus initially.
+									If <strong>true</strong>, the element will set the element's <code>Focus</code> 
+									attribute to <strong>true</strong> upon invocation of the
+									<a href="#Area:show">show</a> method.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>KeyCode &#091;IG&#093;</code> (string or boolean)
+							<blockquote>
+								<p>
+									If set, a keyboard equivalent for activating the element. See
+									<a href="#tek.ui.class.popitem">PopItem</a> for a discussion of denoting
+									keyboard qualifiers. The <a href="#tek.ui.class.text">Text</a> class allows
+									setting this attribute to <strong>true</strong>, in which case the element's
+									<code>Text</code> will be examined during setup for an initiatory character
+									(by default an underscore), and if found, the <code>KeyCode</code> attribute
+									will be replaced by the character following this marker.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Mode &#091;ISG&#093;</code> (string)
+							<blockquote>
+								<p>
+									The element's interaction mode:
+								</p>
+								<blockquote>
+									<ul>
+										<li>
+											<code>&quot;inert&quot;</code>: The element does not react on input
+										</li>
+										<li>
+											<code>&quot;touch&quot;</code>: The element does not rebound and keeps its
+											<code>Selected</code> state; it cannot be unselected by the user and
+											always submits <strong>true</strong> for the <code>Pressed</code> and <code>Selected</code> 
+											attributes.
+										</li>
+										<li>
+											<code>&quot;toggle&quot;</code>: The element does not rebound immediately
+											and keeps its <code>Selected</code> state until the next activation.
+										</li>
+										<li>
+											<code>&quot;button&quot;</code>: The element rebounds when the pointing device
+											over it is being released, or when it is no longer hovering it.
+										</li>
+									</ul>
+								</blockquote>
+								<p>
+									See also the <code>Active</code> attribute.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Pressed &#091;SG&#093;</code> (boolean)
+							<blockquote>
+								<p>
+									Signifies that a button was pressed or released. Changes to this
+									state variable invoke <a href="#Widget:onPress"><code>Widget:onPress()</code></a>.
+								</p>
+							</blockquote>
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
+				<blockquote>
+					<table>
+						<tr>
+							<td class="column1">
+								<em>color</em> 
+							</td>
+							<td class="column2">
+								controls the <code>Widget.FGPen</code> attribute
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-class</em> 
+							</td>
+							<td class="column2">
+								name of an class for rendering an overlay effect
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-color</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-color2</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-kind</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-maxnum</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-maxnum2</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-orientation</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-padding</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-ratio</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>effect-ratio2</em> 
+							</td>
+							<td class="column2">
+								controls the <em>ripple</em> effect hook
+							</td>
+						</tr>
+					</table>
+					<p>
+						A possible name for the <em>effect-class</em> property is <code>&quot;ripple&quot;</code>.
+						As its name suggests, it can paint various ripple effects (e.g. for
+						slider knobs and bar handles). Effect hooks are loaded from
+						<code>tek.ui.hook</code> and may define their own style properties.
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>STYLE PSEUDO CLASSES</dfn>
+				<blockquote>
+					<table>
+						<tr>
+							<td class="column1">
+								<em>active</em> 
+							</td>
+							<td class="column2">
+								for elements in active state
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>disabled</em> 
+							</td>
+							<td class="column2">
+								for elements in disabled state
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>focus</em> 
+							</td>
+							<td class="column2">
+								for elements that have the input focus
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								<em>hover</em> 
+							</td>
+							<td class="column2">
+								for elements that are being hovered by the mouse
+							</td>
+						</tr>
+					</table>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>IMPLEMENTS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Widget:onActivate"><code>Widget:onActivate()</code></a> - Handler for <code>Active</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onClick"><code>Widget:onClick()</code></a> - Gets called when the element has been clicked
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onDblClick"><code>Widget:onDblClick()</code></a> - Handler for <code>DblClick</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onDisable"><code>Widget:onDisable()</code></a> - Handler for <code>Disabled</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onFocus"><code>Widget:onFocus()</code></a> - Handler for <code>Focus</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onHilite"><code>Widget:onHilite()</code></a> - Handler for <code>Hilite</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onHold"><code>Widget:onHold()</code></a> - Handler for <code>Hold</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onHover"><code>Widget:onHover()</code></a> - Handler for <code>Hover</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onPress"><code>Widget:onPress()</code></a> - Handler for <code>Pressed</code> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onSelect"><code>Widget:onSelect()</code></a> - Handler for <code>Selected</code> 
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>OVERRIDES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:checkFocus"><code>Area:checkFocus()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:checkHover"><code>Area:checkHover()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Object:init"><code>Object.init()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:setState"><code>Area:setState()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Element:setup"><code>Element:setup()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:show"><code>Area:show()</code></a> 
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="Widget:onActivate" id="Widget:onActivate"><code>Widget:onActivate()</code></a></h3>
+			<p>
+				This method is invoked when the <code>Active</code> 
+				attribute has changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onClick" id="Widget:onClick"><code>Widget:onClick()</code></a></h3>
+			<p>
+				This method is called when the <code>Pressed</code> attribute
+				changes from <strong>true</strong> to <strong>false</strong>, indicating that the pointing
+				device has been released over the element.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onDblClick" id="Widget:onDblClick"><code>Widget:onDblClick()</code></a></h3>
+			<p>
+				This method is invoked when the <code>DblClick</code> 
+				attribute has changed. It is <strong>true</strong> when the double click was
+				initiated and the mouse button is still held, and <strong>false</strong> when it has
+				been released.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onDisable" id="Widget:onDisable"><code>Widget:onDisable()</code></a></h3>
+			<p>
+				This method is invoked when the <code>Disabled</code> 
+				attribute has changed. The <code>Disabled</code> attribute is defined in the
+				<a href="#tek.ui.class.area">Area</a> class.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onFocus" id="Widget:onFocus"><code>Widget:onFocus()</code></a></h3>
+			<p>
+				This method is invoked when the <code>Focus</code> 
+				attribute has changed. The <code>Focus</code> attribute is defined in the
+				<a href="#tek.ui.class.area">Area</a> class.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onHilite" id="Widget:onHilite"><code>Widget:onHilite()</code></a></h3>
+			<p>
+				This handler is called when the <code>Hilite</code> 
+				attribute has changed. The <code>Hilite</code> attribute is defined in the
+				<a href="#tek.ui.class.area">Area</a> class.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onHold" id="Widget:onHold"><code>Widget:onHold()</code></a></h3>
+			<p>
+				This method is invoked when the <code>Hold</code> attribute
+				has changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onHover" id="Widget:onHover"><code>Widget:onHover()</code></a></h3>
+			<p>
+				This method is invoked when the <code>Hover</code> 
+				attribute has changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onPress" id="Widget:onPress"><code>Widget:onPress()</code></a></h3>
+			<p>
+				This handler is called when the <code>Pressed</code> 
+				attribute has changed.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Widget:onSelect" id="Widget:onSelect"><code>Widget:onSelect()</code></a></h3>
+			<p>
+				This method is invoked when the <code>Selected</code> 
+				attribute has changed. The <code>Selected</code> attribute is defined in the
+				<a href="#tek.ui.class.area">Area</a> class.
+			</p>
+			<hr class="page-break" />
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v33.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> :
+						<a href="#tek.class">Class</a> /
+						<a href="#tek.class.object">Object</a> /
+						<a href="#tek.ui.class.element">Element</a> /
+						<a href="#tek.ui.class.area">Area</a> /
+						<a href="#tek.ui.class.frame">Frame</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
 						Window / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">1 subclasses</option><option value="#tek.ui.class.popupwindow">PopupWindow</option></select>
 					</p>
@@ -7918,6 +7727,9 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -7989,10 +7801,10 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Window:onChangeStatus" id="Window:onChangeStatus"><code>onChangeStatus(status)</code></a></h3>
+		<div class="node"><h3><a name="Window:onChangeStatus" id="Window:onChangeStatus"><code>onChangeStatus()</code></a></h3>
 			<p>
-				This method is invoked when the Window's
-				<code>Status</code> has changed.
+				This method is invoked when the Window's <code>Status</code> has
+				changed.
 			</p>
 			<hr />
 		</div>
@@ -8000,9 +7812,9 @@ message = function(object, message)
 			<p>
 				This handler is invoked when the window's close button
 				is clicked (or the Escape key is pressed and the <code>HideOnEscape</code> flag
-				is set). The standard behavior is to hide the window by setting the
-				<code>Status</code> field to <code>&quot;hide&quot;</code>. When the last window is closed, the
-				application is closed down.
+				is set). The Window class' implementation of this handler is to hide
+				the window by setting the <code>Status</code> attribute to <code>&quot;hide&quot;</code>. When the
+				last window is closed, the application is closed down.
 			</p>
 			<hr />
 		</div>
@@ -8045,7 +7857,7 @@ message = function(object, message)
 				sufficiently short period of time and the pointing device did not move
 				too much since the first event, the double click is triggered by
 				notifying the <code>DblClick</code> attribute in the element. See also
-				<a href="#tek.ui.class.gadget">Gadget</a> for further information.
+				<a href="#tek.ui.class.widget">Widget</a> for further information.
 			</p>
 			<hr />
 		</div>
@@ -8070,7 +7882,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v7.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8146,7 +7958,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Mon Jan  4 10:27:07 2010
+					Document generated on Mon Mar 15 15:23:16 2010
 				</p>
 			</div>
 		</div>

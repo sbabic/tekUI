@@ -89,29 +89,25 @@ app = ui.Application:new
 					Text = L.CHOOSE_FILE,
 					MaxWidth = 0,
 					HAlign = "right",
-
-					onPress = function(self, pressed)
-						if pressed == false then
-							local app = self.Application
-							app:addCoroutine(function()
-								local pathfield = app:getById("pathfield")
-								local filefield = app:getById("filefield")
-								local statusfield = app:getById("statusfield")
-								local status, path, select = app:requestFile
-								{
-									Path = pathfield.Text,
-									SelectMode = app:getById("multiselect").Selected and
-										"multi" or "single"
-								}
-								statusfield:setValue("Text", status)
-								if status == "selected" then
-									pathfield:setValue("Text", path)
-									app:getById("filefield"):setValue("Text",
-										table.concat(select, ", "))
-								end
-							end)
-						end
-						self:getClass().onPress(self, pressed)
+					onClick = function(self)
+						local app = self.Application
+						app:addCoroutine(function()
+							local pathfield = app:getById("pathfield")
+							local filefield = app:getById("filefield")
+							local statusfield = app:getById("statusfield")
+							local status, path, select = app:requestFile
+							{
+								Path = pathfield.Text,
+								SelectMode = app:getById("multiselect").Selected and
+									"multi" or "single"
+							}
+							statusfield:setValue("Text", status)
+							if status == "selected" then
+								pathfield:setValue("Text", path)
+								app:getById("filefield"):setValue("Text",
+									table.concat(select, ", "))
+							end
+						end)
 					end,
 				}
 			}

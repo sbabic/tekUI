@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.group : Group]] /
 --		PageGroup ${subclasses(PageGroup)}
 --
@@ -43,11 +43,11 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Frame = ui.require("frame", 16)
-local Gadget = ui.require("gadget", 19)
-local Group = ui.require("group", 27)
-local Region = ui.loadLibrary("region", 9)
-local Text = ui.require("text", 24)
+local Frame = ui.require("frame", 21)
+local Widget = ui.require("widget", 25)
+local Group = ui.require("group", 31)
+local Region = ui.loadLibrary("region", 10)
+local Text = ui.require("text", 28)
 
 local assert = assert
 local insert = table.insert
@@ -59,15 +59,8 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 16.0"
+_VERSION = "PageGroup 19.0"
 local PageGroup = _M
-
--------------------------------------------------------------------------------
---	Constants & Class data:
--------------------------------------------------------------------------------
-
-local NOTIFY_PAGENUMBER = { ui.NOTIFY_SELF, "onSetPageNumber",
-	ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	PageContainerGroup:
@@ -85,9 +78,9 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:show(drawable)
-	Gadget.show(self, drawable)
-	self.PageElement:show(drawable)
+function PageContainerGroup:show()
+	Widget.show(self)
+	self.PageElement:show()
 end
 
 -------------------------------------------------------------------------------
@@ -96,7 +89,7 @@ end
 
 function PageContainerGroup:hide()
 	self.PageElement:hide()
-	Gadget.hide(self)
+	Widget.hide(self)
 end
 
 -------------------------------------------------------------------------------
@@ -104,7 +97,7 @@ end
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:damage(r1, r2, r3, r4)
-	Gadget.damage(self, r1, r2, r3, r4)
+	Widget.damage(self, r1, r2, r3, r4)
 	local f = self.FreeRegion
 	if f and f:checkIntersect(r1, r2, r3, r4) then
 		self.Flags:set(ui.FL_REDRAW)
@@ -157,8 +150,8 @@ end
 --	onSetDisable: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:onDisable(onoff)
-	return self.PageElement:setValue("Disabled", onoff)
+function PageContainerGroup:onDisable()
+	return self.PageElement:setValue("Disabled", self.Disabled)
 end
 
 -------------------------------------------------------------------------------
@@ -222,7 +215,7 @@ function PageContainerGroup:changeTab(pagebuttons, tabnr)
 		self.PageNumber = tabnr
 		self.PageElement:hide()
 		self.PageElement = self.Children[tabnr]
-		local d = self.Drawable
+		local d = self.Window.Drawable
 		if d then
 			self.PageElement:show(d)
 			self:getParent():rethinkLayout(2, true)
@@ -233,7 +226,19 @@ function PageContainerGroup:changeTab(pagebuttons, tabnr)
 end
 
 -------------------------------------------------------------------------------
---	PageGroup:
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function PageGroup.addClassNotifications(proto)
+	addNotify(proto, "PageNumber", NOTIFY_ALWAYS,
+		{ NOTIFY_SELF, "onSetPageNumber" })
+	return Group.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
+
+-------------------------------------------------------------------------------
+--	new: overrides
 -------------------------------------------------------------------------------
 
 function PageGroup.new(class, self)
@@ -303,10 +308,13 @@ function PageGroup.new(class, self)
 							Mode = "touch",
 							MaxWidth = 0,
 							Text = text,
-							KeyCode = true
+							KeyCode = true,
+							onPress = function(pagebutton)
+								if pagebutton.Pressed then
+									self:setValue("PageNumber", i)
+								end
+							end
 						}
-						pc:addNotify("Pressed", true, 
-							{ self, "setValue", "PageNumber", i })
 					end
 					insert(pagebuttons, pc)
 				end
@@ -348,30 +356,12 @@ function PageGroup.new(class, self)
 end
 
 -------------------------------------------------------------------------------
---	setup: overrides
--------------------------------------------------------------------------------
-
-function PageGroup:setup(app, window)
-	Group.setup(self, app, window)
-	self:addNotify("PageNumber", ui.NOTIFY_ALWAYS, NOTIFY_PAGENUMBER)
-end
-
--------------------------------------------------------------------------------
---	cleanup: overrides
--------------------------------------------------------------------------------
-
-function PageGroup:cleanup()
-	self:remNotify("PageNumber", ui.NOTIFY_ALWAYS, NOTIFY_PAGENUMBER)
-	Group.cleanup(self)
-end
-
--------------------------------------------------------------------------------
---	onsetPageNumber(number): This method is invoked when the element's
+--	onSetPageNumber(): This method is invoked when the element's
 --	{{PageNumber}} attribute has changed.
 -------------------------------------------------------------------------------
 
-function PageGroup:onSetPageNumber(val)
-	local n = tonumber(val)
+function PageGroup:onSetPageNumber()
+	local n = tonumber(self.PageNumber)
 	local b = self.TabButtons
 	if b then
 		if b[n + 1] then

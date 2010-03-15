@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		Numeric ${subclasses(Numeric)}
 --
 --		This class implements the management of numerical
@@ -45,6 +45,7 @@
 --		- Numeric:reset() - Resets {{Value}} to the {{Default}} value
 --
 --	OVERRIDES::
+--		- Object.addClassNotifications()
 --		- Element:cleanup()
 --		- Object.init()
 --		- Element:setup()
@@ -54,29 +55,33 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Gadget = ui.require("gadget", 19)
+local Widget = ui.require("widget", 25)
 
 local floor = math.floor
 local max = math.max
 local min = math.min
 local unpack = unpack
 
-module("tek.ui.class.numeric", tek.ui.class.gadget)
-_VERSION = "Numeric 1.6"
-
--------------------------------------------------------------------------------
--- Data:
--------------------------------------------------------------------------------
-
-local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
-local NOTIFY_MIN = { ui.NOTIFY_SELF, "onSetMin", ui.NOTIFY_VALUE }
-local NOTIFY_MAX = { ui.NOTIFY_SELF, "onSetMax", ui.NOTIFY_VALUE }
-
--------------------------------------------------------------------------------
--- Class implementation:
--------------------------------------------------------------------------------
-
+module("tek.ui.class.numeric", tek.ui.class.widget)
+_VERSION = "Numeric 4.0"
 local Numeric = _M
+
+-------------------------------------------------------------------------------
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function Numeric.addClassNotifications(proto)
+	addNotify(proto, "Value", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetValue" })
+	addNotify(proto, "Min", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetMin" })
+	addNotify(proto, "Max", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetMax" })
+	return Widget.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
+
+-------------------------------------------------------------------------------
+--	new: overrides
+-------------------------------------------------------------------------------
 
 function Numeric.init(self)
 	self = self or { }
@@ -85,29 +90,7 @@ function Numeric.init(self)
 	self.Default = max(self.Min, min(self.Max, self.Default or self.Min))
 	self.Value = max(self.Min, min(self.Max, self.Value or self.Default))
 	self.Step = self.Step or 1
-	return Gadget.init(self)
-end
-
--------------------------------------------------------------------------------
---	setup: overrides
--------------------------------------------------------------------------------
-
-function Numeric:setup(app, window)
-	Gadget.setup(self, app, window)
-	self:addNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE, 1)
-	self:addNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN, 1)
-	self:addNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX, 1)
-end
-
--------------------------------------------------------------------------------
---	cleanup: overrides
--------------------------------------------------------------------------------
-
-function Numeric:cleanup()
-	self:remNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX)
-	self:remNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN)
-	self:remNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE)
-	Gadget.cleanup(self)
+	return Widget.init(self)
 end
 
 -------------------------------------------------------------------------------
@@ -137,31 +120,31 @@ function Numeric:reset()
 end
 
 -------------------------------------------------------------------------------
---	onSetValue(val): This handler is invoked when the Numeric's {{Value}}
+--	onSetValue(): This handler is invoked when the Numeric's {{Value}}
 --	attribute has changed.
 -------------------------------------------------------------------------------
 
-function Numeric:onSetValue(v)
-	self.Value = max(self.Min, min(self.Max, v))
+function Numeric:onSetValue()
+	self.Value = max(self.Min, min(self.Max, self.Value))
 end
 
 -------------------------------------------------------------------------------
---	onSetMin(min): This handler is invoked when the Numeric's {{Min}}
+--	onSetMin(): This handler is invoked when the Numeric's {{Min}}
 --	attribute has changed.
 -------------------------------------------------------------------------------
 
-function Numeric:onSetMin(v)
-	self.Min = min(v, self.Max)
+function Numeric:onSetMin()
+	self.Min = min(self.Min, self.Max)
 	self:setValue("Value", self.Value)
 end
 
 -------------------------------------------------------------------------------
---	onSetMax(max): This handler is invoked when the Numeric's {{Max}}
+--	onSetMax(): This handler is invoked when the Numeric's {{Max}}
 --	attribute has changed.
 -------------------------------------------------------------------------------
 
-function Numeric:onSetMax(v)
-	self.Max = max(self.Min, v)
+function Numeric:onSetMax()
+	self.Max = max(self.Min, self.Max)
 	local d = self.Value - self.Max
 	if d > 0 then
 		self.Value = self.Value - d

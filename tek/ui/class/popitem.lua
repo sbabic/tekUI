@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		PopItem ${subclasses(PopItem)}
 --
@@ -26,7 +26,7 @@
 --			while the popup is open.
 --		- {{Shortcut [IG]}} (string)
 --			Keyboard shortcut for the object; unlike
---			[[#tek.ui.class.gadget : Gadget]].KeyCode, this shortcut is
+--			[[#tek.ui.class.widget : Widget]].KeyCode, this shortcut is
 --			also enabled while the object is invisible. By convention, only
 --			combinations with a qualifier should be used here, e.g.
 --			{{"Alt+C"}}, {{"Shift+Ctrl+Q"}}. Qualifiers are separated by
@@ -46,10 +46,11 @@
 --				{{"End"}}, {{"Print"}}, {{"Scroll"}}, and {{"Pause"}}}}.
 --
 --	OVERRIDES::
+--		- Object.addClassNotifications()
 --		- Element:cleanup()
 --		- Element:getAttr()
 --		- Object.init()
---		- Gadget:onPress()
+--		- Widget:onClick()
 --		- Area:passMsg()
 --		- Element:setup()
 --
@@ -58,9 +59,8 @@
 local db = require "tek.lib.debug"
 
 local ui = require "tek.ui"
-local CheckMark = ui.require("checkmark", 7)
-local PopupWindow = ui.require("popupwindow", 4)
-local Text = ui.require("text", 24)
+local PopupWindow = ui.require("popupwindow", 5)
+local Text = ui.require("text", 28)
 
 local floor = math.floor
 local ipairs = ipairs
@@ -68,7 +68,9 @@ local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 15.0"
+_VERSION = "PopItem 22.0"
+
+local PopItem = _M
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -77,18 +79,26 @@ _VERSION = "PopItem 15.0"
 local DEF_POPUPFADEINDELAY = 6
 local DEF_POPUPFADEOUTDELAY = 10
 
-local NOTIFY_SUBMENU = { ui.NOTIFY_SELF, "submenu", ui.NOTIFY_VALUE }
-local NOTIFY_ONSELECT = { ui.NOTIFY_SELF, "selectPopup" }
-local NOTIFY_ONUNSELECT = { ui.NOTIFY_SELF, "unselectPopup" }
+local FL_POPITEM = ui.FL_POPITEM
 
-local NOTIFY_PRESSED = { ui.NOTIFY_SELF, "onPress", ui.NOTIFY_VALUE }
-local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate", ui.NOTIFY_VALUE }
+local NOTIFY_ACTIVE = { NOTIFY_SELF, "onActivate" }
+
+-------------------------------------------------------------------------------
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function PopItem.addClassNotifications(proto)
+	addNotify(proto, "Hilite", NOTIFY_ALWAYS, { NOTIFY_SELF, "doSubMenu" })
+	addNotify(proto, "Selected", true, { NOTIFY_SELF, "selectPopup" })
+	addNotify(proto, "Selected", false, { NOTIFY_SELF, "unselectPopup" })
+	return Text.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
-
-local PopItem = _M
 
 function PopItem.init(self)
 	self.Image = self.Image or false
@@ -168,9 +178,9 @@ function PopItem:askMinMax(m1, m2, m3, m4)
 	local n1, n2, n3, n4 = Text.askMinMax(self, m1, m2, m3, m4)
 	if self.Image then
 		local p1, p2, p3, p4 = self:getPadding()
-		local m = self.Margin
-		local iw = n1 - m1 - p3 - p1 - m[3] - m[1] + 1
-		local ih = n2 - m2 - p4 - p2 - m[4] - m[2] + 1
+		local ma1, ma2, ma3, ma4 = self:getMargin()
+		local iw = n1 - m1 - p3 - p1 - ma3 - ma1 + 1
+		local ih = n2 - m2 - p4 - p2 - ma4 - ma2 + 1
 		iw, ih = self.Application.Display:fitMinAspect(iw, ih, 1, 1, 0)
 		n1 = n1 + iw
 		n3 = n3 + ih
@@ -185,14 +195,14 @@ end
 function PopItem:layout(x0, y0, x1, y1, markdamage)
 	if Text.layout(self, x0, y0, x1, y1, markdamage) then
 		if self.Image then
-			local r = self.Rect
+			local r1, r2, r3, r4 = self:getRect()
 			local p1, p2, p3, p4 = self:getPadding()
-			local iw = r[3] - r[1] - p3 - p1 + 1
-			local ih = r[4] - r[2] - p4 - p2 + 1
+			local iw = r3 - r1 - p3 - p1 + 1
+			local ih = r4 - r2 - p4 - p2 + 1
 			iw, ih = self.Application.Display:fitMinAspect(iw, ih, 1, 1, 0)
 			-- use half the padding that was granted for the right edge:
-			local x = r[3] - floor(p3 / 2) - iw
-			local y = r[2] + p2
+			local x = r3 - floor(p3 / 2) - iw
+			local y = r2 + p2
 			local i = self.ImageRect
 			i[1], i[2], i[3], i[4] = x, y, x + iw - 1, y + ih - 1
 		end
@@ -205,15 +215,13 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:draw()
-	self.ShiftX, self.ShiftY = self.Drawable:getShift()
+	local d = self.Window.Drawable
+	self.ShiftX, self.ShiftY = d:setShift()
 	if Text.draw(self) then
 		local i = self.Image
 		if i then
-			local d = self.Drawable
-			local r = self.Rect
-			local ir = self.ImageRect
-			local x0, y0, x1, y1 = unpack(ir)
-			i:draw(d, x0, y0, x1, y1, d.Pens[self.FGPen])
+			local x0, y0, x1, y1 = unpack(self.ImageRect)
+			i:draw(d, x0, y0, x1, y1, self.FGPen)
 		end
 		return true
 	end
@@ -224,17 +232,17 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:calcPopup()
-	local x, y = self.Drawable:getXY()
+	local _, _, x, y = self.Window.Drawable:getAttrs()
 	local w
-	local r = self.Rect
+	local r1, r2, r3, r4 = self:getRect()
 	local sx, sy = self.ShiftX, self.ShiftY
 	if self.PopupBase then
-		x =	x + r[3] + sx
-		y = y + r[2] + sy
+		x =	x + r3 + sx
+		y = y + r2 + sy
 	else
-		x =	x + r[1] + sx
-		y = y + r[4] + sy
-		w = r[3] - r[1] + 1
+		x =	x + r1 + sx
+		y = y + r4 + sy
+		w = r3 - r1 + 1
 	end
 	return x, y, w
 end
@@ -255,6 +263,7 @@ function PopItem:beginPopup()
 	-- prepare children for being used in a popup window:
 	for _, c in ipairs(self.Children) do
 		c:init()
+		c.Flags:set(FL_POPITEM)
 		if c:instanceOf(PopItem) then
 			c.PopupBase = self.PopupBase or self
 		end
@@ -288,8 +297,7 @@ function PopItem:beginPopup()
 	self.PopupWindow:setValue("Status", "show")
 
 	self.Window:addNotify("Status", "hide", self.FocusNotification)
-	self.Window:addNotify("WindowFocus", ui.NOTIFY_ALWAYS,
-		self.FocusNotification)
+	self.Window:addNotify("WindowFocus", NOTIFY_ALWAYS, self.FocusNotification)
 
 end
 
@@ -301,7 +309,7 @@ function PopItem:endPopup()
 	self:setValue("Selected", false, false)
 	self:setValue("Focus", false)
 	self:setState()
-	self.Window:remNotify("WindowFocus", ui.NOTIFY_ALWAYS,
+	self.Window:remNotify("WindowFocus", NOTIFY_ALWAYS,
 		self.FocusNotification)
 	self.Window:remNotify("Status", "hide", self.FocusNotification)
 	self.PopupWindow:setValue("Status", "hide")
@@ -315,7 +323,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:unselectPopup()
-	if self.PopupWindow then
+	if self.Children and self.PopupWindow then
 		self:endPopup()
 		self.Window:setActiveElement()
 	end
@@ -341,22 +349,25 @@ function PopItem:passMsg(msg)
 end
 
 
-function PopItem:submenu(val)
-	-- check if not the baseitem:
-	if self.PopupBase then
-		self.Window.DelayedBeginPopup = false
-		if val == true then
-			if not self.PopupWindow then
-				db.trace("Begin beginPopup delay")
-				self.Window.BeginPopupTicks = DEF_POPUPFADEINDELAY
-				self.Window.DelayedBeginPopup = self
-			elseif self.Window.DelayedEndPopup == self then
-				self.Window.DelayedEndPopup = false
+function PopItem:doSubMenu()
+	if self.Children then
+		-- check if not the baseitem:
+		if self.PopupBase then
+			self.Window.DelayedBeginPopup = false
+			local val = self.Hilite
+			if val == true then
+				if not self.PopupWindow then
+					db.trace("Begin beginPopup delay")
+					self.Window.BeginPopupTicks = DEF_POPUPFADEINDELAY
+					self.Window.DelayedBeginPopup = self
+				elseif self.Window.DelayedEndPopup == self then
+					self.Window.DelayedEndPopup = false
+				end
+			elseif val == false and self.PopupWindow then
+				db.trace("Begin endPopup delay")
+				self.Window.BeginPopupTicks = DEF_POPUPFADEOUTDELAY
+				self.Window.DelayedEndPopup = self
 			end
-		elseif val == false and self.PopupWindow then
-			db.trace("Begin endPopup delay")
-			self.Window.BeginPopupTicks = DEF_POPUPFADEOUTDELAY
-			self.Window.DelayedEndPopup = self
 		end
 	end
 end
@@ -378,11 +389,11 @@ function PopItem:selectPopup()
 end
 
 -------------------------------------------------------------------------------
---	onPress:
+--	onClick: overrides
 -------------------------------------------------------------------------------
 
-function PopItem:onPress(pressed)
-	if not pressed and self.PopupBase then
+function PopItem:onClick()
+	if self.PopupBase then
 		-- unselect base item, causing the tree to collapse:
 		self.PopupBase:setValue("Selected", false)
 	end
@@ -393,32 +404,24 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:connectPopItems(app, window)
-	local addhandlers
 	if self:instanceOf(PopItem) then
 		db.info("adding %s", self:getClassName())
 		local c = self:getChildren(true)
 		if c then
-			self:addNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_SUBMENU)
-			self:addNotify("Selected", true, NOTIFY_ONSELECT)
-			self:addNotify("Selected", false, NOTIFY_ONUNSELECT)
 			for i = 1, #c do
-				c[i]:addStyleClass("popup-child")
+				-- c[i]:addStyleClass("popup-child")
 				PopItem.connectPopItems(c[i], app, window)
 			end
 		else
 			if self.Shortcut then
 				window:addKeyShortcut("IgnoreCase+" .. self.Shortcut, self)
 			end
-			addhandlers = true
 		end
+	elseif self:getAttr("popup-collapse") then
+		-- special treatment so that clicking the element collapses the popup:
+		self:addNotify("Active", NOTIFY_ALWAYS, NOTIFY_ACTIVE)
 	end
-	if addhandlers or self:instanceOf(CheckMark) then
-		-- TODO: why not connect()?
-		self.Application = app
-		self.Window = window
-		self:addNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
-		self:addNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-	end
+	self.Flags:set(FL_POPITEM)
 end
 
 -------------------------------------------------------------------------------
@@ -426,7 +429,7 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:disconnectPopItems(window)
-	local remhandlers
+	self.Flags:clear(FL_POPITEM)
 	if self:instanceOf(PopItem) then
 		db.info("removing popitem %s", self:getClassName())
 		local c = self:getChildren(true)
@@ -434,20 +437,13 @@ function PopItem:disconnectPopItems(window)
 			for i = 1, #c do
 				PopItem.disconnectPopItems(c[i], window)
 			end
-			self:remNotify("Selected", false, NOTIFY_ONUNSELECT)
-			self:remNotify("Selected", true, NOTIFY_ONSELECT)
-			self:remNotify("Hilite", ui.NOTIFY_ALWAYS, NOTIFY_SUBMENU)
 		else
 			if self.Shortcut then
 				window:remKeyShortcut(self.Shortcut, self)
 			end
-			remhandlers = true
 		end
-	end
-	if remhandlers or self:instanceOf(CheckMark) then
-		self:remNotify("Pressed", ui.NOTIFY_ALWAYS, NOTIFY_PRESSED)
-		self:remNotify("Active", ui.NOTIFY_ALWAYS, NOTIFY_ACTIVE)
-		-- TODO: why not disconnect()?
+	elseif self:getAttr("popup-collapse") then
+		self:remNotify("Active", NOTIFY_ALWAYS, NOTIFY_ACTIVE)
 	end
 end
 

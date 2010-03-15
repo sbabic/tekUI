@@ -25,7 +25,7 @@ local v = visual.open { Title = "Plasma", Width = WW, Height = WH,
 	MinWidth = WW, MinHeight = WH, MaxWidth = WW, MaxHeight = WH }
 
 -- react on close, keydown, interval; see also tek.ui
-v:setinput(0x0901)
+v:setInput(0x0901)
 
 --
 --	init
@@ -107,7 +107,7 @@ local abort, paint
 repeat
 	visual.wait()
 	repeat
-		local msg = visual.getmsg()
+		local msg = visual.getMsg()
 		if msg then
 			local typ, code, mx, my = msg[2], msg[3], msg[4], msg[5]
 			if typ == 1 -- closewindow
@@ -120,7 +120,7 @@ repeat
 	until not msg
 	if paint then
 		effect()
-		v:drawrgb(0, 0, screen, WIDTH, HEIGHT, PIXWIDTH, PIXHEIGHT)
+		v:drawRGB(0, 0, screen, WIDTH, HEIGHT, PIXWIDTH, PIXHEIGHT)
 		v:flush()
 		paint = false
 	end

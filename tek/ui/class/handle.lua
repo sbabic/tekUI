@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		Handle ${subclasses(Handle)}
 --
 --		Implements a handle that can be dragged along the axis of the Group's
@@ -22,7 +22,7 @@
 --		- Area:checkFocus()
 --		- Area:draw()
 --		- Object.init()
---		- Gadget:onHover()
+--		- Widget:onHover()
 --		- Area:passMsg()
 --		- Area:setState()
 --		- Area:show()
@@ -30,7 +30,7 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Gadget = ui.require("gadget", 19)
+local Widget = ui.require("widget", 25)
 
 local floor = math.floor
 local insert = table.insert
@@ -38,8 +38,8 @@ local ipairs = ipairs
 local max = math.max
 local min = math.min
 
-module("tek.ui.class.handle", tek.ui.class.gadget)
-_VERSION = "Handle 4.0"
+module("tek.ui.class.handle", tek.ui.class.widget)
+_VERSION = "Handle 6.0"
 
 local Handle = _M
 
@@ -54,7 +54,7 @@ function Handle.init(self)
 	self.MoveMinMax = { }
 	self.Orientation = false
 	self.SizeList = false
-	return Gadget.init(self)
+	return Widget.init(self)
 end
 
 -------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ end
 -------------------------------------------------------------------------------
 
 function Handle:setup(app, win)
-	Gadget.setup(self, app, win)
+	Widget.setup(self, app, win)
 	local o = self:getGroup().Orientation == "horizontal"
 	self.Orientation = o
 	if o then
@@ -100,21 +100,22 @@ function Handle:startMove(x, y)
 	for _, e in ipairs(g.Children) do
 		local df = 0 -- delta free
 		local mf = 0 -- max free
-		if e.MinMax[i3] > e.MinMax[i1] then
-			local er = e.Rect
-			local emb = e.Margin
+		local mm = { e.MinMax:get() }
+		if mm[i3] > mm[i1] then
+			local er = { e:getRect() }
+			local emb = { e:getMargin() }
 			if e.Weight then
 				tw = tw + e.Weight
 			else
 				local s = er[i3] - er[i1] + 1
-				if s < e.MinMax[i3] then
+				if s < mm[i3] then
 					nfuc = nfuc + 1
 					fw = fw + 0x10000
 				end
 			end
 			df = er[i3] - er[i1] + 1 + emb[i1] +
-				emb[i3] - e.MinMax[i1]
-			mf = e.MinMax[i3] - (er[i3] - er[i1] + 1 + emb[i1] + emb[i3])
+				emb[i3] - mm[i1]
+			mf = mm[i3] - (er[i3] - er[i1] + 1 + emb[i1] + emb[i3])
 		end
 
 		free1 = free1 + df
@@ -145,8 +146,9 @@ function Handle:startMove(x, y)
 	local n = 0
 	local w = 0x10000
 	for _, e in ipairs(g.Children) do
+		local mm = { e:getMinMax() }
 		local nw
-		if e.MinMax[i3] > e.MinMax[i1] then
+		if mm[i3] > mm[i1] then
 			if not e.Weight then
 				n = n + 1
 				if n == nfuc then
@@ -255,7 +257,7 @@ function Handle:passMsg(msg)
 			return false
 		end
 	end
-	return Gadget.passMsg(self, msg)
+	return Widget.passMsg(self, msg)
 end
 
 -------------------------------------------------------------------------------

@@ -16,17 +16,15 @@ ui.Application:new
 				{
 					Text = "Hello",
 					MaxWidth = 0,
-
-					onPress = function(self, pressed)
-						local button = self.Application:getById("output")
-						if pressed == true then
+					onPress = function(self)
+						ui.Button.onPress(self)
+						local button = self:getById("output")
+						if self.Pressed then
 							button:setValue("Text", "world")
 						else
 							button:setValue("Text", "")
 						end
-						ui.Button.onPress(self, pressed)
 					end
-
 				},
 				ui.Text:new
 				{

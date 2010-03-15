@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		[[#tek.ui.class.popitem : PopItem]] /
 --		PopList ${subclasses(PopList)}
@@ -44,19 +44,19 @@ local db = require "tek.lib.debug"
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 
-local Canvas = ui.require("canvas", 25)
-local Gadget = ui.require("gadget", 19)
-local ListGadget = ui.require("listgadget", 26)
-local PopItem = ui.require("popitem", 15)
-local ScrollGroup = ui.require("scrollgroup", 15)
-local Text = ui.require("text", 24)
+local Canvas = ui.require("canvas", 30)
+local Widget = ui.require("widget", 25)
+local Lister = ui.require("lister", 30)
+local PopItem = ui.require("popitem", 22)
+local ScrollGroup = ui.require("scrollgroup", 17)
+local Text = ui.require("text", 28)
 
 local assert = assert
 local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 10.0"
+_VERSION = "PopList 13.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -68,15 +68,13 @@ local ArrowImage = ui.Image:new
 	{ { 0x1000, 3, { 1, 2, 3 }, "menu-detail" } },
 }
 
-local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE }
-
 -------------------------------------------------------------------------------
---	PopListGadget:
+--	PopLister:
 -------------------------------------------------------------------------------
 
-local PopListGadget = ListGadget:newClass()
+local PopLister = Lister:newClass()
 
-function PopListGadget:passMsg(msg)
+function PopLister:passMsg(msg)
 	if msg[2] == ui.MSG_MOUSEMOVE or
 		(msg[2] == ui.MSG_MOUSEBUTTON and msg[3] == 1) then
 		local lnr = self:findLine(msg[5])
@@ -97,7 +95,9 @@ function PopListGadget:passMsg(msg)
 	end
 end
 
-function PopListGadget:onActivate(active)
+function PopLister:onActivate()
+	Lister.onActivate(self)
+	local active = self.Active
 	if active == false then
 		local lnr = self.CursorLine
 		local entry = self:getItem(lnr)
@@ -110,15 +110,14 @@ function PopListGadget:onActivate(active)
 		self:setValue("Focus", false)
 		self.Window:finishPopup()
 	end
-	ListGadget.onActivate(self, active)
 end
 
-function PopListGadget:askMinMax(m1, m2, m3, m4)
+function PopLister:askMinMax(m1, m2, m3, m4)
 	m1 = m1 + self.MinWidth
 	m2 = m2 + self.CanvasHeight
 	m3 = ui.HUGE
 	m4 = m4 + self.CanvasHeight
-	return Gadget.askMinMax(self, m1, m2, m3, m4)
+	return Widget.askMinMax(self, m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
@@ -126,6 +125,14 @@ end
 -------------------------------------------------------------------------------
 
 local PopList = _M
+
+function PopList.addClassNotifications(proto)
+	addNotify(proto, "SelectedLine", 
+		NOTIFY_ALWAYS, { NOTIFY_SELF, "onSelectLine" })
+	return PopItem.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
 
 function PopList.init(self)
 	self.ImageRect = { 0, 0, 0, 0 }
@@ -138,7 +145,7 @@ end
 function PopList.new(class, self)
 	self = self or { }
 	self.ListObject = self.ListObject or List:new()
-	self.ListGadget = PopListGadget:new { ListObject = self.ListObject,
+	self.Lister = PopLister:new { ListObject = self.ListObject,
 		Class = self.Class, Style = self.Style }
 	self.Children =
 	{
@@ -151,33 +158,23 @@ function PopList.new(class, self)
 				KeepMinWidth = true,
 				KeepMinHeight = true,
 				AutoWidth = true,
-				Child = self.ListGadget
+				Child = self.Lister
 			}
 		}
 	}
 	return PopItem.new(class, self)
 end
 
-function PopList:setup(app, window)
-	PopItem.setup(self, app, window)
-	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
-end
-
-function PopList:cleanup()
-	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
-	PopItem.cleanup(self)
-end
-
-function PopList:show(drawable)
-	PopList.onSelectLine(self, self.SelectedLine)
-	PopItem.show(self, drawable)
+function PopList:show()
+	PopList.onSelectLine(self)
+	PopItem.show(self)
 end
 
 function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
 	if lo and not self.KeepMinWidth then
 		local tr = { }
-		local props = self.ListGadget.Properties
+		local props = self.Lister.Properties
 		local font = self.Application.Display:openFont(props["font"])
 		for lnr = 1, lo:getN() do
 			local entry = lo:getItem(lnr)
@@ -196,16 +193,17 @@ end
 
 function PopList:beginPopup()
 	PopItem.beginPopup(self)
-	self.ListGadget:setValue("Focus", true)
+	self.Lister:setValue("Focus", true)
 end
 
 -------------------------------------------------------------------------------
---	onSelectLine(line): This method is invoked when the {{SelectedLine}}
---	attribute is set.
+--	onSelectLine(): This method is invoked when the {{SelectedLine}}
+--	attribute has changed.
 -------------------------------------------------------------------------------
 
-function PopList:onSelectLine(lnr)
-	local entry = self.ListGadget:getItem(lnr)
+function PopList:onSelectLine()
+	local lnr = self.SelectedLine
+	local entry = self.Lister:getItem(lnr)
 	if entry then
 		self:setValue("Text", entry[1][1])
 	end
@@ -219,7 +217,7 @@ end
 function PopList:setList(listobject)
 	assert(not listobject or listobject:instanceOf(List))
 	self.ListObject = listobject
-	self.ListGadget:setList(listobject)
+	self.Lister:setList(listobject)
 end
 
 -------------------------------------------------------------------------------
@@ -227,6 +225,6 @@ end
 -------------------------------------------------------------------------------
 
 function PopList:decodeProperties(p)
-	self.ListGadget:decodeProperties(p)
+	self.Lister:decodeProperties(p)
 	PopItem.decodeProperties(self, p)
 end

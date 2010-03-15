@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --
---	tek.ui.class.listgadget
+--	tek.ui.class.lister
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
@@ -11,9 +11,9 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
---		[[#tek.ui.class.gadget : Text]] /
---		ListGadget ${subclasses(ListGadget)}
+--		[[#tek.ui.class.widget : Widget]] /
+--		[[#tek.ui.class.text : Text]] /
+--		Lister ${subclasses(Lister)}
 --
 --		This class implements a scrollable list or table. Each item in the
 --		list is a table consisting of the following elements:
@@ -25,7 +25,7 @@
 --			- {{entry[2]}} is a userdata field which can be used at will;
 --			- {{entry[3]}} is a boolean indicating that the line is selected.
 --
---		The following fields are reserved for internal use by the ListGadget;
+--		The following fields are reserved for internal use by the Lister;
 --		you should never rely on their contents or modify them.
 --
 --	ATTRIBUTES::
@@ -35,62 +35,62 @@
 --		- {{AlignElement [IG]}} (Object)
 --			The object determining the right edge of the list, which
 --			is an information needed for the {{AlignColumn}} attribute.
---			By default, the ListGadget's parent {{Canvas}} is used, but by
---			use of this attribute it is possible to align the ListGadget to
+--			By default, the Lister's parent {{Canvas}} is used, but by
+--			use of this attribute it is possible to align the Lister to
 --			something else.
 --		- {{BGAlt [IG]}} (userdata)
 --			A colored pen for painting the background of alternating lines
 --		- {{ColumnPadding [IG]}} (number)
 --			The padding between columns, in pixels. By default, the
---			ListGadget's {{Font}} is used to determine a reasonable offset.
+--			Lister's {{Font}} is used to determine a reasonable offset.
 --		- {{CursorBorderClass [IG]}} (string)
 --			Name of the border class used to implement this element's
 --			cursor border. Default: "default"
 --		- {{CursorLine [ISG]}} (number)
---			The line number of the ListGadget's cursor; this value may
+--			The line number of the Lister's cursor; this value may
 --			be {{0}}, in which case the cursor is invisible. Changing
---			this value will invoke the ListGadget:onSetCursor() method.
+--			this value will invoke the Lister:onSetCursor() method.
 --		- {{Font [IG]}} (string)
 --			Font specifier for determining the font used for list entries.
 --			See [[#tek.ui.class.text : Text]] for details on its format.
 --		- {{HeaderGroup [IG]}} ([[#tek.ui.class.group : Group]])
---			A group of elements used for the table header. The ListGadget
+--			A group of elements used for the table header. The Lister
 --			may take these elements into account for determining the
 --			initial column widths.
 --		- {{ListObject [IG]}} ([[#tek.class.list : List]])
---			The List object the ListGadget operates on; if none is specified,
---			the ListGadget creates an empty one.
+--			The List object the Lister operates on; if none is specified,
+--			the Lister creates an empty one.
 --		- {{NumSelectedLines [G]}} (number)
 --			The number of lines currently selected.
 --		- {{SelectedLines [G]}} (table)
 --			This attribute is a (sparse) table containing the numbers of
 --			selected lines in the list. Use {{pairs()}} to iterate it.
---			See also ListGadget:getSelectedLines() for retrieving a
+--			See also Lister:getSelectedLines() for retrieving a
 --			numerically indexed list.
 --		- {{SelectedLine [ISG]}} (number)
---			The ListGadget's current selected line; this value reflects only
+--			The Lister's current selected line; this value reflects only
 --			the line that was most recently selected or unselected - for
 --			locating all currently selected lines, you will also need
 --			the {{SelectedLines}} attribute. Setting this value will invoke
---			the ListGadget:onSelectLine() method.
+--			the Lister:onSelectLine() method.
 --		- {{SelectMode [IG]}} (string)
---			The ListGadget's selection mode, which can be {{"none"}},
+--			The Lister's selection mode, which can be {{"none"}},
 --			{{"single"}}, or {{"multi"}}.
 --
 --	IMPLEMENTS::
---		- ListGadget:addItem() - Adds an item to the list
---		- ListGadget:changeItem() - Overwrite item in the list
---		- ListGadget:changeSelection() - Changes selection of the list
---		- ListGadget:clear() - Removes all items from the list
---		- ListGadget:damageLine() - Marks line for repainting
---		- ListGadget:getItem() - Returns the item at the specified line
---		- ListGadget:getN() - Returns the number of entries in the list
---		- ListGadget:getSelectedLines() - Returns a table of selected entries
---		- ListGadget:onSelectLine() - Handler invoked for {{SelectedLine}}
---		- ListGadget:onSetCursor() - Handler invoked for {{CursorLine}}
---		- ListGadget:repaint() - Relayouts and repaints the list
---		- ListGadget:remItem() - Removes an item from the list
---		- ListGadget:setList() - Sets a new list object
+--		- Lister:addItem() - Adds an item to the list
+--		- Lister:changeItem() - Overwrite item in the list
+--		- Lister:changeSelection() - Changes selection of the list
+--		- Lister:clear() - Removes all items from the list
+--		- Lister:damageLine() - Marks line for repainting
+--		- Lister:getItem() - Returns the item at the specified line
+--		- Lister:getN() - Returns the number of entries in the list
+--		- Lister:getSelectedLines() - Returns a table of selected entries
+--		- Lister:onSelectLine() - Handler invoked for {{SelectedLine}}
+--		- Lister:onSetCursor() - Handler invoked for {{CursorLine}}
+--		- Lister:repaint() - Relayouts and repaints the list
+--		- Lister:remItem() - Removes an item from the list
+--		- Lister:setList() - Sets a new list object
 --
 --	STYLE PROPERTIES::
 --		- {{background-color2}}
@@ -114,9 +114,9 @@
 local db = require "tek.lib.debug"
 local List = require "tek.class.list"
 local ui = require "tek.ui"
-local Region = ui.loadLibrary("region", 9)
-local ScrollGroup = ui.require("scrollgroup", 15)
-local Text = ui.require("text", 24)
+local Region = ui.loadLibrary("region", 10)
+local ScrollGroup = ui.require("scrollgroup", 17)
+local Text = ui.require("text", 28)
 
 local assert = assert
 local floor = math.floor
@@ -132,9 +132,9 @@ local tostring = tostring
 local type = type
 local unpack = unpack
 
-module("tek.ui.class.listgadget", tek.ui.class.text)
-_VERSION = "ListGadget 26.0"
-local ListGadget = _M
+module("tek.ui.class.lister", tek.ui.class.text)
+_VERSION = "Lister 30.0"
+local Lister = _M
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -142,9 +142,19 @@ local ListGadget = _M
 
 local FL_LAYOUT = ui.FL_LAYOUT
 
-local NOTIFY_CURSOR = { ui.NOTIFY_SELF, "onSetCursor", ui.NOTIFY_VALUE }
-local NOTIFY_SELECT = { ui.NOTIFY_SELF, "onSelectLine", ui.NOTIFY_VALUE }
-local NOTIFY_DBLCLICK = { ui.NOTIFY_SELF, "onDoubleClick", ui.NOTIFY_VALUE }
+-------------------------------------------------------------------------------
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function Lister.addClassNotifications(proto)
+	addNotify(proto, "CursorLine", NOTIFY_ALWAYS,
+		{ NOTIFY_SELF, "onSetCursor" })
+	addNotify(proto, "SelectedLine", NOTIFY_ALWAYS,
+		{ NOTIFY_SELF, "onSelectLine" })
+	return Text.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	Class style properties:
@@ -164,10 +174,10 @@ Properties = {
 }
 
 -------------------------------------------------------------------------------
---	Class implementation:
+--	init: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget.init(self)
+function Lister.init(self)
 	self.AlignColumn = self.AlignColumn or false
 	-- the element that determines the size for AlignColumn:
 	self.AlignElement = self.AlignElement or false
@@ -206,7 +216,7 @@ end
 --	connect: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:connect(parent)
+function Lister:connect(parent)
 	self.Canvas = parent
 	return Text.connect(self, parent)
 end
@@ -215,23 +225,16 @@ end
 --	setup: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:setup(app, window)
+function Lister:setup(app, window)
 	Text.setup(self, app, window)
 	self:initSelectedLines()
-	self:addNotify("CursorLine", ui.NOTIFY_ALWAYS, NOTIFY_CURSOR)
-	self:addNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT, 1)
-	self:addNotify("DblClick", ui.NOTIFY_ALWAYS, NOTIFY_DBLCLICK, 1)
-
 	local props = self.Properties
 	local b = tonumber(props["cursor-width"]) or 1
-
 	self.CursorObject = ui.createHook("border", "default", self,
 		{ Border = { b, b, b, b } })
 	local f = self.Application.Display:openFont(self.Font)
 	self.FontHandle = f
 	self.FWidth, self.FHeight = f:getTextSize("x")
-
-
 	local _, b2, _, b4 = self.CursorObject:getBorder()
 	self.LineHeight = self.FHeight + b2 + b4
 	self.ColumnPadding = self.ColumnPadding or self.FWidth
@@ -242,12 +245,9 @@ end
 --	cleanup: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:cleanup()
+function Lister:cleanup()
 	self.FontHandle = self.Application.Display:closeFont(self.FontHandle)
 	self.CursorObject = ui.destroyHook(self.CursorObject)
-	self:remNotify("DblClick", ui.NOTIFY_ALWAYS, NOTIFY_DBLCLICK)
-	self:remNotify("SelectedLine", ui.NOTIFY_ALWAYS, NOTIFY_SELECT)
-	self:remNotify("CursorLine", ui.NOTIFY_ALWAYS, NOTIFY_CURSOR)
 	self.SelectedLines = false
 	Text.cleanup(self)
 	self.Canvas = false
@@ -257,7 +257,7 @@ end
 --	askMinMax: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:askMinMax(m1, m2, m3, m4)
+function Lister:askMinMax(m1, m2, m3, m4)
 	m1 = m1 + self.MinWidth
 	m2 = m2 + self.FHeight
 	m3 = ui.HUGE
@@ -269,7 +269,7 @@ end
 --	initSelectedLines:
 -------------------------------------------------------------------------------
 
-function ListGadget:initSelectedLines()
+function Lister:initSelectedLines()
 	local s = { }
 	local n = 0
 	local lo = self.ListObject
@@ -290,7 +290,7 @@ end
 --	getLineOnScreen:
 -------------------------------------------------------------------------------
 
-function ListGadget:getLineOnScreen(lnr)
+function Lister:getLineOnScreen(lnr)
 	local l = self.ListObject and self.ListObject:getItem(lnr)
 	if l then
 		local c = self.Canvas
@@ -312,7 +312,7 @@ end
 --	damageLine(lnr): Marks the specified line for repainting.
 -------------------------------------------------------------------------------
 
-function ListGadget:damageLine(lnr)
+function Lister:damageLine(lnr)
 	local r1, r2, r3, r4 = self:getLineOnScreen(lnr)
 	if r1 then
 		self:damage(r1, r2, r3, r4)
@@ -324,7 +324,7 @@ end
 --	specified line number.
 -------------------------------------------------------------------------------
 
-function ListGadget:shiftSelection(lnr, delta)
+function Lister:shiftSelection(lnr, delta)
 	if lnr then
 		local s = self.SelectedLines
 		if s then
@@ -347,10 +347,10 @@ end
 --	{{line}} is unspecified, the entry is added at the end of the list. The
 --	boolean {{quick}} indicates that the list should not be relayouted and
 --	repainted. (For relayouting and repainting the list after mass addition,
---	see also ListGadget:repaint().)
+--	see also Lister:repaint().)
 -------------------------------------------------------------------------------
 
-function ListGadget:addItem(entry, lnr, quick)
+function Lister:addItem(entry, lnr, quick)
 	local lo = self.ListObject
 	if lo then
 		if type(entry) ~= "table" then
@@ -378,10 +378,10 @@ end
 --	remItem(line[, quick]): Removes the item from the list at the
 --	specified line. The boolean {{quick}} indicates that the list should not
 --	be relayouted and repainted. (For relayouting and repainting the list
---	after mass removal, see also ListGadget:repaint().)
+--	after mass removal, see also Lister:repaint().)
 -------------------------------------------------------------------------------
 
-function ListGadget:remItem(lnr, quick)
+function Lister:remItem(lnr, quick)
 	local lo = self.ListObject
 	if lo then
 		local entry = lo:remItem(lnr)
@@ -407,10 +407,10 @@ end
 --	changeItem(item, line[, quick]): Overwrites the {{item}} at the
 --	specified {{line}} in the list. The boolean {{quick}} indicates that
 --	the list should not be relayouted and repainted. For relayouting and
---	repainting the list after mass changes, see also ListGadget:repaint().
+--	repainting the list after mass changes, see also Lister:repaint().
 -------------------------------------------------------------------------------
 
-function ListGadget:changeItem(entry, lnr, quick)
+function Lister:changeItem(entry, lnr, quick)
 	local lo = self.ListObject
 	if lo then
 		if self:remItem(lnr, quick) then
@@ -428,7 +428,7 @@ end
 --	object, and relayouts and repaints the list.
 -------------------------------------------------------------------------------
 
-function ListGadget:setList(listobject)
+function Lister:setList(listobject)
 	assert(not listobject or listobject:instanceOf(List))
 	self.ListObject = listobject
 	self:initSelectedLines()
@@ -439,7 +439,7 @@ end
 --	repaint(): Relayouts and repaints the list.
 -------------------------------------------------------------------------------
 
-function ListGadget:repaint()
+function Lister:repaint()
 	self:prepare(true)
 end
 
@@ -447,7 +447,7 @@ end
 --	prepare: internal
 -------------------------------------------------------------------------------
 
-function ListGadget:prepare(damage)
+function Lister:prepare(damage)
 	local lo = self.ListObject
 	if lo then -- and d then
 
@@ -558,32 +558,29 @@ end
 --	draw: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:draw()
+function Lister:draw()
 	local lo, dr = self.ListObject, self.DamageRegion
 	if lo and dr then
 		-- repaint intra-area damagerects:
 		local props = self.Properties
-		local d = self.Drawable
+		local d = self.Window.Drawable
 		local t = self.RenderData
-		local _, tx, ty = self:getBG()
-		local pens = d.Pens
 		local bgcol = props["background-color"] or "background"
-		t[6] = pens[bgcol] -- background pen
-		t[7] = pens[props["background-color2"] or bgcol] -- background pen, alternate
+		t[6] = bgcol -- background pen
+		t[7] = props["background-color2"] or bgcol -- background pen, alternate
 		d:setFont(self.FontHandle)
 		local props = self.Properties
 		dr:forEach(self.drawPatch, self, t, d, lo, self.LineHeight,
 			self.Canvas.CanvasWidth - 1,
-			pens[props["color"] or "list-detail"], -- foreground pen
-			pens[props["background-color:active"] or "list-active"], -- foreground pen
-			pens[props["color:active"] or "list-active-detail"], -- foreground pen
-			tx, ty)
+			props["color"] or "list-detail", -- foreground pen
+			props["background-color:active"] or "list-active", -- foreground pen
+			props["color:active"] or "list-active-detail") -- foreground pen
 		self.DamageRegion = false
 	end
 end
 
-function ListGadget:drawPatch(r1, r2, r3, r4, t, d, lo, lh, x1, fpen, cpen,
-	cfpen, tx, ty)
+function Lister:drawPatch(r1, r2, r3, r4, t, d, lo, lh, x1, fpen, cpen,
+	cfpen)
 	d:pushClipRect(r1, r2, r3, r4)
 	for lnr = floor(r2 / lh) + 1, min(lo:getN(), floor(r4 / lh) + 1) do
 		local l = lo:getItem(lnr)
@@ -595,7 +592,7 @@ function ListGadget:drawPatch(r1, r2, r3, r4, t, d, lo, lh, x1, fpen, cpen,
 			if lnr == self.CursorLine then
 				-- with cursor:
 				d:fillRect(b1, l[4] + b2, x1 - b3, l[5] - b4,
-					l[3] and cpen or bpen, tx, ty)
+					l[3] and cpen or bpen)
 				for ci = 1, #cp do
 					local text = l[1][ci]
 					if text then
@@ -611,7 +608,7 @@ function ListGadget:drawPatch(r1, r2, r3, r4, t, d, lo, lh, x1, fpen, cpen,
 				self.CursorObject:draw(d)
 			else
 				-- without cursor:
-				d:fillRect(0, l[4], x1, l[5], l[3] and cpen or bpen, tx, ty)
+				d:fillRect(0, l[4], x1, l[5], l[3] and cpen or bpen)
 				for ci = 1, #cp do
 					local text = l[1][ci]
 					if text then
@@ -638,19 +635,20 @@ end
 --	layout: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:layout(r1, r2, r3, r4, markdamage)
+function Lister:layout(r1, r2, r3, r4, markdamage)
 	local res
 	local c = self.Canvas
 	local ch = self.CanvasHeight
 	local cw = c.CanvasWidth
-	local m = self.Margin
-	local x0 = r1 + m[1]
-	local y0 = r2 + m[2]
-	local x1 = r3 - m[3]
-	local y1 = r2 + ch - 1 - m[4]
+	local m1, m2, m3, m4 = self:getMargin()
+	local x0 = r1 + m1
+	local y0 = r2 + m2
+	local x1 = r3 - m3
+	local y1 = r2 + ch - 1 - m4
 	local r = self.Rect
-	if r[1] ~= x0 or r[2] ~= y0 or r[3] ~= x1 or r[4] ~= y1 then
-		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
+	local r1, r2, r3, r4 = r:get()
+	if r1 ~= x0 or r2 ~= y0 or r3 ~= x1 or r4 ~= x1 then
+		r:setRect(x0, y0, x1, y1)
 		c:setValue("CanvasHeight", ch)
 		self:layoutCursor()
 		self.Flags:set(FL_LAYOUT)
@@ -662,7 +660,7 @@ function ListGadget:layout(r1, r2, r3, r4, markdamage)
 	return res
 end
 
-function ListGadget:layoutCursor()
+function Lister:layoutCursor()
 	local co = self.CursorObject
 	local x1 = self.Canvas.CanvasWidth - 1
 	local t = self.RenderData
@@ -678,17 +676,18 @@ end
 --	setState: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:setState(bg, fg)
+function Lister:setState(bg, fg)
 	bg = bg or self.Properties["background-color"]
 	Text.setState(self, bg, fg)
 end
 
 -------------------------------------------------------------------------------
---	onSetCursor(line, oldline): This method is invoked when the
+--	onSetCursor(): This method is invoked when the
 --	{{CursorLine}} attribute has changed.
 -------------------------------------------------------------------------------
 
-function ListGadget:onSetCursor(lnr)
+function Lister:onSetCursor()
+	local lnr = self.CursorLine
 	local lo = self.ListObject
 	if lo then
 		local oldlnr = self.OldCursorLine
@@ -701,11 +700,12 @@ function ListGadget:onSetCursor(lnr)
 end
 
 -------------------------------------------------------------------------------
---	onDoubleClick(clicked)
+--	onDblClick(): overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:onDoubleClick(clicked)
-	if clicked == true then
+function Lister:onDblClick()
+	Text.onDblClick(self)
+	if self.DblClick == true then
 		if not self.SelectedLines[self.CursorLine] then
 			self:setValue("SelectedLine", self.CursorLine, true)
 		end
@@ -713,11 +713,12 @@ function ListGadget:onDoubleClick(clicked)
 end
 
 -------------------------------------------------------------------------------
---	onSelectLine(line): This method is invoked when the {{SelectedLine}}
+--	onSelectLine(): This method is invoked when the {{SelectedLine}}
 --	attribute is set.
 -------------------------------------------------------------------------------
 
-function ListGadget:onSelectLine(lnr)
+function Lister:onSelectLine()
+	local lnr = self.SelectedLine
 	local lo = self.ListObject
 	if lo then
 		local oldlnr = self.OldSelectedLine
@@ -759,7 +760,7 @@ end
 --	the visible part of the list follows the cursor.
 -------------------------------------------------------------------------------
 
-function ListGadget:moveLine(lnr, follow)
+function Lister:moveLine(lnr, follow)
 	local lo = self.ListObject
 	if not lo then
 		return
@@ -808,7 +809,7 @@ function ListGadget:moveLine(lnr, follow)
 	end
 end
 
-function ListGadget:findLine(y)
+function Lister:findLine(y)
 	local lo = self.ListObject
 	if lo then
 		for lnr = 1, lo:getN() do
@@ -826,7 +827,7 @@ end
 --		- "none": marks all lines as unselected
 -------------------------------------------------------------------------------
 
-function ListGadget:changeSelection(mode)
+function Lister:changeSelection(mode)
 	local lo = self.ListObject
 	if lo then
 		if mode == "none" then
@@ -844,7 +845,7 @@ end
 --	passMsg: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:passMsg(msg)
+function Lister:passMsg(msg)
 	if msg[2] == ui.MSG_MOUSEBUTTON then
 		if msg[3] == 1 then -- leftdown:
 			local qual = msg[6]
@@ -887,12 +888,11 @@ end
 -------------------------------------------------------------------------------
 
 local function getheight(self)
-	local c = self.Canvas
-	local r = c.Rect
-	return r[4] - r[2] + 1
+	local _, r2, _, r4 = self.Canvas:getRect()
+	return r4 - r2 + 1
 end
 
-function ListGadget:handleInput(msg)
+function Lister:handleInput(msg)
 	local win = self.Window
 	if win then
 		if self == win.FocusElement then
@@ -942,20 +942,21 @@ end
 --	onFocus: overrides
 -------------------------------------------------------------------------------
 
-function ListGadget:onFocus(focused)
+function Lister:onFocus()
+	Text.onFocus(self)
+	local focused = self.Focus
 	if focused then
 		self.Window:addInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
 	else
 		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
 	end
-	Text.onFocus(self, focused)
 end
 
 -------------------------------------------------------------------------------
 --	getN(): Returns the number of lines in the list.
 -------------------------------------------------------------------------------
 
-function ListGadget:getN()
+function Lister:getN()
 	local lo = self.ListObject
 	return lo and lo:getN() or 0
 end
@@ -964,7 +965,7 @@ end
 --	getItem(line): Returns the item at the specified line.
 -------------------------------------------------------------------------------
 
-function ListGadget:getItem(lnr)
+function Lister:getItem(lnr)
 	local lo = self.ListObject
 	return lo and lo:getItem(lnr)
 end
@@ -975,7 +976,7 @@ end
 --	defined modes are "ascending" or "descending". Default: "ascending"
 -------------------------------------------------------------------------------
 
-function ListGadget:getSelectedLines(mode)
+function Lister:getSelectedLines(mode)
 	local t = { }
 	if self.SelectedLines then
 		for i in pairs(self.SelectedLines) do
@@ -994,7 +995,7 @@ end
 --	clear(): Remove all items from the list.
 -------------------------------------------------------------------------------
 
-function ListGadget:clear()
+function Lister:clear()
 	local lo = self.ListObject
 	if lo then
 		lo:clear()

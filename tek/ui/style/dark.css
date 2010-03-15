@@ -1,6 +1,5 @@
 
 tek.ui.class.display {
-	
 	rgb-background: #000;
 	rgb-hover: #225;
 	rgb-disabled: #112;
@@ -48,7 +47,6 @@ tek.ui.class.checkmark:focus {
 	background-color: focus;
 }
 
-
 tek.ui.class.frame {
 	border-style: solid;
 }
@@ -60,10 +58,10 @@ tek.ui.class.input {
 	font: monospace:15;
 }
 
-tek.ui.class.imagegadget:active {
+tek.ui.class.imagewidget:active {
 	color: active-detail;
 }
-tek.ui.class.imagegadget:focus {
+tek.ui.class.imagewidget:focus {
 	color: active-detail;
 }
 
@@ -83,34 +81,3 @@ tek.ui.class.popupwindow {
 tek.ui.class.textinput:active {
 	background-color: active;
 }
-
-
-/*
-tek.ui.class.checkmark {
-	color: detail;
-}
-
-tek.ui.class.checkmark:active {
-	color: background;
-	background-color: detail;
-}
-
-tek.ui.class.checkmark:hover {
-	color: background;
-	background-color: detail;
-}
-
-tek.ui.class.textinput {
-	color: detail;
-}
-
-tek.ui.class.imagegadget:hover {
-	color: background;
-}
-tek.ui.class.imagegadget:focus {
-	color: background;
-}*/
-
-/* tek.ui.class.imagegadget:hover { */
-/* 	color: active-detail; */
-/* } */

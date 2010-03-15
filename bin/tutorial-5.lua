@@ -9,7 +9,7 @@ ui.Application:new
 	{
 		ui.Window:new
 		{
-			Title = "Tutorial 5",
+			Title = "Tutorial 6",
 			Orientation = "vertical",
 			Children =
 			{
@@ -26,9 +26,16 @@ ui.Application:new
 					Min = 0,
 					Max = 100,
 					Value = 50,
-					onSetValue = function(self, value)
-						ui.Slider.onSetValue(self, value)
-						print("Value:", self.Value)
+
+					onSetValue = function(self)
+						ui.Slider.onSetValue(self)
+						local output = self:getById("output")
+						output:setValue("Text", ("%.2f"):format(self.Value))
+					end,
+
+					show = function(self)
+						ui.Slider.show(self)
+						self:setValue("Value", self.Value, true)
 					end,
 				},
 
@@ -50,7 +57,6 @@ ui.Application:new
 						},
 					}
 				}
-
 			}
 		}
 	}

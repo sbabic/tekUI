@@ -34,50 +34,55 @@ static const luaL_Reg tek_lib_visual_funcs[] =
 	{ "open", tek_lib_visual_open },
 	{ "close", tek_lib_visual_close },
 	{ "sleep", tek_lib_visual_sleep },
-	{ "openfont", tek_lib_visual_openfont },
-	{ "closefont", tek_lib_visual_closefont },
-	{ "textsize", tek_lib_visual_textsize_font },
-	{ "gettime", tek_lib_visual_gettime },
+	{ "openFont", tek_lib_visual_openfont },
+	{ "closeFont", tek_lib_visual_closefont },
+	{ "textSize", tek_lib_visual_textsize_font },
+	{ "getTime", tek_lib_visual_gettime },
 	{ "wait", tek_lib_visual_wait },
-	{ "getmsg", tek_lib_visual_getmsg },
-	{ "createpixmap", tek_lib_visual_createpixmap },
-	{ "freepixmap", tek_lib_visual_freepixmap },
+	{ "getMsg", tek_lib_visual_getmsg },
+	{ "createPixmap", tek_lib_visual_createpixmap },
+	{ "freePixmap", tek_lib_visual_freepixmap },
 	{ TNULL, TNULL }
 };
 
 static const luaL_Reg tek_lib_visual_methods[] =
 {
 	{ "__gc", tek_lib_visual_close },
-	{ "setinput", tek_lib_visual_setinput },
-	{ "clearinput", tek_lib_visual_clearinput },
+	{ "setInput", tek_lib_visual_setinput },
+	{ "clearInput", tek_lib_visual_clearinput },
 	{ "close", tek_lib_visual_close },
-	{ "allocpen", tek_lib_visual_allocpen },
-	{ "freepen", tek_lib_visual_freepen },
-	{ "frect", tek_lib_visual_frect },
-	{ "rect", tek_lib_visual_rect },
-	{ "line", tek_lib_visual_line },
-	{ "plot", tek_lib_visual_plot },
-	{ "text", tek_lib_visual_text },
-	{ "drawimage", tek_lib_visual_drawimage },
-	{ "getattrs", tek_lib_visual_getattrs },
-	{ "setattrs", tek_lib_visual_setattrs },
-	{ "textsize", tek_lib_visual_textsize_visual },
-	{ "setfont", tek_lib_visual_setfont },
-	{ "copyarea", tek_lib_visual_copyarea },
-	{ "setcliprect", tek_lib_visual_setcliprect },
-	{ "unsetcliprect", tek_lib_visual_unsetcliprect },
-	{ "setshift", tek_lib_visual_setshift },
-	{ "drawrgb", tek_lib_visual_drawrgb },
-	{ "drawpixmap", tek_lib_visual_drawpixmap },
-	{ "getuserdata", tek_lib_visual_getuserdata },
+	{ "allocPen", tek_lib_visual_allocpen },
+	{ "freePen", tek_lib_visual_freepen },
+	{ "fillRect", tek_lib_visual_frect },
+	{ "drawRect", tek_lib_visual_rect },
+	{ "drawLine", tek_lib_visual_line },
+	{ "drawPoint", tek_lib_visual_plot },
+	{ "drawText", tek_lib_visual_text },
+	{ "drawImage", tek_lib_visual_drawimage },
+	{ "getAttrs", tek_lib_visual_getattrs },
+	{ "setAttrs", tek_lib_visual_setattrs },
+	{ "textSize", tek_lib_visual_textsize_visual },
+	{ "setFont", tek_lib_visual_setfont },
+	{ "blitRect", tek_lib_visual_copyarea },
+	{ "setClipRect", tek_lib_visual_setcliprect },
+	{ "unsetClipRect", tek_lib_visual_unsetcliprect },
+	{ "setShift", tek_lib_visual_setshift },
+	{ "drawRGB", tek_lib_visual_drawrgb },
+	{ "drawPixmap", tek_lib_visual_drawpixmap },
+	{ "getUserdata", tek_lib_visual_getuserdata },
 	{ "flush", tek_lib_visual_flush },
+	{ "setTextureOrigin", tek_lib_visual_settextureorigin },
+	{ "pushClipRect", tek_lib_visual_pushcliprect },
+	{ "popClipRect", tek_lib_visual_popcliprect },
+	{ "getClipRect", tek_lib_visual_getcliprect },
+	{ "setBGPen", tek_lib_visual_setbgpen },
 	{ TNULL, TNULL }
 };
 
 static const luaL_Reg tek_lib_visual_fontmethods[] =
 {
 	{ "__gc", tek_lib_visual_closefont },
-	{ "getattrs", tek_lib_visual_getfontattrs },
+	{ "getAttrs", tek_lib_visual_getfontattrs },
 	{ "close", tek_lib_visual_closefont },
 	{ "getTextSize", tek_lib_visual_textsize_font },
 	{ TNULL, TNULL }
@@ -105,6 +110,7 @@ static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 **	args.MaxWidth - maximum width of the window
 **	args.MaxHeight - maximum height of the window
 **	args.BlankCursor - blank cursor
+**	args.Pens - pen table
 */
 
 LOCAL LUACFUNC TINT
@@ -120,6 +126,8 @@ tek_lib_visual_open(lua_State *L)
 	vis->vis_isBase = TFALSE;
 	vis->vis_refBase = -1;
 	vis->vis_refFont = -1;
+	vis->vis_refBGPen = -1;
+	vis->vis_BGPen = TNULL;
 
 	/* get and attach metatable: */
 	luaL_newmetatable(L, TEK_LIB_VISUAL_CLASSNAME);
@@ -151,7 +159,12 @@ tek_lib_visual_open(lua_State *L)
 	vis->vis_RectBuffer = TNULL;
 	vis->vis_ShiftX = 0;
 	vis->vis_ShiftY = 0;
+	vis->vis_TextureX = 0;
+	vis->vis_TextureY = 0;
 	vis->vis_Display = visbase->vis_Display;
+	vis->vis_HaveClipRect = TFALSE;
+	TINITLIST(&vis->vis_FreeRects);
+	TINITLIST(&vis->vis_ClipStack);
 	
 	/* place ref to base in metatable: */
 	vis->vis_refBase = luaL_ref(L, -2);
@@ -170,6 +183,16 @@ tek_lib_visual_open(lua_State *L)
 	else
 	{
 		vis->vis_refUserData = -1;
+		lua_pop(L, 1);
+	}
+
+	/* place reference to pens in metatable: */
+	lua_getfield(L, 1, "Pens");
+	if (!lua_isnil(L, -1))
+		vis->vis_refPens = luaL_ref(L, -2);
+	else
+	{
+		vis->vis_refPens = -1;
 		lua_pop(L, 1);
 	}
 
@@ -308,6 +331,10 @@ tek_lib_visual_open(lua_State *L)
 			
 		if (success)
 		{
+			#if defined(TEK_VISUAL_DEBUG)
+			vis->vis_DebugPen1 = TVisualAllocPen(vis->vis_Visual, 0x88ff00);
+			vis->vis_DebugPen2 = TVisualAllocPen(vis->vis_Visual, 0x000000);
+			#endif
 			TVisualSetFont(vis->vis_Visual, vis->vis_Font);
 			lua_pop(L, 1);
 			return 1;
@@ -379,18 +406,26 @@ tek_lib_visual_close(lua_State *L)
 
 	if (vis->vis_refBase >= 0)
 	{
-		lua_getmetatable(L, 1);
+		if (vis->vis_refPens >= 0)
+			luaL_unref(L, lua_upvalueindex(1), vis->vis_refPens);
 		if (vis->vis_refUserData >= 0)
-			luaL_unref(L, -1, vis->vis_refUserData);
-		luaL_unref(L, -1, vis->vis_refSelf);
-		luaL_unref(L, -1, vis->vis_refBase);
+			luaL_unref(L, lua_upvalueindex(1), vis->vis_refUserData);
+		if (vis->vis_refBGPen >= 0)
+			luaL_unref(L, lua_upvalueindex(1), vis->vis_refBGPen);
+		luaL_unref(L, lua_upvalueindex(1), vis->vis_refSelf);
+		luaL_unref(L, lua_upvalueindex(1), vis->vis_refBase);
 		vis->vis_refBase = -1;
-		lua_pop(L, 1);
 		TDBPRINTF(TDB_TRACE,("visual %08x unref'd\n", vis));
 	}
 
 	if (vis->vis_Visual)
 	{
+		struct TNode *node;
+		while ((node = TRemHead(&vis->vis_ClipStack)))
+			TFree(node);
+		while ((node = TRemHead(&vis->vis_FreeRects)))
+			TFree(node);
+		
 		if (vis->vis_Device)
 			TDisplayFreeReq(vis->vis_Device, 
 				(struct TVRequest *) vis->vis_FlushReq);
@@ -477,7 +512,11 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta, vismeta */
 	lua_setfield(L, -2, "__index");
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta */
-	luaL_register(L, NULL, tek_lib_visual_methods);
+	lua_pushvalue(L, -1);
+	luaL_newmetatable(L, TEK_LIB_VISUALPEN_CLASSNAME);
+	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
+	luaI_openlib(L, NULL, tek_lib_visual_methods, 3);
+	
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta */
 	lua_setmetatable(L, -2);
 	/* s: displaytab, exectab, execbase, vistab, visbase */

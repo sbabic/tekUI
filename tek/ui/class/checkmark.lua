@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		CheckMark ${subclasses(CheckMark)}
 --
@@ -37,14 +37,14 @@
 
 local ui = require "tek.ui"
 
-local Text = ui.require("text", 24)
+local Text = ui.require("text", 28)
 
 local floor = math.floor
 local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 7.0"
+_VERSION = "CheckMark 9.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -110,13 +110,13 @@ end
 function CheckMark:layout(x0, y0, x1, y1, markdamage)
 	if Text.layout(self, x0, y0, x1, y1, markdamage) then
 		local i = self.ImageRect
-		local r = self.Rect
+		local r1, r2, r3, r4 = self:getRect()
 		local p1, p2, p3, p4 = self:getPadding()
-		local eh = r[4] - r[2] - p4 - p2 + 1
+		local eh = r4 - r2 - p4 - p2 + 1
 		local iw = self.ImageWidth
 		local ih = self.ImageHeight
-		i[1] = r[1] + p1
-		i[2] = r[2] + p2 + floor((eh - ih) / 2)
+		i[1] = r1 + p1
+		i[2] = r2 + p2 + floor((eh - ih) / 2)
 		i[3] = i[1] + iw - 1
 		i[4] = i[2] + ih - 1
 		return true
@@ -131,7 +131,7 @@ function CheckMark:draw()
 	if Text.draw(self) then
 		local img = self.Selected and self.SelectImage or self.Image
 		if img then
-			img:draw(self.Drawable, unpack(self.ImageRect))
+			img:draw(self.Window.Drawable, unpack(self.ImageRect))
 		end
 		return true
 	end
@@ -165,4 +165,19 @@ function CheckMark:setState(bg, fg)
 		self.Flags:set(ui.FL_REDRAW)
 	end
 	Text.setState(self, bg, fg)
+end
+
+-------------------------------------------------------------------------------
+--	getAttr: overrides
+-------------------------------------------------------------------------------
+
+local getattrs =
+{
+	["popup-collapse"] = function(self)
+		return true
+	end,
+}
+
+function CheckMark:getAttr(attr, ...)
+	return (getattrs[attr] or Text.getAttr)(self, attr, ...)
 end

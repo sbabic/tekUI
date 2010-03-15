@@ -106,7 +106,7 @@ function List:changeItem(entry, lnr)
 end
 
 -------------------------------------------------------------------------------
---	List:clear(): Remove all items from the list.
+--	List:clear(): Removes all items from the list.
 -------------------------------------------------------------------------------
 
 function List:clear()

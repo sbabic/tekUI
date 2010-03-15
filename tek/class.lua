@@ -30,9 +30,9 @@ local getmetatable = getmetatable
 local setmetatable = setmetatable
 
 -- use proxied object model:
-local PROXY = true
+local PROXY = false
 -- in proxied mode, trace uninitialized variable accesses:
-local DEBUG = true
+local DEBUG = false
 
 module "tek.class"
 _VERSION = "Class 7.0"

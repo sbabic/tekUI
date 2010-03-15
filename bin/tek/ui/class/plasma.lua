@@ -17,7 +17,7 @@ local sin = math.sin
 local unpack = unpack
 
 module("tek.ui.class.plasma", tek.ui.class.frame)
-_VERSION = "Plasma 5.0"
+_VERSION = "Plasma 6.1"
 
 local WIDTH = 80
 local HEIGHT = 60
@@ -123,8 +123,8 @@ function Plasma:draw()
 			yc3 = (yc3 + dyc3) % 1024
 		end
 	
-		local d = self.Drawable
-		d:drawRGB(r1, r2, screen, WIDTH, HEIGHT, PIXWIDTH, PIXHEIGHT)
+		self.Window.Drawable:drawRGB(r1, r2, screen, WIDTH, HEIGHT, PIXWIDTH, 
+			PIXHEIGHT)
 		return true
 	end
 end

@@ -2,7 +2,7 @@
 
 local ui = require "tek.ui"
 
-local Gadget = ui.Gadget
+local Widget = ui.Widget
 local Group = ui.Group
 local CheckMark = ui.CheckMark
 local RadioButton = ui.RadioButton
@@ -65,13 +65,13 @@ local window = ui.Window:new
 			Style = "height: fill",
 			Children =
 			{
-				ui.ImageGadget:new
+				ui.ImageWidget:new
 				{
 					Mode = "button",
 					Class = "button",
 					Image = ui.loadImage(ui.ProgDir .. "/graphics/locale.ppm")
 				},
-				ui.ImageGadget:new
+				ui.ImageWidget:new
 				{
 					Style = "background-color: shine;",
 					Image = ui.loadImage(ui.ProgDir .. "/graphics/world.ppm")

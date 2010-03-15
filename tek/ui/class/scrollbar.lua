@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.group : Group]] /
 --		ScrollBar ${subclasses(ScrollBar)}
 --
@@ -49,6 +49,7 @@
 --		- ScrollBar:onSetValue() - Handler for the {{Value}} attribute
 --
 --	OVERRIDES::
+--		- Object.addClassNotifications()
 --		- Element:cleanup()
 --		- Class.new()
 --		- Element:setup()
@@ -56,15 +57,15 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Group = ui.require("group", 27)
-local ImageGadget = ui.require("imagegadget", 9)
-local Slider = ui.require("slider", 19)
+local Group = ui.require("group", 31)
+local ImageWidget = ui.require("imagewidget", 13)
+local Slider = ui.require("slider", 24)
 
 local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 10.3"
+_VERSION = "ScrollBar 13.0"
 
 local ScrollBar = _M
 
@@ -77,52 +78,34 @@ local ArrowDownImage = ui.getStockImage("arrowdown")
 local ArrowLeftImage = ui.getStockImage("arrowleft")
 local ArrowRightImage = ui.getStockImage("arrowright")
 
-local NOTIFY_VALUE = { ui.NOTIFY_SELF, "onSetValue", ui.NOTIFY_VALUE }
-local NOTIFY_MIN = { ui.NOTIFY_SELF, "onSetMin", ui.NOTIFY_VALUE }
-local NOTIFY_MAX = { ui.NOTIFY_SELF, "onSetMax", ui.NOTIFY_VALUE }
-local NOTIFY_RANGE = { ui.NOTIFY_SELF, "onSetRange", ui.NOTIFY_VALUE }
-local NOTIFY_HOLD = { ui.NOTIFY_SELF, "onHold", ui.NOTIFY_VALUE }
-
 -------------------------------------------------------------------------------
 --	ArrowButton:
 -------------------------------------------------------------------------------
 
-local ArrowButton = ImageGadget:newClass { _NAME = "_scrollbar-arrow" }
+local ArrowButton = ImageWidget:newClass { _NAME = "_scrollbar-arrow" }
 
 function ArrowButton.init(self)
 	self.Width = "fill"
 	self.Height = "fill"
 	self.Mode = "button"
 	self.Increase = self.Increase or 1
-	return ImageGadget.init(self)
+	return ImageWidget.init(self)
 end
 
 function ArrowButton:checkFocus()
 	if self.ScrollBar.AcceptFocus then
-		return ImageGadget.checkFocus(self)
+		return ImageWidget.checkFocus(self)
 	end
 	return false
 end
 
-function ArrowButton:setup(app, window)
-	ImageGadget.setup(self, app, window)
-	self:addNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
+function ArrowButton:onClick()
+	self.Slider:increase(self.Increase)
 end
 
-function ArrowButton:cleanup()
-	self:remNotify("Hold", ui.NOTIFY_ALWAYS, NOTIFY_HOLD)
-	ImageGadget.cleanup(self)
-end
-
-function ArrowButton:onPress(pressed)
-	if pressed then
-		self.Slider:increase(self.Increase)
-	end
-	ImageGadget.onPress(self, pressed)
-end
-
-function ArrowButton:onHold(hold)
-	if hold then
+function ArrowButton:onHold()
+	ImageWidget.onHold(self)
+	if self.Hold then
 		self.Slider:increase(self.Increase)
 	end
 end
@@ -140,8 +123,8 @@ function SBSlider:checkFocus()
 	return false
 end
 
-function SBSlider:onSetValue(v)
-	Slider.onSetValue(self, v)
+function SBSlider:onSetValue()
+	Slider.onSetValue(self)
 	self.ScrollBar:setValue("Value", self.Value)
 end
 
@@ -156,23 +139,37 @@ function SBSlider:updateSlider()
 	end
 end
 
-function SBSlider:onSetRange(r)
-	Slider.onSetRange(self, r)
+function SBSlider:onSetRange()
+	Slider.onSetRange(self)
 	self.ScrollBar:setValue("Range", self.Range)
 end
 
-function SBSlider:onSetMin(m)
-	Slider.onSetMin(self, m)
+function SBSlider:onSetMin()
+	Slider.onSetMin(self)
 	self.ScrollBar:setValue("Min", self.Min)
 end
 
-function SBSlider:onSetMax(m)
-	Slider.onSetMax(self, m)
+function SBSlider:onSetMax()
+	Slider.onSetMax(self)
 	self.ScrollBar:setValue("Max", self.Max)
 end
 
 -------------------------------------------------------------------------------
---	ScrollBar:
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function ScrollBar.addClassNotifications(proto)
+	addNotify(proto, "Value", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetValue" })
+	addNotify(proto, "Min", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetMin" })
+	addNotify(proto, "Max", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetMax" })
+	addNotify(proto, "Range", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetRange" })
+	return Group.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
+
+-------------------------------------------------------------------------------
+--	new: overrides
 -------------------------------------------------------------------------------
 
 function ScrollBar.new(class, self)
@@ -288,60 +285,44 @@ function ScrollBar:setup(app, window)
 		self.MaxHeight = 0
 		self.Width = self.Width or "fill"
 	end
-	self:addNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE, 1)
-	self:addNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN, 1)
-	self:addNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX, 1)
-	self:addNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE, 1)
 end
 
 -------------------------------------------------------------------------------
---	cleanup: overrides
--------------------------------------------------------------------------------
-
-function ScrollBar:cleanup()
-	self:remNotify("Range", ui.NOTIFY_ALWAYS, NOTIFY_RANGE)
-	self:remNotify("Max", ui.NOTIFY_ALWAYS, NOTIFY_MAX)
-	self:remNotify("Min", ui.NOTIFY_ALWAYS, NOTIFY_MIN)
-	self:remNotify("Value", ui.NOTIFY_ALWAYS, NOTIFY_VALUE)
-	Group.cleanup(self)
-end
-
--------------------------------------------------------------------------------
---	onSetMin(min): This handler is invoked when the ScrollBar's {{Min}}
+--	onSetMin(): This handler is invoked when the ScrollBar's {{Min}}
 --	attribute has changed. See also Numeric:onSetMin().
 -------------------------------------------------------------------------------
 
-function ScrollBar:onSetMin(v)
-	self.Slider:setValue("Min", v)
+function ScrollBar:onSetMin()
+	self.Slider:setValue("Min", self.Min)
 	self.Min = self.Slider.Min
 end
 
 -------------------------------------------------------------------------------
---	onSetMax(max): This handler is invoked when the ScrollBar's {{Max}}
+--	onSetMax(): This handler is invoked when the ScrollBar's {{Max}}
 --	attribute has changed. See also Numeric:onSetMax().
 -------------------------------------------------------------------------------
 
-function ScrollBar:onSetMax(v)
-	self.Slider:setValue("Max", v)
+function ScrollBar:onSetMax()
+	self.Slider:setValue("Max", self.Max)
 	self.Max = self.Slider.Max
 end
 
 -------------------------------------------------------------------------------
---	onSetValue(val): This handler is invoked when the ScrollBar's {{Value}}
+--	onSetValue(): This handler is invoked when the ScrollBar's {{Value}}
 --	attribute has changed. See also Numeric:onSetValue().
 -------------------------------------------------------------------------------
 
-function ScrollBar:onSetValue(v)
-	self.Slider:setValue("Value", v)
+function ScrollBar:onSetValue()
+	self.Slider:setValue("Value", self.Value)
 	self.Value = self.Slider.Value
 end
 
 -------------------------------------------------------------------------------
---	onSetRange(range): This handler is invoked when the ScrollBar's {{Range}}
+--	onSetRange(): This handler is invoked when the ScrollBar's {{Range}}
 --	attribute has changed. See also Slider:onSetRange().
 -------------------------------------------------------------------------------
 
-function ScrollBar:onSetRange(v)
-	self.Slider:setValue("Range", v)
+function ScrollBar:onSetRange()
+	self.Slider:setValue("Range", self.Range)
 	self.Range = self.Slider.Range
 end

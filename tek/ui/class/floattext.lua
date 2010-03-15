@@ -12,12 +12,12 @@
 --		[[#tek.ui.class.area : Area]] /
 --		FloatText ${subclasses(FloatText)}
 --
---		Implements a scrollable text display. An object of this class is
---		normally the immediate {{Child}} of a
+--		This class implements a scrollable display of text. An object of
+--		this class is normally the immediate child of a
 --		[[#tek.ui.class.canvas : Canvas]].
 --
 --	ATTRIBUTES::
---		- {{FGColor [IG]}} (userdata)
+--		- {{FGPen [IG]}} (userdata)
 --			Pen for rendering the text. This attribute is controllable via the
 --			{{color}} style property.
 --		- {{Font [IG]}} (string)
@@ -35,10 +35,11 @@
 --		- FloatText:onSetText() - Handler called when {{Text}} is changed
 --
 --	STYLE PROPERTIES::
---		{{color}} || controls the {{FloatText.FGColor}} attribute
+--		{{color}} || controls the {{FloatText.FGPen}} attribute
 --		{{font}} || controls the {{FloatText.Font}} attribute
 --
 --	OVERRIDES::
+--		- Object.addClassNotifications()
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Area:damage()
@@ -64,21 +65,30 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 16.0"
+_VERSION = "FloatText 21.0"
 
 local FloatText = _M
 
 -------------------------------------------------------------------------------
---	Constants & Class data:
+--	constants & class data:
 -------------------------------------------------------------------------------
 
 local FL_REDRAW = ui.FL_REDRAW
 local FL_LAYOUT = ui.FL_LAYOUT
 
-local NOTIFY_TEXT = { ui.NOTIFY_SELF, "onSetText" }
+-------------------------------------------------------------------------------
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function FloatText.addClassNotifications(proto)
+	addNotify(proto, "Text", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetText" })
+	return Area.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
---	Class implementation:
+--	init: overrides
 -------------------------------------------------------------------------------
 
 function FloatText.init(self)
@@ -107,7 +117,6 @@ end
 function FloatText:setup(app, window)
 	self.Canvas = self:getParent()
 	Area.setup(self, app, window)
-	self:addNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_TEXT)
 	local f = self.Application.Display:openFont(self.Properties["font"])
 	self.FontHandle = f
 	self.FWidth, self.FHeight = f:getTextSize("W")
@@ -119,7 +128,6 @@ end
 -------------------------------------------------------------------------------
 
 function FloatText:cleanup()
-	self:remNotify("Text", ui.NOTIFY_ALWAYS, NOTIFY_TEXT)
 	self.Canvas = false
 	self.FontHandle = self.Application.Display:closeFont(self.FontHandle)
 	Area.cleanup(self)
@@ -133,23 +141,22 @@ function FloatText:erase()
 	self.Reposition = false
 	local dr = self.DamageRegion
 	-- repaint intra-area damagerects:
-	local d = self.Drawable
-	local p = d.Pens
-	local bp, tx, ty = self:getBG()
+	local d = self.Window.Drawable
 	-- determine visible rectangle:
+	local _, _, r3 = self:getRect()
 	local ca = self.Canvas
 	local x0 = ca and ca.CanvasLeft or 0
-	local x1 = ca and x0 + ca.CanvasWidth - 1 or self.Rect[3]
-	local fp = p[self.FGPen]
+	local x1 = ca and x0 + ca.CanvasWidth - 1 or r3
 	d:setFont(self.FontHandle)
-	dr:forEach(self.drawPatch, self, d, x0, x1, fp, d.Pens[bp], tx, ty)
+	d:setBGPen(self:getBG())
+	dr:forEach(self.drawPatch, self, d, x0, x1, self.FGPen)
 end
 
 -------------------------------------------------------------------------------
 --	drawPatch: draw a single patch
 -------------------------------------------------------------------------------
 
-function FloatText:drawPatch(r1, r2, r3, r4, d, x0, x1, fp, bp, tx, ty)
+function FloatText:drawPatch(r1, r2, r3, r4, d, x0, x1, fp)
 	d:pushClipRect(r1, r2, r3, r4)
 	local lines = self.Lines
 	for lnr = 1, #lines do
@@ -157,7 +164,7 @@ function FloatText:drawPatch(r1, r2, r3, r4, d, x0, x1, fp, bp, tx, ty)
 		-- overlap between damage and line:
 		if intersect(r1, r2, r3, r4, x0, t[2], x1, t[4]) then
 			-- draw line background:
-			d:fillRect(x0, t[2], x1, t[4], bp, tx, ty)
+			d:fillRect(x0, t[2], x1, t[4])
 			-- overlap between damage and text:
 			if intersect(r1, r2, r3, r4, t[1], t[2], t[3], t[4]) then
 				-- draw text:
@@ -174,31 +181,33 @@ end
 
 function FloatText:prepareText()
 	local f = self.FontHandle
-	local lw = 0 -- widest width in text
-	local w, h
-	local i = 0
-	local wl = { }
-	self.WidthsCache = wl -- cache for word lengths / line lengths
-	if self.Preformatted then
-		-- determine widths line by line
-		for line in self.Text:gmatch("([^\n]*)\n?") do
-			w, h = f:getTextSize(line)
-			lw = max(lw, w)
-			i = i + 1
-			wl[i] = w
+	if f then
+		local lw = 0 -- widest width in text
+		local w, h
+		local i = 0
+		local wl = { }
+		self.WidthsCache = wl -- cache for word lengths / line lengths
+		if self.Preformatted then
+			-- determine widths line by line
+			for line in self.Text:gmatch("([^\n]*)\n?") do
+				w, h = f:getTextSize(line)
+				lw = max(lw, w)
+				i = i + 1
+				wl[i] = w
+			end
+		else
+			-- determine widths word by word
+			for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
+				w, h = f:getTextSize(word)
+				lw = max(lw, w)
+				i = i + 1
+				wl[i] = w
+			end
+			self.WordSpacing = f:getTextSize(" ")
 		end
-	else
-		-- determine widths word by word
-		for spc, word in self.Text:gmatch("(%s*)([^%s]*)") do
-			w, h = f:getTextSize(word)
-			lw = max(lw, w)
-			i = i + 1
-			wl[i] = w
-		end
-		self.WordSpacing = f:getTextSize(" ")
+		self.MinWidth, self.MinHeight = lw, h
+		return lw, h
 	end
-	self.MinWidth, self.MinHeight = lw, h
-	return lw, h
 end
 
 -------------------------------------------------------------------------------
@@ -282,26 +291,26 @@ end
 
 function FloatText:layout(r1, r2, r3, r4, markdamage)
 
-	local m = self.Margin
-	local width = r3 - r1 + 1 - m[1] - m[3]
+	local m1, m2, m3, m4 = self:getMargin()
+	local width = r3 - r1 + 1 - m1 - m3
 	local ch = self.CanvasHeight
-	local r = self.Rect
-	local x0 = r1 + m[1]
-	local y0 = r2 + m[2]
-	local x1 = r3 - m[3]
+	local s1, s2, s3, s4 = self:getRect()
+	local x0 = r1 + m1
+	local y0 = r2 + m2
+	local x1 = r3 - m3
 	local redraw
 
-	if not ch or (not r[1] or r[3] - r[1] + 1 ~= width) then
-		self.Lines, ch = self:layoutText(r1 + m[1], r2 + m[2], width)
-		ch = ch + m[4]
+	if not ch or (not s1 or s3 - s1 + 1 ~= width) then
+		self.Lines, ch = self:layoutText(r1 + m1, r2 + m2, width)
+		ch = ch + m4
 		self.CanvasHeight = ch
 		redraw = true
 	end
 
-	local y1 = self.Canvas and r2 + ch - 1 - m[4] or r4 - m[4]
+	local y1 = self.Canvas and r2 + ch - 1 - m4 or r4 - m4
 
 	if redraw or markdamage or
-		r[1] ~= x0 or r[2] ~= y0 or r[3] ~= x1 or r[4] ~= y1 then
+		s1 ~= x0 or s2 ~= y0 or s3 ~= x1 or s4 ~= y1 then
 		if self.Canvas then
 			self.Canvas:setValue("CanvasHeight", self.CanvasHeight)
 			if self.Reposition == "tail" then
@@ -309,10 +318,10 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 			end
 		end
 		self.DamageRegion = Region.new(x0, y0, x1, y1)
-		if not markdamage and not redraw and r[1] == x0 and r[2] == y0 then
-			self.DamageRegion:subRect(r[1], r[2], r[3], r[4])
+		if not markdamage and not redraw and s1 == x0 and s2 == y0 then
+			self.DamageRegion:subRect(s1, s2, s3, s4)
 		end
-		r[1], r[2], r[3], r[4] = x0, y0, x1, y1
+		self.Rect:setRect(x0, y0, x1, y1)
 		self.Flags:set(FL_REDRAW + FL_LAYOUT)
 		return true
 	end
@@ -333,7 +342,7 @@ function FloatText:setState(bg, fg)
 end
 
 -------------------------------------------------------------------------------
---	onSetText(text): Handler called when a new {{Text}} is set.
+--	onSetText(): Handler called when a new {{Text}} is set.
 -------------------------------------------------------------------------------
 
 function FloatText:onSetText()

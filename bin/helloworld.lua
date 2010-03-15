@@ -15,14 +15,11 @@ ui.Application:new
 				ui.Button:new
 				{
 					Text = "_Hello, World!",
-					onPress = function(self, pressed)
-						if pressed == false then
-							print "Hello, World!"
-						end
-						ui.Button.onPress(self, pressed)
-					end,
-				},
-			},
-		},
-	},
+					onClick = function(self)
+						print "Hello, World!"
+					end
+				}
+			}
+		}
+	}
 }:run()

@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.group : Group]] /
 --		DirList ${subclasses(DirList)}
 --
@@ -73,10 +73,10 @@ local _, lfs = pcall(require, "lfs")
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 
-local Group = ui.require("group", 27)
-local ListGadget = ui.require("listgadget", 26)
-local Text = ui.require("text", 24)
-local TextInput = ui.require("textinput", 15)
+local Group = ui.require("group", 31)
+local Lister = ui.require("lister", 30)
+local Text = ui.require("text", 28)
+local TextInput = ui.require("textinput", 18)
 
 local insert = table.insert
 local pairs = pairs
@@ -84,7 +84,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 15.0"
+_VERSION = "DirList 16.0"
 
 local DirList = _M
 
@@ -195,20 +195,21 @@ function DirList.new(class, self)
 		KeyCode = "d",
 		Height = "fill",
 		InitialFocus = self.FocusElement == "path",
+		onEnter = function(pathfield)
+			TextInput.onEnter(pathfield)
+			self:scanDir(pathfield.Text)
+		end
 	}
-
-	self.PathField:addNotify("Enter", ui.NOTIFY_ALWAYS,
-		{ self, "scanDir", ui.NOTIFY_VALUE })
 
 	self.ParentButton = newButton
 	{
 		Text = L.PARENT,
 		MaxWidth = 0,
 		Height = "fill",
+		onClick = function(parentbutton)
+			self:goParent()
+		end
 	}
-
-	self.ParentButton:addNotify("Pressed", false,
-		{ self, "goParent" })
 
 	self.LocationField = TextInput:new
 	{
@@ -217,20 +218,21 @@ function DirList.new(class, self)
 		Height = "fill",
 		InitialFocus = self.FocusElement == "location",
 		EnterNext = true,
+		onEnter = function(locationfield)
+			TextInput.onEnter(locationfield)
+			self:setFileEntry(pathfield.Text)
+		end
 	}
-
-	self.LocationField:addNotify("Enter", ui.NOTIFY_ALWAYS,
-		{ self, "setFileEntry", ui.NOTIFY_VALUE })
 
 	self.ReloadButton = newButton
 	{
 		Text = L.RELOAD,
 		MaxWidth = 0,
 		Height = "fill",
+		onClick = function(reloadbutton)
+			self:reload()
+		end
 	}
-
-	self.ReloadButton:addNotify("Pressed", false,
-		{ self, "reload" })
 
 	self.StatusText = Text:new
 	{
@@ -238,19 +240,22 @@ function DirList.new(class, self)
 		Width = "fill",
 	}
 
-	self.ListGadget = self.ListGadget or ListGadget:new
+	self.Lister = self.Lister or Lister:new
 	{
 		AlignColumn = 1,
 		SelectMode = self.SelectMode or "single",
 		ListObject = self.DirList,
+		onClick = function(lister)
+			self:clickList()
+		end,
+		onSelectLine = function(lister)
+			Lister.onSelectLine(lister)
+			self:showStats()
+		end,
 	}
 
-	self.ListGadget:addNotify("Pressed", true,
-		{ self, "clickList" })
-	self.ListGadget:addNotify("DblClick", true,
+	self.Lister:addNotify("DblClick", true,
 		{ self, "dblClickList" })
-	self.ListGadget:addNotify("SelectedLine", ui.NOTIFY_ALWAYS,
-		{ self, "showStats" })
 
 	self.ListView = ui.ScrollGroup:new
 	{
@@ -259,20 +264,17 @@ function DirList.new(class, self)
 		Child = ui.Canvas:new
 		{
 			AutoWidth = self.AutoWidth,
-			Child = self.ListGadget
+			Child = self.Lister
 		}
 	}
 
-	self.OpenGadget = newButton
+	self.OpenWidget = newButton
 	{
 		Text = self.SelectText,
 		Width = "fill",
 		Height = "fill",
-	}
-
-	self.OpenGadget:addNotify("Pressed", false,
-		{ self, ui.NOTIFY_FUNCTION, function(self)
-			local list = self.ListGadget
+		onClick = function(openwidget)
+			local list = self.Lister
 			local sel = self.Selection
 			for line in pairs(list.SelectedLines) do
 				local entry = list:getItem(line)
@@ -283,18 +285,17 @@ function DirList.new(class, self)
 				insert(sel, self.LocationField.Text)
 			end
 			self:setValue("Status", "selected")
-		end })
+		end
+	}
 
-	self.CancelGadget = newButton
+	self.CancelWidget = newButton
 	{
 		Text = L.CANCEL,
 		Width = "fill",
-	}
-
-	self.CancelGadget:addNotify("Pressed", false,
-		{ self, ui.NOTIFY_FUNCTION, function(self)
+		onClick = function(cancelwidget)
 			self:setValue("Status", "cancelled")
-		end })
+		end
+	}
 
 	self.DirectoryCaption = Text:new
 	{
@@ -343,7 +344,7 @@ function DirList.new(class, self)
 							self.LocationField,
 						}
 					},
-					self.OpenGadget,
+					self.OpenWidget,
 					Group:new
 					{
 						Width = "fill",
@@ -353,7 +354,7 @@ function DirList.new(class, self)
 							self.StatusText,
 						}
 					},
-					self.CancelGadget
+					self.CancelWidget
 				}
 			}
 		}
@@ -386,8 +387,8 @@ function DirList.new(class, self)
 
 	self = Group.new(class, self)
 
-	self:addNotify("Path", ui.NOTIFY_ALWAYS,
-		{ self.PathField, "setValue", "Enter", ui.NOTIFY_VALUE })
+	self:addNotify("Path", NOTIFY_ALWAYS,
+		{ self.PathField, "setValue", "Enter", NOTIFY_VALUE })
 
 	return self
 end
@@ -397,7 +398,7 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:showStats(selected, total)
-	local list = self.ListGadget
+	local list = self.Lister
 	selected = selected or list.NumSelectedLines
 	total = total or list:getN()
 	self.StatusText:setValue("Text",
@@ -461,14 +462,6 @@ end
 function DirList:scanDir(path)
 
 	local app = self.Application
-
-	self.Path = path
-	if path == "" then
-		path = self:getCurrentDir()
-		self.Path = path
-		self.PathField:setValue("Enter", path)
-	end
-
 	local diri = self:getDirIterator(path)
 
 	app:addCoroutine(function()
@@ -477,7 +470,7 @@ function DirList:scanDir(path)
 
 		self.ScanMode = "scanning"
 
-		local obj = self.ListGadget
+		local obj = self.Lister
 		obj:setValue("CursorLine", 0)
 		obj:setList(List:new())
 
@@ -548,9 +541,11 @@ end
 
 function DirList:showDirectory(path)
 	path = path or self.Path
+	if not path or path == "" then
+		path = self:getCurrentDir()
+	end
 	self.Path = path
-	local pathfield = self.PathField
-	pathfield:setValue("Enter", path)
+	self.PathField:setValue("Enter", path)
 end
 
 -------------------------------------------------------------------------------
@@ -567,7 +562,7 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:setFileEntry(entry)
-	local list = self.ListGadget
+	local list = self.Lister
 	local pathfield = self.PathField
 	local p = ui.PathSeparator
 	local path = pathfield.Text:match("(.*[^"..p.."])"..p.."?$") or ""
@@ -584,7 +579,7 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:clickList()
-	local list = self.ListGadget
+	local list = self.Lister
 	local locationfield = self.LocationField
 	local entry = list:getItem(list.CursorLine)
 	entry = entry and entry[1][1]
@@ -611,13 +606,13 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:dblClickList()
-	local list = self.ListGadget
+	local list = self.Lister
 	local entry = list:getItem(list.CursorLine)
 	if entry then
 		if not self:setFileEntry(entry[1][1]) then
 			if self.Window then
 				-- click on "Open":
-				self.Window:clickElement(self.OpenGadget)
+				self.Window:clickElement(self.OpenWidget)
 			end
 		end
 	end

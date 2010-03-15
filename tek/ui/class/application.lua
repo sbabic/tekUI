@@ -106,9 +106,8 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Display = ui.require("display", 21)
+local Display = ui.require("display", 24)
 local Family = ui.require("family", 2)
-local Theme = ui.require("theme", 11)
 
 local assert = assert
 local cocreate = coroutine.create
@@ -118,6 +117,7 @@ local corunning = coroutine.running
 local costatus = coroutine.status
 local coyield = coroutine.yield
 local floor = math.floor
+local getmsg = Display.getMsg
 local insert = table.insert
 local max = math.max
 local min = math.min
@@ -126,9 +126,10 @@ local remove = table.remove
 local select = select
 local traceback = debug.traceback
 local unpack = unpack
+local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 29.0"
+_VERSION = "Application 32.1"
 local Application = _M
 
 -------------------------------------------------------------------------------
@@ -214,7 +215,7 @@ function Application.init(self)
 	self.Vendor = self.Vendor or "unknown"
 
 	-- 'user agent' stylesheet:
-	local s = Theme.getStyleSheet("minimal")
+	local s = ui.getStyleSheet("minimal")
 	if s then
 		insert(props, 1, s)
 	end
@@ -222,7 +223,7 @@ function Application.init(self)
 	-- 'user' stylsheet(s):
 	ui.ThemeName:gsub("%S+", function(theme)
 		if theme ~= "minimal" then
-			local s, msg = Theme.getStyleSheet(theme)
+			local s, msg = ui.getStyleSheet(theme)
 			if s then
 				insert(props, 1, s)
 			else
@@ -313,12 +314,12 @@ end
 --	remMember: overrides
 -------------------------------------------------------------------------------
 
-function Application:remMember(child)
-	if child.Drawable then
-		child:hide()
+function Application:remMember(window)
+	if window.Drawable then
+		window:hide()
 	end
-	Family.remMember(self, child)
-	child:cleanup()
+	Family.remMember(self, window)
+	window:cleanup()
 end
 
 -------------------------------------------------------------------------------
@@ -406,11 +407,17 @@ end
 --	hide: internal
 -------------------------------------------------------------------------------
 
-function Application:hide()
-	local c = self.Children
-	for i = 1, #c do
-		c[i]:hide()
+local function dohide(self, ...)
+	for i = 1, select('#', ...) do
+		local e = select(i, ...)
+		if e.Flags:check(ui.FL_SHOW) then
+			select(i, ...):hide()
+		end
 	end
+end
+
+function Application:hide()
+	dohide(self, unpack(self.Children))
 	self:remInputHandler(MSG_USER, self, self.handleInput)
 end
 
@@ -559,7 +566,7 @@ function Application:run()
 	while self.Status == "run" do
 
 		-- dispatch input messages:
-		while d:getMsg(msg) do
+		while getmsg(msg) do
 			msgdispatch[msg[2]](self, msg)
 		end
 
@@ -617,7 +624,7 @@ function Application:run()
 			if gcarg then
 				collectgarbage(gcarg)
 			end
-			d:wait()
+			wait()
 		end
 
 	end
@@ -687,9 +694,7 @@ function Application:suspend(window)
 	if window then
 		window:addInterval()
 		coyield(window)
-		if window.Drawable then
-			window:remInterval()
-		end
+		window:remInterval()
 	else
 		coyield()
 	end
@@ -810,12 +815,9 @@ function Application:easyRequest(title, text, ...)
 			Mode = "button",
 			KeyCode = true,
 			Text = select(i, ...),
-			onPress = function(self, pressed)
-				if pressed == false then
-					result = i
-					window:setValue("Status", "hide")
-				end
-				ui.Text.onPress(self, pressed)
+			onClick = function(self)
+				result = i
+				window:setValue("Status", "hide")
 			end
 		}
 		if i == numb then

@@ -74,9 +74,9 @@ function MyGraph1:drawGraph()
 	local g = self.GraphRect
 	local w = g[3] - g[1] + 1
 	local h = g[4] - g[2] + 1
-	local d = self.Drawable
-	d:drawLine(g[1], g[2] + h/2, g[3], g[2] + h/2, d.Pens["user4"])
-	d:drawLine(g[1] + w/2, g[2], g[1] + w/2, g[4], d.Pens["user4"])
+	local d = self.Window.Drawable
+	d:drawLine(g[1], g[2] + h/2, g[3], g[2] + h/2, "user4")
+	d:drawLine(g[1] + w/2, g[2], g[1] + w/2, g[4], "user4")
 	ui.Meter.drawGraph(self)
 end
 
@@ -125,11 +125,11 @@ function MyGraph2:drawGraph()
 	local g = self.GraphRect
 	local w = g[3] - g[1] + 1
 	local h = g[4] - g[2] + 1
-	local d = self.Drawable
+	local d = self.Window.Drawable
 	local y0 = g[2]
 	for i = 1, 5 do
 		local y = y0 + (i - 1) * h / 4
-		d:drawLine(g[1], y, g[3], y, d.Pens["user4"])
+		d:drawLine(g[1], y, g[3], y, "user4")
 	end
 	ui.Meter.drawGraph(self)
 end

@@ -15,7 +15,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.boing", tek.ui.class.frame)
-_VERSION = "Boing 4.0"
+_VERSION = "Boing 5.0"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -69,8 +69,8 @@ end
 function Boing:draw()
 	local dr = self.DamageRegion
 	if Frame.draw(self) then
-		local d = self.Drawable
-		local bgpen = d.Pens["dark"]
+		local d = self.Window.Drawable
+		local bgpen = "dark"
 		if dr then
 			-- repaint intra-area damagerects:
 			dr:forEach(d.fillRect, d, bgpen)
@@ -86,8 +86,7 @@ function Boing:draw()
 		if o[1] then
 			d:fillRect(o[1], o[2], o[3], o[4], bgpen)
 		end
-		d:fillRect(x0, y0, x0 + w/20 - 1, y0 + h/20 - 1,
-			d.Pens["shine"])
+		d:fillRect(x0, y0, x0 + w/20 - 1, y0 + h/20 - 1, "shine")
 		o[1] = x0
 		o[2] = y0
 		o[3] = x0 + w/20 - 1

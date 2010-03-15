@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.group : Group]] /
 --		ListView ${subclasses(ListView)}
 --
@@ -37,18 +37,18 @@
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 
-local Canvas = ui.require("canvas", 25)
-local Gadget = ui.require("gadget", 19)
-local Group = ui.require("group", 27)
-local ListGadget = ui.require("listgadget", 26)
-local ScrollBar = ui.require("scrollbar", 10)
-local ScrollGroup = ui.require("scrollgroup", 15)
+local Canvas = ui.require("canvas", 30)
+local Widget = ui.require("widget", 25)
+local Group = ui.require("group", 31)
+local Lister = ui.require("lister", 30)
+local ScrollBar = ui.require("scrollbar", 13)
+local ScrollGroup = ui.require("scrollgroup", 17)
 
 local Text = ui.Text
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 5.2"
+_VERSION = "ListView 6.0"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -65,7 +65,7 @@ end
 
 function HeadItem:askMinMax(m1, m2, m3, m4)
 	local w, h = self:getTextSize()
-	return Gadget.askMinMax(self, m1 + w, m2 + h, m3 + w, m4 + h)
+	return Widget.askMinMax(self, m1 + w, m2 + h, m3 + w, m4 + h)
 end
 
 -------------------------------------------------------------------------------
@@ -100,10 +100,10 @@ function LVCanvas:passMsg(msg)
 			if self:checkArea(msg[4], msg[5]) then
 				-- shift into canvas area:
 				local m = self.TempMsg
-				local r = self.Rect
+				local r1, r2 = self:getRect()
 				m[1], m[2], m[3], m[4], m[5], m[6] = unpack(msg, 1, 6)
-					m[4] = m[4] - r[1] + self.CanvasLeft
-					m[5] = m[5] - r[2] + self.CanvasTop
+					m[4] = m[4] - r1 + self.CanvasLeft
+					m[5] = m[5] - r2 + self.CanvasTop
 				-- pass to child:
 				return self.Child:passMsg(m)
 			end
@@ -121,7 +121,7 @@ local ListView = _M
 function ListView.new(class, self)
 	self = self or { }
 
-	self.Child = self.Child or ListGadget:new()
+	self.Child = self.Child or Lister:new()
 	self.HeaderGroup = self.HeaderGroup or false
 	self.Headers = self.Headers or false
 	self.HSliderMode = self.HSliderMode or "on"
@@ -179,7 +179,7 @@ function ListView.new(class, self)
 			},
 			self.VSliderGroup
 		}
-		-- point element that determines listgadget alignment to outer canvas:
+		-- point element that determines lister alignment to outer canvas:
 		self.Child.AlignElement = self.Children[1].Child
 	else
 		self.Children =

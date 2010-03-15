@@ -1,6 +1,51 @@
 
 == tekUI Changelog ==
 
+=== 0.8j: ===
+ 
+ * Gadget renamed to Widget, ListGadget renamed to Lister, ImageGadget renamed
+ to ImageWidget
+ * Drawable class: removed
+ * Object: Added class-wide handlers and a copy-on-write mechanism for
+ duplicating handlers on object-level on demand; static initialization of
+ handlers is no longer supported
+ * Element: added onSetStyle() and obSetClass(), some bugs fixed in style
+ sheet processing
+ * Application: hide() hardened for side-effects from shutting down while
+ hide() is still in progress
+ * Area: removed Drawable attribute, show() no longer has a drawable argument,
+ removed Margin, added getMargin() and getMinmax(), MinMax, Rect are Region
+ objects now
+ * Widget:onClick(), onHold(), onDblClick() added
+ * Group:addMember() now allows elements to be added to uninitialized groups
+ * Lister:onDoubleClick() renamed to onDblClick() and documented
+ * Slider:onHold() documented
+ * Visual: added setTextureOrigin(), pushClipRect(), popClipRect(), drawing
+ functions no longer receive texture origins as arguments, added setBGPen(),
+ which can be used to set a background color or a texture for fillRect(),
+ renamed copyarea() to blitArea(), function names are now in lowerCamelCase
+ * ScrollGroup: copyArea() renamed to blitArea()
+ * Window: Drawable attribute added, it is now created in show() and
+ destroyed in hide(), removed Visible and Pens attributes, invalid color
+ specifications are now silently converted to the 'background' color
+ * UI: Changed meaning of MSG_ALL, now excluding MSG_INTERVAL
+ * added tek.ui.style.desktop, removed Theme class
+ * Improved documentation and stylesheet, added Windows platform installation
+ note
+ * Display: Simpler and faster color allocation, added newDrawable(), Drawable
+ now encapsulated by Display
+ * Object:doNotify() added, now processes all notifications regardless of
+ esoteric side-effects during traversal, addNotify() positional argument
+ removed
+ * UI: Added FL_POPITEM, added getStyleSheet() from former Theme class, removed
+ region functions
+ * PopItem: sets FL_POPITEM during connect, overwrites doNotify() to filter
+ out notifications in items which have been neither setup nor connected before
+ * Demos: cleanup
+ * Region: added get() function, class check is now based on upvalue
+ * Optimized default layouter, now using more C structures and fewer Lua stack
+ * Editor, Sizeable and EditWindow classes added (not installed globally)
+
 === 0.8i: ===
  
  * Display, Visual: Removed numerical pens, all pens are symbolic now, 

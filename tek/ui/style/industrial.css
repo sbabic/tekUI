@@ -1,3 +1,4 @@
+
 /*
 **	tek/ui/style/industrial.css - Example stylesheet
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
@@ -119,7 +120,7 @@ tek.ui.class.popitem {
 	width: fill;
 }
 
-tek.ui.class.listgadget {
+tek.ui.class.lister {
 	border-color: fill;
 }
 

@@ -248,12 +248,12 @@ local window = Window:new
 											{ { "Nueve - Neuf - Nove" } },
 										}
 									},
-									onSelect = function(self, val)
-										ui.PopList.onSelect(self, val)
+									onSelect = function(self)
+										ui.PopList.onSelect(self)
 										local item = self.ListObject:getItem(self.SelectedLine)
 										if item then
--- 											self.Application:getById("japan-combo"):setValue("SelectedLine", self.SelectedLine)
-											self.Application:getById("popup-show"):setValue("Text", item[1][1])
+-- 											self:getById("japan-combo"):setValue("SelectedLine", self.SelectedLine)
+											self:getById("popup-show"):setValue("Text", item[1][1])
 										end
 									end,
 								},

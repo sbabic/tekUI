@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.numeric : Numeric]] /
 --		Gauge ${subclasses(Gauge)}
 --
@@ -39,11 +39,10 @@ local Region = ui.loadLibrary("region", 9)
 local floor = math.floor
 local max = math.max
 local min = math.min
-local reuseRegion = ui.reuseRegion
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 12.0"
+_VERSION = "Gauge 17.0"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -113,9 +112,9 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Gauge:show(drawable)
-	Numeric.show(self, drawable)
-	self.Child:show(drawable)
+function Gauge:show()
+	Numeric.show(self)
+	self.Child:show()
 end
 
 -------------------------------------------------------------------------------
@@ -143,23 +142,24 @@ end
 function Gauge:getKnobRect()
 	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
+		local c = self.Child
 		local p1, p2, p3, p4 = self:getPadding()
-		local m = self.Child.Margin
-		local km = self.Child.MinMax
-		local x0 = r1 + p1 + m[1]
-		local y0 = r2 + p2 + m[2]
-		local x1 = r3 - p3 - m[3]
-		local y1 = r4 - p4 - m[4]
+		local m1, m2, m3, m4 = c:getMargin()
+		local km1, km2 = c:getMinMax()
+		local x0 = r1 + p1 + m1
+		local y0 = r2 + p2 + m2
+		local x1 = r3 - p3 - m3
+		local y1 = r4 - p4 - m4
 		local r = self.Max - self.Min
 		if self.Orientation == "horizontal" then
-			local w = x1 - x0 - km[1] + 1
-			x1 = min(x1, x0 + floor((self.Value - self.Min) * w / r) + km[1])
+			local w = x1 - x0 - km1 + 1
+			x1 = min(x1, x0 + floor((self.Value - self.Min) * w / r) + km1)
 		else
-			local h = y1 - y0 - km[2] + 1
+			local h = y1 - y0 - km2 + 1
 			y0 = max(y0, 
-				y1 - floor((self.Value - self.Min) * h / r) - km[2])
+				y1 - floor((self.Value - self.Min) * h / r) - km2)
 		end
-		return x0 - m[1], y0 - m[2], x1 + m[3], y1 + m[4]
+		return x0 - m1, y0 - m2, x1 + m3, y1 + m4
 	end
 end
 
@@ -168,13 +168,12 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:updateBGRegion()
-	local r = self.Rect
-	local bg = reuseRegion(self.BGRegion, r[1], r[2], r[3], r[4])
+	local bg = (self.BGRegion or Region.new()):setRect(self:getRect())
 	self.BGRegion = bg
 	local c = self.Child
-	r = c.Rect
+	local r1, r2, r3, r4 = c:getRect()
 	local c1, c2, c3, c4 = c:getBorder()
-	bg:subRect(r[1] - c1, r[2] - c2, r[3] + c3, r[4] + c4)
+	bg:subRect(r1 - c1, r2 - c2, r3 + c3, r4 + c4)
 end
 
 -------------------------------------------------------------------------------
@@ -207,9 +206,9 @@ end
 function Gauge:erase()
 	local bg = self.BGRegion
 	if bg then
-		local d = self.Drawable
-		local bgpen, tx, ty = self:getBG()
-		bg:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
+		local d = self.Window.Drawable
+		d:setBGPen(self:getBG())
+		bg:forEach(d.fillRect, d)
 	end
 end
 
@@ -227,8 +226,8 @@ end
 --	onSetValue: overrides
 -------------------------------------------------------------------------------
 
-function Gauge:onSetValue(v)
-	Numeric.onSetValue(self, v)
+function Gauge:onSetValue()
+	Numeric.onSetValue(self)
 	local x0, y0, x1, y1 = self:getKnobRect()
 	if x0 then
 		if self.Window:relayout(self.Child, x0, y0, x1, y1) then

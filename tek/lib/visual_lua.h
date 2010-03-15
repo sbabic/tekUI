@@ -10,6 +10,18 @@
 #include <tek/inline/exec.h>
 #include <tek/proto/visual.h>
 #include <tek/proto/display.h>
+#include <tek/lib/tekui.h>
+
+/*****************************************************************************/
+
+#define TEK_VISUAL_DEBUG
+
+#define TEK_LIB_VISUAL_VERSION "Visual 4.2"
+#define TEK_LIB_VISUAL_BASECLASSNAME "tek.lib.visual.base*"
+#define TEK_LIB_VISUAL_CLASSNAME "tek.lib.visual*"
+#define TEK_LIB_VISUALPEN_CLASSNAME "tek.lib.visual.pen*"
+#define TEK_LIB_VISUALFONT_CLASSNAME "tek.lib.visual.font*"
+#define TEK_LIB_VISUALPIXMAP_CLASSNAME "tek.lib.visual.pixmap*"
 
 /*****************************************************************************/
 
@@ -49,6 +61,8 @@ typedef struct TEKVisual
 	int vis_refSelf;
 	/* Reference to userdata (stored in metatable): */
 	int vis_refUserData;
+	/* Reference to pens (stored in metatable): */
+	int vis_refPens;
 	/* Is base instance: */
 	TBOOL vis_isBase;
 
@@ -69,6 +83,8 @@ typedef struct TEKVisual
 
 	/* ShiftX/Y: */
 	TINT vis_ShiftX, vis_ShiftY;
+	/* Texture Origin X/Y */
+	TINT vis_TextureX, vis_TextureY;
 
 	TINT vis_RectBufferNum;
 	TINT *vis_RectBuffer;
@@ -81,10 +97,25 @@ typedef struct TEKVisual
 	TBOOL vis_Dirty;
 	TAPTR vis_Device;
 	struct TVRequest *vis_FlushReq;
+	
+	struct TList vis_FreeRects;
+	struct TList vis_ClipStack;
+	RECTINT vis_ClipRect[4];
+	TBOOL vis_HaveClipRect;
+	
+	struct TEKPen *vis_BGPen;
+	int vis_refBGPen;
+	TINT vis_BGPenType;
+	
+	#if defined(TEK_VISUAL_DEBUG)
+	TBOOL vis_Debug;
+	TVPEN vis_DebugPen1;
+	TVPEN vis_DebugPen2;
+	#endif
 
 } TEKVisual;
 
-typedef struct
+typedef struct TEKPen
 {
 	/* Pen object: */
 	TVPEN pen_Pen;
@@ -114,15 +145,6 @@ typedef struct
 	TINT font_UlThickness;
 
 } TEKFont;
-
-/*****************************************************************************/
-
-#define TEK_LIB_VISUAL_VERSION "Visual 2.2"
-#define TEK_LIB_VISUAL_BASECLASSNAME "tek.lib.visual.base*"
-#define TEK_LIB_VISUAL_CLASSNAME "tek.lib.visual*"
-#define TEK_LIB_VISUALPEN_CLASSNAME "tek.lib.visual.pen*"
-#define TEK_LIB_VISUALFONT_CLASSNAME "tek.lib.visual.font*"
-#define TEK_LIB_VISUALPIXMAP_CLASSNAME "tek.lib.visual.pixmap*"
 
 /*****************************************************************************/
 
@@ -161,5 +183,10 @@ LOCAL LUACFUNC TINT tek_lib_visual_drawppm(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_createpixmap(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_freepixmap(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_flush(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_settextureorigin(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_pushcliprect(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_popcliprect(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_getcliprect(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_setbgpen(lua_State *L);
 
 #endif

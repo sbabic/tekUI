@@ -52,12 +52,12 @@
 --			Vertical scroll step, used e.g. for mouse wheels
 --
 --	IMPLEMENTS::
---		- Canvas:checkArea() - Gets the canvas shift [internal]
---		- Canvas:damageChild() - Damage a child object where it is visible
+--		- Canvas:damageChild() - Damages a child object where it is visible
 --		- Canvas:onSetChild() - Handler called when {{Child}} is set
---		- Canvas:updateUnusedRegion() - Update region not covered by Child
+--		- Canvas:updateUnusedRegion() - Updates region not covered by Child
 --
 --	OVERRIDES::
+--		- Object.addClassNotifications()
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Element:connect()
@@ -65,6 +65,9 @@
 --		- Element:decodeProperties()
 --		- Element:disconnect()
 --		- Area:draw()
+--		- Area:drawBegin()
+--		- Area:drawEnd()
+--		- Element:erase()
 --		- Area:focusRect()
 --		- Area:getBG()
 --		- Area:getBGElement()
@@ -74,7 +77,6 @@
 --		- Object.init()
 --		- Area:layout()
 --		- Area:passMsg()
---		- Area:refresh()
 --		- Element:setup()
 --		- Area:show()
 --
@@ -93,21 +95,29 @@ local floor = math.floor
 local max = math.max
 local min = math.min
 local intersect = Region.intersect
-local reuseRegion = ui.reuseRegion
 local tonumber = tonumber
 local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 25.0"
+_VERSION = "Canvas 30.0"
 local Canvas = _M
 
 -------------------------------------------------------------------------------
---	Constants & Class data:
+--	constants & class data:
 -------------------------------------------------------------------------------
 
 local FL_REDRAW = ui.FL_REDRAW
 
-local NOTIFY_CHILD = { ui.NOTIFY_SELF, "onSetChild", ui.NOTIFY_VALUE }
+-------------------------------------------------------------------------------
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function Canvas.addClassNotifications(proto)
+	addNotify(proto, "Child", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetChild" })
+	return Frame.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -170,7 +180,6 @@ end
 function Canvas:setup(app, window)
 	Frame.setup(self, app, window)
 	self.Child:setup(app, window)
-	self:addNotify("Child", ui.NOTIFY_ALWAYS, NOTIFY_CHILD)
 end
 
 -------------------------------------------------------------------------------
@@ -178,7 +187,6 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:cleanup()
-	self:remNotify("Child", ui.NOTIFY_ALWAYS, NOTIFY_CHILD)
 	self.Child:cleanup()
 	Frame.cleanup(self)
 end
@@ -196,9 +204,9 @@ end
 --	show: overrides
 -------------------------------------------------------------------------------
 
-function Canvas:show(drawable)
-	self.Child:show(drawable)
-	Frame.show(self, drawable)
+function Canvas:show()
+	self.Child:show()
+	Frame.show(self)
 end
 
 -------------------------------------------------------------------------------
@@ -239,16 +247,16 @@ end
 function Canvas:layout(r1, r2, r3, r4, markdamage)
 
 	local sizechanged
-	local m = self.Margin
-	local r = self.Rect
+	local m1, m2, m3,m4 = self:getMargin()
+	local s1, s2, s3, s4 = self:getRect()
 	local c = self.Child
-	local mm = c.MinMax
+	local mm1, mm2, mm3, mm4 = c:getMinMax()
 	local res = Frame.layout(self, r1, r2, r3, r4, markdamage)
 
 	if self.AutoWidth then
-		local w = r3 - r1 + 1 - m[1] - m[3]
-		w = max(w, mm[1])
-		w = mm[3] and min(w, mm[3]) or w
+		local w = r3 - r1 + 1 - m1 - m3
+		w = max(w, mm1)
+		w = mm3 and min(w, mm3) or w
 		if w ~= self.CanvasWidth then
 			self:setValue("CanvasWidth", w)
 			sizechanged = true
@@ -256,9 +264,9 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 	end
 
 	if self.AutoHeight then
-		local h = r4 - r2 + 1 - m[2] - m[4]
-		h = max(h, mm[2])
-		h = mm[4] and min(h, mm[4]) or h
+		local h = r4 - r2 + 1 - m2 - m4
+		h = max(h, mm2)
+		h = mm4 and min(h, mm4) or h
 		if h ~= self.CanvasHeight then
 			self:setValue("CanvasHeight", h)
 			sizechanged = true
@@ -284,8 +292,8 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 	-- propagate intra-area damages calculated in Frame.layout to child object:
 	local dr = self.DamageRegion
 	if dr and markdamage ~= false then
-		local sx = self.CanvasLeft - r[1]
-		local sy = self.CanvasTop - r[2]
+		local sx = self.CanvasLeft - s1
+		local sy = self.CanvasTop - s2
 		-- mark as damage shifted into canvas space:
 		dr:forEach(markchilddamage, c, sx, sy)
 	end
@@ -310,21 +318,23 @@ function Canvas:updateUnusedRegion()
 	-- determine unused region:
 	local r1, r2, r3, r4 = self:getRect()
 	if r1 then
-		local ur = reuseRegion(self.UnusedRegion, 0, 0,
+		local ur = (self.UnusedRegion or Region.new()):setRect(0, 0,
 			max(r3 - r1, self.CanvasWidth - 1),
 			max(r4 - r2, self.CanvasHeight - 1))
 		self.UnusedRegion = ur
 		local c = self.Child
-		local r = c.Rect
-		local m = c.Margin
-		local props = c.Properties
-		local b1 = tonumber(props["margin-left"]) or 0
-		local b2 = tonumber(props["margin-top"]) or 0
-		local b3 = tonumber(props["margin-right"]) or 0
-		local b4 = tonumber(props["margin-bottom"]) or 0
-		ur:subRect(r[1] - m[1] + b1, r[2] - m[2] + b2,
-			r[3] + m[3] - b3, r[4] + m[4] - b4)
-		self.Flags:set(FL_REDRAW)
+		r1, r2, r3, r4 = c:getRect()
+		if r1 then
+			local m1, m2, m3, m4 = c:getMargin()
+			local props = c.Properties
+			local b1 = tonumber(props["margin-left"]) or 0
+			local b2 = tonumber(props["margin-top"]) or 0
+			local b3 = tonumber(props["margin-right"]) or 0
+			local b4 = tonumber(props["margin-bottom"]) or 0
+			ur:subRect(r1 - m1 + b1, r2 - m2 + b2,
+				r3 + m3 - b3, r4 + m4 - b4)
+			self.Flags:set(FL_REDRAW)
+		end
 	end
 end
 
@@ -333,10 +343,9 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:erase()
-	local d = self.Drawable
-	local f = self.UnusedRegion
-	local bgpen, tx, ty = self:getBG()
-	f:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
+	local d = self.Window.Drawable
+	d:setBGPen(self:getBG())
+	self.UnusedRegion:forEach(d.fillRect, d)
 end
 
 -------------------------------------------------------------------------------
@@ -359,8 +368,8 @@ end
 function Canvas:getBG()
 	if self.UseChildBG then
 		local c = self.Child
-		local r = c.Rect
-		return c.BGPen, r[1], r[2]
+		local r1, r2 = self:getRect()
+		return c.BGPen, r1, r2
 	end
 	return Frame.getBG(self)
 end
@@ -372,12 +381,12 @@ end
 function Canvas:damage(r1, r2, r3, r4)
 	Frame.damage(self, r1, r2, r3, r4)
 	-- clip absolute:
-	local r = self.Rect
-	r1, r2, r3, r4 = intersect(r1, r2, r3, r4, r[1], r[2], r[3], r[4])
+	local s1, s2, s3, s4 = self:getRect()
+	r1, r2, r3, r4 = intersect(r1, r2, r3, r4, s1, s2, s3, s4)
 	if r1 then
 		-- shift into canvas space:
-		local sx = self.CanvasLeft - r[1]
-		local sy = self.CanvasTop - r[2]
+		local sx = self.CanvasLeft - s1
+		local sy = self.CanvasTop - s2
 		self.Child:damage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
 	end
 end
@@ -402,8 +411,8 @@ function Canvas:damageChild(r1, r2, r3, r4)
 end
 
 -------------------------------------------------------------------------------
---	sx, sy = checkArea(x, y): Checks if {{x, y}} are inside the element's
---	rectangle, and if so, returns the canvas shift by x and y [internal]
+--	sx, sy = checkArea(x, y) - Checks if {{x, y}} are inside the element's
+--	rectangle, and if so, returns the canvas shift by x and y
 -------------------------------------------------------------------------------
 
 function Canvas:checkArea(x, y)
@@ -430,8 +439,8 @@ function Canvas:passMsg(msg)
 	local isover = self:checkArea(msg[4], msg[5])
 	if isover then
 		if msg[2] == ui.MSG_MOUSEBUTTON then
-			local r = self.Rect
-			local h = self.CanvasHeight - (r[4] - r[2] + 1)
+			local r1, r2, r3, r4 = self:getRect()
+			local h = self.CanvasHeight - (r4 - r2 + 1)
 			if msg[3] == 64 then -- wheelup
 				self:setValue("CanvasTop",
 					max(0, min(h, self.CanvasTop - self.VScrollStep)))
@@ -442,11 +451,11 @@ function Canvas:passMsg(msg)
 				return false -- absorb
 			end
 		elseif msg[2] == ui.MSG_KEYDOWN then
+			local _, r2, _, r4 = self:getRect()
+			local h = r4 - r2 + 1
 			if msg[3] == 0xf023 then -- PgUp
-				local h = self.Rect[4] - self.Rect[2] + 1
 				self:setValue("CanvasTop", self.CanvasTop - h)
 			elseif msg[3] == 0xf024 then -- PgDown
-				local h = self.Rect[4] - self.Rect[2] + 1
 				self:setValue("CanvasTop", self.CanvasTop + h)
 			end
 		end
@@ -454,12 +463,12 @@ function Canvas:passMsg(msg)
 	if isover or
 		msg[2] == ui.MSG_MOUSEMOVE and self.Window.MovingElement then
 		-- operate on copy of the input message:
-		local r = self.Rect
+		local r1, r2 = self:getRect()
 		local m = self.TempMsg
 		m[1], m[2], m[3], m[4], m[5], m[6] = unpack(msg)
 		-- shift mouse position into canvas area:
-		m[4] = m[4] - r[1] + self.CanvasLeft
-		m[5] = m[5] - r[2] + self.CanvasTop
+		m[4] = m[4] - r1 + self.CanvasLeft
+		m[5] = m[5] - r2 + self.CanvasTop
 		self.Child:passMsg(m)
 	end
 	return msg
@@ -474,11 +483,12 @@ function Canvas:getChildren()
 end
 
 -------------------------------------------------------------------------------
---	Canvas:onSetChild(child): This handler is invoked when the canvas'
---	child element has changed.
+--	Canvas:onSetChild(): This handler is invoked when the canvas'
+--	{{Child}} element has changed.
 -------------------------------------------------------------------------------
 
-function Canvas:onSetChild(child)
+function Canvas:onSetChild()
+	local child = self.Child
 	local oldchild = self.OldChild
 	if oldchild then
 		if oldchild == self.Window.FocusElement then
@@ -492,7 +502,7 @@ function Canvas:onSetChild(child)
 	self.OldChild = child
 	self.Application:decodeProperties(child)
 	child:setup(self.Application, self.Window)
-	child:show(self.Drawable)
+	child:show(self.Window.Drawable)
 	child:connect(self)
 	self:rethinkLayout(2, true)
 end
@@ -587,12 +597,12 @@ end
 
 function Canvas:drawBegin()
 	if Frame.drawBegin(self) then
-		local r1, r2, r3, r4 = unpack(self.Rect)
+		local r1, r2, r3, r4 = self:getRect()
 		local sx = r1 - self.CanvasLeft
 		local sy = r2 - self.CanvasTop
 		self.ShiftX = sx
 		self.ShiftY = sy
-		local d = self.Drawable
+		local d = self.Window.Drawable
 		d:pushClipRect(r1, r2, r3, r4)
 		d:setShift(sx, sy)
 		return true
@@ -604,7 +614,7 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:drawEnd()
-	local d = self.Drawable
+	local d = self.Window.Drawable
 	d:setShift(-self.ShiftX, -self.ShiftY)
 	d:popClipRect()
 	Frame.drawEnd(self)

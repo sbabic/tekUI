@@ -26,19 +26,15 @@ ui.Application:new
 							NumButtons = 0,
 							MaxWidth = 0,
 							Text = "Add",
-							onPress = function(self, pressed)
-								ui.Button.onPress(self, pressed)
-								if pressed == false and self.NumButtons < 10 then
+							onClick = function(self)
+								if self.NumButtons < 10 then
 									self:getParent():addMember(ui.Button:new {
 										MaxWidth = 0,
 										Text = "Remove",
-										onPress = function(self, pressed)
-											ui.Button.onPress(self, pressed)
-											if pressed == false then
-												local add = self:getById("add-button")
-												add.NumButtons = add.NumButtons - 1
-												self:getParent():remMember(self)
-											end
+										onClick = function(self)
+											local add = self:getById("add-button")
+											add.NumButtons = add.NumButtons - 1
+											self:getParent():remMember(self)
 										end			
 									})
 									self.NumButtons = self.NumButtons + 1
@@ -74,9 +70,9 @@ ui.Application:new
 										ui.Slider.show(self, drawable)
 										self:setValue("Value", self.Value, true)
 									end,
-									onSetValue = function(self, val)
-										ui.Slider.onSetValue(self, val)
-										val = self.Value
+									onSetValue = function(self)
+										ui.Slider.onSetValue(self)
+										local val = self.Value
 										local e = self:getById("slider-weight-1")
 										e:setValue("Weight", val)
 										e:getParent():rethinkLayout()
@@ -90,11 +86,8 @@ ui.Application:new
 									Text = "Reset",
 									VAlign = "center",
 									MaxWidth = 0,
-									onPress = function(self, press)
-										ui.Button.onPress(self, press)
-										if press == false then
-											self:getById("slider-2"):reset()
-										end
+									onClick = function(self)
+										self:getById("slider-2"):reset()
 									end
 								}
 							}
@@ -125,7 +118,7 @@ ui.Application:new
 							Child = ui.Text:new
 							{
 								Id = "dynlayout-knob",
-								Class = "button knob",
+								Class = "knob button",
 							},
 							Height = "fill",
 							Min = 0,
@@ -135,9 +128,9 @@ ui.Application:new
 								ui.Slider.show(self, drawable)
 								self:setValue("Value", self.Value, true)
 							end,
-							onSetValue = function(self, val)
-								ui.Slider.onSetValue(self, val)
-								val = self.Value
+							onSetValue = function(self)
+								ui.Slider.onSetValue(self)
+								local val = self.Value
 								local text = ("%d"):format(val)
 								if val == 100000 then
 									text = text .. "\nMaximum"

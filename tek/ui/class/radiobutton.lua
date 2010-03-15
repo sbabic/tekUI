@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.text : Text]] /
 --		[[#tek.ui.class.checkmark : CheckMark]] /
 --		RadioButton ${subclasses(RadioButton)}
@@ -21,15 +21,15 @@
 --
 --	OVERRIDES::
 --		- Object.init()
---		- Gadget:onSelect()
+--		- Widget:onSelect()
 --
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local CheckMark = ui.require("checkmark", 7)
+local CheckMark = ui.require("checkmark", 9)
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 4.1"
+_VERSION = "RadioButton 6.0"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -55,7 +55,8 @@ end
 --	onSelect:
 -------------------------------------------------------------------------------
 
-function RadioButton:onSelect(selected)
+function RadioButton:onSelect()
+	local selected = self.Selected
 	if selected then
 		-- unselect siblings in group:
 		local myclass = self:getClass()
@@ -67,5 +68,5 @@ function RadioButton:onSelect(selected)
 			end
 		end
 	end
-	CheckMark.onSelect(self, selected)
+	CheckMark.onSelect(self)
 end

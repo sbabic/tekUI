@@ -11,7 +11,7 @@
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8i
+			Version 0.8j
 		</p>
 		<hr />
 		<h2>
@@ -87,13 +87,16 @@
 											3.2.1 <a href="#notefbsd">FreeBSD notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.2 <a href="#notex11">X11 notes</a> 
+											3.2.2 <a href="#notewindows">Windows notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.3 <a href="#notenanox">Nano-X notes</a> 
+											3.2.3 <a href="#notex11">X11 notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.4 <a href="#noterawfb">Raw framebuffer notes</a> 
+											3.2.4 <a href="#notenanox">Nano-X notes</a> 
+										</li>
+										<li style="list-style-type: none">
+											3.2.5 <a href="#noterawfb">Raw framebuffer notes</a> 
 										</li>
 									</ul>
 								</blockquote>
@@ -121,7 +124,10 @@
 								4.2. <a href="#reactingoninput">Reacting on input</a> 
 							</li>
 							<li style="list-style-type: none">
-								4.3. <a href="#adhocclasses">Ad-hoc setup of classes</a> 
+								4.3. <a href="#handlers">List of predefined handlers</a> 
+							</li>
+							<li style="list-style-type: none">
+								4.4. <a href="#adhocclasses">Ad-hoc setup of classes</a> 
 							</li>
 						</ul>
 					</blockquote>
@@ -427,17 +433,18 @@
 		</div>
 		<div class="node"><h2><a name="themes" id="themes">2.4. Style sheets and themes</a></h2>
 			<p>
-				The only admission to a more common appearance is that tekUI tries to
-				import the color scheme found in a GTK+ configuration file. It can be
-				created in the KDE configuration panel conveniently; thus, if you are
-				using KDE and check the appropriate option, KDE, GTK+ and tekUI can
-				all share the same color scheme.
-			</p>
-			<p>
 				tekUI comes with a cascading style sheets (CSS) engine for the
 				import of properties for element classes, custom classes, pseudo
 				classes, as well as for individual, direct and hardcoded class
 				formattings.
+			</p>
+			<p>
+				The only admission to a more common appearance is that tekUI tries to
+				import the color scheme found in a GTK+ configuration file, if the
+				'desktop' style sheet is used (which is the default, see also
+				<a href="#envvariables">environment variables</a>). If you are using KDE and
+				check the <em>Apply colors to non-KDE applications</em> option, KDE, GTK+
+				and tekUI all share the same color scheme.
 			</p>
 		</div>
 		<div class="node"><h2><a name="clibrary" id="clibrary">2.5. C library</a></h2>
@@ -529,6 +536,13 @@
 					</li>
 					<li>
 						&gt;=libXft-2.1.12 (for the x11 driver)
+						<blockquote>
+							<ul>
+								<li>
+									XFree86VidMode extension (for the x11 driver)
+								</li>
+							</ul>
+						</blockquote>
 					</li>
 					<li>
 						&gt;=fontconfig-2.5.0 (for the x11 driver)
@@ -571,7 +585,7 @@
 			<blockquote>
 				<ul>
 					<li>
-						Ubuntu Linux 8.04 and 7.10
+						Ubuntu Linux 9.10, 8.04 and 7.10
 					</li>
 					<li>
 						Windows 2000, Wine
@@ -580,7 +594,7 @@
 						FreeBSD 7.0 (special precautions needed, see annotations below)
 					</li>
 					<li>
-						Gentoo Linux x86/2008.0, amd64/2007.0, ppc/2007.0
+						Gentoo Linux x86/10.0, x86/2008.0, amd64/2007.0, ppc/2007.0
 					</li>
 				</ul>
 			</blockquote>
@@ -598,20 +612,30 @@
 				dynamically loaded by the interpreter.
 			</p>
 		</div>
-		<div class="node"><h3><a name="notex11" id="notex11">3.2.2. X11 notes</a></h3>
+		<div class="node"><h3><a name="notewindows" id="notewindows">3.2.2. Windows notes</a></h3>
+			<p>
+				Not much time has been spent on the Windows version yet. As a result,
+				this display driver is still incomplete and in an experimental state.
+				For example, it is not possible to select an entry in a popup without
+				releasing the mouse button first. For reasons not yet investigated,
+				this display driver feels disproportionately sluggish. For adjusting
+				the build environment, see the <code>config</code> file.
+			</p>
+		</div>
+		<div class="node"><h3><a name="notex11" id="notex11">3.2.3. X11 notes</a></h3>
+			<p>
+				The XFree86VidMode extension is linked against by default. It can
+				be disabled by removing <code>-DENABLE_XVID</code> from <code>X11_DEFS</code> in the
+				config file.
+			</p>
 			<p>
 				In case of problems with texts and labels, try removing
 				<code>-DENABLE_XFT</code> from <code>X11_DEFS</code> in the config file. Some versions
 				of X11 are known to not support the Composite extension and
-				antialiased fonts using Xft at the same time, and we tried to work
-				around this problem by falling back to the core X11 API if the
-				Composite extension was detected. Recent tests indicate that this
-				has been corrected in later versions of X11, and so we removed our
-				workaround. Unfortunately, we got reports of other, possibly
-				unrelated problems with Xft in the meantime.
+				antialiased fonts using Xft at the same time.
 			</p>
 		</div>
-		<div class="node"><h3><a name="notenanox" id="notenanox">3.2.3. Nano-X notes</a></h3>
+		<div class="node"><h3><a name="notenanox" id="notenanox">3.2.4. Nano-X notes</a></h3>
 			<p>
 				For the Nano-X driver you will almost certainly have to adjust the
 				<code>config</code> file. Due to some limitations of Nano-X, tekUI
@@ -623,7 +647,7 @@
 # nano-X &amp; THEME=nanox FULLSCREEN=true bin/demo_custom.lua
 </pre>
 		</div>
-		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.4. Raw framebuffer notes</a></h3>
+		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.5. Raw framebuffer notes</a></h3>
 			<p>
 				Drawing primitives, clipping, and antialiased fonts are provided,
 				and rendering can be targeted to user-supplied memory. This driver
@@ -719,7 +743,7 @@
 		</div>
 		<div class="node"><h2><a name="helloworld" id="helloworld">4.1. Hello, World!</a></h2>
 			<p>
-				The GUI version of the &quot;Hello, World!&quot; program:
+				The GUI version of the 'Hello, World!' program:
 			</p>
 <pre>
 ui = require &quot;tek.ui&quot;
@@ -737,10 +761,10 @@ ui.Application:new
           Text = &quot;Hello, World!&quot;,
           Class = &quot;button&quot;,
           Mode = &quot;button&quot;,
-        },
-      },
-    },
-  },
+        }
+      }
+    }
+  }
 }:run()
 </pre>
 			<p>
@@ -754,10 +778,10 @@ ui.Application:new
 				time, it will be loaded from <code>tek/ui/class/</code> in the file system.
 			</p>
 			<p>
-				Note that a button class is not needed: a button is just a Text
-				element behaving like a button with a frame giving it the appearance
-				of a button. (We will later explain how you can write a button class
-				yourself, to save you some typing.)
+				Note that a button class is not strictly needed: a button is just a
+				Text element behaving like a button with a frame giving it the
+				appearance of a button. We will later explain how you can write a
+				button class yourself, to save you some typing.
 			</p>
 			<p>
 				To quit, click the window's close button. Closing the
@@ -767,13 +791,45 @@ ui.Application:new
 		</div>
 		<div class="node"><h2><a name="reactingoninput" id="reactingoninput">4.2. Reacting on input</a></h2>
 			<p>
-				There are different ways for reacting to presses on the &quot;Hello,
-				World&quot; button. The simplest method is to place an <code>onPress</code> 
-				function into the Text object, which will overwrite the handler
-				reacting on setting the <code>Pressed</code> variable. This variable is set
-				to <strong>true</strong> when a <a href="manual.html#tek.ui.class.gadget">Gadget</a> 
-				is hit with the left mouse button, and to <strong>false</strong> when it is
-				getting released:
+				There are different ways for reacting to presses on the 'Hello,
+				World' button. The simplest form is to place an <code>onClick</code> 
+				function into the Text object:
+			</p>
+<pre>
+ui = require &quot;tek.ui&quot;
+ui.Application:new
+{
+  Children =
+  {
+    ui.Window:new
+    {
+      Title = &quot;Hello&quot;,
+      Children =
+      {
+        ui.Text:new
+        {
+          Text = &quot;Hello, World!&quot;,
+          Class = &quot;button&quot;,
+          Mode = &quot;button&quot;,
+          onClick = function(self)
+            print &quot;Hello, World!&quot;
+          end
+        }
+      }
+    }
+  }
+}:run()
+</pre>
+			<p>
+				But <code>onClick</code> is just a convenient shortcut for the most trivial of
+				all cases. To catch more events, you can override handler functions
+				which react on changes to an element's state variables, like
+				<code>Pressed</code> and <code>Selected</code>, to name but a few. They contain
+				booleans and are indicative of the Element's state, such as: Is it in
+				selected state, is it pressed down, is it hovered by the mouse, is it
+				receiving the input? The <code>onPress</code> handler receives the current
+				state of the <code>Pressed</code> variable as an argument, so it can be used
+				to catch not only releases, but also presses of the mouse button:
 			</p>
 <pre>
 ui = require &quot;tek.ui&quot;
@@ -792,61 +848,25 @@ ui.Application:new
           Class = &quot;button&quot;,
           Mode = &quot;button&quot;,
           onPress = function(self, pressed)
-            if pressed == false then
-              print &quot;Hello, World!&quot;
-            end
             ui.Text.onPress(self, pressed)
-          end,
-        },
-      },
-    },
-  },
+            print(&quot;Pressed:&quot;, pressed)
+          end
+        }
+      }
+    }
+  }
 }:run()
 </pre>
 			<p>
-				When overwriting a method like <code>onPress</code>, also forward the call to
-				the original implementation of the same method.
+				When you overwrite a handler, you should forward the call to the
+				original implementation of the same method, as seen in the example.
 			</p>
 			<p>
-				For regular applications, it is normally sufficient to stick to
-				overwriting the available handlers as in the previous example. But
-				the underlying mechanism to register a notification handler can be
-				interesting as well, especially if you plan on creating new GUI
+				For regular applications it is normally sufficient to stick to
+				overwriting the available <a href="#handlers">handlers</a> as in the previous example.
+				But the underlying mechanism to register a notification handler can
+				be interesting as well, especially if you plan on writing new GUI
 				classes yourself:
-			</p>
-<pre>
-...
-ui.Text:new
-{
-  Text = &quot;_Hello, World!&quot;,
-  Class = &quot;button&quot;,
-  Mode = &quot;button&quot;,
-  Notifications =
-  {
-    &#091;&quot;Pressed&quot;&#093; =
-    {
-      &#091;false&#093; =
-      {
-        {
-          ui.NOTIFY_SELF,
-          ui.NOTIFY_FUNCTION,
-          function(self)
-            print &quot;Hello, World!&quot;
-          end,
-        },
-      },
-    },
-  },
-},
-...
-</pre>
-			<p>
-				Even though notification handlers can be initialized statically
-				(i.e. written in the same expression as the rest of the application),
-				this is not always recommendable, as the deep levels of indentation
-				are getting in the way of clarity. Notification handlers are more
-				commonly added using the <code>addNotify()</code> method, as shown in the
-				next example:
 			</p>
 <pre>
 ui = require &quot;tek.ui&quot;
@@ -865,8 +885,8 @@ text:addNotify(&quot;Pressed&quot;, false, {
     print &quot;Hello, World!&quot;
   end
 })
-app:addMember(win)
 win:addMember(text)
+app:addMember(win)
 app:run()
 </pre>
 			<p>
@@ -878,11 +898,327 @@ app:run()
 			<p>
 				See also <a href="manual.html#Object:addNotify">Object:addNotify</a> for
 				all the hairy details on notification handlers, and the
-				<a href="manual.html#tek.ui.class.gadget">Gadget</a> class for some of the
-				possible actions to react on.
+				<a href="manual.html#tek.ui.class.area">Area</a> and
+				<a href="manual.html#tek.ui.class.widget">Widget</a> classes for the most
+				important state variables.
 			</p>
 		</div>
-		<div class="node"><h2><a name="adhocclasses" id="adhocclasses">4.3. Ad-hoc setup of classes</a></h2>
+		<div class="node"><h2><a name="handlers" id="handlers">4.3. List of predefined handlers</a></h2>
+			<table>
+				<tr>
+					<td class="column1">
+						<strong>Name</strong> 
+					</td>
+					<td class="column2">
+						<strong>Base Class</strong> 
+					</td>
+					<td class="column3">
+						<strong>Cause</strong> 
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onActivate"><code>Widget:onActivate()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Active</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Window:onChangeStatus"><code>Window:onChangeStatus()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.window">Window</a> 
+					</td>
+					<td class="column3">
+						change of <code>Status</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onClick"><code>Widget:onClick()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						caused when <code>Pressed</code> changes to <strong>false</strong>&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onDisable"><code>Widget:onDisable()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Disabled</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onDblClick"><code>Widget:onDblClick()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>DblClick</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#TextInput:onEnter"><code>TextInput:onEnter()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.textinput">TextInput</a> 
+					</td>
+					<td class="column3">
+						change of <code>Enter</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onFocus"><code>Widget:onFocus()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Focus</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Window:onHide"><code>Window:onHide()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.window">Window</a> 
+					</td>
+					<td class="column3">
+						window close button, Escape key
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onHilite"><code>Widget:onHilite()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Hilite</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onHold"><code>Widget:onHold()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Hold</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onHover"><code>Widget:onHover()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Hover</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onPress"><code>Widget:onPress()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Pressed</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Widget:onSelect"><code>Widget:onSelect()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.widget">Widget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Selected</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#DirList:onSelectEntry"><code>DirList:onSelectEntry()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.dirlist">DirList</a> 
+					</td>
+					<td class="column3">
+						item selected by the user
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Lister:onSelectLine"><code>Lister:onSelectLine()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.lister">Lister</a> 
+					</td>
+					<td class="column3">
+						change of the <code>SelectedLine</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#PopList:onSelectLine"><code>PopList:onSelectLine()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.poplist">PopList</a> 
+					</td>
+					<td class="column3">
+						change of the <code>SelectedLine</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Canvas:onSetChild"><code>Canvas:onSetChild()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.canvas">Canvas</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Child</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Element:onSetClass"><code>Element:onSetClass()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.element">Element</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Class</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Lister:onSetCursor"><code>Lister:onSetCursor()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.lister">Lister</a> 
+					</td>
+					<td class="column3">
+						change of the <code>CursorLine</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Numeric:onSetMax"><code>Numeric:onSetMax()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.numeric">Numeric</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Max</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Numeric:onSetMin"><code>Numeric:onSetMin()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.numeric">Numeric</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Min</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#PageGroup:onSetPageNumber"><code>PageGroup:onSetPageNumber()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.pagegroup">PageGroup</a> 
+					</td>
+					<td class="column3">
+						change of the <code>PageNumber</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Slider:onSetRange"><code>Slider:onSetRange()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.slider">Slider</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Range</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Element:onSetStyle"><code>Element:onSetStyle()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.element">Element</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Style</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Text:onSetText"><code>Text:onSetText()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.text">Text</a> 
+					</td>
+					<td class="column3">
+						change of <code>Text</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#FloatText:onSetText"><code>FloatText:onSetText()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.floattext">FloatText</a> 
+					</td>
+					<td class="column3">
+						change of <code>Text</code> attribute&#185;
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Numeric:onSetValue"><code>Numeric:onSetValue()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.numeric">Numeric</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Value</code> attribute&#185;
+					</td>
+				</tr>
+			</table>
+			<p>
+				&#185; using <a href="manual.html#Object:setValue"><code>Object:setValue()</code></a> and the notification mechanism
+			</p>
+		</div>
+		<div class="node"><h2><a name="adhocclasses" id="adhocclasses">4.4. Ad-hoc setup of classes</a></h2>
 			<p>
 				To inherit properties and functionality from existing classes and to
 				reuse existing code consequently, it is often desirable to create new
@@ -1031,8 +1367,8 @@ end
 			<p>
 				There are rare cases in which a class modifies the drawing context,
 				e.g. by setting a coordinate displacement. Such modifications must
-				be performed in <a href="manual.Area:drawBegin">Area:drawBegin()</a> and
-				reverted in <a href="manual.Area:drawEnd">Area:drawEnd()</a>, and the
+				be performed in <a href="manual.html#Area:drawBegin">Area:drawBegin()</a> and
+				reverted in <a href="manual.html#Area:drawEnd">Area:drawEnd()</a>, and the
 				control flow looks like this:
 			</p>
 <pre>
@@ -1104,9 +1440,9 @@ local DEBUG = true
 				A class is usually set up in a prologue like this:
 			</p>
 <pre>
-local Gadget = require &quot;tek.ui.class.gadget&quot;
-module(&quot;tek.ui.class.button&quot;, tek.ui.class.gadget)
-_VERSION = &quot;Button Gadget 1.0&quot;
+local Widget = require &quot;tek.ui.class.widget&quot;
+module(&quot;tek.ui.class.button&quot;, tek.ui.class.widget)
+_VERSION = &quot;Button Widget 1.0&quot;
 local Button = _M
 </pre>
 			<p>
@@ -1123,12 +1459,12 @@ local Button = _M
 <pre>
 function Button.new(class, self)
   ...
-  return Gadget.new(class, self)
+  return Widget.new(class, self)
 end
 
 function Button:method()
   ...
-  Gadget.method(self)
+  Widget.method(self)
 end
 </pre>
 			<p>
@@ -1145,7 +1481,7 @@ end
 			<p>
 				Most notably, the second argument to <code>module</code> should be written out
 				in full &#8211; in the example above, one might be tempted to use
-				<code>Gadget</code> instead of <code>tek.ui.class.gadget</code>; but then, the path
+				<code>Widget</code> instead of <code>tek.ui.class.widget</code>; but then, the path
 				information would be lost for the source code parser, which tries to
 				assemble a self-contained class hierarchy from individual class /
 				child class relations.

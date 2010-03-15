@@ -11,7 +11,7 @@
 --		[[#tek.ui.class.element : Element]] /
 --		[[#tek.ui.class.area : Area]] /
 --		[[#tek.ui.class.frame : Frame]] /
---		[[#tek.ui.class.gadget : Gadget]] /
+--		[[#tek.ui.class.widget : Widget]] /
 --		[[#tek.ui.class.group : Group]] /
 --		Window ${subclasses(Window)}
 --
@@ -75,6 +75,7 @@
 --		- Window:setMovingElement() - Sets the window's moving element
 --
 --	OVERRIDES::
+--		- Object.addClassNotifications()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
@@ -88,10 +89,10 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
-local Drawable = ui.require("drawable", 23)
-local Gadget = ui.require("gadget", 19)
-local Group = ui.require("group", 27)
-local Region = ui.loadLibrary("region", 9)
+local Display = ui.require("display", 25)
+local Widget = ui.require("widget", 25)
+local Group = ui.require("group", 31)
+local Region = ui.loadLibrary("region", 10)
 
 local assert = assert
 local floor = math.floor
@@ -100,30 +101,40 @@ local intersect = Region.intersect
 local max = math.max
 local min = math.min
 local newFlags = ui.newFlags
-local newRegion = ui.newRegion
 local pairs = pairs
 local remove = table.remove
+local setmetatable = setmetatable
 local sort = table.sort
 local type = type
 local unpack = unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 27.0"
+_VERSION = "Window 33.0"
 local Window = _M
 
 -------------------------------------------------------------------------------
---	Constants & Class data:
+--	constants & class data:
 -------------------------------------------------------------------------------
 
 local HUGE = ui.HUGE
-
-local NOTIFY_STATUS = { ui.NOTIFY_SELF, "onChangeStatus", ui.NOTIFY_VALUE }
 
 local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, ui.MSG_MOUSEMOVE, ui.MSG_MOUSEBUTTON,
 	ui.MSG_INTERVAL, ui.MSG_KEYUP }
 
 local FL_REDRAW = ui.FL_REDRAW
+local FL_SHOW = ui.FL_SHOW
+
+-------------------------------------------------------------------------------
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function Window.addClassNotifications(proto)
+	addNotify(proto, "Status", NOTIFY_ALWAYS, { NOTIFY_SELF, "onChangeStatus"})
+	return Group.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -141,6 +152,8 @@ function Window.init(self)
 	self.DblClickCheckInfo = { } -- check_element, sec, usec, mousex, mousey
 	self.DblClickJitter = self.DblClickJitter or ui.DBLCLICKJITTER
 	self.DblClickTimeout = self.DblClickTimeout or ui.DBLCLICKTIME
+	self.Drawable = false
+	self.EventMask = ui.MSG_ALL
 	self.FocusElement = false
 	self.FullScreen = self.FullScreen or ui.FullScreen == "true"
 	self.HideOnEscape = self.HideOnEscape or false
@@ -217,7 +230,6 @@ function Window.init(self)
 	self.Status = self.Status or "initializing"
 	self.Title = self.Title or false
 	self.Top = self.Top or false
-	self.Visible = false
 	self.WindowFocus = false
 	self.WindowMinMax = { }
 	return Group.init(self)
@@ -228,9 +240,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:setup(app)
-	self.Drawable = Drawable:new { Display = app.Display }
 	Group.setup(self, app, self)
-	self:addNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
 	self:addInputHandler(0x171f, self, self.handleInput)
 end
 
@@ -240,7 +250,6 @@ end
 
 function Window:cleanup()
 	self:remInputHandler(0x171f, self, self.handleInput)
-	self:remNotify("Status", ui.NOTIFY_ALWAYS, NOTIFY_STATUS)
 	Group.cleanup(self)
 	assert(self.IntervalCount == 0)
 end
@@ -251,12 +260,60 @@ end
 
 function Window:show()
 	self.Status = "show"
-	if not self.Visible then
-		self.Visible = true
+	if not self.Drawable then
 		local m1, m2, m3, m4, x, y, w, h = self:getWindowDimensions()
-		local d = self.Drawable
-		d:open(self, self.Title or self.Application.ProgramName,
-			w, h, m1, m2, m3, m4, x, y, self.Center, self.FullScreen)
+		
+		local display = self.Application.Display
+		local drawable = self.Drawable
+		
+		drawable = Display.openDrawable {
+			UserData = self,
+			Title = self.Title or self.Application.ProgramName,
+			Width = w,
+			Height = h,
+			Left = x,
+			Top = y,
+			MinWidth = m1,
+			MinHeight = m2,
+			MaxWidth = m3,
+			MaxHeight = m4,
+			Center = self.Center,
+			FullScreen = self.FullScreen,
+			Borderless = (x or y) and true,
+			EventMask = self.EventMask,
+			BlankCursor = ui.NoCursor,
+			Pens = setmetatable({ }, {
+				__index = function(tab, col)
+					local key = col
+					local res
+					if type(col) == "string" then
+						if col:match("^url%b()") then
+							local fname = col:match("^url%(([^()]+)%)")
+							if fname then
+								res = display.getPixmap(fname)
+							end
+							if not res then
+								col = "background"
+							end
+						end
+						if not res then
+							local a, r, g, b = display:colorToRGB(col)
+							if not r then
+								a, r, g, b = display:colorToRGB("background")
+							end
+							res = drawable:allocPen(a, r, g, b)
+						end
+					else
+						res = col
+					end
+					tab[key] = res
+					return res
+				end
+			})
+		}
+		
+		self.Drawable = drawable
+		
 		self.Application:openWindow(self)
 		Group.show(self, d)
 		self:layout()
@@ -269,15 +326,14 @@ end
 
 function Window:hide()
 	self.Status = "hide"
-	if self.Visible then
-		self.Visible = false
-		-- we must save the Drawable, as it gets flushed in hide():
-		local d = self.Drawable
+	if self.Drawable then
 		self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 		Group.hide(self)
-		self.Window.Drawable = d -- restore
+		local d = self.Drawable
+		self.Width, self.Height = d:getAttrs()
 		d:close()
-		self.Width, self.Height = d.Width, d.Height
+		self.Drawable = false
+		self.ActiveElement = false
 		self.Application:closeWindow(self)
 	end
 end
@@ -350,7 +406,12 @@ function Window:addInterval()
 	self.IntervalCount = self.IntervalCount + 1
 	if self.IntervalCount == 1 then
 		db.info("%s : add interval", self)
-		self.Drawable:setInterval(true)
+		self.EventMask = ui.MSG_ALL + ui.MSG_INTERVAL
+		if self.Flags:check(FL_SHOW) then
+			self.Drawable:setInput(ui.MSG_INTERVAL)
+		else
+			db.warn("adding interval on closed window")
+		end
 	end
 end
 
@@ -366,19 +427,23 @@ function Window:remInterval()
 	assert(self.IntervalCount >= 0)
 	if self.IntervalCount == 0 then
 		db.info("%s : rem interval", self)
-		self.Drawable:setInterval(false)
+		self.EventMask = ui.MSG_ALL
+		if self.Flags:check(FL_SHOW) then
+			self.Drawable:clearInput(ui.MSG_INTERVAL)
+		end
 	end
 end
 
 -------------------------------------------------------------------------------
---	onChangeStatus(status): This method is invoked when the Window's
---	{{Status}} has changed.
+--	onChangeStatus(): This method is invoked when the Window's {{Status}} has
+--	changed.
 -------------------------------------------------------------------------------
 
-function Window:onChangeStatus(showhide)
-	if showhide == "show" then
+function Window:onChangeStatus()
+	local status = self.Status
+	if status == "show" then
 		self:show()
-	elseif showhide == "hide" then
+	elseif status == "hide" then
 		self:hide()
 	end
 end
@@ -422,7 +487,7 @@ function Window:getWindowDimensions(update)
 		wm[1], wm[2], wm[3], wm[4] = m1, m2, m3, m4
 		if update then
 			local drawable = self.Drawable
-			local w, h = drawable:getWH()
+			local w, h = drawable:getAttrs()
 			if (m1 and w < m1) or (m2 and h < m2) then -- TODO: m1, m2?
 				-- window needs to grow; mark new region as damaged:
 				w = max(w, m1 or w)
@@ -528,7 +593,7 @@ local MsgHandlers =
 			-- release Hold state:
 			if ae and ae.Active and ae.Hold and self.HoldTickActive > 0 then
 				ae:setValue("Hold", false)
-			end
+			end   
 			if not ae and he and he:checkFocus() then
 				-- support releasing a button over a popup item that wasn't
 				-- activated before, i.e. button was pressed all the time:
@@ -710,7 +775,7 @@ function Window:draw()
 		if e[4] then
 			d:pushClipRect(e[4], e[5], e[6], e[7])
 		end
-		d:copyArea(r[2], r[3], r[4], r[5], r[2] + dx, r[3] + dy, t)
+		d:blitRect(r[2], r[3], r[4], r[5], r[2] + dx, r[3] + dy, t)
 		if e[4] then
 			d:popClipRect()
 		end
@@ -719,7 +784,7 @@ function Window:draw()
 		end
 	end
 	self.BlitObjects = { }
-	Group.draw(self, true)
+	Group.draw(self)
 	d:flush()
 end
 
@@ -728,7 +793,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:update()
-
+	
 	if self.Status == "show" then
 
 		if #self.Relayouts > 0 then
@@ -811,7 +876,7 @@ end
 
 function Window:layout(_, _, _, _, markdamage)
 	self.FreeRegion = false
-	local w, h = self.Drawable:getWH()
+	local w, h = self.Drawable:getAttrs()
 	return Group.layout(self, 0, 0, w - 1, h - 1, markdamage)
 end
 
@@ -940,7 +1005,7 @@ end
 --	sufficiently short period of time and the pointing device did not move
 --	too much since the first event, the double click is triggered by
 --	notifying the {{DblClick}} attribute in the element. See also
---	[[#tek.ui.class.gadget : Gadget]] for further information.
+--	[[#tek.ui.class.widget : Widget]] for further information.
 -------------------------------------------------------------------------------
 
 function Window:setDblClickElement(e)
@@ -953,7 +1018,7 @@ function Window:setDblClickElement(e)
 	local d = self.Drawable
 	if e and d then
 		de = di[1] -- check element
-		local ts, tu = d.Display:getTime()
+		local ts, tu = Display.getTime()
 		if de == e and di[4] then
 			local d1 = self.MouseX - di[4]
 			local d2 = self.MouseY - di[5]
@@ -1122,6 +1187,10 @@ function Window:clickElement(e)
 		e = self:getById(e)
 		assert(e, "Unknown Id")
 	end
+	if not e.Flags:check(ui.FL_SETUP) then
+		e.Application = self.Application
+		e.Window = self
+	end
 	local he = self.HiliteElement
 	self:setHiliteElement(e)
 	self:setActiveElement(e)
@@ -1132,9 +1201,9 @@ end
 -------------------------------------------------------------------------------
 --	onHide(): This handler is invoked when the window's close button
 --	is clicked (or the Escape key is pressed and the {{HideOnEscape}} flag
---	is set). The standard behavior is to hide the window by setting the
---	{{Status}} field to {{"hide"}}. When the last window is closed, the
---	application is closed down.
+--	is set). The Window class' implementation of this handler is to hide
+--	the window by setting the {{Status}} attribute to {{"hide"}}. When the
+--	last window is closed, the application is closed down.
 -------------------------------------------------------------------------------
 
 function Window:onHide()
@@ -1162,7 +1231,7 @@ function Window:addBlit(x0, y0, x1, y1, dx, dy, c1, c2, c3, c4)
 			if ca[key] then
 				ca[key][3]:orRect(x0, y0, x1, y1)
 			else
-				ca[key] = { dx, dy, newRegion(x0, y0, x1, y1), c1, c2, c3, c4 }
+				ca[key] = { dx, dy, Region.new(x0, y0, x1, y1), c1, c2, c3, c4 }
 			end
 		else
 			db.warn("illegal blitrect: %s %s %s %s", x0, y0, x1, y1)

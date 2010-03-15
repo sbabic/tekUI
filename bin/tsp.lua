@@ -177,7 +177,7 @@ function TSP:hide()
 end
 
 function TSP:update()
-	if self.Drawable then
+	if self.Window.Drawable then
 		self.Frame = self.Frame + 1
 		if self.Changed and (self.Frame % REFRESH_DELAY == 0) then
 			self.Changed = false
@@ -196,14 +196,14 @@ function TSP:draw()
 		local x0, y0, x1, y1 = self:getRect()
 		local w = x1 - x0 + 1 - 10
 		local h = y1 - y0 + 1 - 10
-		local d = self.Drawable
+		local d = self.Window.Drawable
 		local p = self.Points
 		for i = 2, #self.Points do
 			local x = x0 + p[i - 1][1] * w + 5
 			local y = y0 + p[i - 1][2] * h + 5
 			local x1 = x0 + p[i][1] * w + 5
 			local y1 = y0 + p[i][2] * h + 5
-			d:drawLine(x, y, x1, y1, d.Pens["shine"])
+			d:drawLine(x, y, x1, y1, "shine")
 		end
 	end
 end
@@ -381,8 +381,8 @@ app = ui.Application:new
 									Value = DEFAULT_DECAY,
 									Kind = "number",
 									Width = "free",
-									onSetValue = function(self, value)
-										ui.ScrollBar.onSetValue(self, value)
+									onSetValue = function(self)
+										ui.ScrollBar.onSetValue(self)
 										local t = ("%.2f"):format(self.Value)
 										self:getById("decay-value"):setValue("Text", t)
 										self:getById("the-tsp").Decay = TSP.getDecay(self.Value)
@@ -407,11 +407,8 @@ app = ui.Application:new
 							Class = "button",
 							Text = "Restart",
 							MaxWidth = 0,
-							onPress = function(self, pressed)
-								ui.Text.onPress(self, pressed)
-								if pressed == false then
-									self:getById("the-tsp"):reset()
-								end
+							onClick = function(self)
+								self:getById("the-tsp"):reset()
 							end
 						},
 					}

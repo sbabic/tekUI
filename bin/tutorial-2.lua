@@ -15,11 +15,8 @@ ui.Application:new
 				ui.Button:new
 				{
 					Text = "Hello world",
-					onPress = function(self, pressed)
-						if pressed == false then
-							print "Hello world"
-						end
-						ui.Button.onPress(self, pressed)
+					onClick = function(self)
+						print "Hello world"
 					end
 				}
 			}

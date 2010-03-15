@@ -11,6 +11,103 @@
 			tekUI Changelog
 		</h2>
 		<h3>
+			0.8j:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					Gadget renamed to Widget, ListGadget renamed to Lister, ImageGadget renamed
+					to ImageWidget
+				</li>
+				<li>
+					Drawable class: removed
+				</li>
+				<li>
+					Object: Added class-wide handlers and a copy-on-write mechanism for
+					duplicating handlers on object-level on demand; static initialization of
+					handlers is no longer supported
+				</li>
+				<li>
+					Element: added <a href="manual.html#onSetStyle"><code>onSetStyle()</code></a> and <a href="manual.html#obSetClass"><code>obSetClass()</code></a>, some bugs fixed in style
+					sheet processing
+				</li>
+				<li>
+					Application: <a href="manual.html#hide"><code>hide()</code></a> hardened for side-effects from shutting down while
+					<a href="manual.html#hide"><code>hide()</code></a> is still in progress
+				</li>
+				<li>
+					Area: removed Drawable attribute, <a href="manual.html#show"><code>show()</code></a> no longer has a drawable argument,
+					removed Margin, added <a href="manual.html#getMargin"><code>getMargin()</code></a> and <a href="manual.html#getMinmax"><code>getMinmax()</code></a>, MinMax, Rect are Region
+					objects now
+				</li>
+				<li>
+					<a href="manual.html#Widget:onClick"><code>Widget:onClick()</code></a>, <a href="manual.html#onHold"><code>onHold()</code></a>, <a href="manual.html#onDblClick"><code>onDblClick()</code></a> added
+				</li>
+				<li>
+					<a href="manual.html#Group:addMember"><code>Group:addMember()</code></a> now allows elements to be added to uninitialized groups
+				</li>
+				<li>
+					<a href="manual.html#Lister:onDoubleClick"><code>Lister:onDoubleClick()</code></a> renamed to <a href="manual.html#onDblClick"><code>onDblClick()</code></a> and documented
+				</li>
+				<li>
+					<a href="manual.html#Slider:onHold"><code>Slider:onHold()</code></a> documented
+				</li>
+				<li>
+					Visual: added <a href="manual.html#setTextureOrigin"><code>setTextureOrigin()</code></a>, <a href="manual.html#pushClipRect"><code>pushClipRect()</code></a>, <a href="manual.html#popClipRect"><code>popClipRect()</code></a>, drawing
+					functions no longer receive texture origins as arguments, added <a href="manual.html#setBGPen"><code>setBGPen()</code></a>,
+					which can be used to set a background color or a texture for <a href="manual.html#fillRect"><code>fillRect()</code></a>,
+					renamed <a href="manual.html#copyarea"><code>copyarea()</code></a> to <a href="manual.html#blitArea"><code>blitArea()</code></a>, function names are now in lowerCamelCase
+				</li>
+				<li>
+					ScrollGroup: <a href="manual.html#copyArea"><code>copyArea()</code></a> renamed to <a href="manual.html#blitArea"><code>blitArea()</code></a> 
+				</li>
+				<li>
+					Window: Drawable attribute added, it is now created in <a href="manual.html#show"><code>show()</code></a> and
+					destroyed in <a href="manual.html#hide"><code>hide()</code></a>, removed Visible and Pens attributes, invalid color
+					specifications are now silently converted to the 'background' color
+				</li>
+				<li>
+					UI: Changed meaning of MSG_ALL, now excluding MSG_INTERVAL
+				</li>
+				<li>
+					added tek.ui.style.desktop, removed Theme class
+				</li>
+				<li>
+					Improved documentation and stylesheet, added Windows platform installation
+					note
+				</li>
+				<li>
+					Display: Simpler and faster color allocation, added <a href="manual.html#newDrawable"><code>newDrawable()</code></a>, Drawable
+					now encapsulated by Display
+				</li>
+				<li>
+					<a href="manual.html#Object:doNotify"><code>Object:doNotify()</code></a> added, now processes all notifications regardless of
+					esoteric side-effects during traversal, <a href="manual.html#addNotify"><code>addNotify()</code></a> positional argument
+					removed
+				</li>
+				<li>
+					UI: Added FL_POPITEM, added <a href="manual.html#getStyleSheet"><code>getStyleSheet()</code></a> from former Theme class, removed
+					region functions
+				</li>
+				<li>
+					PopItem: sets FL_POPITEM during connect, overwrites <a href="manual.html#doNotify"><code>doNotify()</code></a> to filter
+					out notifications in items which have been neither setup nor connected before
+				</li>
+				<li>
+					Demos: cleanup
+				</li>
+				<li>
+					Region: added <a href="manual.html#get"><code>get()</code></a> function, class check is now based on upvalue
+				</li>
+				<li>
+					Optimized default layouter, now using more C structures and fewer Lua stack
+				</li>
+				<li>
+					Editor, Sizeable and EditWindow classes added (not installed globally)
+				</li>
+			</ul>
+		</blockquote>
+		<h3>
 			0.8i:
 		</h3>
 		<blockquote>

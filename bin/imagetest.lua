@@ -20,7 +20,7 @@ ui.Application:new
 			HideOnEscape = true,
 			Children = 
 			{
-				ui.ImageGadget:new 
+				ui.ImageWidget:new 
 				{ 
 					Image = RadioImage1, 
 					MinWidth = 20,
@@ -29,19 +29,19 @@ ui.Application:new
 					Style = "padding: 10",
 					ImageAspectX = 2,
 					ImageAspectY = 3,
-					onPress = function(self, press)
-						self:setImage(press and RadioImage2 or RadioImage1)
-						ui.ImageGadget.onPress(self, press)
+					onPress = function(self)
+						ui.ImageWidget.onPress(self)
+						self:setImage(self.Pressed and RadioImage2 or RadioImage1)
 					end
 				},
-				ui.ImageGadget:new 
+				ui.ImageWidget:new 
 				{ 
 					Mode = "button",
 					Image = BitMapImage1,
 					Style = "padding: 10",
-					onPress = function(self, press)
-						self:setImage(press and BitMapImage2 or BitMapImage1)
-						ui.ImageGadget.onPress(self, press)
+					onPress = function(self)
+						ui.ImageWidget.onPress(self)
+						self:setImage(self.Pressed and BitMapImage2 or BitMapImage1)
 					end
 				}
 			}

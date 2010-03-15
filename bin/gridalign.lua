@@ -4,7 +4,7 @@ local ui = require "tek.ui"
 
 local function setinner(self, idx, val)
 	for _, key in ipairs { "None", "SameSize", "SameWidth", "SameHeight" } do
-		local e = self.Application:getById(key)
+		local e = self:getById(key)
 		for _, c in ipairs(e.Children) do
 			c[idx] = val
 			c:rethinkLayout(1)
@@ -14,7 +14,7 @@ end
 
 local function setouter(self, idx, val)
 	for _, key in ipairs { "None", "SameSize", "SameWidth", "SameHeight" } do
-		local e = self.Application:getById(key)
+		local e = self:getById(key)
 		e[idx] = val
 		e:rethinkLayout(1)
 	end
@@ -44,27 +44,18 @@ ui.application:new
 							Children =
 							{
 								ui.RadioButton:new { Text = "Left",
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setouter(self, "HAlign", "left")
-										end
+									onPress = function(self)
+										setouter(self, "HAlign", "left")
 									end
 								},
 								ui.RadioButton:new { Text = "Center", Selected = true,
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setouter(self, "HAlign", "center")
-										end
+									onPress = function(self)
+										setouter(self, "HAlign", "center")
 									end
 								},
 								ui.RadioButton:new { Text = "Right",
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setouter(self, "HAlign", "right")
-										end
+									onPress = function(self)
+										setouter(self, "HAlign", "right")
 									end
 								}
 							}
@@ -77,27 +68,18 @@ ui.application:new
 							Children =
 							{
 								ui.RadioButton:new { Text = "Top",
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setouter(self, "VAlign", "top")
-										end
+									onPress = function(self)
+										setouter(self, "VAlign", "top")
 									end
 								},
 								ui.RadioButton:new { Text = "Center", Selected = true,
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setouter(self, "VAlign", "center")
-										end
+									onPress = function(self)
+										setouter(self, "VAlign", "center")
 									end
 								},
 								ui.RadioButton:new { Text = "Bottom",
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setouter(self, "VAlign", "bottom")
-										end
+									onPress = function(self)
+										setouter(self, "VAlign", "bottom")
 									end
 								}
 							}
@@ -223,27 +205,18 @@ ui.application:new
 							Children =
 							{
 								ui.RadioButton:new { Text = "Left",
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setinner(self, "HAlign", "left")
-										end
+									onPress = function(self)
+										setinner(self, "HAlign", "left")
 									end
 								},
 								ui.RadioButton:new { Text = "Center", Selected = true,
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setinner(self, "HAlign", "center")
-										end
+									onPress = function(self)
+										setinner(self, "HAlign", "center")
 									end
 								},
 								ui.RadioButton:new { Text = "Right",
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setinner(self, "HAlign", "right")
-										end
+									onPress = function(self)
+										setinner(self, "HAlign", "right")
 									end
 								}
 							}
@@ -256,27 +229,18 @@ ui.application:new
 							Children =
 							{
 								ui.RadioButton:new { Text = "Top",
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setinner(self, "VAlign", "top")
-										end
+									onPress = function(self)
+										setinner(self, "VAlign", "top")
 									end
 								},
 								ui.RadioButton:new { Text = "Center", Selected = true,
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setinner(self, "VAlign", "center")
-										end
+									onPress = function(self)
+										setinner(self, "VAlign", "center")
 									end
 								},
 								ui.RadioButton:new { Text = "Bottom",
-									onPress = function(self, pressed)
-										ui.RadioButton.onPress(self, pressed)
-										if pressed == true then
-											setinner(self, "VAlign", "bottom")
-										end
+									onPress = function(self)
+										setinner(self, "VAlign", "bottom")
 									end
 								}
 							}

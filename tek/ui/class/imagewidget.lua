@@ -1,14 +1,14 @@
 
 --
---	tek.ui.class.imagegadget
+--	tek.ui.class.imagewidget
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
 
 local ui = require "tek.ui"
 
-local Gadget = ui.require("gadget", 19)
-local Region = ui.loadLibrary("region", 9)
+local Widget = ui.require("widget", 25)
+local Region = ui.loadLibrary("region", 10)
 
 local floor = math.floor
 local max = math.max
@@ -16,16 +16,16 @@ local tonumber = tonumber
 local type = type
 local unpack = unpack
 
-module("tek.ui.class.imagegadget", tek.ui.class.gadget)
-_VERSION = "ImageGadget 9.1"
+module("tek.ui.class.imagewidget", tek.ui.class.widget)
+_VERSION = "ImageWidget 13.0"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
 -------------------------------------------------------------------------------
 
-local ImageGadget = _M
+local ImageWidget = _M
 
-function ImageGadget.new(class, self)
+function ImageWidget.new(class, self)
 	self.EraseBG = false
 	self.HAlign = self.HAlign or "center"
 	self.VAlign = self.VAlign or "center"
@@ -36,7 +36,7 @@ function ImageGadget.new(class, self)
 	self.ImageWidth = self.ImageWidth or false
 	self.ImageHeight = self.ImageHeight or false
 	self.Region = false
-	self = Gadget.new(class, self)
+	self = Widget.new(class, self)
 	self:setImage(self.Image)
 	return self
 end
@@ -45,7 +45,7 @@ end
 --	askMinMax:
 -------------------------------------------------------------------------------
 
-function ImageGadget:askMinMax(m1, m2, m3, m4)
+function ImageWidget:askMinMax(m1, m2, m3, m4)
 	local d = self.ImageData
 	
 	local mw = self.MinWidth
@@ -67,14 +67,14 @@ function ImageGadget:askMinMax(m1, m2, m3, m4)
 		ih = floor((iw or mw) * ay / ax)
 	end
 	
-	return Gadget.askMinMax(self, m1 + iw, m2 + ih, m3 + iw, m4 + ih)
+	return Widget.askMinMax(self, m1 + iw, m2 + ih, m3 + iw, m4 + ih)
 end
 
 -------------------------------------------------------------------------------
 --	setImage:
 -------------------------------------------------------------------------------
 
-function ImageGadget:setImage(img)
+function ImageWidget:setImage(img)
 	self.Image = img
 	self.Flags:set(ui.FL_REDRAW + ui.FL_CHANGED)
 	if img then
@@ -91,15 +91,15 @@ end
 --	layout: overrides
 -------------------------------------------------------------------------------
 
-function ImageGadget:layout(r1, r2, r3, r4, markdamage)
-	local res = Gadget.layout(self, r1, r2, r3, r4, markdamage)
+function ImageWidget:layout(r1, r2, r3, r4, markdamage)
+	local res = Widget.layout(self, r1, r2, r3, r4, markdamage)
 	if self.Flags:checkClear(ui.FL_CHANGED) or res then
-		local r = self.Rect
+		local r1, r2, r3, r4 = self:getRect()
 		local p1, p2, p3, p4 = self:getPadding()
 
-		local x, y = r[1], r[2]
-		local rw = r[3] - x + 1
-		local rh = r[4] - y + 1
+		local x, y = r1, r2
+		local rw = r3 - x + 1
+		local rh = r4 - y + 1
 		local w = rw - p1 - p3
 		local h = rh - p2 - p4
 		local id = self.ImageData
@@ -115,9 +115,9 @@ function ImageGadget:layout(r1, r2, r3, r4, markdamage)
 		end
 		
 		if iw ~= rw or ih ~= rh then
-			self.Region = Region.new(x, y, r[3], r[4])
+			self.Region = Region.new(x, y, r3, r4)
 		elseif self.Image and self.Image[4] then -- transparent?
-			self.Region = Region.new(x, y, r[3], r[4])
+			self.Region = Region.new(x, y, r3, r4)
 		else
 			self.Region = false
 		end
@@ -150,21 +150,20 @@ end
 --	draw: overrides
 -------------------------------------------------------------------------------
 
-function ImageGadget:draw()
-	if Gadget.draw(self) then
-		local d = self.Drawable
+function ImageWidget:draw()
+	if Widget.draw(self) then
+		local d = self.Window.Drawable
 		local R = self.Region
 		local img = self.Image
 		if R then
-			local bgpen, tx, ty = self:getBG()
-			R:forEach(d.fillRect, d, d.Pens[bgpen], tx, ty)
+			d:setBGPen(self:getBG())
+			R:forEach(d.fillRect, d)
 		end
 		if img then
 			local x, y, iw, ih = unpack(self.ImageData)
 			local pen = self.FGPen
 			img:draw(d, x, y, x + iw - 1, y + ih - 1, 
-				pen ~= "transparent" and 
-				d.Pens[pen])
+				pen ~= "transparent" and pen)
 		end
 		return true
 	end
