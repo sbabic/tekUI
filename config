@@ -108,7 +108,7 @@ MODDIR = $(BINDIR)/mod
 
 # DEBUG = -g -DTDEBUG=5
 WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function
-OPT = -O3
+OPT = -O2
 INCL = -I. -Iinclude -I$(INCDIR)
 LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 MODCFLAGS = -shared -L $(LIBDIR)

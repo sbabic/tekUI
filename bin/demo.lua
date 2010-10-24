@@ -10,11 +10,11 @@ local VENDOR = "schulze-mueller.de"
 local L = ui.getLocale(APP_ID, VENDOR)
 
 function lfs.readdir(path)
-	local dir = lfs.dir(path)
+	local dir, iter = lfs.dir(path)
 	return function()
 		local e
 		repeat
-			e = dir()
+			e = dir(iter)
 		until e ~= "." and e ~= ".."
 		return e
 	end

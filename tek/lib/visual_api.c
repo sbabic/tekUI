@@ -838,9 +838,11 @@ tek_lib_visual_drawimage(lua_State *L)
 	lua_remove(L, -2);
 	/* pentab */
 	
-	lua_rawgeti(L, 2, 1);
+	lua_pushinteger(L, 1);
+	lua_gettable(L, 2);
 	/* s: pentab, coords */
-	lua_rawgeti(L, 2, 5);
+	lua_pushinteger(L, 5);
+	lua_gettable(L, 2);
 	/* s: pentab, coords, primitives */
 	primcount = lua_objlen(L, -1);
 

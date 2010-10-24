@@ -84,7 +84,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 16.0"
+_VERSION = "DirList 16.1"
 
 local DirList = _M
 
@@ -105,12 +105,12 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:getDirIterator(path)
-	local success, dir = pcall(lfs.dir, path)
+	local success, dir, iter = pcall(lfs.dir, path)
 	if success then
 		return function()
 			local e
 			repeat
-				e = dir()
+				e = dir(iter)
 			until e ~= "." and e ~= ".."
 			return e
 		end

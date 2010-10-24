@@ -16,7 +16,7 @@
 
 #define TEK_VISUAL_DEBUG
 
-#define TEK_LIB_VISUAL_VERSION "Visual 4.2"
+#define TEK_LIB_VISUAL_VERSION "Visual 4.3"
 #define TEK_LIB_VISUAL_BASECLASSNAME "tek.lib.visual.base*"
 #define TEK_LIB_VISUAL_CLASSNAME "tek.lib.visual*"
 #define TEK_LIB_VISUALPEN_CLASSNAME "tek.lib.visual.pen*"

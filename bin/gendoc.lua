@@ -62,11 +62,11 @@ do
 		lfs = require "lfs"
 		function fs.readdir(path)
 			assert(path)
-			local dir = lfs.dir(path)
+			local dir, iter = lfs.dir(path)
 			return function()
 				local e
 				repeat
-					e = dir()
+					e = dir(iter)
 				until e ~= "." and e ~= ".."
 				return e
 			end

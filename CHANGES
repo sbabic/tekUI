@@ -1,6 +1,9 @@
 
 == tekUI Changelog ==
 
+ * Corrected usage of directory iterators from lfs.dir(), now working with
+ LuaFilesystem 1.5 again
+
 === 0.8j: ===
  
  * Gadget renamed to Widget, ListGadget renamed to Lister, ImageGadget renamed
