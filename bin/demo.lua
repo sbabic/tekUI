@@ -307,10 +307,10 @@ app = ui.Application:new
 															Integer = true,
 															Kind = "number",
 															show = function(self, display, drawable)
+																ui.ScrollBar.show(self, display, drawable)
 																local ssm = collectgarbage("setpause", 0)
 																collectgarbage("setpause", ssm)
-																self:setValue("Value", ssm, true)
-																return ui.ScrollBar.show(self, display, drawable)
+																self:setValue("Value", ssm)
 															end,
 															onSetValue = function(self)
 																ui.ScrollBar.onSetValue(self)
@@ -340,10 +340,10 @@ app = ui.Application:new
 															Integer = true,
 															Kind = "number",
 															show = function(self, display, drawable)
+																ui.ScrollBar.show(self, display, drawable)
 																local ssm = collectgarbage("setstepmul", 0)
 																collectgarbage("setstepmul", ssm)
-																self:setValue("Value", ssm, true)
-																return ui.ScrollBar.show(self, display, drawable)
+																self:setValue("Value", ssm)
 															end,
 															onSetValue = function(self)
 																ui.ScrollBar.onSetValue(self)

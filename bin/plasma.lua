@@ -74,15 +74,15 @@ function effect()
 		local xc1, xc2 = xp1, xp2
 		local ysin = sintab[yc1] + sintab[yc2] + sintab[yc3] + 5
 
-		for x = 0, WIDTH - 1 do
+		for x = i, i + WIDTH - 1 do
 
 			local c = sintab[xc1] + sintab[xc2] + ysin
-			screen[i] = palette[FLOOR(c * palettescale)]
-			i = i + 1
+			screen[x] = palette[FLOOR(c * palettescale)]
 			xc1 = (xc1 - 12) % 1024
 			xc2 = (xc2 + 13) % 1024
 
 		end
+		i = i + WIDTH
 
 		yc1 = (yc1 + 8) % 1024
 		yc2 = (yc2 + 11) % 1024

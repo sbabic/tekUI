@@ -137,7 +137,7 @@ local ui = require "tek.ui"
 local Frame = ui.require("frame", 16)
 
 module("tek.ui.class.widget", tek.ui.class.frame)
-_VERSION = "Widget 25.0"
+_VERSION = "Widget 25.1"
 
 local Widget = _M
 
@@ -206,8 +206,10 @@ end
 -------------------------------------------------------------------------------
 
 function Widget:cleanup()
-	self.EffectHook = ui.destroyHook(self.EffectHook)
-	self.Window:remKeyShortcut(self.KeyCode, self)
+	if self.Flags:check(ui.FL_SETUP) then
+		self.EffectHook = ui.destroyHook(self.EffectHook)
+		self.Window:remKeyShortcut(self.KeyCode, self)
+	end
 	Frame.cleanup(self)
 end
 
@@ -291,6 +293,7 @@ function Widget:onActivate()
 			if (active and not selected) or collapse then
 				self:setValue("Selected", true)
 				self:setValue("Pressed", true, true)
+				self:setValue("Pressed", false)
 			end
 		elseif mode == "button" then
 			self:setValue("Selected", active and self.Hover)
@@ -390,8 +393,8 @@ end
 -------------------------------------------------------------------------------
 
 function Widget:setState(bg, fg)
-	local props = self.Properties
-	if props then
+	if self.Flags:check(ui.FL_SETUP) then
+		local props = self.Properties
 		if not bg then
 			if self.Disabled then
 				bg = props["background-color:disabled"]
@@ -420,8 +423,8 @@ function Widget:setState(bg, fg)
 			self.Flags:set(FL_REDRAW)
 		end
 		Frame.setState(self, bg)
-	else
-		db.warn("%s : no properties", self:getClassName())
+-- 	else
+-- 		db.warn("%s : element not initialized", self:getClassName())
 	end
 end
 

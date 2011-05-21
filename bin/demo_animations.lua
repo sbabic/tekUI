@@ -16,7 +16,12 @@ function Coefficient.new(class, self)
 	local group = self -- for building a closure with the group
 	self.Children =
 	{
-		Text:new { Class = "caption", Text = self.Key1, MaxWidth = 0 },
+		Text:new 
+		{ 
+			Class = "caption", 
+			Text = self.Key1,
+			Width = "auto",
+		},
 		Slider:new
 		{
 			Min = 0,
@@ -30,7 +35,12 @@ function Coefficient.new(class, self)
 				p:setValue(group.Key1, self.Value)
 			end,
 		},
-		Text:new { Class = "caption", Text = self.Key2, MaxWidth = 0 },
+		Text:new 
+		{ 
+			Class = "caption", 
+			Text = self.Key2, 
+			Width = "auto",
+		},
 		Slider:new
 		{
 			Min = -16,

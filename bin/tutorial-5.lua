@@ -35,7 +35,7 @@ ui.Application:new
 
 					show = function(self)
 						ui.Slider.show(self)
-						self:setValue("Value", self.Value, true)
+						self:onSetValue()
 					end,
 				},
 

@@ -529,6 +529,43 @@ tek_lib_visual_freepixmap(lua_State *L)
 	return 0;
 }
 
+LOCAL LUACFUNC TINT
+tek_lib_visual_getpixmap(lua_State *L)
+{
+	TEKPixmap *bm = getpixmapptr(L, 1);
+	if (bm->pxm_Data)
+	{
+		lua_Integer x = luaL_checkinteger(L, 2);
+		lua_Integer y = luaL_checkinteger(L, 3);
+		if (x < 0 || x >= bm->pxm_Width)
+			luaL_argerror(L, 2, "Invalid position");
+		if (y < 0 || y >= bm->pxm_Height)
+			luaL_argerror(L, 3, "Invalid position");
+		lua_pushinteger(L, bm->pxm_Data[x + y * bm->pxm_Width]);
+		return 1;
+	}
+	return 0;
+}
+
+LOCAL LUACFUNC TINT
+tek_lib_visual_setpixmap(lua_State *L)
+{
+	TEKPixmap *bm = getpixmapptr(L, 1);
+	if (bm->pxm_Data)
+	{
+		lua_Integer x = luaL_checkinteger(L, 2);
+		lua_Integer y = luaL_checkinteger(L, 3);
+		lua_Integer val = luaL_checkinteger(L, 4);
+		if (x < 0 || x >= bm->pxm_Width)
+			luaL_argerror(L, 2, "Invalid position");
+		if (y < 0 || y >= bm->pxm_Height)
+			luaL_argerror(L, 3, "Invalid position");
+		bm->pxm_Data[x + y * bm->pxm_Width] = val;
+		return 1;
+	}
+	return 0;
+}
+
 /*****************************************************************************/
 
 LOCAL LUACFUNC TINT

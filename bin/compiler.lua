@@ -653,7 +653,6 @@ local app = ui.Application:new
 									Text = "_Lua Source:",
 									Class = "caption",
 									Width = "fill",
-									MaxWidth = 0,
 									KeyCode = true,
 								},
 								ui.TextInput:new
@@ -702,7 +701,7 @@ local app = ui.Application:new
 							{
 								ui.Group:new
 								{
-									MaxWidth = 0,
+									Width = "auto",
 									Orientation = "vertical",
 									Children =
 									{

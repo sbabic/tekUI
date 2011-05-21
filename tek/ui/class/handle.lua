@@ -39,7 +39,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.widget)
-_VERSION = "Handle 6.0"
+_VERSION = "Handle 6.1"
 
 local Handle = _M
 
@@ -62,18 +62,16 @@ end
 -------------------------------------------------------------------------------
 
 function Handle:setup(app, win)
-	Widget.setup(self, app, win)
 	local o = self:getGroup().Orientation == "horizontal"
 	self.Orientation = o
 	if o then
-		self.MaxWidth = 0
-		self.MaxHeight = ui.HUGE
-		self.Height = false
+		self.Width = "auto"
+		self.MaxHeight = "none"
 	else
-		self.MaxWidth = ui.HUGE
-		self.MaxHeight = 0
-		self.Width = false
+		self.MaxWidth = "none"
+		self.Height = "auto"
 	end
+	Widget.setup(self, app, win)
 end
 
 -------------------------------------------------------------------------------

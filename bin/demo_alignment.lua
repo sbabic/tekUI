@@ -32,21 +32,21 @@ local window = Window:new
 				Button:new
 				{
 					Text = L.ALIGNMENT_LEFT,
-					MaxWidth = 0,
+					Width = "auto",
 					MaxHeight = "none",
 					HAlign = "left"
 				},
 				Button:new
 				{
 					Text = L.ALIGNMENT_CENTER,
-					MaxWidth = 0,
+					Width = "auto",
 					MaxHeight = "none",
 					HAlign = "center"
 				},
 				Group:new
 				{
 					Legend = L.ALIGNMENT_GROUP,
-					MaxWidth = 0,
+					Width = "auto",
 					MaxHeight = "none",
 					HAlign = "right",
 					Children =

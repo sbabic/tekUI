@@ -75,7 +75,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 19.1"
+_VERSION = "Element 19.2"
 local Element = _M
 
 -------------------------------------------------------------------------------
@@ -372,7 +372,9 @@ end
 -------------------------------------------------------------------------------
 
 function Element:onSetStyle()
-	self.Application:decodeProperties(self)
+	if self.Flags:check(ui.FL_SETUP) then
+		self.Application:decodeProperties(self)
+	end
 end
 
 -------------------------------------------------------------------------------

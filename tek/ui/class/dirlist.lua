@@ -84,7 +84,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 16.1"
+_VERSION = "DirList 16.2"
 
 local DirList = _M
 
@@ -204,7 +204,7 @@ function DirList.new(class, self)
 	self.ParentButton = newButton
 	{
 		Text = L.PARENT,
-		MaxWidth = 0,
+		Width = "auto",
 		Height = "fill",
 		onClick = function(parentbutton)
 			self:goParent()
@@ -227,7 +227,7 @@ function DirList.new(class, self)
 	self.ReloadButton = newButton
 	{
 		Text = L.RELOAD,
-		MaxWidth = 0,
+		Width = "auto",
 		Height = "fill",
 		onClick = function(reloadbutton)
 			self:reload()
@@ -301,7 +301,7 @@ function DirList.new(class, self)
 	{
 		Text = L.DIRECTORY,
 		Width = "fill",
-		MaxWidth = 0,
+		Width = "auto",
 		Class = "caption",
 	}
 
@@ -338,7 +338,7 @@ function DirList.new(class, self)
 							{
 								Text = L.LOCATION,
 								Width = "fill",
-								MaxWidth = 0,
+								Width = "auto",
 								Class = "caption",
 							},
 							self.LocationField,

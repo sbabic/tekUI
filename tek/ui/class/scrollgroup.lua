@@ -68,7 +68,7 @@ local remove = table.remove
 local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 17.0"
+_VERSION = "ScrollGroup 17.1"
 
 local ScrollGroup = _M
 
@@ -302,9 +302,9 @@ function ScrollGroup:onSetCanvasLeft(x)
 		ox = ox or c.CanvasLeft
 		x = max(0, min(c.CanvasWidth - (r3 - r1 + 1), floor(x)))
 		local dx = ox - x
-		c.CanvasLeft = x
+		c:setValue("CanvasLeft", x, false)
 		c.OldCanvasLeft = x
-		self.Child:setValue("CanvasLeft", x)
+		c:setValue("CanvasLeft", x)
 		if self.HSliderGroup then
 			self.HSliderGroup.Slider:setValue("Value", x)
 		end
@@ -326,9 +326,9 @@ function ScrollGroup:onSetCanvasTop(y)
 		oy = oy or c.CanvasTop
 		y = max(0, min(c.CanvasHeight - (r4 - r2 + 1), floor(y)))
 		local dy = oy - y
-		c.CanvasTop = y
+		c:setValue("CanvasTop", y, false)
 		c.OldCanvasTop = y
-		self.Child:setValue("CanvasTop", y)
+		c:setValue("CanvasTop", y)
 		if self.VSliderGroup then
 			self.VSliderGroup.Slider:setValue("Value", y)
 		end

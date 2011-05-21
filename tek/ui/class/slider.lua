@@ -73,7 +73,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 24.0"
+_VERSION = "Slider 24.1"
 local Slider = _M
 
 -------------------------------------------------------------------------------
@@ -147,16 +147,14 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:setup(app, window)
-	Numeric.setup(self, app, window)
 	if self.Orientation == "horizontal" then
-		self.MaxWidth = ui.HUGE
-		self.MaxHeight = 0
-		self.Width = false
+		self.MaxWidth = "none"
+		self.Height = "auto"
 	else
-		self.MaxWidth = 0
-		self.MaxHeight = ui.HUGE
-		self.Height = false
+		self.Width = "auto"
+		self.MaxHeight = "none"
 	end
+	Numeric.setup(self, app, window)
 	self.Child:setup(app, window)
 end
 

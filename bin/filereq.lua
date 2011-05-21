@@ -31,8 +31,7 @@ app = ui.Application:new
 							Text = L.PATH,
 							Class = "caption",
 							Style = "text-align: right",
-							Width = "fill",
-							MaxWidth = 0,
+							Width = "auto",
 							KeyCode = true,
 						},
 						ui.TextInput:new
@@ -46,8 +45,7 @@ app = ui.Application:new
 							Text = L.SELECTED,
 							Class = "caption",
 							Style = "text-align: right",
-							Width = "fill",
-							MaxWidth = 0,
+							Width = "auto",
 							KeyCode = true,
 						},
 						ui.TextInput:new
@@ -59,8 +57,7 @@ app = ui.Application:new
 							Text = L.STATUS,
 							Class = "caption",
 							Style = "text-align: right",
-							Width = "fill",
-							MaxWidth = 0,
+							Width = "auto",
 							KeyCode = true,
 						},
 						ui.Text:new
@@ -73,8 +70,7 @@ app = ui.Application:new
 							Text = L.MULTISELECT,
 							Class = "caption",
 							Style = "text-align: right",
-							Width = "fill",
-							MaxWidth = 0,
+							Width = "auto",
 							KeyCode = true,
 						},
 						ui.CheckMark:new
@@ -87,7 +83,7 @@ app = ui.Application:new
 				ui.Button:new
 				{
 					Text = L.CHOOSE_FILE,
-					MaxWidth = 0,
+					Width = "auto",
 					HAlign = "right",
 					onClick = function(self)
 						local app = self.Application

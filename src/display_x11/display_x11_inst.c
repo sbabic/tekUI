@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 
 #include "display_x11_mod.h"
 
@@ -271,6 +272,9 @@ static TBOOL getprops(X11DISPLAY *inst)
 			inst->x11_BPP = 4;
 			break;
 	}
+
+	TDBPRINTF(TDB_INFO, ("depth: %d - bpp: %d - pixfmt: %08x - flags: %d\n", 
+		inst->x11_Depth, inst->x11_BPP, inst->x11_PixFmt, inst->x11_Flags));
 
 	inst->x11_ShmAvail = (XShmQueryVersion(inst->x11_Display,
 		&major, &minor, &pixmap) == True && pixmap);

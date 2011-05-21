@@ -129,7 +129,7 @@ local unpack = unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 32.1"
+_VERSION = "Application 32.2"
 local Application = _M
 
 -------------------------------------------------------------------------------
@@ -754,8 +754,8 @@ function Application:requestFile(args)
 		Height = args.Height or 500,
 		MinWidth = 0,
 		MinHeight = 0,
-		MaxWidth = ui.HUGE,
-		MaxHeight = ui.HUGE,
+		MaxWidth = "none",
+		MaxHeight = "none",
 		Center = center,
 		Children = { dirlist },
 		HideOnEscape = true

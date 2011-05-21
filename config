@@ -65,15 +65,12 @@ PLATFORM_LIBS = -pthread
 # Other libraries:
 #------------------------------------------------------------------------------
 
-LUA_DEFS = -I/usr/local/include/lua51 -I/usr/include/lua5.1
+LUA_DEFS = -I/usr/local/include/lua51 -I/usr/include/lua5.1 -I/usr/local/include
 
 FREETYPE_DEFS = -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2
 
 X11_LIBS = -L/usr/X11R6/lib -LX11 -lXext -lXxf86vm
-X11_DEFS = $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DENABLE_XFT -DENABLE_XVID -DENABLE_STDIN -I/usr/X11R6/include
-
-NANOX_LIBS = -L /work/nano-x/dev/src/lib -lnano-X
-NANOX_DEFS = -I /work/nano-x/dev/src/include -DENABLE_STDIN
+X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DENABLE_XFT -DENABLE_XVID -DENABLE_STDIN
 
 DFB_LIBS = `pkg-config --libs directfb`
 DFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
@@ -82,6 +79,9 @@ WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 
 RAWFB_LIBS = -lfreetype -ldisplay_x11 $(X11_LIBS)
 RAWFB_DEFS = $(FREETYPE_DEFS)
+
+NANOX_LIBS = -L /work/nano-x/dev/src/lib -lnano-X
+NANOX_DEFS = -I /work/nano-x/dev/src/include -DENABLE_STDIN
 
 #------------------------------------------------------------------------------
 # Installation paths:

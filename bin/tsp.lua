@@ -315,7 +315,8 @@ app = ui.Application:new
 		ui.Window:new
 		{
 			Width = 400, Height = 600,
-			MaxWidth = "none", MaxHeight = "none",
+			MaxWidth = "none", 
+			MaxHeight = "none",
 			MinWidth = 0, MinHeight = 0,
 			Title = "Travelling Salesman Approximation",
 			Orientation = "vertical",
@@ -388,13 +389,13 @@ app = ui.Application:new
 										self:getById("the-tsp").Decay = TSP.getDecay(self.Value)
 									end,
 									show = function(self, display, drawable)
-										self:setValue("Value", self.Value, true)
-										return ui.ScrollBar.show(self, display, drawable)
+										ui.ScrollBar.show(self, display, drawable)
+										self:onSetValue()
 									end
 								},
 								ui.Text:new
 								{
-									MaxWidth = 0,
+									Width = "auto",
 									Id = "decay-value",
 									Font = "ui-fixed",
 									Text = "1.00",
@@ -406,7 +407,7 @@ app = ui.Application:new
 							Mode = "button",
 							Class = "button",
 							Text = "Restart",
-							MaxWidth = 0,
+							Width = "auto",
 							onClick = function(self)
 								self:getById("the-tsp"):reset()
 							end
@@ -423,7 +424,7 @@ app = ui.Application:new
 							Max = 15,
 							Id = "gauge-thresh",
 							Orientation = "vertical",
-							MaxWidth = 0,
+							Width = "auto",
 							Height = "free",
 						},
 						TSP:new 

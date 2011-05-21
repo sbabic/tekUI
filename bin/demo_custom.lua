@@ -80,8 +80,8 @@ function NumberInput.new(class, self)
 		},
 		Group:new
 		{
+			Width = "auto",
 			Height = "fill",
-			MaxWidth = 0,
 			Orientation = "vertical",
 			Children = self.Buttons2
 		}

@@ -118,7 +118,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 34.0"
+_VERSION = "tekUI 34.1"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -749,9 +749,6 @@ local DEF_STYLESHEET_DEFAULT =
 		["border-style"] = "outset",
 		["border-style:active"] = "inset",
 	},
-	["tek.ui.class.gauge"] = {
-		["height"] = "fill",
-	},
 	["tek.ui.class.group"] = {
 		["border-width"] = 0,
 	},
@@ -776,10 +773,6 @@ local DEF_STYLESHEET_DEFAULT =
 	},
 	["tek.ui.class.scrollbar"] = {
 		["valign"] = "center",
-	},
-	["tek.ui.class.slider"] = {
-		["width"] = "fill",
-		["height"] = "fill",
 	},
 	["tek.ui.class.spacer"] = {
 		["border-width"] = 1,

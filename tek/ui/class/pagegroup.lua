@@ -59,7 +59,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 19.0"
+_VERSION = "PageGroup 19.2"
 local PageGroup = _M
 
 -------------------------------------------------------------------------------
@@ -242,117 +242,93 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 -------------------------------------------------------------------------------
 
 function PageGroup.new(class, self)
-
 	self = self or { }
-
-	self.PageNumber = self.PageNumber or 1
-
+	self.Orientation = "vertical"
+	self.PageCaptions = self.PageCaptions or false
+	self.TabButtons = false
+	
+	local layout = self.Layout
+	self.Layout = false
 	local children = self.Children or { }
-
-	local pagenumber = type(self.PageNumber) == "number" and
-		self.PageNumber or 1
+	self.Children = false
+	local pagenumber = self.PageNumber or 1
+	self.PageNumber = pagenumber
+	pagenumber = type(pagenumber) == "number" and pagenumber or 1
 	pagenumber = max(1, min(pagenumber, #children))
 
-	local pageelement = children[pagenumber] or ui.Area:new { }
-
-	local pagegroup = PageContainerGroup:new
-	{
-		Children = children,
+	self = Group.new(class, self)
+	
+	local pagegroup = PageContainerGroup:new {
+		PageElement = children[pagenumber] or ui.Area:new { },
 		PageNumber = pagenumber,
-		PageElement = pageelement,
 		Width = self.Width,
 		Height = self.Height,
-		Layout = self.Layout
+		Layout = layout,
+		Children = children
 	}
-	self.Layout = false
-
-	self.PageCaptions = self.PageCaptions or false
-
+	
 	local pagebuttons = false
-
 	if self.PageCaptions then
-
 		pagegroup.Class = "page-container"
-
-		pagebuttons =
-		{
-			ui.Frame:new
-			{
+		pagebuttons = { 
+			ui.Frame:new {
 				Class = "page-button-fill",
 				Style = "border-left-width: 0",
 				MinWidth = 3,
 				MaxWidth = 3,
 				Width = 3,
-				Height = "fill",
+				Height = "fill"
 			}
 		}
-
 		if #children == 0 then
-			insert(pagebuttons, ui.Text:new
-			{
+			insert(pagebuttons, ui.Text:new {
 				Class = "page-button",
 				Mode = "inert",
-				MaxWidth = 0,
+				Width = "auto"
 			})
 		else
-			if self.PageCaptions then
-				for i = 1, #children do
-					local pc = self.PageCaptions[i]
-					if type(pc) == "table" then
-						-- element
-					else
-						local text = pc or tostring(i)
-						pc = ui.Text:new
-						{
-							Class = "page-button",
-							Mode = "touch",
-							MaxWidth = 0,
-							Text = text,
-							KeyCode = true,
-							onPress = function(pagebutton)
-								if pagebutton.Pressed then
-									self:setValue("PageNumber", i)
-								end
+			for i = 1, #children do
+				local pc = self.PageCaptions[i]
+				if type(pc) == "table" then
+					-- is element already, ok
+				else
+					local text = pc or tostring(i)
+					pc = ui.Text:new
+					{
+						Class = "page-button",
+						Mode = "touch",
+						Width = "auto",
+						Text = text,
+						KeyCode = true,
+						onPress = function(pagebutton)
+							if pagebutton.Pressed then
+								self:setValue("PageNumber", i)
 							end
-						}
-					end
-					insert(pagebuttons, pc)
+						end
+					}
 				end
+				insert(pagebuttons, pc)
 			end
 		end
-
-		insert(pagebuttons, ui.Frame:new
-		{
+		insert(pagebuttons, ui.Frame:new {
 			Class = "page-button-fill",
-			Height = "fill",
+			Height = "fill"
 		})
-
+		self:addMember(Group:new {
+			Class = "page-button-group",
+			Width = "fill",
+			Height = "auto",
+			Children = pagebuttons
+		})
+		self.TabButtons = pagebuttons
 		if pagebuttons[pagenumber + 1] then
 			pagebuttons[pagenumber + 1]:setValue("Selected", true)
 		end
-
-		self.Children =
-		{
-			Group:new
-			{
-				Class = "page-button-group",
-				Width = "fill",
-				MaxHeight = 0,
-				Children = pagebuttons,
-			},
-			pagegroup
-		}
-	else
-		self.Children =
-		{
-			pagegroup
-		}
 	end
 
-	self.TabButtons = pagebuttons
-	self.Orientation = "vertical"
+	self:addMember(pagegroup)
 
-	return Group.new(class, self)
+	return self
 end
 
 -------------------------------------------------------------------------------

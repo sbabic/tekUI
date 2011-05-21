@@ -65,7 +65,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 13.0"
+_VERSION = "ScrollBar 13.2"
 
 local ScrollBar = _M
 
@@ -187,22 +187,21 @@ function ScrollBar.new(class, self)
 	if self.AcceptFocus == nil then
 		self.AcceptFocus = true
 	end
+	
 	self.Slider = self.Slider or SBSlider:new
 	{
 		Child = self.Child,
-		ScrollBar = self,
+		ScrollBar = false, -- initialized later, see below
 		Min = self.Min,
 		Max = self.Max,
 		Value = self.Value,
 		Range = self.Range,
 		Step = self.Step,
-		Notifications = self.Notifications,
 		Orientation = self.Orientation,
 		Integer = self.Integer,
 		Kind = self.Kind,
 	}
-	self.Notifications = false
-
+	
 	local img1, img2
 	local class1, class2 = "scrollbar-arrowleft", "scrollbar-arrowright"
 	local increase = self.Step
@@ -266,8 +265,12 @@ function ScrollBar.new(class, self)
 			self.ArrowButton2
 		}
 	end
-	return Group.new(class, self)
-
+	
+	self = Group.new(class, self)
+	
+	self.Slider.ScrollBar = self
+	
+	return self
 end
 
 -------------------------------------------------------------------------------
@@ -275,16 +278,16 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollBar:setup(app, window)
-	Group.setup(self, app, window)
 	if self.Orientation == "vertical" then
-		self.MaxWidth = 0
-		self.MaxHeight = ui.HUGE
+		self.Width = "auto"
+		self.MaxHeight = "none"
 		self.Height = self.Height or "fill"
 	else
-		self.MaxWidth = ui.HUGE
-		self.MaxHeight = 0
+		self.MaxWidth = "none"
+		self.Height = "auto"
 		self.Width = self.Width or "fill"
 	end
+	Group.setup(self, app, window)
 end
 
 -------------------------------------------------------------------------------

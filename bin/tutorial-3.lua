@@ -15,7 +15,7 @@ ui.Application:new
 				ui.Button:new
 				{
 					Text = "Hello",
-					MaxWidth = 0,
+					Width = "auto",
 				},
 				ui.Button:new
 				{

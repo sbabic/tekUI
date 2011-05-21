@@ -42,7 +42,7 @@ local min = math.min
 local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 17.0"
+_VERSION = "Gauge 17.1"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -83,18 +83,14 @@ end
 -------------------------------------------------------------------------------
 
 function Gauge:setup(app, window)
-	Numeric.setup(self, app, window)
-	
 	if self.Orientation == "horizontal" then
-		self.MaxWidth = ui.HUGE
-		self.MaxHeight = 0
-		self.Width = false
+		self.MaxWidth = "none"
+		self.Height = "auto"
 	else
-		self.MaxWidth = 0
-		self.MaxHeight = ui.HUGE
-		self.Height = false
+		self.Width = "auto"
+		self.MaxHeight = "none"
 	end
-	
+	Numeric.setup(self, app, window)
 	self.Child:setup(app, window)
 end
 

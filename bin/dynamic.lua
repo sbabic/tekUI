@@ -24,12 +24,12 @@ ui.Application:new
 						{
 							Id = "add-button",
 							NumButtons = 0,
-							MaxWidth = 0,
+							Width = "auto",
 							Text = "Add",
 							onClick = function(self)
 								if self.NumButtons < 10 then
 									self:getParent():addMember(ui.Button:new {
-										MaxWidth = 0,
+										Width = "auto",
 										Text = "Remove",
 										onClick = function(self)
 											local add = self:getById("add-button")
@@ -68,7 +68,7 @@ ui.Application:new
 									Step = 0x400,
 									show = function(self, drawable)
 										ui.Slider.show(self, drawable)
-										self:setValue("Value", self.Value, true)
+										self:onSetValue()
 									end,
 									onSetValue = function(self)
 										ui.Slider.onSetValue(self)
@@ -85,7 +85,7 @@ ui.Application:new
 								{
 									Text = "Reset",
 									VAlign = "center",
-									MaxWidth = 0,
+									Width = "auto",
 									onClick = function(self)
 										self:getById("slider-2"):reset()
 									end
@@ -126,7 +126,7 @@ ui.Application:new
 							Step = 100,
 							show = function(self, drawable)
 								ui.Slider.show(self, drawable)
-								self:setValue("Value", self.Value, true)
+								self:onSetValue()
 							end,
 							onSetValue = function(self)
 								ui.Slider.onSetValue(self)
@@ -143,7 +143,7 @@ ui.Application:new
 						{
 							Style = "font: ui-huge",
 							Id = "text-field-1",
-							MaxWidth = 0,
+							Width = "auto",
 						}
 					}
 				}

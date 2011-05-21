@@ -32,6 +32,8 @@ local insert = table.insert
 local remove = table.remove
 local sort = table.sort
 
+local VERSION = "1.1"
+
 local RULE = "-------------------------------------------------------------------------------"
 local PAGE = "==============================================================================="
 
@@ -603,7 +605,7 @@ local args = Args.read(template, arg)
 
 if not args or args["-h"] then
 
-	print("Lua documentation generator")
+	print("Lua documentation generator " .. VERSION)
 	print("Usage: gendoc.lua [directory or filename] [options]")
 	print("Available options:")
 	print("  -h=HELP/S      this help")

@@ -48,7 +48,7 @@ local Text = ui.Text
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 6.0"
+_VERSION = "ListView 6.1"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -59,7 +59,7 @@ local HeadItem = Text:newClass { _NAME = "_listview-headitem" }
 function HeadItem.init(self)
 	self = self or { }
 	self.Mode = "inert"
-	self.MaxWidth = 0
+	self.Width = "auto"
 	return Text.init(self)
 end
 

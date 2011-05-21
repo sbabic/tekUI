@@ -42,6 +42,8 @@ static const luaL_Reg tek_lib_visual_funcs[] =
 	{ "getMsg", tek_lib_visual_getmsg },
 	{ "createPixmap", tek_lib_visual_createpixmap },
 	{ "freePixmap", tek_lib_visual_freepixmap },
+	{ "getPixmap", tek_lib_visual_getpixmap },
+	{ "setPixmap", tek_lib_visual_setpixmap },
 	{ TNULL, TNULL }
 };
 

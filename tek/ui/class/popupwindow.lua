@@ -32,7 +32,7 @@ local Window = ui.require("window", 33)
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 5.0"
+_VERSION = "PopupWindow 5.1"
 
 local PopupWindow = _M
 
@@ -45,8 +45,8 @@ function PopupWindow.init(self)
 	self.BeginPopupTicks = 0
 	self.DelayedBeginPopup = false
 	self.DelayedEndPopup = false
-	self.MaxWidth = self.MaxWidth or 0
-	self.MaxHeight = self.MaxHeight or 0
+	self.Width = self.Width or "auto"
+	self.Height = self.Height or "auto"
 	self = Window.init(self)
 	self.FullScreen = false
 	return self

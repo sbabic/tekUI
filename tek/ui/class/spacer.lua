@@ -25,7 +25,7 @@ local ui = require "tek.ui"
 local Frame = ui.require("frame", 21)
 
 module("tek.ui.class.spacer", tek.ui.class.frame)
-_VERSION = "Spacer 2.1"
+_VERSION = "Spacer 2.2"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -38,14 +38,12 @@ local Spacer = _M
 -------------------------------------------------------------------------------
 
 function Spacer:setup(app, win)
-	Frame.setup(self, app, win)
 	if self:getGroup().Orientation == "horizontal" then
-		self.MaxWidth = 0
-		self.MaxHeight = ui.HUGE
+		self.Width = "auto"
 		self.Height = "fill"
 	else
-		self.MaxWidth = ui.HUGE
-		self.MaxHeight = 0
+		self.Height = "auto"
 		self.Width = "fill"
 	end
+	Frame.setup(self, app, win)
 end

@@ -44,17 +44,17 @@ ui.application:new
 							Children =
 							{
 								ui.RadioButton:new { Text = "Left",
-									onPress = function(self)
+									onClick = function(self)
 										setouter(self, "HAlign", "left")
 									end
 								},
 								ui.RadioButton:new { Text = "Center", Selected = true,
-									onPress = function(self)
+									onClick = function(self)
 										setouter(self, "HAlign", "center")
 									end
 								},
 								ui.RadioButton:new { Text = "Right",
-									onPress = function(self)
+									onClick = function(self)
 										setouter(self, "HAlign", "right")
 									end
 								}
@@ -68,17 +68,17 @@ ui.application:new
 							Children =
 							{
 								ui.RadioButton:new { Text = "Top",
-									onPress = function(self)
+									onClick = function(self)
 										setouter(self, "VAlign", "top")
 									end
 								},
 								ui.RadioButton:new { Text = "Center", Selected = true,
-									onPress = function(self)
+									onClick = function(self)
 										setouter(self, "VAlign", "center")
 									end
 								},
 								ui.RadioButton:new { Text = "Bottom",
-									onPress = function(self)
+									onClick = function(self)
 										setouter(self, "VAlign", "bottom")
 									end
 								}
@@ -205,17 +205,17 @@ ui.application:new
 							Children =
 							{
 								ui.RadioButton:new { Text = "Left",
-									onPress = function(self)
+									onClick = function(self)
 										setinner(self, "HAlign", "left")
 									end
 								},
 								ui.RadioButton:new { Text = "Center", Selected = true,
-									onPress = function(self)
+									onClick = function(self)
 										setinner(self, "HAlign", "center")
 									end
 								},
 								ui.RadioButton:new { Text = "Right",
-									onPress = function(self)
+									onClick = function(self)
 										setinner(self, "HAlign", "right")
 									end
 								}
@@ -229,17 +229,17 @@ ui.application:new
 							Children =
 							{
 								ui.RadioButton:new { Text = "Top",
-									onPress = function(self)
+									onClick = function(self)
 										setinner(self, "VAlign", "top")
 									end
 								},
 								ui.RadioButton:new { Text = "Center", Selected = true,
-									onPress = function(self)
+									onClick = function(self)
 										setinner(self, "VAlign", "center")
 									end
 								},
 								ui.RadioButton:new { Text = "Bottom",
-									onPress = function(self)
+									onClick = function(self)
 										setinner(self, "VAlign", "bottom")
 									end
 								}

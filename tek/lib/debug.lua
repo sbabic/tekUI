@@ -47,7 +47,6 @@ local getinfo = debug.getinfo
 local stderr = io.stderr
 local pairs = pairs
 local select = select
-local time = os.time
 local tonumber = tonumber
 local tostring = tostring
 local traceback = debug.traceback
@@ -55,7 +54,7 @@ local type = type
 local unpack = unpack
 
 module "tek.lib.debug"
-_VERSION = "Debug 4.3"
+_VERSION = "Debug 5.1"
 
 -- symbolic:
 
@@ -78,20 +77,28 @@ out = stderr
 wrout = function(...) out:write(...) end
 
 -------------------------------------------------------------------------------
+--	debug.format(lvl, msg, ...): Format error message
+-------------------------------------------------------------------------------
+
+function format(lvl, msg, ...)
+	local t = getinfo(4, "lS")
+	return ("(%02d %s:%d) " .. msg .. "\n"):format(lvl, t.short_src,
+		t.currentline, ...)
+end
+
+-------------------------------------------------------------------------------
 --	debug.print(lvl, msg, ...): Prints formatted text if the global debug level
 --	is less or equal the specified level.
 -------------------------------------------------------------------------------
 
 function print(lvl, msg, ...)
 	if level and lvl >= level then
-		local t = getinfo(3, "lS")
 		local arg = { }
 		for i = 1, select('#', ...) do
 			local v = select(i, ...)
-			arg[i] = v and type(v) ~= "number" and tostring(v) or v or 0
+			arg[i] = v ~= nil and tostring(v) or v or "<nil>"
 		end
-		wrout(("(%02d %d %s:%d) " .. msg):format(lvl,
-			time(), t.short_src, t.currentline, unpack(arg)) .. "\n")
+		wrout(format(lvl, msg, unpack(arg)))
 	end
 end
 
@@ -169,12 +176,12 @@ end
 --	function is debug.wrout().
 -------------------------------------------------------------------------------
 
-local function encodenonascii(c)
+local function f_encodenascii(c)
 	return ("\\%03d"):format(c:byte())
 end
 
 local function encode(s)
-	return s:gsub('([%z\001-\031\092"])', encodenonascii)
+	return s:gsub('([%z\001-\031\092"])', f_encodenascii)
 end
 
 local function dumpr(tab, indent, outfunc, saved)

@@ -86,7 +86,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 21.0"
+_VERSION = "Frame 21.1"
 local Frame = _M
 
 local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
@@ -258,7 +258,9 @@ end
 
 function Frame:onSetStyle()
 	Area.onSetStyle(self)
-	self:newBorderObject()
-	self:layoutBorder()
-	self.Flags:set(FL_REDRAWBORDER)
+	if self.Flags:check(ui.FL_SETUP) then
+		self:newBorderObject()
+		self:layoutBorder()
+		self.Flags:set(FL_REDRAWBORDER)
+	end
 end

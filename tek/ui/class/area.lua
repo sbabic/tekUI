@@ -67,10 +67,9 @@
 --		- {{HAlign [IG]}} ({{"left"}}, {{"center"}}, {{"right"}})
 --			Horizontal alignment of the element in its group. This attribute
 --			can be controlled using the {{halign}} style property.
---		- {{Height [IG]}} (number, '''false''', {{"fill"}}, {{"free"}})
+--		- {{Height [IG]}} (number, {{"auto"}}, {{"fill"}}, {{"free"}})
 --			Height of the element, in pixels, or
---				- '''false''' - unspecified; during initialization, the class'
---				default will be used
+--				- {{"auto"}} - Reserves the minimum required
 --				- {{"free"}} - Allows the element's height to grow to any size.
 --				- {{"fill"}} - To fill up the height that other elements in the
 --				same group have claimed, without claiming more.
@@ -80,20 +79,20 @@
 --			If '''true''', the element is in highlighted state. This
 --			state variable is handled by the [[#tek.ui.class.widget : Widget]]
 --			class.
---		- {{MaxHeight [IG]}} (number)
---			Maximum height of the element, in pixels [default: {{ui.HUGE}}].
+--		- {{MaxHeight [IG]}} (number or {{"none"}})
+--			Maximum height of the element, in pixels [default: {{"none"}}].
 --			This attribute is controllable via the {{max-height}} style
 --			property.
---		- {{MaxWidth [IG]}} (number)
---			Maximum width of the element, in pixels [default: {{ui.HUGE}}].
+--		- {{MaxWidth [IG]}} (number or {{"none"}})
+--			Maximum width of the element, in pixels [default: {{"none"}}].
 --			This attribute is controllable via the {{max-width}} style
 --			property.
 --		- {{MinHeight [IG]}} (number)
---			Minimum height of the element, in pixels [default: 0].
+--			Minimum height of the element, in pixels [default: {{0}}].
 --			This attribute is controllable via the {{min-height}} style
 --			property.
 --		- {{MinWidth [IG]}} (number)
---			Minimum width of the element, in pixels [default: 0].
+--			Minimum width of the element, in pixels [default: {{0}}].
 --			This attribute is controllable via the {{min-width}} style
 --			property.
 --		- {{Selected [ISG]}} (boolean)
@@ -111,10 +110,9 @@
 --			Specifies the weight that is attributed to the element relative
 --			to its siblings in the same group. By recommendation, the weights
 --			in a group should sum up to 0x10000.
---		- {{Width [IG]}} (number, '''false''', {{"fill"}}, {{"free"}})
+--		- {{Width [IG]}} (number, {{"auto"}}, {{"fill"}}, {{"free"}})
 --			Width of the element, in pixels, or
---				- '''false''' - unspecified; during initialization, the class'
---				default will be used
+--				- {{"auto"}} - Reserves the minimum required
 --				- {{"free"}} - Allows the element's width to grow to any size
 --				- {{"fill"}} - To fill up the width that other elements in the
 --				same group have claimed, without claiming more.
@@ -204,7 +202,7 @@ local type = type
 local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 44.0"
+_VERSION = "Area 45.0"
 local Area = _M
 
 local FL_REDRAW = ui.FL_REDRAW
@@ -282,6 +280,12 @@ function Area:setup(app, win)
 	end
 	if maxh == "none" then
 		maxh = HUGE
+	end
+	if w == "auto" then
+		maxw = 0
+	end
+	if h == "auto" then
+		maxh = 0
 	end
 	minw = tonumber(minw) or tonumber(w) or minw
 	minh = tonumber(minh) or tonumber(h) or minh

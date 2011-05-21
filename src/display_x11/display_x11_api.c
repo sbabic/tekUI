@@ -1109,7 +1109,8 @@ LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 		{
 			TBOOL success = TFALSE;
 			v->image = XCreateImage(mod->x11_Display, mod->x11_Visual,
-				mod->x11_Depth, ZPixmap, 0, NULL, w, h, mod->x11_BPP * 8, 0);
+				mod->x11_Depth, ZPixmap, 0, NULL, w, h, mod->x11_BPP * 8, 
+				mod->x11_BPP * w);
 			if (v->image)
 			{
 				success = TTRUE;
@@ -1155,8 +1156,8 @@ LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 				TDBPRINTF(TDB_ERROR,("Cannot render to screen mode\n"));
 				break;
 
-			case (32 << 9) + (PIXFMT_RGB << 1) + 0:
 			case (24 << 9) + (PIXFMT_RGB << 1) + 0:
+			case (32 << 9) + (PIXFMT_RGB << 1) + 0:
 				if (dtw == totw * 4 && !v->image_shm)
 				{
 					v->image->data = (char *) buf;

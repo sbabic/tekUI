@@ -12,7 +12,7 @@ local Text = ui.require("text", 28)
 local Window = ui.require("window", 33)
 
 module("tek.ui.class.editwindow", tek.ui.class.window)
-_VERSION = "EditWindow 6.0"
+_VERSION = "EditWindow 6.1"
 
 local EditWindow = _M
 
@@ -222,7 +222,7 @@ function EditWindow.new(class, self)
 	{
 		Style = "text-align: left",
 		Font = "ui-small",
-		MaxWidth = 0,
+		Width = "auto",
 		Text = "Line: 1 Col: 1",
 	}
 	
@@ -233,7 +233,7 @@ function EditWindow.new(class, self)
 		MinWidth = 20,
 		ImageAspectX = 2,
 		ImageAspectY = 3,
-		MaxWidth = 0,
+		Width = "auto",
 		Height = "fill",
 		Mode = "inert",
 	}
