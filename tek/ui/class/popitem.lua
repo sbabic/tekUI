@@ -57,18 +57,15 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-
 local ui = require "tek.ui"
 local PopupWindow = ui.require("popupwindow", 5)
 local Text = ui.require("text", 28)
-
 local floor = math.floor
-local ipairs = ipairs
 local max = math.max
 local unpack = unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 22.0"
+_VERSION = "PopItem 22.1"
 
 local PopItem = _M
 
@@ -253,15 +250,22 @@ end
 
 function PopItem:beginPopup()
 
+	local children = self.Children
+	if not children then
+		db.warn("element has no children")
+		return
+	end
+
 	local winx, winy, winw, winh = self:calcPopup()
 
 	if self.Window.ActivePopup then
-		db.info("Killed active popup")
+		db.warn("Killed active popup")
 		self.Window.ActivePopup:endPopup()
 	end
 
 	-- prepare children for being used in a popup window:
-	for _, c in ipairs(self.Children) do
+	for i = 1, #children do
+		local c = children[i]
 		c:init()
 		c.Flags:set(FL_POPITEM)
 		if c:instanceOf(PopItem) then
@@ -306,6 +310,10 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:endPopup()
+	if not self.Children then
+		db.warn("element has no children")
+		return
+	end
 	self:setValue("Selected", false, false)
 	self:setValue("Focus", false)
 	self:setState()

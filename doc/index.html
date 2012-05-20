@@ -11,7 +11,7 @@
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8j
+			Version 0.8k
 		</p>
 		<hr />
 		<h2>
@@ -124,10 +124,13 @@
 								4.2. <a href="#reactingoninput">Reacting on input</a> 
 							</li>
 							<li style="list-style-type: none">
-								4.3. <a href="#handlers">List of predefined handlers</a> 
+								4.3. <a href="#layout">Controlling the layout</a> 
 							</li>
 							<li style="list-style-type: none">
-								4.4. <a href="#adhocclasses">Ad-hoc setup of classes</a> 
+								4.4. <a href="#handlers">List of predefined handlers</a> 
+							</li>
+							<li style="list-style-type: none">
+								4.5. <a href="#adhocclasses">Ad-hoc setup of classes</a> 
 							</li>
 						</ul>
 					</blockquote>
@@ -210,10 +213,13 @@
 		<div class="node"><h2><a name="status" id="status">1.2. Status, requirements</a></h2>
 			<p>
 				TekUI is in early stage of development. It is available for the
-				Linux, Windows, and FreeBSD platforms. Display drivers are included
-				for X11, Windows, and DirectFB. See also <a href="todo.html">TODO</a> for a
-				list of known bugs and missing features, and <a href="#requirements">requirements</a> for a
-				list of the required libraries.
+				Linux, Windows, and FreeBSD platforms. It may work on other flavours
+				of Unix with few minor changes in the build configuration.
+			</p>
+			<p>
+				Display drivers are included for X11, Windows, and DirectFB. See also
+				<a href="todo.html">TODO</a> for a list of known bugs and missing features,
+				and <a href="#requirements">requirements</a> for a list of the required libraries.
 			</p>
 		</div>
 		<div class="node"><h2><a name="development" id="development">1.3. Development model</a></h2>
@@ -761,6 +767,7 @@ ui.Application:new
           Text = &quot;Hello, World!&quot;,
           Class = &quot;button&quot;,
           Mode = &quot;button&quot;,
+          Width = &quot;auto&quot;
         }
       }
     }
@@ -792,8 +799,9 @@ ui.Application:new
 		<div class="node"><h2><a name="reactingoninput" id="reactingoninput">4.2. Reacting on input</a></h2>
 			<p>
 				There are different ways for reacting to presses on the 'Hello,
-				World' button. The simplest form is to place an <code>onClick</code> 
-				function into the Text object:
+				World' button. The simplest form is to place an
+				<a href="manual.html#Object:onClick">Object:onClick</a> function into the
+				Text object:
 			</p>
 <pre>
 ui = require &quot;tek.ui&quot;
@@ -806,11 +814,10 @@ ui.Application:new
       Title = &quot;Hello&quot;,
       Children =
       {
-        ui.Text:new
+        ui.Button:new
         {
           Text = &quot;Hello, World!&quot;,
-          Class = &quot;button&quot;,
-          Mode = &quot;button&quot;,
+          Width = &quot;auto&quot;,
           onClick = function(self)
             print &quot;Hello, World!&quot;
           end
@@ -821,15 +828,16 @@ ui.Application:new
 }:run()
 </pre>
 			<p>
-				But <code>onClick</code> is just a convenient shortcut for the most trivial of
-				all cases. To catch more events, you can override handler functions
-				which react on changes to an element's state variables, like
-				<code>Pressed</code> and <code>Selected</code>, to name but a few. They contain
+				But <code>onClick</code> is just a convenient shortcut for the most trivial
+				of all cases. To catch more events, you can override handler
+				functions which react on changes to an element's state variables,
+				like <code>Pressed</code> and <code>Selected</code>, to name but a few. They contain
 				booleans and are indicative of the Element's state, such as: Is it in
 				selected state, is it pressed down, is it hovered by the mouse, is it
-				receiving the input? The <code>onPress</code> handler receives the current
-				state of the <code>Pressed</code> variable as an argument, so it can be used
-				to catch not only releases, but also presses of the mouse button:
+				receiving the input? The
+				<a href="manual.html#Object:onPress">Object:onPress</a> handler, for example,
+				can be used to catch not only releases, but also presses on the
+				element:
 			</p>
 <pre>
 ui = require &quot;tek.ui&quot;
@@ -839,17 +847,16 @@ ui.Application:new
   {
     ui.Window:new
     {
-      Title = &quot;Hello&quot;,
       Children =
       {
-        ui.Text:new
+        ui.Text:new { },
+        ui.Button:new
         {
-          Text = &quot;Hello, World!&quot;,
-          Class = &quot;button&quot;,
-          Mode = &quot;button&quot;,
-          onPress = function(self, pressed)
-            ui.Text.onPress(self, pressed)
-            print(&quot;Pressed:&quot;, pressed)
+          Text = &quot;Click&quot;,
+          Width = &quot;auto&quot;,
+          onPress = function(self)
+            ui.Button.onPress(self)
+            self:getPrev():setValue(&quot;Text&quot;, tostring(self.Pressed))
           end
         }
       }
@@ -862,6 +869,13 @@ ui.Application:new
 				original implementation of the same method, as seen in the example.
 			</p>
 			<p>
+				Setting a value using
+				<a href="manual.html#Object:setValue">Object:setValue</a> may invoke a
+				notification handler. In our example, the neighboring element in the
+				group will be notified of an updated text, which will cause it to be
+				repainted.
+			</p>
+			<p>
 				For regular applications it is normally sufficient to stick to
 				overwriting the available <a href="#handlers">handlers</a> as in the previous example.
 				But the underlying mechanism to register a notification handler can
@@ -872,12 +886,7 @@ ui.Application:new
 ui = require &quot;tek.ui&quot;
 app = ui.Application:new()
 win = ui.Window:new { Title = &quot;Hello&quot;, HideOnEscape = true }
-text = ui.Text:new {
-  KeyCode = true,
-  Text = &quot;_Hello, World!&quot;,
-  Class = &quot;button&quot;,
-  Mode = &quot;button&quot;
-}
+text = ui.Button:new { Text = &quot;_Hello, World!&quot;, Width = &quot;auto&quot; }
 text:addNotify(&quot;Pressed&quot;, false, {
   ui.NOTIFY_SELF,
   ui.NOTIFY_FUNCTION,
@@ -890,12 +899,6 @@ app:addMember(win)
 app:run()
 </pre>
 			<p>
-				In this example we have also set the <code>HideOnEscape</code> attribute for
-				the application to quit on pressing the Escape key, and the
-				<code>KeyCode</code> attribute, so that a shortcut for the element is created
-				by placing an underscore in front of a letter in its caption.
-			</p>
-			<p>
 				See also <a href="manual.html#Object:addNotify">Object:addNotify</a> for
 				all the hairy details on notification handlers, and the
 				<a href="manual.html#tek.ui.class.area">Area</a> and
@@ -903,7 +906,114 @@ app:run()
 				important state variables.
 			</p>
 		</div>
-		<div class="node"><h2><a name="handlers" id="handlers">4.3. List of predefined handlers</a></h2>
+		<div class="node"><h2><a name="layout" id="layout">4.3. Controlling the layout</a></h2>
+			<p>
+				By default a tekUI layout is dynamic. This means it will be
+				calculated and, if necessary, recalculated at runtime&#185;. Screen and
+				font characteristics are taken into account as well as style
+				properties controlling the appearance of individual elements.
+			</p>
+			<h4>
+				Group layouting attributes
+			</h4>
+			<blockquote>
+				<ul>
+					<li>
+						<code>Orientation</code> - <code>&quot;horizontal&quot;</code> or <code>&quot;vertical&quot;</code>, the default
+						is <code>&quot;horizontal&quot;</code>. This attribute informs the group of the primary
+						axis on which elements are to be layouted (left-to-right vs.
+						top-to-bottom). This applies to grids also.
+					</li>
+					<li>
+						<code>Columns</code> - Number of columns. A number greater than <code>1</code> 
+						turns the group into a grid.
+					</li>
+					<li>
+						<code>Rows</code> - Number of rows. A number greater than <code>1</code> turns the
+						group into a grid.
+					</li>
+					<li>
+						<code>Layout</code> - The name of a layouting class. Default: <code>&quot;default&quot;</code>,
+						which will try to load the <code>tek.ui.layout.default</code> class. It is
+						also possible to specify an instance of a layouter instead of just
+						the class name.
+					</li>
+					<li>
+						<code>SameSize</code> - boolean, <code>&quot;width&quot;</code> or <code>&quot;height&quot;</code>. Default is
+						<strong>false</strong>. If true, all elements in the group will have the same
+						size on their respective axis. If either of the string keywords is
+						given, this applies to only to the width or height.
+					</li>
+				</ul>
+			</blockquote>
+			<h4>
+				Common layouting attributes (apply to all elements)
+			</h4>
+			<blockquote>
+				<ul>
+					<li>
+						<code>HAlign</code> - The element's horizontal alignment inside the group
+						which it is part of. Possible values are <code>&quot;left&quot;</code>, <code>&quot;center&quot;</code>,
+						and <code>&quot;right&quot;</code>. The corresponding style property is <em>halign</em>.
+					</li>
+					<li>
+						<code>VAlign</code> - The element's vertical alignment inside the group
+						which it is part of. Possible values are <code>&quot;top&quot;</code>, <code>&quot;center&quot;</code>,
+						and <code>&quot;bottom&quot;</code>. The corresponding style property is <em>valign</em>.
+					</li>
+					<li>
+						<code>Width</code> - The width of the element, in pixels, or <code>&quot;auto&quot;</code> 
+						to reserve the minimum size, <code>&quot;free&quot;</code> for allowing the element
+						to grow to any size, or <code>&quot;fill&quot;</code> for allowing the element to
+						grow to no more than the maximum width that other elements in the
+						same group have claimed. The corresponding style property is
+						<em>width</em>.
+					</li>
+					<li>
+						<code>Height</code> - The height of the element, in pixels, or <code>&quot;auto&quot;</code> 
+						to reserve the minimum size, <code>&quot;free&quot;</code> for allowing the element
+						to grow to any size, or <code>&quot;fill&quot;</code> for allowing the element to
+						grow to no more than the maximum height that other elements in the
+						same group have claimed. The corresponding style property is
+						<em>Height</em>.
+					</li>
+					<li>
+						<code>MinWidth</code> - The minimum width of the element, in pixels. The
+						default is <code>0</code>. The corresponding style property is <em>min-width</em>.
+					</li>
+					<li>
+						<code>MinHeight</code> - The minimum height of the element, in pixels. The
+						default is <code>0</code>. The corresponding style property is
+						<em>min-height</em>.
+					</li>
+					<li>
+						<code>MaxWidth</code> - The maximum width of the element, in pixels, or
+						<code>&quot;none&quot;</code> for no limit (which is the default). The corresponding
+						style property is <em>max-width</em>.
+					</li>
+					<li>
+						<code>MaxHeight</code> - The maximum height of the element, in pixels, or
+						<code>&quot;none&quot;</code> for no limit (which is the default). The corresponding
+						style property is <em>max-height</em>.
+					</li>
+				</ul>
+			</blockquote>
+			<p>
+				Note that the <code>Min</code>/<code>Max</code> and <code>Width</code>/<code>Height</code> properties
+				will not override the actual size requirements of an element. An
+				element will not grow to a larger or smaller size than what it is
+				capable of displaying. Style properties will be used as additional
+				hints when an element's size is flexible. As most elements are
+				scalable by nature, the style properties are normally considered.
+			</p>
+			<hr />
+			<p>
+				&#185; More layouting options are available, see also the <code>fixed.lua</code> 
+				and <code>layouthook.lua</code> examples on how to use and implement fixed
+				and custom layouting strategies.
+			</p>
+		</div>
+		<div class="node"><h2><a name="handlers" id="handlers">4.4. List of predefined handlers</a></h2>
 			<table>
 				<tr>
 					<td class="column1">
@@ -1218,7 +1328,7 @@ app:run()
 				&#185; using <a href="manual.html#Object:setValue"><code>Object:setValue()</code></a> and the notification mechanism
 			</p>
 		</div>
-		<div class="node"><h2><a name="adhocclasses" id="adhocclasses">4.4. Ad-hoc setup of classes</a></h2>
+		<div class="node"><h2><a name="adhocclasses" id="adhocclasses">4.5. Ad-hoc setup of classes</a></h2>
 			<p>
 				To inherit properties and functionality from existing classes and to
 				reuse existing code consequently, it is often desirable to create new

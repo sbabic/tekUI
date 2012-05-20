@@ -10,11 +10,38 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<h3>
+			0.8k:
+		</h3>
 		<blockquote>
 			<ul>
 				<li>
+					Area: reenabled &quot;auto&quot; mode for Width and Height
+				</li>
+				<li>
+					Documentation: Added layouting section, improved examples, corrections
+				</li>
+				<li>
 					Corrected usage of directory iterators from <a href="manual.html#lfs:dir"><code>lfs.dir()</code></a>, now working with
 					LuaFilesystem 1.5 again
+				</li>
+				<li>
+					Debug: added <a href="manual.html#wrout"><code>wrout()</code></a> function, simplified
+				</li>
+				<li>
+					Visual API: <a href="manual.html#tek_lib_visual_gettime"><code>tek_lib_visual_gettime()</code></a> stray line removed, causing Lua
+					stack corruption
+				</li>
+				<li>
+					PopItem: <a href="manual.html#beginPopup"><code>beginPopup()</code></a> could attempt to descend into items that have no
+					children, corrected
+				</li>
+				<li>
+					Visual API: Added an option to create images from tables
+				</li>
+				<li>
+					Minor changes and corrections for tekUI to go together with the latest
+					compiler issues and LuaJIT
 				</li>
 			</ul>
 		</blockquote>

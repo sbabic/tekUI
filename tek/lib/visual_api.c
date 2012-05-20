@@ -174,7 +174,6 @@ tek_lib_visual_gettime(lua_State *L)
 	vis = lua_touserdata(L, -1);
 	TExecBase = vis->vis_ExecBase;
 	TGetSystemTime(&dt);
-	lua_remove(L, -3);
 	lua_pushinteger(L, dt.tdt_Int64 / 1000000);
 	lua_pushinteger(L, dt.tdt_Int64 % 1000000);
 	return 2;
@@ -453,8 +452,8 @@ tek_lib_visual_getmsg(lua_State *L)
 
 /*****************************************************************************/
 
-LOCAL LUACFUNC TINT
-tek_lib_visual_createpixmap(lua_State *L)
+static TINT
+tek_lib_visual_createpixmap_from_ppm(lua_State *L)
 {
 	size_t ppmlen;
 	TEKVisual *vis;
@@ -513,6 +512,61 @@ tek_lib_visual_createpixmap(lua_State *L)
 	lua_pushinteger(L, tw);
 	lua_pushinteger(L, th);
 	return 3;
+}
+
+static TINT
+tek_lib_visual_createpixmap_from_table(lua_State *L)
+{
+	TEKVisual *vis;
+	struct TExecBase *TExecBase;
+	TUINT *buf;
+	TEKPixmap *bm;
+	int x, y;
+	int tw = luaL_checkinteger(L, 1);
+	int th = luaL_checkinteger(L, 2);
+	int i = luaL_optinteger(L, 4, 0);
+	int lw = luaL_optinteger(L, 5, tw);
+	
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
+	vis = lua_touserdata(L, -1);
+	lua_pop(L, 1);
+	TExecBase = vis->vis_ExecBase;
+	
+	bm = lua_newuserdata(L, sizeof(TEKPixmap));
+	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
+	lua_setmetatable(L, -2);
+	
+	buf = TAlloc(TNULL, tw * th * sizeof(TUINT));
+	if (buf == TNULL)
+	{
+		lua_pushstring(L, "out of memory");
+		lua_error(L);
+	}
+	
+	bm->pxm_Data = buf;
+	bm->pxm_Width = tw;
+	bm->pxm_Height = th;
+	bm->pxm_VisualBase = vis;
+	
+	for (y = 0; y < th; ++y)
+	{
+		for (x = 0; x < tw; ++x)
+		{
+			lua_rawgeti(L, 3, i + x);
+			*buf++ = lua_tointeger(L, -1);
+			lua_pop(L, 1);
+		}
+		i += lw;
+	}
+	return 1;
+}
+
+LOCAL LUACFUNC TINT
+tek_lib_visual_createpixmap(lua_State *L)
+{
+	if (lua_isstring(L, 1))
+		return tek_lib_visual_createpixmap_from_ppm(L);
+	return tek_lib_visual_createpixmap_from_table(L);
 }
 
 LOCAL LUACFUNC TINT
@@ -1308,7 +1362,8 @@ tek_lib_visual_drawpixmap(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 4);
 	TINT w = luaL_optinteger(L, 5, x0 + img->pxm_Width - 1) - x0 + 1;
 	TINT h = luaL_optinteger(L, 6, y0 + img->pxm_Height - 1) - y0 + 1;
-	TVisualDrawBuffer(vis->vis_Visual, x0 + sx, y0 + sy, img->pxm_Data,
+	TINT offs = 0; /*luaL_optinteger(L, 7, 0)*/;
+	TVisualDrawBuffer(vis->vis_Visual, x0 + sx, y0 + sy, img->pxm_Data + offs,
 		w, h, img->pxm_Width, TNULL);
 	vis->vis_Dirty = TTRUE;
 	return 0;

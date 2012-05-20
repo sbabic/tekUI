@@ -1,11 +1,20 @@
 
 == tekUI Changelog ==
 
+=== 0.8k: ===
+
  * Area: reenabled "auto" mode for Width and Height
- * Documentation: Added layouting section, improved examples
+ * Documentation: Added layouting section, improved examples, corrections
  * Corrected usage of directory iterators from lfs.dir(), now working with
  LuaFilesystem 1.5 again
  * Debug: added wrout() function, simplified
+ * Visual API: tek_lib_visual_gettime() stray line removed, causing Lua
+ stack corruption
+ * PopItem: beginPopup() could attempt to descend into items that have no
+ children, corrected
+ * Visual API: Added an option to create images from tables
+ * Minor changes and corrections for tekUI to go together with the latest
+ compiler issues and LuaJIT
 
 === 0.8j: ===
  

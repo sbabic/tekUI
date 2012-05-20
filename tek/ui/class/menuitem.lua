@@ -40,7 +40,7 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 10.0"
+_VERSION = "MenuItem 10.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -112,17 +112,9 @@ function MenuItem:beginPopup()
 	end
 	-- subitems are handled in baseclass:
 	PopItem.beginPopup(self)
-	-- handle baseitem:
-	if self.Window then
-		self.Window.ActivePopup = self
-	end
 end
 
 function MenuItem:endPopup()
 	-- subitems are handled in baseclass:
 	PopItem.endPopup(self)
-	-- handle baseitem:
-	if self.Window then
-		self.Window.ActivePopup = false
-	end
 end

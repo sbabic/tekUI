@@ -12,7 +12,7 @@
 --		This class implements notifications.
 --
 --	IMPLEMENTS::
---		- Object.addClassNotifications - Collects class notifications
+--		- Object.addClassNotifications() - Collects class notifications
 --		- Object:addNotify() - Adds a notification to an object
 --		- Object:doNotify() - Invokes a notification in the addressed object
 --		- Object.init() - (Re-)initializes an object
@@ -265,7 +265,7 @@ end
 
 -------------------------------------------------------------------------------
 --	Object.addClassNotifications(proto): class method for collecting the
---	class' 'standard' notifications. Standard means that these notifications
+--	standard or default notifications of a class. These notifications
 --	remain in place, and are not removed or replaced during runtime.
 -------------------------------------------------------------------------------
 

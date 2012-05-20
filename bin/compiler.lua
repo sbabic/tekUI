@@ -27,7 +27,7 @@ local PS = ui.PathSeparator
 local PM = "^(" .. PS .. "?.-)" .. PS .. "*([^" .. PS .. "]*)" .. PS .. "+$"
 
 function shellquote(s)
-	return s:gsub('["$\`!]', "\\%1")
+	return s:gsub('["$\\`!]', "\\%1")
 end
 
 function splitpath(path)
