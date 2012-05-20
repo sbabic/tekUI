@@ -1,6 +1,8 @@
 
 == tekUI Changelog ==
 
+ * Corrected some addresses and years in the documentation
+
 === 0.8k: ===
 
  * Area: reenabled "auto" mode for Width and Height

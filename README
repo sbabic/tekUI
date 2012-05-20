@@ -114,7 +114,7 @@ Authors:
  - Franciska Schulze <fschulze at schulze-mueller.de>
 
 Open source project website:
- - http://tekui.teklib.org/
+ - http://tekui.neoscientists.org/
 
 Product website:
  - http://www.schulze-mueller.de/products.html
@@ -217,7 +217,7 @@ and tekUI all share the same color scheme.
 
 ==( clibrary : 2.5. C library )==
 
-The C library is based on the [[TEKlib][http://www.teklib.org/]]
+The C library is based on the [[TEKlib][http://teklib.neoscientists.org/]]
 middleware project. All required modules are contained in tekUI's
 source code distribution, to reduce the hassle of building and
 installing the software.
@@ -506,7 +506,7 @@ like {{Pressed}} and {{Selected}}, to name but a few. They contain
 booleans and are indicative of the Element's state, such as: Is it in
 selected state, is it pressed down, is it hovered by the mouse, is it
 receiving the input? The 
-[[Object:onPress][manual.html#Object:onPress]] handler, for example,
+[[Widget:onPress][manual.html#Widget:onPress]] handler, for example,
 can be used to catch not only releases, but also presses on the
 element:
 
