@@ -29,12 +29,12 @@ local remove = table.remove
 
 module("tek.ui.class.family", tek.class.object)
 _VERSION = "Family 2.5"
+local Family = _M
+Object:newClass(Family)
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
-
-local Family = _M
 
 function Family.init(self)
 	self.Children = self.Children or { }

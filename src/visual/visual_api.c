@@ -694,3 +694,16 @@ EXPORT void vis_drawbuffer(struct TVisualBase *inst,
 	req->tvr_Op.DrawBuffer.Tags = tags;
 	visi_dosync(inst, req);
 }
+
+/*****************************************************************************/
+
+EXPORT TAPTR vis_getselection(struct TVisualBase *inst, TTAGITEM *tags)
+{
+	struct TVRequest *req = visi_getreq(inst, TVCMD_GETSELECTION,
+		inst->vis_Display, TNULL);
+	req->tvr_Op.GetSelection.Type = TGetTag(tags, TVisual_SelectionType, 1);
+	req->tvr_Op.GetSelection.Length = 0;
+	req->tvr_Op.GetSelection.Data = TNULL;
+	visi_dosync(inst, req);
+	return req->tvr_Op.GetSelection.Data;
+}

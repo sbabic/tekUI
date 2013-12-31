@@ -81,6 +81,7 @@ BUTTONS_DESCRIPTION = [[
 BUTTONS_NORMAL_STYLE = "Normal";
 BUTTONS_RIGHT_BOTTOM = "Right\nBottom";
 BUTTONS_TEXT_ALIGNMENTS = "Text Alignments";
+BUTTONS_TEXT_STYLES = "Text Styles";
 BUTTONS_TITLE = "Buttons";
 BUTTONS_TOP_LEFT = "Top\nLeft";
 CANCEL = "_Cancel";
@@ -164,6 +165,15 @@ GRAPHICS_RADIOBUTTONS = "Radio Buttons";
 GRAPHICS_TITLE = "Graphics";
 HELLO = "Hello";
 HELLO_WORLD = "Hello, World!";
+INPUT_DESCRIPTION = "Text Input",
+INPUT_TITLE = "Input",
+INPUT_FIELD = "Input field",
+INPUT_FIELD_TEXT = "Input field",
+INPUT_FIELD_MAX_LENGTH = "Length Limited",
+INPUT_FIELD_PASSWORD = "Password field",
+INPUT_FIELD_FIXED_WIDTH = "Fixed Width",
+INPUT_FIELD_MULTILINE = "Multiline",
+INPUT_FIELD_MULTILINE_TEXT = "Multiline\nText\nField\n",
 INTERPRETER_VERSION = "Interpreter Version: %s";
 LAYOUT_BALANCING_GROUP = "Balancing Group";
 LAYOUT_DESCRIPTION = [[
@@ -239,7 +249,7 @@ SLOW_RENDERING = "Slow Rendering";
 STATUS = "Status";
 SYSTEM_INFORMATION = "System Information";
 TEKUI_COPYRIGHT_TEXT = [[
-Copyright © 2008, 2009 by the authors:
+Copyright © 2008-2013 by the authors:
 
 Timm S. Müller <tmueller@schulze-mueller.de>
 Franciska Schulze <fschulze@schulze-mueller.de>

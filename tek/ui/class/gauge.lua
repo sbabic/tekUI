@@ -39,16 +39,15 @@ local Region = ui.loadLibrary("region", 9)
 local floor = math.floor
 local max = math.max
 local min = math.min
-local unpack = unpack
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 17.1"
+_VERSION = "Gauge 17.2"
+local Gauge = _M
+Numeric:newClass(Gauge)
 
 -------------------------------------------------------------------------------
 -- Gauge:
 -------------------------------------------------------------------------------
-
-local Gauge = _M
 
 function Gauge.init(self)
 	self.BGRegion = false
@@ -228,7 +227,7 @@ function Gauge:onSetValue()
 	if x0 then
 		if self.Window:relayout(self.Child, x0, y0, x1, y1) then
 			self:updateBGRegion()
-			self.Flags:set(ui.FL_REDRAW)
+			self:setFlags(ui.FL_REDRAW)
 		end
 	end
 end

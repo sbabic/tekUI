@@ -100,11 +100,6 @@ tek.ui.class.imagewidget:focus {
 	color: transparent;
 }
 
-tek.ui.class.input {
-	background-color: paper;
-	color: ink;
-}
-
 tek.ui.class.lister {
 	background-color: list;
 	background-color2: list-alt;
@@ -162,14 +157,6 @@ tek.ui.class.text {
 	padding: 2 5 2 5;
 }
 
-tek.ui.class.textinput {
-	border-style: inset;
-	background-color: list;
-}
-tek.ui.class.textinput:disabled {
-	background-color: disabled;
-}
-
 tek.ui.class.window {
 	padding: 0;
 	margin: 0;
@@ -210,15 +197,18 @@ tek.ui.class.radiobutton.menuitem:focus {
 	border-width: 4;
 	border-rim-width: 1;
 }
+
 .button:active {
 	border-style: inset;
 }
 
 .caption {
+	color: caption-detail;
 	border-width: 0;
 	background-color: transparent;
 	text-align: center;
 	vertical-align: center;
+	valign: center;
 }
 
 .gauge-fill {
@@ -352,4 +342,25 @@ _scrollbar-arrow {
 }
 _scrollbar-slider {
 	margin: 0;
+}
+
+
+_editinput { 
+	valign: center;
+}
+_editinput:disabled { 
+	color: disabled-detail;
+}
+
+tek.ui.class.input { 
+	border-style: inset;
+	padding: 0;
+	valign: center;
+}
+
+tek.ui.class.canvas.inputfield {
+/* 	border-color: border-shadow; */
+/* 	border-width: 2; */
+	margin: 1;
+	padding: 0;
 }

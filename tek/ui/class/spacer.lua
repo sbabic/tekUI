@@ -26,12 +26,8 @@ local Frame = ui.require("frame", 21)
 
 module("tek.ui.class.spacer", tek.ui.class.frame)
 _VERSION = "Spacer 2.2"
-
--------------------------------------------------------------------------------
---	Class implementation:
--------------------------------------------------------------------------------
-
 local Spacer = _M
+Frame:newClass(Spacer)
 
 -------------------------------------------------------------------------------
 --	setup: overrides

@@ -31,17 +31,19 @@ int luaopen_tek_class_example(lua_State *L)
 	/* s: <require>, "superclass" */
 	lua_call(L, 1, 1);
 	/* s: superclass */
-	lua_pushvalue(L, -1);
-	/* s: superclass, superclass */
+	lua_getfield(L, -1, "newClass");
+	/* s: superclass, <newClass> */
+	lua_pushvalue(L, -2);
+	/* s: superclass, <newClass>, superclass */
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, CLASS_NAME, classfuncs);
-	/* s: superclass, superclass, class */
-	lua_call(L, 1, 1);
+#else
+	luaL_newlib(L, classfuncs);
+#endif
+	/* s: superclass, <newClass>, superclass, class */
+	lua_call(L, 2, 1); /* class = superclass.newClass(superclass, class) */
 	/* s: superclass, class */
 	luaL_newmetatable(L, CLASS_NAME "*");
-	/* s: superclass, class, meta */
-	lua_getfield(L, -3, "newClass");
-	/* s: superclass, class, meta, <newClass> */
-	lua_setfield(L, -2, "__call");
 	/* s: superclass, class, meta */
 	lua_pushvalue(L, -3);
 	/* s: superclass, class, meta, superclass */
@@ -49,6 +51,7 @@ int luaopen_tek_class_example(lua_State *L)
 	/* s: superclass, class, meta */
 	lua_setmetatable(L, -2);
 	/* s: superclass, class */
-	lua_pop(L, 2);
-	return 0;
+	lua_remove(L, -2);
+	/* s: class */
+	return 1;
 }

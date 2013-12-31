@@ -260,6 +260,8 @@ typedef TTASKENTRY void (*TTASKFUNC)(struct TTask *task);
 #define TTask_OutputFH		(TEXECTAGS_ + 7)
 /* Error file handle */
 #define TTask_ErrorFH		(TEXECTAGS_ + 8)
+/* Msgport hook */ 
+#define TMsgPort_Hook		(TEXECTAGS_ + 9)
 
 /*****************************************************************************/
 /*

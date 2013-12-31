@@ -6,12 +6,12 @@ local floor = math.floor
 local max = math.max
 local min = math.min
 local tonumber = tonumber
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 8.1"
-
+_VERSION = "DefaultBorder 9.1"
 local DefaultBorder = _M
+Border:newClass(DefaultBorder)
 
 function DefaultBorder.init(self)
 	self.Border = self.Border or false
@@ -119,12 +119,13 @@ function DefaultBorder:draw()
 	local tw = self.LegendWidth
 	if tw then
 		local th = self.LegendHeight
-		local w = b[20] - b[18] + 1
-		local tx = b[18] + max(floor((w - tw) / 2), 0)
-		local y0 = b[19] - th - b[23]
+		local y0 = b[19] - b[23]
+		local x0 = b[18]
+		local x1 = b[20]
+		local tx0, tx1 = self:alignText(x0, x1, tw)
 		d:setFont(self.LegendFont)
-		d:pushClipRect(b[18] - b[22], y0, b[20] + b[24], b[19] - b[23] - 1)
-		d:drawText(tx, y0, tx + tw - 1, y0 + th - 1, self.Legend, b[17], gb)
+		d:pushClipRect(x0, y0 - th, x1, y0 - 1)
+		d:drawText(tx0, y0 - th, tx1, y0 - 1, self.Legend, b[17], gb)
 		d:popClipRect()
 	end
 	
@@ -164,10 +165,19 @@ function DefaultBorder:getRegion(br)
 	br:subRect(x0, y0, x1, y1)
 	local tw = self.LegendWidth
 	if tw then
-		local w = x1 - x0 + 1
-		tw = min(tw, w)
-		local tx = x0 + floor((w - tw) / 2)
-		br:orRect(tx, y0 - self.LegendHeight - b[2], tx + tw - 1, y0 - 1)
+		local tx0, tx1 = self:alignText(x0, x1, tw)
+		br:orRect(tx0, y0 - self.LegendHeight - b[2], tx1, y0 - 1)
 	end
 	return br
+end
+
+function DefaultBorder:alignText(x0, x1, tw)
+	local w = x1 - x0 + 1
+	local align = self.Parent.Properties["border-legend-align"]
+	if not align or align == "center" then
+		x0 = max(x0, x0 + floor((w - tw) / 2))
+	elseif align == "right" then
+		x0 = max(x0, x1 + 1 - tw)
+	end
+	return x0, min(x1, x0 + tw - 1)
 end

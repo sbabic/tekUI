@@ -9,8 +9,6 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include <stdio.h>
-
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
@@ -18,12 +16,8 @@
 
 /*****************************************************************************/
 
-#define TEK_LIB_REGION_VERSION "Region 10.0"
-#define TEK_LIB_REGION_NAME "tek.lib.region*"
-#define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
-
-#define MERGE_RECTS	8
-#define MAXPOOLNODES 2048
+#define MERGE_RECTS	5
+#define MAXPOOLNODES 1024
 
 struct RectList
 {
@@ -44,66 +38,6 @@ struct Region
 };
 
 /*****************************************************************************/
-/*
-**	check userdata with metatable from upvalue
-*/
-
-static void *region_checkudataupval(lua_State *L, int n, int upidx,
-	const char *tname)
-{
-	void *p = lua_touserdata(L, n);
-	if (p)
-	{
-		if (lua_getmetatable(L, n))
-		{
-			if (lua_rawequal(L, -1, lua_upvalueindex(upidx)))
-			{
-				lua_pop(L, 1);
-				return p;
-			}
-		}	
-		luaL_typerror(L, n, tname);
-	}
-	return NULL;
-}
-
-static void *region_checkinstupval(lua_State *L, int n, int upidx,
-	const char *tname)
-{
-	TAPTR p = region_checkudataupval(L, n, upidx, tname);
-	if (p == TNULL) luaL_typerror(L, n, tname);
-	return p;
-}
-
-#define region_checkregion(L, n) region_checkinstupval(L, n, 1, "region")
-#define region_optregion(L, n) region_checkudataupval(L, n, 1, "region")
-
-/*****************************************************************************/
-
-static int region_intersect(lua_State *L)
-{
-	TINT d0 = luaL_checkinteger(L, 1);
-	TINT d1 = luaL_checkinteger(L, 2);
-	TINT d2 = luaL_checkinteger(L, 3);
-	TINT d3 = luaL_checkinteger(L, 4);
-	TINT s0 = luaL_checkinteger(L, 5);
-	TINT s1 = luaL_checkinteger(L, 6);
-	TINT s2 = luaL_checkinteger(L, 7);
-	TINT s3 = luaL_checkinteger(L, 8);
-
-	if (TEK_UI_OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3))
-	{
-		lua_pushinteger(L, TMAX(s0, d0));
-		lua_pushinteger(L, TMAX(s1, d1));
-		lua_pushinteger(L, TMIN(s2, d2));
-		lua_pushinteger(L, TMIN(s3, d3));
-		return 4;
-	}
-	
-	return 0;
-}
-
-/*****************************************************************************/
 
 static void region_relinklist(struct TList *dlist, struct TList *slist)
 {
@@ -116,7 +50,6 @@ static void region_relinklist(struct TList *dlist, struct TList *slist)
 		last->tln_Succ = (struct TNode *) &dlist->tlh_Tail;
 		dlast->tln_Succ = first;
 		dlist->tlh_TailPred = last;
- 		/*TINITLIST(slist);*/
 	}
 }
 
@@ -148,8 +81,8 @@ static void region_initrectlist(struct RectList *rl)
 
 static void region_relinkrects(struct RectList *d, struct RectList *s)
 {
-	d->rl_NumNodes += s->rl_NumNodes;
 	region_relinklist(&d->rl_List, &s->rl_List);
+	d->rl_NumNodes += s->rl_NumNodes;
 	region_initrectlist(s);	
 }
 
@@ -164,15 +97,13 @@ static void region_freerects(struct Pool *p, struct RectList *list)
 	}	
 }
 
-/*****************************************************************************/
-
 static TBOOL region_insertrect(struct Pool *pool, struct RectList *list,
 	TINT s0, TINT s1, TINT s2, TINT s3)
 {
 	struct TNode *temp, *next, *node = list->rl_List.tlh_Head;
 	struct RectNode *rn;
 	int i;
-
+	
 	#if defined(MERGE_RECTS)
 	for (i = 0; i < MERGE_RECTS && (next = node->tln_Succ); node = next, ++i)
 	{
@@ -293,6 +224,21 @@ static TBOOL region_cutrectlist(struct Pool *pool, struct RectList *inlist,
 static TBOOL region_orrectlist(struct Pool *pool, struct RectList *list, 
 	RECTINT s[4])
 {
+	if (list->rl_NumNodes > 0)
+	{
+		struct TNode *next, *node = list->rl_List.tlh_Head;
+		for (; (next = node->tln_Succ); node = next)
+		{
+			struct RectNode *rn = (struct RectNode *) node;
+			TINT *r = rn->rn_Rect;
+			if (s[0] >= r[0] && s[1] >= r[1] &&
+				s[2] <= r[2] && s[3] <= r[3])
+			{
+				return TTRUE;
+			}
+		}
+	}
+	
 	struct RectList temp;
 	region_initrectlist(&temp);
 	if (region_cutrectlist(pool, list, &temp, s))
@@ -308,7 +254,82 @@ static TBOOL region_orrectlist(struct Pool *pool, struct RectList *list,
 	return TFALSE;
 }
 
+static TBOOL orregion(struct Region *region, struct RectList *list)
+{
+	TBOOL success = TTRUE;
+	struct TNode *next, *node = list->rl_List.tlh_Head;
+	for (; success && (next = node->tln_Succ); node = next)
+	{
+		struct RectNode *rn = (struct RectNode *) node;
+		success = region_orrectlist(region->rg_Pool, 
+			&region->rg_Rects, rn->rn_Rect);
+	}
+	return success;
+}
+
+static TBOOL andrect(struct RectList *temp,
+	struct Region *region, TINT s0, TINT s1, TINT s2, TINT s3)
+{
+	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
+	TBOOL success = TTRUE;
+	for (; success && (next = node->tln_Succ); node = next)
+	{
+		struct RectNode *dr = (struct RectNode *) node;
+		TINT x0 = dr->rn_Rect[0];
+		TINT y0 = dr->rn_Rect[1];
+		TINT x1 = dr->rn_Rect[2];
+		TINT y1 = dr->rn_Rect[3];
+		if (TEK_UI_OVERLAP(x0, y0, x1, y1, s0, s1, s2, s3))
+		{
+			success = region_insertrect(region->rg_Pool, temp,
+				TMAX(x0, s0), TMAX(y0, s1), TMIN(x1, s2), TMIN(y1, s3));
+		}
+	}
+	if (!success)
+		region_freerects(region->rg_Pool, temp);
+	return success;
+}
+
 /*****************************************************************************/
+
+#define TEK_LIB_REGION_VERSION "Region 10.0"
+#define TEK_LIB_REGION_NAME "tek.lib.region*"
+#define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
+
+static void *region_checkregion(lua_State *L, int n)
+{
+	return luaL_checkudata(L, n, TEK_LIB_REGION_NAME);
+}
+
+static void *region_optregion(lua_State *L, int n)
+{
+	if (lua_type(L, n) == LUA_TUSERDATA)
+		return luaL_checkudata(L, n, TEK_LIB_REGION_NAME);
+	return TNULL;
+}
+
+static int region_intersect(lua_State *L)
+{
+	TINT d0 = luaL_checkinteger(L, 1);
+	TINT d1 = luaL_checkinteger(L, 2);
+	TINT d2 = luaL_checkinteger(L, 3);
+	TINT d3 = luaL_checkinteger(L, 4);
+	TINT s0 = luaL_checkinteger(L, 5);
+	TINT s1 = luaL_checkinteger(L, 6);
+	TINT s2 = luaL_checkinteger(L, 7);
+	TINT s3 = luaL_checkinteger(L, 8);
+
+	if (TEK_UI_OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3))
+	{
+		lua_pushinteger(L, TMAX(s0, d0));
+		lua_pushinteger(L, TMAX(s1, d1));
+		lua_pushinteger(L, TMIN(s2, d2));
+		lua_pushinteger(L, TMIN(s3, d3));
+		return 4;
+	}
+	
+	return 0;
+}
 
 static int region_new(lua_State *L)
 {
@@ -377,19 +398,6 @@ static int region_orrect(lua_State *L)
 		luaL_error(L, "out of memory");
 
 	return 0;
-}
-
-static TBOOL orregion(struct Region *region, struct RectList *list)
-{
-	TBOOL success = TTRUE;
-	struct TNode *next, *node = list->rl_List.tlh_Head;
-	for (; success && (next = node->tln_Succ); node = next)
-	{
-		struct RectNode *rn = (struct RectNode *) node;
-		success = region_orrectlist(region->rg_Pool, 
-			&region->rg_Rects, rn->rn_Rect);
-	}
-	return success;
 }
 
 static int region_xorrect(lua_State *L)
@@ -472,13 +480,13 @@ static TBOOL subrect(lua_State *L, struct Region *region, RECTINT s[])
 		struct RectList temp;
 
 		region_initrectlist(&temp);
-		success = region_cutrect(region->rg_Pool, &temp, rn->rn_Rect, s);
+		success = region_cutrect(pool, &temp, rn->rn_Rect, s);
 
 		node2 = temp.rl_List.tlh_Head;
 		for (; success && (next2 = node2->tln_Succ); node2 = next2)
 		{
 			struct RectNode *rn2 = (struct RectNode *) node2;
-			success = region_insertrect(region->rg_Pool, &r1, rn2->rn_Rect[0],
+			success = region_insertrect(pool, &r1, rn2->rn_Rect[0],
 				rn2->rn_Rect[1], rn2->rn_Rect[2], rn2->rn_Rect[3]);
 		}
 
@@ -554,29 +562,6 @@ static int region_subregion(lua_State *L)
 		}
 	}
 	return 0;
-}
-
-static TBOOL andrect(struct RectList *temp,
-	struct Region *region, TINT s0, TINT s1, TINT s2, TINT s3)
-{
-	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
-	TBOOL success = TTRUE;
-	for (; success && (next = node->tln_Succ); node = next)
-	{
-		struct RectNode *dr = (struct RectNode *) node;
-		TINT x0 = dr->rn_Rect[0];
-		TINT y0 = dr->rn_Rect[1];
-		TINT x1 = dr->rn_Rect[2];
-		TINT y1 = dr->rn_Rect[3];
-		if (TEK_UI_OVERLAP(x0, y0, x1, y1, s0, s1, s2, s3))
-		{
-			success = region_insertrect(region->rg_Pool, temp,
-				TMAX(x0, s0), TMAX(y0, s1), TMIN(x1, s2), TMIN(y1, s3));
-		}
-	}
-	if (!success)
-		region_freerects(region->rg_Pool, temp);
-	return success;
 }
 
 static int region_andrect(lua_State *L)
@@ -751,14 +736,15 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 {
 	struct Pool *pool;
 	
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, "tek.lib.region", tek_lib_region_funcs);
+#else
+	luaL_newlib(L, tek_lib_region_funcs);
+#endif
 	/* s: libtab */
 	
 	lua_pushstring(L, TEK_LIB_REGION_VERSION);
 	lua_setfield(L, -2, "_VERSION");
-	
-	lua_pop(L, 1);
-	/* s: */
 
 	/* require "tek.lib.exec": */
 	lua_getglobal(L, "require");
@@ -771,11 +757,13 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 	/* s: exectab, execbase */
 	lua_remove(L, -2);
 	/* s: execbase */
-
 	luaL_newmetatable(L, TEK_LIB_REGION_NAME);
 	/* s: execbase, metatable */
-	lua_pushvalue(L, -1);
-	luaI_openlib(L, NULL, tek_lib_region_methods, 1);
+#if LUA_VERSION_NUM < 502
+	luaL_register(L, NULL, tek_lib_region_methods);
+#else
+	luaL_setfuncs(L, tek_lib_region_methods, 0);
+#endif
 	/* s: execbase, metatable */
 	lua_pushvalue(L, -1);
 	/* s: execbase, metatable, metatable */
@@ -790,7 +778,11 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 	/* s: execbase, metatable, metatable, pool */
 	luaL_newmetatable(L, TEK_LIB_REGION_POOL_NAME);
 	/* s: execbase, metatable, metatable, pool, poolmt */
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, NULL, tek_lib_region_poolmethods);
+#else
+	luaL_setfuncs(L, tek_lib_region_poolmethods, 0);
+#endif
 	lua_setmetatable(L, -2);
 	/* s: execbase, metatable, metatable, pool */
 	lua_rawseti(L, -2, 2);
@@ -801,5 +793,5 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 	lua_pop(L, 2);
 	/* s: */
 
-	return 0;
+	return 1;
 }

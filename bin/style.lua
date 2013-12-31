@@ -9,7 +9,7 @@ ui.Application:new
 	{
 		ui.Window:new
 		{
-			Title = "Style Test",
+			Title = "Realtime style",
 			HideOnEscape = true,
 			Orientation = "vertical",
 			Children =
@@ -17,46 +17,34 @@ ui.Application:new
 				ui.Text:new 
 				{
 					Id = "the-area",
-					Text = "Une question\nde style",
+					Text = "Edit and apply\nstyle settings",
 					Width = "free",
 					Height = "free",
 				},
-				ui.ScrollGroup:new
+				ui.Input:new
 				{
-					VSliderMode = "auto",
-					HSliderMode = "off",
-					Child = ui.Canvas:new
-					{
-						AutoPosition = true,
-						UseChildBG = true,
-						Child = ui.Input:new
-						{
-							Id = "the-editor",
-							InitialFocus = true,
-							Font = "ui-fixed",
-							FixedFont = true,
-							LineSpacing = 2,
-							SmoothScroll = 2,
-							Data = 
-							{ 
-								"background-color: #800;",
-								"color: white;",
-								"font: ui-huge:48;",
-								"border-style: inset;",
-								"border-width: 10;",
-								"margin: 10;",
-								"padding: 10;",
-								"text-align: right;",
-								"vertical-align: bottom;",
-							}
-						}
-					}
+					Id = "the-editor",
+					InitialFocus = true,
+					Font = "ui-fixed",
+-- 					Style = "margin: 10",
+					MultiLine = true,
+					Text = [[
+background-color: #800;
+color: white;
+font: ui-huge:48;
+border-style: inset;
+border-width: 10;
+margin: 10;
+padding: 10;
+text-align: right;
+vertical-align: bottom;
+]]
 				},
-				ui.Button:new
+				ui.Button:new					
 				{
 					Text = "_Apply",
 					onClick = function(self)
-						local style = table.concat(self:getById("the-editor"):getText(), "\n")
+						local style = self:getById("the-editor"):getText()
 						self:getById("the-area"):setValue("Style", style)
 					end
 				}

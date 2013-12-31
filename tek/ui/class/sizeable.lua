@@ -1,3 +1,32 @@
+-------------------------------------------------------------------------------
+--
+--	tek.ui.class.sizeable
+--	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+--	See copyright notice in COPYRIGHT
+--
+--	OVERVIEW::
+--		[[#ClassOverview]] :
+--		[[#tek.class : Class]] /
+--		[[#tek.class.object : Object]] /
+--		[[#tek.ui.class.element : Element]] /
+--		[[#tek.ui.class.area : Area]] /
+--		[[#tek.ui.class.frame : Frame]] /
+--		[[#tek.ui.class.widget : Widget]] /
+--		Sizeable ${subclasses(Sizeable)}
+--
+--		This class implements the ability to resize an element without the
+--		need to repaint it completely. Its parent must be a Canvas element.
+--
+--	IMPLEMENTS::
+--		- Sizeable:resize() - Resize the element
+--
+--	OVERRIDES::
+--		- Element:connect()
+--		- Area:draw()
+--		- Object.init()
+--		- Area:layout()
+--
+-------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
@@ -6,21 +35,18 @@ local Canvas = ui.require("canvas", 30)
 local Widget = ui.require("widget", 25)
 local Region = ui.loadLibrary("region", 10)
 
-local assert = assert
-local intersect = Region.intersect
-local unpack = unpack
-
 module("tek.ui.class.sizeable", tek.ui.class.widget)
-_VERSION = "Sizeable 9.0"
+_VERSION = "Sizeable 9.1"
 local Sizeable = _M
+Widget:newClass(Sizeable)
 
 -------------------------------------------------------------------------------
 --	init: overrides
 -------------------------------------------------------------------------------
 
 function Sizeable.init(self)
-	self.InsertX = false
-	self.InsertY = false
+	self.InsertX = false	-- internal
+	self.InsertY = false	-- internal
 	self.EraseBG = false
 	self.TrackDamage = true
 	return Widget.init(self)
@@ -124,7 +150,7 @@ function Sizeable:layout(x0, y0, x1, y1, markdamage)
 		end
 		if redraw then
 			self.Rect:setRect(n1, n2, n3, n4)
-			self.Flags:set(ui.FL_REDRAW)
+			self:setFlags(ui.FL_REDRAW)
 			return true
 		end
 	end
@@ -146,7 +172,9 @@ function Sizeable:draw()
 end
 
 -------------------------------------------------------------------------------
---	resize()
+--	Sizeable:resize(dx, dy, insx, insy): Resize the element by {{dx}} on the
+--	x axis and {{dy}} on the y axis, inserting or removing space at {{insx}}
+--	on the x axis and {{insy}} on the y axis.
 -------------------------------------------------------------------------------
 
 function Sizeable:resize(dx, dy, insx, insy)

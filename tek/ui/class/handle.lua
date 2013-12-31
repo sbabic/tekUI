@@ -22,7 +22,6 @@
 --		- Area:checkFocus()
 --		- Area:draw()
 --		- Object.init()
---		- Widget:onHover()
 --		- Area:passMsg()
 --		- Area:setState()
 --		- Area:show()
@@ -39,9 +38,9 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.widget)
-_VERSION = "Handle 6.1"
-
+_VERSION = "Handle 7.0"
 local Handle = _M
+Widget:newClass(Handle)
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -234,10 +233,11 @@ end
 -------------------------------------------------------------------------------
 
 function Handle:passMsg(msg)
+	local mx, my = self:getMsgFields(msg, "mousexy")
 	if msg[2] == ui.MSG_MOUSEBUTTON then
 		if msg[3] == 1 then -- leftdown:
 			if self.Window.HoverElement == self and not self.Disabled then
-				if self:startMove(msg[4], msg[5]) then
+				if self:startMove(mx, my) then
 					self.Window:setMovingElement(self)
 				end
 			end
@@ -250,24 +250,12 @@ function Handle:passMsg(msg)
 		end
 	elseif msg[2] == ui.MSG_MOUSEMOVE then
 		if self.Window.MovingElement == self then
-			self:doMove(msg[4], msg[5])
+			self:doMove(mx, my)
 			-- do not pass message to other elements while dragging:
 			return false
 		end
 	end
 	return Widget.passMsg(self, msg)
-end
-
--------------------------------------------------------------------------------
---	onHover: overrides
--------------------------------------------------------------------------------
-
-function Handle:onHover(hover)
-	hover = hover or self.Window.MovingElement == self
-	if not hover or not self.Window.MovingElement then
-		self:setValue("Hilite", hover)
-	end
-	self:setState()
 end
 
 -------------------------------------------------------------------------------

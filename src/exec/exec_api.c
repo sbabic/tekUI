@@ -591,6 +591,8 @@ EXPORT struct TMsgPort *exec_CreatePort(struct TExecBase *TExecBase,
 	{
 		if (exec_initport(TExecBase, port, task, 0))
 		{
+			port->tmp_Hook = 
+				(struct THook *) TGetTag(tags, TMsgPort_Hook, TNULL);
 			/* overwrite destructor */
 			port->tmp_Handle.thn_Hook.thk_Entry = exec_destroyuserport;
 			return port;

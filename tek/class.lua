@@ -35,7 +35,7 @@ local PROXY = false
 local DEBUG = false
 
 module "tek.class"
-_VERSION = "Class 7.0"
+_VERSION = "Class 8.0"
 
 local Class = _M
 

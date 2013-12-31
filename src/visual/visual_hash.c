@@ -235,11 +235,11 @@ vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash,
 		TUINT i;
 		for (i = 0; i < hash->numbuckets; ++i)
 		{
-			struct vis_HashNode *node, *next;
-			for (node = hash->buckets[i]; node; node = next)
+			struct TNode *node, *next;
+			for (node = &hash->buckets[i]->node; (node); node = next)
 			{
-				next = (struct vis_HashNode *) node->node.tln_Succ;
-				TAddTail(list, &node->node);
+				next = node->tln_Succ;
+				TAddTail(list, node);
 			}
 		}
 		hash->list = list;

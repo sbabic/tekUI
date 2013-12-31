@@ -88,9 +88,18 @@ TMODENTRY int luaopen_tek_lib_display_windows(lua_State *L)
 	exec = *(TAPTR *) lua_touserdata(L, -1);
 
 	/* register functions: */
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, "tek.lib.display.windows", libfuncs);
+#else
+	luaL_newlib(L, libfuncs);
+#endif
 	/* s: exectab, execbase, libtab */
-
+	
+	lua_pushvalue(L, -1);
+	/* s: exectab, execbase, libtab, libtab */
+	lua_insert(L, -4);
+	/* s: libtab, exectab, execbase, libtab */
+	
 	/* create userdata: */
 	display = lua_newuserdata(L, sizeof(TEKDisplay));
 	/* s: exectab, execbase, libtab, libbase */
@@ -112,7 +121,11 @@ TMODENTRY int luaopen_tek_lib_display_windows(lua_State *L)
 	/* s: exectab, execbase, libtab, libbase, libmeta, libmeta */
 	lua_setfield(L, -2, "__index");
 	/* s: exectab, execbase, libtab, libbase, libmeta */
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, NULL, libmethods);
+#else
+	luaL_setfuncs(L, libmethods, 0);	
+#endif
 	/* s: exectab, execbase, libtab, libbase, libmeta */
 	lua_setmetatable(L, -2);
 	/* s: exectab, execbase, libtab, libbase */
@@ -129,5 +142,5 @@ TMODENTRY int luaopen_tek_lib_display_windows(lua_State *L)
 	/* Add visual module to TEKlib's internal module list: */
 	TExecAddModules(exec, (struct TModInitNode *) &im_display, 0);
 
-	return 0;
+	return 1;
 }

@@ -94,6 +94,7 @@
 --		- Application:requestFile() - Opens a file requester
 --		- Application:run() - Runs the application
 --		- Application:suspend() - Suspends the caller's coroutine
+--		- Application:up() - Function called when the application is up
 --
 --	OVERRIDES::
 --		- Family:addMember()
@@ -125,12 +126,14 @@ local newFlags = ui.newFlags
 local remove = table.remove
 local select = select
 local traceback = debug.traceback
-local unpack = unpack
+local type = type
+local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 32.2"
+_VERSION = "Application 37.1"
 local Application = _M
+Family:newClass(Application)
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -157,6 +160,7 @@ function Application.new(class, self)
 		[ui.MSG_MOUSEBUTTON] = self.passMsgNoModal,
 		[ui.MSG_INTERVAL] = self.passMsgInterval,
 		[ui.MSG_KEYUP] = self.passMsgNoModal,
+		[ui.MSG_REQSELECTION] = self.passMsgNoModal,
 		[MSG_USER] = self.passMsg,
 	}
 	-- Check linkage of members, connect and setup them recursively:
@@ -173,6 +177,7 @@ function Application.new(class, self)
 		db.error("Could not connect elements")
 		self.Status = "error"
 	end
+	self:addInputHandler(MSG_USER, self, self.handleInput)
 	return self
 end
 
@@ -184,11 +189,13 @@ function Application.init(self)
 	self.Application = self
 	self.ApplicationId = self.ApplicationId or "unknown"
 	self.Author = self.Author or "unknown"
+	self.Clipboard = self.Clipboard or { }
 	self.Copyright = self.Copyright or "unknown"
 	self.Coroutines = { }
 	self.Display = self.Display or false
 	self.Domain = self.Domain or "unknown"
 	self.ElementById = { }
+	self.FocusWindow = false
 	local t = self.GCControl
 	if t == nil or t == true then
 		self.GCControl = "step"
@@ -214,24 +221,32 @@ function Application.init(self)
 	self.AuthorStyleSheets = authorstylesheets
 	self.Vendor = self.Vendor or "unknown"
 
-	-- 'user agent' stylesheet:
-	local s = ui.getStyleSheet("minimal")
-	if s then
-		insert(props, 1, s)
-	end
-
-	-- 'user' stylsheet(s):
-	ui.ThemeName:gsub("%S+", function(theme)
-		if theme ~= "minimal" then
-			local s, msg = ui.getStyleSheet(theme)
-			if s then
-				insert(props, 1, s)
-			else
-				db.warn("failed to decode user stylesheet: %s", msg)
-			end
+	--	load 'user agent' stylesheets:
+	--	ensures that "minimal" is the first stylesheet.
+	--	always uses "default" as the second stylesheet, unless the user
+	--	explicitely provides "minimal" as the first stylesheet.
+	
+	local stylesheets = { }
+	ui.ThemeName:gsub("%S+", function(name)
+		if name ~= "user" then
+			insert(stylesheets, name)
 		end
 	end)
-
+	if stylesheets[1] ~= "minimal" then
+		insert(stylesheets, 1, "minimal")
+		if stylesheets[2] ~= "default" then
+			insert(stylesheets, 2, "default")
+		end
+	end
+	for i = 1, #stylesheets do
+		local s, msg = ui.getStyleSheet(stylesheets[i])
+		if s then
+			insert(props, 1, s)
+		else
+			db.info("failed to decode user stylesheet: %s", msg)
+		end
+	end
+	
 	-- 'author' stylsheet(s):
 	if authorstylesheets then
 		authorstylesheets:gsub("%S+", function(theme)
@@ -260,6 +275,14 @@ function Application.init(self)
 		end
 	end
 
+	-- 'user' stylesheet:
+	local s, msg = ui.loadStyleSheet("user")
+	if s then
+		insert(props, 1, s)
+	else
+		db.info("failed to decode user stylesheet: %s", msg)
+	end
+
 	return Family.init(self)
 end
 
@@ -270,7 +293,7 @@ end
 -------------------------------------------------------------------------------
 
 function Application:connect(parent)
-	local c = self:getChildren(true) -- true indicates initialization
+	local c = self:getChildren("init")
 	if c then
 		for i = 1, #c do
 			local child = c[i]
@@ -292,7 +315,7 @@ function Application:connect(parent)
 		end
 		return true
 	else
-		db.info("%s : has no children", self:getClassName())
+		db.trace("%s : has no children", self:getClassName())
 	end
 end
 
@@ -393,7 +416,6 @@ end
 -------------------------------------------------------------------------------
 
 function Application:show()
-	self:addInputHandler(MSG_USER, self, self.handleInput)
 	local c = self.Children
 	for i = 1, #c do
 		local w = c[i]
@@ -410,7 +432,7 @@ end
 local function dohide(self, ...)
 	for i = 1, select('#', ...) do
 		local e = select(i, ...)
-		if e.Flags:check(ui.FL_SHOW) then
+		if e:checkFlags(ui.FL_SHOW) then
 			select(i, ...):hide()
 		end
 	end
@@ -433,10 +455,23 @@ function Application:openWindow(window)
 end
 
 -------------------------------------------------------------------------------
+--	setFocusWindow: internal
+-------------------------------------------------------------------------------
+
+function Application:setFocusWindow(window, has_focus)
+	if not has_focus and window == self.FocusWindow then
+		self.FocusWindow = false
+	elseif has_focus and window ~= self.FocusWindow then
+		self.FocusWindow = window
+	end
+end
+
+-------------------------------------------------------------------------------
 --	closeWindow: internal
 -------------------------------------------------------------------------------
 
 function Application:closeWindow(window)
+	self:setFocusWindow(window, false)
 	if window == self.ModalWindows[1] then
 		remove(self.ModalWindows, 1)
 	end
@@ -558,16 +593,21 @@ function Application:run()
 
 	local d = self.Display
 	local ow = self.OpenWindows
-	local msg = { }
+	local wmsg = { } -- window message
 	local msgdispatch = self.MsgDispatch
+
+	self:addCoroutine(self.up, self)
 
 	-- the main loop:
 
 	while self.Status == "run" do
 
 		-- dispatch input messages:
-		while getmsg(msg) do
+		local msg = getmsg()
+		while msg do
 			msgdispatch[msg[2]](self, msg)
+			msg:reply()
+			msg = getmsg()
 		end
 
 		if #ow == 0 then
@@ -589,8 +629,8 @@ function Application:run()
 		for i = 1, #ow do
 			local win = ow[i]
 			-- dispatch user-generated window messages:
-			while win:getMsg(msg) do
-				msgdispatch[msg[2]](self, msg)
+			while win:getMsg(wmsg) do
+				msgdispatch[wmsg[2]](self, wmsg)
 			end
 			-- spool out bundled refreshes, mousemoves, intervals:
 			if win.RefreshMsg then
@@ -710,6 +750,7 @@ end
 --		- {{Height}} - Height of the requester window
 --		- {{Lister}} - External lister object to operate on
 --		- {{Location}} - Initial contents of the requester's location field
+--		- {{OverWindow}} - Open dialogue centered over the specified window
 --		- {{Path}} - The initial path
 --		- {{SelectMode}} - {{"multi"}} or {{"single"}} [default {{"single"}}]
 --		- {{SelectText}} - Text to show on the select button
@@ -723,6 +764,20 @@ end
 --	Note: The caller of this function must be running in a coroutine
 --	(see Application:addCoroutine()).
 -------------------------------------------------------------------------------
+
+function Application:getRequestWindow(ww, wh, overwindow)
+	local ow = self.FocusWindow
+	if overwindow ~= nil then
+		ow = overwindow
+	end
+	local wx, wy
+	if ow then
+		local w, h, x, y = ow.Drawable:getAttrs()
+		wx = x + w / 2 - ww / 2
+		wy = y + h / 2 - wh / 2
+	end
+	return ww, wh, wx, wy
+end
 
 function Application:requestFile(args)
 
@@ -740,18 +795,23 @@ function Application:requestFile(args)
 		FocusElement = args.FocusElement,
 	}
 
+	local ww = args.Width or 400
+	local wh = args.Height or 500
+	local wx, wy
 	local center = args.Center
-	if center == nil then
-		center = true
+	if not center then
+		ww, wh, wx, wy = self:getRequestWindow(ww, wh, args.OverWindow)
 	end
-
+	
 	local window = ui.Window:new
 	{
 		Class = "app-dialog",
 		Title = args.Title or dirlist.Locale.SELECT_FILE_OR_DIRECTORY,
 		Modal = true,
-		Width = args.Width or 400,
-		Height = args.Height or 500,
+		Width = ww,
+		Height = wh,
+		Left = wx,
+		Top = wy,
 		MinWidth = 0,
 		MinHeight = 0,
 		MaxWidth = "none",
@@ -768,7 +828,7 @@ function Application:requestFile(args)
 	dirlist:showDirectory()
 
 	repeat
-		self:suspend(window)
+		self:suspend(window)	-- !
 		if window.Status ~= "show" then
 			-- window closed:
 			dirlist.Status = "cancelled"
@@ -799,8 +859,8 @@ end
 --	running in a coroutine (see Application:addCoroutine()).
 -------------------------------------------------------------------------------
 
-function Application:easyRequest(title, text, ...)
-
+function Application:easyRequest(title, main, ...)
+	
 	assert(corunning(), "Must be called in a coroutine")
 
 	local result = false
@@ -825,7 +885,11 @@ function Application:easyRequest(title, text, ...)
 		end
 		insert(buttons, button)
 	end
-
+	
+	if type(main) == "string" then
+		main = ui.Text:new { Class = "message", Width = "fill", Text = main }
+	end
+	
 	window = ui.Window:new
 	{
 		Class = "app-dialog",
@@ -836,18 +900,32 @@ function Application:easyRequest(title, text, ...)
 		HideOnEscape = true,
 		Children =
 		{
-			ui.Text:new { Class = "message", Width = "fill", Text = text },
+			main,
 			ui.Group:new { Width = "fill", SameSize = true,
 				Children = buttons }
-		}
+		},
+		getReqButton = function(self, nr)
+			return buttons[nr]
+		end,
+		abort = function(self)
+			window:hide()
+		end,
 	}
 
 	Application.connect(window)
 	self:addMember(window)
+	
+	local ww, wh = window:getWindowDimensions()
+	-- assuming here that a popup's minimum size equals its real size
+	local wx, wy
+	ww, wh, wx, wy = self:getRequestWindow(ww, wh)
+	window.Left = wx or false
+	window.Top = wy or false
+		
 	window:setValue("Status", "show")
 
 	repeat
-		self:suspend(window)
+		self:suspend(window) -- !
 	until window.Status ~= "show"
 
 	self:remMember(window)
@@ -973,4 +1051,11 @@ function Application:setLastKey(key)
 	key = key or false
 	self.LastKey = key
 	return oldkey == key
+end
+
+-------------------------------------------------------------------------------
+--	up:
+-------------------------------------------------------------------------------
+
+function Application:up()
 end

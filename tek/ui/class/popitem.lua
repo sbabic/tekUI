@@ -53,6 +53,7 @@
 --		- Widget:onClick()
 --		- Area:passMsg()
 --		- Element:setup()
+--		- Area:show()
 --
 -------------------------------------------------------------------------------
 
@@ -60,14 +61,14 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local PopupWindow = ui.require("popupwindow", 5)
 local Text = ui.require("text", 28)
+ui.require("widget", 26)
 local floor = math.floor
-local max = math.max
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 22.1"
-
+_VERSION = "PopItem 23.8"
 local PopItem = _M
+Text:newClass(PopItem)
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -107,14 +108,14 @@ function PopItem.init(self)
 	if self.KeyCode == nil then
 		self.KeyCode = true
 	end
-	self.ShiftX = false
-	self.ShiftY = false
+	self.ShiftX = 0
+	self.ShiftY = 0
 	if self.Children then
-		self.Mode = "toggle"
+		self.Mode = self.Mode or "toggle"
 		self.FocusNotification = { self, "unselectPopup" }
 	else
 		self.Children = false
-		self.Mode = "button"
+		self.Mode = self.Mode or "button"
 	end
 	self.Shortcut = self.Shortcut or false
 	return Text.init(self)
@@ -128,6 +129,7 @@ function PopItem:connect(parent)
 	if not self.PopupBase then
 		-- this is a root item of a popup tree:
 		self:addStyleClass("popup-root")
+-- 		self:addStyleClass("button")
 	end
 	return Text.connect(self, parent)
 end
@@ -267,7 +269,7 @@ function PopItem:beginPopup()
 	for i = 1, #children do
 		local c = children[i]
 		c:init()
-		c.Flags:set(FL_POPITEM)
+		c:setFlags(FL_POPITEM)
 		if c:instanceOf(PopItem) then
 			c.PopupBase = self.PopupBase or self
 		end
@@ -287,6 +289,7 @@ function PopItem:beginPopup()
 		Height = winh,
 		MaxWidth = winw,
 		MaxHeight = winh,
+		Borderless = true,
 	}
 
 	local app = self.Application
@@ -314,16 +317,23 @@ function PopItem:endPopup()
 		db.warn("element has no children")
 		return
 	end
-	self:setValue("Selected", false, false)
+	local base = self.PopupBase or self
 	self:setValue("Focus", false)
+
+	base:setValue("Focus", true)
+	
 	self:setState()
 	self.Window:remNotify("WindowFocus", NOTIFY_ALWAYS,
 		self.FocusNotification)
 	self.Window:remNotify("Status", "hide", self.FocusNotification)
-	self.PopupWindow:setValue("Status", "hide")
-	self.Application:remMember(self.PopupWindow)
+	
+	if self.PopupWindow then
+		self.PopupWindow:setValue("Status", "hide")
+		self.Application:remMember(self.PopupWindow)
+	end
 	self.Window.ActivePopup = false
 	self.PopupWindow = false
+	self:setValue("Selected", false)
 end
 
 -------------------------------------------------------------------------------
@@ -339,14 +349,15 @@ end
 
 function PopItem:passMsg(msg)
 	if msg[2] == ui.MSG_MOUSEBUTTON then
-		if msg[3] == 1 then -- leftdown:
+		local armb = self.ActivateOnRMB
+		if msg[3] == 1 or (armb and msg[3] == 4) then -- leftdown:
 			if self.PopupWindow and self.Window.ActiveElement ~= self and
 				not self.PopupBase and self.Window.HoverElement == self then
 				self:endPopup()
 				-- swallow event, don't let ourselves get reactivated:
 				return false
 			end
-		elseif msg[3] == 2 then -- leftup:
+		elseif msg[3] == 2 or (armb and msg[3] == 8) then -- leftup:
 			if self.PopupWindow and self.Window.HoverElement ~= self and
 				not self.Disabled then
 				self:endPopup()
@@ -391,7 +402,7 @@ function PopItem:selectPopup()
 		end
 		if self.PopupBase then
 			self.Selected = false
-			self.Flags:set(ui.FL_REDRAW)
+			self:setFlags(ui.FL_REDRAW)
 		end
 	end
 end
@@ -414,7 +425,7 @@ end
 function PopItem:connectPopItems(app, window)
 	if self:instanceOf(PopItem) then
 		db.info("adding %s", self:getClassName())
-		local c = self:getChildren(true)
+		local c = self:getChildren("init")
 		if c then
 			for i = 1, #c do
 				-- c[i]:addStyleClass("popup-child")
@@ -422,14 +433,14 @@ function PopItem:connectPopItems(app, window)
 			end
 		else
 			if self.Shortcut then
-				window:addKeyShortcut("IgnoreCase+" .. self.Shortcut, self)
+				window:addKeyShortcut(self.Shortcut, self)
 			end
 		end
 	elseif self:getAttr("popup-collapse") then
 		-- special treatment so that clicking the element collapses the popup:
 		self:addNotify("Active", NOTIFY_ALWAYS, NOTIFY_ACTIVE)
 	end
-	self.Flags:set(FL_POPITEM)
+	self:setFlags(FL_POPITEM)
 end
 
 -------------------------------------------------------------------------------
@@ -437,10 +448,10 @@ end
 -------------------------------------------------------------------------------
 
 function PopItem:disconnectPopItems(window)
-	self.Flags:clear(FL_POPITEM)
+	self:checkClearFlags(FL_POPITEM)
 	if self:instanceOf(PopItem) then
 		db.info("removing popitem %s", self:getClassName())
-		local c = self:getChildren(true)
+		local c = self:getChildren("init")
 		if c then
 			for i = 1, #c do
 				PopItem.disconnectPopItems(c[i], window)
@@ -477,6 +488,6 @@ end
 --	getChildren: overrides
 -------------------------------------------------------------------------------
 
-function PopItem:getChildren(init)
-	return init and self.Children
+function PopItem:getChildren(mode)
+	return mode == "init" and self.Children
 end

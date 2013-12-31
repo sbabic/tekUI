@@ -67,6 +67,7 @@ function MyGraph1:updateData(msg)
 		c[i] = tonumber(val)
 	end
 	self.RedrawGraph = true
+	self:setFlags(ui.FL_CHANGED)
 	return msg
 end
 
@@ -118,6 +119,7 @@ function MyGraph2:updateData(msg)
 	p[2] = p[2] % 256
 	p[3] = p[3] % 256
 	self.RedrawGraph = true
+	self:setFlags(ui.FL_CHANGED)
 	return msg
 end
 

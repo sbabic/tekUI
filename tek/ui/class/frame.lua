@@ -51,6 +51,7 @@
 --		''border-left-color'' || controls the ''default'' border class
 --		''border-left-width'' || controls {{Frame.Border}}
 --		''border-legend-font'' || controls the ''default'' border class
+--		''border-legend-align'' || controls the ''default'' border class
 --		''border-right-color'' || controls the ''default'' border class
 --		''border-right-width'' || controls {{Frame.Border}}
 --		''border-rim-color'' || controls the ''default'' border class
@@ -74,22 +75,25 @@
 --		- Class.new()
 --		- Element:onSetStyle()
 --		- Area:punch()
+--		- Area:setState()
 --		- Element:setup()
 --
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Area = ui.require("area", 44)
+local Area = ui.require("area", 46)
 local Region = ui.loadLibrary("region", 10)
 local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 21.1"
+_VERSION = "Frame 22.0"
 local Frame = _M
+Area:newClass(Frame)
 
 local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
+local FL_SETUP_LAYOUT = ui.FL_SETUP + ui.FL_LAYOUT
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -167,7 +171,7 @@ function Frame:damage(r1, r2, r3, r4)
 	Area.damage(self, r1, r2, r3, r4)
 	if self.BorderRegion and
 		self.BorderRegion:checkIntersect(r1, r2, r3, r4) then
-		self.Flags:set(FL_REDRAWBORDER)
+		self:setFlags(FL_REDRAWBORDER)
 	end
 end
 
@@ -179,7 +183,7 @@ function Frame:layout(r1, r2, r3, r4, markdamage)
 	local changed, border_ok = Area.layout(self, r1, r2, r3, r4, markdamage)
 	if changed and self:layoutBorder() and not border_ok and
 		markdamage ~= false then
-		self.Flags:set(FL_REDRAWBORDER)
+		self:setFlags(FL_REDRAWBORDER)
 	end		
 	return changed
 end
@@ -212,7 +216,7 @@ end
 
 function Frame:drawBorder()
 	local b = self.BorderObject
-	if b and self.Flags:check(ui.FL_SHOW) then
+	if b and self:checkFlags(ui.FL_SHOW) then
 		b:draw(self.Window.Drawable)
 	end
 end
@@ -223,7 +227,7 @@ end
 
 function Frame:draw()
 	local res = Area.draw(self)
-	if self.Flags:checkClear(FL_REDRAWBORDER) then
+	if self:checkClearFlags(FL_REDRAWBORDER) then
 		self:drawBorder()
 	end
 	return res
@@ -258,9 +262,18 @@ end
 
 function Frame:onSetStyle()
 	Area.onSetStyle(self)
-	if self.Flags:check(ui.FL_SETUP) then
+	if self:checkFlags(FL_SETUP_LAYOUT) then
 		self:newBorderObject()
 		self:layoutBorder()
-		self.Flags:set(FL_REDRAWBORDER)
+		self:setFlags(FL_REDRAWBORDER)
 	end
+end
+
+-------------------------------------------------------------------------------
+--	setState: overrides
+-------------------------------------------------------------------------------
+
+function Frame:setState(bg)
+	Area.setState(self, bg)
+	self:setFlags(FL_REDRAWBORDER)
 end

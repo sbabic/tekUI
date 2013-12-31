@@ -797,7 +797,7 @@ x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags)
 			else
 			{
 				/* load failed, free fontnode */
-				TDBPRINTF(TDB_ERROR,("X unable to load '%s'\n", fattr.fname));
+				TDBPRINTF(TDB_TRACE,("X unable to load '%s'\n", fattr.fname));
 				TFree(fn);
 			}
 		}
@@ -853,7 +853,7 @@ hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 				FNT_DEFREGENC
 			);
 
-			TDBPRINTF(TDB_WARN,("? %s\n", fquery));
+			TDBPRINTF(TDB_TRACE,("? %s\n", fquery));
 
 			fn->font = XLoadQueryFont(mod->x11_Display, fquery);
 

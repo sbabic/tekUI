@@ -310,7 +310,7 @@ local window = ui.Window:new
 				},
 				ui.Button:new
 				{
-					Style = "border-color: border-focus; border-rim-width: 1; border-rim-color:shine; border-focus-color: dark; border-width: 6 12 6 12;",
+					Style = "border-color: border-focus; border-rim-width: 1; border-rim-color:bright; border-focus-color: dark; border-width: 6 12 6 12;",
 					Text = L.BORDER_INDIVIDUAL_STYLE,
 					Height = "fill",
 				}

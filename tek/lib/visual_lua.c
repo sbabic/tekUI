@@ -16,6 +16,48 @@
 
 /*****************************************************************************/
 
+#if LUA_VERSION_NUM < 502
+
+/*	we need upvalues: */
+
+static int my_libsize (const luaL_Reg *l) {
+  int size = 0;
+  for (; l->name; l++) size++;
+  return size;
+}
+
+static void my_luaI_openlib (lua_State *L, const char *libname,
+	const luaL_Reg *l, int nup) {
+  if (libname) {
+    int size = my_libsize(l);
+    /* check whether lib already exists */
+    luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 1);
+    lua_getfield(L, -1, libname);  /* get _LOADED[libname] */
+    if (!lua_istable(L, -1)) {  /* not found? */
+      lua_pop(L, 1);  /* remove previous result */
+      /* try global variable (and create one if it does not exist) */
+      if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL)
+        luaL_error(L, "name conflict for module " LUA_QS, libname);
+      lua_pushvalue(L, -1);
+      lua_setfield(L, -3, libname);  /* _LOADED[libname] = new table */
+    }
+    lua_remove(L, -2);  /* remove _LOADED table */
+    lua_insert(L, -(nup+1));  /* move library table to below upvalues */
+  }
+  for (; l->name; l++) {
+    int i;
+    for (i=0; i<nup; i++)  /* copy upvalues to the top */
+      lua_pushvalue(L, -nup);
+    lua_pushcclosure(L, l->func, nup);
+    lua_setfield(L, -(nup+2), l->name);
+  }
+  lua_pop(L, nup);  /* remove upvalues */
+}
+
+#endif
+
+/*****************************************************************************/
+
 static const struct TInitModule tek_lib_visual_initmodules[] =
 {
 	{ "visual", tek_init_visual, TNULL, 0 },
@@ -41,9 +83,7 @@ static const luaL_Reg tek_lib_visual_funcs[] =
 	{ "wait", tek_lib_visual_wait },
 	{ "getMsg", tek_lib_visual_getmsg },
 	{ "createPixmap", tek_lib_visual_createpixmap },
-	{ "freePixmap", tek_lib_visual_freepixmap },
-	{ "getPixmap", tek_lib_visual_getpixmap },
-	{ "setPixmap", tek_lib_visual_setpixmap },
+	{ "createGradient", tek_lib_visual_creategradient },
 	{ TNULL, TNULL }
 };
 
@@ -78,6 +118,7 @@ static const luaL_Reg tek_lib_visual_methods[] =
 	{ "popClipRect", tek_lib_visual_popcliprect },
 	{ "getClipRect", tek_lib_visual_getcliprect },
 	{ "setBGPen", tek_lib_visual_setbgpen },
+	{ "getSelection", tek_lib_visual_getselection },
 	{ TNULL, TNULL }
 };
 
@@ -93,6 +134,9 @@ static const luaL_Reg tek_lib_visual_fontmethods[] =
 static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 {
 	{ "__gc", tek_lib_visual_freepixmap },
+	{ "free", tek_lib_visual_freepixmap },
+	{ "getPixel", tek_lib_visual_getpixmap },
+	{ "setPixel", tek_lib_visual_setpixmap },
 	{ TNULL, TNULL }
 };
 
@@ -408,14 +452,15 @@ tek_lib_visual_close(lua_State *L)
 
 	if (vis->vis_refBase >= 0)
 	{
+		int ui = lua_upvalueindex(1);
 		if (vis->vis_refPens >= 0)
-			luaL_unref(L, lua_upvalueindex(1), vis->vis_refPens);
+			luaL_unref(L, ui, vis->vis_refPens);
 		if (vis->vis_refUserData >= 0)
-			luaL_unref(L, lua_upvalueindex(1), vis->vis_refUserData);
+			luaL_unref(L, ui, vis->vis_refUserData);
 		if (vis->vis_refBGPen >= 0)
-			luaL_unref(L, lua_upvalueindex(1), vis->vis_refBGPen);
-		luaL_unref(L, lua_upvalueindex(1), vis->vis_refSelf);
-		luaL_unref(L, lua_upvalueindex(1), vis->vis_refBase);
+			luaL_unref(L, ui, vis->vis_refBGPen);
+		luaL_unref(L, ui, vis->vis_refSelf);
+		luaL_unref(L, ui, vis->vis_refBase);
 		vis->vis_refBase = -1;
 		TDBPRINTF(TDB_TRACE,("visual %08x unref'd\n", vis));
 	}
@@ -462,6 +507,16 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 {
 	TEKVisual *vis;
 	struct TExecBase *TExecBase;
+	
+	/* register input message */
+	luaL_newmetatable(L, "tek_msg*");
+	lua_pushcfunction(L, tek_msg_reply);
+	lua_setfield(L, -2, "__gc");
+	lua_pushcfunction(L, tek_msg_index);
+	lua_setfield(L, -2, "__index");
+	lua_pushcfunction(L, tek_msg_len);
+	lua_setfield(L, -2, "__len");
+	lua_pop(L, 1);
 
 	/* require "tek.lib.display.x11": */
 	lua_getglobal(L, "require");
@@ -483,8 +538,17 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	TExecBase = *(TAPTR *) lua_touserdata(L, -1);
 
 	/* register functions: */
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, "tek.lib.visual", tek_lib_visual_funcs);
+#else
+	luaL_newlib(L, tek_lib_visual_funcs);
+#endif
 	/* s: displaytab, exectab, execbase, vistab */
+
+	lua_pushvalue(L, -1);
+	/* s: displaytab, exectab, execbase, vistab, vistab */
+	lua_insert(L, -5);
+	/* s: vistab, displaytab, exectab, execbase, vistab */
 
 	lua_pushstring(L, TEK_LIB_VISUAL_VERSION);
 	lua_setfield(L, -2, "_VERSION");
@@ -517,7 +581,13 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	lua_pushvalue(L, -1);
 	luaL_newmetatable(L, TEK_LIB_VISUALPEN_CLASSNAME);
 	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
-	luaI_openlib(L, NULL, tek_lib_visual_methods, 3);
+	luaL_newmetatable(L, TEK_LIB_VISUALGRADIENT_CLASSNAME);
+	
+#if LUA_VERSION_NUM < 502
+	my_luaI_openlib(L, NULL, tek_lib_visual_methods, 4);
+#else
+	luaL_setfuncs(L, tek_lib_visual_methods, 4);
+#endif
 	
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta */
 	lua_setmetatable(L, -2);
@@ -539,7 +609,11 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: meta, meta */
 	lua_setfield(L, -2, "__index");
 	/* s: meta */
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, NULL, tek_lib_visual_pixmapmethods);
+#else
+	luaL_setfuncs(L, tek_lib_visual_pixmapmethods, 0);
+#endif
 	lua_pop(L, 1);
 	
 	/* prepare font metatable and store reference in metatable: */
@@ -549,7 +623,11 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: fontmeta, fontmeta */
 	lua_setfield(L, -2, "__index");
 	/* s: fontmeta */
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, NULL, tek_lib_visual_fontmethods);
+#else
+	luaL_setfuncs(L, tek_lib_visual_fontmethods, 0);
+#endif
 	lua_pop(L, 1);
 
 	/* Add visual module to TEKlib's internal module list: */
@@ -583,20 +661,30 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 			break;
 		}
 
-		/* Open default font: */
+		/* try to obtain default font: */
+		
+		vis->vis_Font = TNULL;
+		vis->vis_FontHeight = 0;
+		
 		dtags[0].tti_Tag = TVisual_Display;
 		dtags[0].tti_Value = (TTAG) vis->vis_Display;
 		dtags[1].tti_Tag = TTAG_DONE;
 		vis->vis_Font = TVisualOpenFont(vis->vis_Base, dtags);
-		if (vis->vis_Font == TNULL) break;
-
-		ftags[0].tti_Tag = TVisual_FontHeight;
-		ftags[0].tti_Value = (TTAG) &vis->vis_FontHeight;
-		ftags[1].tti_Tag = TTAG_DONE;
-		TVisualGetFontAttrs(vis->vis_Base, vis->vis_Font, ftags);
+		if (vis->vis_Font)
+		{
+			ftags[0].tti_Tag = TVisual_FontHeight;
+			ftags[0].tti_Value = (TTAG) &vis->vis_FontHeight;
+			ftags[1].tti_Tag = TTAG_DONE;
+			TVisualGetFontAttrs(vis->vis_Base, vis->vis_Font, ftags);
+			TDBPRINTF(TDB_INFO,("Driver '%s' supplied default font, size %dpx\n", 
+				DISPLAY_DRIVER, vis->vis_FontHeight));
+		}
+		else
+			TDBPRINTF(TDB_WARN,("Driver '%s' supplied no default font\n", 
+				DISPLAY_DRIVER));
 
 		/* success: */
-		return 0;
+		return 1;
 	}
 
 	TDestroy((struct THandle *) vis->vis_IMsgPort);

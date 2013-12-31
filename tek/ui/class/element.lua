@@ -75,8 +75,9 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 19.2"
+_VERSION = "Element 19.6"
 local Element = _M
+Object:newClass(Element)
 
 -------------------------------------------------------------------------------
 --	Placeholders for notification arguments:
@@ -161,8 +162,13 @@ local function connectProperties(self, stylesheets)
 	local ups
 	local topclass
 	while class ~= Element do
-		for i = 1, #stylesheets do
-			local s = stylesheets[i][class._NAME]
+		for i = 1, #stylesheets + 1 do
+			local s
+			if i <= #stylesheets then
+				s = stylesheets[i][class._NAME]
+			else
+				s = class.Properties
+			end
 			if s then
 				if not topclass then
 					topclass = s
@@ -171,7 +177,7 @@ local function connectProperties(self, stylesheets)
 					if getmetatable(ups) == s then
 						-- already connected
 						return topclass
-					else
+					elseif i <= #stylesheets then
 						setmetatable(ups, s)
 						s.__index = s
 					end
@@ -273,21 +279,19 @@ end
 local empty = { }
 
 function Element:decodeProperties(stylesheets)
+
 	-- connect element style classes:
 	local props = connectProperties(self, stylesheets)
 	if props then
 		props.__index = props
 	end
+	
 	-- overlay with user classes:
 	props = decodeUserClasses(self, stylesheets, props)
+
 	-- overlay with individual and direct formattings:
 	props = decodeIndividualFormats(self, stylesheets, props)
-	-- hardcoded class properties:
-	local cprops = self:getClass().Properties
-	if cprops then
-		props.__index = props
-		props = setmetatable(cprops, props or empty)
-	end
+	
 	self.Properties = props or empty
 end
 
@@ -308,7 +312,7 @@ function Element:setup(app, window)
 	self.Application = app
 	self.Window = window
 	if self.Id then
-		self.Application:addElement(self)
+		app:addElement(self)
 	end
 end
 
@@ -352,18 +356,21 @@ end
 -------------------------------------------------------------------------------
 
 function Element:addStyleClass(styleclass)
-	local class = self.Class
-	if class then
-		for c in class:gmatch("%S+") do
-			if c == styleclass then
-				return
+	if styleclass and styleclass ~= "" then
+		local class = self.Class
+		if class then
+			for c in class:gmatch("%S+") do
+				if c == styleclass then
+					return
+				end
 			end
+			class = class .. " " .. styleclass
+		else
+			class = styleclass
 		end
-		class = class .. " " .. styleclass
-	else
-		class = styleclass
+		self.Class = class
 	end
-	self.Class = class
+	return self.Class
 end
 
 -------------------------------------------------------------------------------
@@ -372,9 +379,7 @@ end
 -------------------------------------------------------------------------------
 
 function Element:onSetStyle()
-	if self.Flags:check(ui.FL_SETUP) then
-		self.Application:decodeProperties(self)
-	end
+	self.Application:decodeProperties(self)
 end
 
 -------------------------------------------------------------------------------

@@ -10,10 +10,157 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<h3>
+			0.8l:
+		</h3>
 		<blockquote>
 			<ul>
 				<li>
+					New Input and TextEdit classes added, the TextInput class is obsolete.
+					Input is largely compatible with TextInput. The new class supports
+					multiline, proportional fonts, smooth scrolling, MaxLength, Size,
+					passwords, selections, and an internal clipboard, which can be shared with
+					the system clipboard (currently implemented in the X11 driver)
+				</li>
+				<li>
+					RawFB (in-memory) framebuffer display driver added, which is recursive:
+					Allows another display driver to be plugged in as its rendering back-end
+				</li>
+				<li>
+					Added Lua 5.2 support, and no longer uses Lua internal API functions
+				</li>
+				<li>
+					Added gradient support, available via stylesheets
+				</li>
+				<li>
+					RawFB: Added LibVNCServer support. Applications can now be shared with
+					the network, running headlessly or with an additional native display
+				</li>
+				<li>
+					Added 'klinik' and 'stain' stylesheets
+				</li>
+				<li>
+					Default border now supports border-legend-align attribute
+				</li>
+				<li>
+					Element: Cascading stylesheets did not incorporate an element's hardcoded
+					class properties correctly, corrected
+				</li>
+				<li>
+					ScrollGroup: Reduced object tree complexity in some cases, some checks
+					added
+				</li>
+				<li>
+					ui: Added FL_UPDATE, typo in &quot;BckSpc&quot; symbolic key name corrected, added
+					MSG_REQSELECTION, added FL_RECVINPUT, FL_RECVMOUSEMOVE, FL_CURSORFOCUS,
+					now automatically loads &quot;default&quot; as the first stylesheet unless &quot;minimal&quot;
+					is explicitely given in the THEME variable
+				</li>
+				<li>
+					Area: <a href="manual.html#setFlags"><code>setFlags()</code></a>, <a href="manual.html#checkClearFlags"><code>checkClearFlags()</code></a> added, taking care of FL_UPDATE
+					bubbling up in the graph on setting FL_REDRAW, FL_REDRAWBORDER, FL_CHANGED.
+					<a href="manual.html#getNext"><code>getNext()</code></a>, <a href="manual.html#getPrev"><code>getPrev()</code></a> now have an optional &quot;recursive&quot; mode argument.
+					added <a href="manual.html#getDisplacement"><code>getDisplacement()</code></a>, <a href="manual.html#getMsgFields"><code>getMsgFields()</code></a>. <a href="manual.html#checkHover"><code>checkHover()</code></a> renamed to
+					<a href="manual.html#checkHilite"><code>checkHilite()</code></a> 
+				</li>
+				<li>
+					Group: now descends only into elements with FL_UPDATE set during updates,
+					which reduces the overhead for small, partial refreshes. <a href="manual.html#remMember"><code>remMember()</code></a> now
+					unweights a Group's remaining elements; no longer passes messages to
+					disabled or inactive elements
+				</li>
+				<li>
+					Lister: No longer unselects entries in <a href="manual.html#cleanup"><code>cleanup()</code></a>, more sanity checks
+				</li>
+				<li>
+					Application: User message handler is now established in <a href="manual.html#new"><code>new()</code></a>, added
+					FocusWindow attribute
+				</li>
+				<li>
+					Display, Visual: Added support for bold and italic in fontnames and with
+					<a href="manual.html#openFont"><code>openFont()</code></a>, better default/fallback fonts, added symbolic color &quot;bright&quot;,
+					<a href="manual.html#getattrs"><code>getattrs()</code></a> now supports query of selection and clipboard
+				</li>
+				<li>
+					DirList: path/location field bugs fixed, some improvements especially in
+					regard to keyboard control
+				</li>
+				<li>
+					DirectFB Display driver: Totalwidth/pitch bug in drawbuffer corrected
+				</li>
+				<li>
+					X11 display: Issues with drawing argument ranges corrected, now stops
+					reading from stdin when an error occurs, Unicode keycode handling improved,
+					added saveunder/backingstore heuristic, compile-time options to reenable
+					default cursor, datagram socket for USER messages, improved pixmap memory
+					management
+				</li>
+				<li>
+					X11 display, Visual, Applications: Added support for selections and
+					clipboards. tekUI input messages are now userdata encapsulations of TEKlib
+					messages, passed into Lua space, unpacked only on demand when accessed, and
+					replied explicitely using <a href="manual.html#reply"><code>reply()</code></a> or implicitely through garbage collection.
+					messages can now perform a roundtrip through Lua space back to originator
+				</li>
+				<li>
+					TEKlib: Added more support for message port hooks
+				</li>
+				<li>
+					PopItem: Some initialization and other problems corrected
+				</li>
+				<li>
+					Widget, Window, PopItem: Added some right mouse button support
+				</li>
+				<li>
+					Widget: improved doubleclick state detection, now known in <a href="manual.html#onPress"><code>onPress()</code></a> etc.,
+					Hover attribute and <a href="manual.html#onHover"><code>onHover()</code></a> removed, simplified activation model based on
+					Hilite attribute, now all widgets receive FL_RECVINPUT, interactive elements
+					additionally receive FL_RECVMOUSEMOVE
+				</li>
+				<li>
+					Window: Focus and Activation in KEYDOWN handler is no longer changed when
+					a keyboard qualifier is present, more rigid checking for elements going
+					active or getting highlighted, no longer passes MSG_NEWSIZE and MSG_REFRESH
+					to group, minimized usage of <a href="manual.html#getByXY"><code>getByXY()</code></a>, <a href="manual.html#getHoverElementByXY"><code>getHoverElementByXY()</code></a> removed
+				</li>
+				<li>
+					TextInput: now stops editing when clicked outside and no other element is
+					activated, added <a href="manual.html#getText"><code>getText()</code></a> method
+				</li>
+				<li>
+					PageGroup: setting PageNumber now sends value and oldvalue in notification
+				</li>
+				<li>
+					Canvas: VScrollStep renamed to VIncrease, fixed some refresh problems
+				</li>
+				<li>
+					Slider: AutoFocus renamed to AutoCapture, Integer renamed to Step, the
+					latter can be a number value or a boolean; AutoCapture now on by default
+				</li>
+				<li>
+					Sizeable class moved into main class hierarchy
+				</li>
+				<li>
+					C dynamic UTF-8 and metadata string class added
+				</li>
+				<li>
+					UTF8String class removed
+				</li>
+				<li>
+					Fixed aliasing issues in compile flags when compiling with more recent
+					versions of GCC
+				</li>
+				<li>
 					Corrected some addresses and years in the documentation
+				</li>
+				<li>
+					Prototype text editor: improved
+				</li>
+				<li>
+					Improved region management, improved buffer rendering, added FONTDIR env
+					variable, default font is now DejaVu, display drivers no longer have to
+					provide a default font, improved font and pixmap cache management, reworked
+					some demos
 				</li>
 			</ul>
 		</blockquote>

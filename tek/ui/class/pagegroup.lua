@@ -56,11 +56,11 @@ local min = math.min
 local tonumber = tonumber
 local tostring = tostring
 local type = type
-local unpack = unpack
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 19.2"
+_VERSION = "PageGroup 19.4"
 local PageGroup = _M
+Group:newClass(PageGroup)
 
 -------------------------------------------------------------------------------
 --	PageContainerGroup:
@@ -100,7 +100,7 @@ function PageContainerGroup:damage(r1, r2, r3, r4)
 	Widget.damage(self, r1, r2, r3, r4)
 	local f = self.FreeRegion
 	if f and f:checkIntersect(r1, r2, r3, r4) then
-		self.Flags:set(ui.FL_REDRAW)
+		self:setFlags(ui.FL_REDRAW)
 	end
 	self.PageElement:damage(r1, r2, r3, r4)
 end
@@ -182,16 +182,16 @@ end
 --	getNext: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:getNext()
-	return self:getParent():getNext()
+function PageContainerGroup:getNext(mode)
+	return self:getParent():getNext(mode)
 end
 
 -------------------------------------------------------------------------------
 --	getPrev: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:getPrev()
-	local c = self:getParent():getChildren()
+function PageContainerGroup:getPrev(mode)
+	local c = self:getParent():getChildren(mode)
 	return c and c[1]
 end
 
@@ -199,8 +199,8 @@ end
 --	getChildren: overrides
 -------------------------------------------------------------------------------
 
-function PageContainerGroup:getChildren(init)
-	return init and self.Children or { self.PageElement }
+function PageContainerGroup:getChildren(mode)
+	return mode == "init" and self.Children or { self.PageElement }
 end
 
 -------------------------------------------------------------------------------
@@ -231,7 +231,7 @@ end
 
 function PageGroup.addClassNotifications(proto)
 	addNotify(proto, "PageNumber", NOTIFY_ALWAYS,
-		{ NOTIFY_SELF, "onSetPageNumber" })
+		{ NOTIFY_SELF, "onSetPageNumber", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE })
 	return Group.addClassNotifications(proto)
 end
 

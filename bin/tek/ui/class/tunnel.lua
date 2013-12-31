@@ -16,13 +16,13 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 5.0"
+_VERSION = "Tunnel 5.1"
+local Tunnel = _M
+Frame:newClass(Tunnel)
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
-
-local Tunnel = _M
 
 function Tunnel:setNumSeg(val)
 	self.numseg = val
@@ -76,7 +76,7 @@ function Tunnel:draw()
 	if Frame.draw(self) then
 		local r1, r2, r3, r4 = self:getRect()
 		local d = self.Window.Drawable
-		local p0, p1 = "dark", "shine"
+		local p0, p1 = "dark", "bright"
 	
 		d:fillRect(r1, r2, r3, r4, p0)
 	
@@ -117,6 +117,6 @@ function Tunnel:updateInterval(msg)
 		self.cx = self.cx == self.ndx and 1 or self.cx + 1
 		self.cy = self.cy == self.ndx and 1 or self.cy + 1
 	end
-	self.Flags:set(ui.FL_REDRAW)
+	self:setFlags(ui.FL_REDRAW)
 	return msg
 end

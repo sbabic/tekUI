@@ -36,15 +36,16 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-
 local Text = ui.require("text", 28)
 
 local floor = math.floor
 local max = math.max
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 9.0"
+_VERSION = "CheckMark 9.1"
+local CheckMark = _M
+Text:newClass(CheckMark)
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -58,8 +59,6 @@ local DEF_IMAGEMINHEIGHT = 18
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
-
-local CheckMark = _M
 
 function CheckMark.new(class, self)
 	self = self or { }
@@ -162,7 +161,7 @@ function CheckMark:setState(bg, fg)
 
 	if self.Selected ~= self.OldSelected then
 		self.OldSelected = self.Selected
-		self.Flags:set(ui.FL_REDRAW)
+		self:setFlags(ui.FL_REDRAW)
 	end
 	Text.setState(self, bg, fg)
 end

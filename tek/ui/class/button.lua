@@ -38,12 +38,13 @@ local Text = ui.require("text", 28)
 
 module("tek.ui.class.button", tek.ui.class.text)
 _VERSION = "Button 2.0"
+local Button = _M
+Text:newClass(Button)
 
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-local Button = _M
 
 function Button.new(class, self)
 	self = self or { }

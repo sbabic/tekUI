@@ -33,14 +33,20 @@ local window = ui.Window:new
 					Height = "fill",
 					Children =
 					{
+						Text:new { Class = "caption", Text = "XX-Small",
+							Style = "font: ui-xx-small" },
+						Text:new { Class = "caption", Text = "X-Small",
+							Style = "font: ui-x-small" },
 						Text:new { Class = "caption", Text = "Small",
 							Style = "font: ui-small" },
 						Text:new { Class = "caption", Text = "Main",
 							Style = "font: ui-main" },
 						Text:new { Class = "caption", Text = "Large",
 							Style = "font: ui-large" },
-						Text:new { Class = "caption", Text = "Huge",
-							Style = "font: ui-huge" },
+						Text:new { Class = "caption", Text = "XL",
+							Style = "font: ui-x-large" },
+						Text:new { Class = "caption", Text = "XXL",
+							Style = "font: ui-xx-large" },
 						Text:new { Class = "caption", Text = "Fixed",
 							Style = "font: ui-fixed" },
 					}
@@ -52,14 +58,18 @@ local window = ui.Window:new
 					Height = "fill",
 					Children =
 					{
-						Text:new { Text = "Small",
-							Style = "font: ui-small" },
+						Text:new { Text = "XX-Small",
+							Style = "font: ui-xx-small" },
+						Text:new { Text = "X-Small",
+							Style = "font: ui-x-small" },
 						Text:new { Text = "Main",
 							Style = "font: ui-main" },
 						Text:new { Text = "Large",
 							Style = "font: ui-large" },
-						Text:new { Text = "Huge",
-							Style = "font: ui-huge" },
+						Text:new { Text = "XL",
+							Style = "font: ui-x-large" },
+						Text:new { Text = "XXL",
+							Style = "font: ui-xx-large" },
 						Text:new { Text = "Fixed",
 							Style = "font: ui-fixed" },
 					}
@@ -71,10 +81,13 @@ local window = ui.Window:new
 					Height = "fill",
 					Children =
 					{
+						Button:new { Text = "XX-Small", Style = "font: ui-xx-small" },
+						Button:new { Text = "X-Small", Style = "font: ui-x-small" },
 						Button:new { Text = "Small", Style = "font: ui-small" },
 						Button:new { Text = "Main", Style = "font: ui-main" },
 						Button:new { Text = "Large", Style = "font: ui-large" },
-						Button:new { Text = "Huge", Style = "font: ui-huge" },
+						Button:new { Text = "XL", Style = "font: ui-x-large" },
+						Button:new { Text = "XXL", Style = "font: ui-xx-large" },
 						Button:new { Text = "Fixed", Style = "font: ui-fixed" },
 					}
 				},
@@ -85,11 +98,11 @@ local window = ui.Window:new
 					Height = "fill",
 					Children =
 					{
-						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: dark; color: shine" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: dark; color: bright" },
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: shadow; color: shine" },
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: half-shadow; color: shine" },
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: half-shine; color: dark" },
-						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: shine; color: dark" },
+						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: bright; color: dark" },
 						Button:new { Text = L.BUTTONS_BUTTON, Style = "background-color: #aa0000; color: #ffff00" },
 					}
 				},
@@ -97,13 +110,27 @@ local window = ui.Window:new
 				{
 					Orientation = "vertical",
 					Legend = L.BUTTONS_TEXT_ALIGNMENTS,
-					Height = "fill",
+-- 					Height = "fill",
 					SameSize = "height",
 					Children =
 					{
 						Button:new { Text = L.BUTTONS_TOP_LEFT, Style = "text-align: left; vertical-align: top; height: free" },
 						Button:new { Text = L.BUTTONS_CENTER, Style = "text-align: center; vertical-align: center; height: free" },
 						Button:new { Text = L.BUTTONS_RIGHT_BOTTOM, Style = "text-align: right; vertical-align: bottom; height: free" },
+					}
+				},
+				Group:new
+				{
+					Orientation = "vertical",
+					Legend = L.BUTTONS_TEXT_STYLES,
+					Height = "fill",
+					SameSize = "height",
+					Children =
+					{
+						Button:new { Text = "Default", Style = "font: ui-main" },
+						Button:new { Text = "Italic", Style = "font: ui-main/i" },
+						Button:new { Text = "Bold", Style = "font: ui-main/b" },
+						Button:new { Text = "BoldItalic", Style = "font: ui-main/bi" },
 					}
 				}
 			}

@@ -65,7 +65,7 @@ ui.Application:new
 									Max = 0x10000,
 									Width = "free",
 									Default = 0x8000,
-									Step = 0x400,
+									Increment = 0x400,
 									show = function(self, drawable)
 										ui.Slider.show(self, drawable)
 										self:onSetValue()
@@ -123,7 +123,7 @@ ui.Application:new
 							Height = "fill",
 							Min = 0,
 							Max = 100000,
-							Step = 100,
+							Increment = 100,
 							show = function(self, drawable)
 								ui.Slider.show(self, drawable)
 								self:onSetValue()

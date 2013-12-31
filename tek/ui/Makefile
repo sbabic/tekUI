@@ -36,6 +36,7 @@ CLASSES = \
 	class/radiobutton.lua \
 	class/scrollbar.lua \
 	class/scrollgroup.lua \
+	class/sizeable.lua \
 	class/slider.lua \
 	class/spacer.lua \
 	class/text.lua \
@@ -72,48 +73,41 @@ CATALOGS2 = \
 
 ###############################################################################
 
-MODS = layout/default$(DLLEXT) support$(DLLEXT)
+MODS = layout/default$(DLLEXT) 
 
 layout/default$(DLLEXT): $(OBJDIR)/default.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/default.lo $(LUA_DLLS)
 
-support$(DLLEXT): $(OBJDIR)/support.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/support.lo $(LUA_DLLS)
-
 $(OBJDIR)/default.lo: layout/default.c
 	$(CC) $(LIBCFLAGS) -o $@ -c layout/default.c
-
-$(OBJDIR)/support.lo: support.c
-	$(CC) $(LIBCFLAGS) -o $@ -c support.c
 
 ###############################################################################
 
 modules: $(OBJDIR) $(MODS)
 
 install:
-	$(INSTALL) -d $(LUA_LIB)/tek/ui/layout
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/layout
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/border
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/hook
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/image
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/class
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/font
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/cursor
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/style
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
-	$(INSTALL) -d $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
-	$(INSTALL) -s layout/default$(DLLEXT) $(LUA_LIB)/tek/ui/layout
-	$(INSTALL) -s support$(DLLEXT) $(LUA_LIB)/tek/ui
-	$(INSTALL) layout/fixed.lua $(LUA_SHARE)/tek/ui/layout
-	$(INSTALL) $(CLASSES) $(LUA_SHARE)/tek/ui/class
-	$(INSTALL) $(BORDERS) $(LUA_SHARE)/tek/ui/border
-	$(INSTALL) $(HOOKS) $(LUA_SHARE)/tek/ui/hook
-	$(INSTALL) $(IMAGES) $(LUA_SHARE)/tek/ui/image
-	$(INSTALL) $(FONTS) $(LUA_SHARE)/tek/ui/font
-	$(INSTALL) $(CURSORS) $(LUA_SHARE)/tek/ui/cursor
-	$(INSTALL) $(STYLES) $(LUA_SHARE)/tek/ui/style
-	$(INSTALL) $(CATALOGS1) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
-	$(INSTALL) $(CATALOGS2) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
+	$(INSTALL_D) $(LUA_LIB)/tek/ui/layout
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/layout
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/border
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/hook
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/image
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/class
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/font
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/cursor
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/style
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
+	$(INSTALL_D) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
+	$(INSTALL_S) layout/default$(DLLEXT) $(LUA_LIB)/tek/ui/layout
+	$(INSTALL_F) layout/fixed.lua $(LUA_SHARE)/tek/ui/layout
+	$(INSTALL_F) $(CLASSES) $(LUA_SHARE)/tek/ui/class
+	$(INSTALL_F) $(BORDERS) $(LUA_SHARE)/tek/ui/border
+	$(INSTALL_F) $(HOOKS) $(LUA_SHARE)/tek/ui/hook
+	$(INSTALL_F) $(IMAGES) $(LUA_SHARE)/tek/ui/image
+	$(INSTALL_F) $(FONTS) $(LUA_SHARE)/tek/ui/font
+	$(INSTALL_F) $(CURSORS) $(LUA_SHARE)/tek/ui/cursor
+	$(INSTALL_F) $(STYLES) $(LUA_SHARE)/tek/ui/style
+	$(INSTALL_F) $(CATALOGS1) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
+	$(INSTALL_F) $(CATALOGS2) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
 
 clean: FORCE
 	-$(RM) $(MODS) $(LIBS)

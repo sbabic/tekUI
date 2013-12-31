@@ -34,7 +34,7 @@ app = ui.Application:new
 							Width = "auto",
 							KeyCode = true,
 						},
-						ui.TextInput:new
+						ui.Input:new
 						{
 							Id = "pathfield",
 							Text = "/home",
@@ -48,7 +48,7 @@ app = ui.Application:new
 							Width = "auto",
 							KeyCode = true,
 						},
-						ui.TextInput:new
+						ui.Input:new
 						{
 							Id = "filefield",
 						},
@@ -93,7 +93,7 @@ app = ui.Application:new
 							local statusfield = app:getById("statusfield")
 							local status, path, select = app:requestFile
 							{
-								Path = pathfield.Text,
+								Path = pathfield:getText(),
 								SelectMode = app:getById("multiselect").Selected and
 									"multi" or "single"
 							}

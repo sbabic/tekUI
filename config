@@ -22,7 +22,7 @@ DISPLAY_DRIVER ?= x11
 # Compiler configuration:
 #------------------------------------------------------------------------------
 
-CCPREFIX =
+# CCPREFIX =
 CC = $(CCPREFIX)gcc -fpic
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,41 +55,45 @@ PLATFORM_LIBS = -pthread
 # PLATFORM_LIBS = -lmsvcrt -lkernel32 -lwinmm -luser32 -lshell32 -ladvapi32
 # LUA_DLLS = -L $(BASEDIR) -llua51
 
-
 #------------------------------------------------------------------------------
-# The basic setup should be complete up to this point.
+# Installation and system paths:
+# (Installation is not always required, e.g. x11 and windows can do without)
 #------------------------------------------------------------------------------
 
+PREFIX ?= /usr/local
+LUA_LIB = $(PREFIX)/lib/lua/5.1
+LUA_SHARE = $(PREFIX)/share/lua/5.1
+SYS_LUA_LIB = $(PREFIX)/lib/lua/5.1
+SYS_LUA_SHARE = $(PREFIX)/share/lua/5.1
 
 #------------------------------------------------------------------------------
 # Other libraries:
 #------------------------------------------------------------------------------
 
-LUA_DEFS = -I/usr/local/include/lua51 -I/usr/include/lua5.1 -I/usr/local/include
+LUA_DEFS = -I$(PREFIX)/include -I/usr/local/include/lua51 -I/usr/include/lua5.1
 
-FREETYPE_DEFS = -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2
+FREETYPE_LIBS = -L$(PREFIX)/lib -lfreetype
+FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2
 
 X11_LIBS = -L/usr/X11R6/lib -LX11 -lXext -lXxf86vm
 X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DENABLE_XFT -DENABLE_XVID -DENABLE_STDIN
 
-DFB_LIBS = `pkg-config --libs directfb`
-DFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
-
 WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 
-RAWFB_LIBS = -lfreetype -ldisplay_x11 $(X11_LIBS)
-RAWFB_DEFS = $(FREETYPE_DEFS)
+# VNCSERVER_LIBS = -L$(PREFIX)/lib -lvncserver
+# VNCSERVER_DEFS = -DENABLE_VNCSERVER -I$(PREFIX)/include -DENABLE_VNCSERVER_COPYRECT
+RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
+RAWFB_SUB_DEFS = -DRFB_RENDER_DEVICE=x11
+RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS)
+RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) # -DFNT_DEFDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
+# Comment out RAWFB_SUB for a 'headless' GUI
+# Note that VNC support makes this software a combined work with LibVNCServer
 
 NANOX_LIBS = -L /work/nano-x/dev/src/lib -lnano-X
 NANOX_DEFS = -I /work/nano-x/dev/src/include -DENABLE_STDIN
 
-#------------------------------------------------------------------------------
-# Installation paths:
-# (Installation is not always required, e.g. x11 and windows can do without)
-#------------------------------------------------------------------------------
-
-LUA_LIB = /usr/local/lib/lua/5.1
-LUA_SHARE = /usr/local/share/lua/5.1
+DFB_LIBS = `pkg-config --libs directfb`
+DFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
 
 #------------------------------------------------------------------------------
 # Build paths:
@@ -107,8 +111,8 @@ MODDIR = $(BINDIR)/mod
 #------------------------------------------------------------------------------
 
 # DEBUG = -g -DTDEBUG=5
-WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function
-OPT = -O1
+WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-long-long
+OPT = -O2 -fno-strict-aliasing
 INCL = -I. -Iinclude -I$(INCDIR)
 LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 MODCFLAGS = -shared -L $(LIBDIR)
@@ -123,7 +127,10 @@ RM = rm
 RMDIR = rm -r
 MKDIR = mkdir -p
 ECHO = echo
-INSTALL = install
+INSTALL_B = install
+INSTALL_F = install
+INSTALL_D = install -d
+INSTALL_S = install -s
 
 #------------------------------------------------------------------------------
 # Predefined targets:

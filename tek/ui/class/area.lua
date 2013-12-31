@@ -147,8 +147,10 @@
 --
 --	IMPLEMENTS::
 --		- Area:askMinMax() - Queries the element's minimum and maximum size
+--		- Area:checkClearFlags() - Check and clear an element's flags
+--		- Area:checkFlags() - Check an element's flags
 --		- Area:checkFocus() - Checks if the element can receive the input focus
---		- Area:checkHover() - Checks if the element can be hovered over
+--		- Area:checkHilite() - Checks if the element can be highlighted
 --		- Area:damage() - Notifies the element of a damage
 --		- Area:draw() - Paints the element
 --		- Area:drawBegin() - Prepares the rendering context
@@ -157,11 +159,13 @@
 --		- Area:focusRect() - Makes the element fully visible, if possible
 --		- Area:getBG() - Gets the element's background properties
 --		- Area:getBGElement() - Gets the element's background element
---		- Area:getChildren() - Gets the element's children
 --		- Area:getByXY() - Checks if the element covers a coordinate
+--		- Area:getChildren() - Gets the element's children
+--		- Area:getDisplacement(): Get this element's coordinate displacement
 --		- Area:getGroup() - Gets the element's group
 --		- Area:getMargin() - Gets the element's margin
 --		- Area:getMinMax() - Gets the element's calculated min/max sizes
+--		- Area:getMsgFields() - Get fields of an input message
 --		- Area:getNext() - Gets the element's successor in its group
 --		- Area:getPadding() - Gets the element's paddings
 --		- Area:getParent() - Gets the element's parent element
@@ -174,6 +178,7 @@
 --		- Area:punch() - Subtracts the outline of the element from a
 --		[[#tek.lib.region : Region]]
 --		- Area:rethinkLayout() - Causes a relayout of the element and its group
+--		- Area:setFlags() - Sets an element's flags
 --		- Area:setState() - Sets the background attribute of an element
 --		- Area:show() - Gets called when the element is about to be shown
 --
@@ -193,22 +198,26 @@ local Region = ui.loadLibrary("region", 10)
 
 local assert = assert
 local newFlags = ui.newFlags
+local checkAnyFlags = ui.checkAnyFlags
 local intersect = Region.intersect
 local max = math.max
 local min = math.min
 local newregion = Region.new
 local tonumber = tonumber
 local type = type
-local unpack = unpack
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 45.0"
+_VERSION = "Area 50.1"
 local Area = _M
+Element:newClass(Area)
 
 local FL_REDRAW = ui.FL_REDRAW
 local FL_LAYOUT = ui.FL_LAYOUT
 local FL_SETUP = ui.FL_SETUP
 local FL_SHOW = ui.FL_SHOW
+local FL_CHANGED = ui.FL_CHANGED
+local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
+local FL_UPDATE = ui.FL_UPDATE
 local FL_CHANGED = ui.FL_CHANGED
 
 local HUGE = ui.HUGE
@@ -297,7 +306,7 @@ function Area:setup(app, win)
 	self.MinHeight = tonumber(minh) or 0
 	self.MaxWidth = tonumber(maxw) or HUGE
 	self.MaxHeight = tonumber(maxh) or HUGE
-	self.Flags:set(FL_SETUP)
+	self:setFlags(FL_SETUP)
 end
 
 -------------------------------------------------------------------------------
@@ -309,7 +318,7 @@ function Area:cleanup()
 	self.DamageRegion = false
 	self.MinMax = newregion()
 	self.Rect = newregion()
-	self.Flags:clear(FL_LAYOUT + FL_SETUP + FL_REDRAW)
+	self:checkClearFlags(FL_LAYOUT + FL_SETUP + FL_REDRAW)
 	Element.cleanup(self)
 end
 
@@ -319,7 +328,7 @@ end
 
 function Area:show()
 	self:setState()
-	self.Flags:set(FL_SHOW)
+	self:setFlags(FL_SHOW)
 end
 
 -------------------------------------------------------------------------------
@@ -328,7 +337,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:hide()
-	self.Flags:clear(FL_SHOW + FL_REDRAW + ui.FL_REDRAWBORDER)
+	self:checkClearFlags(FL_SHOW + FL_REDRAW + ui.FL_REDRAWBORDER)
 end
 
 -------------------------------------------------------------------------------
@@ -347,10 +356,10 @@ end
 -------------------------------------------------------------------------------
 
 function Area:rethinkLayout(repaint, check_size)
-	if self.Flags:check(FL_SETUP) then
+	if self:checkFlags(FL_SETUP) then
 		if check_size then
 			-- indicate possible change of group structure:
-			self:getGroup().Flags:set(FL_CHANGED)
+			self:getGroup():setFlags(FL_CHANGED)
 		end
 		self.Window:addLayout(self, repaint or 0, check_size or false)
 	end
@@ -366,7 +375,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:askMinMax(m1, m2, m3, m4)
-	assert(self.Flags:check(FL_SETUP), "Element not set up")
+	assert(self:checkFlags(FL_SETUP), "Element not set up")
 	local p1, p2, p3, p4 = self:getPadding()
 	m1 = max(self.MinWidth, m1 + p1 + p3)
 	m2 = max(self.MinHeight, m2 + p2 + p4)
@@ -405,13 +414,13 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	end
 
 	r:setRect(x0, y0, x1, y1)
-	self.Flags:set(FL_LAYOUT)
+	self:setFlags(FL_LAYOUT)
 	markdamage = markdamage ~= false
 
 	if not r1 then
 		-- this is the first layout:
 		if markdamage then
-			self.Flags:set(FL_REDRAW)
+			self:setFlags(FL_REDRAW)
 		end
 		return true
 	end
@@ -434,9 +443,11 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	-- * shifting occurs only on one axis
 	-- * size is unchanged OR TrackDamage enabled
 	-- * object is not already slated for copying
-
+	-- * background attachment is not "fixed"
+	
 	if validmove and (samesize or self.TrackDamage) and
-		not win.BlitObjects[self] then
+		not win.BlitObjects[self] and 
+		self.Properties["background-attachment"] ~= "fixed" then
 
 		-- get source rect, incl. border:
 		local s1 = x0 - dx - m1
@@ -495,7 +506,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	end
 
 	if markdamage then
-		self.Flags:set(FL_REDRAW)
+		self:setFlags(FL_REDRAW)
 	end
 	return true
 end
@@ -518,18 +529,18 @@ end
 -------------------------------------------------------------------------------
 
 function Area:damage(r1, r2, r3, r4)
-	if self.Flags:check(FL_LAYOUT + FL_SHOW) then
+	if self:checkFlags(FL_LAYOUT + FL_SHOW) then
 		local s1, s2, s3, s4 = self:getRect()
 		r1, r2, r3, r4 = intersect(r1, r2, r3, r4, s1, s2, s3, s4)
 		local track = self.TrackDamage
-		if r1 and (track or not self.Flags:check(FL_REDRAW)) then
+		if r1 and (track or not self:checkFlags(FL_REDRAW)) then
 			local dr = self.DamageRegion
 			if dr then
 				dr:orRect(r1, r2, r3, r4)
 			elseif track then
 				self.DamageRegion = newregion(r1, r2, r3, r4)			
 			end
-			self.Flags:set(FL_REDRAW)
+			self:setFlags(FL_REDRAW)
 		end
 	end
 end
@@ -570,7 +581,7 @@ local FL_REDRAW_OK = FL_LAYOUT + FL_SHOW + FL_SETUP + FL_REDRAW
 
 function Area:draw()
 	-- check layout, show, setup, redraw, and clear redraw:
-	if self.Flags:checkClear(FL_REDRAW_OK, FL_REDRAW) then
+	if self:checkClearFlags(FL_REDRAW_OK, FL_REDRAW) then
 		if self.EraseBG and self:drawBegin() then
 			self:erase()
 			self:drawEnd()
@@ -642,13 +653,16 @@ function Area:getByXY(x, y)
 end
 
 -------------------------------------------------------------------------------
---	msg = Area:passMsg(msg): This function filters the specified input
---	message. After processing, it is free to return the message unmodified
---	(thus passing it on to the next message handler), to return a copy that
---	has certain fields in the message modified, or to absorb the message
---	by returning '''false'''. If you override this function, you are not
---	allowed to modify any data inside the original message; if you alter it,
---	you must return a copy.
+--	msg = Area:passMsg(msg): If the element has the ui.FL_RECVINPUT flag set,
+--	this function receives input messages. Additionally, to receive messages
+--	of the type ui.MSG_MOUSEMOVE, the flag ui.FL_RECVMOUSEMOVE must be set.
+--	After processing, it is free to return the message unmodified (thus
+--	allowing it to be passed on to other elements), or to absorb the message
+--	by returning '''false'''. You are not allowed to modify any data
+--	inside the original message; if you alter it, you must return a copy.
+--	The message types ui.MSG_INTERVAL, ui.MSG_USER, and ui.MSG_REQSELECTION
+--	are not received by this function. To receive these, you must register an
+--	input handler using Window:addInputHandler().
 -------------------------------------------------------------------------------
 
 function Area:passMsg(msg)
@@ -669,7 +683,7 @@ function Area:setState(bg, fg)
 	end
 	if bg ~= self.BGPen then
 		self.BGPen = bg
-		self.Flags:set(FL_REDRAW)
+		self:setFlags(FL_REDRAW)
 	end
 end
 
@@ -682,18 +696,18 @@ function Area:checkFocus()
 end
 
 -------------------------------------------------------------------------------
---	can_hover = Area:checkHover(): Returns '''true''' if this element can
---	react on being hovered over by the pointing device.
+--	can_hilite = Area:checkHilite(): Returns '''true''' if this element can
+--	be highlighted, e.g by being hovered over with the pointing device.
 -------------------------------------------------------------------------------
 
-function Area:checkHover()
+function Area:checkHilite()
 end
 
 -------------------------------------------------------------------------------
---	table = Area:getNext(): Returns the next element in the group, or, if
---	the element has no successor, the next element in the parent group (and
---	so forth, until it reaches the topmost group). Returns '''nil''' if the
---	element is not currently connected.
+--	element = Area:getNext([mode]): Returns the next element in its group.
+--	If the element has no successor and the optional argument {{mode}} is
+--	{{"recursive"}}, returns the next element in the parent group (and so
+--	forth, until it reaches the topmost group).
 -------------------------------------------------------------------------------
 
 local function findelement(self)
@@ -708,28 +722,34 @@ local function findelement(self)
 	end
 end
 
-function Area:getNext()
+function Area:getNext(mode)
 	local g, n, i = findelement(self)
 	if g then
 		if i == n then
-			return self:getParent():getNext()
+			if mode == "recursive" then
+				return self:getParent():getNext(mode)
+			end
+			return false
 		end
 		return g[i % n + 1]
 	end
 end
 
 -------------------------------------------------------------------------------
---	element = Area:getPrev(): Returns the previous element in the group, or,
---	if the element has no predecessor, the previous element in the parent group
---	(and so forth, until it reaches the topmost group). Returns '''nil''' if
---	the element is not currently connected.
+--	element = Area:getPrev([mode]): Returns the previous element in its group.
+--	If the element has no predecessor and the optional argument {{mode}} is
+--	{{"recursive"}}, returns the previous element in the parent group (and so
+--	forth, until it reaches the topmost group).
 -------------------------------------------------------------------------------
 
-function Area:getPrev()
+function Area:getPrev(mode)
 	local g, n, i = findelement(self)
 	if g then
 		if i == 1 then
-			return self:getParent():getPrev()
+			if mode == "recursive" then
+				return self:getParent():getPrev(mode)
+			end
+			return false
 		end
 		return g[(i - 2) % n + 1]
 	end
@@ -776,10 +796,10 @@ function Area:getParent()
 end
 
 -------------------------------------------------------------------------------
---	element = Area:getChildren(init): Returns a table containing the element's
---	children, or '''nil''' if this element cannot have children. The optional
---	argument {{init}} is '''true''' when this function is called during
---	initialization or deinitialization.
+--	element = Area:getChildren([mode]): Returns a table containing the
+--	element's children, or '''nil''' if this element cannot have children.
+--	The optional argument {{mode}} is the string {{"init"}} when this function
+--	is called during initialization or deinitialization.
 -------------------------------------------------------------------------------
 
 function Area:getChildren()
@@ -792,7 +812,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getRect()
-	if self.Flags:check(FL_LAYOUT + FL_SHOW + FL_SETUP) then
+	if self:checkFlags(FL_LAYOUT + FL_SHOW + FL_SETUP) then
 		return self.Rect:get()
 	end
 end
@@ -824,7 +844,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:drawBegin()
-	return self.Flags:check(FL_LAYOUT + FL_SHOW + FL_SETUP)
+	return self:checkFlags(FL_LAYOUT + FL_SHOW + FL_SETUP)
 end
 
 -------------------------------------------------------------------------------
@@ -876,7 +896,72 @@ end
 -------------------------------------------------------------------------------
 
 function Area:onSetStyle()
+	if not self:checkFlags(FL_SETUP) then
+		db.warn("setstyle on uninitialized element")
+	end
 	Element.onSetStyle(self)
 	self:setState()
 	self:rethinkLayout(2, true)
+end
+
+-------------------------------------------------------------------------------
+--	setFlags(flags)
+-------------------------------------------------------------------------------
+
+local FL_BUBBLEUP = FL_REDRAW + FL_REDRAWBORDER + FL_CHANGED
+
+function Area:setFlags(flags)
+	local f = self.Flags
+	f:set(flags)
+	-- any of the bubbling flags set, update not already set?
+	if checkAnyFlags(flags, FL_BUBBLEUP) and not f:check(FL_UPDATE) then
+		-- bubble up UPDATE
+		local e = self
+		repeat
+			e.Flags:set(FL_UPDATE)
+			e = e:getParent()
+		until not e
+	end
+end
+
+-------------------------------------------------------------------------------
+--	checkFlags(flags)
+-------------------------------------------------------------------------------
+
+function Area:checkFlags(flags)
+	return self.Flags:check(flags)
+end
+
+-------------------------------------------------------------------------------
+--	checkClearFlags(setflags, clearflags)
+-------------------------------------------------------------------------------
+
+function Area:checkClearFlags(setflags, clearflags)
+	return self.Flags:checkClear(setflags, clearflags)
+end
+
+-------------------------------------------------------------------------------
+--	mx, my = getMsgFields(msg, mode)
+-------------------------------------------------------------------------------
+
+function Area:getMsgFields(msg, mode)
+	if mode == "mousexy" then
+		local mx, my = msg[4], msg[5]
+		local e = self:getParent()
+		while e do
+			local dx, dy = e:getDisplacement()
+			mx = mx - dx
+			my = my - dy
+			e = e:getParent()
+		end
+		return mx, my
+	end
+end
+
+-------------------------------------------------------------------------------
+--	dx, dy = getDisplacement(): Get this element's coordinate displacement
+-------------------------------------------------------------------------------
+
+function Area:getDisplacement()
+	return 0, 0
 end

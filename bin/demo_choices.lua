@@ -46,164 +46,176 @@ local window = ui.Window:new
 		Group:new
 		{
 			Width = "fill",
-			Rows = 5,
-			SameSize = "width",
-			Orientation = "vertical",
 			Legend = L.CHOICES_ORDER_BEVERAGES,
 			Children =
 			{
-				VerboseRadioButton:new
-				{
-					Text = L.CHOICES_COFFEE,
-					Id = "drink-coffee",
-					Selected = true,
-					onSelect = function(self)
-						VerboseRadioButton.onSelect(self)
-						if self.Selected then
-							self:getById("drink-hot"):setValue("Selected", true)
-							self:getById("drink-hot"):setValue("Disabled", false)
-							self:getById("drink-ice"):setValue("Disabled", false)
-							self:getById("drink-straw"):setValue("Disabled", false)
-							self:getById("drink-shaken"):setValue("Disabled", false)
-							self:getById("drink-stirred"):setValue("Selected", false)
-							self:getById("drink-stirred"):setValue("Disabled", false)
-						end
-					end,
+				ui.Group:new {
+					Orientation = "vertical",
+					Children = 
+					{
+						VerboseRadioButton:new
+						{
+							Text = L.CHOICES_COFFEE,
+							Id = "drink-coffee",
+							Selected = true,
+							onSelect = function(self)
+								VerboseRadioButton.onSelect(self)
+								if self.Selected then
+									self:getById("drink-hot"):setValue("Selected", true)
+									self:getById("drink-hot"):setValue("Disabled", false)
+									self:getById("drink-ice"):setValue("Disabled", false)
+									self:getById("drink-straw"):setValue("Disabled", false)
+									self:getById("drink-shaken"):setValue("Disabled", false)
+									self:getById("drink-stirred"):setValue("Selected", false)
+									self:getById("drink-stirred"):setValue("Disabled", false)
+								end
+							end,
+						},
+						VerboseRadioButton:new
+						{
+							Text = L.CHOICES_JUICE,
+							Id = "drink-juice",
+							onSelect = function(self)
+								VerboseRadioButton.onSelect(self)
+								if self.Selected then
+									self:getById("drink-hot"):setValue("Selected", false)
+									self:getById("drink-hot"):setValue("Disabled", true)
+									self:getById("drink-ice"):setValue("Disabled", false)
+									self:getById("drink-straw"):setValue("Disabled", false)
+									self:getById("drink-shaken"):setValue("Disabled", false)
+									self:getById("drink-stirred"):setValue("Disabled", false)
+								end
+							end,
+						},
+						VerboseRadioButton:new
+						{
+							Text = L.CHOICES_MANGO_LASSI,
+							Id = "drink-lassi",
+							onSelect = function(self)
+								VerboseRadioButton.onSelect(self)
+								if self.Selected then
+									self:getById("drink-hot"):setValue("Selected", false)
+									self:getById("drink-hot"):setValue("Disabled", true)
+									self:getById("drink-ice"):setValue("Disabled", false)
+									self:getById("drink-straw"):setValue("Disabled", false)
+									self:getById("drink-straw"):setValue("Selected", true)
+									self:getById("drink-shaken"):setValue("Selected", false)
+									self:getById("drink-shaken"):setValue("Disabled", true)
+									self:getById("drink-stirred"):setValue("Disabled", true)
+									self:getById("drink-stirred"):setValue("Selected", true)
+								end
+							end,
+						},
+						VerboseRadioButton:new
+						{
+							Text = L.CHOICES_BEER,
+							Id = "drink-beer",
+							onSelect = function(self)
+								VerboseRadioButton.onSelect(self)
+								if self.Selected then
+									self:getById("drink-hot"):setValue("Selected", false)
+									self:getById("drink-hot"):setValue("Disabled", true)
+									self:getById("drink-ice"):setValue("Selected", false)
+									self:getById("drink-ice"):setValue("Disabled", true)
+									self:getById("drink-straw"):setValue("Selected", false)
+									self:getById("drink-straw"):setValue("Disabled", true)
+									self:getById("drink-shaken"):setValue("Selected", false)
+									self:getById("drink-shaken"):setValue("Disabled", true)
+									self:getById("drink-stirred"):setValue("Selected", false)
+									self:getById("drink-stirred"):setValue("Disabled", true)
+								end
+							end,
+						},
+						VerboseRadioButton:new
+						{
+							Text = L.CHOICES_WHISKY,
+							Id = "drink-whisky",
+							onSelect = function(self)
+								VerboseRadioButton.onSelect(self)
+								if self.Selected then
+									self:getById("drink-hot"):setValue("Selected", false)
+									self:getById("drink-hot"):setValue("Disabled", true)
+									self:getById("drink-ice"):setValue("Disabled", false)
+									self:getById("drink-straw"):setValue("Disabled", false)
+									self:getById("drink-shaken"):setValue("Disabled", false)
+									self:getById("drink-stirred"):setValue("Disabled", false)
+								end
+							end,
+						}
+						
+					}
 				},
-				VerboseRadioButton:new
-				{
-					Text = L.CHOICES_JUICE,
-					Id = "drink-juice",
-					onSelect = function(self)
-						VerboseRadioButton.onSelect(self)
-						if self.Selected then
-							self:getById("drink-hot"):setValue("Selected", false)
-							self:getById("drink-hot"):setValue("Disabled", true)
-							self:getById("drink-ice"):setValue("Disabled", false)
-							self:getById("drink-straw"):setValue("Disabled", false)
-							self:getById("drink-shaken"):setValue("Disabled", false)
-							self:getById("drink-stirred"):setValue("Disabled", false)
-						end
-					end,
-				},
-				VerboseRadioButton:new
-				{
-					Text = L.CHOICES_MANGO_LASSI,
-					Id = "drink-lassi",
-					onSelect = function(self)
-						VerboseRadioButton.onSelect(self)
-						if self.Selected then
-							self:getById("drink-hot"):setValue("Selected", false)
-							self:getById("drink-hot"):setValue("Disabled", true)
-							self:getById("drink-ice"):setValue("Disabled", false)
-							self:getById("drink-straw"):setValue("Disabled", false)
-							self:getById("drink-straw"):setValue("Selected", true)
-							self:getById("drink-shaken"):setValue("Selected", false)
-							self:getById("drink-shaken"):setValue("Disabled", true)
-							self:getById("drink-stirred"):setValue("Disabled", true)
-							self:getById("drink-stirred"):setValue("Selected", true)
-						end
-					end,
-				},
-				VerboseRadioButton:new
-				{
-					Text = L.CHOICES_BEER,
-					Id = "drink-beer",
-					onSelect = function(self)
-						VerboseRadioButton.onSelect(self)
-						if self.Selected then
-							self:getById("drink-hot"):setValue("Selected", false)
-							self:getById("drink-hot"):setValue("Disabled", true)
-							self:getById("drink-ice"):setValue("Selected", false)
-							self:getById("drink-ice"):setValue("Disabled", true)
-							self:getById("drink-straw"):setValue("Selected", false)
-							self:getById("drink-straw"):setValue("Disabled", true)
-							self:getById("drink-shaken"):setValue("Selected", false)
-							self:getById("drink-shaken"):setValue("Disabled", true)
-							self:getById("drink-stirred"):setValue("Selected", false)
-							self:getById("drink-stirred"):setValue("Disabled", true)
-						end
-					end,
-				},
-				VerboseRadioButton:new
-				{
-					Text = L.CHOICES_WHISKY,
-					Id = "drink-whisky",
-					onSelect = function(self)
-						VerboseRadioButton.onSelect(self)
-						if self.Selected then
-							self:getById("drink-hot"):setValue("Selected", false)
-							self:getById("drink-hot"):setValue("Disabled", true)
-							self:getById("drink-ice"):setValue("Disabled", false)
-							self:getById("drink-straw"):setValue("Disabled", false)
-							self:getById("drink-shaken"):setValue("Disabled", false)
-							self:getById("drink-stirred"):setValue("Disabled", false)
-						end
-					end,
-				},
-				VerboseCheckMark:new
-				{
-					Text = L.CHOICES_HOT,
-					Id = "drink-hot",
-					Selected = true,
-					onSelect = function(self)
-						VerboseCheckMark.onSelect(self)
-						if self.Selected then
-							self:getById("drink-ice"):setValue("Selected", false)
-							self:getById("drink-straw"):setValue("Selected", false)
-							self:getById("drink-shaken"):setValue("Selected", false)
-						end
-					end,
-				},
-				VerboseCheckMark:new
-				{
-					Text = L.CHOICES_WITH_ICE,
-					Id = "drink-ice",
-					onSelect = function(self)
-						VerboseCheckMark.onSelect(self)
-						if self.Selected then
-							self:getById("drink-hot"):setValue("Selected", false)
-							self:getById("drink-straw"):setValue("Selected", true)
-						end
-					end,
-				},
-				VerboseCheckMark:new
-				{
-					Text = L.CHOICES_STIRRED,
-					Id = "drink-stirred",
-					onSelect = function(self)
-						VerboseCheckMark.onSelect(self)
-						if self.Selected then
-							self:getById("drink-shaken"):setValue("Selected", false)
-						end
-					end,
-				},
-				VerboseCheckMark:new
-				{
-					Text = L.CHOICES_SHAKEN,
-					Id = "drink-shaken",
-					onSelect = function(self)
-						VerboseCheckMark.onSelect(self)
-						if self.Selected then
-							self:getById("drink-stirred"):setValue("Selected", false)
-							self:getById("drink-hot"):setValue("Selected", false)
-							self:getById("drink-ice"):setValue("Selected", true)
-						end
-					end,
-				},
-				VerboseCheckMark:new
-				{
-					Text = L.CHOICES_DRINKING_STRAW,
-					Id = "drink-straw",
-					onSelect = function(self)
-						VerboseCheckMark.onSelect(self)
-						if self.Selected then
-							self:getById("drink-hot"):setValue("Selected", false)
-							self:getById("drink-ice"):setValue("Selected", true)
-						end
-					end,
+				ui.Group:new {
+					Orientation = "vertical",
+					Children = {
+						
+						VerboseCheckMark:new
+						{
+							Text = L.CHOICES_HOT,
+							Id = "drink-hot",
+							Selected = true,
+							onSelect = function(self)
+								VerboseCheckMark.onSelect(self)
+								if self.Selected then
+									self:getById("drink-ice"):setValue("Selected", false)
+									self:getById("drink-straw"):setValue("Selected", false)
+									self:getById("drink-shaken"):setValue("Selected", false)
+								end
+							end,
+						},
+						VerboseCheckMark:new
+						{
+							Text = L.CHOICES_WITH_ICE,
+							Id = "drink-ice",
+							onSelect = function(self)
+								VerboseCheckMark.onSelect(self)
+								if self.Selected then
+									self:getById("drink-hot"):setValue("Selected", false)
+									self:getById("drink-straw"):setValue("Selected", true)
+								end
+							end,
+						},
+						VerboseCheckMark:new
+						{
+							Text = L.CHOICES_STIRRED,
+							Id = "drink-stirred",
+							onSelect = function(self)
+								VerboseCheckMark.onSelect(self)
+								if self.Selected then
+									self:getById("drink-shaken"):setValue("Selected", false)
+								end
+							end,
+						},
+						VerboseCheckMark:new
+						{
+							Text = L.CHOICES_SHAKEN,
+							Id = "drink-shaken",
+							onSelect = function(self)
+								VerboseCheckMark.onSelect(self)
+								if self.Selected then
+									self:getById("drink-stirred"):setValue("Selected", false)
+									self:getById("drink-hot"):setValue("Selected", false)
+									self:getById("drink-ice"):setValue("Selected", true)
+								end
+							end,
+						},
+						VerboseCheckMark:new
+						{
+							Text = L.CHOICES_DRINKING_STRAW,
+							Id = "drink-straw",
+							onSelect = function(self)
+								VerboseCheckMark.onSelect(self)
+								if self.Selected then
+									self:getById("drink-hot"):setValue("Selected", false)
+									self:getById("drink-ice"):setValue("Selected", true)
+								end
+							end,
+						}
+						
+					}
 				}
 			}
+				
 		},
 		ui.ScrollGroup:new
 		{

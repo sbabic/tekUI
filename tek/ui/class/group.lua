@@ -1,4 +1,4 @@
----------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 --
 --	tek.ui.class.group
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
@@ -65,28 +65,36 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-
-local Area = ui.require("area", 44)
 local Family = ui.require("family", 2)
 local Widget = ui.require("widget", 25)
 local Region = ui.loadLibrary("region", 10)
-
-local floor = math.floor
+local assert = assert
 local intersect = Region.intersect
-local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.group", tek.ui.class.widget)
-_VERSION = "Group 31.0"
+_VERSION = "Group 32.5"
 local Group = _M
+Widget:newClass(Group)
 
-local MOUSEBUTTON = ui.MSG_MOUSEBUTTON
+-------------------------------------------------------------------------------
+--	constants:
+-------------------------------------------------------------------------------
+
 local FL_REDRAW = ui.FL_REDRAW
 local FL_LAYOUT = ui.FL_LAYOUT
 local FL_SHOW = ui.FL_SHOW
 local FL_CHANGED = ui.FL_CHANGED
+local FL_UPDATE = ui.FL_UPDATE
+local FL_SETUP = ui.FL_SETUP
+local FL_RECVINPUT = ui.FL_RECVINPUT
+local FL_RECVMOUSEMOVE = ui.FL_RECVMOUSEMOVE
+
+local MSGFLAGS = FL_LAYOUT + FL_SETUP + FL_SHOW + FL_RECVINPUT
+local MSGFLAGS_MM = MSGFLAGS + FL_RECVMOUSEMOVE
+
+local MSG_MOUSEMOVE = ui.MSG_MOUSEMOVE
 
 -------------------------------------------------------------------------------
 --	class implementation:
@@ -124,7 +132,7 @@ end
 
 function Group:setup(app, window)
 	Widget.setup(self, app, window)
-	self.Flags:set(FL_CHANGED)
+	self:setFlags(FL_CHANGED + FL_RECVINPUT + FL_RECVMOUSEMOVE)
 	local c = self.Children
 	for i = 1, #c do
 		c[i]:setup(app, window)
@@ -136,6 +144,7 @@ end
 -------------------------------------------------------------------------------
 
 function Group:cleanup()
+	self:checkClearFlags(0, FL_RECVINPUT + FL_RECVMOUSEMOVE)
 	local c = self.Children
 	for i = 1, #c do
 		c[i]:cleanup()
@@ -169,6 +178,24 @@ function Group:hide()
 end
 
 -------------------------------------------------------------------------------
+--	connect: overrides
+-------------------------------------------------------------------------------
+
+function Group:connect(parent)
+	assert(parent)
+	local c = self:getChildren("init")
+	if not c then
+		return false
+	end
+	for i = 1, #c do
+		if not c[i]:connect(self) then
+			return false
+		end
+	end
+	return Widget.connect(self, parent)
+end
+
+-------------------------------------------------------------------------------
 --	addMember: add a child member (see Family:addMember())
 -------------------------------------------------------------------------------
 
@@ -178,12 +205,12 @@ function Group:addMember(child, pos)
 	if app then
 		app:decodeProperties(child)
 		child:setup(app, self.Window)
-		if self.Flags:check(FL_SHOW) then
+		if self:checkFlags(FL_SHOW) then
 			child:show()
 		end
 	end
 	if Family.addMember(self, child, pos) then
-		self:rethinkLayout(1, true)
+		self:rethinkLayout(2, true)
 		return child
 	end
 	child:hide()
@@ -191,23 +218,29 @@ function Group:addMember(child, pos)
 end
 
 -------------------------------------------------------------------------------
---	remMember: remove a child member (see Family:remMember())
+--	removed = remMember: remove a child member (see Family:remMember())
 -------------------------------------------------------------------------------
 
 function Group:remMember(child)
 	local window = self.Window
-	local show = child.Flags:check(FL_SHOW) and window
+	local show = child:checkFlags(FL_SHOW) and window
 	if show and child == window.FocusElement then
 		window:setFocusElement()
 	end
-	Family.remMember(self, child)
+	local found = Family.remMember(self, child)
+	if child.Weight then
+		for i = 1, #self.Children do
+			self.Children[i].Weight = false
+		end
+	end
 	if show then
 		child:hide()
 	end
-	if child.Flags:check(ui.FL_SETUP) then
+	if child:checkFlags(FL_SETUP) then
 		child:cleanup()
 	end
 	self:rethinkLayout(1, true)
+	return found
 end
 
 -------------------------------------------------------------------------------
@@ -223,7 +256,7 @@ end
 
 function Group:damage(r1, r2, r3, r4)
 	Widget.damage(self, r1, r2, r3, r4)
-	if self.Flags:check(FL_LAYOUT) then
+	if self:checkFlags(FL_LAYOUT) then
 		local fr = self.FreeRegion
 		if fr and fr:checkIntersect(r1, r2, r3, r4) then
 			if self.TrackDamage then
@@ -235,7 +268,7 @@ function Group:damage(r1, r2, r3, r4)
 				end
 				fr:forEach(orIntersect, dr, r1, r2, r3, r4)
 			end
-			self.Flags:set(FL_REDRAW)
+			self:setFlags(FL_REDRAW)
 		end
 		local c = self.Children
 		for i = 1, #c do
@@ -271,7 +304,9 @@ function Group:draw()
 	local res = Widget.draw(self)
 	local c = self.Children
 	for i = 1, #c do
-		c[i]:draw()
+		if c[i]:checkClearFlags(FL_UPDATE) then
+			c[i]:draw()
+		end
 	end
 	return res
 end
@@ -281,11 +316,14 @@ end
 -------------------------------------------------------------------------------
 
 function Group:getByXY(x, y)
-	local c = self.Children
-	for i = 1, #c do
-		local ret = c[i]:getByXY(x, y)
-		if ret then
-			return ret
+	local r1, r2, r3, r4 = self:getRect()
+	if r1 and x >= r1 and x <= r3 and y >= r2 and y <= r4 then
+		local c = self.Children
+		for i = 1, #c do
+			local ret = c[i]:getByXY(x, y)
+			if ret then
+				return ret
+			end
 		end
 	end
 	return false
@@ -316,7 +354,7 @@ function Group:layout(r1, r2, r3, r4, markdamage)
 			-- fully repaint groups with fixed texture when resized:
 			self.DamageRegion = false
 		end
-		self.Flags:set(FL_REDRAW)
+		self:setFlags(FL_REDRAW)
 	end
 	return res
 end
@@ -343,11 +381,14 @@ function Group:passMsg(msg)
 -- 			end
 -- 		end
 -- 	end
+	local flags = msg[2] == MSG_MOUSEMOVE and MSGFLAGS_MM or MSGFLAGS
 	local c = self.Children
 	for i = 1, #c do
-		msg = c[i]:passMsg(msg)
-		if not msg then
-			return false
+		if c[i]:checkFlags(flags) then
+			msg = c[i]:passMsg(msg)
+			if not msg then
+				return false
+			end
 		end
 	end
 	return msg

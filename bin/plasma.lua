@@ -100,6 +100,18 @@ function effect()
 end
 
 --
+--		Test default font capability
+--
+
+local tw, th, pen
+local font = visual.openFont() -- open default font, if available
+if font then
+	pen = v:allocPen(0,255,255,255)
+	tw, th = font:getTextSize("Plasma")
+	v:setFont(font)
+end
+
+--
 --	main loop
 --
 
@@ -121,6 +133,9 @@ repeat
 	if paint then
 		effect()
 		v:drawRGB(0, 0, screen, WIDTH, HEIGHT, PIXWIDTH, PIXHEIGHT)
+		if font then
+			v:drawText(0, 0, tw, th, "Plasma", pen)
+		end
 		v:flush()
 		paint = false
 	end

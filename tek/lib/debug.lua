@@ -51,10 +51,10 @@ local tonumber = tonumber
 local tostring = tostring
 local traceback = debug.traceback
 local type = type
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module "tek.lib.debug"
-_VERSION = "Debug 5.1"
+_VERSION = "Debug 5.2"
 
 -- symbolic:
 

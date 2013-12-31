@@ -19,11 +19,11 @@
 --		- {{Active [SG]}} (boolean)
 --			The Widget's activation state. While '''true''', the position of
 --			the pointing device is being verified (which is also reflected by
---			the {{Hover}} attribute, see below). When the {{Active}} state
+--			the {{Hilite}} attribute, see below). When the {{Active}} state
 --			variable changes, the Widget's behavior depends on its {{Mode}}
 --			attribute (see below):
 --				* in ''button'' mode, the {{Selected}} attribute is set to
---				the value of the {{Hover}} attribute. When the {{Selected}}
+--				the value of the {{Hilite}} attribute. When the {{Selected}}
 --				state changes, the {{Pressed}} attribute is set to the value
 --				of the {{Active}} attribute.
 --				* in ''toggle'' mode, the {{Selected}} attribute is inverted
@@ -50,9 +50,6 @@
 --			When the element is released, this attribute is set to '''false'''.
 --			Changes to this attribute cause the invocation of the
 --			Widget:onHold() method.
---		- {{Hover [SG]}} (boolean)
---			Signifies a change of the element being hovered by the pointing
---			device. Changes to this state variable invoke Widget:onHover().
 --		- {{InitialFocus [IG]}} (boolean)
 --			Specifies that the element should receive the focus initially.
 --			If '''true''', the element will set the element's {{Focus}}
@@ -107,6 +104,7 @@
 --		''hover'' || for elements that are being hovered by the mouse
 --
 --	IMPLEMENTS::
+--		- Widget:activate() - Activate this or neighbour element
 --		- Widget:onActivate() - Handler for {{Active}}
 --		- Widget:onClick() - Gets called when the element has been clicked
 --		- Widget:onDblClick() - Handler for {{DblClick}}
@@ -114,14 +112,13 @@
 --		- Widget:onFocus() - Handler for {{Focus}}
 --		- Widget:onHilite() - Handler for {{Hilite}}
 --		- Widget:onHold() - Handler for {{Hold}}
---		- Widget:onHover() - Handler for {{Hover}}
 --		- Widget:onPress() - Handler for {{Pressed}}
 --		- Widget:onSelect() - Handler for {{Selected}}
 --
 --	OVERRIDES::
 --		- Object.addClassNotifications()
 --		- Area:checkFocus()
---		- Area:checkHover()
+--		- Area:checkHilite()
 --		- Element:cleanup()
 --		- Object.init()
 --		- Area:layout()
@@ -132,21 +129,26 @@
 --
 -------------------------------------------------------------------------------
 
-local db = require "tek.lib.debug"
+-- local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Frame = ui.require("frame", 16)
 
 module("tek.ui.class.widget", tek.ui.class.frame)
-_VERSION = "Widget 25.1"
-
+_VERSION = "Widget 28.0"
 local Widget = _M
+Frame:newClass(Widget)
 
 -------------------------------------------------------------------------------
 --	constants & class data:
 -------------------------------------------------------------------------------
 
+local MSG_MOUSEMOVE = ui.MSG_MOUSEMOVE
+local MSG_MOUSEBUTTON = ui.MSG_MOUSEBUTTON
+
 local FL_REDRAW = ui.FL_REDRAW
 local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
+local FL_RECVINPUT = ui.FL_RECVINPUT
+local FL_RECVMOUSEMOVE = ui.FL_RECVMOUSEMOVE
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -158,7 +160,6 @@ function Widget.addClassNotifications(proto)
 	addNotify(proto, "Hilite", NOTIFY_ALWAYS, { NOTIFY_SELF, "onHilite" })
 	addNotify(proto, "Selected", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSelect" })
 	addNotify(proto, "Hold", NOTIFY_ALWAYS, { NOTIFY_SELF, "onHold" })
-	addNotify(proto, "Hover", NOTIFY_ALWAYS, { NOTIFY_SELF, "onHover" })
 	addNotify(proto, "Active", NOTIFY_ALWAYS, { NOTIFY_SELF, "onActivate" })
 	addNotify(proto, "Pressed", NOTIFY_ALWAYS, { NOTIFY_SELF, "onPress" })
 	addNotify(proto, "Focus", NOTIFY_ALWAYS, { NOTIFY_SELF, "onFocus" })
@@ -173,11 +174,11 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 
 function Widget.init(self)
 	self.Active = false
+	self.ActivateOnRMB = self.ActivateOnRMB or false -- undocumented yet
 	self.DblClick = false
 	self.EffectHook = false
 	self.FGPen = false
 	self.Hold = false
-	self.Hover = false
 	self.InitialFocus = self.InitialFocus or false
 	self.KeyCode = self.KeyCode or false
 	self.Mode = self.Mode or "inert"
@@ -195,10 +196,14 @@ function Widget:setup(app, window)
 	self.EffectHook = ui.createHook("hook", self.Properties["effect-class"],
 		self, { Style = self.Style })
 	local interactive = self.Mode ~= "inert"
-	local keycode = self.KeyCode
-	if interactive and keycode then
-		self.Window:addKeyShortcut(keycode, self)
+	if interactive then
+		local keycode = self.KeyCode
+		if keycode then
+			self.Window:addKeyShortcut(keycode, self)
+		end
+		self:setFlags(FL_RECVMOUSEMOVE)
 	end
+	self:setFlags(FL_RECVINPUT)
 end
 
 -------------------------------------------------------------------------------
@@ -206,7 +211,8 @@ end
 -------------------------------------------------------------------------------
 
 function Widget:cleanup()
-	if self.Flags:check(ui.FL_SETUP) then
+	self:checkClearFlags(0, FL_RECVINPUT + FL_RECVMOUSEMOVE)
+	if self:checkFlags(ui.FL_SETUP) then
 		self.EffectHook = ui.destroyHook(self.EffectHook)
 		self.Window:remKeyShortcut(self.KeyCode, self)
 	end
@@ -252,22 +258,6 @@ function Widget:draw()
 end
 
 -------------------------------------------------------------------------------
---	Widget:onHover(): This method is invoked when the {{Hover}}
---	attribute has changed.
--------------------------------------------------------------------------------
-
-function Widget:onHover()
-	local hover = self.Hover
-	if self.Mode == "button" then
-		self:setValue("Selected", self.Active and hover)
-	end
-	if self.Mode ~= "inert" then
-		self:setValue("Hilite", hover)
-	end
-	self:setState()
-end
-
--------------------------------------------------------------------------------
 --	Widget:onActivate(): This method is invoked when the {{Active}}
 --	attribute has changed.
 -------------------------------------------------------------------------------
@@ -278,10 +268,9 @@ function Widget:onActivate()
 	local win = self.Window
 	local mode = self.Mode
 	local selected = self.Selected
-	local dbclick
 
 	-- released over a popup which was entered with the button held?
-	local collapse = self.Flags:check(ui.FL_POPITEM) and win and
+	local collapse = self:checkFlags(ui.FL_POPITEM) and win and
 		win.PopupRootWindow
 
 	if win then
@@ -296,23 +285,21 @@ function Widget:onActivate()
 				self:setValue("Pressed", false)
 			end
 		elseif mode == "button" then
-			self:setValue("Selected", active and self.Hover)
+			self:setValue("Selected", active and self.Hilite)
 			if (not selected ~= not active) or collapse then
+				if active then
+					win:setDblClickElement(self)
+				end
 				self:setValue("Pressed", active, true)
 				if collapse then
 					self:setValue("Pressed", false)
 					self:setValue("Selected", false)
 				end
-				dblclick = active and self
 			end
 		end
 		win = self.Window
 	end
-
-	if dblclick ~= nil and win then
-		win:setDblClickElement(dblclick)
-	end
-
+	
 	if collapse and win then
 		win:finishPopup()
 	end
@@ -331,7 +318,7 @@ function Widget:onDisable()
 	if self.Disabled and self.Focus and win then
 		win:setFocusElement()
 	end
-	self.Flags:set(FL_REDRAW)
+	self:setFlags(FL_REDRAW)
 	self:setState()
 end
 
@@ -354,7 +341,7 @@ function Widget:onSelect()
 	-- 	end
 	-- end
 
-	self.Flags:set(FL_REDRAWBORDER)
+	self:setFlags(FL_REDRAWBORDER)
 	self:setState()
 end
 
@@ -365,6 +352,10 @@ end
 -------------------------------------------------------------------------------
 
 function Widget:onHilite()
+	local hilite = self.Hilite
+	if self.Mode == "button" then
+		self:setValue("Selected", self.Active and hilite)
+	end
 	self:setState()
 end
 
@@ -393,7 +384,7 @@ end
 -------------------------------------------------------------------------------
 
 function Widget:setState(bg, fg)
-	if self.Flags:check(ui.FL_SETUP) then
+	if self:checkFlags(ui.FL_SETUP) then
 		local props = self.Properties
 		if not bg then
 			if self.Disabled then
@@ -420,11 +411,9 @@ function Widget:setState(bg, fg)
 		fg = fg or props["color"] or "detail"
 		if fg ~= self.FGPen then
 			self.FGPen = fg
-			self.Flags:set(FL_REDRAW)
+			self:setFlags(FL_REDRAW)
 		end
 		Frame.setState(self, bg)
--- 	else
--- 		db.warn("%s : element not initialized", self:getClassName())
 	end
 end
 
@@ -434,30 +423,27 @@ end
 
 function Widget:passMsg(msg)
 	local win = self.Window
-	if win then -- might be gone if in a PopupWindow
-		local he = win.HoverElement
-		he = he == self and not he.Disabled and he
-		if msg[2] == ui.MSG_MOUSEBUTTON then
-			if msg[3] == 1 then -- leftdown:
-				if not self.Disabled and
-					self:getByXY(msg[4], msg[5]) == self then
-					win:setHiliteElement(self)
-					if self:checkFocus() then
-						win:setFocusElement(self)
-					end
-					win:setActiveElement(self)
+	if msg[2] == MSG_MOUSEBUTTON then
+		local armb = self.ActivateOnRMB
+		local mx, my = self:getMsgFields(msg, "mousexy")
+		if msg[3] == 1 or (armb and msg[3] == 4) then -- l/r down:
+			if win.HoverElement == self and not self.Disabled then
+				win:setHiliteElement(self)
+				if self:checkFocus() then
+					win:setFocusElement(self)
 				end
-			elseif msg[3] == 2 then -- leftup:
-				if he then
-					win:setHiliteElement()
-					win:setHiliteElement(self)
-				end
+				win:setActiveElement(self)
 			end
-		elseif msg[2] == ui.MSG_MOUSEMOVE then
-			if win.HiliteElement == self or he and not win.MovingElement then
-				win:setHiliteElement(he)
-				return false
+		elseif msg[3] == 2 or (armb and msg[3] == 8) then -- l/r up:
+			if he == self then
+				win:setHiliteElement(self)
 			end
+		end
+	elseif msg[2] == MSG_MOUSEMOVE then
+		local he = win.HoverElement == self
+		if win.HiliteElement == self or he and not win.MovingElement then
+			win:setHiliteElement(he and self)
+			return false
 		end
 	end
 	return msg
@@ -474,10 +460,10 @@ function Widget:checkFocus()
 end
 
 -------------------------------------------------------------------------------
---	checkHover: overrides
+--	checkHilite: overrides
 -------------------------------------------------------------------------------
 
-function Widget:checkHover()
+function Widget:checkHilite()
 	return not self.Disabled and self.Mode ~= "inert"
 end
 
@@ -494,9 +480,13 @@ function Widget:onFocus()
 	end
 	local w = self.Window
 	if w then
-		w:setFocusElement(focused and self)
+		if focused then
+			w:setFocusElement(self)
+		elseif w.FocusElement == self then
+			w:setFocusElement()
+		end
 	end
-	self.Flags:set(FL_REDRAWBORDER)
+	self:setFlags(FL_REDRAWBORDER)
 	self:setState()
 end
 
@@ -516,4 +506,23 @@ end
 -------------------------------------------------------------------------------
 
 function Widget:onDblClick()
+end
+
+-------------------------------------------------------------------------------
+--	Widget:activate([mode]): Activates this or an element's "next" element.
+--	{{mode}} can be {{"focus"}} (the default), {{"next"}}, or {{"click"}}.
+-------------------------------------------------------------------------------
+
+function Widget:activate(mode)
+	local win = self.Window
+	if not mode or mode == "focus" then
+		win:setFocusElement(self)
+	elseif mode == "next" then
+		local e = win:getNextElement(self)
+		if e then
+			win:setFocusElement(e)
+		end
+	elseif mode == "click" then
+		win:clickElement(self)
+	end
 end

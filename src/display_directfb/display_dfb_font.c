@@ -30,8 +30,8 @@ static void hostqueryfonts(DFBDISPLAY *mod, struct FontQueryHandle *fqh,
 ** all fontquerynodes, a fontqueryhandle is obtained by calling
 ** dfb_hostqueryfonts()
 */
-THOOKENTRY TTAG
-fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG
+dfb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
@@ -507,7 +507,7 @@ dfb_hostqueryfonts(DFBDISPLAY *mod, TTAGITEM *tags)
 	{
 		fqh->handle.thn_Owner = mod;
 		/* connect destructor */
-		TInitHook(&fqh->handle.thn_Hook, fqhdestroy, fqh);
+		TInitHook(&fqh->handle.thn_Hook, dfb_fqhdestroy, fqh);
 		TInitList(&fqh->reslist);
 		/* init list iterator */
 		fqh->nptr = &fqh->reslist.tlh_Head;

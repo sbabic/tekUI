@@ -23,9 +23,6 @@
 --			If '''false''', the elements inside the scrollbar (slider, arrows)
 --			abstain from receiving the input focus, which means that they can
 --			only be operated with the mouse. Default: '''true'''
---		- {{Integer [IG]}} (boolean)
---			If '''true''', integer steps are enforced. By default, the
---			slider moves continuously.
 --		- {{Max [ISG]}} (number)
 --			The maximum value the slider can accept. Setting this value
 --			invokes the ScrollBar:onSetMax() method.
@@ -38,6 +35,8 @@
 --		- {{Range [ISG]}} (number)
 --			The range of the slider, i.e. the size it represents. Setting
 --			this value invokes the ScrollBar:onSetRange() method.
+--		- {{Step [IG]}} (boolean or number)
+--			See [[#tek.ui.class.slider]].
 --		- {{Value [ISG]}} (number)
 --			The value of the slider. Setting this value invokes the
 --			ScrollBar:onSetValue() method.
@@ -65,9 +64,9 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 13.2"
-
+_VERSION = "ScrollBar 15.1"
 local ScrollBar = _M
+Group:newClass(ScrollBar)
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -88,7 +87,7 @@ function ArrowButton.init(self)
 	self.Width = "fill"
 	self.Height = "fill"
 	self.Mode = "button"
-	self.Increase = self.Increase or 1
+	self.Direction = self.Direction or 1
 	return ImageWidget.init(self)
 end
 
@@ -100,13 +99,17 @@ function ArrowButton:checkFocus()
 end
 
 function ArrowButton:onClick()
-	self.Slider:increase(self.Increase)
+	if self.Direction > 0 then
+		self.Slider:increase()
+	else
+		self.Slider:decrease()
+	end
 end
 
 function ArrowButton:onHold()
 	ImageWidget.onHold(self)
 	if self.Hold then
-		self.Slider:increase(self.Increase)
+		self:onClick()
 	end
 end
 
@@ -175,12 +178,12 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 function ScrollBar.new(class, self)
 	self = self or { }
 	self.Min = self.Min or 1
-	self.Max = self.Max or 100
+	self.Max = self.Max or 1
 	self.Default = max(self.Min, min(self.Max, self.Default or self.Min))
 	self.Value = max(self.Min, min(self.Max, self.Value or self.Default))
 	self.Range = max(self.Max, self.Range or self.Max)
-	self.Step = self.Step or 1
-	self.Integer = self.Integer or false
+	self.Increment = self.Increment or 1
+	self.Step = self.Step or false
 	self.Child = self.Child or false
 	self.ArrowOrientation = self.ArrowOrientation or self.Orientation
 	self.Kind = self.Kind or "scrollbar"
@@ -196,20 +199,20 @@ function ScrollBar.new(class, self)
 		Max = self.Max,
 		Value = self.Value,
 		Range = self.Range,
-		Step = self.Step,
+		Increment = self.Increment,
 		Orientation = self.Orientation,
-		Integer = self.Integer,
+		Step = self.Step,
 		Kind = self.Kind,
 	}
 	
 	local img1, img2
 	local class1, class2 = "scrollbar-arrowleft", "scrollbar-arrowright"
-	local increase = self.Step
+	local increase = self.Increment
 
 	if self.Orientation == "vertical" then
 		if self.ArrowOrientation == "horizontal" then
 			img1, img2 = ArrowLeftImage, ArrowRightImage
-			increase = -self.Step
+			increase = -self.Increment
 		else
 			img1, img2 = ArrowUpImage, ArrowDownImage
 			class1, class2 = "scrollbar-arrowup", "scrollbar-arrowdown"
@@ -217,7 +220,7 @@ function ScrollBar.new(class, self)
 	else
 		if self.ArrowOrientation == "vertical" then
 			img1, img2 = ArrowUpImage, ArrowDownImage
-			increase = -self.Step
+			increase = -self.Increment
 			class1, class2 = "scrollbar-arrowup", "scrollbar-arrowdown"
 		else
 			img1, img2 = ArrowLeftImage, ArrowRightImage
@@ -227,18 +230,18 @@ function ScrollBar.new(class, self)
 	self.ArrowButton1 = ArrowButton:new
 	{
 		Image = img1,
-		Class = class1,
+		Class = "button " .. class1,
 		Slider = self.Slider,
-		Increase = -increase,
 		ScrollBar = self,
+		Direction = -increase
 	}
 	self.ArrowButton2 = ArrowButton:new
 	{
 		Image = img2,
-		Class = class2,
+		Class = "button " .. class2,
 		Slider = self.Slider,
-		Increase = increase,
 		ScrollBar = self,
+		Direction = increase
 	}
 
 	if self.ArrowOrientation ~= self.Orientation then

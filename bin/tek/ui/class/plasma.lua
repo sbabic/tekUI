@@ -14,10 +14,12 @@ local max = math.max
 local min = math.min
 local pi = math.pi
 local sin = math.sin
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.class.plasma", tek.ui.class.frame)
-_VERSION = "Plasma 6.1"
+_VERSION = "Plasma 6.2"
+local Plasma = _M
+Frame:newClass(Plasma)
 
 local WIDTH = 80
 local HEIGHT = 60
@@ -27,8 +29,6 @@ local PIXHEIGHT = 6
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
-
-local Plasma = _M
 
 function Plasma:addgradient(sr, sg, sb, dr, dg, db, num)
 	dr = (dr - sr) / (num - 1)
@@ -138,6 +138,6 @@ function Plasma:updateInterval(msg)
 	xp1 = (xp1 + self.SpeedX1) % 1024
 	xp2 = (xp2 + self.SpeedX2) % 1024
 	p[1], p[2], p[3], p[4], p[5] = xp1, xp2, yp1, yp2, yp3
-	self.Flags:set(ui.FL_REDRAW)
+	self:setFlags(ui.FL_REDRAW)
 	return msg
 end

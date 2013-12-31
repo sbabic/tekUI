@@ -35,7 +35,6 @@ local ui = require "tek.ui"
 local Layout = require "tek.ui.class.layout"
 
 local tonumber = tonumber
-local unpack = unpack
 
 module("tek.ui.layout.fixed", tek.ui.class.layout)
 _VERSION = "Fixed Layout 2.0"

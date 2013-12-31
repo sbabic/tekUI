@@ -11,6 +11,7 @@
 local ui = require "tek.ui"
 local Image = ui.Image
 module("tek.ui.image.checkmark", tek.ui.class.image)
+Image:newClass(_M)
 
 local coords =
 {

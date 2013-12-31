@@ -40,7 +40,9 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 10.1"
+_VERSION = "MenuItem 10.3"
+local MenuItem = _M
+PopItem:newClass(MenuItem)
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -55,8 +57,6 @@ local ArrowImage = ui.Image:new
 -------------------------------------------------------------------------------
 --	MenuItem class:
 -------------------------------------------------------------------------------
-
-local MenuItem = _M
 
 function MenuItem.new(class, self)
 	self = self or { }
@@ -80,6 +80,7 @@ function MenuItem:setup(app, win)
 		end
 	end
 	PopItem.setup(self, app, win)
+	self:setFlags(ui.FL_CURSORFOCUS)
 	local font = self.Application.Display:openFont(self.Properties["font"])
 	self:setTextRecord(1, self.Text, font, "left")
 	if self.Shortcut and not self.Children then
@@ -117,4 +118,5 @@ end
 function MenuItem:endPopup()
 	-- subitems are handled in baseclass:
 	PopItem.endPopup(self)
+	self:setValue("Focus", false)
 end

@@ -45,7 +45,11 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	TTAGITEM tags[2];
 	TAPTR basetask;
 
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, "tek.lib.exec", tek_lib_exec_funcs);
+#else
+	luaL_newlib(L, tek_lib_exec_funcs);
+#endif
 	/* s: libtab */
 
 	pexec = lua_newuserdata(L, sizeof(TAPTR));
@@ -64,7 +68,6 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	/* s: libtab, udata */
 	lua_setfield(L, -2, "base");
 	/* s: libtab */
-	lua_pop(L, 1);
 
 	tags[0].tti_Tag = TExecBase_ModInit;
 	tags[0].tti_Value = (TTAG) tek_lib_exec_initmodules;
@@ -76,5 +79,5 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 
 	*pexec = TGetExecBase(basetask);
 
-	return 0;
+	return 1;
 }

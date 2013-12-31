@@ -27,8 +27,8 @@ function Coefficient.new(class, self)
 			Min = 0,
 			Max = 31,
 			Value = self.Value1,
-			Step = 3,
-			Integer = true,
+			Increment = 3,
+			Step = 1,
 			onSetValue = function(self)
 				Slider.onSetValue(self)
 				local p = self:getById("the-plasma")
@@ -46,8 +46,8 @@ function Coefficient.new(class, self)
 			Min = -16,
 			Max = 15,
 			Value = self.Value2,
-			Step = 3,
-			Integer = true,
+			Increment = 3,
+			Step = 1,
 			onSetValue = function(self)
 				Slider.onSetValue(self)
 				local p = self:getById("the-plasma")
@@ -111,7 +111,6 @@ local window = ui.Window:new
 											Max = 19,
 											Value = 8,
 											Range = 20,
-											Step = 1,
 											onSetValue = function(self)
 												ui.Slider.onSetValue(self)
 												self:getById("the-tunnel"):setSpeed(self.Value)
@@ -129,7 +128,7 @@ local window = ui.Window:new
 											Max = 0x1ff,
 											Value = 0x50,
 											Range = 0x200,
-											Step = 20,
+											Increment = 20,
 											onSetValue = function(self)
 												ui.Slider.onSetValue(self)
 												self:getById("the-tunnel"):setViewZ(self.Value)
@@ -147,7 +146,6 @@ local window = ui.Window:new
 											Max = 19,
 											Value = 6,
 											Range = 20,
-											Step = 1,
 											onSetValue = function(self)
 												ui.Slider.onSetValue(self)
 												self:getById("the-tunnel"):setNumSeg(self.Value)

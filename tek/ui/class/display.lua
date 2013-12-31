@@ -22,21 +22,23 @@
 --		- Display:closeFont() - Closes font
 --		- Display.createPixMap() - Creates a pixmap from picture file data
 --		- Display:getFontAttrs() - Gets font attributes
---		- Display.getPixmap() - Gets a a pixmap from the cache
+--		- Display.getPaint() - Gets a a paint object, cached
 --		- Display:colorToRGB() - Converts a color specification to RGB
 --		- Display:getTime() - Gets system time
---		- Display.loadPixmap() - Loads a pixmap from the file system
 --		- Display:openFont() - Opens a named font
---		- Display:openVisual() - Opens a visual
+--		- Display:openDrawable() - Opens a visual
 --		- Display:sleep() - Sleeps for a period of time
 --
 --	STYLE PROPERTIES::
 --		- {{font}}
 --		- {{font-fixed}}
---		- {{font-huge}}
 --		- {{font-large}}
+--		- {{font-x-large}}
+--		- {{font-xx-large}}
 --		- {{font-menu}}
 --		- {{font-small}}
+--		- {{font-x-small}}
+--		- {{font-xx-small}}
 --		- {{rgb-active}}
 --		- {{rgb-active-detail}}
 --		- {{rgb-background}}
@@ -45,6 +47,8 @@
 --		- {{rgb-border-rim}}
 --		- {{rgb-border-shadow}}
 --		- {{rgb-border-shine}}
+--		- {{rgb-bright}}
+--		- {{rgb-caption-detail}}
 --		- {{rgb-cursor}}
 --		- {{rgb-cursor-detail}}
 --		- {{rgb-dark}}
@@ -92,12 +96,12 @@ local floor = math.floor
 local open = io.open
 local pairs = pairs
 local tonumber = tonumber
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 25.1"
-
+_VERSION = "Display 30.1"
 local Display = _M
+Element:newClass(Display)
 
 -------------------------------------------------------------------------------
 --	Class data and constants:
@@ -112,17 +116,11 @@ local DEF_RGB_HALFSHADOW = "#bebebe"
 local DEF_RGB_HALFSHINE  = "#e1e1e1"
 local DEF_RGB_FOCUS      = "#e05014"
 
-local DEF_MAINFONT  = "sans-serif,helvetica,arial,Vera:14"
-local DEF_SMALLFONT = "sans-serif,helvetica,arial,Vera:12"
-local DEF_MENUFONT  = "sans-serif,helvetica,arial,Vera:14"
-local DEF_FIXEDFONT = "monospace,fixed,courier new,VeraMono:14"
-local DEF_LARGEFONT = "sans-serif,helvetica,arial,Vera:18"
-local DEF_HUGEFONT  = "sans-serif,utopia,arial,Vera:24"
-
 local ColorDefaults =
 {
 	["background"] = DEF_RGB_BACK,
 	["dark"] = DEF_RGB_DETAIL,
+	["bright"] = DEF_RGB_SHINE,
 	["outline"] = DEF_RGB_SHINE,
 	["fill"] = DEF_RGB_FILL,
 	["active"] = DEF_RGB_HALFSHADOW,
@@ -130,6 +128,7 @@ local ColorDefaults =
 	["hover"] = DEF_RGB_HALFSHINE,
 	["disabled"] = DEF_RGB_BACK,
 	["detail"] = DEF_RGB_DETAIL,
+	["caption-detail"] = DEF_RGB_DETAIL,
 	["active-detail"] = DEF_RGB_DETAIL,
 	["focus-detail"] = DEF_RGB_DETAIL,
 	["hover-detail"] = DEF_RGB_DETAIL,
@@ -181,17 +180,67 @@ local ColorDefaults =
 	["orange"] =  "#ffa500",
 }
 
+-------------------------------------------------------------------------------
+--	setup fonts:
+--	style attributes (/b = bold, /i = italic, /bi = bold+italic, /s = scalable)
+--	are passed on to the display driver, which may or may not implement them.
+--	Alternatively, mappings from styles to distinguished fontnames can be
+--	placed in the FontsDefaults cache here.
+-------------------------------------------------------------------------------
+
+local FN_FIXED = "DejaVuSansMono,monospace,fixed,courier/s,VeraMono"
+local FN_FIXEDBOLD = "DejaVuSansMono-Bold,monospace/b,fixed/b,courier/bs,VeraMono/b"
+local FN_FIXEDITALIC = "DejaVuSansMono-Oblique,monospace/i,fixed/i,courier/is,VeraMono/i"
+local FN_FIXEDBOLDITALIC = "DejaVuSansMono-BoldOblique,monospace/bi,fixed/bi,courier/bis,VeraMono/bi"
+
+local FN_NORMAL = "DejaVuSans,sans-serif,helvetica/s,arial,Vera,times"
+local FN_BOLD = "DejaVuSans-Bold,DejaVuSans/b,sans-serif/b,helvetica/sb,arial/b,Vera/b,times/b"
+local FN_ITALIC = "DejaVuSans-Oblique,DejaVuSans/i,sans-serif/i,helvetica/si,arial/i,Vera/i,times/i"
+local FN_BOLDITALIC = "DejaVuSans-BoldOblique,DejaVuSans/bi,sans-serif/bi,helvetica/bis,arial/bi,Vera/bi,times/bi"
+
+local fontsizes = 
+{ 
+	["xx-small"] = 8,
+	["x-small"] = 9,
+	["small"] = 11,
+	["main"] = 13,
+	["menu"] = 13,
+	["large"] = 16,
+	["x-large"] = 21,
+	["xx-large"] = 28,
+}
+
+local fontstyles =
+{
+	[""] = FN_NORMAL,
+	["/i"] = FN_ITALIC,
+	["/b"] = FN_BOLD,
+	["/bi"] = FN_BOLDITALIC
+}
+
 local FontDefaults =
 {
 	-- cache name : propname : default
-	["ui-fixed"] = { "font-fixed", DEF_FIXEDFONT },
-	["ui-huge"] = { "font-huge", DEF_HUGEFONT },
-	["ui-large"] = { "font-large", DEF_LARGEFONT },
-	["ui-main"] = { "font", DEF_MAINFONT },
-	["ui-menu"] = { "font-menu", DEF_MENUFONT },
-	["ui-small"] = { "font-small", DEF_SMALLFONT },
+	["ui-fixed"] = { "font-fixed", FN_FIXED .. ":" .. fontsizes["main"] },
+	["ui-fixed/b"] = { false, FN_FIXEDBOLD .. ":" .. fontsizes["main"] },
+	["ui-fixed/i"] = { false, FN_FIXEDITALIC .. ":" .. fontsizes["main"] },
+	["ui-fixed/bi"] = { false, FN_FIXEDBOLDITALIC .. ":" .. fontsizes["main"] },
 }
-FontDefaults[""] = FontDefaults["ui-main"]
+
+for szname, size in pairs(fontsizes) do
+	for attr, fname in pairs(fontstyles) do
+		local key = "ui-" .. szname .. attr -- e.g. "ui-small/b"
+		local val = fname .. ":" .. size -- e.g. "dejavusans-bold,arial/b:11"
+		local propname = attr == "" and "font-"..szname or ""
+-- 		db.warn("cache-key:%s propname:%s default:%s", key, propname, val)
+		FontDefaults[key] = { propname, val }
+	end
+end
+	
+FontDefaults[""] = FontDefaults["ui-main"] -- default
+FontDefaults["ui-huge"] = FontDefaults["ui-xx-large"] -- alias name (no styles)
+
+-------------------------------------------------------------------------------
 
 local PixmapCache = { }
 
@@ -202,42 +251,46 @@ local PixmapCache = { }
 -------------------------------------------------------------------------------
 
 Display.createPixmap = Visual.createPixmap
+Display.createGradient = Visual.createGradient
 
 -------------------------------------------------------------------------------
---	image, width, height, transparency = Display.loadPixmap(filename): Creates
---	a pixmap object from an image file in the file system. Currently only the
---	PPM file format is recognized.
+--	image, width, height, transparency = Display.getPaint(imgspec): Gets a
+--	paint object, either by loading it from the filesystem, generating it,
+--	or by retrieving it from the cache.
 -------------------------------------------------------------------------------
 
-function Display.loadPixmap(fname)
-	local f = open(fname, "rb")
-	if f then
-		local img, w, h, trans = createPixmap(f:read("*a"))
-		f:close()
-		if img then
-			return img, w, h, trans
+function Display.getPaint(imgspec, display)
+	if PixmapCache[imgspec] then
+		db.trace("got cache copy for '%s'", imgspec)
+		return unpack(PixmapCache[imgspec])
+	end
+	local imgtype, location = imgspec:match("^(%a+)%((.+)%)")
+	local paint, w, h, trans
+	if imgtype == "url" then
+		local f = open(location, "rb")
+		if f then
+			paint, w, h, trans = createPixmap(f:read("*a"))
+			f:close()
 		end
+	elseif imgtype == "gradient" then
+		local x0, y0, c0, x1, y1, c1 = 
+			location:match("^(%d+),(%d+),(%S+),(%d+),(%d+),(%S+)$")
+		local _, r0, g0, b0
+		if display then
+			_, r0, g0, b0 = display:colorToRGB(c0)
+			_, r1, g1, b1 = display:colorToRGB(c1)
+		else
+			_, r0, g0, b0 = hexToRGB(c0)
+			_, r1, g1, b1 = hexToRGB(c1)
+		end
+		local rgb0 = r0 * 65536 + g0 * 256 + b0
+		local rgb1 = r1 * 65536 + g1 * 256 + b1
+		paint = createGradient(x0, y0, x1, y1, rgb0, rgb1)
 	end
-	db.warn("loading '%s' failed", fname)
-	return false
-end
-
--------------------------------------------------------------------------------
---	image, width, height, transparency = Display.getPixmap(fname): Gets a
---	pixmap object, either by loading it from the filesystem or by retrieving
---	it from the cache.
--------------------------------------------------------------------------------
-
-function Display.getPixmap(fname)
-	if PixmapCache[fname] then
-		db.info("got cache copy for '%s'", fname)
-		return unpack(PixmapCache[fname])
+	if paint then
+		PixmapCache[imgspec] = { paint, w, h, trans }
 	end
-	local pm, w, h, trans = loadPixmap(fname)
-	if pm then
-		PixmapCache[fname] = { pm, w, h, trans }
-	end
-	return pm, w, h, trans
+	return paint, w, h, trans
 end
 
 -------------------------------------------------------------------------------
@@ -333,45 +386,74 @@ end
 -------------------------------------------------------------------------------
 
 function Display:colorToRGB(key)
-	return self.hexToRGB(self.Properties["rgb-" .. key] or
-		ColorDefaults[key] or key)
+	local props = self.Properties
+	local col = props["rgb-" .. key] or ColorDefaults[key]
+	if not col then
+		local key1, key2, f = key:match("^tint%((%S+),(%S+),(%S+)%%%)$")
+		if key1 then
+			local a1, r1, g1, b1 = self.hexToRGB(props["rgb-" .. key1] or ColorDefaults[key1] or key1)
+			local a2, r2, g2, b2 = self.hexToRGB(props["rgb-" .. key2] or ColorDefaults[key2] or key2)
+			local a = floor(a1 + (a2 - a1) * f / 100)
+			local r = floor(r1 + (r2 - r1) * f / 100)
+			local g = floor(g1 + (g2 - g1) * f / 100)
+			local b = floor(b1 + (b2 - b1) * f / 100)
+			return a, r, g, b
+		end
+	end
+	return self.hexToRGB(col or key)
 end
 
 -------------------------------------------------------------------------------
---	font = openFont(fontname): Opens the named font. For a discussion
---	of the {{fontname}} format, see [[#tek.ui.class.text : Text]].
+--	font = openFont(fontspec[, size[, attr]]): Opens a font. For a discussion
+--	of the fontname format, see [[#tek.ui.class.text : Text]].
+--	The optional size and attr arguments allow to override their respective
+--	values in the fontspec argument.
 -------------------------------------------------------------------------------
 
-function Display:openFont(fname)
-	local fname = fname or ""
-	if not self.FontCache[fname] then
-		local name, size = fname:match("^([^:]*)%s*:?%s*(%d*)$")
-		local defname = FontDefaults[name]
-		local deff = defname and (self.Properties[defname[1]] or defname[2])
-		if deff then
-			local nname, nsize = deff:match("^([^:]*):?(%d*)$")
-			if size == "" then
-				size = nsize
-			end
-			name = nname
+function Display:openFont(fontspec, override_size, override_attr)
+	fontspec = fontspec or ""
+	local fcache = self.FontCache
+	if not override_size and not override_attr then
+		local frec = fcache[fontspec]
+		if frec and frec[1] then
+			return frec[1], frec
 		end
-		size = tonumber(size)
-		for name in name:gmatch("%s*([^,]*)%s*,?") do
-			if name == "" then
-				name = FontDefaults[""][2]:match("^([^:,]*),?[^:]*:?(%d*)$")
-			end
-			db.info("Open font: '%s' -> '%s:%d'", fname, name, size or -1)
-			local font = Visual.openFont(name, size)
-			if font then
-				local r = { font, font:getAttrs { }, fname, name }
-				self.FontCache[fname] = r
-				self.FontCache[font] = r
-				return font
-			end
-		end
-		return
 	end
-	return self.FontCache[fname][1]
+	local fnames, size = fontspec:match("^%s*([^:]*)%s*%:?%s*(%d*)%s*$")
+	if override_size then
+		fontspec = fnames .. ":" .. override_size
+		size = override_size
+	else
+		size = tonumber(size)
+	end
+	local props = self.Properties
+	for fname in fnames:gmatch("%s*([^,]*)%s*,?") do
+		local realname, attr = fname:match("^([^/]*)/?(.*)$")
+		if override_attr then
+			attr = override_attr
+		end
+		local fcachename = fname
+		if size then
+			fcachename = fcachename .. ":" .. size
+		end
+		local font
+		local defrec = FontDefaults[fname]
+		if defrec then
+			local aliases = props[defrec[1]] or defrec[2]
+			if aliases then
+				font = self:openFont(aliases, size, attr ~= "" and attr)
+			end
+		end
+		font = font or Visual.openFont(realname, size, attr)
+		local frec = { font, font and font:getAttrs { } }
+		fcache[fontspec] = frec
+		fcache[fcachename] = frec
+		if font then
+			fcache[font] = frec
+			return font, frec
+		end
+	end
+	db.error("failed to open font '%s'", fontspec)
 end
 
 -------------------------------------------------------------------------------
@@ -391,3 +473,19 @@ function Display:getFontAttrs(font)
 	local a = self.FontCache[font][2]
 	return a.Height, a.UlPosition, a.UlThickness
 end
+
+-------------------------------------------------------------------------------
+--	dumpColors()
+-------------------------------------------------------------------------------
+
+-- function Display:dumpColors()
+-- 	local p = self.Properties
+-- 	for k, v in pairs(ColorDefaults) do
+-- 		local v = p["rgb-"..k]
+-- 		if v then
+-- 			db.warn("rgb-%s: %s;", k, v)
+-- -- 		else
+-- -- 			db.warn("/*rgb-%s: %s;*/", k, ColorDefaults[k])
+-- 		end
+-- 	end
+-- end

@@ -18,7 +18,7 @@
 #define CLASS_NAME "tek.ui.layout.default"
 
 /* Version: */
-#define TEK_UI_CLASS_LAYOUT_DEFAULT_VERSION "Default Layout 7.1"
+#define TEK_UI_CLASS_LAYOUT_DEFAULT_VERSION "Default Layout 7.2"
 
 /*****************************************************************************/
 
@@ -50,8 +50,8 @@ typedef struct
 
 static int layout_getsamesize(lua_State *L, int groupindex, int axis)
 {
-	lua_getfield(L, groupindex, "SameSize");
 	int res;
+	lua_getfield(L, groupindex, "SameSize");
 	if (lua_isboolean(L, -1) && lua_toboolean(L, -1))
 		res = 1;
 	else
@@ -77,7 +77,11 @@ static layout_struct layout_getstructure(lua_State *L, int group)
 	lua_getfield(L, group, "Rows");
 	gh = lua_isnumber(L, -1) ? lua_tointeger(L, -1) : 0;
 	lua_getfield(L, group, "Children");
+#if LUA_VERSION_NUM < 502
 	nc = lua_objlen(L, -1);
+#else
+	nc = lua_rawlen(L, -1);
+#endif
 	lua_pop(L, 3);
 	
 	if (gw)
@@ -125,36 +129,49 @@ static void layout_calcweights(lua_State *L, layout_struct *lstruct)
 	lua_newtable(L);
 	lua_newtable(L);
 	lua_getfield(L, 2, "Children");
+	/* weights, wx, wy, children */
 	for (y = 1; y <= lstruct->height; ++y)
 	{
 		for (x = 1; x <= lstruct->width; ++x)
 		{
 			lua_rawgeti(L, -1, cidx);
+			/* weights, wx, wy, children, c */
 			if (lua_isnil(L, -1))
 			{
 				lua_pop(L, 1);
 				break;
 			}
 			lua_getfield(L, -1, "Weight");
+			/* weights, wx, wy, children, c, weight */
 			if (lua_isnumber(L, -1))
 			{
 				lua_Integer w = lua_tointeger(L, -1);
 				lua_rawgeti(L, -5, x);
+				/* weights, wx, wy, children, c, weight, wx[x] */
 				lua_rawgeti(L, -5, y);
+				/* weights, wx, wy, children, c, weight, wx[x], wy[y] */
 				lua_pushinteger(L, luaL_optint(L, -2, 0) + w);
+				/* weights, wx, wy, children, c, weight, wx[x], wy[y], wx' */
 				lua_rawseti(L, -8, x);
+				/* weights, wx, wy, children, c, weight, wx[x], wy[y] */
 				lua_pushinteger(L, luaL_optint(L, -1, 0) + w);
+				/* weights, wx, wy, children, c, weight, wx[x], wy[y], wy' */
 				lua_rawseti(L, -7, y);
+				/* weights, wx, wy, children, c, weight, wx[x], wy[y] */
 				lua_pop(L, 4);
 			}
 			else
 				lua_pop(L, 2);
+			/* weights, wx, wy, children */
 			cidx++;
 		}
 	}
 	lua_pop(L, 1);
+	/* weights, wx, wy */
 	lua_rawseti(L, -3, 2);
+	/* weights, wx */
 	lua_rawseti(L, -2, 1);
+	/* weights */
 	lua_pop(L, 1);
 }
 
@@ -179,6 +196,26 @@ static int layout_layoutaxis(lua_State *L)
 	int ssb, ssn = 0;
 	int i;
 
+	/**
+	**	local fw, tw = 0, 0
+	**	local list = { }
+	**	local tmm = self.TempMinMax
+	**	local wgh = group.Weights
+	**	for i = 1, n do
+	**		local mins, maxs = tmm[i1][i], tmm[i3][i]
+	**		local free = maxs and (maxs > mins)
+	**		local weight = wgh[i1][i]
+	**		list[i] = { free, mins, maxs, weight, nil }
+	**		if free then
+	**			if weight then
+	**				tw = tw + weight
+	**			else
+	**				fw = fw + 0x100
+	**			end
+	**		end
+	**	end
+	**/
+
 	lua_Integer fw0 = 0;
 	lua_Integer tw0 = 0;
 	lua_Number fw;
@@ -188,21 +225,29 @@ static int layout_layoutaxis(lua_State *L)
 	lua_getfield(L, 1, "TempMinMax");
 	lua_rawgeti(L, -1, i1);
 	lua_rawgeti(L, -2, i3);
+	/* s: list, tmm, tmm[i1], tmm[i3] */
 	lua_remove(L, -3);
+	/* s: list, tmm[i1], tmm[i3] */
 	
 	lua_getfield(L, 1, "Weights");
+	/* s: list, tmm[i1], tmm[i3], weights */
 	lua_rawgeti(L, -1, i1);
+	/* s: list, tmm[i1], tmm[i3], weights, wgh[i1] */
 	lua_remove(L, -2);
 
 	for (i = 1; i <= n; ++i)
 	{
 		int free;
 		lua_rawgeti(L, -3, i);
+		/* s: l, tmm[i1], tmm[i3], wgh[i1], mins */
 		lua_rawgeti(L, -3, i);
+		/* s: l, tmm[i1], tmm[i3], wgh[i1], mins, maxs */
 		lua_rawgeti(L, -3, i);
+		/* s: l, tmm[i1], tmm[i3], wgh[i1], mins, maxs, weight */
 		free = lua_toboolean(L, -2) ?
 			lua_tointeger(L, -2) > lua_tointeger(L, -3) : 0;
 		lua_createtable(L, 5, 0);
+		/* s: l, tmm[i1], tmm[i3], wgh[i1], mins, maxs, weight, t */
 		lua_pushboolean(L, free);
 		lua_rawseti(L, -2, 1);
 		lua_pushvalue(L, -4);
@@ -213,7 +258,9 @@ static int layout_layoutaxis(lua_State *L)
 		lua_rawseti(L, -2, 4);
 		lua_pushnil(L);
 		lua_rawseti(L, -2, 5);
+		/* s: l, tmm[i1], tmm[i3], wgh[i1], mins, maxs, weight, t */
 		lua_rawseti(L, -8, i);
+		/* s: l, tmm[i1], tmm[i3], wgh[i1], mins, maxs, weight */
 		if (free)
 		{
 			if (lua_toboolean(L, -1))
@@ -224,6 +271,18 @@ static int layout_layoutaxis(lua_State *L)
 		lua_pop(L, 3);
 	}
 	lua_pop(L, 3);
+
+	/**
+	**	if tw < 0x10000 then
+	**		if fw == 0 then
+	**			tw = 0x10000
+	**		else
+	**			fw, tw = (0x10000 - tw) * 0x100 / fw, 0x10000
+	**		end
+	**	else
+	**		fw = 0
+	**	end
+	**/
 
 	if (tw0 < 0x10000)
 	{
@@ -244,6 +303,12 @@ static int layout_layoutaxis(lua_State *L)
 	tw = tw0 / 0x100;
 	fw = fw0 / 0x100;
 
+	/**
+	**	local mab = group.MarginAndBorder
+	**	local ss = group:getSameSize(i1) and
+	**		(group.MinMax[i1] - mab[i1] - mab[i3] - pad[i1] - pad[i3]) / n
+	**/
+
 	ssb = layout_getsamesize(L, 2, i1);
 	if (ssb)
 	{
@@ -259,39 +324,94 @@ static int layout_layoutaxis(lua_State *L)
 	lua_getfield(L, -1, "insert");
 	lua_getfield(L, -2, "remove");
 	lua_remove(L, -3);
+	/* s: list, insert, remove */
 
+	/**
+	**	local e = { unpack(list) }
+	**/
+
+#if LUA_VERSION_NUM < 502
 	len = lua_objlen(L, -3);
+#else
+	len = lua_rawlen(L, -3);
+#endif
 	lua_createtable(L, len, 0);
+	/* s: list, insert, remove, e */
 	for (i = 1; i <= (int) len; ++i)
 	{
 		lua_rawgeti(L, -4, i);
 		lua_rawseti(L, -2, i);
 	}
 
+	/**
+	**	local it = 0
+	**	while #e > 0 do
+	**/
+
+#if LUA_VERSION_NUM < 502
 	while ((len = lua_objlen(L, -1)) > 0)
+#else
+	while ((len = lua_rawlen(L, -1)) > 0)
+#endif
 	{
+		/**
+		**	local rest = free
+		**	local newfree = free
+		**	it = it + 1
+		**	local e2 = { }
+		**/
+
 		lua_Integer rest = free;
 		lua_Integer newfree = free;
 		it++;
 
 		lua_createtable(L, len, 0);
+		/* s: insert, remove, e, e2 */
+
+		/**
+		**	repeat
+		**		...
+		**	until #e == 0
+		**/
 
 		do
 		{
 			lua_Integer olds, news, ti;
 
+			/**
+			**	delta = 0
+			**
+			**	c = remove(e, 1)
+			**
+			**	if c[1] then -- free
+			**		if c[4] then -- weight
+			**			delta = free * (c[4] / 0x100) * (tw / 0x100) / 0x10000
+			**		else
+			**			delta = free * 0x100 * (fw / 0x100) / 0x10000
+			**		end
+			**		delta = floor(delta)
+			**	end
+			**/
+
 			lua_Integer delta = 0;
 
+			/* s: insert, remove, e, e2 */
 			lua_pushvalue(L, -3);
+			/* s: insert, remove, e, e2, remove */
 			lua_pushvalue(L, -3);
+			/* s: insert, remove, e, e2, remove, e */
 			lua_pushinteger(L, 1);
+			/* s: insert, remove, e, e2, remove, e, 1 */
 			lua_call(L, 2, 1);
+			/* s: insert, remove, e, e2, c */
 
 			lua_rawgeti(L, -1, 1);
+			/* s: insert, remove, e, e2, c, c[1] */
 			if (lua_toboolean(L, -1))
 			{
 				lua_Number t;
 				lua_rawgeti(L, -2, 4);
+				/* s: insert, remove, e, e2, c, c[1], c[4] */
 				if (lua_toboolean(L, -1))
 				{
 					t = lua_tonumber(L, -1);
@@ -309,12 +429,29 @@ static int layout_layoutaxis(lua_State *L)
 				delta = t;
 				lua_pop(L, 1);
 			}
+			/* s: insert, remove, e, e2, c, c[1] */
+
+			/**
+			**	if delta == 0 and it > 1 then
+			**		delta = rest
+			**	end
+			**/
 
 			if (delta == 0 && it > 1)
 				delta = rest;
 
+			/**
+			**	olds = c[5] or ss or c[2] -- size, mins
+			**	news = max(olds + delta, ss or c[2]) -- mins
+			**	if not (ss and isgrid) and c[3] and news > c[3] then -- maxs
+			**		news = c[3] -- maxs
+			**	end
+			**	c[5] = news
+			**/
+
 			lua_rawgeti(L, -2, 5);
 			lua_rawgeti(L, -3, 2);
+			/* s: insert, remove, e, e2, c, c[1], c[5], c[2] */
 
 			if (lua_toboolean(L, -2))
 				olds = lua_tointeger(L, -2);
@@ -322,11 +459,13 @@ static int layout_layoutaxis(lua_State *L)
 				olds = ssn;
 			else
 				olds = lua_tointeger(L, -1);
+			/* s: insert, remove, e, e2, c, c[1], c[5], c[2] */
 
 			ti = ssb ? ssn : lua_tointeger(L, -1);
 			news = TMAX(olds + delta, ti);
 
 			lua_rawgeti(L, -4, 3);
+			/* s: insert, remove, e, e2, c, c[1], c[5], c[2], c[3] */
 			if (!(ssb && layout->isgrid) && lua_toboolean(L, -1) && 
 				news > lua_tointeger(L, -1))
 				news = lua_tointeger(L, -1);
@@ -334,23 +473,52 @@ static int layout_layoutaxis(lua_State *L)
 			lua_pushinteger(L, news);
 			lua_rawseti(L, -6, 5);
 
+			/**
+			**	delta = news - olds
+			**	newfree = newfree - delta
+			**	rest = rest - delta
+			**/
+
 			delta = news - olds;
 			newfree -= delta;
 			rest -= delta;
+
+			/**
+			**	if not c[3] or c[3] >= HUGE or c[5] < c[3] then -- maxs
+			**		insert(e2, c)
+			**	end
+			**/
 
 			if (!lua_toboolean(L, -1) || lua_tointeger(L, -1) >= TEKUI_HUGE ||
 				lua_tointeger(L, -3) < lua_tointeger(L, -1))
 			{
 				/* redo in next iteration: */
+				/* s: ins, rem, e, e2, c, c[1], c[5], c[2], c[3] */
 				lua_pushvalue(L, -9);
+				/* s: ins, rem, e, e2, c, c[1], c[5], c[2], c[3], ins */
 				lua_pushvalue(L, -7);
+				/* s: ins, rem, e, e2, c, c[1], c[5], c[2], c[3], ins, e2 */
 				lua_pushvalue(L, -7);
+				/* s: ins, rem, e, e2, c, c[1], c[5], c[2], c[3], ins, e2, c */
 				lua_call(L, 2, 0);
+				/* s: insert, remove, e, e2, c, c[1], c[5], c[2], c[3] */
 			}
 
 			lua_pop(L, 5);
-
+			/* s: insert, remove, e, e2 */
+#if LUA_VERSION_NUM < 502
 		} while (lua_objlen(L, -2) > 0);
+#else
+		} while (lua_rawlen(L, -2) > 0);
+#endif
+		/**
+		**	if newfree < 1 then
+		**		break
+		**	end
+		**
+		**	free = newfree
+		**	e = e2
+		**/
 
 		free = newfree;
 		if (free < 1)
@@ -359,10 +527,13 @@ static int layout_layoutaxis(lua_State *L)
 			break;
 		}
 
+		/* s: insert, remove, e, e2 */
 		lua_replace(L, -2);
+		/* s: insert, remove, e */
 	}
 
 	lua_pop(L, 3);
+	/* s: list */
 	return 1;
 }
 
@@ -374,14 +545,44 @@ static int layout_layoutaxis(lua_State *L)
 static int layout_layout(lua_State *L)
 {
 	layout layout;
+
+	/**
+	**	local ori, gs1, gs2 = getStructure(group)
+	**	if gs1 > 0 and gs2 > 0 then
+	**/
+
 	layout_struct lstruct = layout_getstructure(L, 2);
 	int ori = lstruct.orientation;
 	int gs1 = lstruct.width;
 	int gs2 = lstruct.height;
-	tekui_flags *f, of;
 
 	if (gs1 > 0 && gs2 > 0)
 	{
+		/**
+		**	local isgrid = gs1 > 1 and gs2 > 1
+		**	local i1, i2, i3, i4, i5, i6 = unpack(INDICES[ori])
+		**
+		**	local c, isz, osz, m3, m4, mm, a
+		**	local cidx = 1
+		**	local A = ALIGN[ori]
+		**
+		**	if i1 == 2 then
+		**		gs1, gs2 = gs2, gs1
+		**		r1, r2, r3, r4 = r2, r1, r4, r3
+		**	end
+		**
+		**	local gm = { group:getMargin() }
+		**	local gr = { group:getRect() }
+		**	local gp = { group:getPadding() }
+		**	local goffs = gm[i1] + gp[i1]
+		**	local xywh = self.XYWH
+		**	local minmax = { group.MinMax:get() }
+		**
+		**	if group.Flags:checkClear(FL_STRUCTURE) then
+		**		self:calcWeights(group)
+		**	end
+		**/
+
 		const int *I = INDICES[ori - 1];
 		int i1 = I[0], i2 = I[1], i3 = I[2], i4 = I[3], i5 = I[4], i6 = I[5];
 
@@ -452,13 +653,24 @@ static int layout_layout(lua_State *L)
 		goffs = layout.margin[i1 - 1] + layout.padding[i1 - 1];
 		
 		lua_createtable(L, 6, 0);
+		/* s: xywh */
+
 		lua_getfield(L, 2, "Flags");
-		f = luaL_checkudata(L, -1, TEK_UI_SUPPORT_NAME);
-		of = *f;
-		*f &= ~TEKUI_FL_CHANGED;
-		if (of & TEKUI_FL_CHANGED)
+		lua_getfield(L, -1, "checkClear");
+		lua_pushvalue(L, -2);
+		lua_pushinteger(L, TEKUI_FL_CHANGED);
+		lua_call(L, 2, 1);
+		if (lua_toboolean(L, -1))
 			layout_calcweights(L, &lstruct);
-		lua_pop(L, 1);
+		lua_pop(L, 2);
+
+		/**
+		**	local olist = self:layoutAxis(group,
+		**		r4 - r2 + 1 - group.MinMax[i2], i2, i4, gs2, isgrid, gp, gm, minmax)
+		**
+		**	local ilist = self:layoutAxis(group,
+		**		r3 - r1 + 1 - group.MinMax[i1], i1, i3, gs1, isgrid, gp, gm, minmax)
+		**/
 
 		/* layout on outer axis: */
 		layout.free = r4 - r2 + 1 - layout.minmax[i2 - 1];
@@ -469,7 +681,9 @@ static int layout_layout(lua_State *L)
 		lua_pushvalue(L, 1);
 		lua_pushvalue(L, 2);
 		lua_pushlightuserdata(L, &layout);
+		/* s: xywh, layoutAxis, self, group, layout */	
 		lua_call(L, 3, 1);
+		/* s: xywh, olist */
 		
 		/* layout on inner axis: */
 		layout.free = r3 - r1 + 1 - layout.minmax[i1 - 1];
@@ -480,48 +694,96 @@ static int layout_layout(lua_State *L)
 		lua_pushvalue(L, 1);
 		lua_pushvalue(L, 2);
 		lua_pushlightuserdata(L, &layout);
+		/* s: xywh, olist, layoutAxis, self, group, layout */
 		lua_call(L, 3, 1);
+		/* s: xywh, olist, ilist */
+
+		/**
+		**	local children = group.Children
+		**	local oszmax = gr[i4] - gr[i2] + 1 - gp[i2] - gp[i4]
+		**	xywh[i6] = r2 + mab[i2] + gp[i2]
+		**/
 
 		lua_getfield(L, 2, "Children");
+		/* s: xywh, olist, ilist, children */
 
+		/* size on outer axis: */
 		oszmax = layout.rect[i4 - 1] - layout.rect[i2 - 1] + 1 -
 			layout.padding[i2 - 1] - layout.padding[i4 - 1];
 
+		/* starting position on outer axis: */
 		lua_pushinteger(L,
 			r2 + layout.padding[i2 - 1] + layout.margin[i2 - 1]);
 		lua_rawseti(L, -5, i6);
 
+		/**
+		**	for oidx = 1, gs2 do
+		**		if gs2 > 1 then
+		**			oszmax = olist[oidx][5]
+		**		end
+		**		xywh[i5] = r1 + goffs
+		**/
+
+		/* loop outer axis: */
 		for (oidx = 1; oidx <= gs2; ++oidx)
 		{
 			if (gs2 > 1)
 			{
 				lua_rawgeti(L, -3, oidx);
 				lua_rawgeti(L, -1, 5);
+				/* s: xywh, olist, ilist, children, olist[oidx], olist[oidx][5] */
 				oszmax = lua_tointeger(L, -1);
 				lua_pop(L, 2);
 			}
 
+			/* starting position on inner axis: */
 			lua_pushinteger(L, r1 + goffs);
+			/* s: xywh, olist, ilist, children, val */
 			lua_rawseti(L, -5, i5);
 
+			/**
+			**	for iidx = 1, gs1 do
+			**		c = children[cidx]
+			**		if not c then
+			**			return
+			**		end
+			**/
+
+			/* loop inner axis: */
 			for (iidx = 1; iidx <= gs1; ++iidx)
 			{
+				/* s: xywh, olist, ilist, children */
 				lua_rawgeti(L, -1, cidx);
+				/* s: xywh, olist, ilist, children, c */
 				if (!lua_toboolean(L, -1))
 				{
 					lua_pop(L, 5);
 					return 0;
 				}
 
+				/**
+				**	xywh[1] = xywh[5]
+				**	xywh[2] = xywh[6]
+				**	mm = c.MinMax
+				**	m3, m4 = mm[i3], mm[i4]
+				**	isz = ilist[iidx][5] -- size
+				**/
+
+				/* x0, y0 of child rectangle: */
 				lua_rawgeti(L, -5, 5);
 				lua_rawseti(L, -6, 1);
 				lua_rawgeti(L, -5, 6);
 				lua_rawseti(L, -6, 2);
 
+				/* element minmax: */
 				lua_getfield(L, -1, "MinMax");
+				/* s: mm */
 				lua_getfield(L, -1, "get");
+				/* s: mm, get() */
 				lua_pushvalue(L, -2);
+				/* s: mm, get(), mm */
 				lua_call(L, 1, 4);
+				/* s: mm, mm1, mm2, mm3, mm4 */
 				layout.minmax[0] = lua_tointeger(L, -4);
 				layout.minmax[1] = lua_tointeger(L, -3);
 				layout.minmax[2] = lua_tointeger(L, -2);
@@ -530,13 +792,26 @@ static int layout_layout(lua_State *L)
 				m3 = layout.minmax[i3 - 1];
 				m4 = layout.minmax[i4 - 1];
 
+				/* inner size: */
 				lua_pushvalue(L, -3);
+				/* s: xywh, olist, ilist, children, c, ilist */
 				lua_rawgeti(L, -1, iidx);
+				/* s: xywh, olist, ilist, children, c, ilist, ilist[iidx] */
 				lua_rawgeti(L, -1, 5);
+				/* s: xywh, olist, ilist, children, c, ilist, ilist[iidx], ilist[iidx][5] */
 				isz = lua_tointeger(L, -1);
 				lua_pop(L, 3);
+				/* s: xywh, olist, ilist, children, c */
+
+				/**
+				**	a = c[A[5]]
+				**	if a == "free" or a == "fill" then
+				**		m3 = gr[i3] - gr[i1] + 1 - gp[i1] - gp[i3]
+				**	end
+				**/
 
 				lua_getfield(L, -1, A[4]);
+				/* s: xywh, olist, ilist, children, c, c[A[5]] */
 				s = lua_tostring(L, -1);
 				if (s)
 				{
@@ -549,16 +824,32 @@ static int layout_layout(lua_State *L)
 					}
 				}
 				lua_pop(L, 1);
+				/* s: xywh, olist, ilist, children, c */
+
+				/**
+				** if m3 < isz then
+				**		a = c[A[1]]
+				**		if a == "center" then
+				**			xywh[i1] = xywh[i1] + floor((isz - m3) / 2)
+				**		elseif a == A[3] then
+				**			-- opposite side:
+				**			xywh[i1] = xywh[i1] + isz - m3
+				**		end
+				**		isz = m3
+				**	end
+				**/
 
 				if (m3 < isz)
 				{
 					lua_getfield(L, -1, A[0]);
+					/* s: xywh, olist, ilist, children, c, c[A[1]] */
 					s = lua_tostring(L, -1);
 					if (s)
 					{
 						if (strcmp(s, "center") == 0)
 						{
 							lua_rawgeti(L, -6, i1);
+							/* s: xywh, olist, ilist, children, c, c[A[1]], xywh[i1] */
 							t = lua_tointeger(L, -1);
 							t += (isz - m3) / 2;
 							lua_pushinteger(L, t);
@@ -567,38 +858,69 @@ static int layout_layout(lua_State *L)
 						}
 						else if (strcmp(s, A[2]) == 0)
 						{
+							/* opposite side: */
 							lua_rawgeti(L, -6, i1);
+							/* s: xywh, olist, ilist, children, c, c[A[1]], xywh[i1] */
 							t = lua_tointeger(L, -1);
 							t += isz - m3;
 							lua_pushinteger(L, t);
 							lua_rawseti(L, -8, i1);
 							lua_pop(L, 1);
 						}
+						/* s: xywh, olist, ilist, children, c, c[A[1]] */
 					}
 					isz = m3;
 					lua_pop(L, 1);
+					/* s: xywh, olist, ilist, children, c */
 				}
 
+				/**
+				**	a = c[A[6]]
+				**	if a == "fill" or a == "free" then
+				**		osz = oszmax
+				**	else
+				**		osz = min(olist[oidx][5], m4)
+				**		-- align if element does not fully occupy outer size:
+				**		if osz < oszmax then
+				**			a = c[A[2]]
+				**			if a == "center" then
+				**				xywh[i2] = xywh[i2] + floor((oszmax - osz) / 2)
+				**			elseif a == A[4] then
+				**				-- opposite side:
+				**				xywh[i2] = xywh[i2] + oszmax - osz
+				**			end
+				**		end
+				**	end
+				**/
+
+				/* outer size: */
 				lua_getfield(L, -1, A[5]);
+				/* s: xywh, olist, ilist, children, c, c[A[6]] */
 				s = lua_tostring(L, -1);
 				if (s && s[0] == 'f') /* "free" or "fill" */
 					osz = oszmax;
 				else
 				{
 					lua_rawgeti(L, -5, oidx);
+					/* s: xywh, olist, ilist, children, c, c[A[6]], olist[oidx] */
 					lua_rawgeti(L, -1, 5);
+					/* s: xywh, olist, ilist, children, c, c[A[6]], olist[oidx], olist[oidx][5] */
 					osz = lua_tointeger(L, -1);
 					osz = TMIN(osz, m4);
 					lua_pop(L, 2);
+					/* align if element does not fully occupy outer size: */
+					/* s: xywh, olist, ilist, children, c, c[A[6]] */
 					if (osz < oszmax)
 					{
 						lua_getfield(L, -2, A[1]);
+						/* s: xywh, olist, ilist, children, c, c[A[6]], c[A[2]] */
 						s = lua_tostring(L, -1);
 						if (s)
 						{
 							if (strcmp(s, "center") == 0)
 							{
 								lua_rawgeti(L, -7, i2);
+								/* s: xywh, olist, ilist, children, c, c[A[6]], c[A[2]], xywh[i2] */
 								t = lua_tointeger(L, -1);
 								t += (oszmax - osz) / 2;
 								lua_pushinteger(L, t);
@@ -607,7 +929,9 @@ static int layout_layout(lua_State *L)
 							}
 							else if (strcmp(s, A[3]) == 0)
 							{
+								/* opposite side: */
 								lua_rawgeti(L, -7, i2);
+								/* s: xywh, olist, ilist, children, c, c[A[6]], c[A[2]], xywh[i2] */
 								t = lua_tointeger(L, -1);
 								t += oszmax - osz;
 								lua_pushinteger(L, t);
@@ -616,59 +940,102 @@ static int layout_layout(lua_State *L)
 							}
 						}
 						lua_pop(L, 1);
+						/* s: xywh, olist, ilist, children, c, c[A[6]] */
 					}
 				}
 				lua_pop(L, 1);
+				/* s: xywh, olist, ilist, children, c */
 
+				/**
+				**	xywh[i3] = xywh[i1] + isz - 1
+				**	xywh[i4] = xywh[i2] + osz - 1
+				**/
+
+				/* x1, y1 of child rectangle: */
 				lua_rawgeti(L, -5, i1);
+				/* s: xywh, olist, ilist, children, c, xywh[i1] */
 				t = lua_tointeger(L, -1);
 				lua_pushinteger(L, t + isz - 1);
+				/* s: xywh, olist, ilist, children, c, xywh[i1], val */
 				lua_rawseti(L, -7, i3);
 				lua_pop(L, 1);
 
 				lua_rawgeti(L, -5, i2);
+				/* s: xywh, olist, ilist, children, c, xywh[i2] */
 				t = lua_tointeger(L, -1);
 				lua_pushinteger(L, t + osz - 1);
 				lua_rawseti(L, -7, i4);
 				lua_pop(L, 1);
+				/* s: xywh, olist, ilist, children, c */
+
+				/**
+				**	c:layout(xywh[1], xywh[2], xywh[3], xywh[4], markdamage)
+				**	c:punch(group.FreeRegion)
+				**/
 
 				/* enter recursion: */
 				lua_getfield(L, -1, "layout");
 				lua_pushvalue(L, -2);
+				/* s: xywh, olist, ilist, children, c, c.layout, c */
 				lua_rawgeti(L, -7, 1);
 				lua_rawgeti(L, -8, 2);
 				lua_rawgeti(L, -9, 3);
 				lua_rawgeti(L, -10, 4);
 				lua_pushvalue(L, 7);
+				/* s: xywh, olist, ilist, children, c, c.layout, c, xywh[1], xywh[2], xywh[3], xywh[4], markdamage */
 				lua_call(L, 6, 0);
+				/* s: xywh, olist, ilist, children, c */
 
 				/* punch a hole for the element into the background: */
 				lua_getfield(L, -1, "punch");
 				lua_pushvalue(L, -2);
 				lua_getfield(L, 2, "FreeRegion");
+				/* s: xywh, olist, ilist, children, c, c.punch, c, group.FreeRegion */
 				lua_call(L, 2, 0);
+				/* s: xywh, olist, ilist, children, c */
 
+				/**
+				**	xywh[i5] = xywh[i5] + ilist[iidx][5] -- size
+				**	cidx = cidx + 1
+				**/
+
+				/* update x0: */
 				lua_rawgeti(L, -5, i5);
+				/* s: xywh, olist, ilist, children, c, xywh[i5] */
 				lua_rawgeti(L, -4, iidx);
 				lua_rawgeti(L, -1, 5);
+				/* s: xywh, olist, ilist, children, c, xywh[i5], ilist[iidx], ilist[iidx][5] */
 				t = lua_tointeger(L, -3);
 				t += lua_tointeger(L, -1);
 				lua_pushinteger(L, t);
+				/* s: xywh, olist, ilist, children, c, xywh[i5], ilist[iidx], ilist[iidx][5], val */
 				lua_rawseti(L, -9, i5);
+				/* s: xywh, olist, ilist, children, c, xywh[i5], ilist[iidx], ilist[iidx][5] */
 				lua_pop(L, 4);
+				/* s: xywh, olist, ilist, children */
 
 				/* next child index: */
 				cidx++;
 			}
 
+			/**
+			**	xywh[i6] = xywh[i6] + olist[oidx][5] -- size
+			**/
+
+			/* update y0: */
 			lua_rawgeti(L, -4, i6);
+			/* s: xywh, olist, ilist, children, xywh[i5] */
 			lua_rawgeti(L, -4, oidx);
 			lua_rawgeti(L, -1, 5);
+			/* s: xywh, olist, ilist, children, xywh[i5], olist[oidx], olist[oidx][5] */
 			t = lua_tointeger(L, -3);
 			t += lua_tointeger(L, -1);
 			lua_pushinteger(L, t);
+			/* s: xywh, olist, ilist, children, xywh[i5], olist[oidx], olist[oidx][5], val */
 			lua_rawseti(L, -8, i6);
+			/* s: xywh, olist, ilist, children, xywh[i5], olist[oidx], olist[oidx][5] */
 			lua_pop(L, 3);
+			/* s: xywh, olist, ilist, children */
 		}
 
 		lua_pop(L, 4);
@@ -684,6 +1051,13 @@ static int layout_layout(lua_State *L)
 
 static int layout_askMinMax(lua_State *L)
 {
+	/**
+	**	local m = self.TempRect
+	**	m[1], m[2], m[3], m[4] = 0, 0, 0, 0
+	**	local ori, gw, gh = group:getStructure()
+	**	if gw > 0 and gh > 0 then
+	**/
+
 	int m[5] = { 0, 0, 0, 0, 0 };
 	layout_struct lstruct = layout_getstructure(L, 2);
 	int ori = lstruct.orientation;
@@ -692,6 +1066,18 @@ static int layout_askMinMax(lua_State *L)
 
 	if (gw > 0 && gh > 0)
 	{
+		/**
+		**	local cidx = 1
+		**	local gss = group:getSameSize(ori)
+		**	local minx, miny, maxx, maxy = { }, { }, { }, { }
+		**	local tmm = { minx, miny, maxx, maxy }
+		**	self.TempMinMax = tmm
+		**	local children = self.Children
+		**
+		**	for y = 1, gh do
+		**		for x = 1, gw do
+		**/
+
 		int i1, gs, y, x;
 		int cidx = 1;
 		
@@ -704,6 +1090,8 @@ static int layout_askMinMax(lua_State *L)
 		lua_createtable(L, gh, 0);
 		lua_getfield(L, 2, "Children");
 
+		/* s: tmm, minx, miny, maxx, maxy, children */
+
 		for (y = 1; y <= gh; ++y)
 		{
 			for (x = 1; x <= gw; ++x)
@@ -712,7 +1100,16 @@ static int layout_askMinMax(lua_State *L)
 				int minxx, minyy;
 				const char *s;
 
+				/**
+				**	c = group.Children[cidx]
+				**	if not c then
+				**		break
+				**	end
+				**	cidx = cidx + 1
+				**/
+
 				lua_rawgeti(L, -1, cidx);
+				/* s: tmm, minx, miny, maxx, maxy, children, c */
 
 				if (!lua_toboolean(L, -1))
 				{
@@ -721,20 +1118,36 @@ static int layout_askMinMax(lua_State *L)
 				}
 				cidx++;
 
+				/**
+				**	mm1, mm2, mm3, mm4 = c:askMinMax(m1, m2, m3, m4)
+				**/
+
 				lua_getfield(L, -1, "askMinMax");
 				lua_pushvalue(L, -2);
 				lua_pushvalue(L, 3);
 				lua_pushvalue(L, 4);
 				lua_pushvalue(L, 5);
 				lua_pushvalue(L, 6);
+				/* s: c, c.askMinMax, c, m1, m2, m3, m4 */
 				lua_call(L, 5, 4);
+				/* s: c, mm1, mm2, mm3, mm4 */
 				mm1 = lua_tointeger(L, -4);
 				mm2 = lua_tointeger(L, -3);
 				mm3 = lua_tointeger(L, -2);
 				mm4 = lua_tointeger(L, -1);
 				lua_pop(L, 4);
+				/* s: c */
+
+				/**
+				**	if c.Width == "fill" then
+				**		mm3 = nil
+				**	elseif c.Width == "free" then
+				**		mm3 = ui.HUGE
+				**	end
+				**/
 
 				lua_getfield(L, -1, "Width");
+				/* s: c, c.Width */
 				s = lua_tostring(L, -1);
 				if (s)
 				{
@@ -745,7 +1158,16 @@ static int layout_askMinMax(lua_State *L)
 				}
 				lua_pop(L, 1);
 
+				/**
+				**	if c.Height == "fill" then
+				**		mm4 = nil
+				**	elseif c.Height == "free" then
+				**		mm4 = ui.HUGE
+				**	end
+				**/
+
 				lua_getfield(L, -1, "Height");
+				/* s: c, c.Height */
 				s = lua_tostring(L, -1);
 				if (s)
 				{
@@ -755,44 +1177,81 @@ static int layout_askMinMax(lua_State *L)
 						mm4 = TEKUI_HUGE;
 				}
 				lua_pop(L, 2);
+				/* s: tmm, minx, miny, maxx, maxy, children */
+
+				/**
+				**	mm3 = mm3 or ori == 2 and mm1
+				**	mm4 = mm4 or ori == 1 and mm2
+				**/
 
 				if (mm3 < 0 && ori == 2)
 					mm3 = mm1;
 				if (mm4 < 0 && ori == 1)
 					mm4 = mm2;
 
+				/**
+				**	minx[x] = max(minx[x] or 0, mm1)
+				**	miny[y] = max(miny[y] or 0, mm2)
+				**/
+
 				lua_rawgeti(L, -5, x);
+				/* s: tmm, minx, miny, maxx, maxy, children, minx[x] */
 				minxx = lua_isnil(L, -1) ? 0 : lua_tointeger(L, -1);
 				minxx = TMAX(minxx, mm1);
 				lua_pushinteger(L, minxx);
+				/* s: tmm, minx, miny, maxx, maxy, children, minx[x], minxx */
 				lua_rawseti(L, -7, x);
+				/* s: tmm, minx, miny, maxx, maxy, children, minx[x] */
 				lua_pop(L, 1);
+				/* s: tmm, minx, miny, maxx, maxy, children */
 
 				lua_rawgeti(L, -4, y);
+				/* s: tmm, minx, miny, maxx, maxy, children, miny[y] */
 				minyy = lua_isnil(L, -1) ? 0 : lua_tointeger(L, -1);
 				minyy = TMAX(minyy, mm2);
 				lua_pushinteger(L, minyy);
+				/* s: tmm, minx, miny, maxx, maxy, children, miny[y], minyy */
 				lua_rawseti(L, -6, y);
+				/* s: tmm, minx, miny, maxx, maxy, children, miny[y] */
 				lua_pop(L, 1);
+				/* s: tmm, minx, miny, maxx, maxy, children */
+
+				/**
+				**	if mm3 and (not maxx[x] or mm3 > maxx[x]) then
+				**		maxx[x] = max(mm3, minx[x])
+				**	end
+				**/
 
 				if (mm3 >= 0)
 				{
 					lua_rawgeti(L, -3, x);
+					/* s: tmm, minx, miny, maxx, maxy, children, maxx[x] */
 					if (lua_isnil(L, -1) || mm3 > lua_tointeger(L, -1))
 					{
 						lua_pushinteger(L, TMAX(mm3, minxx));
+						/* s: tmm, minx, miny, maxx, maxy, children, maxx[x], val */
 						lua_rawseti(L, -5, x);
+						/* s: tmm, minx, miny, maxx, maxy, children, maxx[x] */
 					}
 					lua_pop(L, 1);
 				}
 
+				/**
+				**	if mm4 and (not maxy[y] or mm4 > maxy[y]) then
+				**		maxy[y] = max(mm4, miny[y])
+				**	end
+				**/
+
 				if (mm4 >= 0)
 				{
 					lua_rawgeti(L, -2, y);
+					/* s: tmm, minx, miny, maxx, maxy, children, maxy[y] */
 					if (lua_isnil(L, -1) || mm4 > lua_tointeger(L, -1))
 					{
 						lua_pushinteger(L, TMAX(mm4, minyy));
+						/* s: tmm, minx, miny, maxx, maxy, children, maxy[y], val */
 						lua_rawseti(L, -4, y);
+						/* s: tmm, minx, miny, maxx, maxy, children, maxy[y] */
 					}
 					lua_pop(L, 1);
 				}
@@ -800,11 +1259,24 @@ static int layout_askMinMax(lua_State *L)
 			}
 		}
 
+		/* s: tmm, minx, miny, maxx, maxy, children */
 		lua_pop(L, 1);
+		/* s: tmm, minx, miny, maxx, maxy */
 		lua_rawseti(L, -5, 4);
 		lua_rawseti(L, -4, 3);
 		lua_rawseti(L, -3, 2);
 		lua_rawseti(L, -2, 1);
+		/* s: tmm */
+
+		/**
+		**	local gs = gw
+		**	for i1 = 1, 2 do
+		**		local i3 = i1 + 2
+		**		local ss = group:getSameSize(i1)
+		**		local numfree = 0
+		**		local remainder = 0
+		**		for n = 1, gs do
+		**/
 
 		gs = gw;
 		for (i1 = 1; i1 <= 2; i1++)
@@ -818,12 +1290,30 @@ static int layout_askMinMax(lua_State *L)
 
 			for (n = 1; n <= gs; ++n)
 			{
+				/**
+				**	local mins = tmm[i1][n] or 0
+				**	local maxs = tmm[i3][n]
+				**	if ss then
+				**		if not maxs or (maxs > mins) then
+				**			numfree = numfree + 1
+				**		else
+				**			remainder = remainder + mins
+				**		end
+				**		m[i1] = max(m[i1], mins)
+				**	else
+				**		m[i1] = m[i1] + mins
+				**	end
+				**/
+
+				/* s: tmm */
 				lua_rawgeti(L, -1, i1);
 				lua_rawgeti(L, -1, n);
+				/* s: tmm, tmm[i1], tmm[i1][n] */
 				mins = lua_tointeger(L, -1);
 				lua_rawgeti(L, -3, i3);
 				lua_rawgeti(L, -1, n);
 				maxs = lua_isnil(L, -1) ? -1 : lua_tointeger(L, -1);
+				/* s: tmm, tmm[i1], tmm[i1][n], tmm[i3], tmm[i3][n] */
 				
 				if (ss)
 				{
@@ -836,20 +1326,46 @@ static int layout_askMinMax(lua_State *L)
 				else
 					m[i1] += mins;
 				
+				/**
+				**	if maxs then
+				**		maxs = max(maxs, mins)
+				**		tmm[i3][n] = maxs
+				**		m[i3] = (m[i3] or 0) + maxs
+				**	elseif ori == i1 then
+				**		m[i3] = (m[i3] or 0) + mins
+				**	end
+				**/
+
 				if (maxs >= 0)
 				{
 					maxs = TMAX(maxs, mins);
 					lua_pushinteger(L, maxs);
+					/* s: tmm, tmm[i1], tmm[i1][n], tmm[i3], tmm[i3][n], val */
 					lua_rawseti(L, -3, n);
+					/* s: tmm, tmm[i1], tmm[i1][n], tmm[i3], tmm[i3][n] */
 					m[i3] = TMAX(m[i3], 0) + maxs;
 				}
 				else if (ori == i1)
 				{
+					/* if on primary axis, we must reserve at least min: */
 					m[i3] = TMAX(m[i3], 0) + mins;
 				}
 				
 				lua_pop(L, 4);
 			}
+
+			/**
+			**	if ss then
+			**		if numfree == 0 then
+			**			m[i1] = m[i1] * gs
+			**		else
+			**			m[i1] = m[i1] * numfree + remainder
+			**		if m[i3] and m[i1] > m[i3] then
+			**			m[i3] = m[i1]
+			**		end
+			**	end
+			**	gs = gh
+			**/
 
 			if (ss)
 			{
@@ -863,6 +1379,7 @@ static int layout_askMinMax(lua_State *L)
 			gs = gh;
 		}
 
+		/* s: tmm */
 		lua_pop(L, 1);
 	}
 
@@ -878,16 +1395,26 @@ static int layout_askMinMax(lua_State *L)
 
 static int layout_new(lua_State *L)
 {
-	lua_pushvalue(L, lua_upvalueindex(1));
+	lua_getglobal(L, "require");
+	/* s: <require> */
+	lua_pushliteral(L, SUPERCLASS_NAME);
+	/* s: <require>, "superclass" */
+	lua_call(L, 1, 1);
+	/* s: Layout */
 	lua_getfield(L, -1, "new");
+	/* s: Layout, Layout.new */
 	lua_remove(L, -2);
+	/* s: Layout.new */
 	lua_pushvalue(L, 1);
+	/* s: Layout.new, class */
 	lua_pushvalue(L, 2);
+	/* s: Layout.new, class, self */
 	lua_newtable(L);
 	lua_setfield(L, -2, "TempMinMax");
 	lua_newtable(L);
 	lua_setfield(L, -2, "Weights");
 	lua_call(L, 2, 1);
+	/* s: self */
 	return 1;
 }
 
@@ -910,26 +1437,19 @@ TMODENTRY int luaopen_tek_ui_layout_default(lua_State *L)
 	/* s: <require>, "superclass" */
 	lua_call(L, 1, 1);
 	/* s: superclass */
-	lua_pushvalue(L, -1);
-	/* s: superclass, superclass */
-	lua_getglobal(L, "require");
-	/* s: superclass, superclass, <require> */
-	lua_pushliteral(L, SUPERCLASS_NAME);
-	/* s: superclass, superclass, <require>, "superclass" */
-	lua_call(L, 1, 1);
-	/* s: superclass, superclass, Layout: */
-	lua_pushstring(L, TEK_UI_CLASS_LAYOUT_DEFAULT_VERSION);
-	lua_setfield(L, -2, "_VERSION");
-	/* s: superclass, superclass, Layout - Layout is upvalue: */
-	luaI_openlib(L, CLASS_NAME, tek_ui_layout_default_funcs, 1);
-	/* s: superclass, superclass, class */
-	lua_call(L, 1, 1);
+	lua_getfield(L, -1, "newClass");
+	/* s: superclass, <newClass> */
+	lua_pushvalue(L, -2);
+	/* s: superclass, <newClass>, superclass */
+#if LUA_VERSION_NUM < 502
+	luaL_register(L, CLASS_NAME, tek_ui_layout_default_funcs);
+#else
+	luaL_newlib(L, tek_ui_layout_default_funcs);
+#endif
+	/* s: superclass, <newClass>, superclass, class */
+	lua_call(L, 2, 1); /* class = superclass.newClass(superclass, class) */
 	/* s: superclass, class */
 	luaL_newmetatable(L, CLASS_NAME "*");
-	/* s: superclass, class, meta */
-	lua_getfield(L, -3, "newClass");
-	/* s: superclass, class, meta, <newClass> */
-	lua_setfield(L, -2, "__call");
 	/* s: superclass, class, meta */
 	lua_pushvalue(L, -3);
 	/* s: superclass, class, meta, superclass */
@@ -937,6 +1457,7 @@ TMODENTRY int luaopen_tek_ui_layout_default(lua_State *L)
 	/* s: superclass, class, meta */
 	lua_setmetatable(L, -2);
 	/* s: superclass, class */
-	lua_pop(L, 2);
-	return 0;
+	lua_remove(L, -2);
+	/* s: class */
+	return 1;
 }

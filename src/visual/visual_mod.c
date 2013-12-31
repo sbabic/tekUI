@@ -62,6 +62,8 @@ vis_vectors[VISUAL_NUMVECTORS] =
 	(TMFPTR) vis_closedisplay,
 	(TMFPTR) vis_querydisplays,
 	(TMFPTR) vis_getnextdisplay,
+	
+	(TMFPTR) vis_getselection,
 };
 
 static void

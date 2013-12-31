@@ -92,9 +92,10 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local uisupport = require "tek.ui.support"
+local support = require "tek.lib.support"
 local Region = require "tek.lib.region"
 local Object = require "tek.class.object"
+local String = require "tek.lib.string"
 local arg = arg
 local assert = assert
 local error = error
@@ -102,7 +103,7 @@ local floor = math.floor
 local getenv = os.getenv
 local getmetatable = getmetatable
 local insert = table.insert
-local loadstring = loadstring
+local loadstring = loadstring or load
 local open = io.open
 local package = package
 local pairs = pairs
@@ -118,7 +119,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 34.1"
+_VERSION = "tekUI 40.4"
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
@@ -145,7 +146,7 @@ LocalPath = ProgDir and ProgDir .. "?.lua;" .. OldPath or OldPath
 LocalCPath = ProgDir and ProgDir .. "?.so;" .. OldCPath or OldCPath
 
 -- Name of the Default Theme:
-ThemeName = getenv("THEME") or "default desktop"
+ThemeName = getenv("THEME") or "desktop"
 -- Open in fullscreen mode by default?:
 FullScreen = getenv("FULLSCREEN")
 FullScreen = FullScreen or false
@@ -155,10 +156,22 @@ NoCursor = getenv("NOCURSOR") == "true"
 ShortcutMark = "_"
 
 -------------------------------------------------------------------------------
+--	checkAnyFlags: Check presence of flags
+-------------------------------------------------------------------------------
+
+checkAnyFlags = support.checkAnyFlags
+
+-------------------------------------------------------------------------------
 --	newFlags: Support for flag fields
 -------------------------------------------------------------------------------
 
-newFlags = uisupport.newFlags
+newFlags = support.newFlags
+
+-------------------------------------------------------------------------------
+--	copyTable: create copy of a table
+-------------------------------------------------------------------------------
+
+copyTable = support.copyTable
 
 -------------------------------------------------------------------------------
 --	class = ui.loadClass(realm, classname[, min_version]):
@@ -285,7 +298,7 @@ end
 -------------------------------------------------------------------------------
 
 function loadImage(fname)
-	local img, w, h, trans = Display.getPixmap(fname)
+	local img, w, h, trans = Display.getPaint("url("..fname..")")
 	if img then
 		return Image:new { img, w, h, trans }
 	end
@@ -548,7 +561,10 @@ local matchkeys =
 {
 	["background-image"] =
 	{
-		{ "^url%b()", function(p, k, r, a) p[r] = a end, "background-color" }
+		{ "^url%b()", function(p, k, r, a) 
+			p[r] = a end, "background-color" },
+		{ "^gradient%b()", function(p, k, r, a) 
+			p[r] = a end, "background-color" },
 	},
 	["padding"] =
 	{
@@ -625,6 +641,7 @@ end
 
 function loadStyleSheet(file)
 	local fh, msg
+	db.info("loadstylesheet: '%s'", file)
 	if type(file) == "string" then
 		fh, msg = openUIPath(("tek/ui/style/%s.css"):format(file))
 		if not fh then
@@ -724,7 +741,7 @@ function loadStyleSheet(file)
 		end
 	end
 	if fh ~= file then
-		f:close()
+		fh:close()
 	end
 	return false, ("line %s : syntax error"):format(line)
 end
@@ -886,7 +903,7 @@ KeyAliases =
 	["Right"] = { 0xf011 },
 	["Up"] = { 0xf012 },
 	["Down"] = { 0xf013 },
-	["BackSpc"] = { 0x0008 },
+	["BckSpc"] = { 0x0008 },
 	["Tab"] = { 0x0009 },
 	["Esc"] = { 0x001b },
 	["Insert"] = { 0xf021 },
@@ -909,7 +926,8 @@ local function addqual(key, quals, s)
 	local a = KeyAliases[s]
 	if a then
 		if a[1] ~= 0 then
-			key = a[1]
+			key = String.encodeutf8(a[1])
+			
 		end
 		local n = #quals
 		for i = 3, #a do
@@ -931,14 +949,18 @@ end
 function resolveKeyCode(code)
 	local quals, key = { 0 }, ""
 	local ignorecase
+	local have_shift_already
 	for s in ("+" .. code):gmatch("%+(.[^+]*)") do
 		if s == "IgnoreCase" or s == "IgnoreAltShift" then
 			ignorecase = true
+		elseif s == "Shift" then
+			have_shift_already = true
 		end
 		key = addqual(key, quals, s)
 	end
 	local lkey = key:lower()
-	if not ignorecase and key == key:upper() and key ~= lkey then
+	if not ignorecase and key == key:upper() and key ~= lkey and
+		not have_shift_already then
 		addqual(lkey, quals, "Shift")
 	end
 	return lkey, quals
@@ -989,27 +1011,32 @@ NOTIFY_COROUTINE = Element.NOTIFY_COROUTINE
 --	Message types:
 -------------------------------------------------------------------------------
 
-MSG_CLOSE       = 0x0001
-MSG_FOCUS       = 0x0002
-MSG_NEWSIZE     = 0x0004
-MSG_REFRESH     = 0x0008
-MSG_MOUSEOVER   = 0x0010
-MSG_KEYDOWN     = 0x0100
-MSG_MOUSEMOVE   = 0x0200
-MSG_MOUSEBUTTON = 0x0400
-MSG_INTERVAL    = 0x0800
-MSG_KEYUP       = 0x1000
-MSG_USER        = 0x2000
-MSG_ALL         = 0x171f -- all, not including MSG_INTERVAL
+MSG_CLOSE        = 0x0001
+MSG_FOCUS        = 0x0002
+MSG_NEWSIZE      = 0x0004
+MSG_REFRESH      = 0x0008
+MSG_MOUSEOVER    = 0x0010
+MSG_KEYDOWN      = 0x0100
+MSG_MOUSEMOVE    = 0x0200
+MSG_MOUSEBUTTON  = 0x0400
+MSG_INTERVAL     = 0x0800
+MSG_KEYUP        = 0x1000
+MSG_USER         = 0x2000
+MSG_REQSELECTION = 0x4000
+MSG_ALL          = 0x571f -- not including MSG_USER, MSG_INTERVAL
 
 -------------------------------------------------------------------------------
 --	Flags:
 -------------------------------------------------------------------------------
 
-FL_LAYOUT		= 0x0001
-FL_REDRAW		= 0x0002
-FL_REDRAWBORDER = 0x0004
-FL_SETUP		= 0x0008
-FL_SHOW			= 0x0010
-FL_CHANGED		= 0x0020
-FL_POPITEM      = 0x0040
+FL_LAYOUT        = 0x0001
+FL_REDRAW        = 0x0002
+FL_REDRAWBORDER  = 0x0004
+FL_SETUP         = 0x0008
+FL_SHOW          = 0x0010
+FL_CHANGED       = 0x0020
+FL_POPITEM       = 0x0040
+FL_UPDATE        = 0x0080 -- window
+FL_RECVINPUT     = 0x0100
+FL_RECVMOUSEMOVE = 0x0200
+FL_CURSORFOCUS   = 0x0400 -- element can receive the focus using cursor keys

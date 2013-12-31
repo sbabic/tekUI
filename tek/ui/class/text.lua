@@ -41,19 +41,28 @@
 --		A font is specified in the form
 --				"[fontname1,fontname2,...][:][size]"
 --		Font names, if specified, will be probed in the order of their
---		occurrence in the string; the first font that can be opened will 
---		be used. For the font names, the following predefined named are
---		supported:
+--		occurrence; the first font that can be opened will  be used. For
+--		the font name, the following predefined names are supported:
+--			* ''ui-main'' (or an empty string) - The default font,
+--			e.g. for buttons
 --			* ''ui-fixed'' - The default fixed font
---			* ''ui-main'' (or an empty string) - The default main font,
---			e.g. for buttons and menus
+--			* ''ui-menu'' - The default menu font
 --			* ''ui-small'' - The default small font, e.g. for group
 --			captions
+--			* ''ui-x-small'' - The default 'extra small' font
+--			* ''ui-xx-small'' - The default 'extra extra small' font
 --			* ''ui-large'' - The default 'large' font
---			* ''ui-huge'' - The default 'huge' font
+--			* ''ui-x-large'' - The default 'extra large' font
+--			* ''ui-xx-large'' - The default 'extra extra large' font
 --		If no font name is specified, the main font will be used.
---		The size specification (in pixels) is optional as well; if absent,
+--		The size specification (in pixels) is optional; if absent,
 --		the respective font's default size will be used.
+--
+--		Additional hints can be passed alongside with the fontname by appending
+--		a slash and option letters, which must be in alphabetical order.
+--		Currently, the letter {{b}} will be used as a hint for boldface, and
+--		{{i}} for italic. For example, the string {{"ui-main/bi"}} would
+--		request the default main font in bold italic.
 --
 --	IMPLEMENTS::
 --		- Text:getTextSize() - Gets the total extents of all text records
@@ -84,14 +93,17 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.widget)
-_VERSION = "Text 28.0"
+_VERSION = "Text 28.3"
 local Text = _M
+Widget:newClass(Text)
 
 -------------------------------------------------------------------------------
 --	constants & class data:
 -------------------------------------------------------------------------------
 
 local FL_CHANGED = ui.FL_CHANGED
+local FL_SETUP = ui.FL_SETUP
+local FL_REDRAW = ui.FL_REDRAW
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -233,7 +245,7 @@ end
 
 function Text:layout(x0, y0, x1, y1, markdamage)
 	local res = Widget.layout(self, x0, y0, x1, y1, markdamage)
-	if self.Flags:checkClear(FL_CHANGED) or res then
+	if self:checkClearFlags(FL_CHANGED) or res then
 		self:layoutText()
 	end
 	return res
@@ -324,7 +336,7 @@ end
 function Text:setTextRecord(pos, ...)
 	local record, keycode = self:newTextRecord(...)
 	self.TextRecords[pos] = record
-	self.Flags:set(FL_CHANGED)
+	self:setFlags(FL_CHANGED)
 	return record, keycode
 end
 
@@ -344,22 +356,24 @@ end
 -------------------------------------------------------------------------------
 
 function Text:makeTextRecords(text)
-	local props = self.Properties
-	text = text or ""
-	local tr = { }
-	self.TextRecords = tr
-	local y, nl = 0, 0
-	local font = self.Application.Display:openFont(props["font"])
-	for line in (text .. "\n"):gmatch("([^\n]*)\n") do
-		local r = self:addTextRecord(line, font, props["text-align"],
-			props["vertical-align"], 0, y, 0, 0)
-		y = y + r[10]
-		nl = nl + 1
-	end
-	y = 0
-	for i = nl, 1, -1 do
-		tr[i][8] = y
-		y = y + tr[i][10]
+	if self:checkFlags(FL_SETUP) then
+		local props = self.Properties
+		text = text or ""
+		local tr = { }
+		self.TextRecords = tr
+		local y, nl = 0, 0
+		local font = self.Application.Display:openFont(props["font"])
+		for line in (text .. "\n"):gmatch("([^\n]*)\n") do
+			local r = self:addTextRecord(line, font, props["text-align"],
+				props["vertical-align"], 0, y, 0, 0)
+			y = y + r[10]
+			nl = nl + 1
+		end
+		y = 0
+		for i = nl, 1, -1 do
+			tr[i][8] = y
+			y = y + tr[i][10]
+		end
 	end
 end
 
@@ -370,7 +384,7 @@ end
 
 function Text:onSetText()
 	self:makeTextRecords(self.Text)
-	self.Flags:set(ui.FL_REDRAW)
+	self:setFlags(FL_REDRAW)
 	local resizeable = not self.KeepMinWidth
 	self:rethinkLayout(resizeable and 1 or 0, resizeable)
 end

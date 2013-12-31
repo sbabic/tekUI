@@ -59,18 +59,20 @@ local Group = ui.require("group", 31)
 local Region = ui.loadLibrary("region", 10)
 local ScrollBar = ui.require("scrollbar", 13)
 
+local assert = assert
 local floor = math.floor
 local insert = table.insert
 local intersect = Region.intersect
 local max = math.max
 local min = math.min
 local remove = table.remove
-local unpack = unpack
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 17.1"
-
+_VERSION = "ScrollGroup 18.3"
 local ScrollGroup = _M
+Group:newClass(ScrollGroup)
+
+local FL_DRAW = ui.FL_SETUP + ui.FL_SHOW + ui.FL_LAYOUT
 
 -------------------------------------------------------------------------------
 --	new:
@@ -79,11 +81,12 @@ local ScrollGroup = _M
 function ScrollGroup.new(class, self)
 	self = self or { }
 	
+	assert(self.Child)
+	
 	if self.AcceptFocus == nil then
 		self.AcceptFocus = true
 	end
 	self.BlitList = { }
-	self.Orientation = "vertical"
 	self.HMax = -1
 	self.HRange = -1
 	self.HSliderEnabled = false
@@ -94,7 +97,10 @@ function ScrollGroup.new(class, self)
 	self.NotifyLeft = { self, "onSetCanvasLeft", NOTIFY_VALUE }
 	self.NotifyTop = { self, "onSetCanvasTop", NOTIFY_VALUE }
 	self.NotifyWidth = { self, "onSetCanvasWidth", NOTIFY_VALUE }
-	self.ScrollStep = self.ScrollStep or 10
+	self.Orientation = "horizontal"
+	self.Increment = self.Increment or 10
+	self.HIncrement = self.HIncrement or self.Increment
+	self.VIncrement = self.VIncrement or self.Increment
 	self.VMax = -1
 	self.VRange = -1
 	self.VSliderEnabled = false
@@ -109,7 +115,8 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "horizontal",
 			Min = 0,
-			Step = self.ScrollStep,
+			Increment = self.HIncrement,
+			Step = 1,
 			AcceptFocus = self.AcceptFocus
 		}
 		self.HSliderGroup = hslider
@@ -121,26 +128,22 @@ function ScrollGroup.new(class, self)
 		{
 			Orientation = "vertical",
 			Min = 0,
-			Step = self.ScrollStep,
+			Increment = self.VIncrement,
+			Step = 1,
 			AcceptFocus = self.AcceptFocus
 		}
 		self.VSliderGroup = vslider
 		self.VSliderEnabled = true
 	end
-
-	self.Children =
-	{
-		Group:new
-		{
-			Children =
-			{
-				self.Child,
-				vslider
-			}
-		},
-		hslider,
-	}
-
+	
+	self.Children = { self.Child, vslider }
+	self.HGroup = self
+	if self.HSliderMode ~= "off" then
+		self.Orientation = "vertical"
+		self.HGroup = Group:new { Children = self.Children }
+		self.Children = { self.HGroup, hslider }
+	end
+	
 	return Group.new(class, self)
 end
 
@@ -228,10 +231,10 @@ end
 function ScrollGroup:enableVSlider(onoff)
 	local enabled = self.VSliderEnabled
 	if onoff and not enabled then
-		self.Children[1]:addMember(self.VSliderGroup, 2)
+		self.HGroup:addMember(self.VSliderGroup, 2)
 		enabled = true
 	elseif not onoff and enabled then
-		self.Children[1]:remMember(self.VSliderGroup, 2)
+		self.HGroup:remMember(self.VSliderGroup, 2)
 		enabled = false
 	end
 	self.VSliderEnabled = enabled
@@ -334,6 +337,7 @@ function ScrollGroup:onSetCanvasTop(y)
 		end
 		if dy ~= 0 then
 			insert(self.BlitList, { 0, dy })
+			self:setFlags(ui.FL_REDRAW)
 		end
 	end
 end
@@ -385,11 +389,12 @@ function ScrollGroup:draw()
 		dx = dx + c[1]
 		dy = dy + c[2]
 	end
-
-	if dx ~=0 or dy ~= 0 then
-
+	
+	local canvas = self.Child
+	-- we have observed a child element not being ready for drawing:
+	if (dx ~= 0 or dy ~= 0) and canvas:checkFlags(FL_DRAW) then
+		
 		-- determine own and parent canvas:
-		local canvas = self.Child
 		local parent = cs[#cs - 1] or cs[1]
 
 		-- calc total canvas shift for self and parent:
@@ -401,7 +406,7 @@ function ScrollGroup:draw()
 			ax = ax + r1 - cs[i].CanvasLeft
 			ay = ay + r2 - cs[i].CanvasTop
 		end
-
+		
 		-- get intersection between self and parent:
 		local a1, a2, a3, a4 = canvas:getRect()
 		local b1, b2, b3, b4 = parent:getRect()

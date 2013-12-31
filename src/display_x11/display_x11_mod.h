@@ -142,10 +142,10 @@ struct XftInterface
 {
 	XftFont *(*XftFontOpen)(Display *dpy, int screen, ...);
 	void (*XftFontClose)(Display *dpy, XftFont *pub);
-	void (*XftTextExtentsUtf8)(Display *dpy, XftFont *pub, _Xconst FcChar8 *string,
-		int len, XGlyphInfo *extents);
-	void (*XftDrawStringUtf8)(XftDraw *draw, _Xconst XftColor *color, XftFont *pub,
-		int x, int y, _Xconst FcChar8  *string, int len);
+	void (*XftTextExtentsUtf8)(Display *dpy, XftFont *pub,
+		_Xconst FcChar8 *string, int len, XGlyphInfo *extents);
+	void (*XftDrawStringUtf8)(XftDraw *draw, _Xconst XftColor *color, 
+		XftFont *pub, int x, int y, _Xconst FcChar8  *string, int len);
 	void (*XftDrawRect)(XftDraw *draw, _Xconst XftColor *color, int x, int y,
 		unsigned int width, unsigned int height);
 	FT_Face (*XftLockFace)(XftFont *pub);
@@ -214,9 +214,13 @@ typedef struct
 	int x11_Screen;
 	/* default X11 visual: */
 	Visual *x11_Visual;
+	
+	TAPTR x11_IReplyPort;
+	TUINT x11_IReplyPortSignal;	
+	struct THook x11_IReplyHook;
 
-	TUINT x11_Flags;
-	TUINT x11_PixFmt;
+	TUINT x11_RGBOrder;
+	TUINT x11_DstFmt;	/* depth<<8 | rgborder<<1 | swap */
 	TINT x11_Depth, x11_BPP;
 
 	int x11_fd_display;
@@ -253,6 +257,9 @@ typedef struct
 	TUINT8 x11_utf8buffer[X11_UTF8_BUFSIZE];
 
 	Cursor x11_NullCursor;
+	#if defined(ENABLE_DEFAULTCURSOR)
+	Cursor x11_DefaultCursor;
+	#endif
 
 	TTAGITEM *x11_InitTags;
 	struct TMsgPort *x11_IMsgPort;
@@ -261,9 +268,20 @@ typedef struct
 	TINT x11_FullScreenHeight;
 	TBOOL x11_FullScreen;
 	
+	Atom x11_XA_TARGETS;
+	Atom x11_XA_PRIMARY;
+	Atom x11_XA_CLIPBOARD;
+	Atom x11_XA_UTF8_STRING;
+	Atom x11_XA_STRING;
+	Atom x11_XA_COMPOUND_TEXT;
+	
 	#if defined(ENABLE_XVID)
 	XF86VidModeModeInfo x11_OldMode;
 	XF86VidModeModeInfo x11_VidMode;
+	#endif
+
+	#if defined(ENABLE_DGRAM)
+	int x11_UserFD;
 	#endif
 
 } X11DISPLAY;
@@ -323,6 +341,8 @@ typedef struct
 	TTAG userdata;
 	
 	TBOOL changevidmode;
+	
+	size_t shmsize;
 
 } X11WINDOW;
 
@@ -335,18 +355,6 @@ struct attrdata
 	TBOOL sizechanged;
 	TINT neww, newh;
 };
-
-/*****************************************************************************/
-
-#define TVISF_SWAPBYTEORDER	0x00000001
-
-#define PIXFMT_UNDEFINED	0
-#define PIXFMT_RGB			1
-#define PIXFMT_RBG			2
-#define PIXFMT_BRG			3
-#define PIXFMT_BGR			4
-#define PIXFMT_GRB			5
-#define PIXFMT_GBR			6
 
 /*****************************************************************************/
 
@@ -403,5 +411,7 @@ LOCAL THOOKENTRY TTAG x11_hostgetfattrfunc(struct THook *hook, TAPTR obj,
 LOCAL TTAGITEM *x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle);
 LOCAL TSTRPTR x11_utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len,
 	TINT *bytelen);
+
+LOCAL void x11_getselection(X11DISPLAY *mod, struct TVRequest *req);
 
 #endif /* _TEK_DISPLAY_X11_MOD_H */

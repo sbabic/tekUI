@@ -481,6 +481,7 @@ dfb_drawbuffer(DFBDISPLAY *mod, struct TVRequest *req)
 	TINT xd = req->tvr_Op.DrawBuffer.RRect[0];
 	TINT yd = req->tvr_Op.DrawBuffer.RRect[1];
 	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
+	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
 	IDirectFBSurface *surface = NULL;
 	DFBSurfaceDescription dsc;
 	DFBRectangle rect = { 0, 0, w, h };
@@ -491,7 +492,7 @@ dfb_drawbuffer(DFBDISPLAY *mod, struct TVRequest *req)
 	dsc.height = h;
 	dsc.pixelformat = DSPF_RGB32;
 	dsc.preallocated[0].data = buf;
-	dsc.preallocated[0].pitch = w * DFB_BYTES_PER_PIXEL(DSPF_RGB32);
+	dsc.preallocated[0].pitch = totw * DFB_BYTES_PER_PIXEL(DSPF_RGB32);
 
 	if (mod->dfb_DFB->CreateSurface(mod->dfb_DFB, &dsc, &surface) == DFB_OK)
 	{

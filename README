@@ -295,6 +295,9 @@ this writing) are given below:
  * MinGW (for the Windows platform)
  * microwindows-0.91 (for the Nano-X driver)
 
+Lua 5.1 and 5.2 are supported out of the box, if Lua 5.2 is compiled
+with {{LUA_COMPAT_MODULE}}.
+ 
 LibXft and fontconfig are needed for building the x11 driver, but
 tekUI falls back to the core X11 API if they are unavailable at
 runtime. In addition to that, for the documentation system and the
@@ -415,8 +418,9 @@ conveniently invoked with
  fullscreen mode. Fullscreen support varies and depends largely on
  the display driver in use.
  * {{THEME}} - Theme names corresponding to style sheet files in
- {{tek/ui/style/}}. Multiple themes can be separated by spaces.
- The default is {{"default desktop"}}. The ''desktop'' theme tries
+ {{tek/ui/style/}}. Multiple themes can be separated by spaces,
+ e.g. {{"desktop gradient"}}.
+ The default is {{"desktop"}}. The ''desktop'' theme tries
  to import the color scheme found in a GTK2 configuration file.
  * {{GTK2_RC_FILES}} - Possible locations of a gtkrc-2.0
  configuration file.
@@ -665,7 +669,6 @@ Widget:onFocus()          || [[manual.html#tek.ui.class.widget : Widget]]       
 Window:onHide()           || [[manual.html#tek.ui.class.window : Window]]         || window close button, Escape key
 Widget:onHilite()         || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hilite}} attribute¹
 Widget:onHold()           || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hold}} attribute¹
-Widget:onHover()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hover}} attribute¹
 Widget:onPress()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Pressed}} attribute¹
 Widget:onSelect()         || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Selected}} attribute¹
 DirList:onSelectEntry()   || [[manual.html#tek.ui.class.dirlist : DirList]]       || item selected by the user

@@ -35,7 +35,7 @@ local scrollbar2 = ui.ScrollBar:new
 	Width = "free",
 	Min = 0,
 	Max = 10,
-	Integer = true
+	Step = 1
 }
 
 scrollbar2:addNotify("Value", ui.NOTIFY_ALWAYS, { ui.NOTIFY_ID, 
@@ -52,7 +52,7 @@ local scrollbar3 = ui.ScrollBar:new
 	Width = "free",
 	Min = 10,
 	Max = 20,
-	Integer = true,
+	Step = 1,
 }
 
 scrollbar3:addNotify("Value", ui.NOTIFY_ALWAYS, { ui.NOTIFY_ID, 
@@ -66,7 +66,8 @@ local slider1 = ui.Slider:new
 {
 	Id = "slider-1",
 	Orientation = "vertical",
-	Step = 5,
+	Increment = 5,
+	Max = 100,
 }
 
 slider1:addNotify("Value", ui.NOTIFY_ALWAYS,
@@ -76,7 +77,8 @@ local slider2 = ui.Slider:new
 {
 	Id = "slider-2",
 	Orientation = "vertical",
-	Step = 5
+	Increment = 5,
+	Max = 100,
 }
 
 slider2:addNotify("Value", ui.NOTIFY_ALWAYS,
@@ -85,7 +87,8 @@ slider2:addNotify("Value", ui.NOTIFY_ALWAYS,
 local slider3 = ui.Slider:new
 {
 	Id = "slider-7",
-	Step = 5
+	Increment = 5,
+	Max = 100,
 }
 
 slider3:addNotify("Value", ui.NOTIFY_ALWAYS,
@@ -97,7 +100,8 @@ local slider4 = ui.Slider:new
 {
 	Id = "slider-5",
 	Orientation = "vertical",
-	Step = 5
+	Increment = 5,
+	Max = 100,
 }
 
 slider4:addNotify("Value", ui.NOTIFY_ALWAYS,
@@ -107,7 +111,8 @@ local slider5 = ui.Slider:new
 {
 	Id = "slider-6",
 	Orientation = "vertical",
-	Step = 5
+	Increment = 5,
+	Max = 100,
 }
 
 slider5:addNotify("Value", ui.NOTIFY_ALWAYS,
@@ -208,10 +213,12 @@ local window = ui.Window:new
 								Gauge:new
 								{
 									Id = "gauge-2",
+									Max = 100,
 								},
 								Gauge:new
 								{
 									Id = "gauge-3",
+									Max = 100,
 								}
 							}
 						}

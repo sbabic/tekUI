@@ -32,7 +32,7 @@ local insert = table.insert
 local remove = table.remove
 local sort = table.sort
 
-local VERSION = "1.1"
+local VERSION = "1.2"
 
 local RULE = "-------------------------------------------------------------------------------"
 local PAGE = "==============================================================================="
@@ -248,13 +248,13 @@ function processfile(state, fname)
 			if not classname then
 				local p, n, b =
 					line:match(
-						'^%s*module%s*%(%s*"([%w.]*)%.([%w]+)"%s*,%s*([%w.]+)%s*%)')
+						'^%-*%s*module%s*%(%s*"([%w.]*)%.([%w]+)"%s*,%s*([%w.]+)%s*%)')
 				if p and n then
 					classname = p .. "." .. n
 					shortname = n
 					superclass = b
 				else
-					local p, n = line:match('^%s*module%s*"([%w.]*)%.([%w]+)"')
+					local p, n = line:match('^%-*%s*module%s*"([%w.]*)%.([%w]+)"')
 					if p and n then
 						classname = p .. "." .. n
 						shortname = n

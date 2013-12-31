@@ -79,7 +79,7 @@ app = ui.Application:new
 {
 	ProgramName = "tekUI Demo",
 	Author = "Timm S. Müller",
-	Copyright = "Copyright © 2008-2010, Schulze-Müller GbR",
+	Copyright = "Copyright © 2008-2013, Schulze-Müller GbR",
 	ApplicationId = APP_ID,
 	Domain = VENDOR,
 	Children =
@@ -174,7 +174,7 @@ app = ui.Application:new
 														{ { "ProgramName", "tekUI Demo" } },
 														{ { "Version", "1.0" } },
 														{ { "Author", "Timm S. Müller" } },
-														{ { "Copyright", "© 2008, 2009, Schulze-Müller GbR" } },
+														{ { "Copyright", "© 2008-2013, Schulze-Müller GbR" } },
 													}
 												}
 											}
@@ -304,7 +304,7 @@ app = ui.Application:new
 															Width = "free",
 															Min = 1,
 															Max = 300,
-															Integer = true,
+															Step = 1,
 															Kind = "number",
 															show = function(self, display, drawable)
 																ui.ScrollBar.show(self, display, drawable)
@@ -337,7 +337,7 @@ app = ui.Application:new
 															Width = "free",
 															Min = 1,
 															Max = 300,
-															Integer = true,
+															Step = 1,
 															Kind = "number",
 															show = function(self, display, drawable)
 																ui.ScrollBar.show(self, display, drawable)
@@ -447,6 +447,9 @@ app = ui.Application:new
 		{
 			Id = "window-main",
 			HideOnEscape = true,
+			MinWidth = 0, MinHeight = 0,
+			Width = 800, Height = 600,
+			MaxWidth = ui.HUGE, MaxHeight = ui.HUGE,
 
 			onHide = function(self)
 				local app = self.Application
@@ -524,7 +527,7 @@ app = ui.Application:new
 				ui.Text:new
 				{
 					Text = L.TEKUI_DEMO,
-					Style = "font: ui-large"
+					Style = "font: ui-xx-large/bi"
 				},
 				ui.Group:new
 				{

@@ -106,4 +106,7 @@
 #define TVisualGetNextDisplay(visual,handle) \
 	(*(((TMODCALL TTAGITEM *(**)(TAPTR,TAPTR))(visual))[-41]))(visual,handle)
 
+#define TVisualGetSelection(visual,tags) \
+	(*(((TMODCALL TAPTR *(**)(TAPTR,TTAGITEM *))(visual))[-42]))(visual,tags)
+
 #endif /* _TEK_STDCALL_VISUAL_H */

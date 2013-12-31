@@ -8,6 +8,7 @@ local newregion = Region.new
 module("tek.ui.class.border", tek.ui.class.drawhook)
 _VERSION = "Border 7.3"
 local Border = _M
+DrawHook:newClass(Border)
 
 function Border.init(self)
 	self.Border = self.Border or false

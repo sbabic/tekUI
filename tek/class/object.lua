@@ -26,7 +26,7 @@
 
 local Class = require "tek.class"
 local db = require "tek.lib.debug"
-
+local support = require "tek.lib.support" -- comment out to use pure Lua
 local assert = assert
 local error = error
 local insert = table.insert
@@ -37,11 +37,12 @@ local remove = table.remove
 local select = select
 local setmetatable = setmetatable
 local type = type
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.class.object", tek.class)
-_VERSION = "Object 13.0"
+_VERSION = "Object 14.1"
 local Object = _M
+Class:newClass(Object)
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -207,11 +208,11 @@ end
 ------------------------------------------------------------------------------
 
 local copytable
-
-function copytable(src, dst, depth)
+copytable = support and support.copyTable or 
+function (src, dst)
 	for key, val in pairs(src) do
-		if type(val) == "table" and depth < 3 then
-			val = copytable(val, { }, depth + 1)
+		if type(val) == "table" then
+			val = copytable(val, { })
 		end
 		dst[key] = val
 	end
@@ -229,9 +230,9 @@ function Object:addNotify(attr, val, dest)
 	assert(dest)
 	local n = self.Notifications
 	if not pcall(p_addnotify, n, attr, val, dest) then
--- 		db.warn("copy on write notifications : %s.%s=%s",
--- 			self:getClassName(), attr, val)
-		n = copytable(n, { }, 0)
+ 		db.trace("copy on write notifications : %s.%s=%s",
+			self:getClassName(), attr, val)
+		n = copytable(n, { })
 		self.Notifications = n
 		p_addnotify(n, attr, val, dest)
 	end

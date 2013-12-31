@@ -10,8 +10,8 @@ local type = type
 
 module("tek.ui.hook.ripple", tek.ui.class.drawhook)
 _VERSION = "RippleHook 5.0"
-
 local RippleHook = _M
+DrawHook:newClass(RippleHook)
 
 function RippleHook.init(self)
 	self.Defs = { } -- offset, ratio1, ratio2, max1, max2

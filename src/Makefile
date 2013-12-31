@@ -12,4 +12,4 @@ clean libs tools modules:
 #	cd display_windows && $(MAKE) $@
 #	cd display_directfb && $(MAKE) $@
 #	cd display_nanox && $(MAKE) $@
-#	cd display_rawfb && $(MAKE) $@
+	cd display_rawfb && $(MAKE) $@

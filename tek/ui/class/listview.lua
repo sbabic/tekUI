@@ -48,7 +48,9 @@ local Text = ui.Text
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 6.1"
+_VERSION = "ListView 6.2"
+local ListView = _M
+Group:newClass(ListView)
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -97,15 +99,9 @@ function LVCanvas:passMsg(msg)
 	if msg[2] == ui.MSG_MOUSEBUTTON then
 		if msg[3] == 64 or msg[3] == 128 then
 			-- check if mousewheel over ourselves:
-			if self:checkArea(msg[4], msg[5]) then
-				-- shift into canvas area:
-				local m = self.TempMsg
-				local r1, r2 = self:getRect()
-				m[1], m[2], m[3], m[4], m[5], m[6] = unpack(msg, 1, 6)
-					m[4] = m[4] - r1 + self.CanvasLeft
-					m[5] = m[5] - r2 + self.CanvasTop
-				-- pass to child:
-				return self.Child:passMsg(m)
+			local mx, my = self:getMsgFields(msg, "mousexy")
+			if self:checkArea(mx, my) then
+				return self.Child:passMsg(msg)
 			end
 		end
 	end
@@ -115,8 +111,6 @@ end
 -------------------------------------------------------------------------------
 --	ListView:
 -------------------------------------------------------------------------------
-
-local ListView = _M
 
 function ListView.new(class, self)
 	self = self or { }

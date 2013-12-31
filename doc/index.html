@@ -11,7 +11,7 @@
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8k
+			Version 0.8l
 		</p>
 		<hr />
 		<h2>
@@ -568,6 +568,10 @@
 				</ul>
 			</blockquote>
 			<p>
+				Lua 5.1 and 5.2 are supported out of the box, if Lua 5.2 is compiled
+				with <code>LUA_COMPAT_MODULE</code>.
+			</p>
+			<p>
 				LibXft and fontconfig are needed for building the x11 driver, but
 				tekUI falls back to the core X11 API if they are unavailable at
 				runtime. In addition to that, for the documentation system and the
@@ -733,8 +737,9 @@
 					</li>
 					<li>
 						<code>THEME</code> - Theme names corresponding to style sheet files in
-						<code>tek/ui/style/</code>. Multiple themes can be separated by spaces.
-						The default is <code>&quot;default desktop&quot;</code>. The <em>desktop</em> theme tries
+						<code>tek/ui/style/</code>. Multiple themes can be separated by spaces,
+						e.g. <code>&quot;desktop gradient&quot;</code>.
+						The default is <code>&quot;desktop&quot;</code>. The <em>desktop</em> theme tries
 						to import the color scheme found in a GTK2 configuration file.
 					</li>
 					<li>
@@ -1134,17 +1139,6 @@ app:run()
 					</td>
 					<td class="column3">
 						change of the <code>Hold</code> attribute&#185;
-					</td>
-				</tr>
-				<tr>
-					<td class="column1">
-						<a href="manual.html#Widget:onHover"><code>Widget:onHover()</code></a> 
-					</td>
-					<td class="column2">
-						<a href="manual.html#tek.ui.class.widget">Widget</a> 
-					</td>
-					<td class="column3">
-						change of the <code>Hover</code> attribute&#185;
 					</td>
 				</tr>
 				<tr>

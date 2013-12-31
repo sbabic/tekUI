@@ -50,9 +50,6 @@
 --			The line number of the Lister's cursor; this value may
 --			be {{0}}, in which case the cursor is invisible. Changing
 --			this value will invoke the Lister:onSetCursor() method.
---		- {{Font [IG]}} (string)
---			Font specifier for determining the font used for list entries.
---			See [[#tek.ui.class.text : Text]] for details on its format.
 --		- {{HeaderGroup [IG]}} ([[#tek.ui.class.group : Group]])
 --			A group of elements used for the table header. The Lister
 --			may take these elements into account for determining the
@@ -115,7 +112,6 @@ local db = require "tek.lib.debug"
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 local Region = ui.loadLibrary("region", 10)
-local ScrollGroup = ui.require("scrollgroup", 17)
 local Text = ui.require("text", 28)
 
 local assert = assert
@@ -130,17 +126,20 @@ local sort = table.sort
 local tonumber = tonumber
 local tostring = tostring
 local type = type
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.class.lister", tek.ui.class.text)
-_VERSION = "Lister 30.0"
+_VERSION = "Lister 31.0"
 local Lister = _M
+Text:newClass(Lister)
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
 local FL_LAYOUT = ui.FL_LAYOUT
+local MSG_KEYDOWN = ui.MSG_KEYDOWN
+local MSG_KEYUP = ui.MSG_KEYUP
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -192,12 +191,12 @@ function Lister.init(self)
 	self.CursorLine = self.CursorLine or 0
 	self.CursorObject = false
 	self.FHeight = false
-	self.Font = self.Font or false
 	self.FontHandle = false
 	self.FWidth = false
 	self.HeaderGroup = self.HeaderGroup or false
 	self.Mode = "button"
 	self.LineHeight = false
+	self.LastKey = false
 	self.ListObject = self.ListObject or List:new()
 	self.NumColumns = 1
 	self.NumSelectedLines = 0
@@ -232,7 +231,7 @@ function Lister:setup(app, window)
 	local b = tonumber(props["cursor-width"]) or 1
 	self.CursorObject = ui.createHook("border", "default", self,
 		{ Border = { b, b, b, b } })
-	local f = self.Application.Display:openFont(self.Font)
+	local f = self.Application.Display:openFont(props["font"])
 	self.FontHandle = f
 	self.FWidth, self.FHeight = f:getTextSize("x")
 	local _, b2, _, b4 = self.CursorObject:getBorder()
@@ -248,7 +247,7 @@ end
 function Lister:cleanup()
 	self.FontHandle = self.Application.Display:closeFont(self.FontHandle)
 	self.CursorObject = ui.destroyHook(self.CursorObject)
-	self.SelectedLines = false
+-- 	self.SelectedLines = false
 	Text.cleanup(self)
 	self.Canvas = false
 end
@@ -449,9 +448,10 @@ end
 
 function Lister:prepare(damage)
 	local lo = self.ListObject
-	if lo then -- and d then
+	local co = self.CursorObject
+	if lo and co then -- and d then
 
-		local b1, b2, b3, b4 = self.CursorObject:getBorder()
+		local b1, b2, b3, b4 = co:getBorder()
 		local f = self.FontHandle
 		local cw = { }
 		self.ColumnWidths = cw
@@ -544,7 +544,7 @@ function Lister:prepare(damage)
 		if self:layout(0, 0, c.CanvasWidth - 1, c.CanvasHeight - 1, damage)
 			or damage then
 			c:rethinkLayout(1)
-			self.Flags:set(ui.FL_REDRAW)
+			self:setFlags(ui.FL_REDRAW)
 		end
 
 		if damage then
@@ -651,7 +651,7 @@ function Lister:layout(r1, r2, r3, r4, markdamage)
 		r:setRect(x0, y0, x1, y1)
 		c:setValue("CanvasHeight", ch)
 		self:layoutCursor()
-		self.Flags:set(FL_LAYOUT)
+		self:setFlags(FL_LAYOUT)
 		res = true
 	end
 	if markdamage then
@@ -661,15 +661,18 @@ function Lister:layout(r1, r2, r3, r4, markdamage)
 end
 
 function Lister:layoutCursor()
-	local co = self.CursorObject
-	local x1 = self.Canvas.CanvasWidth - 1
-	local t = self.RenderData
-	t[1], t[2], t[3], t[4] = co:getBorder()
-	t[5] = x1
-	local lh = self.LineHeight
-	local y0 = (self.CursorLine - 1) * lh
-	local y1 = y0 + lh - 1
-	co:layout(t[1], y0 + t[2], x1 - t[3], y1 - t[4])
+	local c = self.Canvas
+	if c then
+		local co = self.CursorObject
+		local x1 = c.CanvasWidth - 1
+		local t = self.RenderData
+		t[1], t[2], t[3], t[4] = co:getBorder()
+		t[5] = x1
+		local lh = self.LineHeight
+		local y0 = (self.CursorLine - 1) * lh
+		local y1 = y0 + lh - 1
+		co:layout(t[1], y0 + t[2], x1 - t[3], y1 - t[4])
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -850,7 +853,8 @@ function Lister:passMsg(msg)
 		if msg[3] == 1 then -- leftdown:
 			local qual = msg[6]
 			if self.Window.HoverElement == self and not self.Disabled then
-				local lnr = self:findLine(msg[5])
+				local mx, my = self:getMsgFields(msg, "mousexy")
+				local lnr = self:findLine(my)
 				if lnr then
 					if self.SelectMode == "multi" then
 						if qual == 0 or qual >= 16 then
@@ -901,7 +905,7 @@ function Lister:handleInput(msg)
 			local lo = self.ListObject
 			local numl = lo:getN()
 			local lnr = self.CursorLine
-			if msg[2] == ui.MSG_KEYDOWN then
+			if msg[2] == MSG_KEYDOWN then
 				if key == 0xf013 then -- down
 					self:moveLine(min(lnr + 1, numl), true)
 					return false
@@ -926,12 +930,15 @@ function Lister:handleInput(msg)
 						local l1 = self:findLine(y0 - getheight(self)) or 1
 						self:moveLine(l1, true)
 					end
-				elseif key == 13 then -- return
+				elseif key == 13 and self.LastKey ~= 13 then -- return
 					win:clickElement(self)
 					self:setValue("SelectedLine", self.CursorLine, true)
-				elseif key == 32 then -- space
+				elseif key == 32 and self.LastKey ~= 32 then -- space
 					self:setValue("SelectedLine", self.CursorLine, true)
 				end
+				self.LastKey = key
+			elseif msg[2] == MSG_KEYUP then
+				self.LastKey = false
 			end
 		end
 	end
@@ -946,9 +953,11 @@ function Lister:onFocus()
 	Text.onFocus(self)
 	local focused = self.Focus
 	if focused then
-		self.Window:addInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
+		self.Window:addInputHandler(MSG_KEYDOWN + MSG_KEYUP, self, 
+			self.handleInput)
 	else
-		self.Window:remInputHandler(ui.MSG_KEYDOWN, self, self.handleInput)
+		self.Window:remInputHandler(MSG_KEYDOWN + MSG_KEYUP, self, 
+			self.handleInput)
 	end
 end
 

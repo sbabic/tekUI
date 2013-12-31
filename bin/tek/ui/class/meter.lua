@@ -20,11 +20,12 @@ local remove = table.remove
 local sin = math.sin
 local sort = table.sort
 local tonumber = tonumber
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 7.1"
+_VERSION = "Meter 8.0"
 local Meter = _M
+Text:newClass(Meter)
 
 -------------------------------------------------------------------------------
 --	Class style properties:
@@ -44,7 +45,7 @@ Properties = {
 function Meter.init(self)
 	self.NumSamples = self.NumSamples or 256
 	self.GraphBGColor = self.GraphBGColor or "dark"
-	self.GraphColor = self.GraphColor or "shine"
+	self.GraphColor = self.GraphColor or "bright"
 	self.GraphColor2 = self.GraphColor2 or self.GraphColor
 	self.GraphColor3 = self.GraphColor3 or self.GraphColor
 	self.GraphColor4 = self.GraphColor4 or self.GraphColor
@@ -73,6 +74,7 @@ function Meter.init(self)
 	self.GraphRect = false
 	self.MaxHeight = self.MaxHeight or "none"
 	self.MaxWidth = self.MaxWidth or "none"
+	self.Mode = self.Mode or "line"	-- or "rect"
 	self.RedrawGraph = false
 	self.TextRecordsX = false
 	self.TextRecordsY = false
@@ -236,7 +238,13 @@ function Meter:drawGraph()
 				if x >= r3 then
 					break
 				end
-				d:drawLine(x, y - v0, min(x1 / 0x10000, r3), y - v1, pen)
+				if self.Mode == "rect" then
+					local x1 = min(x1 / 0x10000, r3)
+					d:drawLine(x, y - v0, x1, y - v0, pen)
+					d:drawLine(x1, y - v0, x1, y - v1, pen)
+				else
+					d:drawLine(x, y - v0, min(x1 / 0x10000, r3), y - v1, pen)
+				end
 				x0 = x1
 				v0 = v1
 			end

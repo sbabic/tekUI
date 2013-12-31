@@ -27,8 +27,8 @@ local error = error
 
 module("tek.ui.class.layout", tek.class)
 _VERSION = "Layout 1.0"
-
 local Layout = _M
+Class:newClass(Layout)
 
 -------------------------------------------------------------------------------
 --	Layout:layout(group, x0, y0, x1, y1[, markdamage]):

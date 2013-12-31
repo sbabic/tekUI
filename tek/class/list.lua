@@ -36,6 +36,7 @@ local remove = table.remove
 module("tek.class.list", tek.class)
 _VERSION = "List 3.1"
 local List = _M
+Class:newClass(List)
 
 -------------------------------------------------------------------------------
 --	new: overrides

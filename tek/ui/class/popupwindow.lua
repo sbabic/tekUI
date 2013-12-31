@@ -33,8 +33,8 @@ local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
 _VERSION = "PopupWindow 5.1"
-
 local PopupWindow = _M
+Window:newClass(PopupWindow)
 
 -------------------------------------------------------------------------------
 --	PopupWindow class:

@@ -5,9 +5,9 @@ include $(BASEDIR)/config
 ###############################################################################
 
 LUACLASSES = \
-	class/object.lua class/list.lua class/utf8string.lua
+	class/object.lua class/list.lua
 
 install:
-	$(INSTALL) -d $(LUA_SHARE)/tek/class
-	$(INSTALL) class.lua ui.lua $(LUA_SHARE)/tek
-	$(INSTALL) $(LUACLASSES) $(LUA_SHARE)/tek/class
+	$(INSTALL_D) $(LUA_SHARE)/tek/class
+	$(INSTALL_F) class.lua ui.lua $(LUA_SHARE)/tek
+	$(INSTALL_F) $(LUACLASSES) $(LUA_SHARE)/tek/class

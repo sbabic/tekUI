@@ -50,6 +50,10 @@ typedef TTAG TVPEN;
 #define TVisual_FullScreen			(TVISTAGS_ + 0x010)
 #define TVisual_EventMask			(TVISTAGS_ + 0x011)
 #define TVisual_BlankCursor			(TVISTAGS_ + 0x012)
+#define TVisual_HaveSelection		(TVISTAGS_ + 0x013)
+#define TVisual_HaveClipboard		(TVISTAGS_ + 0x014)
+#define TVisual_SelectionType		(TVISTAGS_ + 0x015)
+#define TVisual_PixelFormat			(TVISTAGS_ + 0x016)
 
 #define	TVisual_FontName			(TVISTAGS_ + 0x100)
 #define	TVisual_FontPxSize			(TVISTAGS_ + 0x101)
@@ -78,7 +82,6 @@ typedef TTAG TVPEN;
 #define TVisual_UserData			(TVISTAGS_ + 0x115)
 #define TVisual_CmdRPort			(TVISTAGS_ + 0x116)
 #define TVisual_IMsgPort			(TVISTAGS_ + 0x117)
-
 
 /* Tagged rendering: */
 
@@ -134,6 +137,7 @@ struct TVRequest
 		struct { TAPTR Window; TINT RRect[4]; TAPTR Buf; TINT TotWidth;
 			TTAGITEM *Tags; } DrawBuffer;
 		struct { TAPTR Window; TINT Rect[4]; } Flush;
+		struct { TAPTR Window; TUINT Type; TAPTR Data; TSIZE Length; } GetSelection;
 	} tvr_Op;
 };
 
@@ -168,7 +172,20 @@ struct TVRequest
 #define TVCMD_DRAWFARC		0x101c
 #define TVCMD_DRAWBUFFER	0x101d
 #define TVCMD_FLUSH			0x101e
+#define TVCMD_GETSELECTION	0x101f
 #define TVCMD_EXTENDED		0x2000
+
+/*****************************************************************************/
+/*
+**	Pixel formats
+**
+**	"native" endianness (register of said width stored in memory)
+**	unless otherwise noted
+*/
+
+#define TVPIXFMT_UNDEFINED	0
+#define TVPIXFMT_ARGB32		1
+#define TVPIXFMT_RGB16		2
 
 /*****************************************************************************/
 /*
@@ -181,7 +198,9 @@ typedef struct TInputMessage
 	struct TNode timsg_Node;
 	/* Size of extra data following the message body: */
 	TTAG timsg_ExtraSize;
-	/* Copy of window userdata: */
+	/* Instance/Window pointer: */
+	TAPTR timsg_Instance;
+	/* Copy of instance/window userdata: */
 	TTAG timsg_UserData;
 	/* Timestamp: */
 	TTIME timsg_TimeStamp;
@@ -197,11 +216,21 @@ typedef struct TInputMessage
 	TINT timsg_X, timsg_Y, timsg_Width, timsg_Height;
 	/* UTF-8 representation of keycode: */
 	unsigned char timsg_KeyCode[8];
-
+	
+	/* Some identification for originator of message: */
+	TTAG timsg_Requestor;
+	/* Msgtype-dependant reply data: */
+	TTAG timsg_ReplyData;
+	/* Tag buffer: */
+	struct TTagItem timsg_Tags[16];
+	
 	/* more fields may follow in the future. Do not use
 	** sizeof(TIMSG); if necessary use TGetSize(imsg) */
 
 } TIMSG;
+
+#define TIMsgReply_UTF8Selection	(TVISTAGS_ + 0x080)
+#define TIMsgReply_UTF8SelectionLen	(TVISTAGS_ + 0x081)
 
 /*****************************************************************************/
 /*
@@ -235,6 +264,8 @@ typedef struct TInputMessage
 #define	TITYPE_COOKEDKEY		TITYPE_KEYDOWN
 /* User message: */
 #define	TITYPE_USER				0x00002000
+/* Selection Request Message: */
+#define TITYPE_REQSELECTION		0x00004000
 
 /*****************************************************************************/
 /*

@@ -2,7 +2,6 @@
 #define _TEKUI_H
 
 #include <tek/exec.h>
-typedef TUINT tekui_flags;
 
 #define TEKUI_HUGE				1000000
 
@@ -12,8 +11,6 @@ typedef TUINT tekui_flags;
 #define TEKUI_FL_SETUP			0x0008
 #define TEKUI_FL_SHOW			0x0010
 #define TEKUI_FL_CHANGED		0x0020
-
-#define TEK_UI_SUPPORT_NAME		"tek.ui.support*"
 
 #define TEK_UI_OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
 ((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))

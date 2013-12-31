@@ -4,6 +4,12 @@
 #include <sys/select.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <X11/cursorfont.h>
+#if defined(ENABLE_DGRAM)
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#endif
 
 #include "display_x11_mod.h"
 
@@ -136,13 +142,16 @@ static void x11_reader_addbytes(struct FileReader *r, int nbytes)
 	r->ReadBytes += nbytes;
 }
 
-static TBOOL getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
+#endif
+
+#if defined(ENABLE_STDIN) || defined(ENABLE_DGRAM)
+static TBOOL 
+getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
-	TIMSG *msg = TAllocMsg(sizeof(TIMSG) + size);
+	TIMSG *msg = TAllocMsg0(sizeof(TIMSG) + size);
 	if (msg)
 	{
-		TFillMem(msg, sizeof(TIMSG), 0);
 		msg->timsg_ExtraSize = size;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->x11_KeyQual;
@@ -155,13 +164,21 @@ static TBOOL getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
 	*msgptr = TNULL;
 	return TFALSE;
 }
-
 #endif
+
 
 /*****************************************************************************/
 /*
 **	Module init/exit
 */
+
+static THOOKENTRY TTAG
+x11_ireplyhookfunc(struct THook *hook, TAPTR obj, TTAG msg)
+{
+	X11DISPLAY *mod = hook->thk_Data;
+	x11_wake(mod);
+	return 0;
+}
 
 LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags)
 {
@@ -170,6 +187,33 @@ LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags)
 	for (;;)
 	{
 		TTAGITEM tags[2];
+		#if defined(ENABLE_DGRAM)
+		struct sockaddr_in addr;
+		int reuse = 1;
+		
+		mod->x11_UserFD = socket(PF_INET, SOCK_DGRAM, 0);
+		if (mod->x11_UserFD < 0)
+			break;
+		if (setsockopt(mod->x11_UserFD, SOL_SOCKET, SO_REUSEADDR, 
+			(char*) &reuse, sizeof(reuse)) < 0)
+			break;
+		memset(&addr, 0, sizeof(struct sockaddr_in));
+		addr.sin_family = AF_INET;
+		addr.sin_addr.s_addr = htonl(0x7f000001);
+		addr.sin_port = htons(20000);
+		if (bind(mod->x11_UserFD, (struct sockaddr *) &addr, sizeof addr) < 0)
+			break;
+		#endif
+
+		TInitHook(&mod->x11_IReplyHook, x11_ireplyhookfunc, mod);
+		tags[0].tti_Tag = TMsgPort_Hook;
+		tags[0].tti_Value = (TTAG) &mod->x11_IReplyHook;
+		tags[1].tti_Tag = TTAG_DONE;
+		mod->x11_IReplyPort = TCreatePort(tags);
+		if (mod->x11_IReplyPort == TNULL)
+			break;
+		mod->x11_IReplyPortSignal = TGetPortSignal(mod->x11_IReplyPort);
+		
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
 		tags[1].tti_Tag = TTAG_DONE;
@@ -177,6 +221,7 @@ LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags)
 			TCreateTask(&mod->x11_Module.tmd_Handle.thn_Hook, tags);
 		if (mod->x11_Task == TNULL)
 			break;
+
 		mod->x11_CmdPort = TGetUserPort(mod->x11_Task);
 		mod->x11_CmdPortSignal = TGetPortSignal(mod->x11_CmdPort);
 		return TTRUE;
@@ -194,6 +239,13 @@ LOCAL void x11_exit(X11DISPLAY *mod)
 		x11_wake(mod);
 		TDestroy(mod->x11_Task);
 	}
+	TDestroy(mod->x11_IReplyPort);
+	
+	#if defined(ENABLE_DGRAM)
+	if (mod->x11_UserFD != -1)
+		close(mod->x11_UserFD);
+	mod->x11_UserFD = -1;
+	#endif
 }
 
 /*****************************************************************************/
@@ -204,10 +256,10 @@ static TBOOL getprops(X11DISPLAY *inst)
 {
 	XVisualInfo xvi;
 	int major, minor, pixmap;
-
-	inst->x11_Flags = (ImageByteOrder(inst->x11_Display) !=
+	
+	inst->x11_DstFmt = (ImageByteOrder(inst->x11_Display) !=
 		(*(TUINT *) endiancheck == 0x11223344 ? MSBFirst : LSBFirst)) ?
-			TVISF_SWAPBYTEORDER : 0;
+			1 : 0;
 
 	if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 16,
 		DirectColor, &xvi))
@@ -243,19 +295,22 @@ static TBOOL getprops(X11DISPLAY *inst)
 		bmsk = xvi.blue_mask;
 
 		if ((rmsk > gmsk) && (gmsk > bmsk))
-			inst->x11_PixFmt = PIXFMT_RGB;
-		else if ((rmsk > bmsk) && (bmsk > gmsk))
-			inst->x11_PixFmt = PIXFMT_RBG;
-		else if ((bmsk > rmsk) && (rmsk > gmsk))
-			inst->x11_PixFmt = PIXFMT_BRG;
-		else if ((bmsk > gmsk) && (gmsk > rmsk))
-			inst->x11_PixFmt = PIXFMT_BGR;
-		else if ((gmsk > rmsk) && (rmsk > bmsk))
-			inst->x11_PixFmt = PIXFMT_GRB;
-		else if ((gmsk > bmsk) && (bmsk > rmsk))
-			inst->x11_PixFmt = PIXFMT_GBR;
-		else
-			inst->x11_PixFmt = PIXFMT_UNDEFINED;
+			inst->x11_RGBOrder = 0;	/* RGB */
+// 		else if ((rmsk > bmsk) && (bmsk > gmsk))
+// 			inst->x11_PixFmt = TVPIXFMT_RBG;
+// 		else if ((bmsk > rmsk) && (rmsk > gmsk))
+// 			inst->x11_PixFmt = TVPIXFMT_BRG;
+// 		else if ((bmsk > gmsk) && (gmsk > rmsk))
+// 			inst->x11_PixFmt = TVPIXFMT_BGR;
+// 		else if ((gmsk > rmsk) && (rmsk > bmsk))
+// 			inst->x11_PixFmt = TVPIXFMT_GRB;
+// 		else if ((gmsk > bmsk) && (bmsk > rmsk))
+// 			inst->x11_PixFmt = TVPIXFMT_GBR;
+// 		else
+// 		{
+// 			TDBPRINTF(TDB_ERROR,("Display pixel format undefined!\n"));
+// 			inst->x11_PixFmt = TVPIXFMT_UNDEFINED;
+// 		}
 
 		if ((inst->x11_Depth == 16) && (xvi.red_mask != 0xf800))
 			inst->x11_Depth = 15;
@@ -273,11 +328,14 @@ static TBOOL getprops(X11DISPLAY *inst)
 			break;
 	}
 
-	TDBPRINTF(TDB_INFO, ("depth: %d - bpp: %d - pixfmt: %08x - flags: %d\n", 
-		inst->x11_Depth, inst->x11_BPP, inst->x11_PixFmt, inst->x11_Flags));
+	inst->x11_DstFmt |= inst->x11_Depth << 8;
+	inst->x11_DstFmt |= inst->x11_RGBOrder << 1;
+	
+	TDBPRINTF(TDB_WARN, ("depth: %d - bpp: %d - order: %08x - destfmt: %08x\n", 
+		inst->x11_Depth, inst->x11_BPP, inst->x11_RGBOrder, inst->x11_DstFmt));
 
 	inst->x11_ShmAvail = (XShmQueryVersion(inst->x11_Display,
-		&major, &minor, &pixmap) == True && pixmap);
+		&major, &minor, &pixmap) == True && major > 0);
 	if (inst->x11_ShmAvail)
 		inst->x11_ShmEvent = XShmGetEventBase(inst->x11_Display) +
 			ShmCompletion;
@@ -303,6 +361,9 @@ static void x11_createnullcursor(X11DISPLAY *mod)
 	dummycolour.flags = 7;
 	mod->x11_NullCursor = XCreatePixmapCursor(display, cursormask, cursormask,
 		&dummycolour, &dummycolour, 0, 0);
+	#if defined(ENABLE_DEFAULTCURSOR)
+	mod->x11_DefaultCursor = XCreateFontCursor(display, XC_left_ptr);
+	#endif
 	XFreePixmap(display, cursormask);
 	XFreeGC(display, gc);
 }
@@ -334,6 +395,19 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		inst->x11_Display = XOpenDisplay(NULL);
 		if (inst->x11_Display == TNULL)
 			break;
+			
+		inst->x11_XA_TARGETS = 
+			XInternAtom(inst->x11_Display, "TARGETS", False);
+		inst->x11_XA_PRIMARY = 
+			XInternAtom(inst->x11_Display, "PRIMARY", False);
+		inst->x11_XA_CLIPBOARD = 
+			XInternAtom(inst->x11_Display, "CLIPBOARD", False);
+		inst->x11_XA_UTF8_STRING = 
+			XInternAtom(inst->x11_Display, "UTF8_STRING", False);
+		inst->x11_XA_STRING = 
+			XInternAtom(inst->x11_Display, "STRING", False);
+		inst->x11_XA_COMPOUND_TEXT = 
+			XInternAtom(inst->x11_Display, "COMPOUND_TEXT", False);
 
 		XkbSetDetectableAutoRepeat(inst->x11_Display, TTRUE, TNULL);
 
@@ -520,6 +594,12 @@ static void x11_docmd(X11DISPLAY *inst, struct TVRequest *req)
 		case TVCMD_DRAWBUFFER:
 			x11_drawbuffer(inst, req);
 			break;
+		case TVCMD_GETSELECTION:
+			x11_getselection(inst, req);
+			break;
+		case TVCMD_FLUSH:
+			XFlush(inst->x11_Display);
+			break;
 		default:
 			TDBPRINTF(TDB_ERROR,("Unknown command code: %d\n",
 			req->tvr_Req.io_Command));
@@ -533,6 +613,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	TUINT sig;
 	fd_set rset;
 	struct TVRequest *req;
+	TIMSG *imsg;
 	char buf[256];
 	struct timeval tv;
 
@@ -548,6 +629,9 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	struct FileReader fr;
 	x11_reader_init(&fr, fd_in, 2048);
 	#endif
+	#if defined(ENABLE_DGRAM)
+	int fd_in = inst->x11_UserFD;
+	#endif
 
 	TGetSystemTime(&nextt);
 	TAddTime(&nextt, &intt);
@@ -557,6 +641,32 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	do
 	{
 		TBOOL do_interval = TFALSE;
+		
+		while ((imsg = TGetMsg(inst->x11_IReplyPort)))
+		{
+			/* returned input message */
+			if (imsg->timsg_Type == TITYPE_REQSELECTION)
+			{
+				XSelectionEvent *reply = 
+					(XSelectionEvent *) imsg->timsg_Requestor;
+				struct TTagItem *replytags = 
+					(struct TTagItem *) imsg->timsg_ReplyData;
+				size_t len =
+					TGetTag(replytags, TIMsgReply_UTF8SelectionLen, 0);
+				TUINT8 *xdata = (TUINT8 *) TGetTag(replytags, 
+					TIMsgReply_UTF8Selection, TNULL);
+				XChangeProperty(inst->x11_Display, reply->requestor,
+	      	        reply->property, XA_ATOM, 8, PropModeReplace, 
+        	        (unsigned char *) xdata, len);
+				XSendEvent(inst->x11_Display, reply->requestor, 0, 
+					NoEventMask, (XEvent *) reply);
+				XSync(inst->x11_Display, False);
+				TFree((TAPTR) imsg->timsg_Requestor);
+				TFree(xdata);
+				/* reqselect roundtrip ended */
+			}
+			TFree(imsg);
+		}
 
 		while (inst->x11_RequestInProgress == TNULL &&
 			(req = TGetMsg(inst->x11_CmdPort)))
@@ -570,7 +680,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 		XFlush(inst->x11_Display);
 
 		FD_ZERO(&rset);
-		#if defined(ENABLE_STDIN)
+		#if defined(ENABLE_STDIN) || defined(ENABLE_DGRAM)
 		if (fd_in >= 0)
 			FD_SET(fd_in, &rset);
 		#endif
@@ -583,6 +693,14 @@ LOCAL void x11_taskfunc(struct TTask *task)
 		TSubTime(&waitt, &nowt);
 
 		tv.tv_sec = waitt.tdt_Int64 / 1000000;
+		if (tv.tv_sec != 0)
+		{
+			/* something's wrong with the clock, recalculate waittime */
+			nextt = nowt;
+			waitt = nextt;
+			TSubTime(&waitt, &nowt);
+			tv.tv_sec = waitt.tdt_Int64 / 1000000;
+		}
 		tv.tv_usec = waitt.tdt_Int64 % 1000000;
 
 		/* wait for display, signal fd and timeout: */
@@ -595,8 +713,9 @@ LOCAL void x11_taskfunc(struct TTask *task)
 			{
 				ioctl(inst->x11_fd_sigpipe_read, FIONREAD, &nbytes);
 				if (nbytes > 0)
-					read(inst->x11_fd_sigpipe_read, buf,
-						TMIN(sizeof(buf), (size_t) nbytes));
+					if (read(inst->x11_fd_sigpipe_read, buf,
+						TMIN(sizeof(buf), (size_t) nbytes)) != nbytes)
+					TDBPRINTF(TDB_ERROR,("could not read wakeup signal\n"));
 			}
 
 			#if defined(ENABLE_STDIN)
@@ -614,7 +733,6 @@ LOCAL void x11_taskfunc(struct TTask *task)
 						x11_reader_addbytes(&fr, nbytes);
 						while (x11_readline(&fr, &line, &len))
 						{
-							TIMSG *imsg;
 							if (inst->x11_IMsgPort &&
 								getusermsg(inst, &imsg, TITYPE_USER, len))
 							{
@@ -624,6 +742,23 @@ LOCAL void x11_taskfunc(struct TTask *task)
 							}
 						}
 					}
+				}
+				else
+					fd_in = -1; /* stop processing */
+			}
+			#elif defined(ENABLE_DGRAM)
+			/* dgram server: */
+			if (fd_in >= 0 && FD_ISSET(fd_in, &rset))
+			{
+				char umsg[1024];
+				TIMSG *imsg;
+				ssize_t len = recv(fd_in, umsg, sizeof umsg, 0);
+				if (len >= 0 && inst->x11_IMsgPort &&
+					getusermsg(inst, &imsg, TITYPE_USER, len))
+				{
+					memcpy((void *) (imsg + 1), umsg, len);
+					TPutMsg(inst->x11_IMsgPort, TNULL,
+						&imsg->timsg_Node);
 				}
 			}
 			#endif
@@ -668,7 +803,8 @@ LOCAL void x11_taskfunc(struct TTask *task)
 LOCAL void x11_wake(X11DISPLAY *inst)
 {
 	char sig = 0;
-	write(inst->x11_fd_sigpipe_write, &sig, 1);
+	if (write(inst->x11_fd_sigpipe_write, &sig, 1) != 1)
+		TDBPRINTF(TDB_ERROR,("could not send wakeup signal\n"));
 }
 
 /*****************************************************************************/
@@ -732,6 +868,7 @@ static TBOOL getimsg(X11DISPLAY *mod, X11WINDOW *v, TIMSG **msgptr, TUINT type)
 		msg = TAllocMsg0(sizeof(TIMSG));
 	if (msg)
 	{
+		msg->timsg_Instance = v;
 		msg->timsg_UserData = v->userdata;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->x11_KeyQual;
@@ -908,7 +1045,13 @@ static TBOOL processkey(X11DISPLAY *mod, X11WINDOW *v, XKeyEvent *ev,
 					imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
 					break;
 				default:
-					newkey = TFALSE;
+					if (keysym > 31 && keysym <= 0x20ff)
+						imsg->timsg_Code = keysym;
+					else if (keysym >= 0x01000100 && keysym <= 0x0110ffff)
+						imsg->timsg_Code = keysym - 0x01000000;
+					else
+						newkey = TFALSE;
+					break;
 			}
 		}
 
@@ -1047,7 +1190,7 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 				TDBPRINTF(TDB_TRACE,("Released request (NoExpose)\n"));
 			}
 			else
-				TDBPRINTF(TDB_WARN,("NoExpose: TITYPE_REFRESH not set\n"));
+				TDBPRINTF(TDB_INFO,("NoExpose: TITYPE_REFRESH not set\n"));
 			break;
 
 		case FocusIn:
@@ -1136,6 +1279,51 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 		case KeyPress:
 			processkey(mod, v, (XKeyEvent *) ev, TTRUE);
 			break;
+
+		case SelectionRequest:
+		{
+			XSelectionRequestEvent *req = (XSelectionRequestEvent *) ev;
+			XSelectionEvent reply;
+			memset(&reply, 0, sizeof reply);
+			reply.type = SelectionNotify;
+			reply.serial = ev->xany.send_event;
+			reply.send_event = True;
+			reply.display = req->display;
+			reply.requestor = req->requestor;
+			reply.selection = req->selection;
+			reply.property = req->property;
+			reply.target = None;
+			reply.time = req->time;
+			
+			if (req->target == mod->x11_XA_TARGETS)
+			{
+				XChangeProperty(mod->x11_Display, req->requestor,
+	                req->property, XA_ATOM, 32, PropModeReplace,
+					(unsigned char *) &mod->x11_XA_UTF8_STRING, 1);
+			}
+			else if (req->target == mod->x11_XA_UTF8_STRING)
+			{
+				XSelectionEvent *rcopy = TAlloc(TNULL, sizeof reply);
+				if (rcopy && getimsg(mod, v, &imsg, TITYPE_REQSELECTION))
+				{
+					*rcopy = reply;
+					imsg->timsg_Requestor = (TTAG) rcopy;
+					imsg->timsg_Code = 
+						req->selection == mod->x11_XA_PRIMARY ? 2 : 1;
+					TAddTail(&v->imsgqueue, &imsg->timsg_Node);
+					break;
+				}
+				TFree(rcopy);
+			}
+			else
+				reply.property = None;
+			
+			XSendEvent(mod->x11_Display, req->requestor, 0, NoEventMask, 
+				(XEvent *) &reply);
+			XSync(mod->x11_Display, False);
+			break;
+		}
+		
 	}
 	return TFALSE;
 }
@@ -1156,6 +1344,11 @@ LOCAL void x11_sendimessages(X11DISPLAY *mod, TBOOL do_interval)
 			TPutMsg(v->imsgport, TNULL, imsg);
 
 		while ((imsg = (TIMSG *) TRemHead(&v->imsgqueue)))
-			TPutMsg(v->imsgport, TNULL, imsg);
+		{
+			/* only certain input message types are sent two-way */
+			struct TMsgPort *rport = imsg->timsg_Type == TITYPE_REQSELECTION ?
+				mod->x11_IReplyPort : TNULL;
+			TPutMsg(v->imsgport, rport, imsg);
+		}
 	}
 }

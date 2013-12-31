@@ -90,7 +90,7 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
 local Display = ui.require("display", 25)
-local Widget = ui.require("widget", 25)
+local Widget = ui.require("widget", 26)
 local Group = ui.require("group", 31)
 local Region = ui.loadLibrary("region", 10)
 
@@ -106,11 +106,12 @@ local remove = table.remove
 local setmetatable = setmetatable
 local sort = table.sort
 local type = type
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 33.0"
+_VERSION = "Window 39.2"
 local Window = _M
+Group:newClass(Window)
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -120,10 +121,11 @@ local HUGE = ui.HUGE
 
 local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, ui.MSG_MOUSEMOVE, ui.MSG_MOUSEBUTTON,
-	ui.MSG_INTERVAL, ui.MSG_KEYUP }
+	ui.MSG_INTERVAL, ui.MSG_KEYUP, ui.MSG_REQSELECTION }
 
 local FL_REDRAW = ui.FL_REDRAW
 local FL_SHOW = ui.FL_SHOW
+local FL_UPDATE = ui.FL_UPDATE
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -146,6 +148,7 @@ function Window.init(self)
 	self.ActivePopup = false
 	self.Blits = { }
 	self.BlitObjects = { }
+	self.Borderless = self.Borderless or false
 	self.CanvasStack = { }
 	self.Center = self.Center or false
 	self.DblClickElement = false
@@ -179,6 +182,7 @@ function Window.init(self)
 		[ui.MSG_MOUSEBUTTON] = { },
 		[ui.MSG_INTERVAL] = { },
 		[ui.MSG_KEYUP] = { },
+		[ui.MSG_REQSELECTION] = { },
 	}
 	self.IntervalMsg = false
 	self.IntervalMsgStore =
@@ -279,7 +283,7 @@ function Window:show()
 			MaxHeight = m4,
 			Center = self.Center,
 			FullScreen = self.FullScreen,
-			Borderless = (x or y) and true,
+			Borderless = self.Borderless,
 			EventMask = self.EventMask,
 			BlankCursor = ui.NoCursor,
 			Pens = setmetatable({ }, {
@@ -287,11 +291,9 @@ function Window:show()
 					local key = col
 					local res
 					if type(col) == "string" then
-						if col:match("^url%b()") then
-							local fname = col:match("^url%(([^()]+)%)")
-							if fname then
-								res = display.getPixmap(fname)
-							end
+						-- match url(...) etc.
+						if col:match("^(%a+)(%b())") then
+							res = display.getPaint(col, display)
 							if not res then
 								col = "background"
 							end
@@ -405,9 +407,8 @@ end
 function Window:addInterval()
 	self.IntervalCount = self.IntervalCount + 1
 	if self.IntervalCount == 1 then
-		db.info("%s : add interval", self)
 		self.EventMask = ui.MSG_ALL + ui.MSG_INTERVAL
-		if self.Flags:check(FL_SHOW) then
+		if self:checkFlags(FL_SHOW) then
 			self.Drawable:setInput(ui.MSG_INTERVAL)
 		else
 			db.warn("adding interval on closed window")
@@ -426,9 +427,8 @@ function Window:remInterval()
 	self.IntervalCount = self.IntervalCount - 1
 	assert(self.IntervalCount >= 0)
 	if self.IntervalCount == 0 then
-		db.info("%s : rem interval", self)
 		self.EventMask = ui.MSG_ALL
-		if self.Flags:check(FL_SHOW) then
+		if self:checkFlags(FL_SHOW) then
 			self.Drawable:clearInput(ui.MSG_INTERVAL)
 		end
 	end
@@ -564,30 +564,33 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_FOCUS] = function(self, msg)
-		self:setValue("WindowFocus", msg[3] == 1)
+		local has_focus = msg[3] == 1 or (self.ActivateOnRMB and msg[3] == 4)
+		self:setValue("WindowFocus", has_focus)
 		self:setHiliteElement()
 		self:setActiveElement()
+		self.Application:setFocusWindow(self, has_focus)
 		return msg
 	end,
 	[ui.MSG_NEWSIZE] = function(self, msg)
 		self:addLayout(self, 0, false)
-		return msg
+		return false -- do not pass this msg to group
 	end,
 	[ui.MSG_REFRESH] = function(self, msg)
 		self:damage(msg[7], msg[8], msg[9], msg[10])
-		return msg
+		return false -- do not pass this msg to group
 	end,
 	[ui.MSG_MOUSEOVER] = function(self, msg)
-		self.MouseX, self.MouseY = msg[4], msg[5]
+		self:setMsgMouseXY(msg)
 		self:setHiliteElement()
 		return msg
 	end,
 	[ui.MSG_MOUSEBUTTON] = function(self, msg)
-		self.MouseX, self.MouseY = msg[4], msg[5]
-		if msg[3] == 1 then -- leftdown:
+		self:setMsgMouseXY(msg)
+		local armb = self.ActivateOnRMB
+		if msg[3] == 1 or (armb and msg[3] == 4) then -- leftdown:
 			-- send "Pressed" to window:
 			self:setValue("Pressed", true, true)
-		elseif msg[3] == 2 then -- leftup:
+		elseif msg[3] == 2 or (armb and msg[3] == 8) then -- leftup:
 			local ae = self.ActiveElement
 			local he = self.HoverElement
 			-- release Hold state:
@@ -607,13 +610,11 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_KEYDOWN] = function(self, msg)
-
+		self:setMsgMouseXY(msg)
 		if not self.Application then
-			db.warn("*** window already collapsed!")
+			db.warn("window already collapsed")
 			return msg
 		end
-
-		self.MouseX, self.MouseY = msg[4], msg[5]
 		-- pass message to active popup element:
 		if self.ActivePopup then
 			-- return
@@ -625,11 +626,12 @@ local MsgHandlers =
 		end
 		local fe = self.FocusElement
 		local key = msg[3]
+		local qual = msg[6]
 		local retrig = key ~= 0 and self.Application:setLastKey(key)
 
 		-- activate window:
 		self:setValue("Active", true)
-		if key == 27 and not retrig then
+		if qual == 0 and key == 27 and not retrig then
 			local pr = self.PopupRootWindow
 			if pr then
 				pr.ActivePopup:endPopup()
@@ -638,19 +640,25 @@ local MsgHandlers =
 			end
 			return
 		elseif key == 9 then -- tab key:
-			if msg[6] == 0 then -- no qualifier:
+			if qual == 0 then -- no qualifier:
 				self:setFocusElement(self:getNextElement(fe))
-			elseif msg[6] == 1 then -- shift qualifier:
+			elseif qual == 1 then -- shift qualifier:
 				self:setFocusElement(self:getNextElement(fe, true))
 			end
 			return
-		elseif key == 61459 or key == 61457 then -- cursor down, right:
-			self:setFocusElement(self:getNextElement(fe))
-			return
-		elseif key == 61458 or key == 61456 then -- cursor up, left:
-			self:setFocusElement(self:getNextElement(fe, true))
-			return
-		elseif key == 13 or key == 32 and not retrig then
+		elseif qual == 0 and (key == 61459 or key == 61457) then -- cursor down, right:
+			local nfe = self:getNextElement(fe)
+			if nfe and nfe:checkFlags(ui.FL_CURSORFOCUS) then
+				self:setFocusElement(nfe)
+				return
+			end
+		elseif qual == 0 and (key == 61458 or key == 61456) then -- cursor up, left:
+			local nfe = self:getNextElement(fe, true)
+			if nfe and nfe:checkFlags(ui.FL_CURSORFOCUS) then
+				self:setFocusElement(nfe)
+				return
+			end
+		elseif qual == 0 and (key == 13 or key == 32) and not retrig then
 			if fe and not fe.Active then
 				self:setHiliteElement(fe)
 				self:setActiveElement(fe)
@@ -674,7 +682,7 @@ local MsgHandlers =
 	[ui.MSG_KEYUP] = function(self, msg)
 		local key = msg[3]
 		self.Application:setLastKey() -- release
-		self.MouseX, self.MouseY = msg[4], msg[5]
+		self:setMsgMouseXY(msg)
 		-- pass message to active popup element:
 		if self.ActivePopup then
 			-- return
@@ -688,12 +696,10 @@ local MsgHandlers =
 			self:setActiveElement()
 			self:setHiliteElement(self.HoverElement)
 		end
-
 		return msg
 	end,
 	[ui.MSG_MOUSEMOVE] = function(self, msg)
-		self.MouseX, self.MouseY = msg[4], msg[5]
-		self.HoverElement = self:getHoverElementByXY(msg[4], msg[5])
+		self:setMsgMouseXY(msg)
 		return msg
 	end,
 }
@@ -706,13 +712,11 @@ function Window:handleInput(msg)
 	return false
 end
 
--------------------------------------------------------------------------------
---	getHoverElementByXY: returns the element hovered by the mouse pointer.
--------------------------------------------------------------------------------
-
-function Window:getHoverElementByXY(mx, my)
-	local he = self:getByXY(mx, my)
-	return he and he:checkHover() and he or false
+function Window:setMsgMouseXY(msg)
+	local mx, my = msg[4], msg[5]
+	self.MouseX, self.MouseY = mx, my
+	self.HoverElement = self:getByXY(mx, my)
+	return mx, my
 end
 
 -------------------------------------------------------------------------------
@@ -835,13 +839,13 @@ function Window:update()
 					if changed then
 						local pg = e:getGroup(true)
 						if pg then
-							pg.Flags:set(FL_REDRAW)
+							pg:setFlags(FL_REDRAW)
 						end
 					end
 
 					if damage == 1 then
 						 -- unconditionally slate the element for repaint:
-						e.Flags:set(FL_REDRAW)
+						e:setFlags(FL_REDRAW)
 					elseif damage == 2 then
 						 -- unconditionally slate the element and all its
 						 -- children for repaint:
@@ -857,13 +861,14 @@ function Window:update()
 
 			-- mouse could point to a different element now:
 			if self.HoverElement then
-				self.HoverElement = self:getHoverElementByXY(self.MouseX,
-					self.MouseY)
+				self.HoverElement = self:getByXY(self.MouseX, self.MouseY)
 			end
 
 		end
 
-		self:draw()
+		if self:checkClearFlags(FL_UPDATE) then
+			self:draw()
+		end
 
 	end
 
@@ -912,11 +917,13 @@ function Window:setHiliteElement(e)
 	local he = self.HiliteElement
 	if e ~= he then
 		if he then
-			he:setValue("Hover", false)
+			he:setValue("Hilite", false)
 		end
-		self.HiliteElement = e or false
-		if e and not e.Disabled then
-			e:setValue("Hover", true)
+		if not e or e:checkHilite() then
+			self.HiliteElement = e or false
+			if e then
+				e:setValue("Hilite", true)
+			end
 		end
 	end
 end
@@ -952,12 +959,14 @@ function Window:setActiveElement(e)
 			self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 			se:setValue("Active", false)
 		end
-		self.ActiveElement = e or false
-		if e then
-			self.HoldTickActive = self.HoldTickFirst
-			self.HoldTickActiveInit = self.HoldTickFirst
-			e:setValue("Active", true)
-			self:addInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
+		if not e or (e:instanceOf(Widget) and not e.Disabled) then
+			self.ActiveElement = e or false
+			if e then
+				self.HoldTickActive = self.HoldTickFirst
+				self.HoldTickActiveInit = self.HoldTickFirst
+				e:setValue("Active", true)
+				self:addInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
+			end
 		end
 	end
 end
@@ -1092,9 +1101,9 @@ function Window:getNextElement(e, backward)
 		if oe then
 			local c = e:getChildren()
 			if backward then
-				ne = c and c[#c] or e:getPrev()
+				ne = c and c[#c] or e:getPrev("recursive")
 			else
-				ne = c and c[1] or e:getNext()
+				ne = c and c[1] or e:getNext("recursive")
 			end
 		else
 			local c = self:getChildren()
@@ -1187,7 +1196,8 @@ function Window:clickElement(e)
 		e = self:getById(e)
 		assert(e, "Unknown Id")
 	end
-	if not e.Flags:check(ui.FL_SETUP) then
+	if not e:checkFlags(ui.FL_SETUP) then
+		db.error("*** element not setup: %s", e:getClassName())
 		e.Application = self.Application
 		e.Window = self
 	end
@@ -1238,3 +1248,5 @@ function Window:addBlit(x0, y0, x1, y1, dx, dy, c1, c2, c3, c4)
 		end
 	end
 end
+
+return Window

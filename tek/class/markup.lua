@@ -219,9 +219,9 @@ local stdout = io.stdout
 local ipairs = ipairs
 
 module("tek.class.markup", tek.class)
-
 _VERSION = "Markup 3.2"
 local Markup = _M
+Class:newClass(Markup)
 
 -------------------------------------------------------------------------------
 --	iterate over lines in a string

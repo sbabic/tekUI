@@ -13,6 +13,9 @@ local Args = require "tek.lib.args"
 local lfs = require "lfs"
 local ui = require "tek.ui"
 local List = require "tek.class.list"
+local Input = ui.Input
+local unpack = unpack or table.unpack
+local loadstring = loadstring or load
 
 local APP_ID = "lua-compiler"
 local DOMAIN = "schulze-mueller.de"
@@ -227,7 +230,7 @@ local function addmodule(app, classname, filename)
 			return 0 -- already present
 		end
 	end
-	local filefield = ui.TextInput:new
+	local filefield = Input:new
 	{
 		Text = filename,
 		Width = "free",
@@ -236,7 +239,7 @@ local function addmodule(app, classname, filename)
 	local selectbutton = FileButton:new
 	{
 		doRequest = function(self)
-			local path, part = splitpath(filefield.Text)
+			local path, part = splitpath(filefield:getText())
 			local status, path, select = app:requestFile
 			{
 				Title = "Select Lua module...",
@@ -279,7 +282,7 @@ end
 local function gui_sample(self)
 	local app = self.Application
 	local filefield = app:getById("text-filename")
-	local fname = filefield.Text
+	local fname = filefield:getText()
 	app:addCoroutine(function()
 		local mods = sample(fname)
 		local n = 0
@@ -302,7 +305,7 @@ local function gui_compile(self)
 			app:getById("popitem-savemode").SelectedLine
 		local ext = savemode == 1 and ".luac" or ".c"
 
-		local srcname = app:getById("text-filename").Text
+		local srcname = app:getById("text-filename"):getText()
 		local outname = app.Settings.OutFileName
 		if outname == "" then
 			outname = (srcname:match("^(.*)%.lua$") or srcname) .. ext
@@ -345,7 +348,7 @@ local function gui_compile(self)
 					local checkbutton = modgroup[i]
 					if checkbutton.Selected then
 						local classname = checkbutton.Text
-						local filename = modgroup[i + 1].Text
+						local filename = modgroup[i + 1]:getText()
 						if io.open(filename) then
 							table.insert(mods, ("%s:%s"):format(classname, filename))
 						else
@@ -655,14 +658,14 @@ local app = ui.Application:new
 									Width = "fill",
 									KeyCode = true,
 								},
-								ui.TextInput:new
+								Input:new
 								{
 									Id = "text-filename",
 									Height = "fill",
 									Style = "text-align: right",
 									onEnter = function(self)
-										ui.TextInput.onEnter(self)
-										local text = self.Text
+										Input.onEnter(self)
+										local text = self:getText()
 										local notexist = io.open(text) == nil
 										local app = self.Application
 										app:getById("button-run"):setValue("Disabled", notexist)
@@ -675,7 +678,7 @@ local app = ui.Application:new
 									doRequest = function(self)
 										local app = self.Application
 										local filefield = app:getById("text-filename")
-										local path, part = splitpath(filefield.Text)
+										local path, part = splitpath(filefield:getText())
 										local status, path, select = app:requestFile
 										{
 											Title = "Select Lua source...",
@@ -794,13 +797,13 @@ local app = ui.Application:new
 													Class = "caption",
 													Text = "Module Name:",
 												},
-												ui.TextInput:new
+												Input:new
 												{
 													MinWidth = 200,
 													InitialFocus = true,
 													onEnter = function(self)
-														ui.TextInput.onEnter(self)
-														local text = self.Text
+														Input.onEnter(self)
+														local text = self:getText()
 														if text ~= "" then
 															addmodule(self.Application, text, "")
 															self.Application:setStatus("Module %s added - please select a file name for it.", text)

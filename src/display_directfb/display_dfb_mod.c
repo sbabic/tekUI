@@ -983,6 +983,7 @@ TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type)
 		msg = TExecAllocMsg0(mod->dfb_ExecBase, sizeof(TIMSG));
 	if (msg)
 	{
+		msg->timsg_Instance = v;
 		msg->timsg_UserData = v->userdata;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->dfb_KeyQual;

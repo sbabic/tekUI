@@ -76,7 +76,7 @@ local ui = require "tek.ui"
 local Group = ui.require("group", 31)
 local Lister = ui.require("lister", 30)
 local Text = ui.require("text", 28)
-local TextInput = ui.require("textinput", 18)
+local Input = ui.require("input")
 
 local insert = table.insert
 local pairs = pairs
@@ -84,9 +84,9 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 16.2"
-
+_VERSION = "DirList 16.7"
 local DirList = _M
+Group:newClass(DirList)
 
 -------------------------------------------------------------------------------
 --	cdir = getCurrentDir(): Returns the current directory. You can override
@@ -183,22 +183,23 @@ function DirList.new(class, self)
 
 	self.ScanMode = false
 	self.DirList = false
+	self.ListComplete = false
 
 	self.SelectMode = self.SelectMode or false
 	self.SelectText = self.SelectText or L.OPEN
 
 	self.Preselect = self.Preselect or self.Location or false
 
-	self.PathField = TextInput:new
+	self.PathField = Input:new
 	{
 		Text = self.Path,
 		KeyCode = "d",
-		Height = "fill",
 		InitialFocus = self.FocusElement == "path",
 		onEnter = function(pathfield)
-			TextInput.onEnter(pathfield)
-			self:scanDir(pathfield.Text)
-		end
+			Input.onEnter(pathfield)
+			self:scanDir(pathfield:getText())
+		end,
+		Style = "valign: center",
 	}
 
 	self.ParentButton = newButton
@@ -211,17 +212,17 @@ function DirList.new(class, self)
 		end
 	}
 
-	self.LocationField = TextInput:new
+	self.LocationField = Input:new
 	{
 		Text = self.Location,
 		KeyCode = "f",
-		Height = "fill",
 		InitialFocus = self.FocusElement == "location",
 		EnterNext = true,
 		onEnter = function(locationfield)
-			TextInput.onEnter(locationfield)
-			self:setFileEntry(pathfield.Text)
-		end
+			Input.onEnter(locationfield)
+			self:setFileEntry(locationfield:getText())
+		end,
+		Style = "valign: center",
 	}
 
 	self.ReloadButton = newButton
@@ -238,6 +239,7 @@ function DirList.new(class, self)
 	{
 		Height = "fill",
 		Width = "fill",
+		Class = "textfield",
 	}
 
 	self.Lister = self.Lister or Lister:new
@@ -252,6 +254,7 @@ function DirList.new(class, self)
 			Lister.onSelectLine(lister)
 			self:showStats()
 		end,
+		Class = "dirlist"
 	}
 
 	self.Lister:addNotify("DblClick", true,
@@ -281,8 +284,9 @@ function DirList.new(class, self)
 				insert(sel, entry[1][1])
 			end
 			-- if nothing selected, use the text in the location field:
-			if #sel == 0 and self.LocationField.Text ~= "" then
-				insert(sel, self.LocationField.Text)
+			local loc = self.LocationField:getText()
+			if #sel == 0 and loc ~= "" then
+				insert(sel, loc)
 			end
 			self:setValue("Status", "selected")
 		end
@@ -464,6 +468,8 @@ function DirList:scanDir(path)
 	local app = self.Application
 	local diri = self:getDirIterator(path)
 
+	self.ListComplete = false
+	
 	app:addCoroutine(function()
 
 		self:abortScan()
@@ -519,6 +525,7 @@ function DirList:scanDir(path)
 			end
 			self:showStats()
 			self:finishScanDir(path)
+			self.ListComplete = true
 
 		end
 
@@ -554,7 +561,7 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:goParent()
-	self:showDirectory(self:splitPath(self.PathField.Text))
+	self:showDirectory(self:splitPath(self.PathField:getText()))
 end
 
 -------------------------------------------------------------------------------
@@ -565,8 +572,9 @@ function DirList:setFileEntry(entry)
 	local list = self.Lister
 	local pathfield = self.PathField
 	local p = ui.PathSeparator
-	local path = pathfield.Text:match("(.*[^"..p.."])"..p.."?$") or ""
-	local fullpath = pathfield.Text .. p .. entry
+	local pathtext = pathfield:getText()
+	local path = pathtext:match("(.*[^"..p.."])"..p.."?$") or ""
+	local fullpath = pathtext .. p .. entry
 	fullpath = fullpath:gsub(p..p.."*", p)
 	if self:getFileStat(path, entry, "mode") == "directory" then
 		self:showDirectory(fullpath)
@@ -611,8 +619,10 @@ function DirList:dblClickList()
 	if entry then
 		if not self:setFileEntry(entry[1][1]) then
 			if self.Window then
-				-- click on "Open":
-				self.Window:clickElement(self.OpenWidget)
+				if self.ListComplete then
+					-- click on "Open":
+					self.Window:clickElement(self.OpenWidget)
+				end
 			end
 		end
 	end
@@ -623,5 +633,5 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:reload()
-	self:scanDir(self.PathField.Text)
+	self:scanDir(self.PathField:getText())
 end

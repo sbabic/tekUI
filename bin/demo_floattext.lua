@@ -37,7 +37,7 @@ local window = ui.Window:new
 							CanvasHeight = 500,
 							Child = ui.FloatText:new
 							{
-								Style = "font: ui-fixed; background-color: dark; color: shine; margin: 10",
+								Style = "font: ui-fixed; background-color: dark; color: bright; margin: 10",
 								Preformatted = true,
 								Text = [[
 
@@ -68,7 +68,6 @@ local window = ui.Window:new
 						},
 						ui.ScrollGroup:new
 						{
-							ScrollStep = 30,
 							HSliderMode = "off",
 							VSliderMode = "on",
 							Child = ui.Canvas:new

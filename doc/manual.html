@@ -5,14 +5,14 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="20-May-2012" />
+		<meta name="created" content="31-Dec-2013" />
 	</head>
 	<body>
 		<h1>
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8k
+			Version 0.8l
 		</p>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -75,6 +75,13 @@
 																										</li>
 																										<li>
 																											<a href="#tek.ui.class.scrollgroup">ScrollGroup</a> 
+																											<blockquote>
+																												<ul>
+																													<li>
+																														<a href="#tek.ui.class.input">Input</a> 
+																													</li>
+																												</ul>
+																											</blockquote>
 																										</li>
 																										<li>
 																											<a href="#tek.ui.class.window">Window</a> 
@@ -101,6 +108,16 @@
 																										</li>
 																										<li>
 																											<a href="#tek.ui.class.slider">Slider</a> 
+																										</li>
+																									</ul>
+																								</blockquote>
+																							</li>
+																							<li>
+																								<a href="#tek.ui.class.sizeable">Sizeable</a> 
+																								<blockquote>
+																									<ul>
+																										<li>
+																											<a href="#tek.ui.class.textedit">TextEdit</a> 
 																										</li>
 																									</ul>
 																								</blockquote>
@@ -138,9 +155,6 @@
 																												</ul>
 																											</blockquote>
 																										</li>
-																										<li>
-																											<a href="#tek.ui.class.textinput">TextInput</a> 
-																										</li>
 																									</ul>
 																								</blockquote>
 																							</li>
@@ -171,9 +185,6 @@
 											</li>
 										</ul>
 									</blockquote>
-								</li>
-								<li>
-									<a href="#tek.class.utf8string">UTF8String</a> 
 								</li>
 								<li>
 									<a href="#tek.ui.class.layout">Layout</a> 
@@ -217,11 +228,11 @@
 			</blockquote>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v8.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
-						<a href="#ClassOverview">ClassOverview</a> : Class / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">5 subclasses</option><option value="#tek.class.list">List</option><option value="#tek.class.markup">Markup</option><option value="#tek.class.object">Object</option><option value="#tek.class.utf8string">UTF8String</option><option value="#tek.ui.class.layout">Layout</option></select>
+						<a href="#ClassOverview">ClassOverview</a> : Class / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">4 subclasses</option><option value="#tek.class.list">List</option><option value="#tek.class.markup">Markup</option><option value="#tek.class.object">Object</option><option value="#tek.ui.class.layout">Layout</option></select>
 					</p>
 					<p>
 						This module implements inheritance and the creation of objects
@@ -679,7 +690,7 @@ class = superclass()
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v13.0)</a></h2>
+		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v14.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -859,161 +870,6 @@ method(object, arg1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.utf8string" id="tek.class.utf8string">UTF8String (v3.1)</a></h2>
-			<div class="definition"><dfn>OVERVIEW</dfn>
-				<blockquote>
-					<p>
-						<a href="#ClassOverview">ClassOverview</a> :
-						<a href="#tek.class">Class</a> /
-						UTF8String 
-					</p>
-					<p>
-						This class supports the manipulation of UTF-8 encoded strings.
-					</p>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>IMPLEMENTS</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:byte"><code>UTF8String:byte()</code></a> - Returns Unicode character codes
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:char"><code>UTF8String.char()</code></a> - Returns UTF8-encoded character sequences
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:chars"><code>UTF8String.chars()</code></a> - Iterator over a string's Unicode character codes
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:erase"><code>UTF8String:erase()</code></a> - Removes substring
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:find"><code>UTF8String:find()</code></a> - Find an UTF-8-encoded string
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:get"><code>UTF8String:get()</code></a> - Returns the string in UTF-8 encoded form
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:insert"><code>UTF8String:insert()</code></a> - Inserts a string at a given position
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:len"><code>UTF8String:len()</code></a> - Returns the length in characters
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:overwrite"><code>UTF8String:overwrite()</code></a> - Overwrites string
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:set"><code>UTF8String:set()</code></a> - Sets a string
-						</li>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:sub"><code>UTF8String:sub()</code></a> - Returns a substring of a string
-						</li>
-					</ul>
-				</blockquote>
-			</div>
-			<div class="definition"><dfn>OVERRIDES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<a href="#UTF8String:new"><code>UTF8String.new()</code></a> - Creates an UTF-8 string object from a string
-						</li>
-					</ul>
-				</blockquote>
-				<hr />
-			</div>
-		</div>
-		<div class="node"><h3><a name="UTF8String:byte" id="UTF8String:byte"><code>UTF8String:byte(i[, j])</code></a></h3>
-			<p>
-				Equivalent to <code>string.byte()</code>, except for that
-				it may return characters in the Unicode range.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:char" id="UTF8String:char"><code>UTF8String.char(...)</code></a></h3>
-			<p>
-				Equivalent to <code>string.char()</code>, except for that it
-				accepts character codes in the Unicode range.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:chars" id="UTF8String:chars"><code>UTF8String.chars(utf8)</code></a></h3>
-			<p>
-				Returns an iterator that traverses the characters
-				in an UTF-8 encoded string, returning character codes in the Unicode range
-				(up to 31 bit). Example:
-			</p>
-<pre>
-for pos, char in UTF8String.chars(utf8str) do
-    ...
-end
-</pre>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:erase" id="UTF8String:erase"><code>UTF8String:erase(i[, j])</code></a></h3>
-			<p>
-				Erases the characters at the positions from
-				<code>i</code> to <code>j</code>. The semantics for the range are the same as for
-				<a href="#UTF8String:sub"><code>UTF8String:sub()</code></a>.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:find" id="UTF8String:find"><code>start, end = UTF8String:find(findstr[, pos])</code></a></h3>
-			<p>
-				Find the specified (UTF-8
-				encoded) <code>findstring</code> in the string object, optionally starting at the
-				given position. Returns the starting and ending position where the strings
-				match in the string object, or <strong>nil</strong>.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:get" id="UTF8String:get"><code>string = UTF8String:get()</code></a></h3>
-			<p>
-				Returns the string in UTF-8 encoded form.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:insert" id="UTF8String:insert"><code>UTF8String:insert(string[, position])</code></a></h3>
-			<p>
-				Inserts the UTF-8 encoded string
-				at the specified <code>position</code> to the string object. If <code>position</code> is
-				absent, the string is added to the end.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:len" id="UTF8String:len"><code>len = UTF8String:len()</code></a></h3>
-			<p>
-				Returns the length of the string, in characters.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:new" id="UTF8String:new"><code>string = UTF8String.new(class, string)</code></a></h3>
-			<p>
-				Creates a string object from an
-				(already UTF-8 encoded) regular string.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:overwrite" id="UTF8String:overwrite"><code>UTF8String:overwrite(s[, pos])</code></a></h3>
-			<p>
-				Overwrites the string object with the
-				specified (already UTF-8 encoded) string, starting a the given position.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:set" id="UTF8String:set"><code>UTF8String:set(s)</code></a></h3>
-			<p>
-				Initializes the string object with a new, UTF-8 encoded
-				string.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="UTF8String:sub" id="UTF8String:sub"><code>substring = UTF8String:sub(i[, j])</code></a></h3>
-			<p>
-				Returns an UTF-8 encoded substring.
-				The semantics are the same as for <code>string.sub()</code>.
-			</p>
-			<hr class="page-break" />
-		</div>
 		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
@@ -1162,7 +1018,7 @@ SOURCE=-s/A/M,DEST=-d/A/K
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v5.1)</a></h2>
+		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v5.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1380,7 +1236,7 @@ function(...) out:write(...) end
 </pre>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v10.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v10.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1537,7 +1393,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v34.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v40.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1965,7 +1821,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v32.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v37.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2169,6 +2025,9 @@ ui.Application:new {
 						<li style="list-style-type: none">
 							<a href="#Application:suspend"><code>Application:suspend()</code></a> - Suspends the caller's coroutine
 						</li>
+						<li style="list-style-type: none">
+							<a href="#Application:up"><code>Application:up()</code></a> - Function called when the application is up
+						</li>
 					</ul>
 				</blockquote>
 			</div>
@@ -2306,6 +2165,9 @@ message = function(object, message)
 						<code>Location</code> - Initial contents of the requester's location field
 					</li>
 					<li style="list-style-type: none">
+						<code>OverWindow</code> - Open dialogue centered over the specified window
+					</li>
+					<li style="list-style-type: none">
 						<code>Path</code> - The initial path
 					</li>
 					<li style="list-style-type: none">
@@ -2363,7 +2225,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v45.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v50.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2813,10 +2675,16 @@ message = function(object, message)
 							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> - Queries the element's minimum and maximum size
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:checkClearFlags"><code>Area:checkClearFlags()</code></a> - Check and clear an element's flags
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:checkFlags"><code>Area:checkFlags()</code></a> - Check an element's flags
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:checkFocus"><code>Area:checkFocus()</code></a> - Checks if the element can receive the input focus
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:checkHover"><code>Area:checkHover()</code></a> - Checks if the element can be hovered over
+							<a href="#Area:checkHilite"><code>Area:checkHilite()</code></a> - Checks if the element can be highlighted
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:damage"><code>Area:damage()</code></a> - Notifies the element of a damage
@@ -2843,10 +2711,13 @@ message = function(object, message)
 							<a href="#Area:getBGElement"><code>Area:getBGElement()</code></a> - Gets the element's background element
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> - Checks if the element covers a coordinate
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:getChildren"><code>Area:getChildren()</code></a> - Gets the element's children
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> - Checks if the element covers a coordinate
+							<a href="#Area:getDisplacement"><code>Area:getDisplacement()</code></a>: Get this element's coordinate displacement
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getGroup"><code>Area:getGroup()</code></a> - Gets the element's group
@@ -2856,6 +2727,9 @@ message = function(object, message)
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getMinMax"><code>Area:getMinMax()</code></a> - Gets the element's calculated min/max sizes
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:getMsgFields"><code>Area:getMsgFields()</code></a> - Get fields of an input message
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:getNext"><code>Area:getNext()</code></a> - Gets the element's successor in its group
@@ -2890,6 +2764,9 @@ message = function(object, message)
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:rethinkLayout"><code>Area:rethinkLayout()</code></a> - Causes a relayout of the element and its group
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:setFlags"><code>Area:setFlags()</code></a> - Sets an element's flags
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> - Sets the background attribute of an element
@@ -2941,10 +2818,10 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:checkHover" id="Area:checkHover"><code>can_hover = Area:checkHover()</code></a></h3>
+		<div class="node"><h3><a name="Area:checkHilite" id="Area:checkHilite"><code>can_hilite = Area:checkHilite()</code></a></h3>
 			<p>
 				Returns <strong>true</strong> if this element can
-				react on being hovered over by the pointing device.
+				be highlighted, e.g by being hovered over with the pointing device.
 			</p>
 			<hr />
 		</div>
@@ -3062,12 +2939,18 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getChildren" id="Area:getChildren"><code>element = Area:getChildren(init)</code></a></h3>
+		<div class="node"><h3><a name="Area:getChildren" id="Area:getChildren"><code>element = Area:getChildren([mode])</code></a></h3>
 			<p>
-				Returns a table containing the element's
-				children, or <strong>nil</strong> if this element cannot have children. The optional
-				argument <code>init</code> is <strong>true</strong> when this function is called during
-				initialization or deinitialization.
+				Returns a table containing the
+				element's children, or <strong>nil</strong> if this element cannot have children.
+				The optional argument <code>mode</code> is the string <code>&quot;init&quot;</code> when this function
+				is called during initialization or deinitialization.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:getDisplacement" id="Area:getDisplacement"><code>dx, dy = getDisplacement()</code></a></h3>
+			<p>
+				Get this element's coordinate displacement
 			</p>
 			<hr />
 		</div>
@@ -3097,12 +2980,12 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getNext" id="Area:getNext"><code>table = Area:getNext()</code></a></h3>
+		<div class="node"><h3><a name="Area:getNext" id="Area:getNext"><code>element = Area:getNext([mode])</code></a></h3>
 			<p>
-				Returns the next element in the group, or, if
-				the element has no successor, the next element in the parent group (and
-				so forth, until it reaches the topmost group). Returns <strong>nil</strong> if the
-				element is not currently connected.
+				Returns the next element in its group.
+				If the element has no successor and the optional argument <code>mode</code> is
+				<code>&quot;recursive&quot;</code>, returns the next element in the parent group (and so
+				forth, until it reaches the topmost group).
 			</p>
 			<hr />
 		</div>
@@ -3120,12 +3003,12 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getPrev" id="Area:getPrev"><code>element = Area:getPrev()</code></a></h3>
+		<div class="node"><h3><a name="Area:getPrev" id="Area:getPrev"><code>element = Area:getPrev([mode])</code></a></h3>
 			<p>
-				Returns the previous element in the group, or,
-				if the element has no predecessor, the previous element in the parent group
-				(and so forth, until it reaches the topmost group). Returns <strong>nil</strong> if
-				the element is not currently connected.
+				Returns the previous element in its group.
+				If the element has no predecessor and the optional argument <code>mode</code> is
+				<code>&quot;recursive&quot;</code>, returns the previous element in the parent group (and so
+				forth, until it reaches the topmost group).
 			</p>
 			<hr />
 		</div>
@@ -3164,13 +3047,16 @@ end
 		</div>
 		<div class="node"><h3><a name="Area:passMsg" id="Area:passMsg"><code>msg = Area:passMsg(msg)</code></a></h3>
 			<p>
-				This function filters the specified input
-				message. After processing, it is free to return the message unmodified
-				(thus passing it on to the next message handler), to return a copy that
-				has certain fields in the message modified, or to absorb the message
-				by returning <strong>false</strong>. If you override this function, you are not
-				allowed to modify any data inside the original message; if you alter it,
-				you must return a copy.
+				If the element has the ui.FL_RECVINPUT flag set,
+				this function receives input messages. Additionally, to receive messages
+				of the type ui.MSG_MOUSEMOVE, the flag ui.FL_RECVMOUSEMOVE must be set.
+				After processing, it is free to return the message unmodified (thus
+				allowing it to be passed on to other elements), or to absorb the message
+				by returning <strong>false</strong>. You are not allowed to modify any data
+				inside the original message; if you alter it, you must return a copy.
+				The message types ui.MSG_INTERVAL, ui.MSG_USER, and ui.MSG_REQSELECTION
+				are not received by this function. To receive these, you must register an
+				input handler using <a href="#Window:addInputHandler"><code>Window:addInputHandler()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -3272,7 +3158,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v30.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v32.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3397,7 +3283,7 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>VScrollStep &#091;IG&#093;</code> (number)
+							<code>VIncrement &#091;IG&#093;</code> (number)
 							<blockquote>
 								<p>
 									Vertical scroll step, used e.g. for mouse wheels
@@ -3468,10 +3354,13 @@ end
 							<a href="#Area:getBGElement"><code>Area:getBGElement()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Area:getChildren"><code>Area:getChildren()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:getByXY"><code>Area:getByXY()</code></a> 
+							<a href="#Area:getDisplacement"><code>Area:getDisplacement()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
@@ -3517,7 +3406,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v9.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v9.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3588,7 +3477,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v16.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v16.7)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3852,7 +3741,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v25.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v30.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3905,7 +3794,7 @@ end
 							<a href="#Display:getFontAttrs"><code>Display:getFontAttrs()</code></a> - Gets font attributes
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:getPixmap"><code>Display.getPixmap()</code></a> - Gets a a pixmap from the cache
+							<a href="#Display:getPaint"><code>Display.getPaint()</code></a> - Gets a a paint object, cached
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Display:colorToRGB"><code>Display:colorToRGB()</code></a> - Converts a color specification to RGB
@@ -3914,13 +3803,10 @@ end
 							<a href="#Display:getTime"><code>Display:getTime()</code></a> - Gets system time
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:loadPixmap"><code>Display.loadPixmap()</code></a> - Loads a pixmap from the file system
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Display:openFont"><code>Display:openFont()</code></a> - Opens a named font
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:openVisual"><code>Display:openVisual()</code></a> - Opens a visual
+							<a href="#Display:openDrawable"><code>Display:openDrawable()</code></a> - Opens a visual
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Display:sleep"><code>Display:sleep()</code></a> - Sleeps for a period of time
@@ -3938,16 +3824,25 @@ end
 							<code>font-fixed</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>font-huge</code> 
+							<code>font-large</code> 
 						</li>
 						<li style="list-style-type: none">
-							<code>font-large</code> 
+							<code>font-x-large</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>font-xx-large</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>font-menu</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>font-small</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>font-x-small</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>font-xx-small</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-active</code> 
@@ -3972,6 +3867,12 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-border-shine</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-bright</code> 
+						</li>
+						<li style="list-style-type: none">
+							<code>rgb-caption-detail</code> 
 						</li>
 						<li style="list-style-type: none">
 							<code>rgb-cursor</code> 
@@ -4107,11 +4008,11 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:getPixmap" id="Display:getPixmap"><code>image, width, height, transparency = Display.getPixmap(fname)</code></a></h3>
+		<div class="node"><h3><a name="Display:getPaint" id="Display:getPaint"><code>image, width, height, transparency = Display.getPaint(imgspec)</code></a></h3>
 			<p>
 				Gets a
-				pixmap object, either by loading it from the filesystem or by retrieving
-				it from the cache.
+				paint object, either by loading it from the filesystem, generating it,
+				or by retrieving it from the cache.
 			</p>
 			<hr />
 		</div>
@@ -4121,28 +4022,22 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:loadPixmap" id="Display:loadPixmap"><code>image, width, height, transparency = Display.loadPixmap(filename)</code></a></h3>
-			<p>
-				Creates
-				a pixmap object from an image file in the file system. Currently only the
-				PPM file format is recognized.
-			</p>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="Display:openDrawable" id="Display:openDrawable"><code>Display:openDrawable()</code></a></h3>
 			<p>
 				Open a drawable
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:openFont" id="Display:openFont"><code>font = openFont(fontname)</code></a></h3>
+		<div class="node"><h3><a name="Display:openFont" id="Display:openFont"><code>font = openFont(fontspec[, size[, attr]])</code></a></h3>
 			<p>
-				Opens the named font. For a discussion
-				of the <code>fontname</code> format, see <a href="#tek.ui.class.text">Text</a>.
+				Opens a font. For a discussion
+				of the fontname format, see <a href="#tek.ui.class.text">Text</a>.
+				The optional size and attr arguments allow to override their respective
+				values in the fontspec argument.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v19.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v19.6)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4416,7 +4311,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v21.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v21.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4565,7 +4460,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v21.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v22.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4713,6 +4608,14 @@ end
 						</tr>
 						<tr>
 							<td class="column1">
+								<em>border-legend-align</em> 
+							</td>
+							<td class="column2">
+								controls the <em>default</em> border class
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
 								<em>border-right-color</em> 
 							</td>
 							<td class="column2">
@@ -4821,6 +4724,9 @@ end
 							<a href="#Area:punch"><code>Area:punch()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Area:setState"><code>Area:setState()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
 					</ul>
@@ -4841,7 +4747,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4899,7 +4805,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v31.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v32.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5068,7 +4974,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v6.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v7.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5103,9 +5009,6 @@ end
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Widget:onHover"><code>Widget:onHover()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -5113,6 +5016,74 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:show"><code>Area:show()</code></a> 
+						</li>
+					</ul>
+				</blockquote>
+				<hr class="page-break" />
+			</div>
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v3.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> :
+						<a href="#tek.class">Class</a> /
+						<a href="#tek.class.object">Object</a> /
+						<a href="#tek.ui.class.element">Element</a> /
+						<a href="#tek.ui.class.area">Area</a> /
+						<a href="#tek.ui.class.frame">Frame</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
+						<a href="#tek.ui.class.group">Group</a> /
+						<a href="#tek.ui.class.scrollgroup">ScrollGroup</a> /
+						Input 
+					</p>
+					<p>
+						Text input class
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>ATTRIBUTES</dfn>
+			</div>
+			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
+			</div>
+			<div class="definition"><dfn>IMPLEMENTS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Input:getText"><code>Input:getText()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Input:onEnter"><code>Input:onEnter()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Input:onSetText"><code>Input:onSetText()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Input:onSetChanged"><code>Input:onSetChanged()</code></a> 
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>OVERRIDES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Class:new"><code>Class.new()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onDisable"><code>Widget:onDisable()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onActivate"><code>Widget:onActivate()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:onFocus"><code>Widget:onFocus()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:checkFocus"><code>Widget:checkFocus()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Widget:activate"><code>Widget:activate()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
@@ -5168,7 +5139,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v30.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v31.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5268,15 +5239,6 @@ end
 									The line number of the Lister's cursor; this value may
 									be <code>0</code>, in which case the cursor is invisible. Changing
 									this value will invoke the <a href="#Lister:onSetCursor"><code>Lister:onSetCursor()</code></a> method.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Font &#091;IG&#093;</code> (string)
-							<blockquote>
-								<p>
-									Font specifier for determining the font used for list entries.
-									See <a href="#tek.ui.class.text">Text</a> for details on its format.
 								</p>
 							</blockquote>
 						</li>
@@ -5547,7 +5509,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v6.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v6.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5605,7 +5567,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v10.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5657,7 +5619,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v4.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v5.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5692,6 +5654,14 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
+							<code>Increment &#091;ISG&#093;</code> (number)
+							<blockquote>
+								<p>
+									Default increase/decrease step value &#091;Default: 1&#093;
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>Max &#091;ISG&#093;</code> (number)
 							<blockquote>
 								<p>
@@ -5706,14 +5676,6 @@ end
 								<p>
 									Minimum acceptable <code>Value</code>. Setting this value
 									invokes the <a href="#Numeric:onSetMin"><code>Numeric:onSetMin()</code></a> method.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Step &#091;ISG&#093;</code> (number)
-							<blockquote>
-								<p>
-									Default step value &#091;Default: 1&#093;
 								</p>
 							</blockquote>
 						</li>
@@ -5736,7 +5698,7 @@ end
 							<a href="#Numeric:decrease"><code>Numeric:decrease()</code></a> - Decreases <code>Value</code> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Numeric:increase"><code>Numeric:increase()</code></a> - Increases <code>Value</code> 
+							<a href="#Numeric:increase"><code>Numeric:increase()</code></a> - Increments <code>Value</code> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Numeric:onSetMax"><code>Numeric:onSetMax()</code></a> - Handler for the <code>Max</code> attribute
@@ -5776,14 +5738,14 @@ end
 		<div class="node"><h3><a name="Numeric:decrease" id="Numeric:decrease"><code>decrease([delta])</code></a></h3>
 			<p>
 				Decrease <code>Value</code> by the specified <code>delta</code>.
-				If <code>delta</code> is omitted, the <code>Step</code> attribute is used in its place.
+				If <code>delta</code> is omitted, the <code>Increment</code> attribute is used in its place.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Numeric:increase" id="Numeric:increase"><code>increase([delta])</code></a></h3>
 			<p>
-				Increase <code>Value</code> by the specified <code>delta</code>.
-				If <code>delta</code> is omitted, the <code>Step</code> attribute is used in its place.
+				Increment <code>Value</code> by the specified <code>delta</code>.
+				If <code>delta</code> is omitted, the <code>Increment</code> attribute is used in its place.
 			</p>
 			<hr />
 		</div>
@@ -5814,7 +5776,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5906,7 +5868,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v22.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v23.8)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6018,12 +5980,15 @@ end
 						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:show"><code>Area:show()</code></a> 
+						</li>
 					</ul>
 				</blockquote>
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6192,7 +6157,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v13.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v15.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6222,15 +6187,6 @@ end
 									If <strong>false</strong>, the elements inside the scrollbar (slider, arrows)
 									abstain from receiving the input focus, which means that they can
 									only be operated with the mouse. Default: <strong>true</strong> 
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Integer &#091;IG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									If <strong>true</strong>, integer steps are enforced. By default, the
-									slider moves continuously.
 								</p>
 							</blockquote>
 						</li>
@@ -6267,6 +6223,14 @@ end
 								<p>
 									The range of the slider, i.e. the size it represents. Setting
 									this value invokes the <a href="#ScrollBar:onSetRange"><code>ScrollBar:onSetRange()</code></a> method.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Step &#091;IG&#093;</code> (boolean or number)
+							<blockquote>
+								<p>
+									See <a href="#tek.ui.class.slider">tek.ui.class.slider</a>.
 								</p>
 							</blockquote>
 						</li>
@@ -6348,7 +6312,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v17.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v18.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6360,7 +6324,7 @@ end
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.widget">Widget</a> /
 						<a href="#tek.ui.class.group">Group</a> /
-						ScrollGroup 
+						ScrollGroup / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">1 subclasses</option><option value="#tek.ui.class.input">Input</option></select>
 					</p>
 					<p>
 						This class implements a group containing a scrollable
@@ -6467,7 +6431,63 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v24.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v9.1)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> :
+						<a href="#tek.class">Class</a> /
+						<a href="#tek.class.object">Object</a> /
+						<a href="#tek.ui.class.element">Element</a> /
+						<a href="#tek.ui.class.area">Area</a> /
+						<a href="#tek.ui.class.frame">Frame</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
+						Sizeable / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">1 subclasses</option><option value="#tek.ui.class.textedit">TextEdit</option></select>
+					</p>
+					<p>
+						This class implements the ability to resize an element without the
+						need to repaint it completely. Its parent must be a Canvas element.
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>IMPLEMENTS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Sizeable:resize"><code>Sizeable:resize()</code></a> - Resize the element
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>OVERRIDES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Element:connect"><code>Element:connect()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:draw"><code>Area:draw()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Object:init"><code>Object.init()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="Sizeable:resize" id="Sizeable:resize"><code>Sizeable:resize(dx, dy, insx, insy)</code></a></h3>
+			<p>
+				Resize the element by <code>dx</code> on the
+				x axis and <code>dy</code> on the y axis, inserting or removing space at <code>insx</code> 
+				on the x axis and <code>insy</code> on the y axis.
+			</p>
+			<hr class="page-break" />
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v26.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6490,12 +6510,12 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>AutoFocus &#091;IG&#093;</code> (boolean)
+							<code>AutoCapture &#091;ISG&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong> and the slider is receiving the focus, it reacts
 									on keyboard shortcuts instantly; otherwise, it must be selected
-									first (and deselected afterwards). Default: <strong>false</strong> 
+									first (and deselected afterwards). Default: <strong>true</strong> 
 								</p>
 							</blockquote>
 						</li>
@@ -6505,15 +6525,6 @@ end
 								<p>
 									A Widget object for being used as the slider's knob. By default,
 									a knob widget of the style class <code>&quot;knob&quot;</code> is created internally.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Integer &#091;IG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									If <strong>true</strong>, integer steps are enforced. By default, the
-									slider knob moves continuously.
 								</p>
 							</blockquote>
 						</li>
@@ -6555,6 +6566,16 @@ end
 								<p>
 									The size of the slider, i.e. the range that it represents.
 									Setting this value invokes the <a href="#Slider:onSetRange"><code>Slider:onSetRange()</code></a> method.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>Step &#091;ISG&#093;</code> (boolean or number)
+							<blockquote>
+								<p>
+									If <strong>true</strong> or <code>1</code>, integer steps are enforced. If a number,
+									steps of that size are enforced. If <strong>false</strong>, the default, the
+									slider knob moves continuously.
 								</p>
 							</blockquote>
 						</li>
@@ -6657,7 +6678,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v28.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v28.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6668,7 +6689,7 @@ end
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.widget">Widget</a> /
-						Text / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">5 subclasses</option><option value="#tek.ui.class.button">Button</option><option value="#tek.ui.class.checkmark">CheckMark</option><option value="#tek.ui.class.lister">Lister</option><option value="#tek.ui.class.popitem">PopItem</option><option value="#tek.ui.class.textinput">TextInput</option></select>
+						Text / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">4 subclasses</option><option value="#tek.ui.class.button">Button</option><option value="#tek.ui.class.checkmark">CheckMark</option><option value="#tek.ui.class.lister">Lister</option><option value="#tek.ui.class.popitem">PopItem</option></select>
 					</p>
 					<p>
 						This class implements widgets with text.
@@ -6760,35 +6781,53 @@ end
 </pre>
 					<p>
 						Font names, if specified, will be probed in the order of their
-						occurrence in the string; the first font that can be opened will
-						be used. For the font names, the following predefined named are
-						supported:
+						occurrence; the first font that can be opened will  be used. For
+						the font name, the following predefined names are supported:
 					</p>
 					<blockquote>
 						<ul>
 							<li>
+								<em>ui-main</em> (or an empty string) - The default font,
+								e.g. for buttons
+							</li>
+							<li>
 								<em>ui-fixed</em> - The default fixed font
 							</li>
 							<li>
-								<em>ui-main</em> (or an empty string) - The default main font,
-								e.g. for buttons and menus
+								<em>ui-menu</em> - The default menu font
 							</li>
 							<li>
 								<em>ui-small</em> - The default small font, e.g. for group
 								captions
 							</li>
 							<li>
+								<em>ui-x-small</em> - The default 'extra small' font
+							</li>
+							<li>
+								<em>ui-xx-small</em> - The default 'extra extra small' font
+							</li>
+							<li>
 								<em>ui-large</em> - The default 'large' font
 							</li>
 							<li>
-								<em>ui-huge</em> - The default 'huge' font
+								<em>ui-x-large</em> - The default 'extra large' font
+							</li>
+							<li>
+								<em>ui-xx-large</em> - The default 'extra extra large' font
 							</li>
 						</ul>
 					</blockquote>
 					<p>
 						If no font name is specified, the main font will be used.
-						The size specification (in pixels) is optional as well; if absent,
+						The size specification (in pixels) is optional; if absent,
 						the respective font's default size will be used.
+					</p>
+					<p>
+						Additional hints can be passed alongside with the fontname by appending
+						a slash and option letters, which must be in alphabetical order.
+						Currently, the letter <code>b</code> will be used as a hint for boldface, and
+						<code>i</code> for italic. For example, the string <code>&quot;ui-main/bi&quot;</code> would
+						request the default main font in bold italic.
 					</p>
 				</blockquote>
 			</div>
@@ -6873,7 +6912,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textinput" id="tek.ui.class.textinput">TextInput (v18.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v17.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6884,89 +6923,35 @@ end
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
 						<a href="#tek.ui.class.widget">Widget</a> /
-						<a href="#tek.ui.class.text">Text</a> /
-						TextInput 
+						<a href="#tek.ui.class.sizeable">Sizeable</a> /
+						TextEdit 
 					</p>
 					<p>
-						This class implements a widget for entering and editing text.
+						Text editor class
 					</p>
 				</blockquote>
 			</div>
 			<div class="definition"><dfn>ATTRIBUTES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>Enter &#091;SG&#093;</code> (string)
-							<blockquote>
-								<p>
-									The text that is being entered (by pressing the Return key) into
-									the input field. Setting this value causes the invocation of
-									the <a href="#TextInput:onEnter"><code>TextInput:onEnter()</code></a> method.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>EnterNext &#091;IG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Indicates that by pressing the Return key, the focus should advance
-									to the next element that can receive input.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>TabEnter &#091;IG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Indicates that leaving the element by pressing the Tab key should
-									set the <code>Enter</code> attribute and invoke the respective handler.
-								</p>
-							</blockquote>
-						</li>
-					</ul>
-				</blockquote>
 			</div>
 			<div class="definition"><dfn>STYLE PROPERTIES</dfn>
-				<blockquote>
-					<ul>
-						<li style="list-style-type: none">
-							<code>cursor-background-color</code> 
-						</li>
-						<li style="list-style-type: none">
-							<code>cursor-color</code> 
-						</li>
-					</ul>
-				</blockquote>
 			</div>
 			<div class="definition"><dfn>IMPLEMENTS</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#TextInput:addChar"><code>TextInput:addChar()</code></a> - Perform character addition
+							<a href="#TextEdit:addChar"><code>TextEdit:addChar()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#TextInput:backSpace"><code>TextInput:backSpace()</code></a> - Perform 'Backspace' function
+							<a href="#TextEdit:getText"><code>TextEdit:getText()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#TextInput:delChar"><code>TextInput:delChar()</code></a> - Perform 'Del' function
+							<a href="#TextEdit:remChar"><code>TextEdit:remChar()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#TextInput:getChar"><code>TextInput:getChar()</code></a> - Get character under cursor or at position
+							<a href="#TextEdit:saveText"><code>TextEdit:saveText()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#TextInput:getCursor"><code>TextInput:getCursor()</code></a> - Get cursor position
-						</li>
-						<li style="list-style-type: none">
-							<a href="#TextInput:moveCursorLeft"><code>TextInput:moveCursorLeft()</code></a> - Move the cursor one step to the left
-						</li>
-						<li style="list-style-type: none">
-							<a href="#TextInput:moveCursorRight"><code>TextInput:moveCursorRight()</code></a> - Move the cursor one step to the right
-						</li>
-						<li style="list-style-type: none">
-							<a href="#TextInput:onEnter"><code>TextInput:onEnter()</code></a> - Handler invoked when <code>Enter</code> ist set
-						</li>
-						<li style="list-style-type: none">
-							<a href="#TextInput:setCursor"><code>TextInput:setCursor()</code></a> - Set cursor position
+							<a href="#TextEdit:setEditing"><code>TextEdit:setEditing()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
@@ -6975,31 +6960,22 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:hide"><code>Element:hide()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Frame:onFocus"><code>Frame:onFocus()</code></a> 
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Widget:onSelect"><code>Widget:onSelect()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Text:onSetText"><code>Text:onSetText()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
+							<a href="#Element:onSetStyle"><code>Element:onSetStyle()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
@@ -7008,73 +6984,23 @@ end
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Element:show"><code>Element:show()</code></a> 
+							<a href="#Area:show"><code>Area:show()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="TextInput:addChar" id="TextInput:addChar"><code>addChar(utf8s)</code></a></h3>
+		<div class="node"><h3><a name="TextEdit:addChar" id="TextEdit:addChar"><code>added = addChar(utf8)</code></a></h3>
 			<p>
-				Perform add character
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="TextInput:backSpace" id="TextInput:backSpace"><code>backSpace()</code></a></h3>
-			<p>
-				Perform backspace
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="TextInput:delChar" id="TextInput:delChar"><code>delChar()</code></a></h3>
-			<p>
-				Perform delete character
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="TextInput:getChar" id="TextInput:getChar"><code>char = getChar([pos])</code></a></h3>
-			<p>
-				Get the character under the cursor, or at the
-				specified position.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="TextInput:getCursor" id="TextInput:getCursor"><code>self:getCursor()</code></a></h3>
-			<p>
-				Get cursor position
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="TextInput:moveCursorLeft" id="TextInput:moveCursorLeft"><code>success = moveCursorLeft()</code></a></h3>
-			<p>
-				Advance the cursor position by 1 to the left.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="TextInput:moveCursorRight" id="TextInput:moveCursorRight"><code>success = moveCursorRight()</code></a></h3>
-			<p>
-				Advance the cursor position by 1 to the right.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="TextInput:onEnter" id="TextInput:onEnter"><code>onEnter()</code></a></h3>
-			<p>
-				This method is called when the <code>Enter</code> attribute is
-				set. It can be overridden for reacting on entering text by pressing
-				the return key. The implementation in this class also sets the <code>Text</code> 
-				attribute (see <a href="#tek.ui.class.text">Text</a>).
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="TextInput:setCursor" id="TextInput:setCursor"><code>self:setCursor(pos)</code></a></h3>
-			<p>
-				Set absolute cursor position. If <code>pos</code> is
-				<code>&quot;eol&quot;</code>, the cursor is positioned to the end of the string.
+				Adds an utf8 character to the text. By adding a
+				newline (<code>&quot;\n&quot;</code>) or CR (<code>&quot;\r&quot;</code>), a new line is produced, <code>&quot;\127&quot;</code> 
+				(DEL) deletes the character under the cursor, <code>&quot;\008&quot;</code> performs a
+				backspace.
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v25.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v28.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7084,7 +7010,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						Widget / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">4 subclasses</option><option value="#tek.ui.class.group">Group</option><option value="#tek.ui.class.handle">Handle</option><option value="#tek.ui.class.numeric">Numeric</option><option value="#tek.ui.class.text">Text</option></select>
+						Widget / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">5 subclasses</option><option value="#tek.ui.class.group">Group</option><option value="#tek.ui.class.handle">Handle</option><option value="#tek.ui.class.numeric">Numeric</option><option value="#tek.ui.class.sizeable">Sizeable</option><option value="#tek.ui.class.text">Text</option></select>
 					</p>
 					<p>
 						This class implements interactions with the user.
@@ -7100,7 +7026,7 @@ end
 								<p>
 									The Widget's activation state. While <strong>true</strong>, the position of
 									the pointing device is being verified (which is also reflected by
-									the <code>Hover</code> attribute, see below). When the <code>Active</code> state
+									the <code>Hilite</code> attribute, see below). When the <code>Active</code> state
 									variable changes, the Widget's behavior depends on its <code>Mode</code> 
 									attribute (see below):
 								</p>
@@ -7108,7 +7034,7 @@ end
 									<ul>
 										<li>
 											in <em>button</em> mode, the <code>Selected</code> attribute is set to
-											the value of the <code>Hover</code> attribute. When the <code>Selected</code> 
+											the value of the <code>Hilite</code> attribute. When the <code>Selected</code> 
 											state changes, the <code>Pressed</code> attribute is set to the value
 											of the <code>Active</code> attribute.
 										</li>
@@ -7161,15 +7087,6 @@ end
 									When the element is released, this attribute is set to <strong>false</strong>.
 									Changes to this attribute cause the invocation of the
 									<a href="#Widget:onHold"><code>Widget:onHold()</code></a> method.
-								</p>
-							</blockquote>
-						</li>
-						<li style="list-style-type: none">
-							<code>Hover &#091;SG&#093;</code> (boolean)
-							<blockquote>
-								<p>
-									Signifies a change of the element being hovered by the pointing
-									device. Changes to this state variable invoke <a href="#Widget:onHover"><code>Widget:onHover()</code></a>.
 								</p>
 							</blockquote>
 						</li>
@@ -7384,6 +7301,9 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#Widget:activate"><code>Widget:activate()</code></a> - Activate this or neighbour element
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Widget:onActivate"><code>Widget:onActivate()</code></a> - Handler for <code>Active</code> 
 						</li>
 						<li style="list-style-type: none">
@@ -7405,9 +7325,6 @@ end
 							<a href="#Widget:onHold"><code>Widget:onHold()</code></a> - Handler for <code>Hold</code> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Widget:onHover"><code>Widget:onHover()</code></a> - Handler for <code>Hover</code> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Widget:onPress"><code>Widget:onPress()</code></a> - Handler for <code>Pressed</code> 
 						</li>
 						<li style="list-style-type: none">
@@ -7426,7 +7343,7 @@ end
 							<a href="#Area:checkFocus"><code>Area:checkFocus()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:checkHover"><code>Area:checkHover()</code></a> 
+							<a href="#Area:checkHilite"><code>Area:checkHilite()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
@@ -7453,6 +7370,13 @@ end
 				</blockquote>
 				<hr />
 			</div>
+		</div>
+		<div class="node"><h3><a name="Widget:activate" id="Widget:activate"><code>Widget:activate([mode])</code></a></h3>
+			<p>
+				Activates this or an element's &quot;next&quot; element.
+				<code>mode</code> can be <code>&quot;focus&quot;</code> (the default), <code>&quot;next&quot;</code>, or <code>&quot;click&quot;</code>.
+			</p>
+			<hr />
 		</div>
 		<div class="node"><h3><a name="Widget:onActivate" id="Widget:onActivate"><code>Widget:onActivate()</code></a></h3>
 			<p>
@@ -7509,13 +7433,6 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Widget:onHover" id="Widget:onHover"><code>Widget:onHover()</code></a></h3>
-			<p>
-				This method is invoked when the <code>Hover</code> 
-				attribute has changed.
-			</p>
-			<hr />
-		</div>
 		<div class="node"><h3><a name="Widget:onPress" id="Widget:onPress"><code>Widget:onPress()</code></a></h3>
 			<p>
 				This handler is called when the <code>Pressed</code> 
@@ -7531,7 +7448,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v33.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v39.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7886,7 +7803,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v7.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v7.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7962,7 +7879,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Sun May 20 17:50:59 2012
+					Document generated on Tue Dec 31 19:07:13 2013
 				</p>
 			</div>
 		</div>

@@ -95,7 +95,7 @@ end
 
 local Presenter = ScrollText:new
 {
-	Style = "font: ui-huge:40; background-color: shadow; color: shine",
+	Style = "font: ui-huge:40; background-color: dark; color: bright",
 -- 	Class = "text-slide",
 	Preformatted = true,
 	Slides =
@@ -121,9 +121,6 @@ local Presenter = ScrollText:new
 			"» GUI code is compact,",
 			"easy to learn, program,",
 			"maintain and extend.",
-			"",
-			"» C/C++ or Java",
-			"knowledge is not required.",
 		},
 	}
 }

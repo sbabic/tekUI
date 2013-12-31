@@ -30,6 +30,8 @@ local CheckMark = ui.require("checkmark", 9)
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
 _VERSION = "RadioButton 6.0"
+local RadioButton = _M
+CheckMark:newClass(RadioButton)
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -41,8 +43,6 @@ local RadioImage2 = ui.getStockImage("radiobutton", 2)
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
-
-local RadioButton = _M
 
 function RadioButton.init(self)
 	self.Image = self.Image or RadioImage1

@@ -22,6 +22,7 @@
 #define TEK_LIB_VISUALPEN_CLASSNAME "tek.lib.visual.pen*"
 #define TEK_LIB_VISUALFONT_CLASSNAME "tek.lib.visual.font*"
 #define TEK_LIB_VISUALPIXMAP_CLASSNAME "tek.lib.visual.pixmap*"
+#define TEK_LIB_VISUALGRADIENT_CLASSNAME "tek.lib.visual.gradient*"
 
 /*****************************************************************************/
 
@@ -146,6 +147,20 @@ typedef struct
 
 } TEKFont;
 
+
+
+typedef struct { float x, y; } vec;
+
+typedef struct {
+	vec vec;
+	float r, g, b;
+} rgbpt;
+
+typedef struct
+{
+	rgbpt A, B;
+} TEKGradient;
+
 /*****************************************************************************/
 
 LOCAL LUACFUNC TINT tek_lib_visual_open(lua_State *L);
@@ -190,5 +205,9 @@ LOCAL LUACFUNC TINT tek_lib_visual_pushcliprect(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_popcliprect(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getcliprect(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_setbgpen(lua_State *L);
-
+LOCAL LUACFUNC TINT tek_lib_visual_getselection(lua_State *L);
+LOCAL LUACFUNC TINT tek_msg_reply(lua_State *L);
+LOCAL LUACFUNC TINT tek_msg_index(lua_State *L);
+LOCAL LUACFUNC TINT tek_msg_len(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L);
 #endif

@@ -17,10 +17,9 @@ local assert = assert
 local type = type
 
 module("tek.ui.class.image", tek.class)
-
 _VERSION = "Image 2.2"
-
 local Image = _M
+Class:newClass(Image)
 
 function Image.new(class, image)
 	if type(image) == "string" then

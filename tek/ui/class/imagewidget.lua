@@ -14,16 +14,16 @@ local floor = math.floor
 local max = math.max
 local tonumber = tonumber
 local type = type
-local unpack = unpack
+local unpack = unpack or table.unpack
 
 module("tek.ui.class.imagewidget", tek.ui.class.widget)
-_VERSION = "ImageWidget 13.0"
+_VERSION = "ImageWidget 13.2"
+local ImageWidget = _M
+Widget:newClass(ImageWidget)
 
 -------------------------------------------------------------------------------
 -- Class implementation:
 -------------------------------------------------------------------------------
-
-local ImageWidget = _M
 
 function ImageWidget.new(class, self)
 	self.EraseBG = false
@@ -76,7 +76,7 @@ end
 
 function ImageWidget:setImage(img)
 	self.Image = img
-	self.Flags:set(ui.FL_REDRAW + ui.FL_CHANGED)
+	self:setFlags(ui.FL_CHANGED + ui.FL_REDRAW)
 	if img then
 		local iw, ih = img:askWidthHeight(false, false)
 		if iw ~= self.ImageWidth or ih ~= self.ImageHeight then
@@ -93,7 +93,7 @@ end
 
 function ImageWidget:layout(r1, r2, r3, r4, markdamage)
 	local res = Widget.layout(self, r1, r2, r3, r4, markdamage)
-	if self.Flags:checkClear(ui.FL_CHANGED) or res then
+	if self:checkClearFlags(ui.FL_CHANGED) or res then
 		local r1, r2, r3, r4 = self:getRect()
 		local p1, p2, p3, p4 = self:getPadding()
 

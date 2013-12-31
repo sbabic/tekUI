@@ -28,12 +28,12 @@ while true do
 	io.stdout:write("\n")
 
 	s1 = s1 + 0.047
-	s2 = s2 + 0.33
+	s2 = s2 + 0.133
 	if s2 > PI2 then
 		s2 = s2 - PI2
 	end
 
 	-- wait given number of microseconds:
-	visual.sleep(30)
+	visual.sleep(10)
 
 end

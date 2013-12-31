@@ -24,21 +24,21 @@
 --		- {{Default [IG]}} (number)
 --			The default for {{Value}}, which can be revoked using the
 --			Numeric:reset() method.
+--		- {{Increment [ISG]}} (number)
+--			Default increase/decrease step value [Default: 1]
 --		- {{Max [ISG]}} (number)
 --			Maximum acceptable {{Value}}. Setting this value
 --			invokes the Numeric:onSetMax() method.
 --		- {{Min [ISG]}} (number)
 --			Minimum acceptable {{Value}}. Setting this value
 --			invokes the Numeric:onSetMin() method.
---		- {{Step [ISG]}} (number)
---			Default step value [Default: 1]
 --		- {{Value [ISG]}} (number)
 --			The current value represented by this class. Setting this
 --			value causes the Numeric:onSetValue() method to be invoked.
 --
 --	IMPLEMENTS::
 --		- Numeric:decrease() - Decreases {{Value}}
---		- Numeric:increase() - Increases {{Value}}
+--		- Numeric:increase() - Increments {{Value}}
 --		- Numeric:onSetMax() - Handler for the {{Max}} attribute
 --		- Numeric:onSetMin() - Handler for the {{Min}} attribute
 --		- Numeric:onSetValue() - Handler for the {{Value}} attribute
@@ -60,11 +60,11 @@ local Widget = ui.require("widget", 25)
 local floor = math.floor
 local max = math.max
 local min = math.min
-local unpack = unpack
 
 module("tek.ui.class.numeric", tek.ui.class.widget)
-_VERSION = "Numeric 4.0"
+_VERSION = "Numeric 5.0"
 local Numeric = _M
+Widget:newClass(Numeric)
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -89,26 +89,26 @@ function Numeric.init(self)
 	self.Min = self.Min or 1
 	self.Default = max(self.Min, min(self.Max, self.Default or self.Min))
 	self.Value = max(self.Min, min(self.Max, self.Value or self.Default))
-	self.Step = self.Step or 1
+	self.Increment = self.Increment or 1
 	return Widget.init(self)
 end
 
 -------------------------------------------------------------------------------
---	increase([delta]): Increase {{Value}} by the specified {{delta}}.
---	If {{delta}} is omitted, the {{Step}} attribute is used in its place.
+--	increase([delta]): Increment {{Value}} by the specified {{delta}}.
+--	If {{delta}} is omitted, the {{Increment}} attribute is used in its place.
 -------------------------------------------------------------------------------
 
 function Numeric:increase(d)
-	self:setValue("Value", self.Value + (d or self.Step))
+	self:setValue("Value", self.Value + (d or self.Increment))
 end
 
 -------------------------------------------------------------------------------
 --	decrease([delta]): Decrease {{Value}} by the specified {{delta}}.
---	If {{delta}} is omitted, the {{Step}} attribute is used in its place.
+--	If {{delta}} is omitted, the {{Increment}} attribute is used in its place.
 -------------------------------------------------------------------------------
 
 function Numeric:decrease(d)
-	self:setValue("Value", self.Value - (d or self.Step))
+	self:setValue("Value", self.Value - (d or self.Increment))
 end
 
 -------------------------------------------------------------------------------

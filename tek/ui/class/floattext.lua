@@ -65,9 +65,9 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.area)
-_VERSION = "FloatText 21.0"
-
+_VERSION = "FloatText 21.2"
 local FloatText = _M
+Area:newClass(FloatText)
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -322,7 +322,7 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 			self.DamageRegion:subRect(s1, s2, s3, s4)
 		end
 		self.Rect:setRect(x0, y0, x1, y1)
-		self.Flags:set(FL_REDRAW + FL_LAYOUT)
+		self:setFlags(FL_LAYOUT + FL_REDRAW)
 		return true
 	end
 
@@ -336,7 +336,7 @@ function FloatText:setState(bg, fg)
 	fg = fg or self.Properties["color"] or "list-detail"
 	if fg ~= self.FGPen then
 		self.FGPen = fg
-		self.Flags:set(FL_REDRAW)
+		self:setFlags(FL_REDRAW)
 	end
 	Area.setState(self, bg)
 end

@@ -48,7 +48,7 @@
 --			If '''true''', the Canvas borrows its background properties from
 --			its child for rendering its {{UnusedRegion}}. If '''false''',
 --			the Canvas' own background properties are used. Default: '''true'''
---		- {{VScrollStep [IG]}} (number)
+--		- {{VIncrement [IG]}} (number)
 --			Vertical scroll step, used e.g. for mouse wheels
 --
 --	IMPLEMENTS::
@@ -71,8 +71,9 @@
 --		- Area:focusRect()
 --		- Area:getBG()
 --		- Area:getBGElement()
---		- Area:getChildren()
 --		- Area:getByXY()
+--		- Area:getChildren()
+--		- Area:getDisplacement()
 --		- Area:hide()
 --		- Object.init()
 --		- Area:layout()
@@ -96,17 +97,20 @@ local max = math.max
 local min = math.min
 local intersect = Region.intersect
 local tonumber = tonumber
-local unpack = unpack
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 30.0"
+_VERSION = "Canvas 32.4"
 local Canvas = _M
+Frame:newClass(Canvas)
 
 -------------------------------------------------------------------------------
 --	constants & class data:
 -------------------------------------------------------------------------------
 
 local FL_REDRAW = ui.FL_REDRAW
+local FL_UPDATE = ui.FL_UPDATE
+local FL_RECVINPUT = ui.FL_RECVINPUT
+local FL_RECVMOUSEMOVE = ui.FL_RECVMOUSEMOVE
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -149,7 +153,7 @@ function Canvas.init(self)
 	if self.UseChildBG == nil then
 		self.UseChildBG = true
 	end
-	self.VScrollStep = self.VScrollStep or 10
+	self.VIncrement = self.VIncrement or 10
 	return Frame.init(self)
 end
 
@@ -179,6 +183,7 @@ end
 
 function Canvas:setup(app, window)
 	Frame.setup(self, app, window)
+	self:setFlags(FL_RECVINPUT + FL_RECVMOUSEMOVE)
 	self.Child:setup(app, window)
 end
 
@@ -188,6 +193,7 @@ end
 
 function Canvas:cleanup()
 	self.Child:cleanup()
+	self:checkClearFlags(0, FL_RECVINPUT + FL_RECVMOUSEMOVE)
 	Frame.cleanup(self)
 end
 
@@ -284,7 +290,14 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 				sizechanged = true
 			end
 		until self.CanvasWidth == iw and self.CanvasHeight == ih
-	
+
+		if not sizechanged and markdamage ~= false then
+			local t1, t2 = self:getRect()
+			if s1 ~= t1 and s2 ~= t2 then -- child unchanged, canvas moved on both axes
+				c:damage(0, 0, iw - 1, ih - 1)
+			end
+		end
+		
 		self:drawEnd()
 	
 	end
@@ -303,7 +316,7 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 	end
 
 	if res or sizechanged then
-		self.Flags:set(FL_REDRAW)
+		self:setFlags(FL_REDRAW)
 		return true
 	end
 
@@ -333,7 +346,7 @@ function Canvas:updateUnusedRegion()
 			local b4 = tonumber(props["margin-bottom"]) or 0
 			ur:subRect(r1 - m1 + b1, r2 - m2 + b2,
 				r3 + m3 - b3, r4 + m4 - b4)
-			self.Flags:set(FL_REDRAW)
+			self:setFlags(FL_REDRAW)
 		end
 	end
 end
@@ -354,9 +367,11 @@ end
 
 function Canvas:draw()
 	local res = Frame.draw(self)
-	if self:drawBegin() then
-		self.Child:draw()
-		self:drawEnd()
+	if self.Child:checkClearFlags(FL_UPDATE) then
+		if self:drawBegin() then
+			self.Child:draw()
+			self:drawEnd()
+		end
 	end
 	return res
 end
@@ -436,18 +451,19 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:passMsg(msg)
-	local isover = self:checkArea(msg[4], msg[5])
+	local mx, my = self:getMsgFields(msg, "mousexy")
+	local isover = self:checkArea(mx, my)
 	if isover then
 		if msg[2] == ui.MSG_MOUSEBUTTON then
 			local r1, r2, r3, r4 = self:getRect()
 			local h = self.CanvasHeight - (r4 - r2 + 1)
 			if msg[3] == 64 then -- wheelup
 				self:setValue("CanvasTop",
-					max(0, min(h, self.CanvasTop - self.VScrollStep)))
+					max(0, min(h, self.CanvasTop - self.VIncrement)))
 				return false -- absorb
 			elseif msg[3] == 128 then -- wheeldown
 				self:setValue("CanvasTop",
-					max(0, min(h, self.CanvasTop + self.VScrollStep)))
+					max(0, min(h, self.CanvasTop + self.VIncrement)))
 				return false -- absorb
 			end
 		elseif msg[2] == ui.MSG_KEYDOWN then
@@ -460,18 +476,7 @@ function Canvas:passMsg(msg)
 			end
 		end
 	end
-	if isover or
-		msg[2] == ui.MSG_MOUSEMOVE and self.Window.MovingElement then
-		-- operate on copy of the input message:
-		local r1, r2 = self:getRect()
-		local m = self.TempMsg
-		m[1], m[2], m[3], m[4], m[5], m[6] = unpack(msg)
-		-- shift mouse position into canvas area:
-		m[4] = m[4] - r1 + self.CanvasLeft
-		m[5] = m[5] - r2 + self.CanvasTop
-		self.Child:passMsg(m)
-	end
-	return msg
+	return self.Child:passMsg(msg)
 end
 
 -------------------------------------------------------------------------------
@@ -524,12 +529,19 @@ function Canvas:focusRect(x0, y0, x1, y1, smooth)
 	local vy1 = vy0 + vh
 	local moved
 
+	-- make fully visible, if possible
+	if self.CanvasWidth <= vw then
+		x0, x1 = 0, 0
+	end
+	if self.CanvasHeight <= vh then
+		y0, y1 = 0, 0
+	end
+	
 	if x0 and self.AutoPosition then
 		local n1, n2, n3, n4 = intersect(x0, y0, x1, y1, vx0, vy0, vx1, vy1)
 		if n1 == x0 and n2 == y0 and n3 == x1 and n4 == y1 then
 			return
 		end
-
 		if y1 > vy1 then
 			vy1 = y1
 			vy0 = vy1 - vh
@@ -546,7 +558,6 @@ function Canvas:focusRect(x0, y0, x1, y1, smooth)
 			vx0 = x0
 			vx1 = vx0 + vw
 		end
-
 		if smooth and smooth > 0 then
 			local nx = floor((vx0 - self.CanvasLeft) / smooth)
 			local ny = floor((vy0 - self.CanvasTop) / smooth)
@@ -557,17 +568,14 @@ function Canvas:focusRect(x0, y0, x1, y1, smooth)
 				vy0 = self.CanvasTop + ny
 			end
 		end
-
 		local t = self.CanvasLeft
 		self:setValue("CanvasLeft", vx0)
 		moved = self.CanvasLeft ~= t
-
 		t = self.CanvasTop
 		self:setValue("CanvasTop", vy0)
 		if not moved then
 			moved = self.CanvasTop ~= t
 		end
-
 		vx0 = x0
 		vy0 = y0
 		vx1 = x1
@@ -598,8 +606,7 @@ end
 function Canvas:drawBegin()
 	if Frame.drawBegin(self) then
 		local r1, r2, r3, r4 = self:getRect()
-		local sx = r1 - self.CanvasLeft
-		local sy = r2 - self.CanvasTop
+		local sx, sy = self:getDisplacement()
 		self.ShiftX = sx
 		self.ShiftY = sy
 		local d = self.Window.Drawable
@@ -618,4 +625,20 @@ function Canvas:drawEnd()
 	d:setShift(-self.ShiftX, -self.ShiftY)
 	d:popClipRect()
 	Frame.drawEnd(self)
+end
+
+-------------------------------------------------------------------------------
+--	getDisplacement: overrides
+-------------------------------------------------------------------------------
+
+function Canvas:getDisplacement()
+	local dx, dy = Frame.getDisplacement(self)
+	local r1, r2 = self:getRect()
+	if r1 then
+		dx = dx + r1
+		dy = dy + r2
+	end
+	dx = dx - self.CanvasLeft
+	dy = dy - self.CanvasTop
+	return dx, dy
 end

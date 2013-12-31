@@ -9,6 +9,70 @@ static void x11_freeimage(X11DISPLAY *mod, X11WINDOW *v);
 #define DEF_WINHEIGHT 400
 
 /*****************************************************************************/
+/*
+**	This is awkward, since we are in a shared library and must
+**	check for availability of the extension in an error handler using
+**	a global variable. TODO: To fully work around this mess, we would
+**	additionally have to enclose XShmAttach() in a mutex.
+*/
+
+static TBOOL x11_shm_available = TTRUE;
+
+static int shm_errhandler(Display *d, XErrorEvent *evt)
+{
+	TDBPRINTF(TDB_ERROR,("Remote display - fallback to normal XPutImage\n"));
+	x11_shm_available = TFALSE;
+	return 0;
+}
+
+static void x11_releasesharedmemory(X11DISPLAY *mod, X11WINDOW *v)
+{
+	if (v->shmsize > 0)
+	{
+		XShmDetach(mod->x11_Display, &v->shminfo);
+		shmdt(v->shminfo.shmaddr);
+		shmctl(v->shminfo.shmid, IPC_RMID, 0);
+	}
+}
+
+static TAPTR x11_getsharedmemory(X11DISPLAY *mod, X11WINDOW *v, size_t size)
+{
+	if (!mod->x11_ShmAvail)
+		return TNULL;
+	if (v->shmsize > 0 && size <= v->shmsize)
+		return v->shminfo.shmaddr;
+	x11_releasesharedmemory(mod, v);
+	v->shminfo.shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0777);
+	if (v->shminfo.shmid != -1)
+	{
+		XErrorHandler oldhnd;
+		v->shminfo.readOnly = False;
+		XSync(mod->x11_Display, 0);
+		oldhnd = XSetErrorHandler(shm_errhandler);
+		x11_shm_available = TTRUE;
+		XShmAttach(mod->x11_Display, &v->shminfo);
+		TDBPRINTF(TDB_TRACE,("shmattach size=%d\n", (int) size));
+		XSync(mod->x11_Display, 0);
+		XSetErrorHandler(oldhnd);
+		if (x11_shm_available)
+		{
+			v->shminfo.shmaddr = shmat(v->shminfo.shmid, 0, 0);
+			v->shmsize = size;
+		}
+		else
+		{
+			shmdt(v->shminfo.shmaddr);
+			shmctl(v->shminfo.shmid, IPC_RMID, 0);
+			/* ah, just forget it altogether: */
+			mod->x11_ShmAvail = TFALSE;
+			v->shmsize = 0;
+			return TNULL;
+		}
+	}
+	return v->shminfo.shmaddr;
+}
+
+/*****************************************************************************/
 
 LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 {
@@ -16,6 +80,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 	TTAGITEM *tags = req->tvr_Op.OpenWindow.Tags;
 	X11WINDOW *v = TAlloc0(mod->x11_MemMgr, sizeof(X11WINDOW));
 	XTextProperty title_prop;
+	TBOOL save_under = TFALSE;
 
 	req->tvr_Op.OpenWindow.Window = v;
 	if (v == TNULL) return;
@@ -54,7 +119,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		}
 
 		swa_mask = CWColormap | CWEventMask;
-
+		
 		fn = mod->x11_fm.deffont;
 		v->curfont = fn;
 		mod->x11_fm.defref++;
@@ -188,8 +253,23 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		{
 			swa_mask |= CWOverrideRedirect;
 			swa.override_redirect = True;
+			/* is borderless, and area smaller than half screen area */
+			save_under = v->winwidth * v->winheight < sw * sh / 2;
 		}
 
+		if (save_under)
+		{
+			swa_mask |= CWSaveUnder;
+			swa.save_under = True;
+		}
+#if 0
+		else
+		{
+			swa_mask |= CWBackingStore;
+			swa.backing_store = True;
+		}
+#endif
+		
 		v->colormap = DefaultColormap(mod->x11_Display, mod->x11_Screen);
 		if (v->colormap == TNULL)
 			break;
@@ -205,6 +285,13 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 			swa.cursor = mod->x11_NullCursor;
 			swa_mask |= CWCursor;
 		}
+		#if defined(ENABLE_DEFAULTCURSOR)
+		else
+		{
+			swa.cursor = mod->x11_DefaultCursor;
+			swa_mask |= CWCursor;
+		}
+		#endif
 
 		v->window = XCreateWindow(mod->x11_Display,
 			RootWindow(mod->x11_Display, mod->x11_Screen),
@@ -274,7 +361,8 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		#endif
 
 		if (setfocus)
-			XSetInputFocus(mod->x11_Display, v->window, RevertToParent, CurrentTime);
+			XSetInputFocus(mod->x11_Display, v->window, RevertToParent,
+				CurrentTime);
 
 		TDBPRINTF(TDB_TRACE,("Created new window: %p\n", v->window));
 		TAddTail(&mod->x11_vlist, &v->node);
@@ -318,6 +406,7 @@ LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req)
 
 	x11_freeimage(mod, v);
 	TFree(v->tempbuf);
+	x11_releasesharedmemory(mod, v);
 
 	#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft && v->draw)
@@ -468,16 +557,27 @@ static TVPEN setfgpen(X11DISPLAY *mod, X11WINDOW *v, TVPEN pen)
 
 /*****************************************************************************/
 
+#define OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
+((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))
+
 LOCAL void x11_frect(X11DISPLAY *mod, struct TVRequest *req)
 {
 	X11WINDOW *v = req->tvr_Op.FRect.Window;
-	TUINT x0 = req->tvr_Op.FRect.Rect[0];
-	TUINT y0 = req->tvr_Op.FRect.Rect[1];
-	TUINT x1 = req->tvr_Op.FRect.Rect[2];
-	TUINT y1 = req->tvr_Op.FRect.Rect[3];
+	TINT x0 = req->tvr_Op.FRect.Rect[0];
+	TINT y0 = req->tvr_Op.FRect.Rect[1];
+	TINT x1 = x0 + req->tvr_Op.FRect.Rect[2] - 1;
+	TINT y1 = y0 + req->tvr_Op.FRect.Rect[3] - 1;
+	if (!OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1, v->winheight - 1))
+		return;
+	
+	x0 = TMAX(x0, 0);
+	y0 = TMAX(y0, 0);
+	x1 = TMIN(x1, v->winwidth - 1);
+	y1 = TMIN(y1, v->winheight - 1);
+	
 	setfgpen(mod, v, req->tvr_Op.FRect.Pen);
 	XFillRectangle(mod->x11_Display, v->window, v->gc,
-		x0, y0, x1, y1);
+		x0, y0, x1 - x0 + 1, y1 - y0 + 1);
 }
 
 /*****************************************************************************/
@@ -485,10 +585,12 @@ LOCAL void x11_frect(X11DISPLAY *mod, struct TVRequest *req)
 LOCAL void x11_line(X11DISPLAY *mod, struct TVRequest *req)
 {
 	X11WINDOW *v = req->tvr_Op.Line.Window;
-	TUINT x0 = req->tvr_Op.Line.Rect[0];
-	TUINT y0 = req->tvr_Op.Line.Rect[1];
-	TUINT x1 = req->tvr_Op.Line.Rect[2];
-	TUINT y1 = req->tvr_Op.Line.Rect[3];
+	TINT x0 = req->tvr_Op.Line.Rect[0];
+	TINT y0 = req->tvr_Op.Line.Rect[1];
+	TINT x1 = req->tvr_Op.Line.Rect[2];
+	TINT y1 = req->tvr_Op.Line.Rect[3];
+	if (!OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1, v->winheight - 1))
+		return;
 	setfgpen(mod, v, req->tvr_Op.Line.Pen);
 	XDrawLine(mod->x11_Display, v->window, v->gc,
 		x0, y0, x1, y1);
@@ -499,13 +601,15 @@ LOCAL void x11_line(X11DISPLAY *mod, struct TVRequest *req)
 LOCAL void x11_rect(X11DISPLAY *mod, struct TVRequest *req)
 {
 	X11WINDOW *v = req->tvr_Op.Rect.Window;
-	TUINT x0 = req->tvr_Op.Rect.Rect[0];
-	TUINT y0 = req->tvr_Op.Rect.Rect[1];
-	TUINT x1 = req->tvr_Op.Rect.Rect[2];
-	TUINT y1 = req->tvr_Op.Rect.Rect[3];
+	TINT x0 = req->tvr_Op.FRect.Rect[0];
+	TINT y0 = req->tvr_Op.FRect.Rect[1];
+	TINT x1 = x0 + req->tvr_Op.FRect.Rect[2] - 1;
+	TINT y1 = y0 + req->tvr_Op.FRect.Rect[3] - 1;
+	if (!OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1, v->winheight - 1))
+		return;
 	setfgpen(mod, v, req->tvr_Op.Rect.Pen);
 	XDrawRectangle(mod->x11_Display, v->window, v->gc,
-		x0, y0, x1 - 1, y1 - 1);
+		x0, y0, x1 - x0, y1 - y0);
 }
 
 /*****************************************************************************/
@@ -733,6 +837,26 @@ static THOOKENTRY TTAG getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 		case TVisual_MaxHeight:
 			*((TINT *) item->tti_Value) = v->sizehints->max_height;
 			break;
+		case TVisual_HaveClipboard:
+		{
+			X11DISPLAY *mod = data->mod;
+			*((TINT *) item->tti_Value) = XGetSelectionOwner(mod->x11_Display, 
+				mod->x11_XA_CLIPBOARD) == v->window;
+			break;
+		}
+		case TVisual_HaveSelection:
+		{
+			X11DISPLAY *mod = data->mod;
+			*((TINT *) item->tti_Value) = XGetSelectionOwner(mod->x11_Display, 
+				mod->x11_XA_PRIMARY) == v->window;
+			break;
+		}
+		case TVisual_Device:
+			*((TAPTR *) item->tti_Value) = data->mod;
+			break;
+		case TVisual_Window:
+			*((TAPTR *) item->tti_Value) = v;
+			break;
 	}
 	data->num++;
 	return TTRUE;
@@ -766,6 +890,20 @@ static THOOKENTRY TTAG setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 		case TVisual_MaxHeight:
 			v->sizehints->max_height = (TINT) item->tti_Value;
 			break;
+		case TVisual_HaveSelection:
+		{
+			X11DISPLAY *mod = data->mod;
+			XSetSelectionOwner(mod->x11_Display, mod->x11_XA_PRIMARY,
+				item->tti_Value ? v->window : None, CurrentTime);
+			break;
+		}
+		case TVisual_HaveClipboard:
+		{
+			X11DISPLAY *mod = data->mod;
+			XSetSelectionOwner(mod->x11_Display, mod->x11_XA_CLIPBOARD,
+				item->tti_Value ? v->window : None, CurrentTime);
+			break;
+		}
 	}
 	data->num++;
 	return TTRUE;
@@ -1007,44 +1145,103 @@ LOCAL void x11_drawtags(X11DISPLAY *mod, struct TVRequest *req)
 }
 
 /*****************************************************************************/
-/*
-**	This is extremely awkward, since we are in a shared library and must
-**	check for availability of the extension in an error handler using
-**	a global variable. TODO: To fully work around this mess, we would
-**	additionally have to enclose XShmAttach() in a mutex.
-*/
-
-static TBOOL x11_shm_available = TTRUE;
-
-static int shm_errhandler(Display *d, XErrorEvent *evt)
-{
-	TDBPRINTF(TDB_ERROR,("Remote display - fallback to normal XPutImage\n"));
-	x11_shm_available = TFALSE;
-	return 0;
-}
-
-/*****************************************************************************/
 
 static void x11_freeimage(X11DISPLAY *mod, X11WINDOW *v)
 {
 	if (v->image)
 	{
-		if (v->image_shm)
-		{
-			XShmDetach(mod->x11_Display, &v->shminfo);
-			shmdt(v->shminfo.shmaddr);
-			shmctl(v->shminfo.shmid, IPC_RMID, 0);
-			v->image_shm = TFALSE;
-		}
 		v->image->data = NULL;
 		XDestroyImage(v->image);
 		v->image = TNULL;
 	}
 }
 
-LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
+static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
+	TUINT8 **bufptr, TINT *bytes_per_line)
 {
-	TAPTR TExecBase = TGetExecBase(mod);
+	if (w <= 0 || h <= 0 || mod->x11_Depth <= 0)
+		return TNULL;
+	
+	while (!v->image || w != v->imw || h != v->imh)
+	{
+		x11_freeimage(mod, v);
+		
+		if (mod->x11_ShmAvail)
+		{
+			/* TODO: buffer more images, not just 1 */
+			v->image = XShmCreateImage(mod->x11_Display, mod->x11_Visual,
+				mod->x11_Depth, ZPixmap, TNULL, &v->shminfo, w, h);
+			if (v->image)
+			{
+				v->image->data = x11_getsharedmemory(mod, v, 
+					v->image->bytes_per_line * v->image->height);
+				if (v->image->data)
+				{
+					v->imw = w;
+					v->imh = h;
+					v->image_shm = TTRUE;
+					break;
+				}
+				x11_freeimage(mod, v);
+			}
+		}
+
+		if (!v->image)
+		{
+			TAPTR TExecBase = TGetExecBase(mod);
+			
+			if (v->tempbuf) 
+				TFree(v->tempbuf);
+			v->tempbuf = TAlloc(TNULL, w * h * mod->x11_BPP);
+			if (v->tempbuf)
+			{
+				v->image = XCreateImage(mod->x11_Display, mod->x11_Visual,
+					mod->x11_Depth, ZPixmap, 0, NULL, w, h, mod->x11_BPP * 8, 
+					mod->x11_BPP * w);
+				if (v->image)
+				{
+					v->image->data = v->tempbuf;
+					v->imw = w;
+					v->imh = h;
+					break;
+				}
+				TFree(v->tempbuf);
+				v->tempbuf = TNULL;
+			}
+		}
+		
+		return TNULL;
+	}
+
+	if (v->tempbuf)
+	{
+		*bufptr = (TUINT8 *) v->tempbuf;
+		*bytes_per_line = v->imw * mod->x11_BPP;
+	}
+	else
+	{
+		*bufptr = (TUINT8 *) v->image->data;
+		*bytes_per_line = v->image->bytes_per_line;
+	}
+	return v->image;
+}
+
+static void x11_putimage(X11DISPLAY *mod, X11WINDOW *v, struct TVRequest *req,
+	TINT x0, TINT y0, TINT w, TINT h)
+{
+	if (v->image_shm)
+	{
+		XShmPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
+			x0, y0, w, h, 1);
+		mod->x11_RequestInProgress = req;
+	}
+	else
+		XPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
+			x0, y0, w, h);
+}
+
+static void x11_drawbuffer_argb32(X11DISPLAY *mod, struct TVRequest *req)
+{
 	X11WINDOW *v = req->tvr_Op.DrawBuffer.Window;
 	TINT x0 = req->tvr_Op.DrawBuffer.RRect[0];
 	TINT y0 = req->tvr_Op.DrawBuffer.RRect[1];
@@ -1052,222 +1249,278 @@ LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
 	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
 	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
-	TUINT dfmt = (mod->x11_Depth << 9) + (mod->x11_PixFmt << 1) +
-		(mod->x11_Flags & TVISF_SWAPBYTEORDER);
+	int xx, yy;
+	TUINT p;
+	TUINT *sp = buf;
+	TUINT8 *dp;
+	TINT dtw;
 
-	if (mod->x11_Depth <= 0)
-		return; /* unsupported */
+	if (!x11_getdrawimage(mod, v, w, h, &dp, &dtw))
+		return;
 
-	if (w != v->imw || h != v->imh)
+	switch (mod->x11_DstFmt)
 	{
-		x11_freeimage(mod, v);
+		default:
+			TDBPRINTF(TDB_ERROR,("Cannot render to screen mode\n"));
+			break;
 
-		if (mod->x11_ShmAvail)
-		{
-			v->image = XShmCreateImage(mod->x11_Display, mod->x11_Visual,
-				mod->x11_Depth, ZPixmap, TNULL, &v->shminfo, w, h);
-			if (v->image)
+		case (24 << 8) + (0 << 1) + 0:
+		case (32 << 8) + (0 << 1) + 0:
+			if (dtw == totw * 4 && !v->image_shm)
 			{
-				v->shminfo.shmid = shmget(IPC_PRIVATE,
-					v->image->bytes_per_line * v->image->height,
-						IPC_CREAT|0777);
-				if (v->shminfo.shmid != -1)
+				v->image->data = (char *) buf;
+			}
+			else
+			{
+				for (yy = 0; yy < h; ++yy)
 				{
-					v->shminfo.shmaddr = v->image->data =
-						shmat(v->shminfo.shmid, 0, 0);
-					if (v->shminfo.shmaddr)
-					{
-						XErrorHandler oldhnd;
-						v->shminfo.readOnly = False;
-						XSync(mod->x11_Display, 0);
-						oldhnd = XSetErrorHandler(shm_errhandler);
-						x11_shm_available = TTRUE;
-						XShmAttach(mod->x11_Display, &v->shminfo);
-						XSync(mod->x11_Display, 0);
-						XSetErrorHandler(oldhnd);
-						if (x11_shm_available)
-						{
-							v->imw = w;
-							v->imh = h;
-							v->image_shm = TTRUE;
-						}
-						else
-						{
-							shmdt(v->shminfo.shmaddr);
-							shmctl(v->shminfo.shmid, IPC_RMID, 0);
-							XDestroyImage(v->image);
-							v->image = TNULL;
-							/* ah, just forget it altogether: */
-							mod->x11_ShmAvail = TFALSE;
-						}
-					}
+					memcpy(dp, sp, w * 4);
+					sp += totw;
+					dp += dtw;
 				}
 			}
-		}
+			break;
 
-		if (!v->image)
-		{
-			TBOOL success = TFALSE;
-			v->image = XCreateImage(mod->x11_Display, mod->x11_Visual,
-				mod->x11_Depth, ZPixmap, 0, NULL, w, h, mod->x11_BPP * 8, 
-				mod->x11_BPP * w);
-			if (v->image)
+		case (15 << 8) + (0 << 1) + 0:
+			for (yy = 0; yy < h; ++yy)
 			{
-				success = TTRUE;
-				if (dfmt != (24 << 9) + (PIXFMT_RGB << 1) + 0 ||
-					v->image->bytes_per_line != totw * 4)
+				for (xx = 0; xx < w; xx++)
 				{
-					v->tempbuf = TAlloc(TNULL, w * h * mod->x11_BPP);
-					if (v->tempbuf)
-						v->image->data = v->tempbuf;
-					else
-						success = TFALSE;
+					p = sp[xx];
+					((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 9) |
+						((p & 0x00f800) >> 6) |
+						((p & 0x0000f8) >> 3);
+
 				}
-				if (success)
-				{
-					v->imw = w;
-					v->imh = h;
-				}
+				sp += totw;
+				dp += dtw;
 			}
-		}
+			break;
+
+		case (15 << 8) + (0 << 1) + 1:
+			for (yy = 0; yy < h; ++yy)
+			{
+				for (xx = 0; xx < w; xx++)
+				{
+					p = sp[xx];
+					/*		24->15 bit, host-swapped
+					**		........rrrrrrrrGGggggggbbbbbbbb
+					** ->	................gggbbbbb0rrrrrGG */
+					((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 17) |
+						((p & 0x00c000) >> 14) |
+						((p & 0x003800) << 2) |
+						((p & 0x0000f8) << 5);
+				}
+				sp += totw;
+				dp += dtw;
+			}
+			break;
+
+		case (16 << 8) + (0 << 1) + 0:
+			for (yy = 0; yy < h; ++yy)
+			{
+				for (xx = 0; xx < w; xx++)
+				{
+					p = sp[xx];
+					((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 8) |
+						((p & 0x00fc00) >> 5) |
+						((p & 0x0000f8) >> 3);
+
+				}
+				sp += totw;
+				dp += dtw;
+			}
+			break;
+
+		case (16 << 8) + (0 << 1) + 1:
+			for (yy = 0; yy < h; ++yy)
+			{
+				for (xx = 0; xx < w; xx++)
+				{
+					p = sp[xx];
+					/*		24->16 bit, host-swapped
+					**		........rrrrrrrrGGGgggggbbbbbbbb
+					** ->	................gggbbbbbrrrrrGGG */
+					((TUINT16 *) dp)[xx] = ((p & 0xf80000) >> 16) |
+						((p & 0x0000f8) << 5) |
+						((p & 0x00e000) >> 13) |
+						((p & 0x001c00) << 3);
+				}
+				sp += totw;
+				dp += dtw;
+			}
+			break;
+
+		case (24 << 8) + (0 << 1) + 1:
+			for (yy = 0; yy < h; ++yy)
+			{
+				for (xx = 0; xx < w; xx++)
+				{
+					p = sp[xx];
+					/*	24->24 bit, host-swapped */
+					((TUINT *) dp)[xx] = ((p & 0x00ff0000) >> 8) |
+						((p & 0x0000ff00) << 8) |
+						((p & 0x000000ff) << 24);
+				}
+				sp += totw;
+				dp += dtw;
+			}
+			break;
 	}
 
-	if (v->image)
+	x11_putimage(mod, v, req, x0, y0, w, h);
+}
+
+
+static void x11_drawbuffer_rgb16(X11DISPLAY *mod, struct TVRequest *req)
+{
+	X11WINDOW *v = req->tvr_Op.DrawBuffer.Window;
+	TINT x0 = req->tvr_Op.DrawBuffer.RRect[0];
+	TINT y0 = req->tvr_Op.DrawBuffer.RRect[1];
+	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
+	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
+	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
+	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
+	int xx, yy;
+	TUINT p;
+	TUINT16 *sp = buf;
+	TUINT8 *dp;
+	TINT dtw;
+
+	if (!x11_getdrawimage(mod, v, w, h, &dp, &dtw))
+		return;
+	
+	switch (mod->x11_DstFmt)
 	{
-		int xx, yy;
-		TUINT p;
-		TUINT *sp = buf;
-		TINT dtw;
-		TUINT8 *dp;
-		if (v->tempbuf)
+		default:
+			TDBPRINTF(TDB_ERROR,("Render to screen mode not implemented\n"));
+			break;
+			
+		case (16 << 8) + (0 << 1) + 0:
+			for (yy = 0; yy < h; ++yy)
+			{
+				// 		...c...8...4...0
+				// 		.bbbbbgggggrrrrr
+				//	->	rrrrrgggggGbbbbb
+				for (xx = 0; xx < w; xx++)
+				{
+					p = sp[xx];
+					/*	16->16 bit */
+					((TUINT16 *) dp)[xx] = 
+						((p & 0x7c00) >> 10) |
+						((p & 0x03e0) << 1) |
+						((p & 0x001f) << 11);
+				}
+				sp += totw;
+				dp += dtw;
+			}
+			break;
+			
+		case (24 << 8) + (0 << 1) + 0:
+			for (yy = 0; yy < h; ++yy)
+			{
+				for (xx = 0; xx < w; xx++)
+				{
+					p = sp[xx];
+					/*	16->24 bit, not swapped */
+					((TUINT *) dp)[xx] = 
+						((p & 0x1f) << 19) | ((p & 0x1c) << 14) |
+						((p & 0x3e0) << 6) | ((p & 0x380) << 1) |
+						((p & 0x7c00) >> 7) | ((p & 0x7000) >> 12);
+				}
+				sp += totw;
+				dp += dtw;
+			}
+			break;
+	}
+	
+	x11_putimage(mod, v, req, x0, y0, w, h);
+}
+
+
+LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
+{
+	TUINT pixfmt = TGetTag(req->tvr_Op.DrawBuffer.Tags, 
+		TVisual_PixelFormat, TVPIXFMT_ARGB32);
+	switch (pixfmt)
+	{
+		case TVPIXFMT_ARGB32:
+			x11_drawbuffer_argb32(mod, req);
+			break;
+		case TVPIXFMT_RGB16:
+			x11_drawbuffer_rgb16(mod, req);
+			break;
+	}
+}
+
+
+/*****************************************************************************/
+/*
+**	getselection:
+*/
+
+LOCAL void x11_getselection(X11DISPLAY *mod, struct TVRequest *req)
+{
+	X11WINDOW *v = req->tvr_Op.Rect.Window;
+	TAPTR TExecBase = TGetExecBase(mod);
+	Display *display = mod->x11_Display;
+	Window window = v->window;
+	TUINT8 *clip = NULL;
+	
+	Atom selatom = req->tvr_Op.GetSelection.Type == 2 ? 
+		mod->x11_XA_PRIMARY : mod->x11_XA_CLIPBOARD;
+	
+	Window selectionowner = XGetSelectionOwner(display, selatom);
+	
+	req->tvr_Op.GetSelection.Data = TNULL;
+	req->tvr_Op.GetSelection.Length = 0;
+	
+	if (selectionowner != None && selectionowner != window)
+	{
+		unsigned char *data = NULL;
+		Atom type;
+		int format;
+		unsigned long len, bytesleft;
+	
+		XConvertSelection(display, selatom, mod->x11_XA_UTF8_STRING,
+			selatom, window, CurrentTime);
+		XFlush(display);
+		for (;;)
 		{
-			dp = (TUINT8 *) v->tempbuf;
-			dtw = w * mod->x11_BPP;
+			XEvent evt;
+			if (XCheckTypedEvent(display, SelectionNotify, &evt))
+			{
+				if (evt.xselection.requestor == window)
+					break;
+			}
 		}
-		else
+		
+		XGetWindowProperty(display, window, selatom, 0, 0, False,
+			AnyPropertyType, &type, &format, &len, &bytesleft, &data);
+	
+		if (data)
 		{
-			dp = (TUINT8 *) v->image->data;
-			dtw = v->image->bytes_per_line;
+			XFree(data);
+			data = NULL;		
 		}
-
-		switch (dfmt)
+		
+		if (bytesleft)
 		{
-			default:
-				TDBPRINTF(TDB_ERROR,("Cannot render to screen mode\n"));
-				break;
-
-			case (24 << 9) + (PIXFMT_RGB << 1) + 0:
-			case (32 << 9) + (PIXFMT_RGB << 1) + 0:
-				if (dtw == totw * 4 && !v->image_shm)
+			if (XGetWindowProperty(display, window, selatom, 0, 
+				bytesleft, False, AnyPropertyType,
+				&type, &format, &len, &bytesleft, &data) == Success)
+			{
+				clip = TAlloc(TNULL, len);
+				if (clip)
 				{
-					v->image->data = (char *) buf;
+					TCopyMem(data, clip, len);
+					req->tvr_Op.GetSelection.Data = clip;
+					req->tvr_Op.GetSelection.Length = len;
 				}
-				else
-				{
-					for (yy = 0; yy < h; ++yy)
-					{
-						TCopyMem(sp, dp, w * 4);
-						sp += totw;
-						dp += dtw;
-					}
-				}
-				break;
-
-			case (15 << 9) + (PIXFMT_RGB << 1) + 0:
-				for (yy = 0; yy < h; ++yy)
-				{
-					for (xx = 0; xx < w; xx++)
-					{
-						p = sp[xx];
-						((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 9) |
-							((p & 0x00f800) >> 6) |
-							((p & 0x0000f8) >> 3);
-
-					}
-					sp += totw;
-					dp += dtw;
-				}
-				break;
-
-			case (15 << 9) + (PIXFMT_RGB << 1) + 1:
-				for (yy = 0; yy < h; ++yy)
-				{
-					for (xx = 0; xx < w; xx++)
-					{
-						p = sp[xx];
-						/*		24->15 bit, host-swapped
-						**		........rrrrrrrrGGggggggbbbbbbbb
-						** ->	................gggbbbbb0rrrrrGG */
-						((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 17) |
-							((p & 0x00c000) >> 14) |
-							((p & 0x003800) << 2) |
-							((p & 0x0000f8) << 5);
-					}
-					sp += totw;
-					dp += dtw;
-				}
-				break;
-
-			case (16 << 9) + (PIXFMT_RGB << 1) + 0:
-				for (yy = 0; yy < h; ++yy)
-				{
-					for (xx = 0; xx < w; xx++)
-					{
-						p = sp[xx];
-						((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 8) |
-							((p & 0x00fc00) >> 5) |
-							((p & 0x0000f8) >> 3);
-
-					}
-					sp += totw;
-					dp += dtw;
-				}
-				break;
-
-			case (16 << 9) + (PIXFMT_RGB << 1) + 1:
-				for (yy = 0; yy < h; ++yy)
-				{
-					for (xx = 0; xx < w; xx++)
-					{
-						p = sp[xx];
-						/*		24->16 bit, host-swapped
-						**		........rrrrrrrrGGGgggggbbbbbbbb
-						** ->	................gggbbbbbrrrrrGGG */
-						((TUINT16 *) dp)[xx] = ((p & 0xf80000) >> 16) |
-							((p & 0x0000f8) << 5) |
-							((p & 0x00e000) >> 13) |
-							((p & 0x001c00) << 3);
-					}
-					sp += totw;
-					dp += dtw;
-				}
-				break;
-
-			case (24 << 9) + (PIXFMT_RGB << 1) + 1:
-				for (yy = 0; yy < h; ++yy)
-				{
-					for (xx = 0; xx < w; xx++)
-					{
-						p = sp[xx];
-						/*	24->24 bit, host-swapped */
-						((TUINT *) dp)[xx] = ((p & 0x00ff0000) >> 8) |
-							((p & 0x0000ff00) << 8) |
-							((p & 0x000000ff) << 24);
-					}
-					sp += totw;
-					dp += dtw;
-				}
-				break;
+				XFree(data);
+			}
 		}
-
-		if (v->image_shm)
-		{
-			XShmPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
-				x0, y0, w, h, 1);
-			mod->x11_RequestInProgress = req;
-		}
-		else
-			XPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
-				x0, y0, w, h);
+		
+		XDeleteProperty(display, window, selatom);
 	}
 }

@@ -18,16 +18,13 @@
 --		This class implements a slider for adjusting a numerical value.
 --
 --	ATTRIBUTES::
---		- {{AutoFocus [IG]}} (boolean)
+--		- {{AutoCapture [ISG]}} (boolean)
 --			If '''true''' and the slider is receiving the focus, it reacts
 --			on keyboard shortcuts instantly; otherwise, it must be selected
---			first (and deselected afterwards). Default: '''false'''
+--			first (and deselected afterwards). Default: '''true'''
 --		- {{Child [IG]}} ([[#tek.ui.class.widget : Widget]])
 --			A Widget object for being used as the slider's knob. By default,
 --			a knob widget of the style class {{"knob"}} is created internally.
---		- {{Integer [IG]}} (boolean)
---			If '''true''', integer steps are enforced. By default, the
---			slider knob moves continuously.
 --		- {{Kind [IG]}} (string)
 --			Kind of the slider:
 --				- {{"scrollbar"}} - for scrollbars. Sets the additional
@@ -41,6 +38,10 @@
 --		- {{Range [ISG]}} (number)
 --			The size of the slider, i.e. the range that it represents.
 --			Setting this value invokes the Slider:onSetRange() method.
+--		- {{Step [ISG]}} (boolean or number)
+--			If '''true''' or {{1}}, integer steps are enforced. If a number,
+--			steps of that size are enforced. If '''false''', the default, the
+--			slider knob moves continuously.
 --
 --	IMPLEMENTS::
 --		- Slider:onSetRange() - Handler for the {{Range}} attribute
@@ -64,17 +65,19 @@
 -------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-local Widget = ui.require("widget", 25)
-local Numeric = ui.require("numeric", 4)
+local Area = ui.require("area", 48)
+local Numeric = ui.require("numeric", 5)
 local Region = ui.loadLibrary("region", 10)
+local Widget = ui.require("widget", 25)
 
 local floor = math.floor
 local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 24.1"
+_VERSION = "Slider 26.3"
 local Slider = _M
+Numeric:newClass(Slider)
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -98,12 +101,8 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 -------------------------------------------------------------------------------
 
 function Slider.init(self)
-	if self.AutoPosition == nil then
-		self.AutoPosition = false
-	end
-	if self.AutoFocus == nil then
-		self.AutoFocus = false
-	end
+	self.AutoCapture = self.AutoCapture == nil and true or self.AutoCapture
+	self.AutoPosition = self.AutoPosition ~= nil and self.AutoPosition or false
 	self.BGRegion = false
 	self.Captured = false
 	self.Child = self.Child or Widget:new {
@@ -111,7 +110,7 @@ function Slider.init(self)
 	}
 	self.ClickDirection = false
 	self.HoldXY = { }
-	self.Integer = self.Integer or false
+	self.Step = self.Step or false
 	self.Kind = self.Kind or false
 	self.Mode = "button"
 	self.Move0 = false
@@ -149,9 +148,9 @@ end
 function Slider:setup(app, window)
 	if self.Orientation == "horizontal" then
 		self.MaxWidth = "none"
-		self.Height = "auto"
+		self.Height = "fill"
 	else
-		self.Width = "auto"
+		self.Width = "fill"
 		self.MaxHeight = "none"
 	end
 	Numeric.setup(self, app, window)
@@ -202,6 +201,22 @@ function Slider:askMinMax(m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
+--	getKnobValue()
+-------------------------------------------------------------------------------
+
+function Slider:getKnobValue(v)
+	v = v or self.Value
+	local i = self.Step
+	if not i then
+		return v
+	end
+	if i == true or v == self.Max then
+		return floor(v)
+	end
+	return floor(v / i) * i
+end
+
+-------------------------------------------------------------------------------
 --	getKnobRect: internal
 -------------------------------------------------------------------------------
 
@@ -217,8 +232,7 @@ function Slider:getKnobRect()
 		local x1 = r3 - p3 - m3
 		local y1 = r4 - p4 - m4
 		local r = self.Range - self.Min
-		local v = self.Value
-		v = self.Integer and floor(v) or v
+		local v = self:getKnobValue()
 		if r > 0 then
 			if self.Orientation == "horizontal" then
 				local w = x1 - x0 - km1 + 1
@@ -321,7 +335,7 @@ function Slider:clickContainer(xy)
 		end
 	end
 	if self.ClickDirection then
-		self:increase(self.ClickDirection * self.Step)
+		self:increase(self.ClickDirection * self.Increment)
 	end
 end
 
@@ -377,9 +391,7 @@ function Slider:doMove(x, y)
 		newv = self.Pos0 +
 			(y - self.Move0[2]) * (self.Range - self.Min) / max(h, 1)
 	end
-	if self.Integer then
-		newv = floor(newv)
-	end
+	newv = self:getKnobValue(newv)
 	self:setValue("Value", newv)
 end
 
@@ -392,11 +404,11 @@ function Slider:updateSlider()
 	local x0, y0, x1, y1 = self:getKnobRect()
 	if x0 and self.Window:relayout(knob, x0, y0, x1, y1) then
 		self:updateBGRegion()
-		if self.Flags:check(FL_REDRAW) then
+		if self:checkFlags(FL_REDRAW) then
 			-- also redraw child if we're slated for redraw already:
-			knob.Flags:set(FL_REDRAW)
+			knob:setFlags(FL_REDRAW)
 		end
-		self.Flags:set(FL_REDRAW)
+		self:setFlags(FL_REDRAW)
 	end	
 end
 
@@ -432,7 +444,9 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:passMsg(msg)
-	if self:getByXY(msg[4], msg[5]) then
+	local mx, my = self:getMsgFields(msg, "mousexy")
+	local win = self.Window
+	if win.HoverElement == self then
 		if msg[2] == ui.MSG_MOUSEBUTTON then
 			if msg[3] == 64 then -- wheelup
 				self:decrease()
@@ -449,37 +463,35 @@ function Slider:passMsg(msg)
 			end
 		end
 	end
-	local win = self.Window
-	if win then
-		if msg[2] == ui.MSG_MOUSEBUTTON then
-			if msg[3] == 1 then -- leftdown:
-				if win.HoverElement == self and not self.Disabled then
-					if self:startMove(msg[4], msg[5]) then
-						win:setMovingElement(self)
-					else
-						-- otherwise the container was clicked:
-						self.HoldXY[1] = msg[4]
-						self.HoldXY[2] = msg[5]
-						self:clickContainer(self.HoldXY)
-					end
+	if msg[2] == ui.MSG_MOUSEBUTTON then
+		if msg[3] == 1 then -- leftdown:
+			if win.HoverElement == self and not self.Disabled then
+				if self:startMove(mx, my) then
+					win:setMovingElement(self)
+				else
+					-- otherwise the container was clicked:
+					self.HoldXY[1] = mx
+					self.HoldXY[2] = my
+					self:clickContainer(self.HoldXY)
 				end
-			elseif msg[3] == 2 then -- leftup:
-				if win.MovingElement == self then
-					win:setMovingElement()
-				end
-				self.Move0 = false
-				self.ClickDirection = false
 			end
-		elseif msg[2] == ui.MSG_MOUSEMOVE then
+		elseif msg[3] == 2 then -- leftup:
 			if win.MovingElement == self then
-				self:doMove(msg[4], msg[5])
-				-- do not pass message to other elements while dragging:
-				return false
+				win:setMovingElement()
 			end
+			self.Move0 = false
+			self.ClickDirection = false
+		end
+	elseif msg[2] == ui.MSG_MOUSEMOVE then
+		if win.MovingElement == self then
+			self:doMove(mx, my)
+			-- do not pass message to other elements while dragging:
+			return false
 		end
 	end
 	return Numeric.passMsg(self, msg)
 end
+
 
 -------------------------------------------------------------------------------
 --	handleInput:
@@ -487,11 +499,11 @@ end
 
 function Slider:handleInput(msg)
 	if msg[2] == ui.MSG_KEYDOWN then
-		if msg[3] == 13 and self.Captured and not self.AutoFocus then
+		if msg[3] == 13 and self.Captured and not self.AutoCapture then
 			self:setCapture(false)
 			return false
 		end
-		local na = not self.AutoFocus
+		local na = not self.AutoCapture
 		local h = self.Orientation == "horizontal"
 		if msg[3] == 0xf010 and (na or h) or
 			msg[3] == 0xf012 and (na or not h) then
@@ -513,7 +525,7 @@ end
 function Slider:onFocus()
 	Numeric.onFocus(self)
 	local focused = self.Focus
-	if self.AutoFocus then
+	if self.AutoCapture then
 		self:setCapture(focused)
 	elseif not focused then
 		self:setCapture(false)
@@ -527,7 +539,7 @@ end
 function Slider:onSelect()
 	Numeric.onSelect(self)
 	local selected = self.Selected
-	if selected and not self.AutoFocus then
+	if selected and not self.AutoCapture then
 		-- enter captured mode:
 		self:setCapture(true)
 	end

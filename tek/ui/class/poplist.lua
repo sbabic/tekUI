@@ -56,7 +56,9 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 13.0"
+_VERSION = "PopList 13.2"
+local PopList = _M
+PopItem:newClass(PopList)
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -77,33 +79,45 @@ local PopLister = Lister:newClass()
 function PopLister:passMsg(msg)
 	if msg[2] == ui.MSG_MOUSEMOVE or
 		(msg[2] == ui.MSG_MOUSEBUTTON and msg[3] == 1) then
-		local lnr = self:findLine(msg[5])
+		local mx, my = self:getMsgFields(msg, "mousexy")
+		local lnr = self:findLine(my)
 		if lnr then
 			if lnr ~= self.SelectedLine then
 				self:setValue("CursorLine", lnr)
-				self:setValue("SelectedLine", lnr)
+				self:setValue("SelectedLine", lnr, true)
 			end
 		end
 	elseif msg[2] == ui.MSG_MOUSEBUTTON and msg[3] == 2 then
 		if not self.Active then
-			-- emulate click:
-			db.warn("need to emulate click")
+			-- need to emulate click:
 			self:setValue("Active", true)
 		end
 		-- let it collapse:
 		self:setValue("Active", false)
 	end
+	return msg
+end
+
+function PopLister:handleInput(msg)
+	if msg[2] == ui.MSG_KEYDOWN then
+		if msg[3] == 13 and self.LastKey ~= 13 then
+			self.Window:clickElement(self)
+			self:setValue("SelectedLine", self.CursorLine, true)
+			return false -- absorb
+		end
+	end
+	return Lister.handleInput(self, msg)
 end
 
 function PopLister:onActivate()
 	Lister.onActivate(self)
 	local active = self.Active
-	if active == false then
+	if active == false and self.Window then
 		local lnr = self.CursorLine
 		local entry = self:getItem(lnr)
 		if entry then
 			local popitem = self.Window.PopupBase
-			popitem:setValue("SelectedLine", lnr)
+			popitem:setValue("SelectedLine", lnr, true)
 			popitem:setValue("Text", entry[1][1])
 		end
 		-- needed to unregister input-handler:
@@ -123,8 +137,6 @@ end
 -------------------------------------------------------------------------------
 --	PopList:
 -------------------------------------------------------------------------------
-
-local PopList = _M
 
 function PopList.addClassNotifications(proto)
 	addNotify(proto, "SelectedLine", 

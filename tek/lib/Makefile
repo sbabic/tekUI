@@ -6,7 +6,7 @@ EXTRADEFS += $(LUA_DEFS) -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
 
 ###############################################################################
 
-DISPLAYS = display/x11$(DLLEXT)
+DISPLAYS = display/x11$(DLLEXT) display/rawfb$(DLLEXT)
 # DISPLAYS = display/windows$(DLLEXT)
 # DISPLAYS = display/directfb$(DLLEXT)
 # DISPLAYS = display/nanox$(DLLEXT)
@@ -14,7 +14,7 @@ DISPLAYS = display/x11$(DLLEXT)
 
 ###############################################################################
 
-MODS = region$(DLLEXT) exec$(DLLEXT) visual$(DLLEXT)
+MODS = region$(DLLEXT) exec$(DLLEXT) visual$(DLLEXT) string$(DLLEXT) support$(DLLEXT)
 
 EXECLIBS = $(LIBDIR)/libhal.a $(LIBDIR)/libexec.a $(LIBDIR)/libtekc.a $(LIBDIR)/libtekdebug.a
 VISUALLIBS = $(LIBDIR)/libvisual.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
@@ -26,6 +26,12 @@ DISPLAYRAWFBLIBS = $(LIBDIR)/libdisplay_rawfb.a $(LIBDIR)/libtek.a $(LIBDIR)/lib
 
 region$(DLLEXT): $(OBJDIR)/region.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/region.lo $(PLATFORM_LIBS) $(LUA_DLLS)
+
+string$(DLLEXT): $(OBJDIR)/string.lo
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/string.lo $(PLATFORM_LIBS) $(LUA_DLLS) -ltek
+
+support$(DLLEXT): $(OBJDIR)/support.lo
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/support.lo $(LUA_DLLS)
 
 exec$(DLLEXT): $(OBJDIR)/exec_lua.lo $(EXECLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_lua.lo -L$(LIBDIR) -lhal -lexec -ltekc -ltekdebug $(PLATFORM_LIBS) $(LUA_DLLS)
@@ -51,6 +57,12 @@ display/rawfb$(DLLEXT): $(OBJDIR)/rawfb_lua.lo $(DISPLAYRAWFBLIBS)
 $(OBJDIR)/region.lo: region.c
 	$(CC) $(LIBCFLAGS) -o $@ -c region.c
 
+$(OBJDIR)/string.lo: string.c
+	$(CC) $(LIBCFLAGS) -o $@ -c string.c
+
+$(OBJDIR)/support.lo: support.c
+	$(CC) $(LIBCFLAGS) -o $@ -c support.c
+
 $(OBJDIR)/exec_lua.lo: exec_lua.c
 	$(CC) $(LIBCFLAGS) -o $@ -c exec_lua.c
 
@@ -72,18 +84,18 @@ $(OBJDIR)/nanox_lua.lo: display/nanox_lua.c
 	$(CC) $(LIBCFLAGS) -o $@ -c display/nanox_lua.c
 
 $(OBJDIR)/rawfb_lua.lo: display/rawfb_lua.c
-	$(CC) $(LIBCFLAGS) -o $@ -c display/rawfb_lua.c
+	$(CC) $(LIBCFLAGS) $(RAWFB_DEFS) -o $@ -c display/rawfb_lua.c
 
 ###############################################################################
 
 modules: $(OBJDIR) $(MODS) $(DISPLAYS)
 
 install:
-	$(INSTALL) -d $(LUA_LIB)/tek/lib/display
-	$(INSTALL) -s $(MODS) $(LUA_LIB)/tek/lib
-	$(INSTALL) -s $(DISPLAYS) $(LUA_LIB)/tek/lib/display
-	$(INSTALL) -d $(LUA_SHARE)/tek/lib
-	$(INSTALL) debug.lua args.lua $(LUA_SHARE)/tek/lib
+	$(INSTALL_D) $(LUA_LIB)/tek/lib/display
+	$(INSTALL_S) $(MODS) $(LUA_LIB)/tek/lib
+	$(INSTALL_S) $(DISPLAYS) $(LUA_LIB)/tek/lib/display
+	$(INSTALL_D) $(LUA_SHARE)/tek/lib
+	$(INSTALL_F) debug.lua args.lua $(LUA_SHARE)/tek/lib
 
 clean: FORCE
 	-$(RM) $(MODS) $(DISPLAYS) $(LIBS)
