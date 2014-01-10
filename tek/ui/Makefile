@@ -24,6 +24,7 @@ CLASSES = \
 	class/handle.lua \
 	class/image.lua \
 	class/imagewidget.lua \
+	class/input.lua \
 	class/layout.lua \
 	class/lister.lua \
 	class/listview.lua \
@@ -40,7 +41,7 @@ CLASSES = \
 	class/slider.lua \
 	class/spacer.lua \
 	class/text.lua \
-	class/textinput.lua \
+	class/textedit.lua \
 	class/window.lua
 BORDERS = border/default.lua
 HOOKS = hook/ripple.lua
@@ -53,21 +54,16 @@ IMAGES = \
 	image/file.lua \
 	image/radiobutton.lua
 STYLES = \
-	style/dark.css \
 	style/desktop.css \
-	style/industrial.css \
 	style/default.css \
-	style/monochrome.css \
-	style/tutorial.css \
+	style/klinik.css \
+	style/stain.css \
 	style/desktop.lua
 FONTS = \
 	font/Vera.ttf \
 	font/VeraMono.ttf
 CURSORS = cursor/cursor-green.png
 CATALOGS1 = \
-	locale/schulze-mueller.de/tekui-demo/en \
-	locale/schulze-mueller.de/tekui-demo/de
-CATALOGS2 = \
 	locale/schulze-mueller.de/dirlist-class/en \
 	locale/schulze-mueller.de/dirlist-class/de
 
@@ -95,7 +91,6 @@ install:
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/font
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/cursor
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/style
-	$(INSTALL_D) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
 	$(INSTALL_S) layout/default$(DLLEXT) $(LUA_LIB)/tek/ui/layout
 	$(INSTALL_F) layout/fixed.lua $(LUA_SHARE)/tek/ui/layout
@@ -106,8 +101,7 @@ install:
 	$(INSTALL_F) $(FONTS) $(LUA_SHARE)/tek/ui/font
 	$(INSTALL_F) $(CURSORS) $(LUA_SHARE)/tek/ui/cursor
 	$(INSTALL_F) $(STYLES) $(LUA_SHARE)/tek/ui/style
-	$(INSTALL_F) $(CATALOGS1) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/tekui-demo
-	$(INSTALL_F) $(CATALOGS2) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
+	$(INSTALL_F) $(CATALOGS1) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
 
 clean: FORCE
 	-$(RM) $(MODS) $(LIBS)
