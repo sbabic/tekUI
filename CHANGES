@@ -14,10 +14,11 @@
  * Added gradient support, available via stylesheets
  * RawFB: Added LibVNCServer support. Applications can now be shared with
  the network, running headlessly or with an additional native display
- * Added 'klinik' and 'stain' stylesheets
- * Default border now supports border-legend-align attribute
+ * Added 'klinik', 'stain', 'gradient' stylesheets
+ * Default border now supports border-legend-align attribute, bug fixed
+ in focus border rendering
  * Element: Cascading stylesheets did not incorporate an element's hardcoded
- class properties correctly, corrected
+ class properties correctly, corrected, getPseudoClass() added
  * ScrollGroup: Reduced object tree complexity in some cases, some checks
  added
  * ui: Added FL_UPDATE, typo in "BckSpc" symbolic key name corrected, added
@@ -28,7 +29,9 @@
  bubbling up in the graph on setting FL_REDRAW, FL_REDRAWBORDER, FL_CHANGED.
  getNext(), getPrev() now have an optional "recursive" mode argument.
  added getDisplacement(), getMsgFields(). checkHover() renamed to
- checkHilite()
+ checkHilite(); getBG() now returns additional position-independency info
+ for better support of transaprent backgrounds, getMargin and getPadding
+ are now written in C
  * Group: now descends only into elements with FL_UPDATE set during updates,
  which reduces the overhead for small, partial refreshes. remMember() now
  unweights a Group's remaining elements; no longer passes messages to
@@ -38,7 +41,8 @@
  FocusWindow attribute
  * Display, Visual: Added support for bold and italic in fontnames and with
  openFont(), better default/fallback fonts, added symbolic color "bright",
- getattrs() now supports query of selection and clipboard
+ getattrs() now supports query of selection and clipboard, getPaintInfo()
+ added
  * DirList: path/location field bugs fixed, some improvements especially in
  regard to keyboard control
  * DirectFB Display driver: Totalwidth/pitch bug in drawbuffer corrected
@@ -80,6 +84,7 @@
  variable, default font is now DejaVu, display drivers no longer have to
  provide a default font, improved font and pixmap cache management, reworked
  some demos
+ * ImageWidget: onSetImage() and documentation added
  
 === 0.8k: ===
 

@@ -902,7 +902,15 @@ local app = ui.Application:new
 
 			}
 		}
-	}
+	},
+	
+	up = function(self)
+		self:easyRequest("Sorry", 
+[[The Lua/module compiler/linker may not be fully functional.
+It once produced working blobs under Lua 5.1 on 32bit x86. 
+Please let the authors know if you happen to know a working
+solution for 5.1, 5.2 and different architectures. Thank you!]], "Okay")
+	end
 }
 
 app:run()

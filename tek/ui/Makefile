@@ -58,7 +58,9 @@ STYLES = \
 	style/default.css \
 	style/klinik.css \
 	style/stain.css \
-	style/desktop.lua
+	style/desktop.lua \
+	style/gradient.css \
+	style/industrial.css
 FONTS = \
 	font/Vera.ttf \
 	font/VeraMono.ttf

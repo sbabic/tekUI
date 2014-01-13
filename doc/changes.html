@@ -37,14 +37,15 @@
 					the network, running headlessly or with an additional native display
 				</li>
 				<li>
-					Added 'klinik' and 'stain' stylesheets
+					Added 'klinik', 'stain', 'gradient' stylesheets
 				</li>
 				<li>
-					Default border now supports border-legend-align attribute
+					Default border now supports border-legend-align attribute, bug fixed
+					in focus border rendering
 				</li>
 				<li>
 					Element: Cascading stylesheets did not incorporate an element's hardcoded
-					class properties correctly, corrected
+					class properties correctly, corrected, <a href="manual.html#getPseudoClass"><code>getPseudoClass()</code></a> added
 				</li>
 				<li>
 					ScrollGroup: Reduced object tree complexity in some cases, some checks
@@ -61,7 +62,9 @@
 					bubbling up in the graph on setting FL_REDRAW, FL_REDRAWBORDER, FL_CHANGED.
 					<a href="manual.html#getNext"><code>getNext()</code></a>, <a href="manual.html#getPrev"><code>getPrev()</code></a> now have an optional &quot;recursive&quot; mode argument.
 					added <a href="manual.html#getDisplacement"><code>getDisplacement()</code></a>, <a href="manual.html#getMsgFields"><code>getMsgFields()</code></a>. <a href="manual.html#checkHover"><code>checkHover()</code></a> renamed to
-					<a href="manual.html#checkHilite"><code>checkHilite()</code></a> 
+					<a href="manual.html#checkHilite"><code>checkHilite()</code></a>; <a href="manual.html#getBG"><code>getBG()</code></a> now returns additional position-independency info
+					for better support of transaprent backgrounds, getMargin and getPadding
+					are now written in C
 				</li>
 				<li>
 					Group: now descends only into elements with FL_UPDATE set during updates,
@@ -79,7 +82,8 @@
 				<li>
 					Display, Visual: Added support for bold and italic in fontnames and with
 					<a href="manual.html#openFont"><code>openFont()</code></a>, better default/fallback fonts, added symbolic color &quot;bright&quot;,
-					<a href="manual.html#getattrs"><code>getattrs()</code></a> now supports query of selection and clipboard
+					<a href="manual.html#getattrs"><code>getattrs()</code></a> now supports query of selection and clipboard, <a href="manual.html#getPaintInfo"><code>getPaintInfo()</code></a> 
+					added
 				</li>
 				<li>
 					DirList: path/location field bugs fixed, some improvements especially in
@@ -161,6 +165,9 @@
 					variable, default font is now DejaVu, display drivers no longer have to
 					provide a default font, improved font and pixmap cache management, reworked
 					some demos
+				</li>
+				<li>
+					ImageWidget: <a href="manual.html#onSetImage"><code>onSetImage()</code></a> and documentation added
 				</li>
 			</ul>
 		</blockquote>

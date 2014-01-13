@@ -29,9 +29,9 @@ ui.Application:new
 -- 					Style = "margin: 10",
 					MultiLine = true,
 					Text = [[
-background-color: #800;
+background-color: gradient(0,0,#f95,400,300,#002);
 color: white;
-font: ui-huge:48;
+font: ui-huge/bi:48;
 border-style: inset;
 border-width: 10;
 margin: 10;
