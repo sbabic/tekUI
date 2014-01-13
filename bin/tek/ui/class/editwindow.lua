@@ -241,7 +241,7 @@ end
 
 function EditInput:updateChangedStatus()
 	local img = self.Changed and FileImage or false
-	self.Window.StatusField:setImage(img)
+	self.Window.StatusField:setValue("Image", img)
 end
 
 function EditInput:onSetCursorX(cx)

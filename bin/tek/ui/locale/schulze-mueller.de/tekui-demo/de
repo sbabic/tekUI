@@ -45,6 +45,8 @@ ANIMATIONS_START = "_Start";
 ANIMATIONS_STOP = "Sto_p";
 ANIMATIONS_TITLE = "Animationen";
 AVAILABLE_DEMOS = "Verfügbare Demos";
+BASEPATH = "Basispfad";
+BASEPATH_ANNOTATION = "Der Basispfad ist eine optionale Wurzel im Dateisystem,\nab der der Dateidialog operieren darf.";
 BORDER_BUTTON = "Rahmen";
 BORDER_CAPTION = "Rahmentitel";
 BORDER_DESCRIPTION = [[
@@ -152,6 +154,17 @@ WIDGET_UNSELECT = "Deselekt.";
 GARBAGE_COLLECTOR = "Garbage\nCollector";
 GC_PAUSE = "Pause";
 GC_STEPMUL = "Steps";
+GRADIENT_LEGEND_WINDOW_GROUP = "Fenstergruppe";
+GRADIENT_LEGEND_GROUP_BORDER = "Gruppenrahmen";
+GRADIENT_LEGEND_BUTTON_BORDER = "Knopfrahmen";
+GRADIENT_BUTTON = "Knopf";
+GRADIENT_DESCRIPTION = [[
+» Hintergründe können mit einer Einzelfarbe, einer Pixmap oder einem Gradienten gezeichnet werden.
+
+» Außerdem können Elementhintergründe transparent sein, so dass ihr Elternelement durchscheint.
+]],
+GRADIENT_TITLE = "Gradient",
+GRAPHICS_BACKGROUND = "Hintergrund";
 GRAPHICS_BITMAPS = "Bitmaps";
 GRAPHICS_CHECKMARKS = "Häkchen";
 GRAPHICS_DESCRIPTION = [[
@@ -190,6 +203,9 @@ LAYOUT_GRID = "Gitter";
 LAYOUT_RELATIVE_SIZES = "Relative Größe";
 LAYOUT_SAME_SIZES = "Einheitliche Größe";
 LAYOUT_TITLE = "Layout";
+LEGEND_SELECTION_TYPE = "Typ der Auswahl";
+LEGEND_SELECT_PATHS = "Pfade auswählen...";
+LEGEND_SELECT_RESULT = "Auswahlergebnis";
 LIST_DESCRIPTION = [[
 » Listen können eine beliebige Anzahl Zeilen und Spalten haben. Ihre Breite und Höhe kann festgelegt oder adaptiv sein.
 
@@ -230,7 +246,10 @@ PRESENTATION_TITLE = "Präsentation";
 PROPERTY = "Eigenschaft";
 QUIT = "Beenden";
 REVOKED = "Widerrufen";
+SELECT = "Auswählen",
 SELECTED = "Gewählt";
+SHOW_FILES_AND_DIRS = "Zeige Dateien und Verzeichnisse",
+SHOW_ONLY_DIRS = "Zeige nur Verzeichnisse",
 SLIDER_CONNECTIONS = "Verbindungen";
 SLIDER_CONTINUOUS = "Fließend";
 SLIDER_DESCRIPTION = [[

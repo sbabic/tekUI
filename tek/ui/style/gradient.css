@@ -1,8 +1,40 @@
 
 /*
-**	tek/ui/style/gradient.css - Gradient effect on buttons
-**	Version: 1.0
+**	tek/ui/style/gradient.css - Gradient effect on windows and buttons
+**	Version: 1.2
 */
+
+tek.ui.class.window {
+	background-color: gradient(0,0,tint(background,bright,30%),30,200,tint(background,dark,30%));
+}
+
+tek.ui.class.widget {
+	background-color: transparent;
+}
+tek.ui.class.widget:hover {
+	background-color: transparent;
+}
+tek.ui.class.widget:active {
+	background-color: transparent;
+}
+tek.ui.class.widget:focus {
+	background-color: transparent;
+}
+tek.ui.class.widget:disabled {
+	background-color: transparent;
+}
+
+tek.ui.class.group {
+	background-color: transparent;
+}
+
+tek.ui.class.canvas {
+	background-color: transparent;
+}
+
+tek.ui.class.floattext {
+	background-color: transparent;
+}
 
 .button {
 	background-color: gradient(0,0,tint(background,border-shadow,50%),0,30,tint(background,border-shine,50%));
@@ -20,3 +52,9 @@
 	background-color: gradient(0,0,tint(disabled,border-shadow,50%),0,30,tint(disabled,border-shine,50%));
 }
 
+.menubar {
+	background-color: gradient(0,0,tint(background,border-shine,70%),0,20,tint(background,border-shadow,50%));
+}
+.menuitem {
+	background-color: transparent;
+}

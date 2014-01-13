@@ -119,6 +119,7 @@ static const luaL_Reg tek_lib_visual_methods[] =
 	{ "getClipRect", tek_lib_visual_getcliprect },
 	{ "setBGPen", tek_lib_visual_setbgpen },
 	{ "getSelection", tek_lib_visual_getselection },
+	{ "getPaintInfo", tek_lib_visual_getpaintinfo },
 	{ TNULL, TNULL }
 };
 

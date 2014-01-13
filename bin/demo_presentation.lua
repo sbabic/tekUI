@@ -57,8 +57,8 @@ function ScrollText:nextSlide()
 	self.UpDown = self.UpDown % 2 + 1
 end
 
-function ScrollText:show(drawable)
-	ui.FloatText.show(self, drawable)
+function ScrollText:show()
+	ui.FloatText.show(self)
 	self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
 end
 

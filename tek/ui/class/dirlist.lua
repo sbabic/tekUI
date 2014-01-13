@@ -22,6 +22,9 @@
 --			Tells the directory lister to adapt its contents dynamically to
 --			the width of the element. By default, the column widths remain
 --			adjusted to the initial width.
+--		- {{DisplayMode [IG]}} (string)
+--			What kind of entries to display, {{"all"}} or {{"onlydirs"}}.
+--			Default: {{"all"}}
 --		- {{FocusElement [I]}} (string)
 --			What element to focus initially: {{"path"}}, {{"location"}},
 --			{{"list"}}. Default: {{"list"}}
@@ -36,6 +39,8 @@
 --			The currently selected entry (may be a file or directory)
 --		- {{Path [IG]}} (string)
 --			Directory in the file system
+--		- {{BasePath}} (string)
+--			Filesystem base path in which the lister is allowed to operate
 --		- {{Selection [G]}} (table)
 --			An array of selected entries
 --		- {{SelectMode [IG]}} (String)
@@ -84,9 +89,46 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 16.7"
+_VERSION = "DirList 17.0"
 local DirList = _M
 Group:newClass(DirList)
+
+-------------------------------------------------------------------------------
+--	basepath = getBasePath()
+-------------------------------------------------------------------------------
+
+function DirList:getBasePath()
+	return self.BasePath:match("^(.*)/?$") or ""
+end
+
+-------------------------------------------------------------------------------
+--	vpath = RealToVPath(path)
+-------------------------------------------------------------------------------
+
+function DirList:RealToVPath(path)
+	local rpath = self:getBasePath()
+	local vpath = path
+	if rpath ~= "" then
+		local match = "^" .. rpath .. "(.*)$"
+		db.info("match %s <-> %s", path, match)
+		vpath = path:match(match)
+		if not vpath then
+			vpath = "" --rpath
+		end
+	end
+	db.info("real2vpath: %s -> %s", path, vpath)
+	return vpath
+end
+
+-------------------------------------------------------------------------------
+--	path = VToRealPath(vpath)
+-------------------------------------------------------------------------------
+
+function DirList:VToRealPath(vpath)
+	local path = self:getBasePath() .. vpath
+	db.info("vpath2real: %s -> %s", vpath, path)
+	return path
+end
 
 -------------------------------------------------------------------------------
 --	cdir = getCurrentDir(): Returns the current directory. You can override
@@ -95,6 +137,9 @@ Group:newClass(DirList)
 
 function DirList:getCurrentDir()
 	local success, path = pcall(lfs.currentdir)
+	if path then
+		path = self:RealToVPath(path)
+	end
 	return success and path
 end
 
@@ -104,17 +149,28 @@ end
 --	function to get an iterator over arbitrary kinds of listings.
 -------------------------------------------------------------------------------
 
-function DirList:getDirIterator(path)
+function DirList:getDirIterator(vpath)
+	local path = self:VToRealPath(vpath)
 	local success, dir, iter = pcall(lfs.dir, path)
 	if success then
 		return function()
 			local e
 			repeat
-				e = dir(iter)
-			until e ~= "." and e ~= ".."
+				repeat
+					e = dir(iter)
+				until e ~= "." and e ~= ".."
+			until not e or self:filterEntry(vpath, e)
 			return e
 		end
 	end
+end
+
+function DirList:filterEntry(vpath, entry)
+	if self.DisplayMode == "onlydirs" and
+		self:getFileStat(vpath, entry, "mode") ~= "directory" then
+		return false
+	end
+	return true
 end
 
 -------------------------------------------------------------------------------
@@ -129,6 +185,7 @@ end
 -------------------------------------------------------------------------------
 
 function DirList:getFileStat(path, name, attr, idx)
+	path = self:VToRealPath(path)
 	return lfs.attributes(path .. ui.PathSeparator .. name, attr)
 end
 
@@ -167,8 +224,11 @@ function DirList.new(class, self)
 
 	self.AutoWidth = self.AutoWidth or false
 	self.Path = self.Path or ""
+	self.BasePath = self.BasePath or ""
 	self.Location = self.Location or ""
 	self.FocusElement = self.FocusElement or "list"
+	
+	self.DisplayMode = self.DisplayMode or "all" -- "onlydirs"
 
 	self.Locale = self.Locale or
 		ui.getLocale("dirlist-class", "schulze-mueller.de")

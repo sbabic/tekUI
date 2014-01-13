@@ -50,6 +50,7 @@
 --		- Element:disconnect() - Disconnects the element from its parent
 --		- Element:getAttr() - Gets a named attribute from an element
 --		- Element:getById() - Gets a registered element by Id
+--		- Element:getPseudoClass() - Gets an element's pseudo class
 --		- Element:onSetClass() - Gets invoked on changes of {{Class}}
 --		- Element:onSetStyle() - Gets invoked on changes of {{Style}}
 --		- Element:setup() - Links the element to an Application and Window
@@ -75,7 +76,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 19.6"
+_VERSION = "Element 20.0"
 local Element = _M
 Object:newClass(Element)
 
@@ -390,4 +391,12 @@ end
 
 function Element:onSetClass()
 	self:onSetStyle()
+end
+
+-------------------------------------------------------------------------------
+--	pclass = Element:getPseudoClass(): Get an element's pseudo class
+-------------------------------------------------------------------------------
+
+function Element:getPseudoClass()
+	return ""
 end

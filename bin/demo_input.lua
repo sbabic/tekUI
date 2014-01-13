@@ -53,7 +53,7 @@ local window = ui.Window:new
 		},
 		ui.Input:new 
 		{
-			Text = L.INPUT_FIELD_TEXT,
+			Text = "Swordfish",
 			MaxLength = 20,
 			PasswordChar = "•",
 		},

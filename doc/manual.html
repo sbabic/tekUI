@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="31-Dec-2013" />
+		<meta name="created" content="12-Jan-2014" />
 	</head>
 	<body>
 		<h1>
@@ -98,6 +98,9 @@
 																							</li>
 																							<li>
 																								<a href="#tek.ui.class.handle">Handle</a> 
+																							</li>
+																							<li>
+																								<a href="#tek.ui.class.imagewidget">ImageWidget</a> 
 																							</li>
 																							<li>
 																								<a href="#tek.ui.class.numeric">Numeric</a> 
@@ -1821,7 +1824,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v37.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v38.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2225,7 +2228,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v50.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v51.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2914,12 +2917,14 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getBG" id="Area:getBG"><code>bgpen[, tx, ty] = Area:getBG()</code></a></h3>
+		<div class="node"><h3><a name="Area:getBG" id="Area:getBG"><code>bgpen, tx, ty, pos_independent = Area:getBG()</code></a></h3>
 			<p>
-				Gets the element's background properties.
-				<code>bgpen</code> is the background pen (which may be a texture). If the element's
-				<em>background-attachment</em> is <code>&quot;scrollable&quot;</code>, then <code>tx</code> and <code>ty</code> are
-				the coordinates of the texture origin.
+				Gets the element's
+				background properties. <code>bgpen</code> is the background paint (which may be a
+				solid color, texture, or gradient). If the element's
+				<em>background-attachment</em> is not <code>&quot;fixed&quot;</code>, then <code>tx</code> and <code>ty</code> are
+				the coordinates of the texture origin. <code>pos_independent</code> indicates
+				whether the background is independent of the element's position.
 			</p>
 			<hr />
 		</div>
@@ -3158,7 +3163,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v32.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v33.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3477,7 +3482,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v16.7)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v17.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3506,6 +3511,15 @@ end
 									Tells the directory lister to adapt its contents dynamically to
 									the width of the element. By default, the column widths remain
 									adjusted to the initial width.
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>DisplayMode &#091;IG&#093;</code> (string)
+							<blockquote>
+								<p>
+									What kind of entries to display, <code>&quot;all&quot;</code> or <code>&quot;onlydirs&quot;</code>.
+									Default: <code>&quot;all&quot;</code> 
 								</p>
 							</blockquote>
 						</li>
@@ -3556,6 +3570,14 @@ end
 							<blockquote>
 								<p>
 									Directory in the file system
+								</p>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>BasePath</code> (string)
+							<blockquote>
+								<p>
+									Filesystem base path in which the lister is allowed to operate
 								</p>
 							</blockquote>
 						</li>
@@ -3741,7 +3763,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v30.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v30.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4037,7 +4059,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v19.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v20.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4156,6 +4178,9 @@ end
 							<a href="#Element:getById"><code>Element:getById()</code></a> - Gets a registered element by Id
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Element:getPseudoClass"><code>Element:getPseudoClass()</code></a> - Gets an element's pseudo class
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Element:onSetClass"><code>Element:onSetClass()</code></a> - Gets invoked on changes of <code>Class</code> 
 						</li>
 						<li style="list-style-type: none">
@@ -4224,6 +4249,12 @@ end
 				previously registered with the <a href="#tek.ui.class.application">Application</a>.
 				This function is a shortcut for <a href="#Application:getById"><code>Application:getById()</code></a>, applied to
 				<code>self.Application</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Element:getPseudoClass" id="Element:getPseudoClass"><code>pclass = Element:getPseudoClass()</code></a></h3>
+			<p>
+				Get an element's pseudo class
 			</p>
 			<hr />
 		</div>
@@ -5021,6 +5052,76 @@ end
 				</blockquote>
 				<hr class="page-break" />
 			</div>
+		</div>
+		<div class="node"><h2><a name="tek.ui.class.imagewidget" id="tek.ui.class.imagewidget">ImageWidget (v14.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						<a href="#ClassOverview">ClassOverview</a> :
+						<a href="#tek.class">Class</a> /
+						<a href="#tek.class.object">Object</a> /
+						<a href="#tek.ui.class.element">Element</a> /
+						<a href="#tek.ui.class.area">Area</a> /
+						<a href="#tek.ui.class.frame">Frame</a> /
+						<a href="#tek.ui.class.widget">Widget</a> /
+						ImageWidget 
+					</p>
+					<p>
+						This class implements widgets with an image.
+						Images are instances of the Image class, which handles pixmaps
+						and simple vector graphics.
+						They can be obtained by <a href="#ui:loadImage"><code>ui.loadImage()</code></a>, <a href="#ui:getStockImage"><code>ui.getStockImage()</code></a>,
+						or by directly instantiating the Image class or derivations thereof.
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>ATTRIBUTES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<code>Image &#091;ISG&#093;</code> (image)
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>IMPLEMENTS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#ImageWidget:onSetImage"><code>ImageWidget:onSetImage()</code></a> - Handler for the <code>Image</code> attribute
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>OVERRIDES</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:askMinMax"><code>Area:askMinMax()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:draw"><code>Area:draw()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Object:new"><code>Object.new()</code></a> 
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="ImageWidget:onSetImage" id="ImageWidget:onSetImage"><code>onSetImage()</code></a></h3>
+			<p>
+				This handler is invoked when the element's <code>Image</code> 
+				attribute has changed.
+			</p>
+			<hr class="page-break" />
 		</div>
 		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v3.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
@@ -7000,7 +7101,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v28.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v28.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7010,7 +7111,7 @@ end
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
 						<a href="#tek.ui.class.frame">Frame</a> /
-						Widget / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">5 subclasses</option><option value="#tek.ui.class.group">Group</option><option value="#tek.ui.class.handle">Handle</option><option value="#tek.ui.class.numeric">Numeric</option><option value="#tek.ui.class.sizeable">Sizeable</option><option value="#tek.ui.class.text">Text</option></select>
+						Widget / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">6 subclasses</option><option value="#tek.ui.class.group">Group</option><option value="#tek.ui.class.handle">Handle</option><option value="#tek.ui.class.imagewidget">ImageWidget</option><option value="#tek.ui.class.numeric">Numeric</option><option value="#tek.ui.class.sizeable">Sizeable</option><option value="#tek.ui.class.text">Text</option></select>
 					</p>
 					<p>
 						This class implements interactions with the user.
@@ -7349,6 +7450,9 @@ end
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Element:getPseudoClass"><code>Element:getPseudoClass()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -7448,7 +7552,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v39.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v40.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7879,7 +7983,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Tue Dec 31 19:07:13 2013
+					Document generated on Sun Jan 12 21:19:07 2014
 				</p>
 			</div>
 		</div>

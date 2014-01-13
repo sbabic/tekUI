@@ -120,6 +120,7 @@
 --		- Area:checkFocus()
 --		- Area:checkHilite()
 --		- Element:cleanup()
+--		- Element:getPseudoClass()
 --		- Object.init()
 --		- Area:layout()
 --		- Area:passMsg()
@@ -134,7 +135,7 @@ local ui = require "tek.ui"
 local Frame = ui.require("frame", 16)
 
 module("tek.ui.class.widget", tek.ui.class.frame)
-_VERSION = "Widget 28.0"
+_VERSION = "Widget 28.1"
 local Widget = _M
 Frame:newClass(Widget)
 
@@ -380,35 +381,27 @@ function Widget:onClick()
 end
 
 -------------------------------------------------------------------------------
+--	getPseudoClass: overrides
+-------------------------------------------------------------------------------
+
+function Widget:getPseudoClass()
+	return self.Disabled and ":disabled" or
+		self.Selected and ":active" or
+		self.Hilite and ":hover" or
+		self.Focus and ":focus" or
+		""
+end
+
+-------------------------------------------------------------------------------
 --	setState: overrides
 -------------------------------------------------------------------------------
 
 function Widget:setState(bg, fg)
 	if self:checkFlags(ui.FL_SETUP) then
 		local props = self.Properties
-		if not bg then
-			if self.Disabled then
-				bg = props["background-color:disabled"]
-			elseif self.Selected then
-				bg = props["background-color:active"]
-			elseif self.Hilite then
-				bg = props["background-color:hover"]
-			elseif self.Focus then
-				bg = props["background-color:focus"]
-			end
-		end
-		if not fg then
-			if self.Disabled then
-				fg = props["color:disabled"]
-			elseif self.Selected then
-				fg = props["color:active"]
-			elseif self.Hilite then
-				fg = props["color:hover"]
-			elseif self.Focus then
-				fg = props["color:focus"]
-			end
-		end
-		fg = fg or props["color"] or "detail"
+		local pclass = self:getPseudoClass()
+		bg = bg or props["background-color" .. pclass]
+		fg = fg or props["color" .. pclass] or "detail"
 		if fg ~= self.FGPen then
 			self.FGPen = fg
 			self:setFlags(FL_REDRAW)

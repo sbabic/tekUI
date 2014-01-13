@@ -109,7 +109,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 39.2"
+_VERSION = "Window 40.0"
 local Window = _M
 Group:newClass(Window)
 
@@ -219,6 +219,7 @@ function Window.init(self)
 		[5] = 0,
 		[6] = 0,
 	}
+	self.PenTable = false
 	-- Root window in a cascade of popup windows:
 	self.PopupRootWindow = self.PopupRootWindow or false
 	self.RefreshMsg = false
@@ -259,6 +260,14 @@ function Window:cleanup()
 end
 
 -------------------------------------------------------------------------------
+--	isSolidPen: Check if a pen is a solid color
+-------------------------------------------------------------------------------
+
+function Window:isSolidPen(pen)
+	return not pen or self.Drawable:getPaintInfo(self.PenTable[pen]) == 1
+end
+
+-------------------------------------------------------------------------------
 --	show: overrides
 -------------------------------------------------------------------------------
 
@@ -266,10 +275,9 @@ function Window:show()
 	self.Status = "show"
 	if not self.Drawable then
 		local m1, m2, m3, m4, x, y, w, h = self:getWindowDimensions()
-		
 		local display = self.Application.Display
-		local drawable = self.Drawable
-		
+		local drawable
+		self.PenTable = { }
 		drawable = Display.openDrawable {
 			UserData = self,
 			Title = self.Title or self.Application.ProgramName,
@@ -286,7 +294,7 @@ function Window:show()
 			Borderless = self.Borderless,
 			EventMask = self.EventMask,
 			BlankCursor = ui.NoCursor,
-			Pens = setmetatable({ }, {
+			Pens = setmetatable(self.PenTable, {
 				__index = function(tab, col)
 					local key = col
 					local res
@@ -313,9 +321,7 @@ function Window:show()
 				end
 			})
 		}
-		
 		self.Drawable = drawable
-		
 		self.Application:openWindow(self)
 		Group.show(self, d)
 		self:layout()
@@ -337,6 +343,7 @@ function Window:hide()
 		self.Drawable = false
 		self.ActiveElement = false
 		self.Application:closeWindow(self)
+		self.PenTable = false
 	end
 end
 

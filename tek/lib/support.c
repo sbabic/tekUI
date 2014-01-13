@@ -129,6 +129,44 @@ static int tek_lib_support_copytable(lua_State *L)
 	return 1;
 }
 
+static int tek_lib_support_getmargin(lua_State *L)
+{
+	lua_Integer m1, m2, m3, m4;
+	lua_getfield(L, 1, "margin-left");
+	lua_getfield(L, 1, "margin-top");
+	lua_getfield(L, 1, "margin-right");
+	lua_getfield(L, 1, "margin-bottom");
+	m1 = lua_tointeger(L, -4);
+	m2 = lua_tointeger(L, -3);
+	m3 = lua_tointeger(L, -2);
+	m4 = lua_tointeger(L, -1);
+	lua_pop(L, 4);
+	lua_pushinteger(L, m1);
+	lua_pushinteger(L, m2);
+	lua_pushinteger(L, m3);
+	lua_pushinteger(L, m4);
+	return 4;
+}
+
+static int tek_lib_support_getpadding(lua_State *L)
+{
+	lua_Integer m1, m2, m3, m4;
+	lua_getfield(L, 1, "padding-left");
+	lua_getfield(L, 1, "padding-top");
+	lua_getfield(L, 1, "padding-right");
+	lua_getfield(L, 1, "padding-bottom");
+	m1 = lua_tointeger(L, -4);
+	m2 = lua_tointeger(L, -3);
+	m3 = lua_tointeger(L, -2);
+	m4 = lua_tointeger(L, -1);
+	lua_pop(L, 4);
+	lua_pushinteger(L, m1);
+	lua_pushinteger(L, m2);
+	lua_pushinteger(L, m3);
+	lua_pushinteger(L, m4);
+	return 4;
+}
+
 /*****************************************************************************/
 
 static const luaL_Reg tek_lib_support_funcs[] =
@@ -136,6 +174,8 @@ static const luaL_Reg tek_lib_support_funcs[] =
 	{ "checkAnyFlags", tek_lib_support_checkanyflags },
 	{ "newFlags", tek_lib_support_newflags },
 	{ "copyTable", tek_lib_support_copytable },
+	{ "getMargin", tek_lib_support_getmargin },
+	{ "getPadding", tek_lib_support_getpadding },
 	{ NULL, NULL }
 };
 

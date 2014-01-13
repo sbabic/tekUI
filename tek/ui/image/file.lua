@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	Version 1.4
+--	Version 1.5
 --
 -------------------------------------------------------------------------------
 
@@ -15,10 +15,10 @@ Image:newClass(_M)
 
 local coords =
 {
-	0x9999, 0xffff,
-	0x7777, 0xeeee,
+	0xaaaa, 0xffff,
+	0x7777, 0xdddd,
 	0x1111, 0xffff,
-	0x3333, 0xeeee,
+	0x3333, 0xdddd,
 	0x1111, 0x0000,
 	0x3333, 0x2222,
 	0xffff, 0x0000,

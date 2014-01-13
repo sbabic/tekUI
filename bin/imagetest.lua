@@ -31,7 +31,7 @@ ui.Application:new
 					ImageAspectY = 3,
 					onPress = function(self)
 						ui.ImageWidget.onPress(self)
-						self:setImage(self.Pressed and RadioImage2 or RadioImage1)
+						self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
 					end
 				},
 				ui.ImageWidget:new 
@@ -41,7 +41,7 @@ ui.Application:new
 					Style = "padding: 10",
 					onPress = function(self)
 						ui.ImageWidget.onPress(self)
-						self:setImage(self.Pressed and BitMapImage2 or BitMapImage1)
+						self:setValue("Image", self.Pressed and BitMapImage2 or BitMapImage1)
 					end
 				}
 			}

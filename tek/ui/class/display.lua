@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 30.1"
+_VERSION = "Display 30.3"
 local Display = _M
 Element:newClass(Display)
 
@@ -276,16 +276,22 @@ function Display.getPaint(imgspec, display)
 		local x0, y0, c0, x1, y1, c1 = 
 			location:match("^(%d+),(%d+),(%S+),(%d+),(%d+),(%S+)$")
 		local _, r0, g0, b0
-		if display then
-			_, r0, g0, b0 = display:colorToRGB(c0)
-			_, r1, g1, b1 = display:colorToRGB(c1)
+		if not x0 then
+			db.error("Invalid gradient arguments: '%s'", location)
 		else
-			_, r0, g0, b0 = hexToRGB(c0)
-			_, r1, g1, b1 = hexToRGB(c1)
+			if display then
+				_, r0, g0, b0 = display:colorToRGB(c0)
+				_, r1, g1, b1 = display:colorToRGB(c1)
+			else
+				_, r0, g0, b0 = hexToRGB(c0)
+				_, r1, g1, b1 = hexToRGB(c1)
+			end
+			if r0 and r1 then
+				local rgb0 = r0 * 65536 + g0 * 256 + b0
+				local rgb1 = r1 * 65536 + g1 * 256 + b1
+				paint = createGradient(x0, y0, x1, y1, rgb0, rgb1)
+			end
 		end
-		local rgb0 = r0 * 65536 + g0 * 256 + b0
-		local rgb1 = r1 * 65536 + g1 * 256 + b1
-		paint = createGradient(x0, y0, x1, y1, rgb0, rgb1)
 	end
 	if paint then
 		PixmapCache[imgspec] = { paint, w, h, trans }
@@ -393,11 +399,13 @@ function Display:colorToRGB(key)
 		if key1 then
 			local a1, r1, g1, b1 = self.hexToRGB(props["rgb-" .. key1] or ColorDefaults[key1] or key1)
 			local a2, r2, g2, b2 = self.hexToRGB(props["rgb-" .. key2] or ColorDefaults[key2] or key2)
-			local a = floor(a1 + (a2 - a1) * f / 100)
-			local r = floor(r1 + (r2 - r1) * f / 100)
-			local g = floor(g1 + (g2 - g1) * f / 100)
-			local b = floor(b1 + (b2 - b1) * f / 100)
-			return a, r, g, b
+			if a1 and a2 then
+				local a = floor(a1 + (a2 - a1) * f / 100)
+				local r = floor(r1 + (r2 - r1) * f / 100)
+				local g = floor(g1 + (g2 - g1) * f / 100)
+				local b = floor(b1 + (b2 - b1) * f / 100)
+				return a, r, g, b
+			end
 		end
 	end
 	return self.hexToRGB(col or key)

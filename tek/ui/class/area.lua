@@ -195,6 +195,9 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Element = ui.require("element", 19)
 local Region = ui.loadLibrary("region", 10)
+local support = require "tek.lib.support" -- comment out to use pure Lua
+local getmargin = support and support.getMargin
+local getpadding = support and support.getPadding
 
 local assert = assert
 local newFlags = ui.newFlags
@@ -207,7 +210,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 50.1"
+_VERSION = "Area 51.1"
 local Area = _M
 Element:newClass(Area)
 
@@ -442,52 +445,54 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	-- refresh element by copying if:
 	-- * shifting occurs only on one axis
 	-- * size is unchanged OR TrackDamage enabled
-	-- * object is not already slated for copying
-	-- * background attachment is not "fixed"
+	-- * element is not already slated for copying
+	-- * element's background is position-independent
 	
 	if validmove and (samesize or self.TrackDamage) and
-		not win.BlitObjects[self] and 
-		self.Properties["background-attachment"] ~= "fixed" then
+		not win.BlitObjects[self] then
+		local _, _, _, pos_independent = self:getBG()
+		if pos_independent then
 
-		-- get source rect, incl. border:
-		local s1 = x0 - dx - m1
-		local s2 = y0 - dy - m2
-		local s3 = x1 - dx + m3
-		local s4 = y1 - dy + m4
+			-- get source rect, incl. border:
+			local s1 = x0 - dx - m1
+			local s2 = y0 - dy - m2
+			local s3 = x1 - dx + m3
+			local s4 = y1 - dy + m4
 
-		local can_copy
+			local can_copy
 
-		local c1, c2, c3, c4 = d:getClipRect()
-		if c1 then
-			-- if we have a cliprect, check if parts become visible that
-			-- were previously obscured (including borders and shift):
-			local r = newregion(r1 + sx - m1, r2 + sy - m2, r3 + sx + m3,
-				r4 + sy + m4)
-			r:subRect(c1, c2, c3, c4)
-			r:shift(dx, dy)
-			r:andRect(c1, c2, c3, c4)
-			if r:isEmpty() then
-				-- completely visible before and after:
+			local c1, c2, c3, c4 = d:getClipRect()
+			if c1 then
+				-- if we have a cliprect, check if parts become visible that
+				-- were previously obscured (including borders and shift):
+				local r = newregion(r1 + sx - m1, r2 + sy - m2, r3 + sx + m3,
+					r4 + sy + m4)
+				r:subRect(c1, c2, c3, c4)
+				r:shift(dx, dy)
+				r:andRect(c1, c2, c3, c4)
+				if r:isEmpty() then
+					-- completely visible before and after:
+					can_copy = true
+				elseif self.TrackDamage then
+					db.warn("partially visible (masked by cliprect)")
+				end
+			else
 				can_copy = true
-			elseif self.TrackDamage then
-				db.warn("partially visible (masked by cliprect)")
 			end
-		else
-			can_copy = true
-		end
 
-		if can_copy then
-			win.BlitObjects[self] = true
-			win:addBlit(s1 + sx, s2 + sy, s3 + sx, s4 + sy, dx, dy,
-				c1, c2, c3, c4)
-			if samesize then
-				-- something changed, no redraw. second value: border_ok hack
-				return true, true
+			if can_copy then
+				win.BlitObjects[self] = true
+				win:addBlit(s1 + sx, s2 + sy, s3 + sx, s4 + sy, dx, dy,
+					c1, c2, c3, c4)
+				if samesize then
+					-- something changed, no redraw. second value: border_ok hack
+					return true, true
+				end
+				r1 = r1 + dx
+				r2 = r2 + dy
+				r3 = r3 + dx
+				r4 = r4 + dy
 			end
-			r1 = r1 + dx
-			r2 = r2 + dy
-			r3 = r3 + dx
-			r4 = r4 + dy
 		end
 	end
 
@@ -592,21 +597,28 @@ function Area:draw()
 end
 
 -------------------------------------------------------------------------------
---	bgpen[, tx, ty] = Area:getBG(): Gets the element's background properties.
---	{{bgpen}} is the background pen (which may be a texture). If the element's
---	''background-attachment'' is {{"scrollable"}}, then {{tx}} and {{ty}} are
---	the coordinates of the texture origin.
+--	bgpen, tx, ty, pos_independent = Area:getBG(): Gets the element's
+--	background properties. {{bgpen}} is the background paint (which may be a
+--	solid color, texture, or gradient). If the element's
+--	''background-attachment'' is not {{"fixed"}}, then {{tx}} and {{ty}} are
+--	the coordinates of the texture origin. {{pos_independent}} indicates
+--	whether the background is independent of the element's position.
 -------------------------------------------------------------------------------
 
 function Area:getBG()
-	local r1, r2 = self:getRect()
-	if r1 then
-		local bgpen = self.BGPen
-		if self.Properties["background-attachment"] ~= "fixed" then
-			return bgpen, r1, r2
+	local scrollable = false
+	local p = self.Properties
+	local bgpen, tx, ty = self.BGPen
+	if not bgpen or 
+		p["background-color" .. self:getPseudoClass()] == "transparent" then
+		bgpen, tx, ty = self:getParent():getBG()
+	else
+		scrollable = p["background-attachment"] ~= "fixed"
+		if scrollable then
+			tx, ty = self:getRect()
 		end
-		return bgpen
 	end
+	return bgpen, tx, ty, self.Window:isSolidPen(bgpen) or scrollable
 end
 
 -------------------------------------------------------------------------------
@@ -860,12 +872,18 @@ end
 --	padding style properties.
 -------------------------------------------------------------------------------
 
-function Area:getPadding()
-	local props = self.Properties
-	return tonumber(props["padding-left"]) or 0,
-		tonumber(props["padding-top"]) or 0,
-		tonumber(props["padding-right"]) or 0, 
-		tonumber(props["padding-bottom"]) or 0
+if getpadding then
+	function Area:getPadding()
+		return getpadding(self.Properties)
+	end
+else
+	function Area:getPadding()
+		local props = self.Properties
+		return tonumber(props["padding-left"]) or 0,
+			tonumber(props["padding-top"]) or 0,
+			tonumber(props["padding-right"]) or 0, 
+			tonumber(props["padding-bottom"]) or 0
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -873,12 +891,18 @@ end
 --	margins in the order left, top, right, bottom.
 -------------------------------------------------------------------------------
 
-function Area:getMargin()
-	local props = self.Properties
-	return tonumber(props["margin-left"]) or 0,
-		tonumber(props["margin-top"]) or 0, 
-		tonumber(props["margin-right"]) or 0,
-		tonumber(props["margin-bottom"]) or 0
+if getmargin then
+	function Area:getMargin()
+		return getmargin(self.Properties)
+	end
+else
+	function Area:getMargin()
+		local props = self.Properties
+		return tonumber(props["margin-left"]) or 0,
+			tonumber(props["margin-top"]) or 0, 
+			tonumber(props["margin-right"]) or 0,
+			tonumber(props["margin-bottom"]) or 0
+	end
 end
 
 -------------------------------------------------------------------------------

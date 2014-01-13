@@ -45,6 +45,8 @@ ANIMATIONS_START = "_Start";
 ANIMATIONS_STOP = "Sto_p";
 ANIMATIONS_TITLE = "Animations";
 AVAILABLE_DEMOS = "Available Demos";
+BASEPATH = "Base path";
+BASEPATH_ANNOTATION = "The base path is an optional root in the filesystem\nin which the file requester is allowed to operate.";
 BORDER_BUTTON = "Borders";
 BORDER_CAPTION = "Border Caption";
 BORDER_DESCRIPTION = [[
@@ -145,13 +147,24 @@ FLOATTEXT_DESCRIPTION = [[
 ]];
 FLOATTEXT_DYNAMIC_LAYOUT = "Dynamic Layout";
 FLOATTEXT_PREFORMATTED = "Preformatted";
-FLOATTEXT_TITLE = "Floattext",
+FLOATTEXT_TITLE = "Floattext";
 FLOATTEXT_YOU_CAN_DRAG_THE_BAR = "You can drag the bar between the elements.";
 WIDGET_MODES = "Widget Modes";
 WIDGET_UNSELECT = "Unselect";
 GARBAGE_COLLECTOR = "Garbage\nCollector";
 GC_PAUSE = "Pause";
 GC_STEPMUL = "Steps";
+GRADIENT_LEGEND_WINDOW_GROUP = "Window Group";
+GRADIENT_LEGEND_GROUP_BORDER = "Group Border";
+GRADIENT_LEGEND_BUTTON_BORDER = "Button Border";
+GRADIENT_BUTTON = "Button";
+GRADIENT_DESCRIPTION = [[
+» Backgrounds can be painted with a solid color, pixmap, or gradient.
+
+» Also, an element's background can be transparent, letting its parent element shine through.
+]],
+GRADIENT_TITLE = "Gradient",
+GRAPHICS_BACKGROUND = "Background";
 GRAPHICS_BITMAPS = "Bitmaps";
 GRAPHICS_CHECKMARKS = "Checkmarks";
 GRAPHICS_DESCRIPTION = [[
@@ -190,6 +203,9 @@ LAYOUT_GRID = "Grid";
 LAYOUT_RELATIVE_SIZES = "Relative Sizes";
 LAYOUT_SAME_SIZES = "Same Sizes";
 LAYOUT_TITLE = "Layout";
+LEGEND_SELECTION_TYPE = "Selection type";
+LEGEND_SELECT_PATHS = "Select paths...";
+LEGEND_SELECT_RESULT = "Selection result";
 LIST_DESCRIPTION = [[
 » Lists can contain any number of rows and columns. Their widths and heights can be fixed or adaptive.
 
@@ -230,7 +246,10 @@ PRESENTATION_TITLE = "Presentation";
 PROPERTY = "Property";
 QUIT = "_Quit";
 REVOKED = "Revoked";
+SELECT = "Select";
 SELECTED = "Selected";
+SHOW_FILES_AND_DIRS = "Show files and directories",
+SHOW_ONLY_DIRS = "Show only directories",
 SLIDER_CONNECTIONS = "Connections";
 SLIDER_CONTINUOUS = "Continuous";
 SLIDER_DESCRIPTION = [[
@@ -238,7 +257,7 @@ SLIDER_DESCRIPTION = [[
 
 » They support a numerical minimum, maximum, default, value, and range, all of whose are adjustable using the notification system.
 
-» By default, sliders move continuously, but they can be forced to an integer step rate. Naturally, this attribute becomes meaningless if an integer version of the Lua VM is used.
+» By default, sliders move continuously, but they can be forced to an integer step rate.
 ]];
 SLIDER_GAUGE = "Gauge";
 SLIDER_INTEGER_STEP = "Integer Step";

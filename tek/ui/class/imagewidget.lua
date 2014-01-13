@@ -1,15 +1,43 @@
-
+-------------------------------------------------------------------------------
 --
 --	tek.ui.class.imagewidget
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
+--	OVERVIEW::
+--		[[#ClassOverview]] :
+--		[[#tek.class : Class]] /
+--		[[#tek.class.object : Object]] /
+--		[[#tek.ui.class.element : Element]] /
+--		[[#tek.ui.class.area : Area]] /
+--		[[#tek.ui.class.frame : Frame]] /
+--		[[#tek.ui.class.widget : Widget]] /
+--		ImageWidget ${subclasses(ImageWidget)}
+--
+--		This class implements widgets with an image.
+--		Images are instances of the Image class, which handles pixmaps
+--		and simple vector graphics.
+--		They can be obtained by ui.loadImage(), ui.getStockImage(),
+--		or by directly instantiating the Image class or derivations thereof.
+--
+--	ATTRIBUTES::
+--		- {{Image [ISG]}} (image)
+--
+--	IMPLEMENTS::
+--		- ImageWidget:onSetImage() - Handler for the {{Image}} attribute
+--
+--	OVERRIDES::
+--		- Object.addClassNotifications()
+--		- Area:askMinMax()
+--		- Area:draw()
+--		- Area:layout()
+--		- Object.new()
+--
+-------------------------------------------------------------------------------
 
 local ui = require "tek.ui"
-
 local Widget = ui.require("widget", 25)
 local Region = ui.loadLibrary("region", 10)
-
 local floor = math.floor
 local max = math.max
 local tonumber = tonumber
@@ -17,12 +45,23 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.imagewidget", tek.ui.class.widget)
-_VERSION = "ImageWidget 13.2"
+_VERSION = "ImageWidget 14.0"
 local ImageWidget = _M
 Widget:newClass(ImageWidget)
 
 -------------------------------------------------------------------------------
--- Class implementation:
+--	addClassNotifications: overrides
+-------------------------------------------------------------------------------
+
+function ImageWidget.addClassNotifications(proto)
+	addNotify(proto, "Image", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetImage" })
+	return Widget.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
+
+-------------------------------------------------------------------------------
+--	new: overrides
 -------------------------------------------------------------------------------
 
 function ImageWidget.new(class, self)
@@ -42,7 +81,7 @@ function ImageWidget.new(class, self)
 end
 
 -------------------------------------------------------------------------------
---	askMinMax:
+--	askMinMax: overrides
 -------------------------------------------------------------------------------
 
 function ImageWidget:askMinMax(m1, m2, m3, m4)
@@ -167,4 +206,13 @@ function ImageWidget:draw()
 		end
 		return true
 	end
+end
+
+-------------------------------------------------------------------------------
+--	onSetImage(): This handler is invoked when the element's {{Image}}
+--	attribute has changed.
+-------------------------------------------------------------------------------
+
+function ImageWidget:onSetImage()
+	self:setImage(self.Image)
 end

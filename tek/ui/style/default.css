@@ -2,7 +2,7 @@
 /*
 **	tek/ui/style/default.css
 **
-**	Version: 2.4
+**	Version: 3.1
 */
 
 tek.ui.class.area {
@@ -16,6 +16,7 @@ tek.ui.class.checkmark {
 	border-rim-width: 0;
 	border-focus-width: 1;
 	text-align: left;
+	background-attachment: fixed;
 }
 tek.ui.class.checkmark:active {
 	background-color: transparent;
@@ -282,8 +283,8 @@ tek.ui.class.radiobutton.menuitem:focus {
 }
 .page-button:active {
 	border-style: outset;
-	border-bottom-color: group;
-	background-color: group;
+	border-bottom-color: transparent;
+	background-color: transparent;
 }
 .page-button:focus {
 	background-color: hover;

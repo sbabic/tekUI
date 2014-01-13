@@ -9,7 +9,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 9.1"
+_VERSION = "DefaultBorder 9.2"
 local DefaultBorder = _M
 Border:newClass(DefaultBorder)
 
@@ -123,6 +123,7 @@ function DefaultBorder:draw()
 		local x0 = b[18]
 		local x1 = b[20]
 		local tx0, tx1 = self:alignText(x0, x1, tw)
+		d:setBGPen(gb, gox, goy)
 		d:setFont(self.LegendFont)
 		d:pushClipRect(x0, y0 - th, x1, y0 - 1)
 		d:drawText(tx0, y0 - th, tx1, y0 - 1, self.Legend, b[17], gb)
@@ -150,11 +151,13 @@ function DefaultBorder:draw()
 		drawBorderRect(d, b, d1, d2, d3, d4, p1, p2, p3, p4)
 	end
 
+	-- rim:
 	d:setBGPen(b[13])
 	drawBorderRect(d, b,
 		min(b[22], rw), min(b[23], rw), min(b[24], rw), min(b[25], rw))
 	
-	d:setBGPen(e.Focus and b[14] or gb, gox, gox)
+	-- focus:	
+	d:setBGPen(e.Focus and b[14] or gb, gox, goy)
 	drawBorderRect(d, b, b[22], b[23], b[24], b[25])
 end
 

@@ -131,7 +131,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 37.1"
+_VERSION = "Application 38.0"
 local Application = _M
 Family:newClass(Application)
 
@@ -787,6 +787,8 @@ function Application:requestFile(args)
 
 	local dirlist = args.Lister or ui.DirList:new
 	{
+		DisplayMode = args.DisplayMode or "all",
+		BasePath = args.BasePath or "",
 		Path = args.Path or "/",
 		Kind = "requester",
 		SelectMode = args.SelectMode or "single",

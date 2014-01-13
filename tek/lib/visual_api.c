@@ -1989,3 +1989,13 @@ LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L)
 	lua_setmetatable(L, -2);
 	return 1;
 }
+
+/*****************************************************************************/
+
+LOCAL LUACFUNC TINT tek_lib_visual_getpaintinfo(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	void *udata;
+	lua_pushinteger(L, getbgpaint(L, vis, 2, &udata));
+	return 1;
+}
