@@ -5,14 +5,14 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="12-Jan-2014" />
+		<meta name="created" content="14-Jan-2014" />
 	</head>
 	<body>
 		<h1>
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8l
+			Version 1.0
 		</p>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -208,7 +208,7 @@
 				</ul>
 			</blockquote>
 			<h2>
-				Modules
+				Libraries
 			</h2>
 			<blockquote>
 				<ul>
@@ -1239,7 +1239,7 @@ function(...) out:write(...) end
 </pre>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v10.1)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v10.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1274,9 +1274,6 @@ function(...) out:write(...) end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:orRect"><code>Region:orRect()</code></a> - <em>Or</em>s a rectangle to a region
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Region:orRegion"><code>Region:orRegion()</code></a> - <em>Or</em>s a region to a region
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:setRect"><code>Region:setRect()</code></a> - Resets a region to the given rectangle
@@ -1331,6 +1328,12 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Region:get" id="Region:get"><code>minx, miny, maxx, maxy = region:get()</code></a></h3>
+			<p>
+				Get region's min/max extents
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Region:intersect" id="Region:intersect"><code>x0, y0, x1, y1 = Region.intersect(d1, d2, d3, d4, s1, s2, s3, s4)</code></a></h3>
 			<p>
 				Returns the coordinates of a rectangle where a rectangle specified by
@@ -1356,12 +1359,6 @@ func(obj, x0, y0, x1, y1, ...)
 		<div class="node"><h3><a name="Region:orRect" id="Region:orRect"><code>region:orRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Logical <em>or</em>s a rectangle to a region
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Region:orRegion" id="Region:orRegion"><code>region:orRegion(region)</code></a></h3>
-			<p>
-				Logical <em>or</em>s another region to a region
 			</p>
 			<hr />
 		</div>
@@ -1396,7 +1393,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v40.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v41.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1459,6 +1456,18 @@ ui.Application:new { ...
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<code>VERSION</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Overall package version number of tekUI, starting at <code>100</code> 
+										for version 1.00. (Not to be confused with the ui module's
+										<code>_VERSION</code> <em>string</em>, with underscore)
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
 							<code>HUGE</code> 
 							<blockquote>
 								<ul>
@@ -1504,7 +1513,7 @@ ui.Application:new { ...
 					</ul>
 				</blockquote>
 			</div>
-			<div class="definition"><dfn>MESSAGE TYPES</dfn>
+			<div class="definition"><dfn>MESSAGE TYPE CONSTANTS</dfn>
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
@@ -2228,7 +2237,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v51.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v51.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3163,7 +3172,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v33.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v33.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4491,7 +4500,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v22.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v22.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7907,7 +7916,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v7.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v7.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7983,7 +7992,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Sun Jan 12 21:19:07 2014
+					Document generated on Tue Jan 14 16:50:20 2014
 				</p>
 			</div>
 		</div>

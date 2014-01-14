@@ -1,9 +1,33 @@
+/*-----------------------------------------------------------------------------
+--
+--	tek.ui.layout.default
+--	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+--	See copyright notice in COPYRIGHT
+--
+--	OVERVIEW::
+--		[[#ClassOverview]] :
+--		[[#tek.class : Class]] /
+--		[[#tek.ui.class.layout : Layout]] /
+--		DefaultLayout
+--
+--		This class implements a [[#tek.ui.class.group : Group]]'s ''default''
+--		layouting strategy. The standard strategy is to adapt a Group's
+--		contents dynamically to the free space available. It takes into
+--		account an element's {{HAlign}}, {{VAlign}}, {{Width}}, and {{Height}}
+--		attributes.
+--
+--	OVERRIDES::
+--		- Layout:askMinMax()
+--		- Layout:layout()
+--		- Class.new()
+--
+-------------------------------------------------------------------------------
 
-/*
-**	tek.ui.layout.default - Default layouter
-**	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
-**	See copyright notice in COPYRIGHT
-*/
+module("tek.ui.layout.default", tek.ui.class.layout)
+_VERSION = "Default Layout 7.4"
+local DefaultLayout = _M
+
+******************************************************************************/
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -18,7 +42,7 @@
 #define CLASS_NAME "tek.ui.layout.default"
 
 /* Version: */
-#define TEK_UI_CLASS_LAYOUT_DEFAULT_VERSION "Default Layout 7.2"
+#define TEK_UI_CLASS_LAYOUT_DEFAULT_VERSION "Default Layout 7.4"
 
 /*****************************************************************************/
 

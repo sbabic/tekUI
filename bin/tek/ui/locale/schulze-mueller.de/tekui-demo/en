@@ -187,7 +187,7 @@ INPUT_FIELD_PASSWORD = "Password field",
 INPUT_FIELD_FIXED_WIDTH = "Fixed Width",
 INPUT_FIELD_MULTILINE = "Multiline",
 INPUT_FIELD_MULTILINE_TEXT = "Multiline\nText\nField\n",
-INTERPRETER_VERSION = "Interpreter Version: %s";
+INTERPRETER_VERSION = "Lua interpreter version: %s";
 LAYOUT_BALANCING_GROUP = "Balancing Group";
 LAYOUT_DESCRIPTION = [[
 » In the upmost group, the size of each element is determined by the text it contains, while in the second group the size of all elements is determined by the broadest text.
@@ -268,7 +268,7 @@ SLOW_RENDERING = "Slow Rendering";
 STATUS = "Status";
 SYSTEM_INFORMATION = "System Information";
 TEKUI_COPYRIGHT_TEXT = [[
-Copyright © 2008-2013 by the authors:
+Copyright © 2008-2014 by the authors:
 
 Timm S. Müller <tmueller@schulze-mueller.de>
 Franciska Schulze <fschulze@schulze-mueller.de>
@@ -278,4 +278,5 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.]];
 TEKUI_DEMO = "tekUI Demo";
 TEKUI_LICENSE = "tekUI License";
+TEKUI_PACKAGE_VERSION = "tekUI version: %s";
 VALUE = "Value";

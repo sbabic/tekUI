@@ -195,9 +195,9 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Element = ui.require("element", 19)
 local Region = ui.loadLibrary("region", 10)
-local support = require "tek.lib.support" -- comment out to use pure Lua
-local getmargin = support and support.getMargin
-local getpadding = support and support.getPadding
+local support = require "tek.lib.support"
+local getmargin = support.getMargin
+local getpadding = support.getPadding
 
 local assert = assert
 local newFlags = ui.newFlags
@@ -210,7 +210,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 51.1"
+_VERSION = "Area 51.2"
 local Area = _M
 Element:newClass(Area)
 
@@ -872,18 +872,8 @@ end
 --	padding style properties.
 -------------------------------------------------------------------------------
 
-if getpadding then
-	function Area:getPadding()
-		return getpadding(self.Properties)
-	end
-else
-	function Area:getPadding()
-		local props = self.Properties
-		return tonumber(props["padding-left"]) or 0,
-			tonumber(props["padding-top"]) or 0,
-			tonumber(props["padding-right"]) or 0, 
-			tonumber(props["padding-bottom"]) or 0
-	end
+function Area:getPadding()
+	return getpadding(self.Properties)
 end
 
 -------------------------------------------------------------------------------
@@ -891,18 +881,8 @@ end
 --	margins in the order left, top, right, bottom.
 -------------------------------------------------------------------------------
 
-if getmargin then
-	function Area:getMargin()
-		return getmargin(self.Properties)
-	end
-else
-	function Area:getMargin()
-		local props = self.Properties
-		return tonumber(props["margin-left"]) or 0,
-			tonumber(props["margin-top"]) or 0, 
-			tonumber(props["margin-right"]) or 0,
-			tonumber(props["margin-bottom"]) or 0
-	end
+function Area:getMargin()
+	return getmargin(self.Properties)
 end
 
 -------------------------------------------------------------------------------

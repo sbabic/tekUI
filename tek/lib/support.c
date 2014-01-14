@@ -1,6 +1,6 @@
 
 /*
-**	tek.lib.support - internal C support library
+**	tek.lib.support - C support library
 */
 
 #include <lua.h>
@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #define TEK_LIB_SUPPORT_NAME    "tek.lib.support*"
-#define TEK_LIB_SUPPORT_VERSION "Support Library 3.0"
+#define TEK_LIB_SUPPORT_VERSION "Support Library 4.0"
 
 typedef uint32_t flags_t;
 
@@ -129,42 +129,46 @@ static int tek_lib_support_copytable(lua_State *L)
 	return 1;
 }
 
+static int tek_lib_support_get4ints(lua_State *L)
+{
+	lua_Integer a1, a2, a3, a4;
+	a1 = lua_tointeger(L, -4);
+	a2 = lua_tointeger(L, -3);
+	a3 = lua_tointeger(L, -2);
+	a4 = lua_tointeger(L, -1);
+	lua_pop(L, 4);
+	lua_pushinteger(L, a1);
+	lua_pushinteger(L, a2);
+	lua_pushinteger(L, a3);
+	lua_pushinteger(L, a4);
+	return 4;
+}
+
 static int tek_lib_support_getmargin(lua_State *L)
 {
-	lua_Integer m1, m2, m3, m4;
 	lua_getfield(L, 1, "margin-left");
 	lua_getfield(L, 1, "margin-top");
 	lua_getfield(L, 1, "margin-right");
 	lua_getfield(L, 1, "margin-bottom");
-	m1 = lua_tointeger(L, -4);
-	m2 = lua_tointeger(L, -3);
-	m3 = lua_tointeger(L, -2);
-	m4 = lua_tointeger(L, -1);
-	lua_pop(L, 4);
-	lua_pushinteger(L, m1);
-	lua_pushinteger(L, m2);
-	lua_pushinteger(L, m3);
-	lua_pushinteger(L, m4);
-	return 4;
+	return tek_lib_support_get4ints(L);
 }
 
 static int tek_lib_support_getpadding(lua_State *L)
 {
-	lua_Integer m1, m2, m3, m4;
 	lua_getfield(L, 1, "padding-left");
 	lua_getfield(L, 1, "padding-top");
 	lua_getfield(L, 1, "padding-right");
 	lua_getfield(L, 1, "padding-bottom");
-	m1 = lua_tointeger(L, -4);
-	m2 = lua_tointeger(L, -3);
-	m3 = lua_tointeger(L, -2);
-	m4 = lua_tointeger(L, -1);
-	lua_pop(L, 4);
-	lua_pushinteger(L, m1);
-	lua_pushinteger(L, m2);
-	lua_pushinteger(L, m3);
-	lua_pushinteger(L, m4);
-	return 4;
+	return tek_lib_support_get4ints(L);
+}
+
+static int tek_lib_support_getborder(lua_State *L)
+{
+	lua_getfield(L, 1, "border-left-width");
+	lua_getfield(L, 1, "border-top-width");
+	lua_getfield(L, 1, "border-right-width");
+	lua_getfield(L, 1, "border-bottom-width");
+	return tek_lib_support_get4ints(L);
 }
 
 /*****************************************************************************/
@@ -176,6 +180,7 @@ static const luaL_Reg tek_lib_support_funcs[] =
 	{ "copyTable", tek_lib_support_copytable },
 	{ "getMargin", tek_lib_support_getmargin },
 	{ "getPadding", tek_lib_support_getpadding },
+	{ "getBorder", tek_lib_support_getborder },
 	{ NULL, NULL }
 };
 

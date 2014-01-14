@@ -32,7 +32,7 @@ local insert = table.insert
 local remove = table.remove
 local sort = table.sort
 
-local VERSION = "1.2"
+local VERSION = "1.3"
 
 local RULE = "-------------------------------------------------------------------------------"
 local PAGE = "==============================================================================="
@@ -78,20 +78,20 @@ do
 end
 
 -------------------------------------------------------------------------------
---	recursedir: recurse directory, invoke func(fullname, path, name) for
---	every entry whose filemode matches mode ("directory" or "file") and
+--	recursedir: recurse directory, invoke func(fullname, path, name, suffixes)
+--	for every entry whose filemode matches mode ("directory" or "file") and
 --	its name matches pattern. mode and pattern may be nil each.
 -------------------------------------------------------------------------------
 
-function recursedir(func, path, mode, pattern)
+function recursedir(func, path, mode, pattern, suffixes)
 	if fs.stat(path, "mode") == "directory" then
 		for name in fs.readdir(path) do
 			local fullname = path .. "/" .. name
 			if (not mode or fs.stat(fullname, "mode") == mode) and
-				(not pattern or name:match(pattern)) then
+				(not pattern or suffixes[name:match(pattern)]) then
 				func(fullname, path, name)
 			end
-			recursedir(func, fullname, mode, pattern)
+			recursedir(func, fullname, mode, pattern, suffixes)
 		end
 	end
 end
@@ -169,7 +169,7 @@ function processfile(state, fname)
 			-- collect documentation:
 
 			if parser == 0 then
-				if line:match("^%-%-%-%-%-%-%-%-") then
+				if line:match("^/?%*?%-%-%-%-%-%-%-%-") then
 					parser = 1
 					break
 				end
@@ -435,7 +435,7 @@ function processtree(state)
 	if mode == "directory" then
 		recursedir(function(filename)
 			processfile(state, filename)
-		end, state.from, "file", 	"^.*%.lua$")
+		end, state.from, "file", "^.*%.(%a+)$", { lua=true, c=true })
 	elseif mode == "file" then
 		processfile(state, state.from)
 	end
@@ -472,7 +472,7 @@ function processtree(state)
 			numlibs = numlibs + 1
 		end
 		if numlibs > 0 then
-			insert(state.classdiagram, "\n== Modules ==\n")
+			insert(state.classdiagram, "\n== Libraries ==\n")
 			local set = { }
 			for key, data in pairs(state.basecandidates) do
 				insert(set, { cmp = tostring(key):lower(),

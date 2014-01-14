@@ -1,9 +1,35 @@
+/*-----------------------------------------------------------------------------
+--
+--	tek.lib.region
+--	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+--	See copyright notice in COPYRIGHT
+--
+--	OVERVIEW::
+--		This library implements the management of regions, which are
+--		collections of non-overlapping rectangles.
+--
+--	FUNCTIONS::
+--		- Region:andRect() - ''And''s a rectangle to a region
+--		- Region:andRegion() - ''And''s a region to a region
+--		- Region:checkIntersect() - Checks if a rectangle intersects a region
+--		- Region:forEach() - Calls a function for each rectangle in a region
+--		- Region.intersect() - Returns the intersection of two rectangles
+--		- Region:isEmpty() - Checks if a Region is empty
+--		- Region.new() - Creates a new Region
+--		- Region:orRect() - ''Or''s a rectangle to a region
+--		- Region:setRect() - Resets a region to the given rectangle
+--		- Region:shift() - Displaces a region
+--		- Region:subRect() - Subtracts a rectangle from a region
+--		- Region:subRegion() - Subtracts a region from a region
+--		- Region:xorRect() - ''Exclusive Or''s a rectangle to a region
+--
+-------------------------------------------------------------------------------
 
-/*
-**	tek.lib.region - Management of rectangular regions
-**	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
-**	See copyright notice in COPYRIGHT
-*/
+module "tek.lib.region"
+_VERSION = "Region 10.2"
+local Region = _M
+
+******************************************************************************/
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -13,6 +39,10 @@
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
 #include <tek/lib/tekui.h>
+
+#define TEK_LIB_REGION_VERSION "Region 10.2"
+#define TEK_LIB_REGION_NAME "tek.lib.region*"
+#define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
 
 /*****************************************************************************/
 
@@ -292,10 +322,6 @@ static TBOOL andrect(struct RectList *temp,
 
 /*****************************************************************************/
 
-#define TEK_LIB_REGION_VERSION "Region 10.0"
-#define TEK_LIB_REGION_NAME "tek.lib.region*"
-#define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
-
 static void *region_checkregion(lua_State *L, int n)
 {
 	return luaL_checkudata(L, n, TEK_LIB_REGION_NAME);
@@ -307,6 +333,14 @@ static void *region_optregion(lua_State *L, int n)
 		return luaL_checkudata(L, n, TEK_LIB_REGION_NAME);
 	return TNULL;
 }
+
+/*-----------------------------------------------------------------------------
+--	x0, y0, x1, y1 = Region.intersect(d1, d2, d3, d4, s1, s2, s3, s4):
+--	Returns the coordinates of a rectangle where a rectangle specified by
+--	the coordinates s1, s2, s3, s4 overlaps with the rectangle specified
+--	by the coordinates d1, d2, d3, d4. The return value is '''nil''' if
+--	the rectangles do not overlap.
+-----------------------------------------------------------------------------*/
 
 static int region_intersect(lua_State *L)
 {
@@ -330,6 +364,11 @@ static int region_intersect(lua_State *L)
 	
 	return 0;
 }
+
+/*-----------------------------------------------------------------------------
+--	region = Region.new(r1, r2, r3, r4): Creates a new region from the given
+--	coordinates.
+-----------------------------------------------------------------------------*/
 
 static int region_new(lua_State *L)
 {
@@ -362,6 +401,11 @@ static int region_new(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	self = region:setRect(r1, r2, r3, r4): Resets an existing region
+--	to the specified rectangle.
+-----------------------------------------------------------------------------*/
+
 static int region_set(lua_State *L)
 {
 	struct Region *region = region_checkregion(L, 1);
@@ -384,6 +428,10 @@ static int region_collect(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	region:orRect(r1, r2, r3, r4): Logical ''or''s a rectangle to a region
+-----------------------------------------------------------------------------*/
+
 static int region_orrect(lua_State *L)
 {
 	struct Region *region = region_checkregion(L, 1);
@@ -399,6 +447,10 @@ static int region_orrect(lua_State *L)
 
 	return 0;
 }
+
+/*-----------------------------------------------------------------------------
+--	region:xorRect(r1, r2, r3, r4): Logical ''xor''s a rectange to a region
+-----------------------------------------------------------------------------*/
 
 static int region_xorrect(lua_State *L)
 {
@@ -507,6 +559,10 @@ static TBOOL subrect(lua_State *L, struct Region *region, RECTINT s[])
 	return success;
 }
 
+/*-----------------------------------------------------------------------------
+--	self = region:subRect(r1, r2, r3, r4): Subtracts a rectangle from a region
+-----------------------------------------------------------------------------*/
+
 static int region_subrect(lua_State *L)
 {
 	struct Region *region = region_checkregion(L, 1);
@@ -519,6 +575,12 @@ static int region_subrect(lua_State *L)
 	lua_pushvalue(L, 1);
 	return 1;
 }
+
+/*-----------------------------------------------------------------------------
+--	success = region:checkIntersect(x0, y0, x1, y1): Returns a boolean
+--	indicating whether a rectangle specified by its coordinates overlaps
+--	with a region.
+-----------------------------------------------------------------------------*/
 
 static int region_checkintersect(lua_State *L)
 {
@@ -545,6 +607,10 @@ static int region_checkintersect(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	region:subRegion(region2): Subtracts {{region2}} from {{region}}.
+-----------------------------------------------------------------------------*/
+
 static int region_subregion(lua_State *L)
 {
 	struct Region *self = region_checkregion(L, 1);
@@ -564,6 +630,10 @@ static int region_subregion(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	region:andRect(r1, r2, r3, r4): Logical ''and''s a rectange to a region
+-----------------------------------------------------------------------------*/
+
 static int region_andrect(lua_State *L)
 {
 	struct Region *self = region_checkregion(L, 1);
@@ -580,6 +650,10 @@ static int region_andrect(lua_State *L)
 	}
 	return TFALSE;
 }
+
+/*-----------------------------------------------------------------------------
+--	region:andRegion(r): Logically ''and''s a region to a region
+-----------------------------------------------------------------------------*/
 
 static int region_andregion(lua_State *L)
 {
@@ -604,6 +678,13 @@ static int region_andregion(lua_State *L)
 	return success;
 }
 
+/*-----------------------------------------------------------------------------
+--	region:forEach(func, obj, ...): For each rectangle in a region, calls the
+--	specified function according the following scheme:
+--			func(obj, x0, y0, x1, y1, ...)
+--	Extra arguments are passed through to the function.
+-----------------------------------------------------------------------------*/
+
 static int region_foreach(lua_State *L)
 {
 	struct Region *region = region_checkregion(L, 1);
@@ -626,7 +707,9 @@ static int region_foreach(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	region:shift(dx, dy): Shifts a region by delta x and y.
+-----------------------------------------------------------------------------*/
 
 static int region_shift(lua_State *L)
 {
@@ -645,7 +728,9 @@ static int region_shift(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	region:isEmpty(): Returns '''true''' if a region is empty.
+-----------------------------------------------------------------------------*/
 
 static int region_isempty(lua_State *L)
 {
@@ -654,9 +739,11 @@ static int region_isempty(lua_State *L)
 	return 1;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	minx, miny, maxx, maxy = region:get(): Get region's min/max extents
+-----------------------------------------------------------------------------*/
 
-static int region_get(lua_State *L)
+static int region_getminmax(lua_State *L)
 {
 	struct Region *region = region_checkregion(L, 1);
 	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
@@ -699,8 +786,6 @@ static int pool_collect(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-
 static const luaL_Reg tek_lib_region_funcs[] =
 {
 	{ "new", region_new },
@@ -722,7 +807,7 @@ static const luaL_Reg tek_lib_region_methods[] =
 	{ "forEach", region_foreach },
 	{ "shift", region_shift },
 	{ "isEmpty", region_isempty },
-	{ "get", region_get },
+	{ "get", region_getminmax },
 	{ NULL, NULL }
 };
 

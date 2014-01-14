@@ -187,7 +187,7 @@ INPUT_FIELD_PASSWORD = "Passwortfeld",
 INPUT_FIELD_FIXED_WIDTH = "Fixe Breite",
 INPUT_FIELD_MULTILINE = "Mehrzeilig",
 INPUT_FIELD_MULTILINE_TEXT = "Mehrzeilige\nTexteingabe\n",
-INTERPRETER_VERSION = "Interpreterversion: %s";
+INTERPRETER_VERSION = "Lua-Interpreterversion: %s";
 LAYOUT_BALANCING_GROUP = "Verschiebbare Gruppe";
 LAYOUT_DESCRIPTION = [[
 » In der obersten Gruppe wird die Breite jedes Elements von seinem individuellen Textinhalt bestimmt, während in der zweiten Gruppe das breiteste Element die Breite aller Elemente bestimmt.
@@ -268,7 +268,7 @@ SLOW_RENDERING = "Langsames Zeichnen";
 STATUS = "Status";
 SYSTEM_INFORMATION = "Systeminformation";
 TEKUI_COPYRIGHT_TEXT = [[
-Copyright © 2008-2013 by the authors:
+Copyright © 2008-2014 by the authors:
 
 Timm S. Müller <tmueller@schulze-mueller.de>
 Franciska Schulze <fschulze@schulze-mueller.de>
@@ -278,4 +278,5 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.]];
 TEKUI_DEMO = "tekUI Demo";
 TEKUI_LICENSE = "tekUI Lizenzbestimmungen";
+TEKUI_PACKAGE_VERSION = "tekUI-Version: %s";
 VALUE = "Wert";

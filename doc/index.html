@@ -11,7 +11,7 @@
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 0.8l
+			Version 1.0
 		</p>
 		<hr />
 		<h2>
@@ -30,13 +30,10 @@
 								1.2. <a href="#status">Status, requirements</a> 
 							</li>
 							<li style="list-style-type: none">
-								1.3. <a href="#development">Development model</a> 
+								1.3. <a href="#support">Support and services</a> 
 							</li>
 							<li style="list-style-type: none">
-								1.4. <a href="#support">Support and services</a> 
-							</li>
-							<li style="list-style-type: none">
-								1.5. <a href="#authors">Authors and contact</a> 
+								1.4. <a href="#authors">Authors and contact</a> 
 							</li>
 						</ul>
 					</blockquote>
@@ -93,10 +90,7 @@
 											3.2.3 <a href="#notex11">X11 notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.4 <a href="#notenanox">Nano-X notes</a> 
-										</li>
-										<li style="list-style-type: none">
-											3.2.5 <a href="#noterawfb">Raw framebuffer notes</a> 
+											3.2.4 <a href="#noterawfb">Raw framebuffer notes</a> 
 										</li>
 									</ul>
 								</blockquote>
@@ -179,7 +173,7 @@
 				TekUI is a small, freestanding and portable graphical user interface
 				(GUI) toolkit written in Lua and C. It was developed for the X Window
 				System initially and has been ported to DirectFB, Windows, Nano-X and
-				a raw framebuffer since.
+				a raw framebuffer since. A <a href="#noterawfb">VNC option</a> is available.
 			</p>
 			<p>
 				Its main focus is the rapid development of custom-made applications
@@ -212,33 +206,28 @@
 		</div>
 		<div class="node"><h2><a name="status" id="status">1.2. Status, requirements</a></h2>
 			<p>
-				TekUI is in early stage of development. It is available for the
-				Linux, Windows, and FreeBSD platforms. It may work on other flavours
-				of Unix with few minor changes in the build configuration.
+				TekUI is slowly approaching feature completeness (&quot;beta&quot; stadium). It
+				is available for Unix-like operating systems such as Linux and
+				FreeBSD, and it may work on other flavours of Unix with few changes.
+				A rudimentary Windows display driver and build setup is included, but
+				not very well supported at this time.
 			</p>
 			<p>
-				Display drivers are included for X11, Windows, and DirectFB. See also
-				<a href="todo.html">TODO</a> for a list of known bugs and missing features,
-				and <a href="#requirements">requirements</a> for a list of the required libraries.
+				Display drivers are included for X11, Windows, DirectFB, and raw
+				memory. See also <a href="todo.html">TODO</a> for a list of known bugs
+				and missing features, and <a href="#requirements">requirements</a> for a list of the
+				required libraries.
 			</p>
 		</div>
-		<div class="node"><h2><a name="development" id="development">1.3. Development model</a></h2>
-			<p>
-				Bug fixes and additions are welcome. Submit your patches, and we will
-				check them for inclusion to the public source code repository.
-				Regular contributors are welcome also.
-			</p>
-		</div>
-		<div class="node"><h2><a name="support" id="support">1.4. Support and services</a></h2>
+		<div class="node"><h2><a name="support" id="support">1.3. Support and services</a></h2>
 			<p>
 				Special adaptations, custom display drivers, new user interface
 				elements, and support and services for the integration of tekUI into
 				your products are available from the authors &#8211; see below. A
-				commercial version with additional components (such as a Nano-X and
-				raw framebuffer driver and XML support) is available on request.
+				commercially licensed and supported version is available on request.
 			</p>
 		</div>
-		<div class="node"><h2><a name="authors" id="authors">1.5. Authors and contact</a></h2>
+		<div class="node"><h2><a name="authors" id="authors">1.4. Authors and contact</a></h2>
 			<p>
 				Authors:
 			</p>
@@ -562,14 +551,11 @@
 					<li>
 						MinGW (for the Windows platform)
 					</li>
-					<li>
-						microwindows-0.91 (for the Nano-X driver)
-					</li>
 				</ul>
 			</blockquote>
 			<p>
-				Lua 5.1 and 5.2 are supported out of the box, if Lua 5.2 is compiled
-				with <code>LUA_COMPAT_MODULE</code>.
+				Lua 5.1, 5.2 and LuaJIT 2.0 are supported out of the box, if Lua 5.2
+				is compiled with <code>LUA_COMPAT_MODULE</code>.
 			</p>
 			<p>
 				LibXft and fontconfig are needed for building the x11 driver, but
@@ -589,30 +575,31 @@
 		</div>
 		<div class="node"><h2><a name="buildenv" id="buildenv">3.2. Adjusting the build environment</a></h2>
 			<p>
-				This release has been tested on and should compile and run out of the
+				TekUI was at some point tested and should compile and run out of the
 				box on
 			</p>
 			<blockquote>
 				<ul>
 					<li>
-						Ubuntu Linux 9.10, 8.04 and 7.10
-					</li>
-					<li>
-						Windows 2000, Wine
+						Ubuntu Linux (tested: 9.10, 8.04 and 7.10)
 					</li>
 					<li>
 						FreeBSD 7.0 (special precautions needed, see annotations below)
 					</li>
 					<li>
-						Gentoo Linux x86/10.0, x86/2008.0, amd64/2007.0, ppc/2007.0
+						Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
+						amd64/2007.0, ppc/2007.0)
+					</li>
+					<li>
+						Windows (tested: 2000, Wine)
 					</li>
 				</ul>
 			</blockquote>
 			<p>
-				If building fails for you, you have to adjust the build environment,
-				which is located in the <code>config</code> file on the topmost directory
-				level. Supported build tools are <code>gmake</code> (common under Linux) and
-				<code>pmake</code> (common under FreeBSD).
+				If building fails for you, you may have to adjust the build
+				environment, which is located in the <code>config</code> file on the topmost
+				directory level. Supported build tools are <code>gmake</code> (common under
+				Linux) and <code>pmake</code> (common under FreeBSD).
 			</p>
 		</div>
 		<div class="node"><h3><a name="notefbsd" id="notefbsd">3.2.1. FreeBSD notes</a></h3>
@@ -636,36 +623,27 @@
 			<p>
 				The XFree86VidMode extension is linked against by default. It can
 				be disabled by removing <code>-DENABLE_XVID</code> from <code>X11_DEFS</code> in the
-				config file.
-			</p>
-			<p>
-				In case of problems with texts and labels, try removing
-				<code>-DENABLE_XFT</code> from <code>X11_DEFS</code> in the config file. Some versions
-				of X11 are known to not support the Composite extension and
-				antialiased fonts using Xft at the same time.
+				config file. In case of problems with texts and labels, try removing
+				<code>-DENABLE_XFT</code> from <code>X11_DEFS</code>.
 			</p>
 		</div>
-		<div class="node"><h3><a name="notenanox" id="notenanox">3.2.4. Nano-X notes</a></h3>
+		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.4. Raw framebuffer notes</a></h3>
 			<p>
-				For the Nano-X driver you will almost certainly have to adjust the
-				<code>config</code> file. Due to some limitations of Nano-X, tekUI
-				applications will probably make sense only when running in fullscreen
-				mode without a window manager. See also <code>tek/ui/style/nanox.css</code> 
-				for more information. Example:
+				The raw framebuffer driver performs all rendering in a chunk of
+				memory, which can be supplied by the user. Color depth may be 16 or
+				32 bit. This driver is recursive in that another display driver may
+				be plugged into it as a visualization device and for passing through
+				input. It was originally intended to act as a template (or skeleton)
+				for specializations in a target context, like custom hardware or a 3D
+				game or simulation.
 			</p>
-<pre>
-# nano-X &amp; THEME=nanox FULLSCREEN=true bin/demo_custom.lua
-</pre>
-		</div>
-		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.5. Raw framebuffer notes</a></h3>
 			<p>
-				Drawing primitives, clipping, and antialiased fonts are provided,
-				and rendering can be targeted to user-supplied memory. This driver
-				implements no input and serves as a template (or skeleton) for
-				specializations in a target context, like custom hardware or a 3D
-				game or simulation. For testing and debugging, the raw framebuffer
-				driver is recursive; by plugging in another display driver, an
-				instant visualization device and input source can be provided.
+				A VNC server option (through
+				<a href="http://libvncserver.sourceforge.net/">LibVNCServer</a>) is available
+				for this driver, which allows a tekUI application to be shared over
+				the network. This works both &quot;headless&quot; or with a local display. To
+				enable LibVNCServer support, comment in the <code>VNCSERVER_</code> defines in
+				the config file.
 			</p>
 		</div>
 		<div class="node"><h2><a name="building" id="building">3.3. Building</a></h2>
@@ -1039,7 +1017,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Active</code> attribute&#185;
+						change of the <code>Active</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1050,7 +1028,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.window">Window</a> 
 					</td>
 					<td class="column3">
-						change of <code>Status</code> attribute&#185;
+						change of <code>Status</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1061,7 +1039,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						caused when <code>Pressed</code> changes to <strong>false</strong>&#185;
+						caused when <code>Pressed</code> changes to <strong>false</strong> 
 					</td>
 				</tr>
 				<tr>
@@ -1072,7 +1050,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Disabled</code> attribute&#185;
+						change of the <code>Disabled</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1083,18 +1061,18 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						change of the <code>DblClick</code> attribute&#185;
+						change of the <code>DblClick</code> attribute
 					</td>
 				</tr>
 				<tr>
 					<td class="column1">
-						<a href="manual.html#TextInput:onEnter"><code>TextInput:onEnter()</code></a> 
+						<a href="manual.html#Input:onEnter"><code>Input:onEnter()</code></a> 
 					</td>
 					<td class="column2">
-						<a href="manual.html#tek.ui.class.textinput">TextInput</a> 
+						<a href="manual.html#tek.ui.class.input">Input</a> 
 					</td>
 					<td class="column3">
-						change of <code>Enter</code> attribute&#185;
+						change of <code>Enter</code> attribute, pressing enter
 					</td>
 				</tr>
 				<tr>
@@ -1105,7 +1083,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Focus</code> attribute&#185;
+						change of the <code>Focus</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1127,7 +1105,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Hilite</code> attribute&#185;
+						change of the <code>Hilite</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1138,7 +1116,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Hold</code> attribute&#185;
+						change of the <code>Hold</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1149,7 +1127,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Pressed</code> attribute&#185;
+						change of the <code>Pressed</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1160,7 +1138,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.widget">Widget</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Selected</code> attribute&#185;
+						change of the <code>Selected</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1182,7 +1160,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.lister">Lister</a> 
 					</td>
 					<td class="column3">
-						change of the <code>SelectedLine</code> attribute&#185;
+						change of the <code>SelectedLine</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1193,7 +1171,18 @@ app:run()
 						<a href="manual.html#tek.ui.class.poplist">PopList</a> 
 					</td>
 					<td class="column3">
-						change of the <code>SelectedLine</code> attribute&#185;
+						change of the <code>SelectedLine</code> attribute
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Input:onSetChanged"><code>Input:onSetChanged()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.input">Input</a> 
+					</td>
+					<td class="column3">
+						setting the <code>Changed</code> attribute, on text changes
 					</td>
 				</tr>
 				<tr>
@@ -1204,7 +1193,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.canvas">Canvas</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Child</code> attribute&#185;
+						change of the <code>Child</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1215,7 +1204,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.element">Element</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Class</code> attribute&#185;
+						change of the <code>Class</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1226,7 +1215,18 @@ app:run()
 						<a href="manual.html#tek.ui.class.lister">Lister</a> 
 					</td>
 					<td class="column3">
-						change of the <code>CursorLine</code> attribute&#185;
+						change of the <code>CursorLine</code> attribute
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#ImageWidget:onSetImage"><code>ImageWidget:onSetImage()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.imagewidget">ImageWidget</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Image</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1237,7 +1237,18 @@ app:run()
 						<a href="manual.html#tek.ui.class.numeric">Numeric</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Max</code> attribute&#185;
+						change of the <code>Max</code> attribute
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#ScrollBar:onSetMax"><code>ScrollBar:onSetMax()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.scrollbar">ScrollBar</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Max</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1248,7 +1259,18 @@ app:run()
 						<a href="manual.html#tek.ui.class.numeric">Numeric</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Min</code> attribute&#185;
+						change of the <code>Min</code> attribute
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#ScrollBar:onSetMin"><code>ScrollBar:onSetMin()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.scrollbar">ScrollBar</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Min</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1259,7 +1281,18 @@ app:run()
 						<a href="manual.html#tek.ui.class.pagegroup">PageGroup</a> 
 					</td>
 					<td class="column3">
-						change of the <code>PageNumber</code> attribute&#185;
+						change of the <code>PageNumber</code> attribute
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#ScrollBar:onSetRange"><code>ScrollBar:onSetRange()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.scrollbar">ScrollBar</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Range</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1270,7 +1303,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.slider">Slider</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Range</code> attribute&#185;
+						change of the <code>Range</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1281,18 +1314,7 @@ app:run()
 						<a href="manual.html#tek.ui.class.element">Element</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Style</code> attribute&#185;
-					</td>
-				</tr>
-				<tr>
-					<td class="column1">
-						<a href="manual.html#Text:onSetText"><code>Text:onSetText()</code></a> 
-					</td>
-					<td class="column2">
-						<a href="manual.html#tek.ui.class.text">Text</a> 
-					</td>
-					<td class="column3">
-						change of <code>Text</code> attribute&#185;
+						change of the <code>Style</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1303,7 +1325,29 @@ app:run()
 						<a href="manual.html#tek.ui.class.floattext">FloatText</a> 
 					</td>
 					<td class="column3">
-						change of <code>Text</code> attribute&#185;
+						change of <code>Text</code> attribute
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Input:onSetText"><code>Input:onSetText()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.input">Input</a> 
+					</td>
+					<td class="column3">
+						change of <code>Text</code> attribute
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#Text:onSetText"><code>Text:onSetText()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.text">Text</a> 
+					</td>
+					<td class="column3">
+						change of <code>Text</code> attribute
 					</td>
 				</tr>
 				<tr>
@@ -1314,18 +1358,26 @@ app:run()
 						<a href="manual.html#tek.ui.class.numeric">Numeric</a> 
 					</td>
 					<td class="column3">
-						change of the <code>Value</code> attribute&#185;
+						change of the <code>Value</code> attribute
+					</td>
+				</tr>
+				<tr>
+					<td class="column1">
+						<a href="manual.html#ScrollBar:onSetValue"><code>ScrollBar:onSetValue()</code></a> 
+					</td>
+					<td class="column2">
+						<a href="manual.html#tek.ui.class.scrollbar">ScrollBar</a> 
+					</td>
+					<td class="column3">
+						change of the <code>Value</code> attribute
 					</td>
 				</tr>
 			</table>
-			<p>
-				&#185; using <a href="manual.html#Object:setValue"><code>Object:setValue()</code></a> and the notification mechanism
-			</p>
 		</div>
 		<div class="node"><h2><a name="adhocclasses" id="adhocclasses">4.5. Ad-hoc setup of classes</a></h2>
 			<p>
 				To inherit properties and functionality from existing classes and to
-				reuse existing code consequently, it is often desirable to create new
+				consequently reuse existing code, it is often desirable to create new
 				classes yourself. There are different scopes in which new classes can
 				be useful:
 			</p>
@@ -1361,8 +1413,8 @@ local Button = ui.Text:newClass { _NAME = &quot;_button&quot; }
 				<em>ad-hoc</em> classes may be named arbitrarily, but their names should
 				be prefixed with an underscore to distinguish them from global
 				classes. You can even do without a name, as tekUI will create one
-				for you if necessary (but you will find it difficult to reference
-				such a class in a style sheet).
+				for you if necessary, but you will find it difficult to reference
+				such a class in a style sheet.
 			</p>
 			<p>
 				From this point, the new class can be extended, e.g. for
@@ -1548,12 +1600,15 @@ local Widget = require &quot;tek.ui.class.widget&quot;
 module(&quot;tek.ui.class.button&quot;, tek.ui.class.widget)
 _VERSION = &quot;Button Widget 1.0&quot;
 local Button = _M
+Widget:newClass(Button)
 </pre>
 			<p>
 				The second argument to <code>module</code> is the super class to derive the
 				new class from (see also <a href="manual.html#tek.class">tek.class</a> for
 				details on how this is supposed to work). By convention, we then put
-				the module table (the class) into a local variable.
+				the module table (the class) into a local variable. The last line is
+				for compatibility with Lua 5.2, as the second argument to module
+				doesn't work with Lua 5.2 anymore.
 			</p>
 			<p>
 				Finally, methods in the newly created class may look like this (note

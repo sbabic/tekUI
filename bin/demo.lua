@@ -172,9 +172,9 @@ app = ui.Application:new
 													Items =
 													{
 														{ { "ProgramName", "tekUI Demo" } },
-														{ { "Version", "1.0" } },
+														{ { "Version", "1.1" } },
 														{ { "Author", "Timm S. Müller" } },
-														{ { "Copyright", "© 2008-2013, Schulze-Müller GbR" } },
+														{ { "Copyright", "© 2008-2014, Schulze-Müller GbR" } },
 													}
 												}
 											}
@@ -255,7 +255,8 @@ app = ui.Application:new
 												AutoWidth = true,
 												Child = ui.FloatText:new
 												{
-													Text = L.INTERPRETER_VERSION:format(_VERSION)
+													Text = L.INTERPRETER_VERSION:format(_VERSION) .. "\n" ..
+															L.TEKUI_PACKAGE_VERSION:format(ui.VERSION)
 												}
 											}
 										},

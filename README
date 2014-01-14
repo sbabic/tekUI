@@ -4,9 +4,8 @@
  - 1. [[#about : About tekUI]]
   - 1.1. [[#license : License]]
   - 1.2. [[#status : Status, requirements]]
-  - 1.3. [[#development : Development model]]
-  - 1.4. [[#support : Support and services]]
-  - 1.5. [[#authors : Authors and contact]]
+  - 1.3. [[#support : Support and services]]
+  - 1.4. [[#authors : Authors and contact]]
 
  - 2. [[#overview : Technical overview]]
   - 2.1. [[#features : General features]]
@@ -24,8 +23,7 @@
    - 3.2.1 [[#notefbsd : FreeBSD notes]]
    - 3.2.2 [[#notewindows : Windows notes]]
    - 3.2.3 [[#notex11 : X11 notes]]
-   - 3.2.4 [[#notenanox : Nano-X notes]]
-   - 3.2.5 [[#noterawfb : Raw framebuffer notes]]
+   - 3.2.4 [[#noterawfb : Raw framebuffer notes]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
@@ -57,7 +55,7 @@
 TekUI is a small, freestanding and portable graphical user interface
 (GUI) toolkit written in Lua and C. It was developed for the X Window
 System initially and has been ported to DirectFB, Windows, Nano-X and
-a raw framebuffer since.
+a raw framebuffer since. A [[VNC option][#noterawfb]] is available.
 
 Its main focus is the rapid development of custom-made applications
 with a custom appearance, such as for embedded devices with a display
@@ -85,29 +83,25 @@ are available under a commercial license – see [[#support]].
 
 ==( status : 1.2. Status, requirements )==
 
-TekUI is in early stage of development. It is available for the
-Linux, Windows, and FreeBSD platforms. It may work on other flavours
-of Unix with few minor changes in the build configuration.
+TekUI is slowly approaching feature completeness ("beta" stadium). It
+is available for Unix-like operating systems such as Linux and
+FreeBSD, and it may work on other flavours of Unix with few changes.
+A rudimentary Windows display driver and build setup is included, but
+not very well supported at this time.
 
-Display drivers are included for X11, Windows, and DirectFB. See also
-[[TODO][todo.html]] for a list of known bugs and missing features,
-and [[#requirements]] for a list of the required libraries.
+Display drivers are included for X11, Windows, DirectFB, and raw
+memory. See also [[TODO][todo.html]] for a list of known bugs
+and missing features, and [[#requirements]] for a list of the
+required libraries.
 
-==( development : 1.3. Development model )==
-
-Bug fixes and additions are welcome. Submit your patches, and we will
-check them for inclusion to the public source code repository.
-Regular contributors are welcome also.
-
-==( support : 1.4. Support and services )==
+==( support : 1.3. Support and services )==
 
 Special adaptations, custom display drivers, new user interface
 elements, and support and services for the integration of tekUI into
 your products are available from the authors – see below. A
-commercial version with additional components (such as a Nano-X and
-raw framebuffer driver and XML support) is available on request.
+commercially licensed and supported version is available on request.
 
-==( authors : 1.5. Authors and contact )==
+==( authors : 1.4. Authors and contact )==
 
 Authors:
  - Timm S. Müller <tmueller at schulze-mueller.de>
@@ -293,11 +287,10 @@ this writing) are given below:
  * >=freetype-2.3.5 (for the x11 and directfb drivers)
  * >=DirectFB-0.9.25.1 (for the directfb driver)
  * MinGW (for the Windows platform)
- * microwindows-0.91 (for the Nano-X driver)
 
-Lua 5.1 and 5.2 are supported out of the box, if Lua 5.2 is compiled
-with {{LUA_COMPAT_MODULE}}.
- 
+Lua 5.1, 5.2 and LuaJIT 2.0 are supported out of the box, if Lua 5.2
+is compiled with {{LUA_COMPAT_MODULE}}.
+
 LibXft and fontconfig are needed for building the x11 driver, but
 tekUI falls back to the core X11 API if they are unavailable at
 runtime. In addition to that, for the documentation system and the
@@ -313,18 +306,19 @@ required to compile and run tekUI on Ubuntu Linux: {{lua5.1}},
 
 ==( buildenv : 3.2. Adjusting the build environment )==
 
-This release has been tested on and should compile and run out of the
+TekUI was at some point tested and should compile and run out of the
 box on
 
- * Ubuntu Linux 9.10, 8.04 and 7.10
- * Windows 2000, Wine
+ * Ubuntu Linux (tested: 9.10, 8.04 and 7.10)
  * FreeBSD 7.0 (special precautions needed, see annotations below)
- * Gentoo Linux x86/10.0, x86/2008.0, amd64/2007.0, ppc/2007.0
+ * Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
+ amd64/2007.0, ppc/2007.0)
+ * Windows (tested: 2000, Wine)
 
-If building fails for you, you have to adjust the build environment,
-which is located in the {{config}} file on the topmost directory
-level. Supported build tools are {{gmake}} (common under Linux) and
-{{pmake}} (common under FreeBSD).
+If building fails for you, you may have to adjust the build
+environment, which is located in the {{config}} file on the topmost
+directory level. Supported build tools are {{gmake}} (common under
+Linux) and {{pmake}} (common under FreeBSD).
 
 ===( notefbsd : 3.2.1. FreeBSD notes )===
 
@@ -345,32 +339,25 @@ the build environment, see the {{config}} file.
 
 The XFree86VidMode extension is linked against by default. It can
 be disabled by removing {{-DENABLE_XVID}} from {{X11_DEFS}} in the
-config file.
+config file. In case of problems with texts and labels, try removing
+{{-DENABLE_XFT}} from {{X11_DEFS}}.
 
-In case of problems with texts and labels, try removing
-{{-DENABLE_XFT}} from {{X11_DEFS}} in the config file. Some versions
-of X11 are known to not support the Composite extension and
-antialiased fonts using Xft at the same time.
+===( noterawfb : 3.2.4. Raw framebuffer notes )===
 
-===( notenanox : 3.2.4. Nano-X notes )===
+The raw framebuffer driver performs all rendering in a chunk of
+memory, which can be supplied by the user. Color depth may be 16 or
+32 bit. This driver is recursive in that another display driver may
+be plugged into it as a visualization device and for passing through
+input. It was originally intended to act as a template (or skeleton)
+for specializations in a target context, like custom hardware or a 3D
+game or simulation.
 
-For the Nano-X driver you will almost certainly have to adjust the
-{{config}} file. Due to some limitations of Nano-X, tekUI
-applications will probably make sense only when running in fullscreen
-mode without a window manager. See also {{tek/ui/style/nanox.css}}
-for more information. Example:
-
-  # nano-X & THEME=nanox FULLSCREEN=true bin/demo_custom.lua
-
-===( noterawfb : 3.2.5. Raw framebuffer notes )===
-
-Drawing primitives, clipping, and antialiased fonts are provided,
-and rendering can be targeted to user-supplied memory. This driver
-implements no input and serves as a template (or skeleton) for
-specializations in a target context, like custom hardware or a 3D
-game or simulation. For testing and debugging, the raw framebuffer
-driver is recursive; by plugging in another display driver, an
-instant visualization device and input source can be provided.
+A VNC server option (through 
+[[LibVNCServer][http://libvncserver.sourceforge.net/]]) is available
+for this driver, which allows a tekUI application to be shared over
+the network. This works both "headless" or with a local display. To
+enable LibVNCServer support, comment in the {{VNCSERVER_}} defines in
+the config file.
 
 ==( building : 3.3. Building )==
 
@@ -659,39 +646,44 @@ and custom layouting strategies.
 ==( handlers : 4.4. List of predefined handlers )==
 
 '''Name'''                || '''Base Class'''                                     || '''Cause'''
-Widget:onActivate()       || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Active}} attribute¹ 
-Window:onChangeStatus()   || [[manual.html#tek.ui.class.window : Window]]         || change of {{Status}} attribute¹
-Widget:onClick()          || [[manual.html#tek.ui.class.widget : Widget]]         || caused when {{Pressed}} changes to '''false'''¹
-Widget:onDisable()        || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Disabled}} attribute¹
-Widget:onDblClick()       || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{DblClick}} attribute¹
-TextInput:onEnter()       || [[manual.html#tek.ui.class.textinput : TextInput]]   || change of {{Enter}} attribute¹
-Widget:onFocus()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Focus}} attribute¹
+Widget:onActivate()       || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Active}} attribute 
+Window:onChangeStatus()   || [[manual.html#tek.ui.class.window : Window]]         || change of {{Status}} attribute
+Widget:onClick()          || [[manual.html#tek.ui.class.widget : Widget]]         || caused when {{Pressed}} changes to '''false'''
+Widget:onDisable()        || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Disabled}} attribute
+Widget:onDblClick()       || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{DblClick}} attribute
+Input:onEnter()           || [[manual.html#tek.ui.class.input : Input]]           || change of {{Enter}} attribute, pressing enter
+Widget:onFocus()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Focus}} attribute
 Window:onHide()           || [[manual.html#tek.ui.class.window : Window]]         || window close button, Escape key
-Widget:onHilite()         || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hilite}} attribute¹
-Widget:onHold()           || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hold}} attribute¹
-Widget:onPress()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Pressed}} attribute¹
-Widget:onSelect()         || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Selected}} attribute¹
+Widget:onHilite()         || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hilite}} attribute
+Widget:onHold()           || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Hold}} attribute
+Widget:onPress()          || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Pressed}} attribute
+Widget:onSelect()         || [[manual.html#tek.ui.class.widget : Widget]]         || change of the {{Selected}} attribute
 DirList:onSelectEntry()   || [[manual.html#tek.ui.class.dirlist : DirList]]       || item selected by the user
-Lister:onSelectLine()     || [[manual.html#tek.ui.class.lister : Lister]]         || change of the {{SelectedLine}} attribute¹
-PopList:onSelectLine()    || [[manual.html#tek.ui.class.poplist : PopList]]       || change of the {{SelectedLine}} attribute¹
-Canvas:onSetChild()       || [[manual.html#tek.ui.class.canvas : Canvas]]         || change of the {{Child}} attribute¹
-Element:onSetClass()      || [[manual.html#tek.ui.class.element : Element]]       || change of the {{Class}} attribute¹
-Lister:onSetCursor()      || [[manual.html#tek.ui.class.lister : Lister]]         || change of the {{CursorLine}} attribute¹
-Numeric:onSetMax()        || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Max}} attribute¹
-Numeric:onSetMin()        || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Min}} attribute¹
-PageGroup:onSetPageNumber() || [[manual.html#tek.ui.class.pagegroup : PageGroup]] || change of the {{PageNumber}} attribute¹
-Slider:onSetRange()       || [[manual.html#tek.ui.class.slider : Slider]]         || change of the {{Range}} attribute¹
-Element:onSetStyle()      || [[manual.html#tek.ui.class.element : Element]]       || change of the {{Style}} attribute¹
-Text:onSetText()          || [[manual.html#tek.ui.class.text : Text]]             || change of {{Text}} attribute¹
-FloatText:onSetText()     || [[manual.html#tek.ui.class.floattext : FloatText]]   || change of {{Text}} attribute¹
-Numeric:onSetValue()      || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Value}} attribute¹
-
-¹ using Object:setValue() and the notification mechanism
+Lister:onSelectLine()     || [[manual.html#tek.ui.class.lister : Lister]]         || change of the {{SelectedLine}} attribute
+PopList:onSelectLine()    || [[manual.html#tek.ui.class.poplist : PopList]]       || change of the {{SelectedLine}} attribute
+Input:onSetChanged()      || [[manual.html#tek.ui.class.input : Input]]           || setting the {{Changed}} attribute, on text changes
+Canvas:onSetChild()       || [[manual.html#tek.ui.class.canvas : Canvas]]         || change of the {{Child}} attribute
+Element:onSetClass()      || [[manual.html#tek.ui.class.element : Element]]       || change of the {{Class}} attribute
+Lister:onSetCursor()      || [[manual.html#tek.ui.class.lister : Lister]]         || change of the {{CursorLine}} attribute
+ImageWidget:onSetImage()  || [[manual.html#tek.ui.class.imagewidget : ImageWidget]] || change of the {{Image}} attribute
+Numeric:onSetMax()        || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Max}} attribute
+ScrollBar:onSetMax()      || [[manual.html#tek.ui.class.scrollbar : ScrollBar]]   || change of the {{Max}} attribute
+Numeric:onSetMin()        || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Min}} attribute
+ScrollBar:onSetMin()      || [[manual.html#tek.ui.class.scrollbar : ScrollBar]]   || change of the {{Min}} attribute
+PageGroup:onSetPageNumber() || [[manual.html#tek.ui.class.pagegroup : PageGroup]] || change of the {{PageNumber}} attribute
+ScrollBar:onSetRange()    || [[manual.html#tek.ui.class.scrollbar : ScrollBar]]   || change of the {{Range}} attribute
+Slider:onSetRange()       || [[manual.html#tek.ui.class.slider : Slider]]         || change of the {{Range}} attribute
+Element:onSetStyle()      || [[manual.html#tek.ui.class.element : Element]]       || change of the {{Style}} attribute
+FloatText:onSetText()     || [[manual.html#tek.ui.class.floattext : FloatText]]   || change of {{Text}} attribute
+Input:onSetText()         || [[manual.html#tek.ui.class.input : Input]]           || change of {{Text}} attribute
+Text:onSetText()          || [[manual.html#tek.ui.class.text : Text]]             || change of {{Text}} attribute
+Numeric:onSetValue()      || [[manual.html#tek.ui.class.numeric : Numeric]]       || change of the {{Value}} attribute
+ScrollBar:onSetValue()    || [[manual.html#tek.ui.class.scrollbar : ScrollBar]]   || change of the {{Value}} attribute
 
 ==( adhocclasses : 4.5. Ad-hoc setup of classes )==
 
 To inherit properties and functionality from existing classes and to
-reuse existing code consequently, it is often desirable to create new
+consequently reuse existing code, it is often desirable to create new
 classes yourself. There are different scopes in which new classes can
 be useful:
 
@@ -717,8 +709,8 @@ Text class whereever you see fit:
 ''ad-hoc'' classes may be named arbitrarily, but their names should
 be prefixed with an underscore to distinguish them from global
 classes. You can even do without a name, as tekUI will create one
-for you if necessary (but you will find it difficult to reference
-such a class in a style sheet).
+for you if necessary, but you will find it difficult to reference
+such a class in a style sheet.
 
 From this point, the new class can be extended, e.g. for
 initializations which turn a Text into a Button:
@@ -854,11 +846,14 @@ A class is usually set up in a prologue like this:
   module("tek.ui.class.button", tek.ui.class.widget)
   _VERSION = "Button Widget 1.0"
   local Button = _M
+  Widget:newClass(Button)
 
 The second argument to {{module}} is the super class to derive the
 new class from (see also [[tek.class][manual.html#tek.class]] for
 details on how this is supposed to work). By convention, we then put
-the module table (the class) into a local variable.
+the module table (the class) into a local variable. The last line is
+for compatibility with Lua 5.2, as the second argument to module
+doesn't work with Lua 5.2 anymore.
 
 Finally, methods in the newly created class may look like this (note
 that, thanks to the {{Button}} variable, the second example provides

@@ -29,6 +29,10 @@
 --		- ui.resolveKeyCode() - Converts a keycode into keys and qualifiers
 --
 --	CONSTANTS::
+--		- {{VERSION}}
+--			- Overall package version number of tekUI, starting at {{100}}
+--			for version 1.00. (Not to be confused with the ui module's
+--			{{_VERSION}} ''string'', with underscore)
 --		- {{HUGE}}
 --			- This constant is used to express a 'huge' spatial extent on a
 --			given axis, e.g. {{Width = ui.HUGE}} indicates that you wish no
@@ -45,7 +49,7 @@
 --			recognized as a double click. Default: {{32000}}. Use a larger
 --			value for touchscreens.
 --
---	MESSAGE TYPES::
+--	MESSAGE TYPE CONSTANTS::
 --		- {{MSG_CLOSE}}
 --			- Message sent when a window was closed
 --		- {{MSG_FOCUS}}
@@ -119,7 +123,8 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 40.4"
+_VERSION = "tekUI 41.0" -- module version
+VERSION = 100 -- package version
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:

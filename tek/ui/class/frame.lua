@@ -84,11 +84,13 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Area = ui.require("area", 46)
 local Region = ui.loadLibrary("region", 10)
+local support = require "tek.lib.support" -- comment out to use pure Lua
+local getborder = support.getBorder
 local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 22.0"
+_VERSION = "Frame 22.1"
 local Frame = _M
 Area:newClass(Frame)
 
@@ -126,10 +128,7 @@ end
 
 function Frame:newBorderObject()
 	local props = self.Properties
-	local b1 = tonumber(props["border-left-width"]) or 0
-	local b2 = tonumber(props["border-top-width"]) or 0
-	local b3 = tonumber(props["border-right-width"]) or 0
-	local b4 = tonumber(props["border-bottom-width"]) or 0
+	local b1, b2, b3, b4 = getborder(props)
 	if b1 > 0 or b2 > 0 or b3 > 0 or b4 > 0 then
 		self.BorderObject = ui.createHook("border",
 			props["border-class"] or "default", self,

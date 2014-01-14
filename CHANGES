@@ -1,6 +1,18 @@
 
 == tekUI Changelog ==
 
+=== 1.0: ===
+
+ * New versioning scheme established. The 1.0 version does not reflect some
+ exceptional achievement, and the major version will be changed more
+ frequently in the future. The versioning scheme resembles Lua's in that new
+ major versions indicate some nontrivial API changes. The UI library now
+ contains a version that reflects tekUI's overall package version number.
+ * The document generator now accepts C source files, too, for Lua classes
+ which have been written in or ported to C. The notation is the same, so
+ Lua headers need to be enclosed in C comments. Also it is recommended to
+ keep the module headers, _VERSION and local classname variables intact.
+
 === 0.8l: ===
 
  * New Input and TextEdit classes added, the TextInput class is obsolete.
