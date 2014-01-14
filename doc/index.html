@@ -380,7 +380,7 @@
 						Text button (and label), also multi-line
 					</li>
 					<li>
-						Text input (single line)
+						Text input (single and multi-line, passwords, scrolling, ...)
 					</li>
 				</ul>
 			</blockquote>
@@ -543,7 +543,7 @@
 						&gt;=fontconfig-2.5.0 (for the x11 driver)
 					</li>
 					<li>
-						&gt;=freetype-2.3.5 (for the x11 and directfb drivers)
+						&gt;=freetype-2.3.5 (for the x11, directfb and rawfb drivers)
 					</li>
 					<li>
 						&gt;=DirectFB-0.9.25.1 (for the directfb driver)
@@ -723,6 +723,10 @@
 					<li>
 						<code>GTK2_RC_FILES</code> - Possible locations of a gtkrc-2.0
 						configuration file.
+					</li>
+					<li>
+						<code>FONTDIR</code> - Raw framebuffer TTF font directory, overriding the
+						hardcoded default (<code>tek/ui/font</code>)
 					</li>
 				</ul>
 			</blockquote>

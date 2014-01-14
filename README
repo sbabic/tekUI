@@ -165,7 +165,7 @@ stable yet, so be prepared for structural and API changes.
  * Slider
  * Spacer
  * Text button (and label), also multi-line
- * Text input (single line)
+ * Text input (single and multi-line, passwords, scrolling, ...)
 
 ==( deployment : 2.3. Deployment )==
 
@@ -284,7 +284,7 @@ this writing) are given below:
  * >=libXft-2.1.12 (for the x11 driver)
   * XFree86VidMode extension (for the x11 driver)
  * >=fontconfig-2.5.0 (for the x11 driver)
- * >=freetype-2.3.5 (for the x11 and directfb drivers)
+ * >=freetype-2.3.5 (for the x11, directfb and rawfb drivers)
  * >=DirectFB-0.9.25.1 (for the directfb driver)
  * MinGW (for the Windows platform)
 
@@ -340,7 +340,7 @@ the build environment, see the {{config}} file.
 The XFree86VidMode extension is linked against by default. It can
 be disabled by removing {{-DENABLE_XVID}} from {{X11_DEFS}} in the
 config file. In case of problems with texts and labels, try removing
-{{-DENABLE_XFT}} from {{X11_DEFS}}.
+{{-DENABLE_XFT}} from {{X11_DEFS}}. 
 
 ===( noterawfb : 3.2.4. Raw framebuffer notes )===
 
@@ -411,6 +411,8 @@ conveniently invoked with
  to import the color scheme found in a GTK2 configuration file.
  * {{GTK2_RC_FILES}} - Possible locations of a gtkrc-2.0
  configuration file.
+ * {{FONTDIR}} - Raw framebuffer TTF font directory, overriding the
+ hardcoded default ({{tek/ui/font}})
 
 ---------------------------------------------------------------------
 
