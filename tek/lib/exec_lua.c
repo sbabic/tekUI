@@ -5,12 +5,9 @@
 **	See copyright notice in COPYRIGHT
 */
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-
 #include <tek/debug.h>
 #include <tek/teklib.h>
+#include <tek/lib/tek_lua.h>
 #include <tek/proto/hal.h>
 #include <tek/proto/exec.h>
 
@@ -45,13 +42,8 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	TTAGITEM tags[2];
 	TAPTR basetask;
 
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, "tek.lib.exec", tek_lib_exec_funcs);
-#else
-	luaL_newlib(L, tek_lib_exec_funcs);
-#endif
+	lua_newtable(L);
 	/* s: libtab */
-
 	pexec = lua_newuserdata(L, sizeof(TAPTR));
 	/* s: libtab, udata */
 	*pexec = TNULL;

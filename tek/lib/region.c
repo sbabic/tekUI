@@ -31,17 +31,14 @@ local Region = _M
 
 ******************************************************************************/
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-
+#include <tek/lib/tek_lua.h>
+#include <tek/lib/tekui.h>
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
-#include <tek/lib/tekui.h>
 
 #define TEK_LIB_REGION_VERSION "Region 10.2"
-#define TEK_LIB_REGION_NAME "tek.lib.region*"
+#define TEK_LIB_REGION_NAME "tek.lib.region"
 #define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
 
 /*****************************************************************************/
@@ -324,13 +321,13 @@ static TBOOL andrect(struct RectList *temp,
 
 static void *region_checkregion(lua_State *L, int n)
 {
-	return luaL_checkudata(L, n, TEK_LIB_REGION_NAME);
+	return luaL_checkudata(L, n, TEK_LIB_REGION_NAME "*");
 }
 
 static void *region_optregion(lua_State *L, int n)
 {
 	if (lua_type(L, n) == LUA_TUSERDATA)
-		return luaL_checkudata(L, n, TEK_LIB_REGION_NAME);
+		return luaL_checkudata(L, n, TEK_LIB_REGION_NAME "*");
 	return TNULL;
 }
 
@@ -375,7 +372,7 @@ static int region_new(lua_State *L)
 	struct Region *region = lua_newuserdata(L, sizeof(struct Region));
 	/* s: udata */
 	region_initrectlist(&region->rg_Rects);
-	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_REGION_NAME);
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_REGION_NAME "*");
 	/* s: udata, metatable */
 	lua_rawgeti(L, -1, 2);
 	/* s: udata, metatable, pool */
@@ -821,34 +818,24 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 {
 	struct Pool *pool;
 	
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, "tek.lib.region", tek_lib_region_funcs);
-#else
-	luaL_newlib(L, tek_lib_region_funcs);
-#endif
-	/* s: libtab */
-	
+	tek_lua_register(L, TEK_LIB_REGION_NAME, tek_lib_region_funcs, 0);
 	lua_pushstring(L, TEK_LIB_REGION_VERSION);
 	lua_setfield(L, -2, "_VERSION");
 
 	/* require "tek.lib.exec": */
 	lua_getglobal(L, "require");
-	/* s: "require" */
+	/* s: require() */
 	lua_pushliteral(L, "tek.lib.exec");
-	/* s: "require", "tek.lib.exec" */
+	/* s: require(), "tek.lib.exec" */
 	lua_call(L, 1, 1);
 	/* s: exectab */
 	lua_getfield(L, -1, "base");
 	/* s: exectab, execbase */
 	lua_remove(L, -2);
 	/* s: execbase */
-	luaL_newmetatable(L, TEK_LIB_REGION_NAME);
+	luaL_newmetatable(L, TEK_LIB_REGION_NAME "*");
 	/* s: execbase, metatable */
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, NULL, tek_lib_region_methods);
-#else
-	luaL_setfuncs(L, tek_lib_region_methods, 0);
-#endif
+	tek_lua_register(L, NULL, tek_lib_region_methods, 0);
 	/* s: execbase, metatable */
 	lua_pushvalue(L, -1);
 	/* s: execbase, metatable, metatable */
@@ -863,11 +850,7 @@ TMODENTRY int luaopen_tek_lib_region(lua_State *L)
 	/* s: execbase, metatable, metatable, pool */
 	luaL_newmetatable(L, TEK_LIB_REGION_POOL_NAME);
 	/* s: execbase, metatable, metatable, pool, poolmt */
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, NULL, tek_lib_region_poolmethods);
-#else
-	luaL_setfuncs(L, tek_lib_region_poolmethods, 0);
-#endif
+	tek_lua_register(L, NULL, tek_lib_region_poolmethods, 0);
 	lua_setmetatable(L, -2);
 	/* s: execbase, metatable, metatable, pool */
 	lua_rawseti(L, -2, 2);

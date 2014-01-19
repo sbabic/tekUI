@@ -62,7 +62,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 17.3"
+_VERSION = "TextEdit 17.4"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -97,7 +97,6 @@ Properties = {
 
 function TextEdit.init(self)
 	self.AutoIndent = true -- self.AutoIndent or false
-	self.AutoPosition = self.AutoPosition or false
 	self.AutoWrap = self.AutoWrap or false
 	self.BlinkCursor = self.BlinkCursor or false
 	self.BlinkState = false
@@ -108,7 +107,7 @@ function TextEdit.init(self)
 	self.Clipboard = self.Clipboard or false
 	self.CursorMode = "active" -- "hidden", "still"
 	self.Cursor = false
-	self.CursorStyle = self.CursorStyle or "line" -- "block", "line", "wholeline"
+	self.CursorStyle = self.CursorStyle or "line" -- "block", "wholeline"
 	self.CursorThickness = self.CursorThickness or 1 -- in line mode, minus 1
 	self.CursorX = self.CursorX or 1
 	self.CursorY = self.CursorY or 1
@@ -144,7 +143,7 @@ function TextEdit.init(self)
 	self.TextWidth = false
 	self.UseFakeCanvasWidth = not self.AutoWrap -- unlimited line width
 	self.VisualCursorX = 1
-	self.VisibleMargin = self.VisibleMargin or { 0, 0, 0, 0 } -- left, top, right, bottom
+	self.VisibleMargin = self.VisibleMargin or { 0, 0, 0, 0 }
 	-- indicates that Y positions and heights are cached and valid:
 -- 	self.YValid = true 
 	return Sizeable.init(self)
@@ -285,7 +284,8 @@ end
 function TextEdit:getMark(cx, cy)
 	local m = self.Mark
 	if m then
-		return self:getMarkTopBottom(m[1], m[2], cx or self.CursorX, cy or self.CursorY)
+		return self:getMarkTopBottom(m[1], m[2], 
+			cx or self.CursorX, cy or self.CursorY)
 	end
 end
 
@@ -502,7 +502,8 @@ function TextEdit:updateCanvasSize()
 	local c = self.Parent
 	if c then
 		local w, h = self:getRealCanvasSize()
-		c:setValue("CanvasWidth", self.UseFakeCanvasWidth and FAKECANVASWIDTH or w)
+		c:setValue("CanvasWidth", 
+			self.UseFakeCanvasWidth and FAKECANVASWIDTH or w)
 		c:setValue("CanvasHeight", h)
 		c:rethinkLayout()
 	end
@@ -818,9 +819,9 @@ function TextEdit:drawPatch(r1, r2, r3, r4)
 	for lnr = l0, l1 do
 		local x0, y0, x1, y1 = self:getLineGeometry(lnr)
 		local x2 = x0
-		self:foreachSnippet(lnr, function(self, pos, snip, vx, gx0, gx1, fgpen, bgpen, ly)
+		self:foreachSnippet(lnr, function(self, pos, snip, vx, gx0, gx1,
+			fgpen, bgpen, ly)
 			if ly > 0 then
--- 				db.warn("multiline : x0=%s x1=%s y=%d s='%s'", x0, x1, ly, snip:get())
 				return true -- cannot handle multiline for now
 			end
 			local x1 = x0 + gx1
@@ -833,7 +834,8 @@ function TextEdit:drawPatch(r1, r2, r3, r4)
 				d:fillRect(x0, y0, x1, y1, bgpen)
 				if password then
 					local slen = snip:len()
-					d:drawText(x0, y0 + lo, x1, y1 - lo, password:rep(slen), fgpen)
+					d:drawText(x0, y0 + lo, x1, y1 - lo, password:rep(slen), 
+						fgpen)
 				else
 					d:drawText(x0, y0 + lo, x1, y1 - lo, snip:get(), fgpen)
 				end
@@ -848,8 +850,6 @@ function TextEdit:drawPatch(r1, r2, r3, r4)
 	d:setBGPen(bgpen)
 	r:forEach(d.fillRect, d)
 	
-	
-
 	local c = self.Cursor
 	if c and intersect(r1, r2, r3, r4, c[1], c[2], c[3], c[4]) then
 		if c[6] == 1 then
@@ -1185,7 +1185,8 @@ function TextEdit:foreachSnippet(lnr, func)
 	local pos0, pos1
 	local pen_bg, pen_fg = self:getLinePens(lnr)
 	local mark_bg, mark_fg = self:getPens("mark")
-	local maxwidth = self.AutoWrap and self.Parent.CanvasWidth or FAKECANVASWIDTH
+	local maxwidth = self.AutoWrap and 
+		self.Parent.CanvasWidth or FAKECANVASWIDTH
 	local ly = 0 -- intra line nr
 	
 	while true do
@@ -1428,7 +1429,8 @@ function TextEdit:setCursor(bs, cx, cy, follow)
 
 		if c then
 			-- old cursor, and visible?
-			if c[6] and (c[1] ~= x0 or c[2] ~= y0 or c[3] ~= x1 or c[4] ~= y1) then
+			if c[6] and 
+				(c[1] ~= x0 or c[2] ~= y0 or c[3] ~= x1 or c[4] ~= y1) then
 				local x0 = min(x0, c[1])
 				local x1 = max(x1, c[3])
 				if ychanged and self.CursorStyle == "wholeline" then
@@ -2016,7 +2018,8 @@ end
 -------------------------------------------------------------------------------
 
 function TextEdit:find(search)
-	local sx, sy = self:moveCursorPosition(self.CursorX, self.CursorY, 1, 0, true)
+	local sx, sy = self:moveCursorPosition(self.CursorX, self.CursorY, 1, 0, 
+		true)
 	local numl = self:getNumLines()
 	for y = 0, numl - 1 do
 		local cy = ((sy - 1 + y) % numl) + 1
@@ -2174,7 +2177,6 @@ function TextEdit:findCurrentWord()
 		return cx0, cx1 + 1
 	end
 end
-
 
 -------------------------------------------------------------------------------
 --	updateWindow()

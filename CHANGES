@@ -8,10 +8,17 @@
  frequently in the future. The versioning scheme resembles Lua's in that new
  major versions indicate some nontrivial API changes. The UI library now
  contains a version that reflects tekUI's overall package version number.
- * The document generator now accepts C source files, too, for Lua classes
- which have been written in or ported to C. The notation is the same, so
- Lua headers need to be enclosed in C comments. Also it is recommended to
- keep the module headers, _VERSION and local classname variables intact.
+ * The document generator now accepts C source files, too, for classes which
+ have been written in or ported to C. The notation is the same, so the current
+ function headers only need to be enclosed in C comments. Also it is
+ recommended to keep the module headers, _VERSION and local classname hints
+ intact.
+ * tekUI example class written in C: Fixed a bug that thwarted child classes
+ to inherit from the example class. Rounded out the registration prolog, added
+ tek_lua_register() that isolates 5.1/5.2 compatibility and simplifies
+ registration
+ * Raw framebuffer: Improved window focus management, fixed memory leak
+ * String class: documentation added
 
 === 0.8l: ===
 

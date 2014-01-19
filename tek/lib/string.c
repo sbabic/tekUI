@@ -1,35 +1,52 @@
+/*-----------------------------------------------------------------------------
+--
+--	tek.lib.string
+--	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+--	See copyright notice in COPYRIGHT
+--
+--	OVERVIEW::
+--		String management supporting two 31 bit values for each codepoint
+--		(intended for character strings and their metadata). Strings are
+--		stored internally as UTF-8 encoded snippets which are automatically
+--		packed and unpacked on demand. Forward iteration, insertion and
+--		deletion is considered fast, even for strings of arbitrary length
+--		and at arbitrary positions.
+--
+--	FUNCTIONS::
+--		- String.encodeutf8() - Encode codepoints to UTF-8
+--		- String:erase() - Erases a range of a string
+--		- String:find() - Finds the UTF-8 string in a string object
+--		- String.foreachutf8() - Iterate codepoints of an UTF-8 encoded string
+--		- String:free() - Free string object
+--		- String:get() - Returns string
+--		- String:getchar() - Returns character UTF-8 encoded
+--		- String:getval() - Returns character and metadata
+--		- String:insert() - Appends or inserts string
+--		- String:len() - Returns string length
+--		- String.new() - Creates a new string object
+--		- String:overwrite() - Overwrites range of a string
+--		- String:set() - Initializes string object
+--		- String:setmetadata() - Set metadata in a string object
+--		- String:sub() - Returns substring
+--
+-------------------------------------------------------------------------------
 
-/*
-**	tek.lib.string - Unicode/metadata string management
-**	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
-**	See copyright notice in COPYRIGHT
-**
-**	s:set(utf8_or_string, p0[, p1]])	-- sets metadata to 0
-**	utf8 = s:sub([p0[, p1]])	-- s:get([p0[, p1]])
-**	len = s:len()
-**	s:insert(utf8_or_string[, pos])	-- also inserts metadata (0 in utf8 case)
-**	s:erase([p0[, p1]])			-- metadata gets erased, too
-**	s:overwrite(utf8[, pos])	-- sets overwritten metadata to 0
-**	val, meta = s:getval(pos)
-**	val = s:getchar(pos)
-**	p0, p1 = s:find(utf8[, pos])
-**	s:setmetadata(val[, p0[, p1])
-*/
+module "tek.lib.string"
+_VERSION = "String 1.0"
+local String = _M
+
+******************************************************************************/
 
 /*#define NDEBUG*/
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
-
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-
+#include <tek/lib/tek_lua.h>
 #include <tek/teklib.h>
 #include <tek/lib/tekui.h>
 
 #define TEK_LIB_STRING_VERSION	"String Library 0.2"
-#define TEK_LIB_STRING_NAME		"tek.lib.string*"
+#define TEK_LIB_STRING_NAME		"tek.lib.string"
 
 /*****************************************************************************/
 
@@ -647,7 +664,7 @@ static void tek_string_compact_int(lua_State *L, tek_string *s)
 static int tek_string_compact(lua_State *L)
 {
 #if defined(COMPACTION)
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	tek_string_compact_int(L, s);
 #endif /* defined(COMPACTION) */
 	return 0;
@@ -778,11 +795,18 @@ static tek_char tek_string_getval_int(lua_State *L, tek_string *s,
 	return sn->tsn_Data[p0 - pos].cdata[0];
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	string = String:set(string2[, p0[, p1]]): Initializes the string
+--	object with {{string2}}, which can be either an UTF-8
+--	encoded string or another string object. An optional range starts at
+--	position {{p0}} and extends to the position {{p1}}, which may be negative
+--	to indicate the number of characters from the end of the string.
+--	Metadata at the affected positions is set to {{0}}. Returns itself.
+-----------------------------------------------------------------------------*/
 
 static int tek_string_set(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	tek_string *s2 = TNULL;
 	struct utf8reader rd;
 	tek_size inslen;
@@ -802,7 +826,7 @@ static int tek_string_set(lua_State *L)
 		inslen = 0;
 	else
 	{
-		s2 = luaL_checkudata(L, 2, TEK_LIB_STRING_NAME);
+		s2 = luaL_checkudata(L, 2, TEK_LIB_STRING_NAME "*");
 		inslen = s2->ts_Length;
 	}
 	
@@ -926,18 +950,30 @@ static int tek_string_set(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	len = String:len(): Returns the number of characters in the string object.
+-----------------------------------------------------------------------------*/
+
 static int tek_string_len(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	lua_pushinteger(L, s->ts_Length);
 	return 1;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	utf8str = String:get([p0[, p1]]): An alias for String:sub()
+-----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------
+--	utf8str = String:sub([p0[, p1]]): Returns an UTF-8 encoded string
+--	representing the string object or a range of it. An optional range starts
+--	at position {{p0}} and extends to the position {{p1}}, which may be
+--	negative to indicate the number of characters from the end of the string.
+-----------------------------------------------------------------------------*/
 
 static int tek_string_sub(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	tek_size p0 = luaL_optinteger(L, 2, 1);
 	tek_size p1 = luaL_optinteger(L, 3, -1);
 	if (getfirstlast(s->ts_Length, &p0, &p1))
@@ -1010,9 +1046,17 @@ static tek_node *tek_string_breaklist(lua_State *L, tek_string *s, int pos)
 	return newnode1;
 }
 
+/*-----------------------------------------------------------------------------
+--	String:insert(string2[, pos]): Inserts {{string2}} into the string
+--	object, optionally at the given starting position. The default position
+--	is at the end of the string. {{string2}} may be an UTF-8 encoded string or
+--	another string object. Metadata from another string object will be
+--	inserted accordingly, otherwise it is set to {{0}}.
+-----------------------------------------------------------------------------*/
+
 static int tek_string_insert(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	tek_string *s2 = TNULL;
 	tek_size p0;
 	tek_size inslen;
@@ -1034,7 +1078,7 @@ static int tek_string_insert(lua_State *L)
 	}
 	else
 	{
-		s2 = luaL_checkudata(L, 2, TEK_LIB_STRING_NAME);
+		s2 = luaL_checkudata(L, 2, TEK_LIB_STRING_NAME "*");
 		inslen = s2->ts_Length;
 	}
 
@@ -1098,9 +1142,16 @@ static int tek_string_insert(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	String:erase([p0[, p1]]): Erases a range of characters from a string
+--	object. An optional range starts at position {{p0}} and extends to the
+--	position {{p1}}, which may be negative to indicate the number of
+--	characters from the end of the string.
+-----------------------------------------------------------------------------*/
+
 static int tek_string_erase(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	tek_size p0 = luaL_optinteger(L, 2, 1);
 	tek_size p1 = luaL_optinteger(L, 3, -1);
 	if (getfirstlast(s->ts_Length, &p0, &p1))
@@ -1169,9 +1220,16 @@ static int tek_string_erase(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	String:overwrite(utf8str[, pos]): Overwrites a range of characters in a
+--	string object from an UTF-8 encoded string, starting at the given position
+--	(default: {{1}}). Metadata in the string object at the affected positions
+--	will be set to {{0}}.
+-----------------------------------------------------------------------------*/
+
 static int tek_string_overwrite(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	struct utf8reader rd;
 	size_t rawlen;
 	tek_size pos = 0;
@@ -1214,9 +1272,14 @@ static int tek_string_overwrite(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	char, metadata = String:getval(pos): Returns a character's and its
+--	metadata's numeric codepoints at the given position in a string object.
+-----------------------------------------------------------------------------*/
+
 static int tek_string_getval(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	tek_size p0 = luaL_checkinteger(L, 2);
 	int meta_idx = luaL_optinteger(L, 3, METAIDX);
 	tek_char c;
@@ -1244,9 +1307,14 @@ static int tek_string_getval(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	utf8 = String:getchar(pos): Returns an UTF-8 encoded character at the
+--	given position in a string object.
+-----------------------------------------------------------------------------*/
+
 static int tek_string_getchar(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	tek_size p0 = luaL_checkinteger(L, 2);
 	if (getfirst(s->ts_Length, &p0, 1, s->ts_Length))
 	{
@@ -1271,9 +1339,16 @@ static int tek_string_getchar(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	p0, p1 = String:find(utf8[, pos]): Finds the specified UTF-8 encoded
+--	string in the string object, and if found, returns the first and last
+--	position of its next occurrence from the starting position
+--	(default: {{1}}).
+-----------------------------------------------------------------------------*/
+
 static int tek_string_find(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	size_t rawlen;
 	tek_size slen;
 	tek_char *sbuf;
@@ -1336,9 +1411,16 @@ redo:
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	String:setmetadata(value[, p0[, p1]]): Sets metadata in a string object
+--	to the specified value. An optional range starts at position {{p0}} and
+--	extends to the position {{p1}}, which may be negative to indicate the
+--	number of characters from the end of the string.
+-----------------------------------------------------------------------------*/
+
 static int tek_string_setmetadata(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	tek_char val = luaL_checkinteger(L, 2);
 	tek_size p0 = luaL_optinteger(L, 3, 1);
 	tek_size p1 = luaL_optinteger(L, 4, -1);
@@ -1394,8 +1476,9 @@ static int tek_string_setmetadata(lua_State *L)
 }
 
 
-/*****************************************************************************/
-
+/*-----------------------------------------------------------------------------
+--	string = String.new(): Creates a new, initially empty string object.
+-----------------------------------------------------------------------------*/
 
 static int tek_string_new(lua_State *L)
 {
@@ -1403,7 +1486,7 @@ static int tek_string_new(lua_State *L)
 	memset(s, 0, sizeof(tek_string));
 	TINITLIST(&s->ts_List);
 	/* s: udata */
-	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_STRING_NAME);
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_STRING_NAME "*");
 	/* s: udata, metatable */
 	lua_setmetatable(L, -2);
 	/* s: udata */
@@ -1414,9 +1497,15 @@ static int tek_string_new(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	String:free(): Free resources held by a string object. The only need for
+--	this function is to free the object as quickly as possible, preempting
+--	garbage collection.
+-----------------------------------------------------------------------------*/
+
 static int tek_string_collect(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	if (!s->ts_Collected)
 	{
 		s->ts_Collected = 1;
@@ -1435,11 +1524,15 @@ static int tek_string_collect(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	utf8string = encodeutf8(val1, val2, ...)
-**	utf8string = encodeutf8(table)
-*/
+/*-----------------------------------------------------------------------------
+--	utf8string = String.encodeutf8(table or number[, ...]): If the first
+--	argument is a table, encodes the numerically indexed codepoints in that
+--	table to an UTF-8 string; an optional second argument specifies the
+--	first position and an optional third argument the last position in the
+--	table.
+--	If the first argument is a number, encodes this and the following
+--	arguments as codepoints to an UTF-8 string.
+-----------------------------------------------------------------------------*/
 
 static int tek_string_encodeutf8(lua_State *L)
 {
@@ -1483,14 +1576,14 @@ static int tek_string_encodeutf8(lua_State *L)
 	return 1;
 }
 
-/*****************************************************************************/
-/*
-**	len, maxval = foreachutf8(utf8string, arg)
-**	arg can be a table, in which case each codepoint will be inserted into
-**	that table; or a function, which will be called for each codepoint; or
-**	nil. Returns the length of the string in codepoints and the maximum
-**	codepoint value
-*/
+/*-----------------------------------------------------------------------------
+--	length, maxval = String.foreachutf8(utf8string[, arg]):
+--	Returns the number of codepoints in {{utf8string}} and the highest
+--	codepoint number that occured in the string.
+--	{{arg}} can be a table, in which case each codepoint will be inserted
+--	into it as a number value, or a function, which will be called for each
+--	codepoint as its first, and the current position as its second argument.
+-----------------------------------------------------------------------------*/
 
 static int tek_string_foreachutf8(lua_State *L)
 {
@@ -1551,7 +1644,7 @@ static int tek_string_foreachutf8(lua_State *L)
 
 static int tek_string_getvisualpos(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	int tabsize = luaL_checkinteger(L, 2);
 	int cx = luaL_checkinteger(L, 3);
 	int vx = 0, v = 0;
@@ -1577,7 +1670,7 @@ static int tek_string_getvisualpos(lua_State *L)
 
 static int tek_string_foreachchar(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	int tabsize = luaL_checkinteger(L, 2);
 	int vx = 0;
 	int pos0 = 1;
@@ -1626,7 +1719,7 @@ static int tek_string_getrawwidth_int(lua_State *L, int p0, int p1, int fixedfwi
 
 static int tek_string_gettextwidth(lua_State *L)
 {
-	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME);
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
 	int tabsize = luaL_checkinteger(L, 2);
 	int p0 = luaL_checkinteger(L, 3);
 	int p1 = luaL_checkinteger(L, 4);
@@ -1705,6 +1798,7 @@ static const luaL_Reg tek_string_methods[] =
 {
 	{ "__gc", tek_string_collect },
 	{ "__tostring", tek_string_sub },
+	
 	{ "set", tek_string_set },
 	{ "sub", tek_string_sub },
 	{ "get", tek_string_sub },
@@ -1716,6 +1810,7 @@ static const luaL_Reg tek_string_methods[] =
 	{ "getchar", tek_string_getchar },
 	{ "find", tek_string_find },
 	{ "setmetadata", tek_string_setmetadata },
+	
 	{ "compact", tek_string_compact },
 	{ "getVisualPos", tek_string_getvisualpos },
 	{ "forEachChar", tek_string_foreachchar },
@@ -1725,19 +1820,11 @@ static const luaL_Reg tek_string_methods[] =
 
 TMODENTRY int luaopen_tek_lib_string(lua_State *L)
 {
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, "tek.lib.string", tek_string_funcs);
-#else
-	luaL_newlib(L, tek_string_funcs);
-#endif
+	tek_lua_register(L, TEK_LIB_STRING_NAME, tek_string_funcs, 0);
 	lua_pushstring(L, TEK_LIB_STRING_VERSION);
 	lua_setfield(L, -2, "_VERSION");
-	luaL_newmetatable(L, TEK_LIB_STRING_NAME);
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, NULL, tek_string_methods);
-#else
-	luaL_setfuncs(L, tek_string_methods, 0);
-#endif
+	luaL_newmetatable(L, TEK_LIB_STRING_NAME "*");
+	tek_lua_register(L, NULL, tek_string_methods, 0);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	lua_pop(L, 1);

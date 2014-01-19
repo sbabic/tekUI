@@ -10,6 +10,37 @@
 
 /*****************************************************************************/
 
+LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v)
+{
+	TAPTR TExecBase = TGetExecBase(mod);
+	TIMSG *imsg;
+	
+	if (v == mod->rfb_FocusWindow || (v && v->borderless))
+		return;
+	
+	if (mod->rfb_FocusWindow)
+	{
+		if (rfb_getimsg(mod, mod->rfb_FocusWindow, &imsg, TITYPE_FOCUS))
+		{
+			imsg->timsg_Code = 0;
+			TPutMsg(mod->rfb_FocusWindow->rfbw_IMsgPort, TNULL, imsg);
+		}
+	}
+	
+	if (v)
+	{
+		if (rfb_getimsg(mod, v, &imsg, TITYPE_FOCUS))
+		{
+			imsg->timsg_Code = 1;
+			TPutMsg(v->rfbw_IMsgPort, TNULL, imsg);
+		}
+	}
+	
+	mod->rfb_FocusWindow = v;
+}
+
+/*****************************************************************************/
+
 LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
@@ -142,6 +173,9 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_InputMask = (TUINT) TGetTag(tags, TVisual_EventMask, 0);
 	v->userdata = TGetTag(tags, TVisual_UserData, TNULL);
 	
+	v->borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
+	
+	
 	v->rfbw_IMsgPort = req->tvr_Op.OpenWindow.IMsgPort;
 
 	TInitList(&v->penlist);
@@ -153,11 +187,12 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	/* add window on top of window stack: */
 	TLock(mod->rfb_Lock);
 	TAddHead(&mod->rfb_VisualList, &v->rfbw_Node);
+	rfb_focuswindow(mod, v);
 	TUnlock(mod->rfb_Lock);
-	
+
 	/* Reply instance: */
 	req->tvr_Op.OpenWindow.Window = v;		
-
+	
 	/* send refresh message: */
 	if (rfb_getimsg(mod, v, &imsg, TITYPE_REFRESH))
 	{
@@ -345,8 +380,15 @@ LOCAL void rfb_closevisual(RFBDISPLAY *mod, struct TVRequest *req)
 	RFBWINDOW *v = req->tvr_Op.CloseWindow.Window;
 	if (v == TNULL) return;
 
+	/*rfb_focuswindow(mod, v, TFALSE);*/
+	
 	rfb_damage(mod, v->rfbw_WinRect, v);
 
+	TLock(mod->rfb_Lock);
+	
+	if (mod->rfb_FocusWindow == v)
+		mod->rfb_FocusWindow = TNULL;
+	
 	TRemove(&v->rfbw_Node);
 
 	while ((pen = (struct RFBPen *) TRemHead(&v->penlist)))
@@ -370,6 +412,7 @@ LOCAL void rfb_closevisual(RFBDISPLAY *mod, struct TVRequest *req)
 		rfb_vnc_exit(mod);
 #endif
 	}
+	TUnlock(mod->rfb_Lock);
 	
 	TFree(v);
 }

@@ -170,15 +170,15 @@ tek.ui.class.scrollbar {
 	
 }
 
-_newinput { 
+_editinput { 
 	font: sans-serif/s;
 	valign: center;
 }
-_newinput:disabled { 
+_editinput:disabled { 
 	color: disabled-detail;
 }
 
-tek.ui.class.newinput { 
+tek.ui.class.input { 
 	border-style: solid;
 	padding: 0;
 	valign: center;

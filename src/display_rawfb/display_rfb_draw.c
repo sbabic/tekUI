@@ -1055,7 +1055,10 @@ LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 // 	rfb_region_andrect(pool, R, v->rfbw_ClipRect, dx, dy);
 	
 	if (R->rg_Rects.rl_NumNodes == 0)
+	{
+		rfb_region_destroy(pool, R);
 		return;
+	}
 	
 	TINT yinc = dy < 0 ? -1 : 1;
 	TINT y, i, h;

@@ -23,8 +23,8 @@
 --
 --	NOTES::
 --		This class adds redundancy, because it differs from the
---		[[#tek.ui.class.text : Text]] class only in that it specifies a few
---		attributes differently in its {{new()}} method. To avoid this overhead,
+--		[[#tek.ui.class.text : Text]] class only in that it initializes a few
+--		defaults differently in its {{new()}} method. To avoid this overhead,
 --		use the Text class directly, or create a ''Button factory'' like this:
 --				function newButton(text)
 --				  return ui.Text:new { Mode = "button", Class = "button",
@@ -44,7 +44,6 @@ Text:newClass(Button)
 -------------------------------------------------------------------------------
 --	Class implementation:
 -------------------------------------------------------------------------------
-
 
 function Button.new(class, self)
 	self = self or { }

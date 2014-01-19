@@ -55,7 +55,7 @@
 
 local ui = require "tek.ui"
 
-local Area = ui.require("area", 36)
+local Frame = ui.require("frame", 22)
 local Region = ui.loadLibrary("region", 9)
 
 local concat = table.concat
@@ -64,10 +64,10 @@ local max = math.max
 local intersect = Region.intersect
 local remove = table.remove
 
-module("tek.ui.class.floattext", tek.ui.class.area)
+module("tek.ui.class.floattext", tek.ui.class.frame)
 _VERSION = "FloatText 21.2"
 local FloatText = _M
-Area:newClass(FloatText)
+Frame:newClass(FloatText)
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -82,10 +82,21 @@ local FL_LAYOUT = ui.FL_LAYOUT
 
 function FloatText.addClassNotifications(proto)
 	addNotify(proto, "Text", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetText" })
-	return Area.addClassNotifications(proto)
+	return Frame.addClassNotifications(proto)
 end
 
 ClassNotifications = addClassNotifications { Notifications = { } }
+
+-------------------------------------------------------------------------------
+--	Class style properties:
+-------------------------------------------------------------------------------
+
+Properties = {
+	["border-top-width"] = 0,
+	["border-right-width"] = 0,
+	["border-bottom-width"] = 0,
+	["border-left-width"] = 0,
+}
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -107,7 +118,7 @@ function FloatText.init(self)
 	end
 	self.WidthsCache = false
 	self.WordSpacing = false
-	return Area.init(self)
+	return Frame.init(self)
 end
 
 -------------------------------------------------------------------------------
@@ -116,7 +127,7 @@ end
 
 function FloatText:setup(app, window)
 	self.Canvas = self:getParent()
-	Area.setup(self, app, window)
+	Frame.setup(self, app, window)
 	local f = self.Application.Display:openFont(self.Properties["font"])
 	self.FontHandle = f
 	self.FWidth, self.FHeight = f:getTextSize("W")
@@ -130,7 +141,7 @@ end
 function FloatText:cleanup()
 	self.Canvas = false
 	self.FontHandle = self.Application.Display:closeFont(self.FontHandle)
-	Area.cleanup(self)
+	Frame.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
@@ -219,7 +230,7 @@ function FloatText:askMinMax(m1, m2, m3, m4)
 	m2 = m2 + self.FHeight
 	m3 = ui.HUGE
 	m4 = ui.HUGE
-	return Area.askMinMax(self, m1, m2, m3, m4)
+	return Frame.askMinMax(self, m1, m2, m3, m4)
 end
 
 -------------------------------------------------------------------------------
@@ -291,10 +302,13 @@ end
 
 function FloatText:layout(r1, r2, r3, r4, markdamage)
 
+	local s1, s2, s3, s4 = self:getRect()
 	local m1, m2, m3, m4 = self:getMargin()
+	
+	local changed = Frame.layout(self, r1, r2, r3, r4, markdamage)
+	
 	local width = r3 - r1 + 1 - m1 - m3
 	local ch = self.CanvasHeight
-	local s1, s2, s3, s4 = self:getRect()
 	local x0 = r1 + m1
 	local y0 = r2 + m2
 	local x1 = r3 - m3
@@ -323,8 +337,10 @@ function FloatText:layout(r1, r2, r3, r4, markdamage)
 		end
 		self.Rect:setRect(x0, y0, x1, y1)
 		self:setFlags(FL_LAYOUT + FL_REDRAW)
-		return true
+		changed = true
 	end
+	
+	return changed
 
 end
 
@@ -338,7 +354,7 @@ function FloatText:setState(bg, fg)
 		self.FGPen = fg
 		self:setFlags(FL_REDRAW)
 	end
-	Area.setState(self, bg)
+	Frame.setState(self, bg)
 end
 
 -------------------------------------------------------------------------------

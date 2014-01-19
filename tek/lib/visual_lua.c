@@ -6,54 +6,13 @@
 */
 
 #include <string.h>
+#include <tek/lib/tek_lua.h>
 #include <tek/mod/exec.h>
 #include <tek/proto/hal.h>
 #include "visual_lua.h"
 
 #if !defined(DISPLAY_DRIVER)
 #define DISPLAY_DRIVER "x11"
-#endif
-
-/*****************************************************************************/
-
-#if LUA_VERSION_NUM < 502
-
-/*	we need upvalues: */
-
-static int my_libsize (const luaL_Reg *l) {
-  int size = 0;
-  for (; l->name; l++) size++;
-  return size;
-}
-
-static void my_luaI_openlib (lua_State *L, const char *libname,
-	const luaL_Reg *l, int nup) {
-  if (libname) {
-    int size = my_libsize(l);
-    /* check whether lib already exists */
-    luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 1);
-    lua_getfield(L, -1, libname);  /* get _LOADED[libname] */
-    if (!lua_istable(L, -1)) {  /* not found? */
-      lua_pop(L, 1);  /* remove previous result */
-      /* try global variable (and create one if it does not exist) */
-      if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL)
-        luaL_error(L, "name conflict for module " LUA_QS, libname);
-      lua_pushvalue(L, -1);
-      lua_setfield(L, -3, libname);  /* _LOADED[libname] = new table */
-    }
-    lua_remove(L, -2);  /* remove _LOADED table */
-    lua_insert(L, -(nup+1));  /* move library table to below upvalues */
-  }
-  for (; l->name; l++) {
-    int i;
-    for (i=0; i<nup; i++)  /* copy upvalues to the top */
-      lua_pushvalue(L, -nup);
-    lua_pushcclosure(L, l->func, nup);
-    lua_setfield(L, -(nup+2), l->name);
-  }
-  lua_pop(L, nup);  /* remove upvalues */
-}
-
 #endif
 
 /*****************************************************************************/
@@ -539,11 +498,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	TExecBase = *(TAPTR *) lua_touserdata(L, -1);
 
 	/* register functions: */
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, "tek.lib.visual", tek_lib_visual_funcs);
-#else
-	luaL_newlib(L, tek_lib_visual_funcs);
-#endif
+	tek_lua_register(L, "tek.lib.visual", tek_lib_visual_funcs, 0);
 	/* s: displaytab, exectab, execbase, vistab */
 
 	lua_pushvalue(L, -1);
@@ -584,11 +539,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
 	luaL_newmetatable(L, TEK_LIB_VISUALGRADIENT_CLASSNAME);
 	
-#if LUA_VERSION_NUM < 502
-	my_luaI_openlib(L, NULL, tek_lib_visual_methods, 4);
-#else
-	luaL_setfuncs(L, tek_lib_visual_methods, 4);
-#endif
+	tek_lua_register(L, NULL, tek_lib_visual_methods, 4);
 	
 	/* s: displaytab, exectab, execbase, vistab, visbase, vismeta */
 	lua_setmetatable(L, -2);
@@ -610,11 +561,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: meta, meta */
 	lua_setfield(L, -2, "__index");
 	/* s: meta */
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, NULL, tek_lib_visual_pixmapmethods);
-#else
-	luaL_setfuncs(L, tek_lib_visual_pixmapmethods, 0);
-#endif
+	tek_lua_register(L, NULL, tek_lib_visual_pixmapmethods, 0);
 	lua_pop(L, 1);
 	
 	/* prepare font metatable and store reference in metatable: */
@@ -624,11 +571,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	/* s: fontmeta, fontmeta */
 	lua_setfield(L, -2, "__index");
 	/* s: fontmeta */
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, NULL, tek_lib_visual_fontmethods);
-#else
-	luaL_setfuncs(L, tek_lib_visual_fontmethods, 0);
-#endif
+	tek_lua_register(L, NULL, tek_lib_visual_fontmethods, 0);
 	lua_pop(L, 1);
 
 	/* Add visual module to TEKlib's internal module list: */

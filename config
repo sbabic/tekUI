@@ -123,7 +123,7 @@ BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 # Build tools:
 #------------------------------------------------------------------------------
 
-AR = $(CCPREFIX)ar r
+AR = $(CCPREFIX)ar rcu
 RM = rm
 RMDIR = rm -r
 MKDIR = mkdir -p

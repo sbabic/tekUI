@@ -29,10 +29,8 @@ local DefaultLayout = _M
 
 ******************************************************************************/
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
 #include <string.h>
+#include <tek/lib/tek_lua.h>
 #include <tek/lib/tekui.h>
 
 /* Name of superclass: */
@@ -42,7 +40,7 @@ local DefaultLayout = _M
 #define CLASS_NAME "tek.ui.layout.default"
 
 /* Version: */
-#define TEK_UI_CLASS_LAYOUT_DEFAULT_VERSION "Default Layout 7.4"
+#define CLASS_VERSION "Default Layout 7.4"
 
 /*****************************************************************************/
 
@@ -1453,35 +1451,31 @@ static const luaL_Reg tek_ui_layout_default_funcs[] =
 	{ NULL, NULL }
 };
 
+/*****************************************************************************/
+
 TMODENTRY int luaopen_tek_ui_layout_default(lua_State *L)
 {
 	lua_getglobal(L, "require");
-	/* s: <require> */
 	lua_pushliteral(L, SUPERCLASS_NAME);
-	/* s: <require>, "superclass" */
 	lua_call(L, 1, 1);
-	/* s: superclass */
 	lua_getfield(L, -1, "newClass");
-	/* s: superclass, <newClass> */
-	lua_pushvalue(L, -2);
-	/* s: superclass, <newClass>, superclass */
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, CLASS_NAME, tek_ui_layout_default_funcs);
-#else
-	luaL_newlib(L, tek_ui_layout_default_funcs);
-#endif
-	/* s: superclass, <newClass>, superclass, class */
-	lua_call(L, 2, 1); /* class = superclass.newClass(superclass, class) */
-	/* s: superclass, class */
-	luaL_newmetatable(L, CLASS_NAME "*");
-	/* s: superclass, class, meta */
-	lua_pushvalue(L, -3);
-	/* s: superclass, class, meta, superclass */
-	lua_setfield(L, -2, "__index");
-	/* s: superclass, class, meta */
-	lua_setmetatable(L, -2);
-	/* s: superclass, class */
-	lua_remove(L, -2);
+	lua_insert(L, -2);
+	/* s: newClass(), superclass */
+	
+	/* pass superclass as upvalue: */
+	lua_pushvalue(L, -1);
+	/* s: newClass(), superclass, superclass */
+	tek_lua_register(L, CLASS_NAME, tek_ui_layout_default_funcs, 1);
+	/* s: newClass(), superclass, class */
+	
+	/* insert name and version: */
+	lua_pushliteral(L, CLASS_NAME);
+	lua_setfield(L, -2, "_NAME");
+	lua_pushliteral(L, CLASS_VERSION);
+	lua_setfield(L, -2, "_VERSION");
+	
+	/* inherit: class = superclass.newClass(superclass, class) */
+	lua_call(L, 2, 1); 
 	/* s: class */
 	return 1;
 }

@@ -288,6 +288,8 @@ typedef struct
 	
 	struct Region *rfb_DirtyRegion;
 	
+	struct rfb_window *rfb_FocusWindow;
+	
 #if defined(ENABLE_VNCSERVER)
 	rfbScreenInfoPtr rfb_RFBScreen;
 	TAPTR rfb_VNCTask;
@@ -299,7 +301,7 @@ typedef struct
 
 } RFBDISPLAY;
 
-typedef struct
+typedef struct rfb_window
 {
 	struct TNode rfbw_Node;
 	/* Window extents: */
@@ -323,6 +325,8 @@ typedef struct
 	/* Modulo, pixel per line */
 	TINT rfbw_Modulo;
 	TINT rfbw_PixelPerLine;
+	/* window is "borderless", i.e. a popup window: */
+	TBOOL borderless;
 
 } RFBWINDOW;
 
@@ -413,6 +417,7 @@ LOCAL TAPTR rfb_hostqueryfonts(RFBDISPLAY *mod, TTAGITEM *tags);
 LOCAL void rfb_flush_clients(RFBDISPLAY *mod, TBOOL also_external);
 
 LOCAL RFBWINDOW *rfb_findcoord(RFBDISPLAY *mod, TINT x, TINT y);
+LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v);
 
 #if defined(ENABLE_VNCSERVER)
 

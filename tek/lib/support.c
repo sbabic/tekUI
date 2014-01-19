@@ -3,12 +3,10 @@
 **	tek.lib.support - C support library
 */
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-#include <stdint.h>
+#include <tek/lib/tek_lua.h>
+#include <tek/lib/tekui.h>
 
-#define TEK_LIB_SUPPORT_NAME    "tek.lib.support*"
+#define TEK_LIB_SUPPORT_NAME    "tek.lib.support"
 #define TEK_LIB_SUPPORT_VERSION "Support Library 4.0"
 
 typedef uint32_t flags_t;
@@ -28,14 +26,14 @@ static int tek_lib_support_newflags(lua_State *L)
 	flags_t inif = luaL_optinteger(L, 1, 0);
 	flags_t *f = lua_newuserdata(L, sizeof(flags_t));
 	*f = inif;
-	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_SUPPORT_NAME);
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_SUPPORT_NAME "*");
 	lua_setmetatable(L, -2);
 	return 1;
 }
 
 static int tek_lib_support_flags_check(lua_State *L)
 {
-	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME);
+	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME "*");
 	flags_t nf = luaL_checkinteger(L, 2);
 	lua_pushboolean(L, (*f & nf) == nf);
 	return 1;
@@ -43,7 +41,7 @@ static int tek_lib_support_flags_check(lua_State *L)
 
 static int tek_lib_support_flags_clear(lua_State *L)
 {
-	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME);
+	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME "*");
 	*f &= ~luaL_checkinteger(L, 2);
 	lua_pushinteger(L, *f);
 	return 1;
@@ -51,7 +49,7 @@ static int tek_lib_support_flags_clear(lua_State *L)
 
 static int tek_lib_support_flags_set(lua_State *L)
 {
-	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME);
+	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME "*");
 	*f |= luaL_checkinteger(L, 2);
 	lua_pushinteger(L, *f);
 	return 1;
@@ -59,7 +57,7 @@ static int tek_lib_support_flags_set(lua_State *L)
 
 static int tek_lib_support_flags_get(lua_State *L)
 {
-	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME);
+	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME "*");
 	flags_t mf = luaL_optinteger(L, 2, 0x7fffffff);
 	lua_pushinteger(L, *f & mf);
 	return 1;
@@ -67,7 +65,7 @@ static int tek_lib_support_flags_get(lua_State *L)
 
 static int tek_lib_support_flags_checkany(lua_State *L)
 {
-	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME);
+	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME "*");
 	flags_t mf = luaL_checkinteger(L, 2);
 	lua_pushboolean(L, *f & mf);
 	return 1;
@@ -75,7 +73,7 @@ static int tek_lib_support_flags_checkany(lua_State *L)
 
 static int tek_lib_support_flags_checkclear(lua_State *L)
 {
-	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME);
+	flags_t *f = luaL_checkudata(L, 1, TEK_LIB_SUPPORT_NAME "*");
 	flags_t chkf = luaL_checkinteger(L, 2);
 	flags_t clrf = luaL_optinteger(L, 3, chkf);
 	lua_pushboolean(L, (*f & chkf) == chkf);
@@ -173,6 +171,7 @@ static int tek_lib_support_getborder(lua_State *L)
 
 /*****************************************************************************/
 
+
 static const luaL_Reg tek_lib_support_funcs[] =
 {
 	{ "checkAnyFlags", tek_lib_support_checkanyflags },
@@ -183,6 +182,7 @@ static const luaL_Reg tek_lib_support_funcs[] =
 	{ "getBorder", tek_lib_support_getborder },
 	{ NULL, NULL }
 };
+
 
 static const luaL_Reg tek_lib_support_flags_methods[] =
 {
@@ -195,21 +195,14 @@ static const luaL_Reg tek_lib_support_flags_methods[] =
 	{ NULL, NULL }
 };
 
+
 int luaopen_tek_lib_support(lua_State *L)
 {
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, "tek.lib.support", tek_lib_support_funcs);
-#else
-	luaL_newlib(L, tek_lib_support_funcs);
-#endif
+	tek_lua_register(L, TEK_LIB_SUPPORT_NAME, tek_lib_support_funcs, 0);
 	lua_pushstring(L, TEK_LIB_SUPPORT_VERSION);
 	lua_setfield(L, -2, "_VERSION");
-	luaL_newmetatable(L, TEK_LIB_SUPPORT_NAME);
-#if LUA_VERSION_NUM < 502
-	luaL_register(L, NULL, tek_lib_support_flags_methods);
-#else
-	luaL_setfuncs(L, tek_lib_support_flags_methods, 0);
-#endif
+	luaL_newmetatable(L, TEK_LIB_SUPPORT_NAME "*");
+	tek_lua_register(L, NULL, tek_lib_support_flags_methods, 0);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	lua_pop(L, 1);

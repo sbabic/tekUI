@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="14-Jan-2014" />
+		<meta name="created" content="19-Jan-2014" />
 	</head>
 	<body>
 		<h1>
@@ -41,14 +41,14 @@
 															<blockquote>
 																<ul>
 																	<li>
-																		<a href="#tek.ui.class.floattext">FloatText</a> 
-																	</li>
-																	<li>
 																		<a href="#tek.ui.class.frame">Frame</a> 
 																		<blockquote>
 																			<ul>
 																				<li>
 																					<a href="#tek.ui.class.canvas">Canvas</a> 
+																				</li>
+																				<li>
+																					<a href="#tek.ui.class.floattext">FloatText</a> 
 																				</li>
 																				<li>
 																					<a href="#tek.ui.class.spacer">Spacer</a> 
@@ -220,6 +220,9 @@
 					</li>
 					<li>
 						<a href="#tek.lib.region">Region</a> 
+					</li>
+					<li>
+						<a href="#tek.lib.string">String</a> 
 					</li>
 					<li>
 						<a href="#tek.ui">ui</a> 
@@ -1393,6 +1396,200 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
+		<div class="node"><h2><a name="tek.lib.string" id="tek.lib.string">String (v1.0)</a></h2>
+			<div class="definition"><dfn>OVERVIEW</dfn>
+				<blockquote>
+					<p>
+						String management supporting two 31 bit values for each codepoint
+						(intended for character strings and their metadata). Strings are
+						stored internally as UTF-8 encoded snippets which are automatically
+						packed and unpacked on demand. Forward iteration, insertion and
+						deletion is considered fast, even for strings of arbitrary length
+						and at arbitrary positions.
+					</p>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>FUNCTIONS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#String:encodeutf8"><code>String.encodeutf8()</code></a> - Encode codepoints to UTF-8
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:erase"><code>String:erase()</code></a> - Erases a range of a string
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:find"><code>String:find()</code></a> - Finds the UTF-8 string in a string object
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:foreachutf8"><code>String.foreachutf8()</code></a> - Iterate codepoints of an UTF-8 encoded string
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:free"><code>String:free()</code></a> - Free string object
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:get"><code>String:get()</code></a> - Returns string
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:getchar"><code>String:getchar()</code></a> - Returns character UTF-8 encoded
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:getval"><code>String:getval()</code></a> - Returns character and metadata
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:insert"><code>String:insert()</code></a> - Appends or inserts string
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:len"><code>String:len()</code></a> - Returns string length
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:new"><code>String.new()</code></a> - Creates a new string object
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:overwrite"><code>String:overwrite()</code></a> - Overwrites range of a string
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:set"><code>String:set()</code></a> - Initializes string object
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:setmetadata"><code>String:setmetadata()</code></a> - Set metadata in a string object
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:sub"><code>String:sub()</code></a> - Returns substring
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="String:encodeutf8" id="String:encodeutf8"><code>utf8string = String.encodeutf8(table or number[, ...])</code></a></h3>
+			<p>
+				If the first
+				argument is a table, encodes the numerically indexed codepoints in that
+				table to an UTF-8 string; an optional second argument specifies the
+				first position and an optional third argument the last position in the
+				table.
+				If the first argument is a number, encodes this and the following
+				arguments as codepoints to an UTF-8 string.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:erase" id="String:erase"><code>String:erase([p0[, p1]])</code></a></h3>
+			<p>
+				Erases a range of characters from a string
+				object. An optional range starts at position <code>p0</code> and extends to the
+				position <code>p1</code>, which may be negative to indicate the number of
+				characters from the end of the string.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:find" id="String:find"><code>p0, p1 = String:find(utf8[, pos])</code></a></h3>
+			<p>
+				Finds the specified UTF-8 encoded
+				string in the string object, and if found, returns the first and last
+				position of its next occurrence from the starting position
+				(default: <code>1</code>).
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:foreachutf8" id="String:foreachutf8"><code>length, maxval = String.foreachutf8(utf8string[, arg])</code></a></h3>
+			<p>
+				Returns the number of codepoints in <code>utf8string</code> and the highest
+				codepoint number that occured in the string.
+				<code>arg</code> can be a table, in which case each codepoint will be inserted
+				into it as a number value, or a function, which will be called for each
+				codepoint as its first, and the current position as its second argument.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:free" id="String:free"><code>String:free()</code></a></h3>
+			<p>
+				Free resources held by a string object. The only need for
+				this function is to free the object as quickly as possible, preempting
+				garbage collection.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:get" id="String:get"><code>utf8str = String:get([p0[, p1]])</code></a></h3>
+			<p>
+				An alias for <a href="#String:sub"><code>String:sub()</code></a> 
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:getchar" id="String:getchar"><code>utf8 = String:getchar(pos)</code></a></h3>
+			<p>
+				Returns an UTF-8 encoded character at the
+				given position in a string object.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:getval" id="String:getval"><code>char, metadata = String:getval(pos)</code></a></h3>
+			<p>
+				Returns a character's and its
+				metadata's numeric codepoints at the given position in a string object.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:insert" id="String:insert"><code>String:insert(string2[, pos])</code></a></h3>
+			<p>
+				Inserts <code>string2</code> into the string
+				object, optionally at the given starting position. The default position
+				is at the end of the string. <code>string2</code> may be an UTF-8 encoded string or
+				another string object. Metadata from another string object will be
+				inserted accordingly, otherwise it is set to <code>0</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:len" id="String:len"><code>len = String:len()</code></a></h3>
+			<p>
+				Returns the number of characters in the string object.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:new" id="String:new"><code>string = String.new()</code></a></h3>
+			<p>
+				Creates a new, initially empty string object.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:overwrite" id="String:overwrite"><code>String:overwrite(utf8str[, pos])</code></a></h3>
+			<p>
+				Overwrites a range of characters in a
+				string object from an UTF-8 encoded string, starting at the given position
+				(default: <code>1</code>). Metadata in the string object at the affected positions
+				will be set to <code>0</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:set" id="String:set"><code>string = String:set(string2[, p0[, p1]])</code></a></h3>
+			<p>
+				Initializes the string
+				object with <code>string2</code>, which can be either an UTF-8
+				encoded string or another string object. An optional range starts at
+				position <code>p0</code> and extends to the position <code>p1</code>, which may be negative
+				to indicate the number of characters from the end of the string.
+				Metadata at the affected positions is set to <code>0</code>. Returns itself.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:setmetadata" id="String:setmetadata"><code>String:setmetadata(value[, p0[, p1]])</code></a></h3>
+			<p>
+				Sets metadata in a string object
+				to the specified value. An optional range starts at position <code>p0</code> and
+				extends to the position <code>p1</code>, which may be negative to indicate the
+				number of characters from the end of the string.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:sub" id="String:sub"><code>utf8str = String:sub([p0[, p1]])</code></a></h3>
+			<p>
+				Returns an UTF-8 encoded string
+				representing the string object or a range of it. An optional range starts
+				at position <code>p0</code> and extends to the position <code>p1</code>, which may be
+				negative to indicate the number of characters from the end of the string.
+			</p>
+			<hr class="page-break" />
+		</div>
 		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v41.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
@@ -2245,7 +2442,7 @@ message = function(object, message)
 						<a href="#tek.class">Class</a> /
 						<a href="#tek.class.object">Object</a> /
 						<a href="#tek.ui.class.element">Element</a> /
-						Area / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">2 subclasses</option><option value="#tek.ui.class.floattext">FloatText</option><option value="#tek.ui.class.frame">Frame</option></select>
+						Area / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">1 subclasses</option><option value="#tek.ui.class.frame">Frame</option></select>
 					</p>
 					<p>
 						This is the base class of all visible user interface elements.
@@ -3158,8 +3355,8 @@ end
 				<blockquote>
 					<p>
 						This class adds redundancy, because it differs from the
-						<a href="#tek.ui.class.text">Text</a> class only in that it specifies a few
-						attributes differently in its <code>new()</code> method. To avoid this overhead,
+						<a href="#tek.ui.class.text">Text</a> class only in that it initializes a few
+						defaults differently in its <code>new()</code> method. To avoid this overhead,
 						use the Text class directly, or create a <em>Button factory</em> like this:
 					</p>
 <pre>
@@ -4509,7 +4706,7 @@ end
 						<a href="#tek.class.object">Object</a> /
 						<a href="#tek.ui.class.element">Element</a> /
 						<a href="#tek.ui.class.area">Area</a> /
-						Frame / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">3 subclasses</option><option value="#tek.ui.class.canvas">Canvas</option><option value="#tek.ui.class.spacer">Spacer</option><option value="#tek.ui.class.widget">Widget</option></select>
+						Frame / <select onchange="if (this.value != '') window.location.href = this.value; this.selectedIndex = 0;"><option value="">4 subclasses</option><option value="#tek.ui.class.canvas">Canvas</option><option value="#tek.ui.class.floattext">FloatText</option><option value="#tek.ui.class.spacer">Spacer</option><option value="#tek.ui.class.widget">Widget</option></select>
 					</p>
 					<p>
 						This class implements an element's borders. The <em>default</em> border
@@ -7022,7 +7219,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v17.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v17.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7992,7 +8189,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Tue Jan 14 16:50:20 2014
+					Document generated on Sun Jan 19 16:10:10 2014
 				</p>
 			</div>
 		</div>

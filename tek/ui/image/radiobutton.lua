@@ -4,7 +4,7 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	Version 2.2
+--	Version 3.0
 --
 -------------------------------------------------------------------------------
 
@@ -34,22 +34,26 @@ local points2 = { 3,4,5,6,7,8 }
 local points3 = { 9,10,12,11 }
 local points4 = { 2,4,8,6 }
 
-local primitives1 =
+local primitives =
 {
-	{ 0x1000, 6, points1, "border-shine" },
-	{ 0x1000, 6, points2, "border-shadow" },
-	{ 0x1000, 4, points4, "background" },
-}
-
-local primitives2 =
-{
-	{ 0x1000, 6, points1, "border-shadow" },
-	{ 0x1000, 6, points2, "border-shine" },
-	{ 0x1000, 4, points4, "background" },
-	{ 0x1000, 4, points3, "detail" },
+	[0] = { },
+	{
+		{ 0x1000, 6, points1, "border-shine" },
+		{ 0x1000, 6, points2, "border-shadow" },
+		{ 0x1000, 4, points4, "background" },
+	},
+	{
+		{ 0x1000, 6, points1, "border-shadow" },
+		{ 0x1000, 6, points2, "border-shine" },
+		{ 0x1000, 4, points4, "background" },
+		{ 0x1000, 4, points3, "detail" },
+	},
+	{
+		{ 0x1000, 4, points3, "detail" },
+	}
 }
 
 function new(class, num)
 	return Image.new(class, { coords, false, false, true,
-		num == 2 and primitives2 or primitives1 })
+		primitives[num] or primitives[1] } )
 end

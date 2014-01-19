@@ -320,29 +320,54 @@ LOCAL RFBWINDOW *rfb_findcoord(RFBDISPLAY *mod, TINT x, TINT y)
 	return TNULL;
 }
 
-static TBOOL rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg)
-{
+static TBOOL rfb_passevent(RFBDISPLAY *mod, RFBWINDOW *v, TIMSG *omsg)
+{		
 	TAPTR TExecBase = TGetExecBase(mod);
-	TINT x = omsg->timsg_MouseX;
-	TINT y = omsg->timsg_MouseY;
 	TUINT type = omsg->timsg_Type;
-	TBOOL sent = TFALSE;
-	TLock(mod->rfb_InstanceLock);
-	RFBWINDOW *v = rfb_findcoord(mod, x, y);
 	if (v && (v->rfbw_InputMask & type))
 	{
 		TIMSG *imsg;
 		if (rfb_getimsg(mod, v, &imsg, omsg->timsg_Type))
 		{
+			TINT x = omsg->timsg_MouseX;
+			TINT y = omsg->timsg_MouseY;
 			imsg->timsg_Code = omsg->timsg_Code;
 			imsg->timsg_Qualifier = omsg->timsg_Qualifier;
 			imsg->timsg_MouseX = x - v->rfbw_WinRect[0];
 			imsg->timsg_MouseY = y - v->rfbw_WinRect[1];
 			memcpy(imsg->timsg_KeyCode, omsg->timsg_KeyCode, 8);
 			TPutMsg(v->rfbw_IMsgPort, TNULL, imsg);
-			sent = TTRUE;
+			return TTRUE;
 		}
 	}
+	return TFALSE;
+}
+
+static RFBWINDOW *rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg, TBOOL focus)
+{
+	TAPTR TExecBase = TGetExecBase(mod);
+	TINT x = omsg->timsg_MouseX;
+	TINT y = omsg->timsg_MouseY;
+	TLock(mod->rfb_InstanceLock);
+	RFBWINDOW *v = rfb_findcoord(mod, x, y);
+	if (v)
+	{
+		if (focus)
+			rfb_focuswindow(mod, v);
+		rfb_passevent(mod, v, omsg);
+	}
+	TUnlock(mod->rfb_InstanceLock);
+	return v;
+}
+
+static TBOOL rfb_passevent_to_focus(RFBDISPLAY *mod, TIMSG *omsg)
+{
+	TAPTR TExecBase = TGetExecBase(mod);
+	TBOOL sent = TFALSE;
+	TLock(mod->rfb_InstanceLock);
+	RFBWINDOW *v = mod->rfb_FocusWindow;
+	if (v)
+		sent = rfb_passevent(mod, v, omsg);
 	TUnlock(mod->rfb_InstanceLock);
 	return sent;
 }
@@ -392,17 +417,35 @@ static void rfb_processevent(RFBDISPLAY *mod)
 				break;
 			}
 			case TITYPE_FOCUS:
-				TDBPRINTF(TDB_WARN,("unhandled event: FOCUS\n"));
+				TDBPRINTF(TDB_INFO,("unhandled event: FOCUS\n"));
 				break;
 			case TITYPE_MOUSEOVER:
-				TDBPRINTF(TDB_WARN,("unhandled event: MOUSEOVER\n"));
+				TDBPRINTF(TDB_INFO,("unhandled event: MOUSEOVER\n"));
 				break;
-			case TITYPE_MOUSEBUTTON:
-			case TITYPE_MOUSEMOVE:
+				
 			case TITYPE_KEYUP:
 			case TITYPE_KEYDOWN:
-				rfb_passevent_by_mousexy(mod, msg);
+				/* pass keyboard events to focused window, else to the
+				 * hovered window (also setting the focus): */
+				if (!rfb_passevent_to_focus(mod, msg))
+					rfb_passevent_by_mousexy(mod, msg, TTRUE);
 				break;
+
+			case TITYPE_MOUSEMOVE:
+				/* pass mouse movements to focused and hovered window: */
+				if (rfb_passevent_by_mousexy(mod, msg, TFALSE) != 
+					mod->rfb_FocusWindow)
+					rfb_passevent_to_focus(mod, msg);
+				break;
+				
+			case TITYPE_MOUSEBUTTON:
+			{
+				/* set focus on mousebutton down */
+				TBOOL focus = msg->timsg_Code & (TMBCODE_LEFTDOWN | 
+					TMBCODE_RIGHTDOWN | TMBCODE_MIDDLEDOWN);
+				rfb_passevent_by_mousexy(mod, msg, focus);
+				break;
+			}
 		}
 		TReplyMsg(msg);
 	}
