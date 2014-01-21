@@ -860,6 +860,9 @@ tek_lib_visual_frectpixmap(lua_State *L, TEKVisual *vis, TEKPixmap *pm,
 }
 
 /*****************************************************************************/
+/*
+**	Gradient support
+*/
 
 static float mulVec(vec a, vec b)
 {
@@ -908,8 +911,6 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	TINT x0, TINT y0, TINT w, TINT h, TINT ox, TINT oy)
 {
 	int y, x;
-	
-	
 	int Ar = gr->A.r;
 	int Ag = gr->A.g;
 	int Ab = gr->A.b;
@@ -920,6 +921,17 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	int Dg = Bg - Ag;
 	int Db = Bb - Ab;
 	
+#if 0
+	TUINT rgb0 = (Ar << 16) | (Ag << 8) | Ab;
+	TUINT rgb1 = (Br << 16) | (Bg << 8) | Bb;
+	TUINT rgb2 = (Dr << 16) | (Dg << 8) | Db;
+	if (rgb0 == rgb1 && rgb0 == rgb2)
+	{
+		TVisualFRectRGB(vis->vis_Visual, x0, y0, w, h, rgb0);
+		return;
+	}
+#endif
+
 	vec r0 = gr->A.vec;
 	vec u = subVec(gr->B.vec, r0);
 	
@@ -941,18 +953,7 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	float db = (cb1 - cb0) / (w - 1);
 	float dx = (cx1 - cx0) / (w - 1);
 
-#if	0
-	TUINT rgb0 = ((TUINT) cr0 << 16) | ((TUINT) cg0 << 8) | (TUINT) cb0;
-	TUINT rgb1 = ((TUINT) cr1 << 16) | ((TUINT) cg1 << 8) | (TUINT) cb1;
-	TUINT rgb2 = ((TUINT) cr2 << 16) | ((TUINT) cg2 << 8) | (TUINT) cb2;
-	if (rgb0 == rgb1 && rgb0 == rgb2)
-	{
-		TVisualFRectRGB(vis->vis_Visual, x0, y0, w, h, rgb0);
-		return;
-	}
-#endif
-	
-	TUINT *buf = malloc(w * h * sizeof(TUINT));
+	TUINT *buf = TExecAlloc(vis->vis_ExecBase, TNULL, w * h * sizeof(TUINT));
 	if (!buf)
 		return;
 	
@@ -1054,10 +1055,8 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	}
 
 	buf -= w * h;
-	
 	TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, w, h, w, TNULL);
-	
-	free(buf);
+	TExecFree(vis->vis_ExecBase, buf);
 }
 
 /*****************************************************************************/

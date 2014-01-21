@@ -19,6 +19,10 @@
  registration
  * Raw framebuffer: Improved window focus management, fixed memory leak
  * String class: documentation added
+ * Application:up() added
+ * Added examples demonstrating communication with child processes and
+ datagram socket server; these facilities are no longer part of the display
+ drivers, but now available throughout tek.lib.visual.
 
 === 0.8l: ===
 

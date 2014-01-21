@@ -58,7 +58,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 19.4"
+_VERSION = "PageGroup 19.5"
 local PageGroup = _M
 Group:newClass(PageGroup)
 
@@ -191,8 +191,7 @@ end
 -------------------------------------------------------------------------------
 
 function PageContainerGroup:getPrev(mode)
-	local c = self:getParent():getChildren(mode)
-	return c and c[1]
+	return self:getParent():getPrev(mode)
 end
 
 -------------------------------------------------------------------------------

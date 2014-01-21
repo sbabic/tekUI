@@ -596,7 +596,7 @@ function Application:run()
 	local wmsg = { } -- window message
 	local msgdispatch = self.MsgDispatch
 
-	self:addCoroutine(self.up, self)
+	self:up()
 
 	-- the main loop:
 
@@ -1056,7 +1056,9 @@ function Application:setLastKey(key)
 end
 
 -------------------------------------------------------------------------------
---	up:
+--	up(): This function is called when the application is fully initialized
+--	and about to enter its main loop. The user can overwrite it e.g. to
+--	add a coroutine that shows a splash screen.
 -------------------------------------------------------------------------------
 
 function Application:up()

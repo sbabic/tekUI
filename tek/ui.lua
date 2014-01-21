@@ -123,7 +123,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 41.0" -- module version
+_VERSION = "tekUI 42.0" -- module version
 VERSION = 100 -- package version
 
 -------------------------------------------------------------------------------
@@ -159,6 +159,8 @@ FullScreen = FullScreen or false
 NoCursor = getenv("NOCURSOR") == "true"
 -- Standard shortcut marker:
 ShortcutMark = "_"
+-- Input message fileno (-1 = default/stdin):
+MsgFileNo = -1
 
 -------------------------------------------------------------------------------
 --	checkAnyFlags: Check presence of flags

@@ -280,7 +280,7 @@ typedef struct
 	XF86VidModeModeInfo x11_VidMode;
 	#endif
 
-	#if defined(ENABLE_DGRAM)
+	#if defined(ENABLE_X11_DGRAM)
 	int x11_UserFD;
 	#endif
 

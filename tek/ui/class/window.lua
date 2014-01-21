@@ -109,7 +109,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 40.0"
+_VERSION = "Window 40.1"
 local Window = _M
 Group:newClass(Window)
 
@@ -294,6 +294,7 @@ function Window:show()
 			Borderless = self.Borderless,
 			EventMask = self.EventMask,
 			BlankCursor = ui.NoCursor,
+			MsgFileNo = ui.MsgFileNo, -- used when opening the 1st window
 			Pens = setmetatable(self.PenTable, {
 				__index = function(tab, col)
 					local key = col

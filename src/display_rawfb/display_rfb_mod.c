@@ -6,22 +6,14 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
-#include <assert.h>
-#include <unistd.h>
-#include <fcntl.h>
-
 #include "display_rfb_mod.h"
 
 #if defined(RFB_RENDER_DEVICE)
-
 #define STRHELP(x) #x
 #define STR(x) STRHELP(x)
 #define SUBDEVICE_NAME "display_" STR(RFB_RENDER_DEVICE)
-
 #else
-
 #define SUBDEVICE_NAME TNULL
-
 #endif
 
 static void rfb_processevent(RFBDISPLAY *mod);

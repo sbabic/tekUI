@@ -141,10 +141,9 @@ end
 -------------------------------------------------------------------------------
 
 print "This example can additionally visualize sets of 16bit numbers coming"
-print "in via stdin. The X11 driver supports the conversion of textual lines"
-print "from stdin to input messages of the required type, MSG_USER. To see"
-print "the extra curve, run this example as follows:"
-print "# bin/gendata.lua | bin/meter.lua"
+print "in via stdin, by dispatching lines to messages of the type MSG_USER."
+print "To see the extra curve, run this example as follows:"
+print "$ bin/gendata.lua | bin/meter.lua"
 
 ui.Application:new
 {

@@ -5,7 +5,7 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <X11/cursorfont.h>
-#if defined(ENABLE_DGRAM)
+#if defined(ENABLE_X11_DGRAM)
 #include <sys/socket.h>
 #include <net/if.h>
 #include <netinet/in.h>
@@ -18,7 +18,7 @@ static void x11_processevent(X11DISPLAY *mod);
 static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 	TAPTR msgstate, XEvent *ev);
 
-#if defined(ENABLE_STDIN)
+#if defined(ENABLE_X11_STDIN)
 /*****************************************************************************/
 /*
 **	File reader
@@ -144,7 +144,7 @@ static void x11_reader_addbytes(struct FileReader *r, int nbytes)
 
 #endif
 
-#if defined(ENABLE_STDIN) || defined(ENABLE_DGRAM)
+#if defined(ENABLE_X11_STDIN) || defined(ENABLE_X11_DGRAM)
 static TBOOL 
 getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
 {
@@ -187,7 +187,7 @@ LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags)
 	for (;;)
 	{
 		TTAGITEM tags[2];
-		#if defined(ENABLE_DGRAM)
+		#if defined(ENABLE_X11_DGRAM)
 		struct sockaddr_in addr;
 		int reuse = 1;
 		
@@ -241,7 +241,7 @@ LOCAL void x11_exit(X11DISPLAY *mod)
 	}
 	TDestroy(mod->x11_IReplyPort);
 	
-	#if defined(ENABLE_DGRAM)
+	#if defined(ENABLE_X11_DGRAM)
 	if (mod->x11_UserFD != -1)
 		close(mod->x11_UserFD);
 	mod->x11_UserFD = -1;
@@ -624,12 +624,12 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	TTIME nextt;
 	TTIME waitt, nowt;
 
-	#if defined(ENABLE_STDIN)
+	#if defined(ENABLE_X11_STDIN)
 	int fd_in = STDIN_FILENO;
 	struct FileReader fr;
 	x11_reader_init(&fr, fd_in, 2048);
 	#endif
-	#if defined(ENABLE_DGRAM)
+	#if defined(ENABLE_X11_DGRAM)
 	int fd_in = inst->x11_UserFD;
 	#endif
 
@@ -680,7 +680,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 		XFlush(inst->x11_Display);
 
 		FD_ZERO(&rset);
-		#if defined(ENABLE_STDIN) || defined(ENABLE_DGRAM)
+		#if defined(ENABLE_X11_STDIN) || defined(ENABLE_X11_DGRAM)
 		if (fd_in >= 0)
 			FD_SET(fd_in, &rset);
 		#endif
@@ -718,7 +718,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 					TDBPRINTF(TDB_ERROR,("could not read wakeup signal\n"));
 			}
 
-			#if defined(ENABLE_STDIN)
+			#if defined(ENABLE_X11_STDIN)
 			/* stdin line reader: */
 			if (fd_in >= 0 && FD_ISSET(fd_in, &rset))
 			{
@@ -746,7 +746,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 				else
 					fd_in = -1; /* stop processing */
 			}
-			#elif defined(ENABLE_DGRAM)
+			#elif defined(ENABLE_X11_DGRAM)
 			/* dgram server: */
 			if (fd_in >= 0 && FD_ISSET(fd_in, &rset))
 			{
@@ -792,7 +792,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 
 	TDBPRINTF(TDB_INFO,("Device instance closedown\n"));
 
-	#if defined(ENABLE_STDIN)
+	#if defined(ENABLE_X11_STDIN)
 	x11_reader_exit(&fr);
 	#endif
 

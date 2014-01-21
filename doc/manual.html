@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="19-Jan-2014" />
+		<meta name="created" content="21-Jan-2014" />
 	</head>
 	<body>
 		<h1>
@@ -1590,7 +1590,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v41.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v42.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2431,6 +2431,14 @@ message = function(object, message)
 				to sleep until something happens in the application, or an interval timer
 				event is present at the window (i.e. the suspended coroutine is
 				rescheduled after no longer than 1/50th of a second).
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:up" id="Application:up"><code>up()</code></a></h3>
+			<p>
+				This function is called when the application is fully initialized
+				and about to enter its main loop. The user can overwrite it e.g. to
+				add a coroutine that shows a splash screen.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -6083,7 +6091,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7758,7 +7766,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v40.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v40.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8189,7 +8197,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Sun Jan 19 16:10:10 2014
+					Document generated on Tue Jan 21 03:13:52 2014
 				</p>
 			</div>
 		</div>

@@ -113,6 +113,10 @@ typedef struct TEKVisual
 	TVPEN vis_DebugPen1;
 	TVPEN vis_DebugPen2;
 	#endif
+	
+	struct TTask *vis_IOTask;
+	TAPTR vis_IOData;
+	int vis_IOFileNo;
 
 } TEKVisual;
 
@@ -162,6 +166,9 @@ typedef struct
 } TEKGradient;
 
 /*****************************************************************************/
+
+LOCAL TBOOL tek_lib_visual_io_open(TEKVisual *vis);
+LOCAL void tek_lib_visual_io_close(TEKVisual *vis);
 
 LOCAL LUACFUNC TINT tek_lib_visual_open(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_close(lua_State *L);

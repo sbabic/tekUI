@@ -117,6 +117,7 @@ static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 **	args.MaxHeight - maximum height of the window
 **	args.BlankCursor - blank cursor
 **	args.Pens - pen table
+**	args.MsgFileNo - File number for user input messges
 */
 
 LOCAL LUACFUNC TINT
@@ -285,6 +286,11 @@ tek_lib_visual_open(lua_State *L)
 	if (lua_isboolean(L, -1))
 		tp++->tti_Value = (TTAG) lua_toboolean(L, -1);
 	lua_pop(L, 1);
+	
+	lua_getfield(L, 1, "MsgFileNo");
+	if (lua_isnumber(L, -1))
+		visbase->vis_IOFileNo = lua_tonumber(L, -1);
+	lua_pop(L, 1);
 
 	tp->tti_Tag = TVisual_Display;
 	tp++->tti_Value = (TTAG) vis->vis_Display;
@@ -343,6 +349,9 @@ tek_lib_visual_open(lua_State *L)
 			#endif
 			TVisualSetFont(vis->vis_Visual, vis->vis_Font);
 			lua_pop(L, 1);
+
+			if (!visbase->vis_IOTask)
+				tek_lib_visual_io_open(visbase);
 			return 1;
 		}
 		
@@ -444,6 +453,8 @@ tek_lib_visual_close(lua_State *L)
 
 	if (vis->vis_isBase)
 	{
+		tek_lib_visual_io_close(vis);
+		
 		TDestroy((struct THandle *) vis->vis_IMsgPort);
 		TDestroy((struct THandle *) vis->vis_CmdRPort);
 		if (vis->vis_Base)
@@ -520,6 +531,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	vis->vis_refBase = -1;
 	vis->vis_isBase = TTRUE;
 	vis->vis_DrawBuffer = TNULL;
+	vis->vis_IOFileNo = -1; /* default */
 
 	/* register base: */
 	lua_pushvalue(L, -1);
@@ -590,7 +602,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 		if (vis->vis_CmdRPort == TNULL) break;
 		vis->vis_IMsgPort = TCreatePort(TNULL);
 		if (vis->vis_IMsgPort == TNULL) break;
-
+		
 		/* Open a display: */
 		dtags[0].tti_Tag = TVisual_DisplayName;
 		dtags[0].tti_Value = (TTAG) "display_" DISPLAY_DRIVER;
@@ -606,10 +618,8 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 		}
 
 		/* try to obtain default font: */
-		
 		vis->vis_Font = TNULL;
 		vis->vis_FontHeight = 0;
-		
 		dtags[0].tti_Tag = TVisual_Display;
 		dtags[0].tti_Value = (TTAG) vis->vis_Display;
 		dtags[1].tti_Tag = TTAG_DONE;

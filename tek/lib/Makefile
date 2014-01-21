@@ -2,7 +2,7 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
-EXTRADEFS += $(LUA_DEFS) -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
+EXTRADEFS += $(LUA_DEFS) $(TEKUI_DEFS) -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
 
 ###############################################################################
 
@@ -36,8 +36,8 @@ support$(DLLEXT): $(OBJDIR)/support.lo
 exec$(DLLEXT): $(OBJDIR)/exec_lua.lo $(EXECLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_lua.lo -L$(LIBDIR) -lhal -lexec -ltekc -ltekdebug $(PLATFORM_LIBS) $(LUA_DLLS)
 
-visual$(DLLEXT): $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(VISUALLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo -L$(LIBDIR) -lvisual -ltek -ltekdebug $(LUA_DLLS)
+visual$(DLLEXT): $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo $(VISUALLIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo -L$(LIBDIR) -lvisual -ltek -ltekdebug $(LUA_DLLS)
 
 display/x11$(DLLEXT): $(OBJDIR)/x11_lua.lo $(DISPLAYX11LIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/x11_lua.lo -L$(LIBDIR) -ldisplay_x11 -ltek -ltekdebug $(X11_LIBS) $(LUA_DLLS)
@@ -70,6 +70,8 @@ $(OBJDIR)/visual_lua.lo: visual_lua.c visual_lua.h
 	$(CC) $(LIBCFLAGS) -o $@ -c visual_lua.c
 $(OBJDIR)/visual_api.lo: visual_api.c visual_lua.h
 	$(CC) $(LIBCFLAGS) -o $@ -c visual_api.c
+$(OBJDIR)/visual_io.lo: visual_io.c visual_lua.h
+	$(CC) $(LIBCFLAGS) -o $@ -c visual_io.c
 
 $(OBJDIR)/x11_lua.lo: display/x11_lua.c
 	$(CC) $(LIBCFLAGS) -o $@ -c display/x11_lua.c

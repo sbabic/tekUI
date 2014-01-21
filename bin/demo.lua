@@ -1,6 +1,13 @@
 #!/usr/bin/env lua
 
-local lfs = require "lfs"
+local lfs
+pcall(function() lfs = require "lfs" end)
+if not lfs then
+	print "Sorry, this demo needs the luafilesystem library."
+	print "It should be still possible to run the demos individually."
+	return
+end
+
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 local db = require "tek.lib.debug"
