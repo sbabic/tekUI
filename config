@@ -20,11 +20,12 @@ DISPLAY_DRIVER ?= x11
 
 #------------------------------------------------------------------------------
 # tekUI features:
-# ENABLE_FILENO dispatches lines from a fd (normally stdin) to MSG_USER.
-# ENABLE_DGRAM enables a datagram server on 127.0.0.1:20000 for the same.
+# ENABLE_GRADIENT - enable gradients (uses floating point arithmetics)
+# ENABLE_FILENO - dispatches lines from a fd (normally stdin) to MSG_USER.
+# ENABLE_DGRAM - enables a datagram server on 127.0.0.1:20000 for the same.
 #------------------------------------------------------------------------------
 
-TEKUI_DEFS = -DENABLE_FILENO # -DENABLE_DGRAM=20000
+TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_FILENO # -DENABLE_DGRAM=20000
 
 #------------------------------------------------------------------------------
 # Compiler configuration:

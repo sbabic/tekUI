@@ -152,6 +152,7 @@ typedef struct
 } TEKFont;
 
 
+#if defined(ENABLE_GRADIENT)
 
 typedef struct { float x, y; } vec;
 
@@ -164,6 +165,8 @@ typedef struct
 {
 	rgbpt A, B;
 } TEKGradient;
+
+#endif
 
 /*****************************************************************************/
 

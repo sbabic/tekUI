@@ -4,7 +4,9 @@
 === General ===
 
  * Improved list class
- * Context menus
- * Bubble help
+ * Ubiquitous popup menus
  * FloatText styling options
  * Confinement of popup elements to the visible screen
+ 
+ * Driver-internal pixmap caching
+ * PNG loader, drawbuffer alphachannel

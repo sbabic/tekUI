@@ -864,6 +864,8 @@ tek_lib_visual_frectpixmap(lua_State *L, TEKVisual *vis, TEKPixmap *pm,
 **	Gradient support
 */
 
+#if defined(ENABLE_GRADIENT)
+
 static float mulVec(vec a, vec b)
 {
 	return a.x * b.x + a.y * b.y;
@@ -982,7 +984,7 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 			g = Bg;
 			b = Bb;
 		}
-		else if (cx >= 1 && ce <= 255)
+		else if (cx >= 1 && cx <= 255 && ce >= 1 && ce <= 255)
 		{
 			if (cx == ce)
 			{
@@ -1002,7 +1004,7 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 				continue;
 			}
 		}
-		else if (cx < 1 && ce <= 255)
+		else if ((cx < 1 && ce <= 255) || (cx <= 255 && ce < 1))
 		{
 			for (x = 0; x < w; ++x)
 			{
@@ -1017,7 +1019,7 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 			}
 			continue;
 		}
-		else if (cx > 255 && ce > 1)
+		else if ((cx >= 1 && ce > 255) || (cx > 255 && ce >= 1))
 		{
 			for (x = 0; x < w; ++x)
 			{
@@ -1058,6 +1060,8 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, w, h, w, TNULL);
 	TExecFree(vis->vis_ExecBase, buf);
 }
+
+#endif
 
 /*****************************************************************************/
 
@@ -1104,6 +1108,7 @@ tek_lib_visual_frect(lua_State *L)
 			tek_lib_visual_frectpixmap(L, vis, pm, x0, y0, w, h, ox, oy);
 			break;
 		}
+#if defined(ENABLE_GRADIENT)
 		case PAINT_GRADIENT:
 		{
 			TEKGradient *grad = udata;
@@ -1112,6 +1117,7 @@ tek_lib_visual_frect(lua_State *L)
 			tek_lib_visual_frectgradient(L, vis, grad, x0, y0, w, h, ox, oy);
 			break;
 		}
+#endif
 	}
 	
 	vis->vis_Dirty = TTRUE;
@@ -1196,6 +1202,7 @@ tek_lib_visual_text(lua_State *L)
 				x1 - x0 + 1, y1 - y0 + 1, ox, oy);
 			break;
 		}
+#if defined(ENABLE_GRADIENT)
 		case PAINT_GRADIENT:
 		{
 			TEKGradient *grad = udata;
@@ -1205,6 +1212,7 @@ tek_lib_visual_text(lua_State *L)
 				x1 - x0 + 1, y1 - y0 + 1, ox, oy);
 			break;
 		}
+#endif
 	}
 	
 	TVisualText(vis->vis_Visual, x0, y0, text, tlen, fpen->pen_Pen);
@@ -1971,6 +1979,7 @@ tek_lib_visual_getselection(lua_State *L)
 
 LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L)
 {
+#if defined(ENABLE_GRADIENT)
 	TUINT rgb0 = luaL_checkinteger(L, 5);
 	TUINT rgb1 = luaL_checkinteger(L, 6);
 	TEKGradient *gr = lua_newuserdata(L, sizeof(TEKGradient));
@@ -1986,6 +1995,9 @@ LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L)
 	gr->B.b = rgb1 & 0xff;
 	luaL_newmetatable(L, TEK_LIB_VISUALGRADIENT_CLASSNAME);
 	lua_setmetatable(L, -2);
+#else
+	lua_pushnil(L);
+#endif
 	return 1;
 }
 

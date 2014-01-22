@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 30.3"
+_VERSION = "Display 30.4"
 local Display = _M
 Element:newClass(Display)
 
@@ -274,11 +274,10 @@ function Display.getPaint(imgspec, display)
 		end
 	elseif imgtype == "gradient" then
 		local x0, y0, c0, x1, y1, c1 = 
-			location:match("^(%d+),(%d+),(%S+),(%d+),(%d+),(%S+)$")
+			location:match("^(%S+),(%S+),(%S+),(%S+),(%S+),(%S+)$")
 		local _, r0, g0, b0
-		if not x0 then
-			db.error("Invalid gradient arguments: '%s'", location)
-		else
+		x0, y0, x1, y1 = tonumber(x0), tonumber(y0), tonumber(x1), tonumber(y1)
+		if x0 and y0 and x1 and y1 then
 			if display then
 				_, r0, g0, b0 = display:colorToRGB(c0)
 				_, r1, g1, b1 = display:colorToRGB(c1)
@@ -291,6 +290,8 @@ function Display.getPaint(imgspec, display)
 				local rgb1 = r1 * 65536 + g1 * 256 + b1
 				paint = createGradient(x0, y0, x1, y1, rgb0, rgb1)
 			end
+		else
+			db.error("Invalid gradient arguments: '%s'", location)
 		end
 	end
 	if paint then

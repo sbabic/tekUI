@@ -20,8 +20,8 @@ if cid ~= 0 then
 	posix.close(fdw1) 
 	posix.close(fdr2)
 
-	-- send msg to gui: these messages are lines separated by newline
-	-- and dispatched to the GUI as messges of the type MSG_USER.
+	-- send msg to gui: these messages are strings separated by newline
+	-- and dispatched to the GUI as messages of the type MSG_USER.
 	
 	local function sendmsg_gui(msg)
 		posix.write(fdw2, msg .. "\n")

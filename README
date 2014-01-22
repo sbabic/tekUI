@@ -53,9 +53,10 @@
 =( about : 1. About tekUI )=
 
 TekUI is a small, freestanding and portable graphical user interface
-(GUI) toolkit written in Lua and C. It was developed for the X Window
-System initially and has been ported to DirectFB, Windows, Nano-X and
-a raw framebuffer since. A [[VNC option][#noterawfb]] is available.
+(GUI) toolkit written in Lua and C. It was initially developed for
+the X Window System and has been ported to DirectFB, Windows, Nano-X
+and a raw framebuffer since. A [[VNC server option][#noterawfb]] is
+available that allows the remote control of tekUI applications.
 
 Its main focus is the rapid development of custom-made applications
 with a custom appearance, such as for embedded devices with a display
@@ -67,9 +68,10 @@ supporting regular, general-purpose desktop and mobile applications.
 Being mostly written in the
 [[Lua scripting language][http://www.lua.org/]] and using a simple
 inheritance scheme and class library, tekUI is easily extensible with
-new user interface elements. New controls can be written in Lua and
-ported to C later. The creation of new styles and themes and fitting
-the software to a new device are equally simple.
+new user interface elements. New controls can be written (or
+prototyped) in Lua and ported to C later. The creation of new styles
+and themes and fitting the software to a new device are equally
+simple.
 
 See below for a more detailed technical [[#overview]].
 
@@ -85,9 +87,9 @@ are available under a commercial license – see [[#support]].
 
 TekUI is slowly approaching feature completeness ("beta" stadium). It
 is available for Unix-like operating systems such as Linux and
-FreeBSD, and it may work on other flavours of Unix with few changes.
-A rudimentary Windows display driver and build setup is included, but
-not very well supported at this time.
+FreeBSD, and it may work on other flavours of Unix with few
+modifications. A rudimentary Windows display driver and build setup
+is included, but not very well supported at this time.
 
 Display drivers are included for X11, Windows, DirectFB, and raw
 memory. See also [[TODO][todo.html]] for a list of known bugs
@@ -100,6 +102,11 @@ Special adaptations, custom display drivers, new user interface
 elements, and support and services for the integration of tekUI into
 your products are available from the authors – see below. A
 commercially licensed and supported version is available on request.
+
+The more difficult, resource-constrained or exotic the target
+environment or application, the more interesting for us; if a tekUI
+application was to be deployed on bare metal without operating
+system, this would be feasible.
 
 ==( authors : 1.4. Authors and contact )==
 
@@ -125,16 +132,17 @@ attempt to conform to the looks of a host's native GUI (although this
 can be emulated to a certain degree – see below for details). The
 implementation comes straight to the point, and it is comparatively
 fast and resource-friendly, despite its script-heavy nature. Among
-the benefits for developers are its transparency and modularity; in
-particular, custom interface elements can be created with little
-effort. Note, however, that the programming interfaces are not fully
-stable yet, so be prepared for structural and API changes.
+the benefits for developers are its simplicity, transparency and
+modularity; in particular, custom interface elements can be created
+with little effort. Note, however, that the programming interfaces
+are not fully stable yet, so be prepared for structural and API
+changes.
 
 ==( features : 2.1. General features )==
 
  * Automatic layouting and scalability
  * Font-sensitivity, support for antialiased fonts
- * Full Unicode (UTF-8) support
+ * Full Unicode (UTF-8) and localization support
  * Support for cascading style sheets (CSS) and themes
  * Allows for multi-windowed, tabbed and fullscreen applications
  * Fully incremental refresh logic, backbuffers are not required
@@ -144,6 +152,8 @@ stable yet, so be prepared for structural and API changes.
  and integer versions of the Lua VM
  * Supplied with a documentation system supporting tekUI's object
  model
+ * Support for textures, color gradients and transparency
+ * Powerful unicode/metadata string class written in C
 
 ==( uielements : 2.2. Supported interface elements )==
 
@@ -172,8 +182,12 @@ stable yet, so be prepared for structural and API changes.
 The only language currently supported for writing applications in is
 Lua, and application programmers will have to use existing Lua
 modules or create their own C bindings for communicating with their
-host. Creating C bindings is an easy and well-documented task in Lua,
-and the tekUI package contains numerous examples.
+host. 
+
+Apart from that, the package comes with examples that demonstrate
+the communication via file streams, datagram sockets (using
+Luasocket), and pipes between parent and child processes (using
+luaposix).
 
 ==== Future plans ====
 
@@ -217,9 +231,9 @@ source code distribution, to reduce the hassle of building and
 installing the software.
 
 The C library isolates from the host and provides
-performance-critical routines (e.g. the region management and the
-default layouter). Rendering and input handling are implemented as
-display drivers, which allow for easy exchangeability.
+performance-critical routines (e.g. the region management, defaul
+layouter and string library). Rendering and input handling are
+implemented as display drivers, which allow for easy exchangeability.
 
 Aside from the display driver interface, the C library implements
 OS-like facilities such as portable threads, a timer device and the
@@ -262,10 +276,10 @@ compiled to Lua bytecode, can fit into 256kB. Add to that approx.
 128kB for the C modules and another 128kB for the Lua virtual
 machine.
 
-Generic, unmodified versions of tekUI have been deployed on PPC and
-ARM based microcontrollers with clock rates as low as 200MHz, while
-maintaining good reactivity and a pleasant look & feel. Lower clock
-rates are workable with some adaptations, namely by disabling
+Generic, unmodified versions of tekUI have been deployed on PPC, ARM,
+and MIPS based microcontrollers with clock rates as low as 200MHz,
+while maintaining good reactivity and a pleasant look & feel. Lower
+clock rates are workable with some adaptations, namely by disabling
 expensive features like style sheet support, by porting certain
 classes to C, using display drivers which are more tightly connected
 to the hardware, etc.
@@ -303,6 +317,18 @@ package is recommended.
 required to compile and run tekUI on Ubuntu Linux: {{lua5.1}},
 {{liblua5.1-0-dev}}, {{liblua5.1-filesystem0}}, {{libfreetype6-dev}},
 {{libxft-dev}}, {{libxext-dev}}, {{libxxf86vm-dev}}.
+
+TekUI is free of floating point arithmetics and works with a 32bit
+integer version of the Lua virtual machine, with the following,
+noncritical exceptions:
+
+ * Support for color gradients (see {{-DENABLE_GADIENT}} in the
+ config file) requires the {{float}} data type in the C library. 
+ * There are a few places in the x11 driver where the {{double}} data
+ type is used, if Xft support is enabled (see {{-DENABLE_XFT}}).
+ * The desktop style needs floating point support in the Lua VM to
+ import GTK+ colors (falls back to the default colorscheme if
+ unavailable at runtime).
 
 ==( buildenv : 3.2. Adjusting the build environment )==
 
@@ -345,19 +371,19 @@ config file. In case of problems with texts and labels, try removing
 ===( noterawfb : 3.2.4. Raw framebuffer notes )===
 
 The raw framebuffer driver performs all rendering in a chunk of
-memory, which can be supplied by the user. Color depth may be 16 or
+memory that can be supplied by the user. Color depth may be 16 or
 32 bit. This driver is recursive in that another display driver may
-be plugged into it as a visualization device and for passing through
-input. It was originally intended to act as a template (or skeleton)
-for specializations in a target context, like custom hardware or a 3D
+be plugged into it as a visualization and input device. It was
+originally intended to act as a template (or skeleton) for
+specializations in a target context, like custom hardware or a 3D
 game or simulation.
 
 A VNC server option (through 
 [[LibVNCServer][http://libvncserver.sourceforge.net/]]) is available
 for this driver, which allows a tekUI application to be shared over
-the network. This works both "headless" or with a local display. To
-enable LibVNCServer support, comment in the {{VNCSERVER_}} defines in
-the config file.
+the network. This works both "headless" and with a local display. To
+enable LibVNCServer support, enable the raw framebuffer and the
+{{VNCSERVER_}} defines in the config file.
 
 ==( building : 3.3. Building )==
 
@@ -634,7 +660,7 @@ properties controlling the appearance of individual elements.
 
 Note that the {{Min}}/{{Max}} and {{Width}}/{{Height}} properties
 will not override the actual size requirements of an element. An
-element will not grow to a larger or smaller size than what it is
+element will not claim a larger or smaller size than what it is
 capable of displaying. Style properties will be used as additional
 hints when an element's size is flexible. As most elements are
 scalable by nature, the style properties are normally considered.
@@ -867,8 +893,8 @@ an implicit {{self}}):
   end
 
   function Button:method()
-    ...
     Widget.method(self)
+    ...
   end
 
 Also, don't forget to add a {{_VERSION}} variable, as it will be used

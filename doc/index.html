@@ -171,9 +171,10 @@
 		<div class="node"><h1><a name="about" id="about">1. About tekUI</a></h1>
 			<p>
 				TekUI is a small, freestanding and portable graphical user interface
-				(GUI) toolkit written in Lua and C. It was developed for the X Window
-				System initially and has been ported to DirectFB, Windows, Nano-X and
-				a raw framebuffer since. A <a href="#noterawfb">VNC option</a> is available.
+				(GUI) toolkit written in Lua and C. It was initially developed for
+				the X Window System and has been ported to DirectFB, Windows, Nano-X
+				and a raw framebuffer since. A <a href="#noterawfb">VNC server option</a> is
+				available that allows the remote control of tekUI applications.
 			</p>
 			<p>
 				Its main focus is the rapid development of custom-made applications
@@ -187,9 +188,10 @@
 				Being mostly written in the
 				<a href="http://www.lua.org/">Lua scripting language</a> and using a simple
 				inheritance scheme and class library, tekUI is easily extensible with
-				new user interface elements. New controls can be written in Lua and
-				ported to C later. The creation of new styles and themes and fitting
-				the software to a new device are equally simple.
+				new user interface elements. New controls can be written (or
+				prototyped) in Lua and ported to C later. The creation of new styles
+				and themes and fitting the software to a new device are equally
+				simple.
 			</p>
 			<p>
 				See below for a more detailed technical <a href="#overview">overview</a>.
@@ -208,9 +210,9 @@
 			<p>
 				TekUI is slowly approaching feature completeness (&quot;beta&quot; stadium). It
 				is available for Unix-like operating systems such as Linux and
-				FreeBSD, and it may work on other flavours of Unix with few changes.
-				A rudimentary Windows display driver and build setup is included, but
-				not very well supported at this time.
+				FreeBSD, and it may work on other flavours of Unix with few
+				modifications. A rudimentary Windows display driver and build setup
+				is included, but not very well supported at this time.
 			</p>
 			<p>
 				Display drivers are included for X11, Windows, DirectFB, and raw
@@ -225,6 +227,12 @@
 				elements, and support and services for the integration of tekUI into
 				your products are available from the authors &#8211; see below. A
 				commercially licensed and supported version is available on request.
+			</p>
+			<p>
+				The more difficult, resource-constrained or exotic the target
+				environment or application, the more interesting for us; if a tekUI
+				application was to be deployed on bare metal without operating
+				system, this would be feasible.
 			</p>
 		</div>
 		<div class="node"><h2><a name="authors" id="authors">1.4. Authors and contact</a></h2>
@@ -280,10 +288,11 @@
 				can be emulated to a certain degree &#8211; see below for details). The
 				implementation comes straight to the point, and it is comparatively
 				fast and resource-friendly, despite its script-heavy nature. Among
-				the benefits for developers are its transparency and modularity; in
-				particular, custom interface elements can be created with little
-				effort. Note, however, that the programming interfaces are not fully
-				stable yet, so be prepared for structural and API changes.
+				the benefits for developers are its simplicity, transparency and
+				modularity; in particular, custom interface elements can be created
+				with little effort. Note, however, that the programming interfaces
+				are not fully stable yet, so be prepared for structural and API
+				changes.
 			</p>
 		</div>
 		<div class="node"><h2><a name="features" id="features">2.1. General features</a></h2>
@@ -296,7 +305,7 @@
 						Font-sensitivity, support for antialiased fonts
 					</li>
 					<li>
-						Full Unicode (UTF-8) support
+						Full Unicode (UTF-8) and localization support
 					</li>
 					<li>
 						Support for cascading style sheets (CSS) and themes
@@ -318,6 +327,12 @@
 					<li>
 						Supplied with a documentation system supporting tekUI's object
 						model
+					</li>
+					<li>
+						Support for textures, color gradients and transparency
+					</li>
+					<li>
+						Powerful unicode/metadata string class written in C
 					</li>
 				</ul>
 			</blockquote>
@@ -390,8 +405,13 @@
 				The only language currently supported for writing applications in is
 				Lua, and application programmers will have to use existing Lua
 				modules or create their own C bindings for communicating with their
-				host. Creating C bindings is an easy and well-documented task in Lua,
-				and the tekUI package contains numerous examples.
+				host.
+			</p>
+			<p>
+				Apart from that, the package comes with examples that demonstrate
+				the communication via file streams, datagram sockets (using
+				Luasocket), and pipes between parent and child processes (using
+				luaposix).
 			</p>
 			<h4>
 				Future plans
@@ -451,9 +471,9 @@
 			</p>
 			<p>
 				The C library isolates from the host and provides
-				performance-critical routines (e.g. the region management and the
-				default layouter). Rendering and input handling are implemented as
-				display drivers, which allow for easy exchangeability.
+				performance-critical routines (e.g. the region management, defaul
+				layouter and string library). Rendering and input handling are
+				implemented as display drivers, which allow for easy exchangeability.
 			</p>
 			<p>
 				Aside from the display driver interface, the C library implements
@@ -504,10 +524,10 @@
 				machine.
 			</p>
 			<p>
-				Generic, unmodified versions of tekUI have been deployed on PPC and
-				ARM based microcontrollers with clock rates as low as 200MHz, while
-				maintaining good reactivity and a pleasant look &amp; feel. Lower clock
-				rates are workable with some adaptations, namely by disabling
+				Generic, unmodified versions of tekUI have been deployed on PPC, ARM,
+				and MIPS based microcontrollers with clock rates as low as 200MHz,
+				while maintaining good reactivity and a pleasant look &amp; feel. Lower
+				clock rates are workable with some adaptations, namely by disabling
 				expensive features like style sheet support, by porting certain
 				classes to C, using display drivers which are more tightly connected
 				to the hardware, etc.
@@ -572,6 +592,28 @@
 				<code>liblua5.1-0-dev</code>, <code>liblua5.1-filesystem0</code>, <code>libfreetype6-dev</code>,
 				<code>libxft-dev</code>, <code>libxext-dev</code>, <code>libxxf86vm-dev</code>.
 			</p>
+			<p>
+				TekUI is free of floating point arithmetics and works with a 32bit
+				integer version of the Lua virtual machine, with the following,
+				noncritical exceptions:
+			</p>
+			<blockquote>
+				<ul>
+					<li>
+						Support for color gradients (see <code>-DENABLE_GADIENT</code> in the
+						config file) requires the <code>float</code> data type in the C library.
+					</li>
+					<li>
+						There are a few places in the x11 driver where the <code>double</code> data
+						type is used, if Xft support is enabled (see <code>-DENABLE_XFT</code>).
+					</li>
+					<li>
+						The desktop style needs floating point support in the Lua VM to
+						import GTK+ colors (falls back to the default colorscheme if
+						unavailable at runtime).
+					</li>
+				</ul>
+			</blockquote>
 		</div>
 		<div class="node"><h2><a name="buildenv" id="buildenv">3.2. Adjusting the build environment</a></h2>
 			<p>
@@ -630,20 +672,20 @@
 		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.4. Raw framebuffer notes</a></h3>
 			<p>
 				The raw framebuffer driver performs all rendering in a chunk of
-				memory, which can be supplied by the user. Color depth may be 16 or
+				memory that can be supplied by the user. Color depth may be 16 or
 				32 bit. This driver is recursive in that another display driver may
-				be plugged into it as a visualization device and for passing through
-				input. It was originally intended to act as a template (or skeleton)
-				for specializations in a target context, like custom hardware or a 3D
+				be plugged into it as a visualization and input device. It was
+				originally intended to act as a template (or skeleton) for
+				specializations in a target context, like custom hardware or a 3D
 				game or simulation.
 			</p>
 			<p>
 				A VNC server option (through
 				<a href="http://libvncserver.sourceforge.net/">LibVNCServer</a>) is available
 				for this driver, which allows a tekUI application to be shared over
-				the network. This works both &quot;headless&quot; or with a local display. To
-				enable LibVNCServer support, comment in the <code>VNCSERVER_</code> defines in
-				the config file.
+				the network. This works both &quot;headless&quot; and with a local display. To
+				enable LibVNCServer support, enable the raw framebuffer and the
+				<code>VNCSERVER_</code> defines in the config file.
 			</p>
 		</div>
 		<div class="node"><h2><a name="building" id="building">3.3. Building</a></h2>
@@ -988,7 +1030,7 @@ app:run()
 			<p>
 				Note that the <code>Min</code>/<code>Max</code> and <code>Width</code>/<code>Height</code> properties
 				will not override the actual size requirements of an element. An
-				element will not grow to a larger or smaller size than what it is
+				element will not claim a larger or smaller size than what it is
 				capable of displaying. Style properties will be used as additional
 				hints when an element's size is flexible. As most elements are
 				scalable by nature, the style properties are normally considered.
@@ -1626,8 +1668,8 @@ function Button.new(class, self)
 end
 
 function Button:method()
-  ...
   Widget.method(self)
+  ...
 end
 </pre>
 			<p>
