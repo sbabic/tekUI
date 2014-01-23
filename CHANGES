@@ -10,9 +10,7 @@
  contains a version that reflects tekUI's overall package version number.
  * The document generator now accepts C source files, too, for classes which
  have been written in or ported to C. The notation is the same, so the current
- function headers only need to be enclosed in C comments. Also it is
- recommended to keep the module headers, _VERSION and local classname hints
- intact.
+ function headers only need to be enclosed in C comments.
  * tekUI example class written in C: Fixed a bug that thwarted child classes
  to inherit from the example class. Rounded out the registration prolog, added
  tek_lua_register() that isolates 5.1/5.2 compatibility and simplifies
@@ -21,8 +19,9 @@
  * String class: documentation added
  * Application:up() added
  * Added examples demonstrating communication with child processes and
- datagram socket server; these facilities are no longer part of the display
- drivers, but now available throughout tek.lib.visual.
+ datagram socket server; socket and filestream communication are no longer
+ part of the display drivers, but now available throughout tek.lib.visual
+ * Rendering of color gradients corrected
 
 === 0.8l: ===
 
