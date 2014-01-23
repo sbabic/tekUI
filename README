@@ -16,14 +16,16 @@
   - 2.6. [[#objectmodel : Lua, C and object model]]
   - 2.7. [[#documentation : Documentation system]]
   - 2.8. [[#embedded : Fitness for the use in embedded systems]]
+  - 2.9. [[#futureplans : Future plans]]
 
  - 3. [[#buildinstall : Building and installing]]
   - 3.1. [[#requirements : Requirements]]
   - 3.2. [[#buildenv : Adjusting the build environment]]
-   - 3.2.1 [[#notefbsd : FreeBSD notes]]
-   - 3.2.2 [[#notewindows : Windows notes]]
-   - 3.2.3 [[#notex11 : X11 notes]]
-   - 3.2.4 [[#noterawfb : Raw framebuffer notes]]
+   - 3.2.1 [[#notelinux : Linux notes]]
+   - 3.2.2 [[#notefbsd : FreeBSD notes]]
+   - 3.2.3 [[#notewindows : Windows notes]]
+   - 3.2.4 [[#notex11 : X11 notes]]
+   - 3.2.5 [[#noterawfb : Raw framebuffer notes]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
@@ -125,22 +127,23 @@ Mailing list:
 TekUI is not a binding to an existing GUI library, and it makes no
 attempt to conform to the looks of a host's native GUI (although this
 can be emulated to a certain degree – see below for details). The
-implementation comes straight to the point, and it is comparatively
-fast and resource-friendly, despite its script-heavy nature. Among
-the benefits for developers are its simplicity, transparency and
-modularity; in particular, custom interface elements can be created
-with little effort. Note, however, that the programming interfaces
-are not fully stable yet, so be prepared for structural and API
-changes.
+implementation is comparatively fast and resource-friendly, despite
+its script-heavy nature. Among the benefits for developers are its
+simplicity, transparency and modularity; in particular, custom
+interface elements can be created with little effort. Note, however,
+that the programming interfaces are not fully stable yet, so be
+prepared for structural and API changes.
 
 ==( features : 2.1. General features )==
 
+ * Fully event-driven
  * Automatic layouting and scalability
  * Font-sensitivity, support for antialiased fonts
  * Full Unicode (UTF-8) and localization support
  * Support for cascading style sheets (CSS) and themes
  * Allows for multi-windowed, tabbed and fullscreen applications
- * Fully incremental refresh logic, backbuffers are not required
+ * Fully incremental, minimally invasive refresh logic, backbuffers
+ are not required
  * Concurrency thanks to inbuilt support for dispatching to
  coroutines
  * Works unmodified with stock (double precision), single precision
@@ -149,6 +152,7 @@ changes.
  model
  * Support for textures, color gradients and transparency
  * Powerful unicode/metadata string class written in C
+ * A text editor is included as an example.
 
 ==( uielements : 2.2. Supported interface elements )==
 
@@ -179,30 +183,9 @@ Lua, and application programmers will have to use existing Lua
 modules or create their own C bindings for communicating with their
 host. 
 
-Apart from that, the package comes with examples that demonstrate
-the communication via file streams, datagram sockets (using
-Luasocket), and pipes between parent and child processes (using
-luaposix).
-
-==== Future plans ====
-
-The next development goal is to fold the tekUI framework into a
-freestanding C library, which enables applications to create
-asynchronous GUI objects, communicating with their main program
-using an application-level protocol. From this, the following
-benefits are envisioned:
-
- * GUIs integrate smoothly even into I/O-burdened applications
- (clients, servers)
- * strict separation of GUI and functionality; the GUI runs in
- a thread or process of its own
- * Faulty GUI application code, as it is written in a safe language,
- cannot corrupt the heap or otherwise crash the device, even if it
- is without a MMU.
-
-Lua would continue to act as the toolkit's internal scripting
-language, which can be used for complex interconnections
-between GUI elements as well as many application tasks.
+The package comes with examples that demonstrate the communication
+via file streams, datagram sockets (using Luasocket), and pipes
+between parent and child processes (using luaposix).
 
 ==( themes : 2.4. Style sheets and themes )==
 
@@ -231,8 +214,8 @@ layouter and string library). Rendering and input handling are
 implemented as display drivers, which allow for easy exchangeability.
 
 Aside from the display driver interface, the C library implements
-OS-like facilities such as portable threads, a timer device and the
-possibility of a virtual filesystem interface.
+OS-like facilities such as portable threads, a timer device and can
+support a virtual filesystem interface.
 
 ==( objectmodel : 2.6. Lua, C and object model )==
 
@@ -265,19 +248,39 @@ the document generator to process the file system hierarchy.
 
 ==( embedded : 2.8. Fitness for the use in embedded systems )==
 
-Complete solutions based on tekUI are in the reach of 512kB ROM or
+Complete solutions based on tekUI are in the reach of 512KiB ROM or
 flash memory: A typical application and the required modules, if
-compiled to Lua bytecode, can fit into 256kB. Add to that approx.
-128kB for the C modules and another 128kB for the Lua virtual
+compiled to Lua bytecode, can fit into 256KiB. Add to that approx.
+128kB for the C modules and another 128KiB for the Lua virtual
 machine.
 
 Generic, unmodified versions of tekUI have been deployed on PPC, ARM,
-and MIPS based microcontrollers with clock rates as low as 200MHz,
-while maintaining good reactivity and a pleasant look & feel. Lower
-clock rates are workable with some adaptations, namely by disabling
+x86, and MIPS based microcontrollers with clock rates as low as
+200MHz, while maintaining good reactivity and a pleasant look & feel.
+Lower clock rates are workable with some adaptations, by disabling
 expensive features like style sheet support, by porting certain
 classes to C, using display drivers which are more tightly connected
 to the hardware, etc.
+
+==( futureplans : 2.9. Future plans )===
+
+One future development goal is to fold the tekUI framework into
+a freestanding C library, which enables applications to create
+asynchronous GUI objects, communicating with their main program
+using an application-level protocol. From this, the following
+benefits are envisioned:
+
+ * GUIs integrate smoothly even into I/O-burdened applications
+ (clients, servers)
+ * strict separation of GUI and functionality; the GUI runs in
+ a thread or process of its own
+ * Faulty GUI application code, as it is written in a safe language,
+ cannot corrupt the heap or otherwise crash the device, even if it
+ is without a MMU.
+
+Lua would continue to act as the toolkit's internal scripting
+language, which can be used for complex interconnections
+between GUI elements as well as many application tasks.
 
 ---------------------------------------------------------------------
 
@@ -290,34 +293,22 @@ this writing) are given below:
 
  * >=Lua-5.1.2
  * >=libX11-1.1.3 (for the x11 driver)
- * >=libXft-2.1.12 (for the x11 driver)
-  * XFree86VidMode extension (for the x11 driver)
- * >=fontconfig-2.5.0 (for the x11 driver)
+  * >=libXft-2.1.12 (for the x11 driver, enabled by default)
+  * >=fontconfig-2.5.0 (for the x11 driver, enabled by default)
+  * XFree86VidMode extension (for the x11 driver, enabled by default)
  * >=freetype-2.3.5 (for the x11, directfb and rawfb drivers)
  * >=DirectFB-0.9.25.1 (for the directfb driver)
+ * LibVNCServer-0.9.9 (for the rawfb driver, disabled by default)
  * MinGW (for the Windows platform)
 
 Lua 5.1, 5.2 and LuaJIT 2.0 are supported out of the box, if Lua 5.2
 is compiled with {{LUA_COMPAT_MODULE}}.
 
-LibXft and fontconfig are needed for building the x11 driver, but
-tekUI falls back to the core X11 API if they are unavailable at
-runtime. In addition to that, for the documentation system and the
-[[DirList][manual.html#tek.ui.class.dirlist]] class to work, an
-installation of the
-[[LuaFileSystem][http://www.keplerproject.org/luafilesystem/]]
-package is recommended.
-
-'''Linux note''': By popular request, these are the names of packages
-required to compile and run tekUI on Ubuntu Linux: {{lua5.1}},
-{{liblua5.1-0-dev}}, {{liblua5.1-filesystem0}}, {{libfreetype6-dev}},
-{{libxft-dev}}, {{libxext-dev}}, {{libxxf86vm-dev}}.
-
 TekUI is free of floating point arithmetics and works with a 32bit
 integer version of the Lua virtual machine, with the following,
 noncritical exceptions:
 
- * Support for color gradients (see {{-DENABLE_GADIENT}} in the
+ * Support for color gradients (see {{-DENABLE_GRADIENT}} in the
  config file) requires the {{float}} data type in the C library. 
  * There are a few places in the x11 driver where the {{double}} data
  type is used, if Xft support is enabled (see {{-DENABLE_XFT}}).
@@ -325,13 +316,25 @@ noncritical exceptions:
  import GTK+ colors (falls back to the default colorscheme if
  unavailable at runtime).
 
+TekUI does not strictly depend on any external Lua library. The
+following libraries are supported:
+
+ * [[LuaFileSystem][http://www.keplerproject.org/luafilesystem/]]
+ for the [[DirList][manual.html#tek.ui.class.dirlist]] class,
+ [[#documentation]] generator, and main demo program
+ * [[LuaSocket][http://w3.impa.br/~diego/software/luasocket/]]
+ for the socketmessage example
+ * [[luaposix][https://github.com/luaposix/luaposix]] for the
+ childprocess example
+ 
 ==( buildenv : 3.2. Adjusting the build environment )==
 
 TekUI was at some point tested and should compile and run out of the
 box on
 
  * Ubuntu Linux (tested: 9.10, 8.04 and 7.10)
- * FreeBSD 7.0 (special precautions needed, see annotations below)
+ * FreeBSD 7.0 (special precautions needed, see 
+ [[FreeBSD notes][#notefbsd]])
  * Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
  amd64/2007.0, ppc/2007.0)
  * Windows (tested: 2000, Wine)
@@ -341,13 +344,20 @@ environment, which is located in the {{config}} file on the topmost
 directory level. Supported build tools are {{gmake}} (common under
 Linux) and {{pmake}} (common under FreeBSD).
 
-===( notefbsd : 3.2.1. FreeBSD notes )===
+===( notelinux : 3.2.1. Linux notes )===
+
+By popular request, these are the names of packages required to
+compile and run tekUI on Ubuntu Linux: {{lua5.1}},
+{{liblua5.1-0-dev}}, {{liblua5.1-filesystem0}}, {{libfreetype6-dev}},
+{{libxft-dev}}, {{libxext-dev}}, {{libxxf86vm-dev}}.
+
+===( notefbsd : 3.2.2. FreeBSD notes )===
 
 You need a Lua binary which is linked with the {{-pthread}} option,
 as tekUI is using multithreaded code in shared libraries, which are
 dynamically loaded by the interpreter.
 
-===( notewindows : 3.2.2. Windows notes )===
+===( notewindows : 3.2.3. Windows notes )===
 
 Not much time has been spent on the Windows version yet. As a result,
 this display driver is still incomplete and in an experimental state.
@@ -356,14 +366,19 @@ releasing the mouse button first. For reasons not yet investigated,
 this display driver feels disproportionately sluggish. For adjusting
 the build environment, see the {{config}} file.
 
-===( notex11 : 3.2.3. X11 notes )===
+===( notex11 : 3.2.4. X11 notes )===
+
+By default, libXft and fontconfig are needed for building the x11
+driver, but tekUI falls back to the core x11 font API if they are
+unavailable at runtime. Also, libXft is unnecessary if you stack
+the rawfb driver on top of the x11 driver. Disable it by removing
+{{-DENABLE_XFT}} from {{X11_DEFS}}. 
 
 The XFree86VidMode extension is linked against by default. It can
 be disabled by removing {{-DENABLE_XVID}} from {{X11_DEFS}} in the
-config file. In case of problems with texts and labels, try removing
-{{-DENABLE_XFT}} from {{X11_DEFS}}. 
+config file. 
 
-===( noterawfb : 3.2.4. Raw framebuffer notes )===
+===( noterawfb : 3.2.5. Raw framebuffer notes )===
 
 The raw framebuffer driver performs all rendering in a chunk of
 memory that can be supplied by the user. Color depth may be 16 or
