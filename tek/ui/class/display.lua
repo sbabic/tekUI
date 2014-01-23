@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 30.4"
+_VERSION = "Display 30.5"
 local Display = _M
 Element:newClass(Display)
 
@@ -274,7 +274,7 @@ function Display.getPaint(imgspec, display)
 		end
 	elseif imgtype == "gradient" then
 		local x0, y0, c0, x1, y1, c1 = 
-			location:match("^(%S+),(%S+),(%S+),(%S+),(%S+),(%S+)$")
+			location:match("^(%-?%d+),(%-?%d+),(%S+),(%-?%d+),(%-?%d+),(%S+)$")
 		local _, r0, g0, b0
 		x0, y0, x1, y1 = tonumber(x0), tonumber(y0), tonumber(x1), tonumber(y1)
 		if x0 and y0 and x1 and y1 then

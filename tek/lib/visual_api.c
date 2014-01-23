@@ -901,7 +901,7 @@ static void getS2(vec r0, vec u, int Ar, int Ag, int Ab, int Dr, int Dg, int Db,
 	vec z = { x, y };
 	float s = mulVec(subVec(z, r0), u) / mulVec(u, u);
 	vec F = subVec(addVec(r0, scaleVec(u, s)), r0);
-	float f = TABS(u.y > u.x) ? F.y / u.y : F.x / u.x;
+	float f = TABS(u.y) > TABS(u.x) ? F.y / u.y : F.x / u.x;
 	*pr = Ar + Dr * f;
 	*pg = Ag + Dg * f;
 	*pb = Ab + Db * f;
@@ -954,7 +954,7 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	float dg = (cg1 - cg0) / (w - 1);
 	float db = (cb1 - cb0) / (w - 1);
 	float dx = (cx1 - cx0) / (w - 1);
-
+	
 	TUINT *buf = TExecAlloc(vis->vis_ExecBase, TNULL, w * h * sizeof(TUINT));
 	if (!buf)
 		return;
