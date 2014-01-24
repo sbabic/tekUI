@@ -3,18 +3,19 @@
 **	display_rfb_vnc.c - VNC extension to the raw buffer display driver
 **	(C) 2013 by Timm S. Mueller <tmueller at schulze-mueller.de>
 **
-**	This file is licensed under the GPLv2
-**
-**	This file is written against and contains parts of LibVNCServer, which
-**	is a GPLv2 licensed work. Distributing binary versions of your software
-**	based on tekUI with VNC support compiled in makes your software a
-**	combined work with this file and LibVNCServer, which means that your
-**	software must comply to the terms of not only tekUI's license, but also
-**	the GPLv2.
+**	This module is written against LibVNCServer, which is a GPLv2 licensed
+**	work. Distributing binary versions of your software based on tekUI with
+**	VNC support makes your software a combined work with LibVNCServer, which
+**	means that your software must comply to the terms of not only tekUI's
+**	license, but also to the GPLv2. (Scripts being run on this combined work
+**	should not be affected.)
 */
 
 #include <rfb/keysym.h>
 #include "display_rfb_mod.h"
+#if defined(ENABLE_VNCSERVER_COPYRECT)
+#include <sys/ioctl.h>
+#endif
 
 #define VNCSERVER_COPYRECT_MINPIXELS	10000
 
@@ -70,186 +71,6 @@ static unsigned char *rfb_encodeutf8(unsigned char *buf, int c)
 	}
 	return buf;
 }
-
-
-#if defined(ENABLE_VNCSERVER_COPYRECT)
-
-#include <errno.h>
-
-static int 
-rfbCheckFds2(rfbScreenInfoPtr rfbScreen,long usec, int extra_fd)
-{
-    int nfds;
-    fd_set fds;
-    struct timeval tv;
-    struct sockaddr_in addr;
-    socklen_t addrlen = sizeof(addr);
-    char buf[6];
-    rfbClientIteratorPtr i;
-    rfbClientPtr cl;
-    int result = 0;
-
-    if (!rfbScreen->inetdInitDone && rfbScreen->inetdSock != -1) {
-	rfbNewClientConnection(rfbScreen,rfbScreen->inetdSock); 
-	rfbScreen->inetdInitDone = TRUE;
-    }
-
-    do {
-		int maxfd = rfbScreen->maxFd;
-	memcpy((char *)&fds, (char *)&(rfbScreen->allFds), sizeof(fd_set));
-	
-	if (extra_fd != -1)
-	{
-		FD_SET(extra_fd, &fds);
-		maxfd = extra_fd > maxfd ? extra_fd : maxfd;
-	}
-	
-	tv.tv_sec = 0;
-	tv.tv_usec = usec;
-	nfds = select(maxfd + 1, &fds, NULL, NULL /* &fds */, &tv);
-	if (nfds == 0) {
-	    /* timed out, check for async events */
-            i = rfbGetClientIterator(rfbScreen);
-            while((cl = rfbClientIteratorNext(i))) {
-                if (cl->onHold)
-                    continue;
-                if (FD_ISSET(cl->sock, &(rfbScreen->allFds)))
-                    rfbSendFileTransferChunk(cl);
-            }
-            rfbReleaseClientIterator(i);
-	    return result;
-	}
-
-	if (nfds < 0) {
-#ifdef WIN32
-	    errno = WSAGetLastError();
-#endif
-	    if (errno != EINTR)
-		rfbLogPerror("rfbCheckFds: select");
-	    return -1;
-	}
-	
-	result += nfds;
-
-	if (rfbScreen->listenSock != -1 && FD_ISSET(rfbScreen->listenSock, &fds)) {
-
-	    if (!rfbProcessNewConnection(rfbScreen))
-                return -1;
-
-	    FD_CLR(rfbScreen->listenSock, &fds);
-	    if (--nfds == 0)
-		return result;
-	}
-
-#ifdef LIBVNCSERVER_IPv6
-	if (rfbScreen->listen6Sock != -1 && FD_ISSET(rfbScreen->listen6Sock, &fds)) {
-
-	    if (!rfbProcessNewConnection(rfbScreen))
-                return -1;
-
-	    FD_CLR(rfbScreen->listen6Sock, &fds);
-	    if (--nfds == 0)
-		return result;
-	}
-#endif
-
-	if ((rfbScreen->udpSock != -1) && FD_ISSET(rfbScreen->udpSock, &fds)) {
-	    if(!rfbScreen->udpClient)
-		rfbNewUDPClient(rfbScreen);
-	    if (recvfrom(rfbScreen->udpSock, buf, 1, MSG_PEEK,
-			(struct sockaddr *)&addr, &addrlen) < 0) {
-		rfbLogPerror("rfbCheckFds: UDP: recvfrom");
-		rfbDisconnectUDPSock(rfbScreen);
-		rfbScreen->udpSockConnected = FALSE;
-	    } else {
-		if (!rfbScreen->udpSockConnected ||
-			(memcmp(&addr, &rfbScreen->udpRemoteAddr, addrlen) != 0))
-		{
-		    /* new remote end */
-		    rfbLog("rfbCheckFds: UDP: got connection\n");
-
-		    memcpy(&rfbScreen->udpRemoteAddr, &addr, addrlen);
-		    rfbScreen->udpSockConnected = TRUE;
-
-		    if (connect(rfbScreen->udpSock,
-				(struct sockaddr *)&addr, addrlen) < 0) {
-			rfbLogPerror("rfbCheckFds: UDP: connect");
-			rfbDisconnectUDPSock(rfbScreen);
-			return -1;
-		    }
-
-		    rfbNewUDPConnection(rfbScreen,rfbScreen->udpSock);
-		}
-
-		rfbProcessUDPInput(rfbScreen);
-	    }
-
-	    FD_CLR(rfbScreen->udpSock, &fds);
-	    if (--nfds == 0)
-		return result;
-	}
-
-	i = rfbGetClientIterator(rfbScreen);
-	while((cl = rfbClientIteratorNext(i))) {
-
-	    if (cl->onHold)
-		continue;
-
-            if (FD_ISSET(cl->sock, &(rfbScreen->allFds)))
-            {
-                if (FD_ISSET(cl->sock, &fds))
-                    rfbProcessClientMessage(cl);
-                else
-                    rfbSendFileTransferChunk(cl);
-            }
-	}
-	rfbReleaseClientIterator(i);
-    } while(rfbScreen->handleEventsEagerly);
-
-	char rdbuf;
-	if (extra_fd != -1 && FD_ISSET(extra_fd, &fds))
-	{
-		read(extra_fd, &rdbuf, 1);
-		g_mod->rfb_WaitSignal = TTRUE;
-	}
-	
-    return result;
-}
-
-static rfbBool
-rfbProcessEvents2(rfbScreenInfoPtr screen,long usec, int extra_fd)
-{
-  rfbClientIteratorPtr i;
-  rfbClientPtr cl,clPrev;
-  rfbBool result=FALSE;
-  extern rfbClientIteratorPtr
-    rfbGetClientIteratorWithClosed(rfbScreenInfoPtr rfbScreen);
-  extern rfbClientPtr
-    rfbClientIteratorHead(rfbClientIteratorPtr i);
-	
-  if(usec<0)
-    usec=screen->deferUpdateTime*1000;
-
-  rfbCheckFds2(screen,usec, extra_fd);
-//   rfbHttpCheckFds(screen);
-
-  i = rfbGetClientIteratorWithClosed(screen);
-  cl=rfbClientIteratorHead(i);
-  while(cl) {
-    result = rfbUpdateClient(cl);
-    clPrev=cl;
-    cl=rfbClientIteratorNext(i);
-    if(clPrev->sock==-1) {
-      rfbClientConnectionGone(clPrev);
-      result=TRUE;
-    }
-  }
-  rfbReleaseClientIterator(i);
-
-  return result;
-}
-
-#endif
 
 /*****************************************************************************/
 
@@ -522,16 +343,28 @@ static void rfb_vnc_task(struct TTask *task)
 {
 	TAPTR TExecBase = TGetExecBase(task);
 	RFBDISPLAY *mod = TGetTaskData(task);
+	TBOOL waitsig = TFALSE;
+	int extra_fd = mod->rfb_RFBPipeFD[0];
+	FD_SET(extra_fd, &mod->rfb_RFBScreen->allFds);
+	mod->rfb_RFBScreen->maxFd = TMAX(mod->rfb_RFBScreen->maxFd, extra_fd);
+
 	while (!(TSetSignal(0, 0) & TTASK_SIG_ABORT))
 	{
 #if defined(ENABLE_VNCSERVER_COPYRECT)
-		if (rfbProcessEvents2(mod->rfb_RFBScreen, 10000, mod->rfb_RFBPipeFD[0]) == 0)
+		int res = rfbProcessEvents(mod->rfb_RFBScreen, 10000);
+		int nbytes = 0;
+		ioctl(extra_fd, FIONREAD, &nbytes);
+		if (nbytes > 0)
 		{
-			if (mod->rfb_WaitSignal)
-			{
-				TSignal(mod->rfb_RFBMainTask, mod->rfb_RFBReadySignal);
-				mod->rfb_WaitSignal = TFALSE;
-			}
+			char rdbuf;
+			if (read(extra_fd, &rdbuf, 1) != 1)
+				TDBPRINTF(TDB_ERROR,("error reading from signalfd\n"));
+			waitsig = TTRUE;
+		}
+		if (res == 0 && waitsig)
+		{
+			TSignal(mod->rfb_RFBMainTask, mod->rfb_RFBReadySignal);
+			waitsig = TFALSE;
 		}
 #else
 		rfbProcessEvents(mod->rfb_RFBScreen, 20000);
@@ -672,7 +505,8 @@ void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,
 		/* flush dirty rects */
 		rfb_flush_clients(mod, TTRUE);
 		/* break rfbProcessEvents */
-		write(mod->rfb_RFBPipeFD[1], &wrbuf, 1);
+		if (write(mod->rfb_RFBPipeFD[1], &wrbuf, 1) != 1)
+			TDBPRINTF(TDB_ERROR,("error writing to signalfd\n"));
 		/* wait for completion of rfbProcessEvents */
 		TExecWait(mod->rfb_ExecBase, mod->rfb_RFBReadySignal);
 		/* update own buffer */
