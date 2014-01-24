@@ -443,7 +443,13 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		ftags[2].tti_Tag = TTAG_DONE;
 
 		inst->x11_fm.deffont = x11_hostopenfont(inst, ftags);
-		if (inst->x11_fm.deffont == TNULL) break;
+#if 0
+		if (inst->x11_fm.deffont == TNULL)
+		{
+			TDBPRINTF(TDB_ERROR,("Could not provide a default font\n"));
+			break;
+		}
+#endif
 
 		x11_createnullcursor(inst);
 

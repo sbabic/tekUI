@@ -14,6 +14,7 @@
 #include <rfb/keysym.h>
 #include "display_rfb_mod.h"
 #if defined(ENABLE_VNCSERVER_COPYRECT)
+#include <unistd.h>
 #include <sys/ioctl.h>
 #endif
 
