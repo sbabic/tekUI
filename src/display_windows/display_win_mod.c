@@ -518,7 +518,7 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 		msg = TAllocMsg0(sizeof(TIMSG));
 	if (msg)
 	{
-		msg->timsg_Instance = v;
+		msg->timsg_Instance = win;
 		msg->timsg_UserData = win->fbv_UserData;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = win->fbv_KeyQual;
