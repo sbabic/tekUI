@@ -98,7 +98,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 34.0"
+_VERSION = "Canvas 34.1"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -337,7 +337,13 @@ function Canvas:updateUnusedRegion()
 		local c = self.Child
 		r1, r2, r3, r4 = c:getRect()
 		if r1 then
-			ur:subRect(r1, r2, r3, r4)
+			local props = c.Properties
+			local b1 = tonumber(props["margin-left"]) or 0
+			local b2 = tonumber(props["margin-top"]) or 0
+			local b3 = tonumber(props["margin-right"]) or 0
+			local b4 = tonumber(props["margin-bottom"]) or 0
+			local m1, m2, m3, m4 = c:getMargin()
+			ur:subRect(r1 - m1 + b1, r2 - m2 + b2, r3 + m3 - b3, r4 + m4 - b4)
 			self:setFlags(FL_REDRAW)
 		end
 	end
