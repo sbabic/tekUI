@@ -33,4 +33,12 @@ do { \
 } while (0)
 #endif
 
+#if LUA_VERSION_NUM < 502
+#define tek_lua_equal(L, i1, i2) lua_equal(L, i1, i2)
+#define tek_lua_len(L, i) lua_objlen(L, i)
+#else
+#define tek_lua_equal(L, i1, i2) lua_compare(L, i1, i2, LUA_OPEQ)
+#define tek_lua_len(L, i) lua_rawlen(L, i)
+#endif
+
 #endif

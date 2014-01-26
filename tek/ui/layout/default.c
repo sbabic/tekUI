@@ -24,7 +24,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.layout.default", tek.ui.class.layout)
-_VERSION = "Default Layout 7.4"
+_VERSION = "Default Layout 8.0"
 local DefaultLayout = _M
 
 ******************************************************************************/
@@ -40,7 +40,7 @@ local DefaultLayout = _M
 #define CLASS_NAME "tek.ui.layout.default"
 
 /* Version: */
-#define CLASS_VERSION "Default Layout 7.4"
+#define CLASS_VERSION "Default Layout 8.0"
 
 /*****************************************************************************/
 
@@ -436,7 +436,7 @@ static int layout_layoutaxis(lua_State *L)
 				/* s: insert, remove, e, e2, c, c[1], c[4] */
 				if (lua_toboolean(L, -1))
 				{
-					t = lua_tonumber(L, -1);
+					t = lua_tointeger(L, -1);
 					t /= 0x100;
 					t *= tw;
 					t *= free;
@@ -678,14 +678,10 @@ static int layout_layout(lua_State *L)
 		/* s: xywh */
 
 		lua_getfield(L, 2, "Flags");
-		lua_getfield(L, -1, "checkClear");
-		lua_pushvalue(L, -2);
-		lua_pushinteger(L, TEKUI_FL_CHANGED);
-		lua_call(L, 2, 1);
-		if (lua_toboolean(L, -1))
+		if (lua_tointeger(L, -1) & TEKUI_FL_CHANGED)
 			layout_calcweights(L, &lstruct);
-		lua_pop(L, 2);
-
+		lua_pop(L, 1);
+		
 		/**
 		**	local olist = self:layoutAxis(group,
 		**		r4 - r2 + 1 - group.MinMax[i2], i2, i4, gs2, isgrid, gp, gm, minmax)

@@ -11,6 +11,11 @@
 #define TEKUI_FL_SETUP			0x0008
 #define TEKUI_FL_SHOW			0x0010
 #define TEKUI_FL_CHANGED		0x0020
+#define TEKUI_FL_POPITEM		0x0040
+#define TEKUI_FL_UPDATE			0x0080
+#define TEKUI_FL_RECVINPUT		0x0100
+#define TEKUI_FL_RECVMOUSEMOVE	0x0200
+#define TEKUI_FL_CURSORFOCUS	0x0400
 
 #define TEK_UI_OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
 ((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))

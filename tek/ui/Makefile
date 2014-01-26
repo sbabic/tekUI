@@ -6,7 +6,6 @@ EXTRADEFS += $(LUA_DEFS)
 
 CLASSES = \
 	class/application.lua \
-	class/area.lua \
 	class/border.lua \
 	class/button.lua \
 	class/canvas.lua \
@@ -17,7 +16,6 @@ CLASSES = \
 	class/element.lua \
 	class/family.lua \
 	class/floattext.lua \
-	class/frame.lua \
 	class/widget.lua \
 	class/gauge.lua \
 	class/group.lua \
@@ -71,20 +69,31 @@ CATALOGS1 = \
 
 ###############################################################################
 
-MODS = layout/default$(DLLEXT) 
+MODS_C = class/area$(DLLEXT) class/frame$(DLLEXT)
+MODS_L = layout/default$(DLLEXT)
 
 layout/default$(DLLEXT): $(OBJDIR)/default.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/default.lo $(LUA_DLLS)
-
 $(OBJDIR)/default.lo: layout/default.c
 	$(CC) $(LIBCFLAGS) -o $@ -c layout/default.c
 
+class/area$(DLLEXT): $(OBJDIR)/area.lo
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/area.lo $(LUA_DLLS)
+$(OBJDIR)/area.lo: class/area.c
+	$(CC) $(LIBCFLAGS) -o $@ -c class/area.c
+
+class/frame$(DLLEXT): $(OBJDIR)/frame.lo
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/frame.lo $(LUA_DLLS)
+$(OBJDIR)/frame.lo: class/frame.c
+	$(CC) $(LIBCFLAGS) -o $@ -c class/frame.c
+
 ###############################################################################
 
-modules: $(OBJDIR) $(MODS)
+modules: $(OBJDIR) $(MODS_C) $(MODS_L)
 
 install:
 	$(INSTALL_D) $(LUA_LIB)/tek/ui/layout
+	$(INSTALL_D) $(LUA_LIB)/tek/ui/class
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/layout
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/border
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/hook
@@ -94,7 +103,8 @@ install:
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/cursor
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/style
 	$(INSTALL_D) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
-	$(INSTALL_S) layout/default$(DLLEXT) $(LUA_LIB)/tek/ui/layout
+	$(INSTALL_S) $(MODS_L) $(LUA_LIB)/tek/ui/layout
+	$(INSTALL_S) $(MODS_C) $(LUA_LIB)/tek/ui/class
 	$(INSTALL_F) layout/fixed.lua $(LUA_SHARE)/tek/ui/layout
 	$(INSTALL_F) $(CLASSES) $(LUA_SHARE)/tek/ui/class
 	$(INSTALL_F) $(BORDERS) $(LUA_SHARE)/tek/ui/border
@@ -106,5 +116,5 @@ install:
 	$(INSTALL_F) $(CATALOGS1) $(LUA_SHARE)/tek/ui/locale/schulze-mueller.de/dirlist-class
 
 clean: FORCE
-	-$(RM) $(MODS) $(LIBS)
+	-$(RM) $(MODS_C) $(MODS_L) $(LIBS)
 	-$(RMDIR) $(OBJDIR)

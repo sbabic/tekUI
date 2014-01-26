@@ -195,13 +195,11 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 local Element = ui.require("element", 19)
 local Region = ui.loadLibrary("region", 10)
-local support = require "tek.lib.support"
-local getmargin = support.getMargin
-local getpadding = support.getPadding
 
 local assert = assert
-local newFlags = ui.newFlags
-local checkAnyFlags = ui.checkAnyFlags
+local band = ui.band
+local bnot = ui.bnot
+local bor = ui.bor
 local intersect = Region.intersect
 local max = math.max
 local min = math.min
@@ -210,7 +208,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 51.2"
+_VERSION = "Area 52.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -222,6 +220,7 @@ local FL_CHANGED = ui.FL_CHANGED
 local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
 local FL_UPDATE = ui.FL_UPDATE
 local FL_CHANGED = ui.FL_CHANGED
+local FL_BUBBLEUP = FL_REDRAW + FL_REDRAWBORDER + FL_CHANGED
 
 local HUGE = ui.HUGE
 
@@ -252,7 +251,7 @@ function Area.init(self)
 	if self.EraseBG == nil then
 		self.EraseBG = true
 	end
-	self.Flags = newFlags()
+	self.Flags = 0
 	self.Focus = false
 	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
@@ -873,7 +872,9 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getPadding()
-	return getpadding(self.Properties)
+	local p = self.Properties
+	return p["padding-left"] or 0, p["padding-top"] or 0,
+		p["padding-right"] or 0, p["padding-bottom"] or 0
 end
 
 -------------------------------------------------------------------------------
@@ -882,7 +883,9 @@ end
 -------------------------------------------------------------------------------
 
 function Area:getMargin()
-	return getmargin(self.Properties)
+	local p = self.Properties
+	return p["margin-left"] or 0, p["margin-top"] or 0, 
+		p["margin-right"] or 0, p["margin-bottom"] or 0
 end
 
 -------------------------------------------------------------------------------
@@ -909,43 +912,49 @@ function Area:onSetStyle()
 end
 
 -------------------------------------------------------------------------------
---	setFlags(flags)
+--	setFlags(flags): Set element's flags. The flags {{FL_REDRAW}},
+--	{{FL_CHANGED}}, and {{FL_REDRAWBORDER}} will additionally cause the flag
+--	{{FL_UPDATE}} to be set, which will also bubble up in the element
+--	hierarchy until it reaches to topmost element.
 -------------------------------------------------------------------------------
 
-local FL_BUBBLEUP = FL_REDRAW + FL_REDRAWBORDER + FL_CHANGED
-
 function Area:setFlags(flags)
-	local f = self.Flags
-	f:set(flags)
+	local f = bor(self.Flags, flags)
+	self.Flags = f
 	-- any of the bubbling flags set, update not already set?
-	if checkAnyFlags(flags, FL_BUBBLEUP) and not f:check(FL_UPDATE) then
+	if band(flags, FL_BUBBLEUP) ~= 0 and band(f, FL_UPDATE) == 0 then
 		-- bubble up UPDATE
 		local e = self
 		repeat
-			e.Flags:set(FL_UPDATE)
+			e.Flags = bor(e.Flags, FL_UPDATE)
 			e = e:getParent()
 		until not e
 	end
 end
 
 -------------------------------------------------------------------------------
---	checkFlags(flags)
+--	all_present = Area:checkFlags(flags): Check for presence of all of the
+--	specified {{flags}} in the element.
 -------------------------------------------------------------------------------
 
 function Area:checkFlags(flags)
-	return self.Flags:check(flags)
+	return band(self.Flags, flags) == flags
 end
 
 -------------------------------------------------------------------------------
---	checkClearFlags(setflags, clearflags)
+--	checkClearFlags(chkflags, clrflags)
 -------------------------------------------------------------------------------
 
-function Area:checkClearFlags(setflags, clearflags)
-	return self.Flags:checkClear(setflags, clearflags)
+function Area:checkClearFlags(chkflags, clrflags)
+	local f = self.Flags
+	self.Flags = band(f, bnot(clrflags or chkflags))
+	return band(f, chkflags) == chkflags
 end
 
 -------------------------------------------------------------------------------
---	mx, my = getMsgFields(msg, mode)
+--	... = Area:getMsgFields(msg, field): Get specified field(s) from an input
+--	message. Possible fields include:
+--	* {{"mousexy"}}: Returns the message's mouse coordinates (x, y)
 -------------------------------------------------------------------------------
 
 function Area:getMsgFields(msg, mode)
@@ -963,7 +972,7 @@ function Area:getMsgFields(msg, mode)
 end
 
 -------------------------------------------------------------------------------
---	dx, dy = getDisplacement(): Get this element's coordinate displacement
+--	dx, dy = Area:getDisplacement(): Get the element's coordinate displacement
 -------------------------------------------------------------------------------
 
 function Area:getDisplacement()

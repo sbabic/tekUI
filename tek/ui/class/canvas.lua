@@ -91,9 +91,6 @@ local Area = ui.require("area", 36)
 local Element = ui.require("element", 16)
 local Frame = ui.require("frame", 16)
 local Region = ui.loadLibrary("region", 9)
-local support = require "tek.lib.support"
-local getmargin = support.getMargin
-
 local floor = math.floor
 local max = math.max
 local min = math.min
@@ -101,7 +98,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 33.1"
+_VERSION = "Canvas 34.0"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -340,9 +337,7 @@ function Canvas:updateUnusedRegion()
 		local c = self.Child
 		r1, r2, r3, r4 = c:getRect()
 		if r1 then
-			local m1, m2, m3, m4 = c:getMargin()
-			local b1, b2, b3, b4 = getmargin(c.Properties)
-			ur:subRect(r1 - m1 + b1, r2 - m2 + b2, r3 + m3 - b3, r4 + m4 - b4)
+			ur:subRect(r1, r2, r3, r4)
 			self:setFlags(FL_REDRAW)
 		end
 	end

@@ -88,19 +88,18 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-
 local Display = ui.require("display", 25)
 local Widget = ui.require("widget", 26)
 local Group = ui.require("group", 31)
 local Region = ui.loadLibrary("region", 10)
 
 local assert = assert
+local band = ui.band
 local floor = math.floor
 local insert = table.insert
 local intersect = Region.intersect
 local max = math.max
 local min = math.min
-local newFlags = ui.newFlags
 local pairs = pairs
 local remove = table.remove
 local setmetatable = setmetatable
@@ -109,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 40.1"
+_VERSION = "Window 41.1"
 local Window = _M
 Group:newClass(Window)
 
@@ -359,17 +358,15 @@ end
 -------------------------------------------------------------------------------
 
 function Window:addInputHandler(msgtype, object, func)
-	local flags = newFlags(msgtype)
+	local flags = msgtype
 	local hnd = { object, func }
 	for i = 1, #MSGTYPES do
 		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
-		if ih then
-			if flags:check(mask) then
-				insert(ih, 1, hnd)
-				if mask == ui.MSG_INTERVAL and #ih == 1 then
-					self:addInterval()
-				end
+		if ih and band(flags, mask) == mask then
+			insert(ih, 1, hnd)
+			if mask == ui.MSG_INTERVAL and #ih == 1 then
+				self:addInterval()
 			end
 		end
 	end
@@ -382,21 +379,19 @@ end
 -------------------------------------------------------------------------------
 
 function Window:remInputHandler(msgtype, object, func)
-	local flags = newFlags(msgtype)
+	local flags = msgtype
 	for i = 1, #MSGTYPES do
 		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
-		if ih then
-			if flags:check(mask) then
-				for i = 1, #ih do
-					local h = ih[i]
-					if h[1] == object and h[2] == func then
-						remove(ih, i)
-						if mask == ui.MSG_INTERVAL and #ih == 0 then
-							self:remInterval()
-						end
-						break
+		if ih and band(flags, mask) == mask then
+			for i = 1, #ih do
+				local h = ih[i]
+				if h[1] == object and h[2] == func then
+					remove(ih, i)
+					if mask == ui.MSG_INTERVAL and #ih == 0 then
+						self:remInterval()
 					end
+					break
 				end
 			end
 		end
@@ -1205,7 +1200,7 @@ function Window:clickElement(e)
 		assert(e, "Unknown Id")
 	end
 	if not e:checkFlags(ui.FL_SETUP) then
-		db.error("*** element not setup: %s", e:getClassName())
+		db.info("element not setup: %s", e:getClassName())
 		e.Application = self.Application
 		e.Window = self
 	end

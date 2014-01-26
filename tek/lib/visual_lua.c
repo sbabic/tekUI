@@ -289,7 +289,7 @@ tek_lib_visual_open(lua_State *L)
 	
 	lua_getfield(L, 1, "MsgFileNo");
 	if (lua_isnumber(L, -1))
-		visbase->vis_IOFileNo = lua_tonumber(L, -1);
+		visbase->vis_IOFileNo = lua_tointeger(L, -1);
 	lua_pop(L, 1);
 
 	tp->tti_Tag = TVisual_Display;

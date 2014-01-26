@@ -22,6 +22,9 @@
  datagram socket server; socket and filestream communication are no longer
  part of the display drivers, but now available throughout tek.lib.visual
  * Rendering of color gradients corrected
+ * Area.Flags: is a numerical type now
+ * The Area and Frame classes have been rewritten in C, the original Lua
+ versions are still available in the archive
 
 === 0.8l: ===
 

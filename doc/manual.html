@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="23-Jan-2014" />
+		<meta name="created" content="26-Jan-2014" />
 	</head>
 	<body>
 		<h1>
@@ -1590,7 +1590,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v42.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v43.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2030,7 +2030,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v38.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v39.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3028,6 +3028,21 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Area:checkClearFlags" id="Area:checkClearFlags"><code>all_present = Area:checkClearFlags(chkflags[, clearflags])</code></a></h3>
+			<p>
+				Check for
+				presence of all of the specified <code>chkflags</code> in the element. Optionally
+				clears the <code>clearflags</code> set from the element.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Area:checkFlags" id="Area:checkFlags"><code>all_present = Area:checkFlags(flags)</code></a></h3>
+			<p>
+				Check for presence of all of the
+				specified <code>flags</code> in the element.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Area:checkFocus" id="Area:checkFocus"><code>can_receive = Area:checkFocus()</code></a></h3>
 			<p>
 				Returns <strong>true</strong> if this element can
@@ -3167,9 +3182,9 @@ end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Area:getDisplacement" id="Area:getDisplacement"><code>dx, dy = getDisplacement()</code></a></h3>
+		<div class="node"><h3><a name="Area:getDisplacement" id="Area:getDisplacement"><code>dx, dy = Area:getDisplacement()</code></a></h3>
 			<p>
-				Get this element's coordinate displacement
+				Get the element's coordinate displacement
 			</p>
 			<hr />
 		</div>
@@ -3313,6 +3328,15 @@ end
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Area:setFlags" id="Area:setFlags"><code>setFlags(flags)</code></a></h3>
+			<p>
+				Set element's flags. The flags <code>FL_REDRAW</code>,
+				<code>FL_CHANGED</code>, and <code>FL_REDRAWBORDER</code> will additionally cause the flag
+				<code>FL_UPDATE</code> to be set, which will also bubble up in the element
+				hierarchy until it reaches to topmost element.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Area:setState" id="Area:setState"><code>Area:setState(bg)</code></a></h3>
 			<p>
 				Sets the <code>BGPen</code> attribute according to
@@ -3377,7 +3401,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v33.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v34.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4976,21 +5000,8 @@ end
 						</li>
 					</ul>
 				</blockquote>
-				<hr />
+				<hr class="page-break" />
 			</div>
-		</div>
-		<div class="node"><h3><a name="Frame:drawBorder" id="Frame:drawBorder"><code>Frame:drawBorder()</code></a></h3>
-			<p>
-				Draws an element's border.
-			</p>
-			<hr />
-		</div>
-		<div class="node"><h3><a name="Frame:getBorder" id="Frame:getBorder"><code>b1, b2, b3, b4 = Frame:getBorder()</code></a></h3>
-			<p>
-				Returns an element's border widths in
-				the order left, top, right, bottom.
-			</p>
-			<hr class="page-break" />
 		</div>
 		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
@@ -7766,7 +7777,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v40.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v41.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8121,7 +8132,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v7.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v8.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8197,7 +8208,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Thu Jan 23 13:03:45 2014
+					Document generated on Sun Jan 26 14:33:42 2014
 				</p>
 			</div>
 		</div>

@@ -106,11 +106,11 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-
 local Display = ui.require("display", 24)
 local Family = ui.require("family", 2)
 
 local assert = assert
+local band = ui.band
 local cocreate = coroutine.create
 local collectgarbage = collectgarbage
 local coresume = coroutine.resume
@@ -122,7 +122,6 @@ local getmsg = Display.getMsg
 local insert = table.insert
 local max = math.max
 local min = math.min
-local newFlags = ui.newFlags
 local remove = table.remove
 local select = select
 local traceback = debug.traceback
@@ -131,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 38.0"
+_VERSION = "Application 39.0"
 local Application = _M
 Family:newClass(Application)
 
@@ -972,15 +971,13 @@ end
 -------------------------------------------------------------------------------
 
 function Application:addInputHandler(msgtype, object, func)
-	local flags = newFlags(msgtype)
+	local flags = msgtype
 	local hnd = { object, func }
 	for i = 1, #MSGTYPES do
 		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
-		if ih then
-			if flags:check(mask) then
-				insert(ih, 1, hnd)
-			end
+		if ih and band(flags, mask) == mask then
+			insert(ih, 1, hnd)
 		end
 	end
 end
@@ -991,18 +988,16 @@ end
 -------------------------------------------------------------------------------
 
 function Application:remInputHandler(msgtype, object, func)
-	local flags = newFlags(msgtype)
+	local flags = msgtype
 	for i = 1, #MSGTYPES do
 		local mask = MSGTYPES[i]
 		local ih = self.InputHandlers[mask]
-		if ih then
-			if flags:check(mask) then
-				for i = 1, #ih do
-					local h = ih[i]
-					if h[1] == object and h[2] == func then
-						remove(ih, i)
-						break
-					end
+		if ih and band(flags, mask) == mask then
+			for i = 1, #ih do
+				local h = ih[i]
+				if h[1] == object and h[2] == func then
+					remove(ih, i)
+					break
 				end
 			end
 		end
