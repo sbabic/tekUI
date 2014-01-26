@@ -209,7 +209,7 @@ source code distribution, to reduce the hassle of building and
 installing the software.
 
 The C library isolates from the host and provides
-performance-critical routines (e.g. the region management, defaul
+performance-critical routines (e.g. the region management, default
 layouter and string library). Rendering and input handling are
 implemented as display drivers, which allow for easy exchangeability.
 
@@ -251,7 +251,7 @@ the document generator to process the file system hierarchy.
 Complete solutions based on tekUI are in the reach of 512KiB ROM or
 flash memory: A typical application and the required modules, if
 compiled to Lua bytecode, can fit into 256KiB. Add to that approx.
-128kB for the C modules and another 128KiB for the Lua virtual
+128KiB for the C modules and another 128KiB for the Lua virtual
 machine.
 
 Generic, unmodified versions of tekUI have been deployed on PPC, ARM,

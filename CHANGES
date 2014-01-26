@@ -25,9 +25,6 @@
  * Area.Flags: is a numerical type now
  * The Area and Frame classes have been rewritten in C, the original Lua
  versions are still available in the archive
-
-=== 0.8l: ===
-
  * New Input and TextEdit classes added, the TextInput class is obsolete.
  Input is largely compatible with TextInput. The new class supports
  multiline, proportional fonts, smooth scrolling, MaxLength, Size,
