@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 41.1"
+_VERSION = "Window 41.2"
 local Window = _M
 Group:newClass(Window)
 
@@ -165,9 +165,9 @@ function Window.init(self)
 	-- Hold tick counter reinitialization (see below):
 	self.HoldTickActiveInit = 0
 	-- Number of ticks for first hold tick counter initialization:
-	self.HoldTickFirst = 22
+	self.HoldTickFirst = self.HoldTickFirst or 22
 	-- Number of ticks for hold counter repeat initialization:
-	self.HoldTickRepeat = 7
+	self.HoldTickRepeat = self.HoldTickRepeat or 7
 	self.HoverElement = false
 	self.InputHandlers =
 	{
@@ -981,9 +981,8 @@ end
 function Window:handleHold(msg)
 	local ae = self.ActiveElement
 	if ae and ae.Active then
-		assert(self.HoldTickActive > 0)
 		self.HoldTickActive = self.HoldTickActive - 1
-		if self.HoldTickActive == 0 then
+		if self.HoldTickActive <= 0 then
 			self.HoldTickActiveInit = self.HoldTickRepeat
 			self.HoldTickActive = self.HoldTickRepeat
 			ae:setValue("Hold", true, true)
