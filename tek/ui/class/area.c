@@ -1497,9 +1497,9 @@ static int tek_ui_class_area_erase(lua_State *L)
 	/* d, setBGPen(), d, getBG() */
 	lua_pushvalue(L, ISELF);
 	/* d, setBGPen(), d, getBG(), self */
-	lua_call(L, 1, 1);
-	/* d, setBGPen(), d, bg */
-	lua_call(L, 2, 0);
+	lua_call(L, 1, 3);
+	/* d, setBGPen(), d, bg, tx, ty */
+	lua_call(L, 4, 0);
 	/* d */
 	lua_getfield(L, ISELF, "DamageRegion");
 	/* d, dr */
