@@ -91,6 +91,12 @@ tek.ui.class.handle:active {
 	background-color: hover;
 }
 
+tek.ui.class.imagewidget {
+	min-width: 10;
+	min-height: 13;
+	border-width: 0;
+}
+
 tek.ui.class.imagewidget:active {
 	color: transparent;
 }

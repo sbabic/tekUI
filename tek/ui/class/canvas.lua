@@ -98,7 +98,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 34.1"
+_VERSION = "Canvas 34.2"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -132,10 +132,10 @@ function Canvas.init(self)
 	end
 	self.AutoHeight = self.AutoHeight or false
 	self.AutoWidth = self.AutoWidth or false
-	self.CanvasHeight = self.CanvasHeight or 0
-	self.CanvasLeft = self.CanvasLeft or 0
-	self.CanvasTop = self.CanvasTop or 0
-	self.CanvasWidth = self.CanvasWidth or 0
+	self.CanvasHeight = tonumber(self.CanvasHeight) or 0
+	self.CanvasLeft = tonumber(self.CanvasLeft) or 0
+	self.CanvasTop = tonumber(self.CanvasTop) or 0
+	self.CanvasWidth = tonumber(self.CanvasWidth) or 0
 	self.NullArea = Area:new { MaxWidth = 0, MinWidth = 0 }
 	self.Child = self.Child or self.NullArea
 	self.KeepMinHeight = self.KeepMinHeight or false

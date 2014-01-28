@@ -1,4 +1,9 @@
 #!/usr/bin/env lua
+--
+--	bin/demo.lua - tekUI demo
+--	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+--	See copyright notice in COPYRIGHT
+--
 
 local lfs
 pcall(function() lfs = require "lfs" end)

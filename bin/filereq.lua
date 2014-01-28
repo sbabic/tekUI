@@ -40,7 +40,6 @@ app = ui.Application:new
 						{
 							Id = "multiselect",
 							Text = L.MULTISELECT,
-							KeyCode = ui.extractKeyCode(L.MULTISELECT),
 						},
 					},
 				},

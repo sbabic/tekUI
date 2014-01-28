@@ -9,7 +9,6 @@ EXTRADEFS += $(LUA_DEFS) $(TEKUI_DEFS) -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
 DISPLAYS = display/x11$(DLLEXT) display/rawfb$(DLLEXT)
 # DISPLAYS = display/windows$(DLLEXT)
 # DISPLAYS = display/directfb$(DLLEXT)
-# DISPLAYS = display/nanox$(DLLEXT)
 # DISPLAYS = display/rawfb$(DLLEXT)
 
 ###############################################################################
@@ -21,7 +20,6 @@ VISUALLIBS = $(LIBDIR)/libvisual.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
 DISPLAYX11LIBS = $(LIBDIR)/libdisplay_x11.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
 DISPLAYDFBLIBS = $(LIBDIR)/libdisplay_directfb.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
 DISPLAYWINLIBS = $(LIBDIR)/libdisplay_win.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
-DISPLAYNANOXLIBS = $(LIBDIR)/libdisplay_nanox.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
 DISPLAYRAWFBLIBS = $(LIBDIR)/libdisplay_rawfb.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
 
 region$(DLLEXT): $(OBJDIR)/region.lo
@@ -47,9 +45,6 @@ display/directfb$(DLLEXT): $(OBJDIR)/directfb_lua.lo $(DISPLAYDFBLIBS)
 
 display/windows$(DLLEXT): $(OBJDIR)/windows_lua.lo $(DISPLAYWINLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/windows_lua.lo -L$(LIBDIR) -ldisplay_win -ltek -ltekdebug $(WIN_LIBS) $(LUA_DLLS)
-
-display/nanox$(DLLEXT): $(OBJDIR)/nanox_lua.lo $(DISPLAYNANOXLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/nanox_lua.lo -L$(LIBDIR) -ldisplay_nanox -ltek -ltekdebug $(NANOX_LIBS) $(LUA_DLLS)
 
 display/rawfb$(DLLEXT): $(OBJDIR)/rawfb_lua.lo $(DISPLAYRAWFBLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/rawfb_lua.lo -L$(LIBDIR) -ldisplay_rawfb -ltek -ltekdebug $(RAWFB_LIBS) $(LUA_DLLS)
@@ -81,9 +76,6 @@ $(OBJDIR)/directfb_lua.lo: display/directfb_lua.c
 
 $(OBJDIR)/windows_lua.lo: display/windows_lua.c
 	$(CC) $(LIBCFLAGS) -o $@ -c display/windows_lua.c
-
-$(OBJDIR)/nanox_lua.lo: display/nanox_lua.c
-	$(CC) $(LIBCFLAGS) -o $@ -c display/nanox_lua.c
 
 $(OBJDIR)/rawfb_lua.lo: display/rawfb_lua.c
 	$(CC) $(LIBCFLAGS) $(RAWFB_DEFS) -o $@ -c display/rawfb_lua.c

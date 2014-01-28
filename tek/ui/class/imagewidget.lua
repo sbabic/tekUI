@@ -21,7 +21,7 @@
 --		or by directly instantiating the Image class or derivations thereof.
 --
 --	ATTRIBUTES::
---		- {{Image [ISG]}} (image)
+--		- {{Image [ISG]}} (image object)
 --
 --	IMPLEMENTS::
 --		- ImageWidget:onSetImage() - Handler for the {{Image}} attribute
@@ -45,7 +45,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.imagewidget", tek.ui.class.widget)
-_VERSION = "ImageWidget 14.0"
+_VERSION = "ImageWidget 15.0"
 local ImageWidget = _M
 Widget:newClass(ImageWidget)
 
@@ -65,9 +65,13 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 -------------------------------------------------------------------------------
 
 function ImageWidget.new(class, self)
+	self = self or { }
 	self.EraseBG = false
 	self.HAlign = self.HAlign or "center"
 	self.VAlign = self.VAlign or "center"
+	if type(self.Image) == "string" then
+		self.Image = ui.getStockImage(self.Image)
+	end
 	self.Image = self.Image or false
 	self.ImageAspectX = self.ImageAspectX or 1
 	self.ImageAspectY = self.ImageAspectY or 1

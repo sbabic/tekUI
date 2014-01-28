@@ -12,7 +12,7 @@ PLATFORM ?= posix
 DLLEXT = .so
 
 #------------------------------------------------------------------------------
-# Default display driver [Choices: x11, rawfb, directfb, windows, nanox]:
+# Default display driver [Choices: x11, rawfb, directfb, windows]:
 # If you change it, also adjust src/Makefile and tek/lib/Makefile.
 #------------------------------------------------------------------------------
 
@@ -97,9 +97,6 @@ RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS)
 RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) # -DFNT_DEFDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
 # Comment out RAWFB_SUB for a 'headless' GUI. VNC support makes this software
 # a combined work with LibVNCServer, see also src/display_rawfb/vnc/COPYING
-
-NANOX_LIBS = -L /work/nano-x/dev/src/lib -lnano-X
-NANOX_DEFS = -I /work/nano-x/dev/src/include
 
 DFB_LIBS = `pkg-config --libs directfb`
 DFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`

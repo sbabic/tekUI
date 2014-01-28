@@ -68,7 +68,7 @@ local min = math.min
 local remove = table.remove
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 18.3"
+_VERSION = "ScrollGroup 18.4"
 local ScrollGroup = _M
 Group:newClass(ScrollGroup)
 
@@ -80,13 +80,11 @@ local FL_DRAW = ui.FL_SETUP + ui.FL_SHOW + ui.FL_LAYOUT
 
 function ScrollGroup.new(class, self)
 	self = self or { }
-	
-	assert(self.Child)
-	
 	if self.AcceptFocus == nil then
 		self.AcceptFocus = true
 	end
 	self.BlitList = { }
+	self.Child = self.Child or false
 	self.HMax = -1
 	self.HRange = -1
 	self.HSliderEnabled = false

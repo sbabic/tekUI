@@ -338,7 +338,7 @@ static lua_Integer clrsetflags(lua_State *L, lua_Integer clr, lua_Integer set,
 	}
 	lua_pop(L, 1);
 	
-	if (bubbleup && (nf & TEKUI_FL_BUBBLEUP) && !(nf & TEKUI_FL_UPDATE))
+	if (bubbleup && (set & TEKUI_FL_BUBBLEUP) && !(nf & TEKUI_FL_UPDATE))
 	{
 		lua_pushvalue(L, ISELF);
 		do
