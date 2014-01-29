@@ -1,4 +1,10 @@
 
+/*
+**	tek/ui/style/klinik.css
+**
+**	Version: 1.1
+*/
+
 tek.ui.class.display {
 	rgb-background: #eee;
 	rgb-dark: #000;
@@ -14,19 +20,19 @@ tek.ui.class.display {
 	rgb-active-detail: #000;
 	rgb-focus-detail: #222;
 	rgb-hover-detail: #222;
-	rgb-disabled-detail: #777;
+	rgb-disabled-detail: #666;
 	rgb-disabled-detail-shine: #fff;
-	rgb-border-shine: #f4f4f4;
+	rgb-border-shine: #f8f8f8;
 	rgb-border-shadow: #ccc;
 	rgb-border-rim: #999;
-	rgb-border-focus: #8ae;
+	rgb-border-focus: #fff;
 	rgb-border-legend: #888;
 	rgb-menu: #fff;
 	rgb-menu-detail: #000;
 	rgb-menu-active: #68c;
 	rgb-menu-active-detail: #fff;
 	rgb-list: #fff;
-	rgb-list-alt: #f4f4f4;
+	rgb-list-alt: #f8f8f8;
 	rgb-list-detail: #000;
 	rgb-list-active: #68c;
 	rgb-list-active-detail: #fff;
@@ -121,14 +127,13 @@ tek.ui.class.slider:focus {
 }
 
 .knob {
+	padding: 6;
 	border-focus-width: 0;
 	border-style: outset;
-	
 	border-rim-width: 1;
 	border-width: 3;
 	border-color: shine half-shine half-shadow border-shine;
 	margin: 0;
-	padding: 5;
 	min-width: 12;
 	min-height: 12;
 }
@@ -171,7 +176,6 @@ tek.ui.class.scrollbar {
 }
 
 _editinput { 
-	font: sans-serif/s;
 	valign: center;
 }
 _editinput:disabled { 
@@ -219,7 +223,8 @@ tek.ui.class.group {
 
 tek.ui.class.lister {
 	cursor-width: 2;
-	border-color: border-focus;
+	border-color: #68c;
+/* 	font: sans-serif/s; */
 }
 
 .dirlist {
@@ -228,7 +233,7 @@ tek.ui.class.lister {
 }
 	
 tek.ui.class.checkmark {
-	margin: 5;
+	margin: 4;
 }
 tek.ui.class.radiobutton {
 	margin: 4;
@@ -239,9 +244,9 @@ tek.ui.class.checkmark:active {
 }
 
 
-tek.ui.class.input.listgroup {
+tek.ui.class.textedit.listgroup {
 	font: ui-fixed:18;
-	margin: 18;
+	margin: 12; /*18;*/
 }
 tek.ui.class.canvas.listgroup {
 	border-style: solid;
@@ -282,6 +287,64 @@ tek.ui.class.spacer {
 }
 
 
-tek.ui.class.window {
-	border-color: #ddd;
+tek.ui.class.button {
+	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+tek.ui.class.button:hover {
+	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+tek.ui.class.button:focus {
+	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+tek.ui.class.button:active {
+	background-image: gradient(20,0,tint(active,border-shadow,40%),20,10,tint(active,border-shine,60%));
+}
+tek.ui.class.button:disabled {
+	background-image: gradient(20,0,tint(disabled,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+
+tek.ui.class.poplist {
+	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+tek.ui.class.poplist:hover {
+	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+tek.ui.class.poplist:focus {
+	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+tek.ui.class.poplist:active {
+	background-image: gradient(20,0,tint(active,border-shadow,40%),20,10,tint(active,border-shine,60%));
+}
+tek.ui.class.poplist:disabled {
+	background-image: gradient(20,0,tint(disabled,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+
+.button {
+	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+.button:hover {
+	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+.button:focus {
+	background-image: gradient(20,0,border-shadow,20,10,border-shine);
+}
+.button:active {
+	background-image: gradient(20,0,tint(active,#daa,100%),20,10,tint(active,#fdb,80%));
+	border-color: tint(#daa,border-shine,60%) tint(#fdb,border-shadow,60%) tint(#fdb,border-shadow,60%) tint(#daa,border-shine,60%);
+}
+.button:disabled {
+	background-image: gradient(20,0,tint(disabled,border-shadow,30%),20,10,tint(background,border-shine,70%));
+}
+/*.button:activefocus {
+	background-image: gradient(20,0,tint(active,#daa,100%),20,10,tint(active,#fec,80%));
+	border-color: tint(#ebb,border-shine,60%) tint(#fec,border-shadow,60%) tint(#fec,border-shadow,60%) tint(#daa,border-shine,60%);
+}*/
+
+.menubar {
+	background-attachment: fixed;
+	background-image: gradient(20,0,border-shine,20,40,border-shadow);
+}
+.menuitem {
+	background-color: transparent;
+	background-attachment: fixed;
 }

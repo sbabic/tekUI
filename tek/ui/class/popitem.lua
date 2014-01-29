@@ -66,7 +66,7 @@ local floor = math.floor
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 23.8"
+_VERSION = "PopItem 23.9"
 local PopItem = _M
 Text:newClass(PopItem)
 
@@ -490,4 +490,17 @@ end
 
 function PopItem:getChildren(mode)
 	return mode == "init" and self.Children
+end
+
+-------------------------------------------------------------------------------
+--	getPseudoClass: overrides
+-------------------------------------------------------------------------------
+
+function PopItem:getPseudoClass()
+	return self.Disabled and ":disabled" or
+		self.Hilite and ":hover" or
+		self.Selected and ":active" or
+-- 		(self.Selected and self.Focus) and ":activefocus" or
+		self.Focus and ":focus" or
+		""
 end

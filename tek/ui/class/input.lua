@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 3.0"
+_VERSION = "Input 3.1"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -307,6 +307,7 @@ function Input.new(class, self)
 end
 
 function Input:onSetChanged()
+	self.EditInput:setValue("Changed", self.Changed)
 end
 
 function Input:addChar(utf8char)

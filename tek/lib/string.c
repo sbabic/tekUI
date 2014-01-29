@@ -32,7 +32,7 @@
 -------------------------------------------------------------------------------
 
 module "tek.lib.string"
-_VERSION = "String 1.0"
+_VERSION = "String 1.1"
 local String = _M
 
 ******************************************************************************/
@@ -45,7 +45,7 @@ local String = _M
 #include <tek/teklib.h>
 #include <tek/lib/tekui.h>
 
-#define TEK_LIB_STRING_VERSION	"String Library 0.2"
+#define TEK_LIB_STRING_VERSION	"String Library 1.1"
 #define TEK_LIB_STRING_NAME		"tek.lib.string"
 
 /*****************************************************************************/
@@ -319,6 +319,8 @@ static int getfirstlast(int len, tek_size *pp0, tek_size *pp1)
 		}
 		if (p0 <= len && p1 >= p0)
 		{
+			if (p1 > len)
+				p1 = len;
 			*pp0 = p0;
 			*pp1 = p1;
 			return 1;
@@ -370,10 +372,16 @@ static void tek_string_dump(tek_string *s)
 {
 	struct TNode *next, *node = s->ts_List.tlh_Head;
 	tek_size pos = 1;
+#if defined(SANITY_CHECKS)
+	tek_size elen = 0;
+#endif
 	for (; (next = node->tln_Succ); node = next)
 	{
 		tek_node *sn = (tek_node *) node;
 		int i;
+#if defined(SANITY_CHECKS)
+		elen += sn->tsn_Length;
+#endif
 		for (i = 0; i < sn->tsn_Length; ++i)
 		{
 			int c = sn->tsn_Data[i].cdata[0];
@@ -387,6 +395,13 @@ static void tek_string_dump(tek_string *s)
 		fprintf(stderr, " ");
 	}
 	fprintf(stderr, "\n");
+#if defined(SANITY_CHECKS)
+	if (elen != s->ts_Length)
+	{
+		fprintf(stderr, "*** string illegal len=%d expected=%d\n", elen, s->ts_Length);
+		abort();
+	}
+#endif
 }
 #endif
 
@@ -877,6 +892,9 @@ static int tek_string_set(lua_State *L)
 				if (pos > p1) break;
 				elen[0] += encodeutf8(utf8buf, c) - utf8buf;
 			}
+#if defined(SANITY_CHECKS)
+			assert(pos == inslen);
+#endif
 		}
 		
 		tek_string_freeutf8(L, s);
@@ -914,6 +932,9 @@ static int tek_string_set(lua_State *L)
 				if (pos > p1) break;
 				utf8[0] = encodeutf8(utf8[0], c);
 			}
+#if defined(SANITY_CHECKS)
+			assert(pos == inslen);
+#endif
 		}
 #else
 		tek_node *sn = tek_string_allocnode(L, partlen);
@@ -1093,7 +1114,7 @@ static int tek_string_insert(lua_State *L)
 		fprintf(stderr, "illegal position\n");
 		return 0;
 	}
-
+	
 	nnode = tek_string_getnode(L, s, TCLAMP(1, p0 - 1, s->ts_Length), 
 		&nodepos);
 	if (nnode && (nnode->tsn_AllocLength - nnode->tsn_Length >= inslen))

@@ -135,7 +135,7 @@ local ui = require "tek.ui"
 local Frame = ui.require("frame", 16)
 
 module("tek.ui.class.widget", tek.ui.class.frame)
-_VERSION = "Widget 28.1"
+_VERSION = "Widget 28.2"
 local Widget = _M
 Frame:newClass(Widget)
 
@@ -386,9 +386,10 @@ end
 
 function Widget:getPseudoClass()
 	return self.Disabled and ":disabled" or
+-- 		(self.Selected and self.Focus) and ":activefocus" or
 		self.Selected and ":active" or
-		self.Hilite and ":hover" or
 		self.Focus and ":focus" or
+		self.Hilite and ":hover" or
 		""
 end
 

@@ -62,7 +62,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 17.4"
+_VERSION = "TextEdit 17.5"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -318,8 +318,12 @@ function TextEdit:eraseBlock(mx0, my0, mx1, my1)
 			firstremove = my0
 		end
 		local line = self:getLineText(my1)
-		if mx1 > 1 then
-			line:erase(1, mx1 - 1)
+		if line then
+			if mx1 > 1 then
+				line:erase(1, mx1 - 1)
+			end
+		else
+			db.error("*** no line %s", my1)
 		end
 		for y = numremove - 1, 0, -1 do
 			self:removeLine(firstremove + y, true)
@@ -327,7 +331,13 @@ function TextEdit:eraseBlock(mx0, my0, mx1, my1)
 		if join then
 			local thisline = self:getLineText(my0)
 			local nextline = self:getLineText(my0 + 1)
-			thisline:insert(nextline)
+			if thisline and nextline then
+				thisline:insert(nextline)
+			elseif thisline then
+				db.error("*** no nextline %s", my0 + 1)
+			elseif nextline then
+				db.error("*** no thisline %s", my0)
+			end
 			self:changeLine(my0)
 			self:removeLine(my0 + 1, true)
 			self:resize(0, -lh, 0, lh * my0)

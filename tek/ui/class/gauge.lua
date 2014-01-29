@@ -26,7 +26,6 @@
 --		- Object.init()
 --		- Area:layout()
 --		- Numeric:onSetValue()
---		- Area:setState()
 --		- Element:setup()
 --		- Area:show()
 --

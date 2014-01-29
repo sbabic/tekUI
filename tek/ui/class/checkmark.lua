@@ -43,7 +43,7 @@ local max = math.max
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 9.1"
+_VERSION = "CheckMark 9.2"
 local CheckMark = _M
 Text:newClass(CheckMark)
 
@@ -142,23 +142,6 @@ end
 
 function CheckMark:setState(bg, fg)
 	local props = self.Properties
-
-	-- in checkmarks, Hilite has precedence over Selected:
-	if not bg and self.Hilite then
-		bg = props["background-color:hover"]
-	end
-	if not fg and self.Hilite then
-		fg = props["color:hover"]
-	end
-
-	if not bg and self.Focus then
-		bg = props["background-color:focus"]
-	end
-	if not fg and self.Focus then
-		fg = props["color:focus"]
-	end
-
-
 	if self.Selected ~= self.OldSelected then
 		self.OldSelected = self.Selected
 		self:setFlags(ui.FL_REDRAW)
