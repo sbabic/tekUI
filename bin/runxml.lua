@@ -1,17 +1,12 @@
 #!/usr/bin/env lua
 
 --
---	runxml.lua - XML to Lua/tekUI converter and runner
+--	runxml.lua - XML to Lua+tekUI converter, runner, and checker
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
 
-local Class = require "tek.class"
-Class.PROXY = true
-Class.DEBUG = true
-		
 local ui = require "tek.ui"
-
 local db = require "tek.lib.debug"
 local Args = require "tek.lib.args"
 require "lxp.lom"
@@ -44,20 +39,20 @@ end
 local template = "SRC/A,EXECUTE=-e/S,CHECK=-c/S,HELP=-h/S"
 local args = Args.read(template, arg)
 if not args or args["-h"] then
-	print "Usage: runxml [options] xml-src"
+	print "Usage: runxml.lua [options] xml-src"
 	print "Options:"
-	print "  -e   pass converted XML to Lua interpreter"
+	print "  -e   pass code on to the Lua interpreter"
 	print "  -c   perform runtime validity checks against tekUI implementation"
 	print "  -h   this help"
-	print "Converts well-formed XML to a Lua."
-	return
+	print "Converts well-formed XML to a tekUI application's Lua code."
+	return os.exit(1)
 end
 
 local fname = args.src
 local file = io.open(fname)
 if not file then
 	print("Error reading '" .. fname .. "'")
-	return
+	return os.exit(1)
 end
 
 if args.execute then
@@ -68,7 +63,7 @@ end
 local dom = lxp.lom.parse(file:read("*a"))
 if not dom then
 	print("Ill-formed XML")
-	return
+	return os.exit(1)
 end
 
 local function recurse(tab, indent)
@@ -224,3 +219,5 @@ else
 end
 
 outf('app:run()\n')
+
+return os.exit(0)

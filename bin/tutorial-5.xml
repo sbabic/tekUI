@@ -2,7 +2,7 @@
 
 <tekui:application>
 	<application AuthorStyleSheets="tutorial">
-		<window Title="Tutorial 6" Orientation="vertical" HideOnEscape="true">
+		<window Title="Tutorial 5" Orientation="vertical" HideOnEscape="true">
 			<text Id="output" Legend="Output" Height="free" Style="font: :100" />
 			<slider Id="slider" Min="0" Max="100" Value="50">
 				<method Name="onSetValue">

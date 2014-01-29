@@ -5,7 +5,7 @@
 		<window Title="Hello" Orientation="vertical" HideOnEscape="true">
 			<button>
 				_Hello World!
-				<method name="onPress">
+				<method Name="onPress">
 					self:getClass().onPress(self)
 					if self.Pressed == false then
 						print "Hello World!"

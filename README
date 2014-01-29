@@ -14,9 +14,10 @@
   - 2.4. [[#themes : Style sheets and themes]]
   - 2.5. [[#clibrary : C library]]
   - 2.6. [[#objectmodel : Lua, C and object model]]
-  - 2.7. [[#documentation : Documentation system]]
-  - 2.8. [[#embedded : Fitness for the use in embedded systems]]
-  - 2.9. [[#futureplans : Future plans]]
+  - 2.7. [[#xmlapps : Writing applications in XML]]
+  - 2.8. [[#documentation : Documentation system]]
+  - 2.9. [[#embedded : Fitness for the use in embedded systems]]
+  - 2.10. [[#futureplans : Future plans]]
 
  - 3. [[#buildinstall : Building and installing]]
   - 3.1. [[#requirements : Requirements]]
@@ -40,7 +41,7 @@
  - 5. [[#developersguide : Developer's Guide]]
   - 5.1. [[#lifecycle : The lifecycle of an element]]
   - 5.2. [[#debug : Debug library]]
-  - 5.3. [[#proxied : Proxied object model]]
+  - 5.3. [[#proxied : Debugging objects]]
   - 5.4. [[#classsetup : Class setup]]
   - 5.5. [[#classdoc : Class documentation system]]
 
@@ -83,7 +84,7 @@ TekUI is free software under the same license as Lua itself: It can
 be used for both academic and commercial purposes at no cost. It
 qualifies as Open Source software, and its license is compatible with
 the GPL – see [[copyright][copyright.html]]. Additional components
-are available under a commercial license – see [[#support]].
+are available under a commercial license – see below.
 
 ==( status : 1.2. Status, requirements )==
 
@@ -130,30 +131,28 @@ can be emulated to a certain degree – see below for details). The
 implementation is comparatively fast and resource-friendly, despite
 its script-heavy nature. Among the benefits for developers are its
 simplicity, transparency and modularity; in particular, custom
-interface elements can be created with little effort. Note, however,
-that the programming interfaces are not fully stable yet, so be
-prepared for structural and API changes.
+interface elements can be created with little effort.
 
 ==( features : 2.1. General features )==
 
- * Fully event-driven
+ * Strictly event-driven
  * Automatic layouting and scalability
  * Font-sensitivity, support for antialiased fonts
- * Full Unicode (UTF-8) and localization support
+ * UTF-8 and localization support, Unicode/metadata strings
  * Support for cascading style sheets (CSS) and themes
  * Allows for multi-windowed, tabbed and fullscreen applications
- * Fully incremental, minimally invasive refresh logic, backbuffers
- are not required
+ * Incremental refresh logic with minimal overdraw
  * Concurrency thanks to inbuilt support for dispatching to
  coroutines
+ * Applications can be written in Lua code, nested expressions, or
+ XML. The XML launcher can validate against the actual implementation
  * Works unmodified with stock (double precision), single precision
  and integer versions of the Lua VM
  * Supplied with a documentation system supporting tekUI's object
  model
  * Support for textures, color gradients and transparency
- * Powerful unicode/metadata string class written in C
  * A text editor is included as an example.
-
+ 
 ==( uielements : 2.2. Supported interface elements )==
 
  * Canvas
@@ -189,7 +188,7 @@ between parent and child processes (using luaposix).
 
 ==( themes : 2.4. Style sheets and themes )==
 
-tekUI comes with a cascading style sheets (CSS) engine for the
+TekUI comes with a cascading style sheets (CSS) engine for the
 import of properties for element classes, custom classes, pseudo
 classes, as well as for individual, direct and hardcoded class
 formattings.
@@ -233,7 +232,29 @@ porting classes to C, there is a certain degree of freedom in how
 much reliance on the Lua VM and its automatic resource management
 is desired.
 
-==( documentation : 2.7. Documentation system )==
+==( xmlapps : 2.7. Writing applications in XML )==
+
+TekUI applications can be written as nested expressions in Lua, and
+this makes it easy to convert hierarchically structured formats such
+as XML to fully functional applications that can be executed on the
+Lua virtual machine. An examplary XML runner is included, e.g.:
+
+  # bin/runxml.lua -e tutorial-5.xml
+
+One benefit of writing an application in XML is that some validity
+checks can be performed against a document type, and also against
+tekUI's actual implementation:
+
+  # bin/runxml.lua -c tutorial-5.xml
+
+For this, it is required that you are using a debug version of
+tekUI's base class, see [[#proxied : Debugging objects]].
+
+XML support is still somewhat experimental. See the accompanying
+examples on how to express interactions between elements using
+notifications and the embedding of methods.
+
+==( documentation : 2.8. Documentation system )==
 
 TekUI comes with a documentation generator supporting its own object
 model. It is capable of generating a function reference and
@@ -246,7 +267,7 @@ Note that you need
 [[LuaFileSystem][http://www.keplerproject.org/luafilesystem/]] for
 the document generator to process the file system hierarchy.
 
-==( embedded : 2.8. Fitness for the use in embedded systems )==
+==( embedded : 2.9. Fitness for the use in embedded systems )==
 
 Complete solutions based on tekUI are in the reach of 512KiB ROM or
 flash memory: A typical application and the required modules, if
@@ -262,7 +283,7 @@ expensive features like style sheet support, by porting certain
 classes to C, using display drivers which are more tightly connected
 to the hardware, etc.
 
-==( futureplans : 2.9. Future plans )===
+==( futureplans : 2.10. Future plans )===
 
 One future development goal is to fold the tekUI framework into
 a freestanding C library, which enables applications to create
@@ -322,6 +343,8 @@ following libraries are supported:
  * [[LuaFileSystem][http://www.keplerproject.org/luafilesystem/]]
  for the [[DirList][manual.html#tek.ui.class.dirlist]] class,
  [[#documentation]] generator, and main demo program
+ * [[LuaExpat][http://matthewwild.co.uk/projects/luaexpat/]] for
+ the XML runner
  * [[LuaSocket][http://w3.impa.br/~diego/software/luasocket/]]
  for the socketmessage example
  * [[luaposix][https://github.com/luaposix/luaposix]] for the
@@ -845,12 +868,13 @@ setting it after including the module:
 
 See also the module's documentation for redirecting the output.
 
-==( proxied : 5.3. Proxied object model )==
+==( proxied : 5.3. Debugging objects )==
 
-If you plan on extending existing classes or develop your own, you
-are advised to set the following configurable parameters in
-[[tek.class][manual.html#tek.class]], the base class of all tekUI
-classes:
+If you wish to use [[#xmlapps : validation of XML files]] against
+tekUI's implementation, of if you plan on extending existing
+classes or develop your own, you are advised to set the following
+configurable parameters in [[tek.class][manual.html#tek.class]],
+the base class of all tekUI classes:
 
   local PROXY = true
   local DEBUG = true

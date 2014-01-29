@@ -10,7 +10,7 @@ body {
 a:link, a:visited {
 	color: #065;
 	background-color: inherit;
-	text-decoration: none;
+/* 	text-decoration: none; */
 }
 
 a:link:hover, a:visited:hover { background-color: #efd; }
