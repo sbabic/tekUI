@@ -68,7 +68,7 @@ local min = math.min
 local remove = table.remove
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 18.4"
+_VERSION = "ScrollGroup 19.0"
 local ScrollGroup = _M
 Group:newClass(ScrollGroup)
 
@@ -87,6 +87,7 @@ function ScrollGroup.new(class, self)
 	self.Child = self.Child or false
 	self.HMax = -1
 	self.HRange = -1
+	self.HValue = -1
 	self.HSliderEnabled = false
 	self.HSliderGroup = self.HSliderGroup or false
 	self.HSliderMode = self.HSliderMode or "off"
@@ -101,6 +102,7 @@ function ScrollGroup.new(class, self)
 	self.VIncrement = self.VIncrement or self.Increment
 	self.VMax = -1
 	self.VRange = -1
+	self.VValue = -1
 	self.VSliderEnabled = false
 	self.VSliderGroup = self.VSliderGroup or false
 	self.VSliderMode = self.VSliderMode or "off"
@@ -252,14 +254,17 @@ function ScrollGroup:onSetCanvasWidth(w)
 		self:enableHSlider(self.HSliderMode == "on"
 			or self.HSliderMode == "auto" and (sw < w))
 		local g = self.HSliderGroup
-		if g then
-			if self.HRange ~= w then
-				self.HRange = w
+		if self.HRange ~= w then
+			self.HRange = w
+			if g then
 				g.Slider:setValue("Range", w)
 			end
-			if self.HMax ~= w - sw then
-				self.HMax = w - sw
-				g.Slider:setValue("Max", w - sw)
+		end
+		local hmax = max(0, w - sw)
+		if self.HMax ~= hmax then
+			self.HMax = hmax
+			if g then
+				g.Slider:setValue("Max", hmax)
 			end
 		end
 	end
@@ -278,14 +283,17 @@ function ScrollGroup:onSetCanvasHeight(h)
 		self:enableVSlider(self.VSliderMode == "on"
 			or self.VSliderMode == "auto" and (sh < h))
 		local g = self.VSliderGroup
-		if g then
-			if self.VRange ~= h then
-				self.VRange = h
+		if self.VRange ~= h then
+			self.VRange = h
+			if g then
 				g.Slider:setValue("Range", h)
 			end
-			if self.VMax ~= h - sh then
-				self.VMax = h - sh
-				g.Slider:setValue("Max", h - sh)
+		end
+		local vmax = max(0, h - sh)
+		if self.VMax ~= vmax then
+			self.VMax = vmax
+			if g then
+				g.Slider:setValue("Max", vmax)
 			end
 		end
 	end
@@ -309,6 +317,7 @@ function ScrollGroup:onSetCanvasLeft(x)
 		if self.HSliderGroup then
 			self.HSliderGroup.Slider:setValue("Value", x)
 		end
+		self.HValue = x
 		if dx ~= 0 then
 			insert(self.BlitList, { dx, 0 })
 		end
@@ -333,6 +342,7 @@ function ScrollGroup:onSetCanvasTop(y)
 		if self.VSliderGroup then
 			self.VSliderGroup.Slider:setValue("Value", y)
 		end
+		self.VValue = y
 		if dy ~= 0 then
 			insert(self.BlitList, { 0, dy })
 			self:setFlags(ui.FL_REDRAW)

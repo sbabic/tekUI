@@ -40,8 +40,7 @@ tek.ui.class.canvas.textlist {
 							FGPens = { "#fff", "#fff", "#000" },
 							Weight = 0xc000,
 							HardScroll = true,
-							Latch = true,
-							
+							-- Latch = "bottom", -- default
 							Data = { 
 "This is a new text/list class that allows",
 "for colorization and efficient resizing.",
@@ -89,6 +88,16 @@ tek.ui.class.canvas.textlist {
 								local tw = self:getById("textlist")
 								local lnr = tw:getNumLines() + 1
 								tw:addLine(getline(3, lnr), lnr)
+							end
+						},
+						ui.Area:new { Width = "free", Height = "auto" },
+						ui.Button:new {
+							Width = "auto",
+							Text = "Clear",
+							InitialFocus = true,
+							onClick = function(self)
+								local tw = self:getById("textlist")
+								tw:clear()
 							end
 						},
 					},
