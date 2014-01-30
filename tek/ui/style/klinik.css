@@ -244,11 +244,11 @@ tek.ui.class.checkmark:active {
 }
 
 
-tek.ui.class.textedit.listgroup {
+tek.ui.class.textedit.textlist {
 	font: ui-fixed:18;
 	margin: 12; /*18;*/
 }
-tek.ui.class.canvas.listgroup {
+tek.ui.class.canvas.textlist {
 	border-style: solid;
 	border-color: #aaa;
 }

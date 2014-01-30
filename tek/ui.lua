@@ -33,6 +33,8 @@
 --			- Overall package version number of tekUI, starting at {{100}}
 --			for version 1.00. (Not to be confused with the ui module's
 --			{{_VERSION}} ''string'', with underscore)
+--		- {{VERSIONSTRING}}
+--			- String representation of the overall package version number
 --		- {{HUGE}}
 --			- This constant is used to express a 'huge' spatial extent on a
 --			given axis, e.g. {{Width = ui.HUGE}} indicates that you wish no
@@ -123,8 +125,10 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 43.0" -- module version string
-VERSION = 100 -- overall package version number
+_VERSION = "tekUI 44.0" -- module version string
+
+VERSION = 101 -- overall package version number
+VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:

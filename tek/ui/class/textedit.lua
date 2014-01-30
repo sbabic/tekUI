@@ -62,7 +62,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 17.5"
+_VERSION = "TextEdit 17.6"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -70,6 +70,8 @@ local LNR_HUGE = 1000000000
 local FAKECANVASWIDTH = 1000000000 --30000
 local FL_SETUP = ui.FL_SETUP
 local FL_READY = ui.FL_LAYOUT + ui.FL_SHOW + FL_SETUP
+
+local PENIDX_MARK = 64
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -128,8 +130,8 @@ function TextEdit.init(self)
 	self.Mark = false
 	self.MarkMode = self.MarkMode or "shift" -- "block", "shift"
 	self.MaxLength = self.MaxLength or false
-	self.MetaBGPens = { }
-	self.MetaFGPens = { }
+	self.BGPens = self.BGPens or { }
+	self.FGPens = self.FGPens or { }
 	self.Mode = "touch"
 	self.MultiLine = self.MultiLine or false
 	self.ReadOnly = self.ReadOnly == nil and true or self.ReadOnly
@@ -141,7 +143,9 @@ function TextEdit.init(self)
 	self.UpdateSuspended = false
 	self.TabSize = self.TabSize or 4
 	self.TextWidth = false
-	self.UseFakeCanvasWidth = not self.AutoWrap -- unlimited line width
+	if self.UseFakeCanvasWidth == nil then
+		self.UseFakeCanvasWidth = not self.AutoWrap -- unlimited line width
+	end
 	self.VisualCursorX = 1
 	self.VisibleMargin = self.VisibleMargin or { 0, 0, 0, 0 }
 	-- indicates that Y positions and heights are cached and valid:
@@ -679,8 +683,8 @@ function TextEdit:setup(app, window)
 
 	local props = self.Properties
 	
-	self.MetaBGPens[1] = props["findmark-background-color"] or "list-alt"
-	self.MetaFGPens[1] = props["findmark-color"] or "list-detail"
+	self.BGPens[PENIDX_MARK] = self.BGPens[PENIDX_MARK] or props["findmark-background-color"] or "list-alt"
+	self.FGPens[PENIDX_MARK] = self.FGPens[PENIDX_MARK] or props["findmark-color"] or "list-detail"
 	
 	local fname = self.FontName or props["font"]
 	local f = self.Application.Display:openFont(fname)
@@ -1215,8 +1219,8 @@ function TextEdit:foreachSnippet(lnr, func)
 				pos0 = pos1
 				snipvx = vx
 				snipgx = gx
-				fgpen = mark and mark_fg or self.MetaFGPens[meta] or pen_fg
-				bgpen = mark and mark_bg or self.MetaBGPens[meta] or pen_bg
+				fgpen = mark and mark_fg or self.FGPens[meta] or pen_fg
+				bgpen = mark and mark_bg or self.BGPens[meta] or pen_bg
 			end
 			vx = vx + 1
 			if char == 9 then
@@ -2066,7 +2070,7 @@ function TextEdit:clearMark()
 end
 
 function TextEdit:mark(line, lnr, p0, p1)
-	line:setmetadata(1, p0, p1)
+	line:setmetadata(PENIDX_MARK, p0, p1)
 end
 
 function TextEdit:markWord(text)

@@ -1,6 +1,18 @@
 
 == tekUI Changelog ==
 
+=== 1.01: ===
+
+ * Area: C version erase() did not use texture origins, corrected, in
+ setFlags() now only newly set flags cause FL_UPDATE to bubble up
+ * String: Fixed a bug in range calculation that could corrupt the heap
+ * Window: Added support for initializing HoldTickFirst and -Repeat
+ * Added XML runner, examples and documentation
+ * CheckMark, PopItem, Widget: Some corrections in precedence of style
+ pseudoclasses
+ * Added prototype TextList class
+ * Improved 'klinik' stylesheet
+
 === 1.0: ===
 
  * New versioning scheme established. The 1.0 version does not reflect some

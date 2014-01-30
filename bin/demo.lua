@@ -268,7 +268,7 @@ app = ui.Application:new
 												Child = ui.FloatText:new
 												{
 													Text = L.INTERPRETER_VERSION:format(_VERSION) .. "\n" ..
-															L.TEKUI_PACKAGE_VERSION:format(ui.VERSION)
+															L.TEKUI_PACKAGE_VERSION:format(ui.VERSIONSTRING)
 												}
 											}
 										},
