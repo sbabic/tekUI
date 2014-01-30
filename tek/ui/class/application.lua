@@ -130,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 39.0"
+_VERSION = "Application 39.1"
 local Application = _M
 Family:newClass(Application)
 
@@ -181,39 +181,13 @@ function Application.new(class, self)
 end
 
 -------------------------------------------------------------------------------
---	init: overrides
+--	initStyleSheets
 -------------------------------------------------------------------------------
 
-function Application.init(self)
-	self.Application = self
-	self.ApplicationId = self.ApplicationId or "unknown"
-	self.Author = self.Author or "unknown"
-	self.Clipboard = self.Clipboard or { }
-	self.Copyright = self.Copyright or "unknown"
-	self.Coroutines = { }
-	self.Display = self.Display or false
-	self.Domain = self.Domain or "unknown"
-	self.ElementById = { }
-	self.FocusWindow = false
-	local t = self.GCControl
-	if t == nil or t == true then
-		self.GCControl = "step"
-	end
-	self.InputHandlers = { [MSG_USER] = { } }
-	self.LastKey = false
-	self.ModalWindows = { } -- stack of
-	self.MsgDispatch = false
-	self.OpenWindows = { }
-	if self.Preload then
-		ui.require("group", 22)
-		ui.require("text", 20)
-		ui.require("window", 22)
-		ui.require("dirlist", 14)
-	end
-	self.ProgramName = self.ProgramName or self.Title or "tekUI"
+function Application.initStylesheets(self)
+
 	local props = { [0] = { } }
 	self.Properties = props
-	self.Status = "init"
 	local authorstyles = self.AuthorStyles or false
 	self.AuthorStyles = authorstyles
 	local authorstylesheets = self.AuthorStyleSheets or false
@@ -282,6 +256,41 @@ function Application.init(self)
 		db.info("failed to decode user stylesheet: %s", msg)
 	end
 
+end
+
+-------------------------------------------------------------------------------
+--	init: overrides
+-------------------------------------------------------------------------------
+
+function Application.init(self)
+	self.Application = self
+	self.ApplicationId = self.ApplicationId or "unknown"
+	self.Author = self.Author or "unknown"
+	self.Clipboard = self.Clipboard or { }
+	self.Copyright = self.Copyright or "unknown"
+	self.Coroutines = { }
+	self.Display = self.Display or false
+	self.Domain = self.Domain or "unknown"
+	self.ElementById = { }
+	self.FocusWindow = false
+	local t = self.GCControl
+	if t == nil or t == true then
+		self.GCControl = "step"
+	end
+	self.InputHandlers = { [MSG_USER] = { } }
+	self.LastKey = false
+	self.ModalWindows = { } -- stack of
+	self.MsgDispatch = false
+	self.OpenWindows = { }
+	if self.Preload then
+		ui.require("group", 22)
+		ui.require("text", 20)
+		ui.require("window", 22)
+		ui.require("dirlist", 14)
+	end
+	self.ProgramName = self.ProgramName or self.Title or "tekUI"
+	self.Status = "init"
+	Application.initStylesheets(self)
 	return Family.init(self)
 end
 
