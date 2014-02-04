@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 3.1"
+_VERSION = "Input 3.2"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -137,6 +137,9 @@ function EditInput:passMsg(msg)
 						end
 						ct[1], ct[2] = ts, tu
 					end
+				else
+					self.MouseButtonPressed = false
+					self:setValue("Selected", false)
 				end
 -- 			end
 		elseif msg[3] == 2 then
@@ -259,6 +262,10 @@ function Input.new(class, self)
 	self.TabEnter = self.TabEnter or false
 	self.Text = self.Text or "" -- needed?
 --	self.InitialFocus = self.InitialFocus or false
+	
+	if not self.AutoPosition then
+		self.AutoPosition = true
+	end
 
 	self.AcceptFocus = false
 	self.HSliderMode = "off"

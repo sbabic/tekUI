@@ -45,7 +45,7 @@ local db = require "tek.lib.debug"
 local String = require "tek.lib.string"
 local ui = require "tek.ui"
 local Region = ui.loadLibrary("region", 9)
-local Sizeable = ui.require("sizeable", 6)
+local Sizeable = ui.require("sizeable", 10)
 
 local assert = assert
 local concat = table.concat
@@ -62,7 +62,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 17.6"
+_VERSION = "TextEdit 17.8"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -70,6 +70,7 @@ local LNR_HUGE = 1000000000
 local FAKECANVASWIDTH = 1000000000 --30000
 local FL_SETUP = ui.FL_SETUP
 local FL_READY = ui.FL_LAYOUT + ui.FL_SHOW + FL_SETUP
+local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 
 local PENIDX_MARK = 64
 
@@ -99,6 +100,7 @@ Properties = {
 
 function TextEdit.init(self)
 	self.AutoIndent = true -- self.AutoIndent or false
+	self.AutoPosition = self.AutoPosition or false
 	self.AutoWrap = self.AutoWrap or false
 	self.BlinkCursor = self.BlinkCursor or false
 	self.BlinkState = false
@@ -770,7 +772,9 @@ function TextEdit:layout(x0, y0, x1, y1, markdamage)
 			local n4 = y1 - m4
 			local r1, r2, r3, r4 = self:getRect()
 			markdamage = markdamage ~= false
-			if n1 == r1 and n2 == r2 and markdamage and self.TrackDamage then
+			if n1 == r1 and n2 == r2 and markdamage and 
+				self:checkFlags(FL_TRACKDAMAGE) then
+				
 				local dw = n3 - r3
 				local dh = n4 - r4
 				if dw ~= 0 and insx and c[1] > insx then
@@ -2278,7 +2282,7 @@ function TextEdit:getMouseOver(msg)
 	local y0 = y - cy
 	local is_over = x0 >= 0 and x0 < vw and y0 >= 0 and y0 < vh
 	local position = false
-	local over = "outside"
+	local over = false
 	if is_over then
 		position = true
 		local m1, m2, m3, m4 = self:getMargin()

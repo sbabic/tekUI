@@ -34,6 +34,7 @@ static void hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh,
 	struct fnt_attr *fattr);
 
 /*****************************************************************************/
+#if defined(ENABLE_XFT)
 static const
 TSTRPTR libxftsyms[LIBXFT_NUMSYMS] =
 {
@@ -70,6 +71,7 @@ TSTRPTR libfcsyms[LIBFC_NUMSYMS] =
 	"FcInit",
 	"FcFini",
 };
+#endif
 
 /*****************************************************************************/
 /* try to open libfontconfig and libxft and bind all symbols
@@ -123,11 +125,11 @@ LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod)
 
 LOCAL void x11_exitlibxft(X11DISPLAY *mod)
 {
+	#if defined(ENABLE_XFT)
 	if (mod->x11_libfchandle)
 		(*mod->x11_fciface.FcFini)();
 	if (mod->x11_libfchandle)
 		dlclose(mod->x11_libfchandle);
-	#if defined(ENABLE_XFT)
 	if (mod->x11_libxfthandle)
 		dlclose(mod->x11_libxfthandle);
 	#endif

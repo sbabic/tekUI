@@ -11,7 +11,7 @@
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 1.01
+			Version 1.02
 		</p>
 		<hr />
 		<h2>
@@ -83,6 +83,9 @@
 								3.1. <a href="#requirements">Requirements</a> 
 							</li>
 							<li style="list-style-type: none">
+								3.1.1 <a href="#luamodules">External Lua modules</a> 
+							</li>
+							<li style="list-style-type: none">
 								3.2. <a href="#buildenv">Adjusting the build environment</a> 
 								<blockquote>
 									<ul>
@@ -100,6 +103,9 @@
 										</li>
 										<li style="list-style-type: none">
 											3.2.5 <a href="#noterawfb">Raw framebuffer notes</a> 
+										</li>
+										<li style="list-style-type: none">
+											3.2.6 <a href="#notefloat">Floating point support</a> 
 										</li>
 									</ul>
 								</blockquote>
@@ -613,31 +619,11 @@
 				Lua 5.1, 5.2 and LuaJIT 2.0 are supported out of the box, if Lua 5.2
 				is compiled with <code>LUA_COMPAT_MODULE</code>.
 			</p>
+		</div>
+		<div class="node"><h3><a name="luamodules" id="luamodules">3.1.1. External Lua modules</a></h3>
 			<p>
-				TekUI is free of floating point arithmetics and works with a 32bit
-				integer version of the Lua virtual machine, with the following,
-				noncritical exceptions:
-			</p>
-			<blockquote>
-				<ul>
-					<li>
-						Support for color gradients (see <code>-DENABLE_GRADIENT</code> in the
-						config file) requires the <code>float</code> data type in the C library.
-					</li>
-					<li>
-						There are a few places in the x11 driver where the <code>double</code> data
-						type is used, if Xft support is enabled (see <code>-DENABLE_XFT</code>).
-					</li>
-					<li>
-						The desktop style needs floating point support in the Lua VM to
-						import GTK+ colors (falls back to the default colorscheme if
-						unavailable at runtime).
-					</li>
-				</ul>
-			</blockquote>
-			<p>
-				TekUI does not strictly depend on any external Lua library. The
-				following libraries are supported:
+				TekUI does not strictly depend on any external Lua modules. The
+				following modules are supported:
 			</p>
 			<blockquote>
 				<ul>
@@ -748,6 +734,30 @@
 				enable LibVNCServer support, enable the raw framebuffer and the
 				<code>VNCSERVER_</code> defines in the config file.
 			</p>
+		</div>
+		<div class="node"><h3><a name="notefloat" id="notefloat">3.2.6 Floating point support</a></h3>
+			<p>
+				TekUI is free of floating point arithmetics and works with a 32bit
+				integer version of the Lua virtual machine, with the following,
+				noncritical exceptions:
+			</p>
+			<blockquote>
+				<ul>
+					<li>
+						Support for color gradients (see <code>-DENABLE_GRADIENT</code> in the
+						config file) requires the <code>float</code> data type in the C library.
+					</li>
+					<li>
+						There are a few places in the x11 driver where the <code>double</code> data
+						type is used, if Xft support is enabled (see <code>-DENABLE_XFT</code>).
+					</li>
+					<li>
+						The desktop style needs floating point support in the Lua VM to
+						import GTK+ colors (falls back to the default colorscheme if
+						unavailable at runtime).
+					</li>
+				</ul>
+			</blockquote>
 		</div>
 		<div class="node"><h2><a name="building" id="building">3.3. Building</a></h2>
 			<p>

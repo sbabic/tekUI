@@ -1,6 +1,26 @@
 
 == tekUI Changelog ==
 
+=== 1.02: ===
+
+ * PopItem: getPseudoClass() removed
+ * Window: relayout() removed
+ * TextList: improved logic for latching on list top or bottom
+ * ScrollGroup: added HValue, VValue, H/VMax/Min/Range/Value are now
+ always updated
+ * runxml: version added
+ * some corrections in examples
+ * Application, Area (Lua version): small optimizations
+ * VNC server: Now using a nonblocking socket for signalling, maxfd is
+ constantly updated
+ * TextEdit: AutoPosition reenabled, fixes regression
+ * Slider, Gauge: now uses rethinkLayout() instead of Window.relayout(),
+ leading to visually tighter updates
+ * Input, EditWindow: clicking outside the element stops editing
+ * UI, Area, Canvas, Group, PopItem, Sizeable, TextEdit, Widget, Window:
+ Added flags FL_AUTOPOSITION, FL_ERASEBG, FL_TRACKDAMAGE, FL_ACTIVATERMB,
+ FL_INITIALFOCUS
+    
 === 1.01: ===
 
  * Area: C version erase() did not use texture origins, corrected, in

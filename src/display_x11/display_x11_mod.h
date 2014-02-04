@@ -12,7 +12,9 @@
 #include <tek/teklib.h>
 
 #include <X11/X.h>
+#if defined(ENABLE_XFT)
 #include <X11/Xft/Xft.h>
+#endif
 #include <X11/Xlib.h>
 #include <sys/shm.h>
 #include <X11/Xutil.h>
@@ -138,6 +140,7 @@ struct fnt_attr
 	TINT  fnum;
 };
 
+#if defined(ENABLE_XFT)
 struct XftInterface
 {
 	XftFont *(*XftFontOpen)(Display *dpy, int screen, ...);
@@ -189,6 +192,8 @@ struct FcInterface
 
 #define LIBFC_NUMSYMS	(sizeof(struct FcInterface) / sizeof(void (*)(void)))
 
+#endif
+
 /*****************************************************************************/
 
 typedef struct
@@ -232,10 +237,9 @@ typedef struct
 	TBOOL x11_use_xft;
 	TAPTR x11_libxfthandle;
 	struct XftInterface x11_xftiface;
-	#endif
-
 	TAPTR x11_libfchandle;
 	struct FcInterface x11_fciface;
+	#endif
 
 	struct FontMan x11_fm;
 
@@ -308,7 +312,9 @@ typedef struct
 	Colormap colormap;
 	GC gc;
 
+#if defined(ENABLE_XFT)
 	XftDraw *draw;
+#endif
 	TAPTR curfont; /* current active font */
 
 	Atom atom_wm_delete_win;

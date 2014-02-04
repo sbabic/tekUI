@@ -50,11 +50,12 @@
 --			When the element is released, this attribute is set to '''false'''.
 --			Changes to this attribute cause the invocation of the
 --			Widget:onHold() method.
---		- {{InitialFocus [IG]}} (boolean)
+--		- {{InitialFocus [I]}} (boolean)
 --			Specifies that the element should receive the focus initially.
---			If '''true''', the element will set the element's {{Focus}}
---			attribute to '''true''' upon invocation of the
---			[[#Area:show : show]] method.
+--			If '''true''', the element will set its {{Focus}} attribute to
+--			'''true''' upon invocation of the [[#Area:show : show]] method.
+--			The boolean will be translated to the flag {{FL_INITIALFOCUS}},
+--			and is meaningless after initialization.
 --		- {{KeyCode [IG]}} (string or boolean)
 --			If set, a keyboard equivalent for activating the element. See
 --			[[#tek.ui.class.popitem : PopItem]] for a discussion of denoting
@@ -132,10 +133,12 @@
 
 -- local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Frame = ui.require("frame", 16)
+local Frame = ui.require("frame", 17)
+
+local bor = ui.bor
 
 module("tek.ui.class.widget", tek.ui.class.frame)
-_VERSION = "Widget 28.2"
+_VERSION = "Widget 29.0"
 local Widget = _M
 Frame:newClass(Widget)
 
@@ -150,6 +153,9 @@ local FL_REDRAW = ui.FL_REDRAW
 local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
 local FL_RECVINPUT = ui.FL_RECVINPUT
 local FL_RECVMOUSEMOVE = ui.FL_RECVMOUSEMOVE
+local FL_AUTOPOSITION = ui.FL_AUTOPOSITION
+local FL_ACTIVATERMB = ui.FL_ACTIVATERMB
+local FL_INITIALFOCUS = ui.FL_INITIALFOCUS
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -174,16 +180,22 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 -------------------------------------------------------------------------------
 
 function Widget.init(self)
+	local flags = 0
 	self.Active = false
-	self.ActivateOnRMB = self.ActivateOnRMB or false -- undocumented yet
+	if self.ActivateOnRMB then
+		flags = bor(flags, FL_ACTIVATERMB)
+	end
 	self.DblClick = false
 	self.EffectHook = false
 	self.FGPen = false
 	self.Hold = false
-	self.InitialFocus = self.InitialFocus or false
+	if self.InitialFocus then
+		flags = bor(flags, FL_INITIALFOCUS)
+	end
 	self.KeyCode = self.KeyCode or false
 	self.Mode = self.Mode or "inert"
 	self.Pressed = false
+	self.Flags = bor(self.Flags or 0, flags)
 	return Frame.init(self)
 end
 
@@ -226,7 +238,7 @@ end
 
 function Widget:show()
 	Frame.show(self)
-	if self.Mode ~= "inert" and self.InitialFocus then
+	if self.Mode ~= "inert" and self:checkFlags(FL_INITIALFOCUS) then
 		self:setValue("Focus", true)
 	end
 end
@@ -418,7 +430,7 @@ end
 function Widget:passMsg(msg)
 	local win = self.Window
 	if msg[2] == MSG_MOUSEBUTTON then
-		local armb = self.ActivateOnRMB
+		local armb = self:checkFlags(FL_ACTIVATERMB)
 		local mx, my = self:getMsgFields(msg, "mousexy")
 		if msg[3] == 1 or (armb and msg[3] == 4) then -- l/r down:
 			if win.HoverElement == self and not self.Disabled then
@@ -469,7 +481,7 @@ end
 
 function Widget:onFocus()
 	local focused = self.Focus
-	if focused and self.AutoPosition then
+	if focused and self:checkFlags(FL_AUTOPOSITION) then
 		self:focusRect()
 	end
 	local w = self.Window

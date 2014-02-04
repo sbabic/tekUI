@@ -24,7 +24,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.editwindow", tek.ui.class.window)
-_VERSION = "EditWindow 7.1"
+_VERSION = "EditWindow 7.2"
 local EditWindow = _M
 Window:newClass(EditWindow)
 
@@ -325,6 +325,9 @@ function EditInput:passMsg(msg)
 					end
 					ct[1], ct[2] = ts, tu
 				end
+-- 			else
+-- 				self.MouseButtonPressed = false
+-- 				self:setValue("Selected", false)
 			end
 		elseif msg[3] == 2 then
 			self.MouseButtonPressed = false
@@ -374,7 +377,7 @@ end
 function EditInput:handleMouseButton(msg)
 	if msg[3] == 64 then -- wheelup
 		local over = self:getMouseOver(msg)
-		if over ~= "outside" then
+		if over then
 			self:setActive(true)
 			self:cursorUp()
 			self:mouseUnmark()
@@ -383,7 +386,7 @@ function EditInput:handleMouseButton(msg)
 		return msg
 	elseif msg[3] == 128 then -- wheeldown
 		local over = self:getMouseOver(msg)
-		if over ~= "outside" then
+		if over then
 			self:setActive(true)
 			self:cursorDown()
 			self:mouseUnmark()
@@ -465,7 +468,7 @@ end
 --	shortcuts in a window
 -------------------------------------------------------------------------------
 
-function EditWindow.createNewInput(self, L, shared, input_table)
+function EditWindow.createNewInput(self, L, shared, input_table, initial)
 	local fontname = self.FontName
 	if self.FontSize then
 		fontname = (fontname or "") .. ":" .. self.FontSize
@@ -476,6 +479,7 @@ function EditWindow.createNewInput(self, L, shared, input_table)
 	
 	local input = EditInput:new {
 -- 		AutoPosition = true,
+		InitialFocus = initial,
 		InputShared = shared,
 		FontName = fontname,
 		Clipboard = self.Clipboard,
@@ -590,7 +594,7 @@ function EditWindow.new(class, self)
 	
 	self.EditInputs = { }
 	for i = 1, self.NumInputs do
-		EditWindow.createNewInput(self, L, shared, self.EditInputs)
+		EditWindow.createNewInput(self, L, shared, self.EditInputs, i == 1)
 	end
 	
 	if self.FileName then
@@ -600,9 +604,6 @@ function EditWindow.new(class, self)
 			self.EditInputs[i]:loadText(fnames[i])
 		end
 	end
-	
-	self.EditInputs[1].InitialFocus = true
---	self.EditInputs[1].ScrollGroup.Weight = 0x10000
 
 	local inputchildren = { }
 	for i = 1, #self.EditInputs do

@@ -6,6 +6,8 @@
 --	See copyright notice in COPYRIGHT
 --
 
+local _VERSION = "runxml 1.0"
+
 local ui = require "tek.ui"
 local db = require "tek.lib.debug"
 local Args = require "tek.lib.args"
@@ -21,7 +23,19 @@ local function outf(fmt, ...)
 	fdout:write(fmt:format(...))
 end
 
+local initonlyattrs = 
+{
+	ActivateOnRMB = "boolean",
+	AutoPosition = "boolean",
+	EraseBG = "boolean",
+	InitialFocus = "boolean",
+	TrackDamage = "boolean",
+}
+
 local function checkattribute(class, attr, val)
+	if initonlyattrs[attr] then
+		return true
+	end
 	return pcall(function() ui[class]:new()[attr] = val or "Test" end)
 end
 
@@ -36,19 +50,29 @@ end
 
 
 
-local template = "SRC/A,EXECUTE=-e/S,CHECK=-c/S,HELP=-h/S"
+local template = "SRC,EXECUTE=-e/S,CHECK=-c/S,VERSION=-v/S,HELP=-h/S"
 local args = Args.read(template, arg)
 if not args or args["-h"] then
 	print "Usage: runxml.lua [options] xml-src"
 	print "Options:"
 	print "  -e   pass code on to the Lua interpreter"
 	print "  -c   perform runtime validity checks against tekUI implementation"
+	print "  -v   show version info and exit"
 	print "  -h   this help"
 	print "Converts well-formed XML to a tekUI application's Lua code."
 	return os.exit(1)
 end
 
+if args.version then
+	print(_VERSION)
+	return os.exit(1)
+end
+
 local fname = args.src
+if not fname then
+	print "No file specified."
+	return os.exit(1)
+end
 local file = io.open(fname)
 if not file then
 	print("Error reading '" .. fname .. "'")

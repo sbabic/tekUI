@@ -125,9 +125,9 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 44.0" -- module version string
+_VERSION = "tekUI 45.0" -- module version string
 
-VERSION = 101 -- overall package version number
+VERSION = 102 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------
@@ -1046,14 +1046,19 @@ MSG_ALL          = 0x571f -- not including MSG_USER, MSG_INTERVAL
 --	Flags:
 -------------------------------------------------------------------------------
 
-FL_LAYOUT        = 0x0001
-FL_REDRAW        = 0x0002
-FL_REDRAWBORDER  = 0x0004
-FL_SETUP         = 0x0008
-FL_SHOW          = 0x0010
-FL_CHANGED       = 0x0020
-FL_POPITEM       = 0x0040
-FL_UPDATE        = 0x0080 -- window
-FL_RECVINPUT     = 0x0100
-FL_RECVMOUSEMOVE = 0x0200
+FL_LAYOUT        = 0x0001 -- element has been layouted
+FL_REDRAW        = 0x0002 -- element needs a repaint
+FL_REDRAWBORDER  = 0x0004 -- element needs a border repaint
+FL_SETUP         = 0x0008 -- element is setup
+FL_SHOW          = 0x0010 -- element is being shown
+FL_CHANGED       = 0x0020 -- element has seen structural changes
+FL_POPITEM       = 0x0040 -- used to identify elements in popups
+FL_UPDATE        = 0x0080 -- flag bubbled up on setting REDRAW, CHANGED, ...
+FL_RECVINPUT     = 0x0100 -- element receives input
+FL_RECVMOUSEMOVE = 0x0200 -- element receives mouse movement events
 FL_CURSORFOCUS   = 0x0400 -- element can receive the focus using cursor keys
+FL_AUTOPOSITION  = 0x0800 -- element is positioned automatically when focused
+FL_ERASEBG       = 0x1000 -- the element erases its background automatically
+FL_TRACKDAMAGE   = 0x2000 -- the element tracks intra-area damages
+FL_ACTIVATERMB   = 0x4000 -- (also) activate on right mouse button
+FL_INITIALFOCUS  = 0x8000 -- element is receiving the focus during show()

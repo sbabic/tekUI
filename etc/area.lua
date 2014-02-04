@@ -16,13 +16,15 @@
 --		relationships to its neighbour elements.
 --
 --	ATTRIBUTES::
---		- {{AutoPosition [ISG]}} (boolean)
+--		- {{AutoPosition [I]}} (boolean)
 --			When the element receives the focus, this flag instructs it to
 --			automatically position itself into the visible area of any Canvas
 --			that may contain it. An affected [[#tek.ui.class.canvas : Canvas]]
 --			must have its {{AutoPosition}} attribute enabled as well for this
 --			option to take effect (but unlike the Area class, in a Canvas it
 --			is disabled by default).
+--			The boolean (default '''true''') will be translated to the flag
+--			{{FL_AUTOPOSITION}}, and is meaningless after initialization.
 --		- {{BGPen [G]}} (color specification)
 --			The current color (or texture) for painting the element's
 --			background. This value is set in Area:setState(), where it is
@@ -38,12 +40,14 @@
 --			If '''true''', the element is in disabled state and loses its
 --			ability to interact with the user. This state variable is handled
 --			in the [[#tek.ui.class.widget : Widget]] class.
---		- {{EraseBG [ISG]}} (boolean)
+--		- {{EraseBG [I]}} (boolean)
 --			If '''true''', the element's background is painted automatically
 --			using the Area:erase() method. Set this attribute to '''false'''
 --			if you intend to paint the background yourself in Area:draw().
+--			The boolean (default '''true''') will be translated to the flag
+--			{{FL_ERASEBG}}, and is meaningless after initialization.
 --		- {{Flags [SG]}} (Flags field)
---			This attribute holds various status flags:
+--			This attribute holds various status flags, among others:
 --			- {{FL_SETUP}} - Set in Area:setup() and cleared in Area:cleanup()
 --			- {{FL_LAYOUT}} - Set in Area:layout(), cleared in Area:cleanup()
 --			- {{FL_SHOW}} - Set in Area:show(), cleared in Area:hide()
@@ -98,11 +102,13 @@
 --		- {{Selected [ISG]}} (boolean)
 --			If '''true''', the element is in selected state. This state
 --			variable is handled by the [[#tek.ui.class.widget : Widget]] class.
---		- {{TrackDamage [ISG]}} (boolean)
+--		- {{TrackDamage [I]}} (boolean)
 --			If '''true''', the element collects intra-area damages in a
 --			[[#tek.lib.region : Region]] named {{DamageRegion}}, which can be
 --			used by class writers to implement minimally invasive repaints.
 --			Default: '''false''', the element is repainted in its entirety.
+--			The boolean will be translated to the flag {{FL_TRACKDAMAGE}} and
+--			is meaningless after initialization.
 --		- {{VAlign [IG]}} ({{"top"}}, {{"center"}}, {{"bottom"}})
 --			Vertical alignment of the element in its group. This attribute
 --			can be controlled using the {{valign}} style property.
@@ -208,7 +214,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 52.0"
+_VERSION = "Area 53.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -221,6 +227,9 @@ local FL_REDRAWBORDER = ui.FL_REDRAWBORDER
 local FL_UPDATE = ui.FL_UPDATE
 local FL_CHANGED = ui.FL_CHANGED
 local FL_BUBBLEUP = FL_REDRAW + FL_REDRAWBORDER + FL_CHANGED
+local FL_AUTOPOSITION = ui.FL_AUTOPOSITION
+local FL_ERASEBG = ui.FL_ERASEBG
+local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 
 local HUGE = ui.HUGE
 
@@ -242,16 +251,20 @@ end
 -------------------------------------------------------------------------------
 
 function Area.init(self)
-	if self.AutoPosition == nil then
-		self.AutoPosition = true
+	local flags = 0
+	if self.AutoPosition == nil or self.AutoPosition then
+		flags = bor(flags, FL_AUTOPOSITION)
 	end
+	if self.EraseBG == nil or self.EraseBG then
+		flags = bor(flags, FL_ERASEBG)
+	end
+	if self.TrackDamage then
+		flags = bor(flags, FL_TRACKDAMAGE)
+	end
+	self.Flags = bor(self.Flags or 0, flags)
 	self.BGPen = false
 	self.DamageRegion = false
 	self.Disabled = self.Disabled or false
-	if self.EraseBG == nil then
-		self.EraseBG = true
-	end
-	self.Flags = 0
 	self.Focus = false
 	self.HAlign = self.HAlign or false
 	self.Height = self.Height or false
@@ -261,7 +274,6 @@ function Area.init(self)
 	self.MinHeight = self.MinHeight or false
 	self.MinWidth = self.MinWidth or false
 	self.Selected = self.Selected or false
-	self.TrackDamage = self.TrackDamage or false
 	self.VAlign = self.VAlign or false
 	self.Weight = self.Weight or false
 	self.Width = self.Width or false
@@ -339,7 +351,7 @@ end
 -------------------------------------------------------------------------------
 
 function Area:hide()
-	self:checkClearFlags(FL_SHOW + FL_REDRAW + ui.FL_REDRAWBORDER)
+	self:checkClearFlags(FL_SHOW + FL_REDRAW + FL_REDRAWBORDER)
 end
 
 -------------------------------------------------------------------------------
@@ -440,6 +452,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 
 	local samesize = dw == 0 and dh == 0
 	local validmove = (dx == 0) ~= (dy == 0)
+	local trackdamage = self:checkFlags(FL_TRACKDAMAGE)
 
 	-- refresh element by copying if:
 	-- * shifting occurs only on one axis
@@ -447,7 +460,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	-- * element is not already slated for copying
 	-- * element's background is position-independent
 	
-	if validmove and (samesize or self.TrackDamage) and
+	if validmove and (samesize or trackdamage) and
 		not win.BlitObjects[self] then
 		local _, _, _, pos_independent = self:getBG()
 		if pos_independent then
@@ -472,7 +485,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 				if r:isEmpty() then
 					-- completely visible before and after:
 					can_copy = true
-				elseif self.TrackDamage then
+				elseif trackdamage then
 					db.warn("partially visible (masked by cliprect)")
 				end
 			else
@@ -497,7 +510,7 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 
 	if x0 == r1 and y0 == r2 then
 		-- did not move, size changed:
-		if markdamage and self.TrackDamage then
+		if markdamage and trackdamage then
 			-- if damage is to be marked and can be tracked:
 			local r = newregion(x0, y0, x1, y1):subRect(r1, r2, r3, r4)
 			-- clip new damage through current cliprect, correct by shift:
@@ -528,7 +541,7 @@ end
 --	Area:damage(x0, y0, x1, y1): If the element overlaps with the given
 --	rectangle, this function marks it as damaged by setting {{ui.FL_REDRAW}}
 --	in the element's {{Flag}} field. Additionally, if the element's
---	{{TrackDamage}} attribute is '''true''', intra-area damage rectangles are
+--	{{FL_TRACKDAMAGE}} flag is set, intra-area damage rectangles are
 --	collected in {{DamageRegion}}.
 -------------------------------------------------------------------------------
 
@@ -536,12 +549,12 @@ function Area:damage(r1, r2, r3, r4)
 	if self:checkFlags(FL_LAYOUT + FL_SHOW) then
 		local s1, s2, s3, s4 = self:getRect()
 		r1, r2, r3, r4 = intersect(r1, r2, r3, r4, s1, s2, s3, s4)
-		local track = self.TrackDamage
-		if r1 and (track or not self:checkFlags(FL_REDRAW)) then
+		local trackdamage = self:checkFlags(FL_TRACKDAMAGE)
+		if r1 and (trackdamage or not self:checkFlags(FL_REDRAW)) then
 			local dr = self.DamageRegion
 			if dr then
 				dr:orRect(r1, r2, r3, r4)
-			elseif track then
+			elseif trackdamage then
 				self.DamageRegion = newregion(r1, r2, r3, r4)			
 			end
 			self:setFlags(FL_REDRAW)
@@ -554,7 +567,7 @@ end
 --	by the presence of the flag {{ui.FL_REDRAW}} in the {{Flags}} field),
 --	draws the element into the rectangle that was assigned to it by the
 --	layouter, clears {{ui.FL_REDRAW}}, and returns '''true'''. If the
---	atttribute {{EraseBG}} is set, this function also clears the element's
+--	flag {{FL_ERASEBG}} is set, this function also clears the element's
 --	background by calling Area:erase().
 --
 --	When overriding this function, the control flow is roughly as follows:
@@ -586,7 +599,7 @@ local FL_REDRAW_OK = FL_LAYOUT + FL_SHOW + FL_SETUP + FL_REDRAW
 function Area:draw()
 	-- check layout, show, setup, redraw, and clear redraw:
 	if self:checkClearFlags(FL_REDRAW_OK, FL_REDRAW) then
-		if self.EraseBG and self:drawBegin() then
+		if self:checkFlags(FL_ERASEBG) and self:drawBegin() then
 			self:erase()
 			self:drawEnd()
 		end
@@ -633,7 +646,7 @@ end
 
 -------------------------------------------------------------------------------
 --	Area:erase(): Clears the element's background. This method is invoked by
---	Area:draw() if the {{EraseBG}} attribute is set, and when a repaint is
+--	Area:draw() if the {{FL_ERASEBG}} flag is set, and when a repaint is
 --	possible and necessary. Area:drawBegin() has been invoked when this
 --	function is called, and Area:drawEnd() will be called afterwards.
 -------------------------------------------------------------------------------

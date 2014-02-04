@@ -5,14 +5,14 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="30-Jan-2014" />
+		<meta name="created" content="04-Feb-2014" />
 	</head>
 	<body>
 		<h1>
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 1.01
+			Version 1.02
 		</p>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -1590,7 +1590,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v44.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v45.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2040,7 +2040,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v39.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v39.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2452,7 +2452,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v51.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v53.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2473,7 +2473,7 @@ message = function(object, message)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>AutoPosition &#091;ISG&#093;</code> (boolean)
+							<code>AutoPosition &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									When the element receives the focus, this flag instructs it to
@@ -2482,6 +2482,8 @@ message = function(object, message)
 									must have its <code>AutoPosition</code> attribute enabled as well for this
 									option to take effect (but unlike the Area class, in a Canvas it
 									is disabled by default).
+									The boolean (default <strong>true</strong>) will be translated to the flag
+									<code>FL_AUTOPOSITION</code>, and is meaningless after initialization.
 								</p>
 							</blockquote>
 						</li>
@@ -2519,12 +2521,14 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>EraseBG &#091;ISG&#093;</code> (boolean)
+							<code>EraseBG &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element's background is painted automatically
 									using the <a href="#Area:erase"><code>Area:erase()</code></a> method. Set this attribute to <strong>false</strong> 
 									if you intend to paint the background yourself in <a href="#Area:draw"><code>Area:draw()</code></a>.
+									The boolean (default <strong>true</strong>) will be translated to the flag
+									<code>FL_ERASEBG</code>, and is meaningless after initialization.
 								</p>
 							</blockquote>
 						</li>
@@ -2532,7 +2536,7 @@ message = function(object, message)
 							<code>Flags &#091;SG&#093;</code> (Flags field)
 							<blockquote>
 								<p>
-									This attribute holds various status flags:
+									This attribute holds various status flags, among others:
 								</p>
 								<ul>
 									<li style="list-style-type: none">
@@ -2673,13 +2677,15 @@ message = function(object, message)
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>TrackDamage &#091;ISG&#093;</code> (boolean)
+							<code>TrackDamage &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									If <strong>true</strong>, the element collects intra-area damages in a
 									<a href="#tek.lib.region">Region</a> named <code>DamageRegion</code>, which can be
 									used by class writers to implement minimally invasive repaints.
 									Default: <strong>false</strong>, the element is repainted in its entirety.
+									The boolean will be translated to the flag <code>FL_TRACKDAMAGE</code> and
+									is meaningless after initialization.
 								</p>
 							</blockquote>
 						</li>
@@ -3079,7 +3085,7 @@ message = function(object, message)
 				If the element overlaps with the given
 				rectangle, this function marks it as damaged by setting <code>ui.FL_REDRAW</code> 
 				in the element's <code>Flag</code> field. Additionally, if the element's
-				<code>TrackDamage</code> attribute is <strong>true</strong>, intra-area damage rectangles are
+				<code>FL_TRACKDAMAGE</code> flag is set, intra-area damage rectangles are
 				collected in <code>DamageRegion</code>.
 			</p>
 			<hr />
@@ -3090,7 +3096,7 @@ message = function(object, message)
 				by the presence of the flag <code>ui.FL_REDRAW</code> in the <code>Flags</code> field),
 				draws the element into the rectangle that was assigned to it by the
 				layouter, clears <code>ui.FL_REDRAW</code>, and returns <strong>true</strong>. If the
-				atttribute <code>EraseBG</code> is set, this function also clears the element's
+				flag <code>FL_ERASEBG</code> is set, this function also clears the element's
 				background by calling <a href="#Area:erase"><code>Area:erase()</code></a>.
 			</p>
 			<p>
@@ -3140,7 +3146,7 @@ end
 		<div class="node"><h3><a name="Area:erase" id="Area:erase"><code>Area:erase()</code></a></h3>
 			<p>
 				Clears the element's background. This method is invoked by
-				<a href="#Area:draw"><code>Area:draw()</code></a> if the <code>EraseBG</code> attribute is set, and when a repaint is
+				<a href="#Area:draw"><code>Area:draw()</code></a> if the <code>FL_ERASEBG</code> flag is set, and when a repaint is
 				possible and necessary. <a href="#Area:drawBegin"><code>Area:drawBegin()</code></a> has been invoked when this
 				function is called, and <a href="#Area:drawEnd"><code>Area:drawEnd()</code></a> will be called afterwards.
 			</p>
@@ -3411,7 +3417,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v34.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v35.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3434,7 +3440,7 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>AutoPosition &#091;IG&#093;</code> (boolean)
+							<code>AutoPosition &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									See <a href="#tek.ui.class.area">Area</a> 
@@ -5013,7 +5019,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5068,7 +5074,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v32.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v33.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5352,7 +5358,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v3.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v3.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6195,7 +6201,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v24.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v25.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6758,7 +6764,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v9.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v10.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6814,7 +6820,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v26.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v26.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7239,7 +7245,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v17.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v17.8)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7327,7 +7333,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v28.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v29.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7418,13 +7424,14 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>InitialFocus &#091;IG&#093;</code> (boolean)
+							<code>InitialFocus &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									Specifies that the element should receive the focus initially.
-									If <strong>true</strong>, the element will set the element's <code>Focus</code> 
-									attribute to <strong>true</strong> upon invocation of the
-									<a href="#Area:show">show</a> method.
+									If <strong>true</strong>, the element will set its <code>Focus</code> attribute to
+									<strong>true</strong> upon invocation of the <a href="#Area:show">show</a> method.
+									The boolean will be translated to the flag <code>FL_INITIALFOCUS</code>,
+									and is meaningless after initialization.
 								</p>
 							</blockquote>
 						</li>
@@ -7778,7 +7785,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v41.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v42.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8209,7 +8216,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Thu Jan 30 22:16:36 2014
+					Document generated on Tue Feb  4 08:20:43 2014
 				</p>
 			</div>
 		</div>

@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 41.2"
+_VERSION = "Window 42.1"
 local Window = _M
 Group:newClass(Window)
 
@@ -125,6 +125,7 @@ local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 local FL_REDRAW = ui.FL_REDRAW
 local FL_SHOW = ui.FL_SHOW
 local FL_UPDATE = ui.FL_UPDATE
+local FL_ACTIVATERMB = ui.FL_ACTIVATERMB
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -567,7 +568,8 @@ local MsgHandlers =
 		return msg
 	end,
 	[ui.MSG_FOCUS] = function(self, msg)
-		local has_focus = msg[3] == 1 or (self.ActivateOnRMB and msg[3] == 4)
+		local has_focus = msg[3] == 1 or 
+			(self:checkFlags(FL_ACTIVATERMB) and msg[3] == 4)
 		self:setValue("WindowFocus", has_focus)
 		self:setHiliteElement()
 		self:setActiveElement()
@@ -589,7 +591,7 @@ local MsgHandlers =
 	end,
 	[ui.MSG_MOUSEBUTTON] = function(self, msg)
 		self:setMsgMouseXY(msg)
-		local armb = self.ActivateOnRMB
+		local armb = self:checkFlags(FL_ACTIVATERMB)
 		if msg[3] == 1 or (armb and msg[3] == 4) then -- leftdown:
 			-- send "Pressed" to window:
 			self:setValue("Pressed", true, true)
@@ -886,29 +888,6 @@ function Window:layout(_, _, _, _, markdamage)
 	self.FreeRegion = false
 	local w, h = self.Drawable:getAttrs()
 	return Group.layout(self, 0, 0, w - 1, h - 1, markdamage)
-end
-
--------------------------------------------------------------------------------
---	relayout:
--------------------------------------------------------------------------------
-
-function Window:relayout(e, x0, y0, x1, y1, markdamage)
-	local temp = { e }
-	while not e:instanceOf(Window) do
-		e = e:getParent()
-		insert(temp, e)
-	end
-	for i = #temp, 2, -1 do
-		local e = temp[i]
-		if not e:drawBegin() then
-			db.error("%s : cannot draw", e:getClassName())
-		end
-	end
-	local res = temp[1]:layout(x0, y0, x1, y1, markdamage)
-	for i = 2, #temp do
-		temp[i]:drawEnd()
-	end
-	return res
 end
 
 -------------------------------------------------------------------------------

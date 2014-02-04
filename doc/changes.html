@@ -11,6 +11,54 @@
 			tekUI Changelog
 		</h2>
 		<h3>
+			1.02:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					PopItem: <a href="manual.html#getPseudoClass"><code>getPseudoClass()</code></a> removed
+				</li>
+				<li>
+					Window: <a href="manual.html#relayout"><code>relayout()</code></a> removed
+				</li>
+				<li>
+					TextList: improved logic for latching on list top or bottom
+				</li>
+				<li>
+					ScrollGroup: added HValue, VValue, H/VMax/Min/Range/Value are now
+					always updated
+				</li>
+				<li>
+					runxml: version added
+				</li>
+				<li>
+					some corrections in examples
+				</li>
+				<li>
+					Application, Area (Lua version): small optimizations
+				</li>
+				<li>
+					VNC server: Now using a nonblocking socket for signalling, maxfd is
+					constantly updated
+				</li>
+				<li>
+					TextEdit: AutoPosition reenabled, fixes regression
+				</li>
+				<li>
+					Slider, Gauge: now uses <a href="manual.html#rethinkLayout"><code>rethinkLayout()</code></a> instead of <a href="manual.html#Window:relayout"><code>Window.relayout()</code></a>,
+					leading to visually tighter updates
+				</li>
+				<li>
+					Input, EditWindow: clicking outside the element stops editing
+				</li>
+				<li>
+					UI, Area, Canvas, Group, PopItem, Sizeable, TextEdit, Widget, Window:
+					Added flags FL_AUTOPOSITION, FL_ERASEBG, FL_TRACKDAMAGE, FL_ACTIVATERMB,
+					FL_INITIALFOCUS
+				</li>
+			</ul>
+		</blockquote>
+		<h3>
 			1.01:
 		</h3>
 		<blockquote>

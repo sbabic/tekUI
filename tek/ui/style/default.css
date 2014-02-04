@@ -2,7 +2,7 @@
 /*
 **	tek/ui/style/default.css
 **
-**	Version: 3.1
+**	Version: 3.2
 */
 
 tek.ui.class.area {
@@ -94,7 +94,7 @@ tek.ui.class.handle:active {
 tek.ui.class.imagewidget {
 	min-width: 10;
 	min-height: 13;
-	border-width: 0;
+	border-width: 3;
 }
 
 tek.ui.class.imagewidget:active {
@@ -234,7 +234,7 @@ tek.ui.class.radiobutton.menuitem:focus {
 }
 
 .knob-scrollbar {
-	effect-class: ripple;
+/* 	effect-class: ripple; */
 	effect-orientation: inline;
 	effect-kind: dot;
 }

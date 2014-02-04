@@ -105,8 +105,6 @@ function TextList:addLine(text, lnr)
 	if latch == "bottom" then
 		input:setCursor(0, 1, input:getNumLines(), 1) -- follow
 		input:followCursor()
-	else
-		db.warn("visible:")
 	end
 	input:setCursor(0, cx, cy, 0)
 	input:releaseWindowUpdate()

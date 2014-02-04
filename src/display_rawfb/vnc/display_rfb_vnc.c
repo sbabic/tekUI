@@ -15,7 +15,7 @@
 #include "display_rfb_mod.h"
 #if defined(ENABLE_VNCSERVER_COPYRECT)
 #include <unistd.h>
-#include <sys/ioctl.h>
+#include <fcntl.h>
 #endif
 
 #define VNCSERVER_COPYRECT_MINPIXELS	10000
@@ -345,23 +345,22 @@ static void rfb_vnc_task(struct TTask *task)
 	TAPTR TExecBase = TGetExecBase(task);
 	RFBDISPLAY *mod = TGetTaskData(task);
 	TBOOL waitsig = TFALSE;
+	
+#if defined(ENABLE_VNCSERVER_COPYRECT)
 	int extra_fd = mod->rfb_RFBPipeFD[0];
 	FD_SET(extra_fd, &mod->rfb_RFBScreen->allFds);
-	mod->rfb_RFBScreen->maxFd = TMAX(mod->rfb_RFBScreen->maxFd, extra_fd);
-
+	fcntl(extra_fd, F_SETFL, O_NONBLOCK);
+#endif
+	
 	while (!(TSetSignal(0, 0) & TTASK_SIG_ABORT))
 	{
 #if defined(ENABLE_VNCSERVER_COPYRECT)
+		if (extra_fd > mod->rfb_RFBScreen->maxFd)
+			mod->rfb_RFBScreen->maxFd = extra_fd;
 		int res = rfbProcessEvents(mod->rfb_RFBScreen, 10000);
-		int nbytes = 0;
-		ioctl(extra_fd, FIONREAD, &nbytes);
-		if (nbytes > 0)
-		{
-			char rdbuf;
-			if (read(extra_fd, &rdbuf, 1) != 1)
-				TDBPRINTF(TDB_ERROR,("error reading from signalfd\n"));
+		char rdbuf[16];
+		if (read(extra_fd, rdbuf, 16) > 0)
 			waitsig = TTRUE;
-		}
 		if (res == 0 && waitsig)
 		{
 			TSignal(mod->rfb_RFBMainTask, mod->rfb_RFBReadySignal);

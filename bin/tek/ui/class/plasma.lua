@@ -17,14 +17,9 @@ local sin = math.sin
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.plasma", tek.ui.class.frame)
-_VERSION = "Plasma 6.2"
+_VERSION = "Plasma 6.3"
 local Plasma = _M
 Frame:newClass(Plasma)
-
-local WIDTH = 80
-local HEIGHT = 60
-local PIXWIDTH = 6
-local PIXHEIGHT = 6
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -64,6 +59,10 @@ function Plasma.new(class, self)
 	self.SpeedY1 = 9
 	self.SpeedY2 = -4
 	self.SpeedY3 = 5
+	self.PixWidth = self.PixWidth or 5
+	self.PixHeight = self.PixHeight or 5
+	self.W = self.W or 80
+	self.H = self.H or 50
 	return Frame.new(class, self)
 end
 
@@ -74,10 +73,10 @@ function Plasma.init(self)
 	for i = 0, 1023 do
 		sintab[i] = sin(i / 1024 * pi * 2)
 	end
-	self.MinWidth = WIDTH * PIXWIDTH
-	self.MinHeight = HEIGHT * PIXHEIGHT
-	self.MaxWidth = WIDTH * PIXWIDTH
-	self.MaxHeight = HEIGHT * PIXHEIGHT
+	self.MinWidth = self.W * self.PixWidth
+	self.MinHeight = self.H * self.PixHeight
+	self.MaxWidth = self.W * self.PixWidth
+	self.MaxHeight = self.H * self.PixHeight
 	return Frame.init(self)
 end
 
@@ -109,10 +108,10 @@ function Plasma:draw()
 		local dyc2 = floor(self.DeltaY2)
 		local dyc3 = floor(self.DeltaY3)
 	
-		for y = 0, HEIGHT - 1 do
+		for y = 0, self.H - 1 do
 			local xc1, xc2 = xp1, xp2
 			local ysin = sintab[yc1] + sintab[yc2] + sintab[yc3] + 5
-			for x = y * WIDTH, (y + 1) * WIDTH - 1 do
+			for x = y * self.W, (y + 1) * self.W - 1 do
 				c = sintab[xc1] + sintab[xc2] + ysin
 				screen[x] = palette[floor(c * pscale)]
 				xc1 = (xc1 + dxc1) % 1024
@@ -123,8 +122,8 @@ function Plasma:draw()
 			yc3 = (yc3 + dyc3) % 1024
 		end
 	
-		self.Window.Drawable:drawRGB(r1, r2, screen, WIDTH, HEIGHT, PIXWIDTH, 
-			PIXHEIGHT)
+		self.Window.Drawable:drawRGB(r1, r2, screen, self.W, self.H, 
+			self.PixWidth, self.PixHeight)
 		return true
 	end
 end

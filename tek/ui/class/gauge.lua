@@ -40,7 +40,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 17.2"
+_VERSION = "Gauge 17.3"
 local Gauge = _M
 Numeric:newClass(Gauge)
 
@@ -222,11 +222,5 @@ end
 
 function Gauge:onSetValue()
 	Numeric.onSetValue(self)
-	local x0, y0, x1, y1 = self:getKnobRect()
-	if x0 then
-		if self.Window:relayout(self.Child, x0, y0, x1, y1) then
-			self:updateBGRegion()
-			self:setFlags(ui.FL_REDRAW)
-		end
-	end
+	self:rethinkLayout(2)
 end

@@ -291,6 +291,7 @@ local window = Window:new
 							{
 								CanvasHeight = 400,
 								AutoWidth = true,
+								AutoPosition = true,
 								Child = ui.Group:new
 								{
 									Orientation = "vertical",

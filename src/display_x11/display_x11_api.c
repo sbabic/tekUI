@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "display_x11_mod.h"
 
 static void freepen(X11DISPLAY *mod, X11WINDOW *v, struct X11Pen *pen);

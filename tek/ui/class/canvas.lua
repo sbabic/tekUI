@@ -18,7 +18,7 @@
 --		child objects of the [[#tek.ui.class.scrollgroup : ScrollGroup]] class.
 --
 --	ATTRIBUTES::
---		- {{AutoPosition [IG]}} (boolean)
+--		- {{AutoPosition [I]}} (boolean)
 --			See [[#tek.ui.class.area : Area]]
 --		- {{AutoHeight [IG]}} (boolean)
 --			The height of the canvas is automatically adapted to the height
@@ -87,7 +87,7 @@ local db = require "tek.lib.debug"
 local ui = require "tek.ui"
 
 local Application = ui.require("application", 29)
-local Area = ui.require("area", 36)
+local Area = ui.require("area", 53)
 local Element = ui.require("element", 16)
 local Frame = ui.require("frame", 16)
 local Region = ui.loadLibrary("region", 9)
@@ -98,7 +98,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 34.2"
+_VERSION = "Canvas 35.0"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -110,6 +110,7 @@ local FL_REDRAW = ui.FL_REDRAW
 local FL_UPDATE = ui.FL_UPDATE
 local FL_RECVINPUT = ui.FL_RECVINPUT
 local FL_RECVMOUSEMOVE = ui.FL_RECVMOUSEMOVE
+local FL_AUTOPOSITION = ui.FL_AUTOPOSITION
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -542,7 +543,7 @@ function Canvas:focusRect(x0, y0, x1, y1, smooth)
 		y0, y1 = 0, 0
 	end
 	
-	if x0 and self.AutoPosition then
+	if x0 and self:checkFlags(FL_AUTOPOSITION) then
 		local n1, n2, n3, n4 = intersect(x0, y0, x1, y1, vx0, vy0, vx1, vy1)
 		if n1 == x0 and n2 == y0 and n3 == x1 and n4 == y1 then
 			return

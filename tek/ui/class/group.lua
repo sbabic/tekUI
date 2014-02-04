@@ -67,14 +67,14 @@
 
 local ui = require "tek.ui"
 local Family = ui.require("family", 2)
-local Widget = ui.require("widget", 25)
+local Widget = ui.require("widget", 29)
 local Region = ui.loadLibrary("region", 10)
 local assert = assert
 local intersect = Region.intersect
 local type = type
 
 module("tek.ui.class.group", tek.ui.class.widget)
-_VERSION = "Group 32.5"
+_VERSION = "Group 33.0"
 local Group = _M
 Widget:newClass(Group)
 
@@ -90,6 +90,7 @@ local FL_UPDATE = ui.FL_UPDATE
 local FL_SETUP = ui.FL_SETUP
 local FL_RECVINPUT = ui.FL_RECVINPUT
 local FL_RECVMOUSEMOVE = ui.FL_RECVMOUSEMOVE
+local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 
 local MSGFLAGS = FL_LAYOUT + FL_SETUP + FL_SHOW + FL_RECVINPUT
 local MSGFLAGS_MM = MSGFLAGS + FL_RECVMOUSEMOVE
@@ -259,7 +260,7 @@ function Group:damage(r1, r2, r3, r4)
 	if self:checkFlags(FL_LAYOUT) then
 		local fr = self.FreeRegion
 		if fr and fr:checkIntersect(r1, r2, r3, r4) then
-			if self.TrackDamage then
+			if self:checkFlags(FL_TRACKDAMAGE) then
 				-- mark damage where it overlaps with freeregion:
 				local dr = self.DamageRegion
 				if not dr then

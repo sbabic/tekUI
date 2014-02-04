@@ -16,13 +16,15 @@
 --		relationships to its neighbour elements.
 --
 --	ATTRIBUTES::
---		- {{AutoPosition [ISG]}} (boolean)
+--		- {{AutoPosition [I]}} (boolean)
 --			When the element receives the focus, this flag instructs it to
 --			automatically position itself into the visible area of any Canvas
 --			that may contain it. An affected [[#tek.ui.class.canvas : Canvas]]
 --			must have its {{AutoPosition}} attribute enabled as well for this
 --			option to take effect (but unlike the Area class, in a Canvas it
 --			is disabled by default).
+--			The boolean (default '''true''') will be translated to the flag
+--			{{FL_AUTOPOSITION}}, and is meaningless after initialization.
 --		- {{BGPen [G]}} (color specification)
 --			The current color (or texture) for painting the element's
 --			background. This value is set in Area:setState(), where it is
@@ -38,12 +40,14 @@
 --			If '''true''', the element is in disabled state and loses its
 --			ability to interact with the user. This state variable is handled
 --			in the [[#tek.ui.class.widget : Widget]] class.
---		- {{EraseBG [ISG]}} (boolean)
+--		- {{EraseBG [I]}} (boolean)
 --			If '''true''', the element's background is painted automatically
 --			using the Area:erase() method. Set this attribute to '''false'''
 --			if you intend to paint the background yourself in Area:draw().
+--			The boolean (default '''true''') will be translated to the flag
+--			{{FL_ERASEBG}}, and is meaningless after initialization.
 --		- {{Flags [SG]}} (Flags field)
---			This attribute holds various status flags:
+--			This attribute holds various status flags, among others:
 --			- {{FL_SETUP}} - Set in Area:setup() and cleared in Area:cleanup()
 --			- {{FL_LAYOUT}} - Set in Area:layout(), cleared in Area:cleanup()
 --			- {{FL_SHOW}} - Set in Area:show(), cleared in Area:hide()
@@ -98,11 +102,13 @@
 --		- {{Selected [ISG]}} (boolean)
 --			If '''true''', the element is in selected state. This state
 --			variable is handled by the [[#tek.ui.class.widget : Widget]] class.
---		- {{TrackDamage [ISG]}} (boolean)
+--		- {{TrackDamage [I]}} (boolean)
 --			If '''true''', the element collects intra-area damages in a
 --			[[#tek.lib.region : Region]] named {{DamageRegion}}, which can be
 --			used by class writers to implement minimally invasive repaints.
 --			Default: '''false''', the element is repainted in its entirety.
+--			The boolean will be translated to the flag {{FL_TRACKDAMAGE}} and
+--			is meaningless after initialization.
 --		- {{VAlign [IG]}} ({{"top"}}, {{"center"}}, {{"bottom"}})
 --			Vertical alignment of the element in its group. This attribute
 --			can be controlled using the {{valign}} style property.
@@ -192,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 51.2"
+_VERSION = "Area 53.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -211,7 +217,7 @@ Element:newClass(Area)
 #define CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define CLASS_VERSION "Area 52.2"
+#define CLASS_VERSION "Area 53.0"
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
@@ -512,7 +518,7 @@ static int tek_ui_class_area_cleanup(lua_State *L)
 --	Area:damage(x0, y0, x1, y1): If the element overlaps with the given
 --	rectangle, this function marks it as damaged by setting {{ui.FL_REDRAW}}
 --	in the element's {{Flag}} field. Additionally, if the element's
---	{{TrackDamage}} attribute is '''true''', intra-area damage rectangles are
+--	{{FL_TRACKDAMAGE}} flag is set, intra-area damage rectangles are
 --	collected in {{DamageRegion}}.
 -----------------------------------------------------------------------------*/
 
@@ -541,7 +547,8 @@ static int tek_ui_class_area_damage(lua_State *L)
 			r2 = TMAX(s2, r2);
 			r3 = TMIN(s3, r3);
 			r4 = TMIN(s4, r4);
-			TBOOL track = getboolfield(L, ISELF, "TrackDamage");
+			TBOOL track = 
+				getnumfield(L, ISELF, "Flags") & TEKUI_FL_TRACKDAMAGE;
 			TBOOL redraw = TFALSE;
 			if (!track)
 				redraw = clrsetflags(L, 0, 0, TFALSE) & TEKUI_FL_REDRAW;
@@ -652,12 +659,12 @@ static int tek_ui_class_area_layout(lua_State *L)
 	lua_Integer sy = lua_tointeger(L, -1);
 	lua_pop(L, 2);
 	
-	TBOOL trackdamage = getboolfield(L, ISELF, "TrackDamage");
+	TBOOL track = getnumfield(L, ISELF, "Flags") & TEKUI_FL_TRACKDAMAGE;
 	TBOOL samesize = (dw == 0) && (dh == 0);
 	TBOOL validmove = (dx == 0) != (dy == 0);
 	
 	TBOOL can_copy = TFALSE;
-	if (validmove && (samesize || trackdamage))
+	if (validmove && (samesize || track))
 	{
 		lua_getfield(L, -2, "BlitObjects");
 		lua_pushvalue(L, ISELF);
@@ -771,7 +778,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 	}
 		
 	/* win, d */
-	if ((x0 == r1 && y0 == r2) && markdamage && trackdamage)
+	if ((x0 == r1 && y0 == r2) && markdamage && track)
 	{
 		lua_getfield(L, IREGION, "new");
 		lua_pushinteger(L, x0);
@@ -843,7 +850,7 @@ static int tek_ui_class_area_punch(lua_State *L)
 --	by the presence of the flag {{ui.FL_REDRAW}} in the {{Flags}} field),
 --	draws the element into the rectangle that was assigned to it by the
 --	layouter, clears {{ui.FL_REDRAW}}, and returns '''true'''. If the
---	atttribute {{EraseBG}} is set, this function also clears the element's
+--	flag {{FL_ERASEBG}} is set, this function also clears the element's
 --	background by calling Area:erase().
 --
 --	When overriding this function, the control flow is roughly as follows:
@@ -876,7 +883,7 @@ static int tek_ui_class_area_draw(lua_State *L)
 	if ((clrsetflags(L, TEKUI_FL_REDRAW, 0, TFALSE) & TEKUI_FL_REDRAWOK) == 
 		TEKUI_FL_REDRAWOK)
 	{
-		TBOOL erasebg = getboolfield(L, ISELF, "EraseBG");
+		TBOOL erasebg = getnumfield(L, ISELF, "Flags") & TEKUI_FL_ERASEBG;
 		if (erasebg)
 		{
 			lua_getfield(L, ISELF, "drawBegin");
@@ -1479,7 +1486,7 @@ static int tek_ui_class_area_passmsg(lua_State *L)
 
 /*-----------------------------------------------------------------------------
 --	Area:erase(): Clears the element's background. This method is invoked by
---	Area:draw() if the {{EraseBG}} attribute is set, and when a repaint is
+--	Area:draw() if the {{FL_ERASEBG}} flag is set, and when a repaint is
 --	possible and necessary. Area:drawBegin() has been invoked when this
 --	function is called, and Area:drawEnd() will be called afterwards.
 -----------------------------------------------------------------------------*/
@@ -1771,12 +1778,23 @@ static int tek_ui_class_area_show(lua_State *L)
 
 static int tek_ui_class_area_init(lua_State *L)
 {
-	setfieldboolifnil(L, ISELF, "AutoPosition", TTRUE);
+	lua_Integer flags = getnumfield(L, ISELF, "Flags");
+	lua_getfield(L, ISELF, "AutoPosition");
+	if (lua_isnil(L, -1) || lua_toboolean(L, -1))
+		flags |= TEKUI_FL_AUTOPOSITION;
+	lua_pop(L, 1);
+	lua_getfield(L, ISELF, "EraseBG");
+	if (lua_isnil(L, -1) || lua_toboolean(L, -1))
+		flags |= TEKUI_FL_ERASEBG;
+	lua_pop(L, 1);
+	lua_getfield(L, ISELF, "TrackDamage");
+	if (lua_toboolean(L, -1))
+		flags |= TEKUI_FL_TRACKDAMAGE;
+	lua_pop(L, 1);
 	setfieldbool(L, ISELF, "BGPen", TFALSE);
 	setfieldbool(L, ISELF, "DamageRegion", TFALSE);
 	setfieldbooliffalse(L, ISELF, "Disabled", TFALSE);
-	setfieldboolifnil(L, ISELF, "EraseBG", TTRUE);
-	lua_pushinteger(L, 0);
+	lua_pushinteger(L, flags);
 	lua_setfield(L, ISELF, "Flags");
 	setfieldbool(L, ISELF, "Focus", TFALSE);
 	setfieldbooliffalse(L, ISELF, "HAlign", TFALSE);
@@ -1787,7 +1805,6 @@ static int tek_ui_class_area_init(lua_State *L)
 	setfieldbooliffalse(L, ISELF, "MinHeight", TFALSE);
 	setfieldbooliffalse(L, ISELF, "MinWidth", TFALSE);
 	setfieldbooliffalse(L, ISELF, "Selected", TFALSE);
-	setfieldbooliffalse(L, ISELF, "TrackDamage", TFALSE);
 	setfieldbooliffalse(L, ISELF, "VAlign", TFALSE);
 	setfieldbooliffalse(L, ISELF, "Weight", TFALSE);
 	setfieldbooliffalse(L, ISELF, "Width", TFALSE);

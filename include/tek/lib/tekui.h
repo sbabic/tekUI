@@ -16,6 +16,11 @@
 #define TEKUI_FL_RECVINPUT		0x0100
 #define TEKUI_FL_RECVMOUSEMOVE	0x0200
 #define TEKUI_FL_CURSORFOCUS	0x0400
+#define TEKUI_FL_AUTOPOSITION	0x0800
+#define TEKUI_FL_ERASEBG		0x1000
+#define TEKUI_FL_TRACKDAMAGE	0x2000
+#define TEKUI_FL_ACTIVATERMB	0x4000
+#define TEKUI_FL_INITIALFOCUS	0x8000
 
 #define TEK_UI_OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
 ((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))

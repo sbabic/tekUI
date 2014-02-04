@@ -30,15 +30,18 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-
-local Canvas = ui.require("canvas", 30)
-local Widget = ui.require("widget", 25)
+local Canvas = ui.require("canvas", 35)
+local Widget = ui.require("widget", 29)
 local Region = ui.loadLibrary("region", 10)
 
+local bor = ui.bor
+
 module("tek.ui.class.sizeable", tek.ui.class.widget)
-_VERSION = "Sizeable 9.1"
+_VERSION = "Sizeable 10.0"
 local Sizeable = _M
 Widget:newClass(Sizeable)
+
+local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -48,7 +51,7 @@ function Sizeable.init(self)
 	self.InsertX = false	-- internal
 	self.InsertY = false	-- internal
 	self.EraseBG = false
-	self.TrackDamage = true
+	self.Flags = bor(self.Flags or 0, FL_TRACKDAMAGE)
 	return Widget.init(self)
 end
 
@@ -131,7 +134,9 @@ function Sizeable:layout(x0, y0, x1, y1, markdamage)
 
 	local r1, r2, r3, r4 = self:getRect()
 	
-	if n1 == r1 and n2 == r2 and markdamage and self.TrackDamage then
+	if n1 == r1 and n2 == r2 and markdamage and 
+		self:checkFlags(FL_TRACKDAMAGE) then
+		
 		local dw = n3 - r3
 		local dh = n4 - r4
 		local insx = self.InsertX

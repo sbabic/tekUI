@@ -66,7 +66,7 @@ local floor = math.floor
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 24.0"
+_VERSION = "PopItem 25.0"
 local PopItem = _M
 Text:newClass(PopItem)
 
@@ -78,6 +78,7 @@ local DEF_POPUPFADEINDELAY = 6
 local DEF_POPUPFADEOUTDELAY = 10
 
 local FL_POPITEM = ui.FL_POPITEM
+local FL_ACTIVATERMB = ui.FL_ACTIVATERMB
 
 local NOTIFY_ACTIVE = { NOTIFY_SELF, "onActivate" }
 
@@ -268,7 +269,8 @@ function PopItem:beginPopup()
 	-- prepare children for being used in a popup window:
 	for i = 1, #children do
 		local c = children[i]
-		c:init()
+		c.Hilite = false
+		c.Focus = false
 		c:setFlags(FL_POPITEM)
 		if c:instanceOf(PopItem) then
 			c.PopupBase = self.PopupBase or self
@@ -349,7 +351,7 @@ end
 
 function PopItem:passMsg(msg)
 	if msg[2] == ui.MSG_MOUSEBUTTON then
-		local armb = self.ActivateOnRMB
+		local armb = self:checkFlags(FL_ACTIVATERMB)
 		if msg[3] == 1 or (armb and msg[3] == 4) then -- leftdown:
 			if self.PopupWindow and self.Window.ActiveElement ~= self and
 				not self.PopupBase and self.Window.HoverElement == self then

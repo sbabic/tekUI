@@ -11,6 +11,7 @@ ui.Application:new
 		{
 			Title = "Tutorial 6",
 			Orientation = "vertical",
+			HideOnEscape = true,
 			Children =
 			{
 				ui.Text:new
@@ -26,6 +27,7 @@ ui.Application:new
 					Min = 0,
 					Max = 100,
 					Value = 50,
+					InitialFocus = true,
 
 					onSetValue = function(self)
 						ui.Slider.onSetValue(self)

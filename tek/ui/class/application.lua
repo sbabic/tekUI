@@ -130,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 39.1"
+_VERSION = "Application 39.2"
 local Application = _M
 Family:newClass(Application)
 
@@ -885,14 +885,12 @@ function Application:easyRequest(title, main, ...)
 			Mode = "button",
 			KeyCode = true,
 			Text = select(i, ...),
+			InitialFocus = i == numb,
 			onClick = function(self)
 				result = i
 				window:setValue("Status", "hide")
 			end
 		}
-		if i == numb then
-			button.InitialFocus = true
-		end
 		insert(buttons, button)
 	end
 	

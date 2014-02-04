@@ -73,7 +73,6 @@ tek.ui.class.canvas.textlist {
 						ui.Button:new {
 							Width = "auto",
 							Text = "Add In Center",
-							InitialFocus = true,
 							onClick = function(self)
 								local tw = self:getById("textlist")
 								local lnr = math.max(1, math.floor(tw:getNumLines() / 2))
@@ -83,7 +82,6 @@ tek.ui.class.canvas.textlist {
 						ui.Button:new {
 							Width = "auto",
 							Text = "Add On Bottom",
-							InitialFocus = true,
 							onClick = function(self)
 								local tw = self:getById("textlist")
 								local lnr = tw:getNumLines() + 1
@@ -94,7 +92,6 @@ tek.ui.class.canvas.textlist {
 						ui.Button:new {
 							Width = "auto",
 							Text = "Clear",
-							InitialFocus = true,
 							onClick = function(self)
 								local tw = self:getById("textlist")
 								tw:clear()
