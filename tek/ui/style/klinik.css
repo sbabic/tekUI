@@ -2,7 +2,7 @@
 /*
 **	tek/ui/style/klinik.css
 **
-**	Version: 1.1
+**	Version: 1.2
 */
 
 tek.ui.class.display {
@@ -294,7 +294,7 @@ tek.ui.class.button:hover {
 	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
 }
 tek.ui.class.button:focus {
-	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+	background-image: gradient(20,0,tint(background,border-shadow,60%),20,10,tint(background,border-shine,70%));
 }
 tek.ui.class.button:active {
 	background-image: gradient(20,0,tint(active,border-shadow,40%),20,10,tint(active,border-shine,60%));
@@ -310,7 +310,7 @@ tek.ui.class.poplist:hover {
 	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
 }
 tek.ui.class.poplist:focus {
-	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
+	background-image: gradient(20,0,tint(background,border-shadow,60%),20,10,tint(background,border-shine,70%));
 }
 tek.ui.class.poplist:active {
 	background-image: gradient(20,0,tint(active,border-shadow,40%),20,10,tint(active,border-shine,60%));
@@ -326,7 +326,7 @@ tek.ui.class.poplist:disabled {
 	background-image: gradient(20,0,tint(background,border-shadow,30%),20,10,tint(background,border-shine,70%));
 }
 .button:focus {
-	background-image: gradient(20,0,border-shadow,20,10,border-shine);
+	background-image: gradient(20,0,tint(background,border-shadow,60%),20,10,tint(background,border-shine,70%));
 }
 .button:active {
 	background-image: gradient(20,0,tint(active,#daa,100%),20,10,tint(active,#fdb,80%));

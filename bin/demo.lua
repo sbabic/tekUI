@@ -496,7 +496,7 @@ app = ui.Application:new
 								ui.MenuItem:new
 								{
 									Text = L.MENU_ABOUT,
-									Shortcut = "Ctrl+?",
+									Shortcut = "Ctrl+b",
 									onClick = function(self)
 										self:getById("about-window"):setValue("Status", "show")
 									end
@@ -528,7 +528,7 @@ app = ui.Application:new
 								ui.MenuItem:new
 								{
 									Text = L.MENU_QUIT,
-									Shortcut = "Ctrl+Q",
+									Shortcut = "Ctrl+q",
 									onClick = function(self)
 										self:getById("window-main"):onHide()
 									end,
