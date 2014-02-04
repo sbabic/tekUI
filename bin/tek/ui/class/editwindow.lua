@@ -24,7 +24,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.editwindow", tek.ui.class.window)
-_VERSION = "EditWindow 7.3"
+_VERSION = "EditWindow 7.4"
 local EditWindow = _M
 Window:newClass(EditWindow)
 
@@ -385,7 +385,7 @@ function EditInput:handleMouseButton(msg)
 		end
 		return msg
 	elseif msg[3] == 128 then -- wheeldown
-		local over = self.Parentf:getMouseOver(msg)
+		local over = self.Parent:getMouseOver(msg)
 		if over then
 			self:setActive(true)
 			self:cursorDown()
