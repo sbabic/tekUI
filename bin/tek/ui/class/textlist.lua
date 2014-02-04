@@ -4,7 +4,7 @@ local db = require "tek.lib.debug"
 local ScrollGroup = ui.ScrollGroup
 
 module("tek.ui.class.textlist", tek.ui.class.scrollgroup)
-_VERSION = "TextList 1.1"
+_VERSION = "TextList 1.2"
 local TextList = _M
 ScrollGroup:newClass(TextList)
 
@@ -91,11 +91,21 @@ function TextList:addLine(text, lnr)
 	local numl = input:getNumLines()
 	lnr = lnr or numl + 1
 	local empty = numl == 1 and input:getLineLength(1) == 0
+	
 	if not empty then
 		if lnr > numl then
 			input:setCursor(0, -1, numl)
 			input:enter(0) -- do not follow
 		else
+			local vy = self.ListCanvas.CanvasTop
+			local lh = input.LineHeight
+			if lh * lnr < vy then
+				vy = vy + lh
+-- 				if self.HardScroll then
+-- 					vy = vy - (vy % lh)
+-- 				end
+				self.ListCanvas:setValue("CanvasTop", vy)
+			end
 			input:setCursor(0, 1, lnr)
 			input:enter(0) -- do not follow
 			input:setCursor(0, 1, lnr, 0) -- do not follow

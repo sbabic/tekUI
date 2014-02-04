@@ -44,7 +44,7 @@ local db = require "tek.lib.debug"
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 
-local Canvas = ui.require("canvas", 30)
+local Canvas = ui.require("canvas", 36)
 local Widget = ui.require("widget", 25)
 local Lister = ui.require("lister", 30)
 local PopItem = ui.require("popitem", 22)
@@ -56,7 +56,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 13.2"
+_VERSION = "PopList 13.3"
 local PopList = _M
 PopItem:newClass(PopList)
 
@@ -76,24 +76,42 @@ local ArrowImage = ui.Image:new
 
 local PopLister = Lister:newClass()
 
+function PopLister.new(class, self)
+	self.Clicked = false
+	return Lister.new(class, self)
+end
+
 function PopLister:passMsg(msg)
+	local over, mx, my = self.Parent:getMouseOver(msg)
+	if msg[2] == ui.MSG_MOUSEBUTTON then
+		if msg[3] == 1 then
+			self.Clicked = over
+		elseif msg[3] == 2 then
+			self.Clicked = false
+		end
+	end
 	if msg[2] == ui.MSG_MOUSEMOVE or
 		(msg[2] == ui.MSG_MOUSEBUTTON and msg[3] == 1) then
-		local mx, my = self:getMsgFields(msg, "mousexy")
-		local lnr = self:findLine(my)
-		if lnr then
-			if lnr ~= self.SelectedLine then
-				self:setValue("CursorLine", lnr)
-				self:setValue("SelectedLine", lnr, true)
+		if over then
+			if not self.Clicked then
+				local lnr = self:findLine(my)
+				if lnr then
+					if lnr ~= self.SelectedLine then
+						self:setValue("CursorLine", lnr)
+						self:setValue("SelectedLine", lnr, true)
+					end
+				end
 			end
 		end
 	elseif msg[2] == ui.MSG_MOUSEBUTTON and msg[3] == 2 then
-		if not self.Active then
-			-- need to emulate click:
-			self:setValue("Active", true)
+		if over then
+			if not self.Active then
+				-- need to emulate click:
+				self:setValue("Active", true)
+			end
+			-- let it collapse:
+			self:setValue("Active", false)
 		end
-		-- let it collapse:
-		self:setValue("Active", false)
 	end
 	return msg
 end
@@ -151,6 +169,7 @@ function PopList.init(self)
 	self.Image = self.Image or ArrowImage
 	self.Width = self.Width or "fill"
 	self.SelectedLine = self.SelectedLine or 0
+	self.ListHeight = self.ListHeight or false
 	return PopItem.init(self)
 end
 
@@ -163,14 +182,16 @@ function PopList.new(class, self)
 	{
 		ScrollGroup:new
 		{
--- 			VSliderMode = "auto",
+			VSliderMode = self.ListHeight and "auto" or "off",
 			Child = Canvas:new
 			{
+				Height = self.ListHeight,
 				Class = "poplist-canvas",
 				KeepMinWidth = true,
-				KeepMinHeight = true,
+				KeepMinHeight = not self.ListHeight,
 				AutoWidth = true,
-				Child = self.Lister
+				AutoHeight = true,
+				Child = self.Lister,
 			}
 		}
 	}
@@ -205,6 +226,8 @@ end
 
 function PopList:beginPopup()
 	PopItem.beginPopup(self)
+-- 	self.Lister:setValue("SelectedLine", self.SelectedLine, false)
+	self.Lister.Clicked = false
 	self.Lister:setValue("Focus", true)
 end
 

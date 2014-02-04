@@ -98,7 +98,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 35.0"
+_VERSION = "Canvas 36.0"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -647,4 +647,39 @@ function Canvas:getDisplacement()
 	dx = dx - self.CanvasLeft
 	dy = dy - self.CanvasTop
 	return dx, dy
+end
+
+-------------------------------------------------------------------------------
+--	over, x, y = getMouseOver(msg): From an input message, retrieves the mouse
+--	position as seen from the child object. The first return value is 
+--	'''false''', {{"child"}} if the mouse is over the child object, or
+--	{{"canvas"}} if the mouse is over the canvas.
+-------------------------------------------------------------------------------
+
+function Canvas:getMouseOver(msg)
+	local c = self.Child
+	if c then
+		local cx = self.CanvasLeft
+		local cy = self.CanvasTop
+		local c1, c2, c3, c4 = self:getRect()
+		local vw = c3 - c1 + 1
+		local vh = c4 - c2 + 1
+		local x, y = c:getMsgFields(msg, "mousexy")
+		local x0 = x - cx
+		local y0 = y - cy
+		local is_over = x0 >= 0 and x0 < vw and y0 >= 0 and y0 < vh
+		local position = false
+		local over = false
+		if is_over then
+			position = true
+			local m1, m2, m3, m4 = c:getMargin()
+			if x >= m1 and y >= m2 and x < self.CanvasWidth - m3 and
+				y < self.CanvasHeight - m4 then -- in text:
+				over = "child"
+			else
+				over = "canvas"
+			end
+		end
+		return over, x, y
+	end
 end

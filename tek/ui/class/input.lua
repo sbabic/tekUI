@@ -40,7 +40,7 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui"
-local Canvas = ui.require("canvas", 0)
+local Canvas = ui.require("canvas", 36)
 local Display = ui.require("display", 0)
 local TextEdit = ui.require("textedit", 17)
 local ScrollGroup = ui.require("scrollgroup", 0)
@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 3.2"
+_VERSION = "Input 3.3"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -113,8 +113,8 @@ function EditInput:passMsg(msg)
 -- 			if self.Window.HoverElement ~= self then
 -- 				self:setValue("Focus", false)
 -- 			else
-				local _, position_cursor, x, y = self:getMouseOver(msg)
-				if position_cursor then
+				local over, x, y = self.Parent:getMouseOver(msg)
+				if over then
 					self:setActive(true) -- sets focus and editing
 					if self.Mark then
 						self:mouseUnmark()
@@ -151,9 +151,9 @@ function EditInput:passMsg(msg)
 		end
 	elseif msg[2] == MSG_MOUSEMOVE then
 		if self.MouseButtonPressed then
-			local _, position_cursor, x, y = self:getMouseOver(msg)
+			local over, x, y = self.Parent:getMouseOver(msg)
 			self:setCursorByXY(x, y, 1)
-			if position_cursor then
+			if over then
 				local cx, cy = self:getCursor()
 				local mx, my = self.MouseMarkCursorX, self.MouseMarkCursorY
 				if not self.Mark and (cx ~= mx or cy ~= my) then

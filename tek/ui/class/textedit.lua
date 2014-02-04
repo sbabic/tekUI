@@ -62,7 +62,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 17.8"
+_VERSION = "TextEdit 18.0"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -2266,35 +2266,6 @@ function TextEdit:indentBlock(num, inschar)
 	return true
 end
 
--------------------------------------------------------------------------------
---	over, place_cursor, x, y = TextEdit:getMouseOver(msg)
--------------------------------------------------------------------------------
-
-function TextEdit:getMouseOver(msg)
-	local c = self.Parent
-	local cx = c.CanvasLeft
-	local cy = c.CanvasTop
-	local c1, c2, c3, c4 = c:getRect()
-	local vw = c3 - c1 + 1
-	local vh = c4 - c2 + 1
-	local x, y = self:getMsgFields(msg, "mousexy")
-	local x0 = x - cx
-	local y0 = y - cy
-	local is_over = x0 >= 0 and x0 < vw and y0 >= 0 and y0 < vh
-	local position = false
-	local over = false
-	if is_over then
-		position = true
-		local m1, m2, m3, m4 = self:getMargin()
-		if x >= m1 and y >= m2 and x < c.CanvasWidth - m3 and
-			y < c.CanvasHeight - m4 then -- in text:
-			over = "text"
-		else
-			over = "canvas"
-		end
-	end
-	return over, position, x, y
-end
 
 function TextEdit:getSelection(which)
 	which = which or 1 -- 1 = clipboard (default), 2 = selection

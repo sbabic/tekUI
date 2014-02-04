@@ -24,7 +24,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.editwindow", tek.ui.class.window)
-_VERSION = "EditWindow 7.2"
+_VERSION = "EditWindow 7.3"
 local EditWindow = _M
 Window:newClass(EditWindow)
 
@@ -301,8 +301,8 @@ function EditInput:passMsg(msg)
 		self:setCursorMode(has_focus and "active" or "still")
 	elseif msg[2] == MSG_MOUSEBUTTON then
 		if msg[3] == 1 or msg[3] == 16 then -- left/middle down
-			local _, position_cursor, x, y = self:getMouseOver(msg)
-			if position_cursor then
+			local over, x, y = self.Parent:getMouseOver(msg)
+			if over then
 				self:setActive(true) -- sets focus and editing
 				if self.Mark then
 					self:mouseUnmark()
@@ -338,9 +338,9 @@ function EditInput:passMsg(msg)
 		end
 	elseif msg[2] == MSG_MOUSEMOVE then
 		if self.MouseButtonPressed then
-			local _, position_cursor, x, y = self:getMouseOver(msg)
+			local over, x, y = self.Parent:getMouseOver(msg)
 			self:setCursorByXY(x, y, 1)
-			if position_cursor then
+			if over then
 				local cx, cy = self:getCursor()
 				local mx, my = self.MouseMarkCursorX, self.MouseMarkCursorY
 				if not self.Mark and (cx ~= mx or cy ~= my) then
@@ -376,7 +376,7 @@ end
 
 function EditInput:handleMouseButton(msg)
 	if msg[3] == 64 then -- wheelup
-		local over = self:getMouseOver(msg)
+		local over = self.Parent:getMouseOver(msg)
 		if over then
 			self:setActive(true)
 			self:cursorUp()
@@ -385,7 +385,7 @@ function EditInput:handleMouseButton(msg)
 		end
 		return msg
 	elseif msg[3] == 128 then -- wheeldown
-		local over = self:getMouseOver(msg)
+		local over = self.Parentf:getMouseOver(msg)
 		if over then
 			self:setActive(true)
 			self:cursorDown()

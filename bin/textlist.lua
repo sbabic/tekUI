@@ -24,6 +24,10 @@ tek.ui.class.canvas.textlist {
 ]],
 	Children = {
 		ui.Window:new {
+-- 			show = function(self)
+-- 				ui.Window.show(self)
+-- 				self.Drawable:setAttrs { Debug = true }
+-- 			end,
 			HideOnEscape = true,
 			Orientation = "vertical",
 			Children = { 

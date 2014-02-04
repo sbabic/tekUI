@@ -64,7 +64,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 15.1"
+_VERSION = "ScrollBar 15.2"
 local ScrollBar = _M
 Group:newClass(ScrollBar)
 
@@ -84,8 +84,8 @@ local ArrowRightImage = ui.getStockImage("arrowright")
 local ArrowButton = ImageWidget:newClass { _NAME = "_scrollbar-arrow" }
 
 function ArrowButton.init(self)
-	self.Width = "fill"
-	self.Height = "fill"
+	self.Width = "auto"
+	self.Height = "auto"
 	self.Mode = "button"
 	self.Direction = self.Direction or 1
 	return ImageWidget.init(self)
@@ -203,6 +203,8 @@ function ScrollBar.new(class, self)
 		Orientation = self.Orientation,
 		Step = self.Step,
 		Kind = self.Kind,
+		Height = "fill",
+		Width = "fill",
 	}
 	
 	local img1, img2
