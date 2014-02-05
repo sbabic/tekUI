@@ -1,6 +1,11 @@
 
 == tekUI Changelog ==
 
+=== 1.03: ===
+
+ * Bug in Area class (C version) fixed: Did not differentiate between
+ layouted rectangle 'unset' and 'zero'
+
 === 1.02: ===
 
  * PopItem: getPseudoClass() removed

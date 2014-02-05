@@ -198,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 53.0"
+_VERSION = "Area 53.1"
 local Area = _M
 Element:newClass(Area)
 
@@ -217,7 +217,7 @@ Element:newClass(Area)
 #define CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define CLASS_VERSION "Area 53.0"
+#define CLASS_VERSION "Area 53.1"
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
@@ -618,7 +618,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 	TBOOL not_r1 = !lua_toboolean(L, -4);
 	lua_pop(L, 4);
 	
-	if (r1 == x0 && r2 == y0 && r3 == x1 && r4 == y1)
+	if (!not_r1 && r1 == x0 && r2 == y0 && r3 == x1 && r4 == y1)
 	{
 		lua_pop(L, 1);
 		return 0;

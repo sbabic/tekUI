@@ -214,7 +214,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 53.0"
+_VERSION = "Area 53.1"
 local Area = _M
 Element:newClass(Area)
 
