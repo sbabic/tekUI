@@ -50,6 +50,13 @@
 --			- Maximum number of microseconds between mouse clicks to be
 --			recognized as a double click. Default: {{32000}}. Use a larger
 --			value for touchscreens.
+--		- {{ThemeName}}
+--			- Setting this variable overrides the {{THEME}} environment
+--			variable and enforces the usage of the specified cascade, up to
+--			the point where the application's author styles are considered.
+--		- {{UserStyles}}
+--			- Name of the user stylesheet file. Default: {{"user"}}. Can
+--			be set to '''false''' to be disabled.
 --
 --	MESSAGE TYPE CONSTANTS::
 --		- {{MSG_CLOSE}}
@@ -125,9 +132,9 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 45.0" -- module version string
+_VERSION = "tekUI 46.0" -- module version string
 
-VERSION = 102 -- overall package version number
+VERSION = 104 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------
@@ -165,6 +172,8 @@ NoCursor = getenv("NOCURSOR") == "true"
 ShortcutMark = "_"
 -- Input message fileno (-1 = default/stdin):
 MsgFileNo = -1
+-- Name of the user stylesheet file:
+UserStyles = "user"
 
 -------------------------------------------------------------------------------
 --	copyTable: create copy of a table

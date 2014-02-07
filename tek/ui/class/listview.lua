@@ -48,7 +48,7 @@ local Text = ui.Text
 local unpack = unpack
 
 module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 6.2"
+_VERSION = "ListView 6.3"
 local ListView = _M
 Group:newClass(ListView)
 
@@ -58,11 +58,11 @@ Group:newClass(ListView)
 
 local HeadItem = Text:newClass { _NAME = "_listview-headitem" }
 
-function HeadItem.init(self)
+function HeadItem.new(class, self)
 	self = self or { }
 	self.Mode = "inert"
 	self.Width = "auto"
-	return Text.init(self)
+	return Text.new(class, self)
 end
 
 function HeadItem:askMinMax(m1, m2, m3, m4)

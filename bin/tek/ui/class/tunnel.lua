@@ -16,7 +16,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 5.1"
+_VERSION = "Tunnel 5.2"
 local Tunnel = _M
 Frame:newClass(Tunnel)
 
@@ -34,32 +34,27 @@ function Tunnel:setViewZ(val)
 	self.viewz = val
 end
 
-function Tunnel.init(self)
-
+function Tunnel.new(class, self)
+	self = self or { }
 	self.EraseBG = false
-
 	self.MinWidth = self.MinWidth or 128
 	self.MinHeight = self.MinHeight or 128
-
 	-- movement table:
 	self.dx = {  }
 	self.ndx = 32
 	for i = 1, self.ndx do
 		self.dx[i] = sin(i * pi * 2 / 32) * 5
 	end
-
 	-- current offs in movement table:
 	self.cx = 1
 	self.cy = 8
-
 	self.numseg = 6
 	self.speed = 8
 	self.z = 0
 	self.viewz = 0x50
 	self.dist = 0x100
 	self.size = { 320, 256 }
-
-	return Frame.init(self)
+	return Frame.new(class, self)
 end
 
 function Tunnel:show(drawable)

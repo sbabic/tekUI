@@ -24,7 +24,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.editwindow", tek.ui.class.window)
-_VERSION = "EditWindow 7.4"
+_VERSION = "EditWindow 7.5"
 local EditWindow = _M
 Window:newClass(EditWindow)
 
@@ -42,7 +42,8 @@ local L = ui.getLocale("editwindow-class", "schulze-mueller.de")
 
 local EditInput = TextEdit:newClass { _NAME = "_editinput" }
 
-function EditInput.init(self)
+function EditInput.new(class, self)
+	self = self or { }
 	self.FindText = self.FindText or false
 	self.VisibleMargin = self.VisibleMargin or { 3, 2, 3, 2 }
 	self.MouseButtonPressed = false
@@ -52,7 +53,7 @@ function EditInput.init(self)
 	self.MultiLine = true
 	self.Class = "editor"
 -- 	self.LineSpacing = 10
-	return TextEdit.init(self)
+	return TextEdit.new(class, self)
 end
 
 function EditInput:textRequest(text, enterfunc, windowtitle, caption, buttontext)

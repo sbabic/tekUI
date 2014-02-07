@@ -46,6 +46,7 @@
   - 5.3. [[#proxied : Debugging objects]]
   - 5.4. [[#classsetup : Class setup]]
   - 5.5. [[#classdoc : Class documentation system]]
+  - 5.6. [[#cssprecedence : Stylesheets precedence]]
 
 === Links ===
 
@@ -191,13 +192,13 @@ between parent and child processes (using luaposix).
 ==( themes : 2.4. Style sheets and themes )==
 
 TekUI comes with a cascading style sheets (CSS) engine for the
-import of properties for element classes, custom classes, pseudo
+declaration of styles for element classes, custom classes, pseudo
 classes, as well as for individual, direct and hardcoded class
-formattings.
+formattings. 
 
 The only admission to a more common appearance is that tekUI tries to
 import the color scheme found in a GTK+ configuration file, if the
-'desktop' style sheet is used (which is the default, see also
+{{"desktop"}} style sheet is used (which is the default, see also
 [[environment variables][#envvariables]]). If you are using KDE and
 check the ''Apply colors to non-KDE applications'' option, KDE, GTK+
 and tekUI all share the same color scheme.
@@ -997,3 +998,31 @@ For further information, consult the sources in the
 containing the
 [[markup notation reference][manual.html#tek.class.markup]], which
 can be found in {{tek.class.markup}}.
+
+==( cssprecedence : 5.6. Stylesheets precedence )==
+
+TekUI uses a cascading stylesheets (CSS) engine, which borrows from
+the W3C recommendations. The order of precedence is as follows:
+
+ * Hardcoded class defaults
+ * User agent: tekUI's built-in stylesheets, either {{"default"}} or 
+ {{"minimal"}}. The implied default is {{"default"}}, unless the
+ first word in the {{THEME}} variable is {{"minimal"}}. {{"minimal"}}
+ is hardwired into the ui library, while {{"default"}} is an actual
+ stylesheet file.
+ * User: Names of stylesheet files from the {{THEME}} environment
+ variable, e.g. {{"stain gradient"}}. The default is {{"desktop"}}. 
+ * Author: Names of stylesheet files specified in
+ {{Application.AuthorStyleSheets}}.
+ * Author: Styles specified in {{Application.AuthorStyles}}.
+ * User important: The {{user.css}} stylesheet.
+
+To shut off interferences from user styles, use a predefined cascade
+by overwriting the {{THEME}} variable inside your application, e.g.:
+
+  local ui = require "tek.ui"
+  ui.ThemeName = "mycompany" -- also implies "default"
+
+To also disable the {{user.css}} file:
+
+  ui.UserStyles = false

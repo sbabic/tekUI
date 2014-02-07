@@ -138,7 +138,7 @@ local Frame = ui.require("frame", 17)
 local bor = ui.bor
 
 module("tek.ui.class.widget", tek.ui.class.frame)
-_VERSION = "Widget 29.0"
+_VERSION = "Widget 30.1"
 local Widget = _M
 Frame:newClass(Widget)
 
@@ -156,6 +156,7 @@ local FL_RECVMOUSEMOVE = ui.FL_RECVMOUSEMOVE
 local FL_AUTOPOSITION = ui.FL_AUTOPOSITION
 local FL_ACTIVATERMB = ui.FL_ACTIVATERMB
 local FL_INITIALFOCUS = ui.FL_INITIALFOCUS
+local FL_POPITEM = ui.FL_POPITEM
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -179,24 +180,27 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function Widget.init(self)
+function Widget.new(class, self)
+	self = self or { }
 	local flags = 0
-	self.Active = false
 	if self.ActivateOnRMB then
 		flags = bor(flags, FL_ACTIVATERMB)
 	end
+	if self.InitialFocus then
+		flags = bor(flags, FL_INITIALFOCUS)
+	end
+	self.Flags = bor(self.Flags or 0, flags)
+	
+	self.Active = false
 	self.DblClick = false
 	self.EffectHook = false
 	self.FGPen = false
 	self.Hold = false
-	if self.InitialFocus then
-		flags = bor(flags, FL_INITIALFOCUS)
-	end
 	self.KeyCode = self.KeyCode or false
 	self.Mode = self.Mode or "inert"
 	self.Pressed = false
-	self.Flags = bor(self.Flags or 0, flags)
-	return Frame.init(self)
+	
+	return Frame.new(class, self)
 end
 
 -------------------------------------------------------------------------------
@@ -397,8 +401,15 @@ end
 -------------------------------------------------------------------------------
 
 function Widget:getPseudoClass()
+	if self:checkFlags(FL_POPITEM) then
+		-- in a popup item, give the hover class precedence:
+		return self.Disabled and ":disabled" or
+			self.Hilite and ":hover" or
+			self.Selected and ":active" or
+			self.Focus and ":focus" or
+			""
+	end
 	return self.Disabled and ":disabled" or
--- 		(self.Selected and self.Focus) and ":activefocus" or
 		self.Selected and ":active" or
 		self.Focus and ":focus" or
 		self.Hilite and ":hover" or
@@ -531,4 +542,14 @@ function Widget:activate(mode)
 	elseif mode == "click" then
 		win:clickElement(self)
 	end
+end
+
+-------------------------------------------------------------------------------
+--	beginPopup: overrides
+-------------------------------------------------------------------------------
+
+function Widget:beginPopup(baseitem)
+	Frame.beginPopup(self, baseitem)
+	self.Active = false
+	self.Pressed = false
 end

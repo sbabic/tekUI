@@ -23,8 +23,8 @@
 --	OVERRIDES::
 --		- Element:connect()
 --		- Area:draw()
---		- Object.init()
 --		- Area:layout()
+--		- Class.new()
 --
 -------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ local Region = ui.loadLibrary("region", 10)
 local bor = ui.bor
 
 module("tek.ui.class.sizeable", tek.ui.class.widget)
-_VERSION = "Sizeable 10.0"
+_VERSION = "Sizeable 10.1"
 local Sizeable = _M
 Widget:newClass(Sizeable)
 
@@ -47,12 +47,12 @@ local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function Sizeable.init(self)
+function Sizeable.new(class, self)
 	self.InsertX = false	-- internal
 	self.InsertY = false	-- internal
 	self.EraseBG = false
 	self.Flags = bor(self.Flags or 0, FL_TRACKDAMAGE)
-	return Widget.init(self)
+	return Widget.new(class, self)
 end
 
 -------------------------------------------------------------------------------

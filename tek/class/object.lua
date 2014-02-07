@@ -40,7 +40,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.class.object", tek.class)
-_VERSION = "Object 14.1"
+_VERSION = "Object 14.2"
 local Object = _M
 Class:newClass(Object)
 
@@ -81,9 +81,13 @@ end
 
 -------------------------------------------------------------------------------
 --	object = Object.init(object): This function is called during Object.new()
---	before passing control to {{superclass.new()}}. By convention, {{new()}}
---	is used to claim resources (e.g. to create tables), whereas the {{init()}}
---	function is used to initialize them with defaults.
+--	before passing control to {{superclass.new()}}. The original intention was
+--	that resources were to be claimed in {{new()}}, whereas defaults were to
+--	be (re-)initialized during {{init()}}. As of 1.04, this usage pattern is
+--	discouraged; all initializations should take place in {{new()}} now, as
+--	this differentiation was insufficient to cover complex reinitializations,
+--	and it interferes with fields like {{Area.TrackDamage}}, which are now
+--	initialization-only.
 -------------------------------------------------------------------------------
 
 function Object.init(self)

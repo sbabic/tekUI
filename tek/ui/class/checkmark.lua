@@ -27,7 +27,6 @@
 --	OVERRIDES::
 --		- Area:askMinMax()
 --		- Area:draw()
---		- Object.init()
 --		- Area:layout()
 --		- Class.new()
 --		- Area:setState()
@@ -43,7 +42,7 @@ local max = math.max
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 9.2"
+_VERSION = "CheckMark 9.3"
 local CheckMark = _M
 Text:newClass(CheckMark)
 
@@ -63,10 +62,7 @@ local DEF_IMAGEMINHEIGHT = 18
 function CheckMark.new(class, self)
 	self = self or { }
 	self.ImageRect = { 0, 0, 0, 0 }
-	return Text.new(class, self)
-end
-
-function CheckMark.init(self)
+	
 	self.SelectImage = self.SelectImage or CheckImage2
 	self.Image = self.Image or CheckImage1
 	self.ImageHeight = false
@@ -77,7 +73,8 @@ function CheckMark.init(self)
 	end
 	self.Mode = self.Mode or "toggle"
 	self.OldSelected = false
-	return Text.init(self)
+	
+	return Text.new(class, self)
 end
 
 -------------------------------------------------------------------------------
@@ -147,19 +144,4 @@ function CheckMark:setState(bg, fg)
 		self:setFlags(ui.FL_REDRAW)
 	end
 	Text.setState(self, bg, fg)
-end
-
--------------------------------------------------------------------------------
---	getAttr: overrides
--------------------------------------------------------------------------------
-
-local getattrs =
-{
-	["popup-collapse"] = function(self)
-		return true
-	end,
-}
-
-function CheckMark:getAttr(attr, ...)
-	return (getattrs[attr] or Text.getAttr)(self, attr, ...)
 end

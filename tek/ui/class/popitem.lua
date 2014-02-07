@@ -49,7 +49,7 @@
 --		- Object.addClassNotifications()
 --		- Element:cleanup()
 --		- Element:getAttr()
---		- Object.init()
+--		- Class.new()
 --		- Widget:onClick()
 --		- Area:passMsg()
 --		- Element:setup()
@@ -66,7 +66,7 @@ local floor = math.floor
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 25.0"
+_VERSION = "PopItem 26.0"
 local PopItem = _M
 Text:newClass(PopItem)
 
@@ -99,7 +99,8 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-function PopItem.init(self)
+function PopItem.new(class, self)
+	self = self or { }
 	self.Image = self.Image or false
 	self.ImageRect = self.ImageRect or false
 	self.PopupBase = false
@@ -119,7 +120,7 @@ function PopItem.init(self)
 		self.Mode = self.Mode or "button"
 	end
 	self.Shortcut = self.Shortcut or false
-	return Text.init(self)
+	return Text.new(class, self)
 end
 
 -------------------------------------------------------------------------------
@@ -248,11 +249,16 @@ function PopItem:calcPopup()
 end
 
 -------------------------------------------------------------------------------
---	beginPopup:
+--	beginPopup: overrides
 -------------------------------------------------------------------------------
 
-function PopItem:beginPopup()
-
+function PopItem:beginPopup(baseitem)
+	if baseitem then
+		Text.beginPopup(self, baseitem)
+		self.PopupBase = baseitem
+		return
+	end
+	
 	local children = self.Children
 	if not children then
 		db.warn("element has no children")
@@ -269,12 +275,8 @@ function PopItem:beginPopup()
 	-- prepare children for being used in a popup window:
 	for i = 1, #children do
 		local c = children[i]
-		c.Hilite = false
-		c.Focus = false
+		c:beginPopup(self.PopupBase or self)
 		c:setFlags(FL_POPITEM)
-		if c:instanceOf(PopItem) then
-			c.PopupBase = self.PopupBase or self
-		end
 	end
 
 	self.PopupWindow = PopupWindow:new
@@ -472,18 +474,12 @@ end
 --	getAttr: overrides
 -------------------------------------------------------------------------------
 
-local getattrs =
-{
-	["menuitem-size"] = function(self)
-		-- Do we have a text record for a shortcut? If so, return its size
-		if self.TextRecords[2] then
-			return self:getTextSize()	
-		end
-	end,
-}
-
 function PopItem:getAttr(attr, ...)
-	return (getattrs[attr] or Text.getAttr)(self, attr, ...)
+	if attr == "menuitem-size" then
+		-- Do we have a text record for a shortcut? If so, return its size
+		return self.TextRecords[2] and self:getTextSize()
+	end
+	return Text.getAttr(self, attr, ...)
 end
 
 -------------------------------------------------------------------------------

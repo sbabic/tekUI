@@ -21,7 +21,7 @@
 --		- Area:askMinMax()
 --		- Area:checkFocus()
 --		- Area:draw()
---		- Object.init()
+--		- Class.new()
 --		- Area:passMsg()
 --		- Area:show()
 --
@@ -37,7 +37,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.handle", tek.ui.class.widget)
-_VERSION = "Handle 7.0"
+_VERSION = "Handle 7.1"
 local Handle = _M
 Widget:newClass(Handle)
 
@@ -45,14 +45,15 @@ Widget:newClass(Handle)
 -- Class implementation:
 -------------------------------------------------------------------------------
 
-function Handle.init(self)
+function Handle.new(class, self)
+	self = self or { }
 	self.AutoPosition = false
 	self.Mode = self.Mode or "button"
 	self.Move0 = false
 	self.MoveMinMax = { }
 	self.Orientation = false
 	self.SizeList = false
-	return Widget.init(self)
+	return Widget.new(class, self)
 end
 
 -------------------------------------------------------------------------------

@@ -87,9 +87,10 @@ end
 
 local MyGraph2 = ui.Meter:newClass()
 
-function MyGraph2.init(self)
+function MyGraph2.new(class, self)
+	self = self or { }
 	self.Params = { 0,0,0 }
-	return ui.Meter.init(self)
+	return ui.Meter.new(class, self)
 end
 
 function MyGraph2:show(drawable)

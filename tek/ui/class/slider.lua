@@ -51,11 +51,11 @@
 --		- Element:cleanup()
 --		- Area:draw()
 --		- Area:hide()
---		- Object.init()
 --		- Area:layout()
---		- Area:passMsg()
+--		- Class.new()
 --		- Widget:onFocus()
 --		- Widget:onHold()
+--		- Area:passMsg()
 --		- Area:setState()
 --		- Element:setup()
 --		- Area:show()
@@ -75,7 +75,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 26.4"
+_VERSION = "Slider 26.5"
 local Slider = _M
 Numeric:newClass(Slider)
 
@@ -94,7 +94,8 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function Slider.init(self)
+function Slider.new(class, self)
+	self = self or { }
 	self.AutoCapture = self.AutoCapture == nil and true or self.AutoCapture
 	self.AutoPosition = self.AutoPosition ~= nil and self.AutoPosition or false
 	self.BGRegion = false
@@ -111,7 +112,7 @@ function Slider.init(self)
 	self.Orientation = self.Orientation or "horizontal"
 	self.Pos0 = 0
 	self.Range = self.Range or false
-	self = Numeric.init(self)
+	self = Numeric.new(class, self)
 	self.Range = max(self.Max, self.Range or self.Max)
 	return self
 end

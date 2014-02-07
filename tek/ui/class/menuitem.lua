@@ -24,7 +24,6 @@
 --	OVERRIDES::
 --		- Area:askMinMax()
 --		- Area:draw()
---		- Object.init()
 --		- Area:layout()
 --		- Class.new()
 --		- Area:show()
@@ -39,7 +38,7 @@ local max = math.max
 local floor = math.floor
 
 module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 10.3"
+_VERSION = "MenuItem 11.0"
 local MenuItem = _M
 PopItem:newClass(MenuItem)
 
@@ -104,14 +103,14 @@ function MenuItem:doSubMenu()
 	end
 end
 
-function MenuItem:beginPopup()
+function MenuItem:beginPopup(baseitem)
 	if self.Window and self.Window.ActivePopup and
 		self.Window.ActivePopup ~= self then
 		-- close already open menu in same group:
 		self.Window.ActivePopup:endPopup()
 	end
 	-- subitems are handled in baseclass:
-	PopItem.beginPopup(self)
+	PopItem.beginPopup(self, baseitem)
 end
 
 function MenuItem:endPopup()

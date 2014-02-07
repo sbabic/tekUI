@@ -1,8 +1,8 @@
 #!/usr/bin/env lua
 
 local ui = require "tek.ui"
-
--- require "profiler".start "lua.prof"
+ui.ThemeName = "dark tutorial"
+ui.UserStyles = false
 
 ui.Application:new {
 	Children = {
@@ -119,5 +119,3 @@ ui.Application:new {
 		}
 	}
 }:run()
-
--- profiler.stop()

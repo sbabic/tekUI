@@ -8,10 +8,11 @@ ui = require "tek.ui"
 
 Button = ui.Text:newClass { _NAME = "_button" }
 
-function Button.init(self)
+function Button.new(class, self)
+	self = self or { }
 	self.Class = "button"
 	self.Mode = self.Mode or "button"
-	return ui.Text.init(self)
+	return ui.Text.new(class, self)
 end
 
 -------------------------------------------------------------------------------

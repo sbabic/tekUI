@@ -9,16 +9,17 @@ local min = math.min
 local type = type
 
 module("tek.ui.hook.ripple", tek.ui.class.drawhook)
-_VERSION = "RippleHook 5.0"
+_VERSION = "RippleHook 5.1"
 local RippleHook = _M
 DrawHook:newClass(RippleHook)
 
-function RippleHook.init(self)
+function RippleHook.new(class, self)
+	self = self or { }
 	self.Defs = { } -- offset, ratio1, ratio2, max1, max2
 	self.Orientation = self.Orientation or false
 	self.Params = { } -- n, m, x, y, dx, dy, dx2, dy2
 	self.DrawDotFunc = false
-	return DrawHook.init(self)
+	return DrawHook.new(class, self)
 end
 
 function RippleHook:connect(parent)

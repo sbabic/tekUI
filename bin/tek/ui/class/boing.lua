@@ -15,7 +15,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.boing", tek.ui.class.frame)
-_VERSION = "Boing 5.1"
+_VERSION = "Boing 5.2"
 local Boing = _M
 Frame:newClass(Boing)
 
@@ -29,7 +29,7 @@ local NOTIFY_YPOS = { ui.NOTIFY_SELF, "onSetYPos", ui.NOTIFY_VALUE }
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-function Boing.init(self)
+function Boing.new(class, self)
 	self = self or { }
 	self.Boing = { 0x8000, 0x8000 }
 	self.Boing[3] = 0x334
@@ -40,7 +40,7 @@ function Boing.init(self)
 	self.OldRect = { }
 	self.TrackDamage = true
 	self.Running = self.Running or false
-	return Frame.init(self)
+	return Frame.new(class, self)
 end
 
 function Boing:setup(app, window)

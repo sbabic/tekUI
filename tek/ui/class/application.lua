@@ -38,11 +38,10 @@
 --			{{AuthorStyleSheets}} attribute.
 --		- {{AuthorStyleSheets [IG]}} (string)
 --			A string containing the names of author style sheet files
---			overlaying user and user agent styles. Multiple style
+--			overlaying user agent and theme declaration. Multiple style
 --			sheets are separated by spaces. The last style sheet has the
 --			highest precedence, e.g. {{"desktop texture"}} would load the
---			style sheets {{desktop.css}} and {{texture.css}}, placing
---			{{texture.css}} on top of the cascade.
+--			style sheets {{desktop.css}} and {{texture.css}}.
 --		- {{Copyright [IG]}} (string)
 --			Copyright notice applying to the application, default
 --			{{"unknown"}}
@@ -98,7 +97,6 @@
 --
 --	OVERRIDES::
 --		- Family:addMember()
---		- Object.init()
 --		- Class.new()
 --		- Family:remMember()
 --
@@ -130,7 +128,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 39.2"
+_VERSION = "Application 40.0"
 local Application = _M
 Family:newClass(Application)
 
@@ -146,6 +144,38 @@ local MSGTYPES = { MSG_USER }
 -------------------------------------------------------------------------------
 
 function Application.new(class, self)
+	
+	self = self or { }
+	
+	self.Application = self
+	self.ApplicationId = self.ApplicationId or "unknown"
+	self.Author = self.Author or "unknown"
+	self.Clipboard = self.Clipboard or { }
+	self.Copyright = self.Copyright or "unknown"
+	self.Coroutines = { }
+	self.Display = self.Display or false
+	self.Domain = self.Domain or "unknown"
+	self.ElementById = { }
+	self.FocusWindow = false
+	local t = self.GCControl
+	if t == nil or t == true then
+		self.GCControl = "step"
+	end
+	self.InputHandlers = { [MSG_USER] = { } }
+	self.LastKey = false
+	self.ModalWindows = { } -- stack of
+	self.MsgDispatch = false
+	self.OpenWindows = { }
+	if self.Preload then
+		ui.require("group", 22)
+		ui.require("text", 20)
+		ui.require("window", 22)
+		ui.require("dirlist", 14)
+	end
+	self.ProgramName = self.ProgramName or self.Title or "tekUI"
+	self.Status = "init"
+	Application.initStylesheets(self)
+	
 	self = Family.new(class, self)
 	self.MsgDispatch =
 	{
@@ -201,9 +231,7 @@ function Application.initStylesheets(self)
 	
 	local stylesheets = { }
 	ui.ThemeName:gsub("%S+", function(name)
-		if name ~= "user" then
-			insert(stylesheets, name)
-		end
+		insert(stylesheets, name)
 	end)
 	if stylesheets[1] ~= "minimal" then
 		insert(stylesheets, 1, "minimal")
@@ -249,49 +277,15 @@ function Application.initStylesheets(self)
 	end
 
 	-- 'user' stylesheet:
-	local s, msg = ui.loadStyleSheet("user")
-	if s then
-		insert(props, 1, s)
-	else
-		db.info("failed to decode user stylesheet: %s", msg)
+	if ui.UserStyles then
+		local s, msg = ui.loadStyleSheet(ui.UserStyles)
+		if s then
+			insert(props, 1, s)
+		else
+			db.info("failed to decode user stylesheet: %s", msg)
+		end
 	end
 
-end
-
--------------------------------------------------------------------------------
---	init: overrides
--------------------------------------------------------------------------------
-
-function Application.init(self)
-	self.Application = self
-	self.ApplicationId = self.ApplicationId or "unknown"
-	self.Author = self.Author or "unknown"
-	self.Clipboard = self.Clipboard or { }
-	self.Copyright = self.Copyright or "unknown"
-	self.Coroutines = { }
-	self.Display = self.Display or false
-	self.Domain = self.Domain or "unknown"
-	self.ElementById = { }
-	self.FocusWindow = false
-	local t = self.GCControl
-	if t == nil or t == true then
-		self.GCControl = "step"
-	end
-	self.InputHandlers = { [MSG_USER] = { } }
-	self.LastKey = false
-	self.ModalWindows = { } -- stack of
-	self.MsgDispatch = false
-	self.OpenWindows = { }
-	if self.Preload then
-		ui.require("group", 22)
-		ui.require("text", 20)
-		ui.require("window", 22)
-		ui.require("dirlist", 14)
-	end
-	self.ProgramName = self.ProgramName or self.Title or "tekUI"
-	self.Status = "init"
-	Application.initStylesheets(self)
-	return Family.init(self)
 end
 
 -------------------------------------------------------------------------------

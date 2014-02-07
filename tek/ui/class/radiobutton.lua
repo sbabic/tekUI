@@ -20,7 +20,7 @@
 --		implement mutually exclusive 'radio buttons'.
 --
 --	OVERRIDES::
---		- Object.init()
+--		- Class.new()
 --		- Widget:onSelect()
 --
 -------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ local ui = require "tek.ui"
 local CheckMark = ui.require("checkmark", 9)
 
 module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 6.0"
+_VERSION = "RadioButton 6.1"
 local RadioButton = _M
 CheckMark:newClass(RadioButton)
 
@@ -44,11 +44,11 @@ local RadioImage2 = ui.getStockImage("radiobutton", 2)
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-function RadioButton.init(self)
+function RadioButton.new(class, self)
 	self.Image = self.Image or RadioImage1
 	self.SelectImage = self.SelectImage or RadioImage2
 	self.Mode = self.Mode or "touch"
-	return CheckMark.init(self)
+	return CheckMark.new(class, self)
 end
 
 -------------------------------------------------------------------------------

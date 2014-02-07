@@ -131,6 +131,15 @@ local TSP = Frame:newClass()
 
 function TSP.new(class, self)
 	self = self or { }
+	self.Decay = 0.9999999
+	self.Frame = 1
+	self.Length = 0
+	self.Threshold = 0
+	self.Changed = false
+	self.Iterations = 0
+	self.Accepted = 0
+	self.Bombs = 0
+	self.Points = { }
 	self = Frame.new(class, self)
 	self:reset()
 	return self
@@ -151,19 +160,6 @@ end
 
 function TSP.getDecay(v)
 	return 1 - 1 / math.pow(10, 8 - v)
-end
-
-function TSP.init(self)
-	self.Decay = 0.9999999
-	self.Frame = 1
-	self.Length = 0
-	self.Threshold = 0
-	self.Changed = false
-	self.Iterations = 0
-	self.Accepted = 0
-	self.Bombs = 0
-	self.Points = { }
-	return Frame.init(self)
 end
 
 function TSP:show(drawable)

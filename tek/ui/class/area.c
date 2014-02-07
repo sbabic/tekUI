@@ -198,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 53.1"
+_VERSION = "Area 54.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -217,7 +217,7 @@ Element:newClass(Area)
 #define CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define CLASS_VERSION "Area 53.1"
+#define CLASS_VERSION "Area 54.0"
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
@@ -240,14 +240,14 @@ Element:newClass(Area)
 static void setfieldbool(lua_State *L, int idx, const char *k, TBOOL b)
 {
 	lua_pushboolean(L, b);
-	lua_setfield(L, idx, k);
+	lua_setfield(L, idx > 0 ? idx : idx - 1, k);
 }
 
 static void setfieldbooliffalse(lua_State *L, int idx, const char *k, TBOOL b)
 {
 	lua_getfield(L, idx, k);
 	if (!lua_toboolean(L, -1))
-		setfieldbool(L, idx, k, b);
+		setfieldbool(L, idx > 0 ? idx : idx - 1, k, b);
 	lua_pop(L, 1);
 }
 
@@ -378,6 +378,39 @@ static int tek_ui_class_area_new(lua_State *L)
 	lua_setfield(L, -2, "MinMax");
 	callfield(L, IREGION, "new", 0, 1);
 	lua_setfield(L, -2, "Rect");
+	
+	setfieldbool(L, -1, "BGPen", TFALSE);
+	setfieldbool(L, -1, "DamageRegion", TFALSE);
+	setfieldbooliffalse(L, -1, "Disabled", TFALSE);
+	setfieldbool(L, -1, "Focus", TFALSE);
+	setfieldbooliffalse(L, -1, "HAlign", TFALSE);
+	setfieldbooliffalse(L, -1, "Height", TFALSE);
+	setfieldbool(L, -1, "Hilite", TFALSE);
+	setfieldbooliffalse(L, -1, "MaxHeight", TFALSE);
+	setfieldbooliffalse(L, -1, "MaxWidth", TFALSE);
+	setfieldbooliffalse(L, -1, "MinHeight", TFALSE);
+	setfieldbooliffalse(L, -1, "MinWidth", TFALSE);
+	setfieldbooliffalse(L, -1, "Selected", TFALSE);
+	setfieldbooliffalse(L, -1, "VAlign", TFALSE);
+	setfieldbooliffalse(L, -1, "Weight", TFALSE);
+	setfieldbooliffalse(L, -1, "Width", TFALSE);
+	
+	lua_Integer flags = getnumfield(L, -1, "Flags");
+	lua_getfield(L, -1, "AutoPosition");
+	if (lua_isnil(L, -1) || lua_toboolean(L, -1))
+		flags |= TEKUI_FL_AUTOPOSITION;
+	lua_pop(L, 1);
+	lua_getfield(L, -1, "EraseBG");
+	if (lua_isnil(L, -1) || lua_toboolean(L, -1))
+		flags |= TEKUI_FL_ERASEBG;
+	lua_pop(L, 1);
+	lua_getfield(L, -1, "TrackDamage");
+	if (lua_toboolean(L, -1))
+		flags |= TEKUI_FL_TRACKDAMAGE;
+	lua_pop(L, 1);
+	lua_pushinteger(L, flags);
+	lua_setfield(L, -2, "Flags");
+	
 	callfield(L, ISUPERCLASS, "new", 2, 1);
 	return 1;
 }
@@ -1773,43 +1806,14 @@ static int tek_ui_class_area_show(lua_State *L)
 }
 
 /*-----------------------------------------------------------------------------
---	init: overrides
+--	beginPopup([baseitem]): Prepare element for being used in a popup.
 -----------------------------------------------------------------------------*/
 
-static int tek_ui_class_area_init(lua_State *L)
+static int tek_ui_class_area_beginpopup(lua_State *L)
 {
-	lua_Integer flags = getnumfield(L, ISELF, "Flags");
-	lua_getfield(L, ISELF, "AutoPosition");
-	if (lua_isnil(L, -1) || lua_toboolean(L, -1))
-		flags |= TEKUI_FL_AUTOPOSITION;
-	lua_pop(L, 1);
-	lua_getfield(L, ISELF, "EraseBG");
-	if (lua_isnil(L, -1) || lua_toboolean(L, -1))
-		flags |= TEKUI_FL_ERASEBG;
-	lua_pop(L, 1);
-	lua_getfield(L, ISELF, "TrackDamage");
-	if (lua_toboolean(L, -1))
-		flags |= TEKUI_FL_TRACKDAMAGE;
-	lua_pop(L, 1);
-	setfieldbool(L, ISELF, "BGPen", TFALSE);
-	setfieldbool(L, ISELF, "DamageRegion", TFALSE);
-	setfieldbooliffalse(L, ISELF, "Disabled", TFALSE);
-	lua_pushinteger(L, flags);
-	lua_setfield(L, ISELF, "Flags");
-	setfieldbool(L, ISELF, "Focus", TFALSE);
-	setfieldbooliffalse(L, ISELF, "HAlign", TFALSE);
-	setfieldbooliffalse(L, ISELF, "Height", TFALSE);
 	setfieldbool(L, ISELF, "Hilite", TFALSE);
-	setfieldbooliffalse(L, ISELF, "MaxHeight", TFALSE);
-	setfieldbooliffalse(L, ISELF, "MaxWidth", TFALSE);
-	setfieldbooliffalse(L, ISELF, "MinHeight", TFALSE);
-	setfieldbooliffalse(L, ISELF, "MinWidth", TFALSE);
-	setfieldbooliffalse(L, ISELF, "Selected", TFALSE);
-	setfieldbooliffalse(L, ISELF, "VAlign", TFALSE);
-	setfieldbooliffalse(L, ISELF, "Weight", TFALSE);
-	setfieldbooliffalse(L, ISELF, "Width", TFALSE);
-	lua_pushvalue(L, ISELF);
-	return callfield(L, ISUPERCLASS, "init", 1, 1);
+	setfieldbool(L, ISELF, "Focus", TFALSE);
+	return 0;
 }
 
 /*****************************************************************************/
@@ -1854,7 +1858,7 @@ static const luaL_Reg classfuncs[] =
 	{ "rethinkLayout", tek_ui_class_area_rethinklayout },
 	{ "hide", tek_ui_class_area_hide },
 	{ "show", tek_ui_class_area_show },
-	{ "init", tek_ui_class_area_init },
+	{ "beginPopup", tek_ui_class_area_beginpopup },
 	{ NULL, NULL }
 };
 

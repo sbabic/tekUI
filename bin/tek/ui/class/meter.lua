@@ -23,7 +23,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 8.0"
+_VERSION = "Meter 8.1"
 local Meter = _M
 Text:newClass(Meter)
 
@@ -42,7 +42,8 @@ Properties = {
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-function Meter.init(self)
+function Meter.new(class, self)
+	self = self or { }
 	self.NumSamples = self.NumSamples or 256
 	self.GraphBGColor = self.GraphBGColor or "dark"
 	self.GraphColor = self.GraphColor or "bright"
@@ -79,7 +80,7 @@ function Meter.init(self)
 	self.TextRecordsX = false
 	self.TextRecordsY = false
 	self.TextRegion = false
-	return Text.init(self)
+	return Text.new(class, self)
 end
 
 -------------------------------------------------------------------------------

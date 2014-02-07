@@ -56,8 +56,8 @@
 --		- Area:getChildren()
 --		- Area:getGroup()
 --		- Area:hide()
---		- Object.init()
 --		- Area:layout()
+--		- Class.new()
 --		- Area:passMsg()
 --		- Area:punch()
 --		- Element:setup()
@@ -74,7 +74,7 @@ local intersect = Region.intersect
 local type = type
 
 module("tek.ui.class.group", tek.ui.class.widget)
-_VERSION = "Group 33.0"
+_VERSION = "Group 33.1"
 local Group = _M
 Widget:newClass(Group)
 
@@ -101,7 +101,8 @@ local MSG_MOUSEMOVE = ui.MSG_MOUSEMOVE
 --	class implementation:
 -------------------------------------------------------------------------------
 
-function Group.init(self)
+function Group.new(class, self)
+	self = self or { }
 	self.Children = self.Children or { }
 	self.Columns = self.Columns or false
 	self.FreeRegion = false
@@ -112,7 +113,7 @@ function Group.init(self)
 	self.Orientation = self.Orientation or "horizontal"
 	self.Rows = self.Rows or false
 	self.SameSize = self.SameSize or false
-	return Widget.init(self)
+	return Widget.new(class, self)
 end
 
 -------------------------------------------------------------------------------

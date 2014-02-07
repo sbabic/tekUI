@@ -57,7 +57,7 @@
 --
 --	OVERRIDES::
 --		- Object.addClassNotifications()
---		- Object.init()
+--		- Class.new()
 --
 -------------------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 20.0"
+_VERSION = "Element 20.1"
 local Element = _M
 Object:newClass(Element)
 
@@ -124,7 +124,8 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function Element.init(self)
+function Element.new(class, self)
+	self = self or { }
 	self.Application = false
 	self.Class = self.Class or false
 	self.Id = self.Id or false
@@ -132,7 +133,7 @@ function Element.init(self)
 	self.Properties = false
 	self.Style = self.Style or false
 	self.Window = false
-	return Object.init(self)
+	return Object.new(class, self)
 end
 
 -------------------------------------------------------------------------------

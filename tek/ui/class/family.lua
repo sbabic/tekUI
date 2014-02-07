@@ -28,7 +28,7 @@ local insert = table.insert
 local remove = table.remove
 
 module("tek.ui.class.family", tek.class.object)
-_VERSION = "Family 2.5"
+_VERSION = "Family 2.6"
 local Family = _M
 Object:newClass(Family)
 
@@ -36,9 +36,10 @@ Object:newClass(Family)
 --	Class implementation:
 -------------------------------------------------------------------------------
 
-function Family.init(self)
+function Family.new(class, self)
+	self = self or { }
 	self.Children = self.Children or { }
-	return Object.init(self)
+	return Object.new(class, self)
 end
 
 -------------------------------------------------------------------------------

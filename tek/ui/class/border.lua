@@ -6,14 +6,15 @@ local unpack = unpack
 local newregion = Region.new
 
 module("tek.ui.class.border", tek.ui.class.drawhook)
-_VERSION = "Border 7.3"
+_VERSION = "Border 7.4"
 local Border = _M
 DrawHook:newClass(Border)
 
-function Border.init(self)
+function Border.new(class, self)
+	self = self or { }
 	self.Border = self.Border or false
 	self.Rect = newregion()
-	return DrawHook.init(self)
+	return DrawHook.new(class, self)
 end
 
 function Border:getBorder()

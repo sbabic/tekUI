@@ -23,8 +23,8 @@
 --		- Element:cleanup()
 --		- Area:draw()
 --		- Area:hide()
---		- Object.init()
 --		- Area:layout()
+--		- Class.new()
 --		- Numeric:onSetValue()
 --		- Element:setup()
 --		- Area:show()
@@ -40,7 +40,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 17.3"
+_VERSION = "Gauge 17.4"
 local Gauge = _M
 Numeric:newClass(Gauge)
 
@@ -48,12 +48,13 @@ Numeric:newClass(Gauge)
 -- Gauge:
 -------------------------------------------------------------------------------
 
-function Gauge.init(self)
+function Gauge.new(class, self)
+	self = self or { }
 	self.BGRegion = false
 	self.Child = self.Child or ui.Frame:new { Class = "gauge-fill" }
 	self.Mode = "inert"
 	self.Orientation = self.Orientation or "horizontal"
-	return Numeric.init(self)
+	return Numeric.new(class, self)
 end
 
 -------------------------------------------------------------------------------

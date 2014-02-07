@@ -98,8 +98,8 @@
 --		- Element:connect()
 --		- Area:draw()
 --		- Area:hide()
---		- Object.init()
 --		- Area:layout()
+--		- Class.new()
 --		- Frame:onFocus()
 --		- Area:passMsg()
 --		- Area:setState()
@@ -129,7 +129,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.lister", tek.ui.class.text)
-_VERSION = "Lister 31.0"
+_VERSION = "Lister 31.1"
 local Lister = _M
 Text:newClass(Lister)
 
@@ -176,7 +176,8 @@ Properties = {
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function Lister.init(self)
+function Lister.new(class, self)
+	self = self or { }
 	self.AlignColumn = self.AlignColumn or false
 	-- the element that determines the size for AlignColumn:
 	self.AlignElement = self.AlignElement or false
@@ -208,7 +209,7 @@ function Lister.init(self)
 	self.TrackDamage = true
 	self.OldCursorLine = self.CursorLine
 	self.OldSelectedLine = self.SelectedLine
-	return Text.init(self)
+	return Text.new(class, self)
 end
 
 -------------------------------------------------------------------------------

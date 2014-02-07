@@ -190,7 +190,6 @@
 --
 --	OVERRIDES::
 --		- Element:cleanup()
---		- Object.init()
 --		- Class.new()
 --		- Element:onSetStyle()
 --		- Element:setup()
@@ -214,7 +213,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 53.1"
+_VERSION = "Area 54.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -243,25 +242,7 @@ function Area.new(class, self)
 	self.MinMax = newregion()
 	-- The layouted rectangle of the element on the display:
 	self.Rect = newregion()
-	return Element.new(class, self)
-end
 
--------------------------------------------------------------------------------
---	init: overrides
--------------------------------------------------------------------------------
-
-function Area.init(self)
-	local flags = 0
-	if self.AutoPosition == nil or self.AutoPosition then
-		flags = bor(flags, FL_AUTOPOSITION)
-	end
-	if self.EraseBG == nil or self.EraseBG then
-		flags = bor(flags, FL_ERASEBG)
-	end
-	if self.TrackDamage then
-		flags = bor(flags, FL_TRACKDAMAGE)
-	end
-	self.Flags = bor(self.Flags or 0, flags)
 	self.BGPen = false
 	self.DamageRegion = false
 	self.Disabled = self.Disabled or false
@@ -277,7 +258,20 @@ function Area.init(self)
 	self.VAlign = self.VAlign or false
 	self.Weight = self.Weight or false
 	self.Width = self.Width or false
-	return Element.init(self)
+	
+	local flags = 0
+	if self.AutoPosition == nil or self.AutoPosition then
+		flags = bor(flags, FL_AUTOPOSITION)
+	end
+	if self.EraseBG == nil or self.EraseBG then
+		flags = bor(flags, FL_ERASEBG)
+	end
+	if self.TrackDamage then
+		flags = bor(flags, FL_TRACKDAMAGE)
+	end
+	self.Flags = bor(self.Flags or 0, flags)
+	
+	return Element.new(class, self)
 end
 
 -------------------------------------------------------------------------------
@@ -990,4 +984,13 @@ end
 
 function Area:getDisplacement()
 	return 0, 0
+end
+
+-------------------------------------------------------------------------------
+--	beginPopup([baseitem]): Prepare element for being used in a popup.
+-------------------------------------------------------------------------------
+
+function Area:beginPopup(baseitem)
+	self.Hilite = false
+	self.Focus = false
 end

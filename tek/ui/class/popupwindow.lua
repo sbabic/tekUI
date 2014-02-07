@@ -20,9 +20,9 @@
 --		[[#tek.ui.class.popitem : PopItem]].
 --
 --	OVERRIDES::
---		- Object.init()
---		- Area:show()
+--		- Class.new()
 --		- Area:passMsg()
+--		- Area:show()
 --
 -------------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ local Window = ui.require("window", 33)
 local max = math.max
 
 module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 5.1"
+_VERSION = "PopupWindow 5.2"
 local PopupWindow = _M
 Window:newClass(PopupWindow)
 
@@ -40,16 +40,15 @@ Window:newClass(PopupWindow)
 --	PopupWindow class:
 -------------------------------------------------------------------------------
 
-function PopupWindow.init(self)
+function PopupWindow.new(class, self)
 	self.PopupBase = self.PopupBase or false
 	self.BeginPopupTicks = 0
 	self.DelayedBeginPopup = false
 	self.DelayedEndPopup = false
 	self.Width = self.Width or "auto"
 	self.Height = self.Height or "auto"
-	self = Window.init(self)
 	self.FullScreen = false
-	return self
+	return Window.new(class, self)
 end
 
 -------------------------------------------------------------------------------

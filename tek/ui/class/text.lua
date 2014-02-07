@@ -74,7 +74,7 @@
 --		- Area:askMinMax()
 --		- Element:cleanup()
 --		- Area:draw()
---		- Object.init()
+--		- Class.new()
 --		- Element:onSetStyle()
 --		- Element:setup()
 --
@@ -93,7 +93,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.widget)
-_VERSION = "Text 28.3"
+_VERSION = "Text 28.4"
 local Text = _M
 Widget:newClass(Text)
 
@@ -120,13 +120,14 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function Text.init(self)
+function Text.new(class, self)
+	self = self or { }
 	self.KeepMinHeight = self.KeepMinHeight or false
 	self.KeepMinWidth = self.KeepMinWidth or false
 	self.Mode = self.Mode or "inert"
 	self.Text = self.Text or ""
 	self.TextRecords = self.TextRecords or false
-	return Widget.init(self)
+	return Widget.new(class, self)
 end
 
 -------------------------------------------------------------------------------

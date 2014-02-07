@@ -75,8 +75,8 @@
 --		- Area:getChildren()
 --		- Area:getDisplacement()
 --		- Area:hide()
---		- Object.init()
 --		- Area:layout()
+--		- Class.new()
 --		- Area:passMsg()
 --		- Element:setup()
 --		- Area:show()
@@ -98,7 +98,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 36.0"
+_VERSION = "Canvas 36.1"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -127,7 +127,8 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function Canvas.init(self)
+function Canvas.new(class, self)
+	self = self or { }
 	if self.AutoPosition == nil then
 		self.AutoPosition = false
 	end
@@ -154,7 +155,7 @@ function Canvas.init(self)
 		self.UseChildBG = true
 	end
 	self.VIncrement = self.VIncrement or 10
-	return Frame.init(self)
+	return Frame.new(class, self)
 end
 
 -------------------------------------------------------------------------------

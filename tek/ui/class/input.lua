@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 3.3"
+_VERSION = "Input 3.4"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -63,12 +63,13 @@ local MSG_KEYDOWN = ui.MSG_KEYDOWN
 
 local EditInput = TextEdit:newClass { _NAME = "_editinput" }
 
-function EditInput.init(self)
+function EditInput.new(class, self)
+	self = self or { }
 	self.MouseButtonPressed = false
 	self.LastClickTime = { 0, 0 }
 	self.MouseMarkCursorX = false
 	self.MouseMarkCursorY = false
-	return TextEdit.init(self)
+	return TextEdit.new(class, self)
 end
 
 function EditInput:askMinMax(m1, m2, m3, m4)

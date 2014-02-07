@@ -9,17 +9,18 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 9.2"
+_VERSION = "DefaultBorder 9.3"
 local DefaultBorder = _M
 Border:newClass(DefaultBorder)
 
-function DefaultBorder.init(self)
+function DefaultBorder.new(class, self)
+	self = self or { }
 	self.Border = self.Border or false
 	self.Legend = self.Legend or false
 	self.LegendFont = false
 	self.LegendWidth = false
 	self.LegendHeight = false
-	return Border.init(self)
+	return Border.new(class, self)
 end
 
 function DefaultBorder:setup(app, win)

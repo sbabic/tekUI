@@ -64,7 +64,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 15.2"
+_VERSION = "ScrollBar 15.3"
 local ScrollBar = _M
 Group:newClass(ScrollBar)
 
@@ -83,12 +83,12 @@ local ArrowRightImage = ui.getStockImage("arrowright")
 
 local ArrowButton = ImageWidget:newClass { _NAME = "_scrollbar-arrow" }
 
-function ArrowButton.init(self)
+function ArrowButton.new(class, self)
 	self.Width = "auto"
 	self.Height = "auto"
 	self.Mode = "button"
 	self.Direction = self.Direction or 1
-	return ImageWidget.init(self)
+	return ImageWidget.new(class, self)
 end
 
 function ArrowButton:checkFocus()

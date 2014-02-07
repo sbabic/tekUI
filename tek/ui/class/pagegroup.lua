@@ -34,7 +34,6 @@
 --
 --	OVERRIDES::
 --		- Element:cleanup()
---		- Object.init()
 --		- Class.new()
 --		- Element:setup()
 --
@@ -58,7 +57,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 19.5"
+_VERSION = "PageGroup 19.6"
 local PageGroup = _M
 Group:newClass(PageGroup)
 
@@ -68,10 +67,10 @@ Group:newClass(PageGroup)
 
 local PageContainerGroup = Group:newClass { _NAME = "_page-container" }
 
-function PageContainerGroup.init(self)
+function PageContainerGroup.new(class, self)
 	self.PageElement = self.PageElement or false
 	self.PageNumber = self.PageNumber or 1
-	return Group.init(self)
+	return Group.new(class, self)
 end
 
 -------------------------------------------------------------------------------

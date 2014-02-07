@@ -1,6 +1,20 @@
 
 == tekUI Changelog ==
 
+=== 1.04: ===
+
+ * ui, Application: Added UserStyles variable
+ * Removed use of the init() function
+ * CheckMark:getAttr() removed
+ * Area:beginPopup() added
+ * PopItem: now uses child:beginPopup() to prepare an element for being used
+ in a popup
+ * Widget:getPseudoClass() now gives hover precendece if the element is in a
+ popup
+ * Window:update() could try to relayout elements without a rectangle,
+ corrected
+ * Added some CSS documentation
+
 === 1.03: ===
 
  * Bug in Area class (C version) fixed: Did not differentiate between

@@ -31,7 +31,6 @@
 --	OVERRIDES::
 --		- Element:cleanup()
 --		- Area:draw()
---		- Object.init()
 --		- Area:layout()
 --		- Class.new()
 --		- Element:onSetStyle()
@@ -62,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 18.0"
+_VERSION = "TextEdit 18.1"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -98,7 +97,8 @@ Properties = {
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function TextEdit.init(self)
+function TextEdit.new(class, self)
+	self = self or { }
 	self.AutoIndent = true -- self.AutoIndent or false
 	self.AutoPosition = self.AutoPosition or false
 	self.AutoWrap = self.AutoWrap or false
@@ -152,7 +152,7 @@ function TextEdit.init(self)
 	self.VisibleMargin = self.VisibleMargin or { 0, 0, 0, 0 }
 	-- indicates that Y positions and heights are cached and valid:
 -- 	self.YValid = true 
-	return Sizeable.init(self)
+	return Sizeable.new(class, self)
 end
 
 -------------------------------------------------------------------------------

@@ -17,7 +17,7 @@ local sin = math.sin
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.plasma", tek.ui.class.frame)
-_VERSION = "Plasma 6.3"
+_VERSION = "Plasma 6.4"
 local Plasma = _M
 Frame:newClass(Plasma)
 
@@ -63,10 +63,7 @@ function Plasma.new(class, self)
 	self.PixHeight = self.PixHeight or 5
 	self.W = self.W or 80
 	self.H = self.H or 50
-	return Frame.new(class, self)
-end
-
-function Plasma.init(self)
+	
 	addgradient(self, 209,219,155, 79,33,57, 68)
 	addgradient(self, 79,33,57, 209,130,255, 60)
 	local sintab = self.SinTab
@@ -77,7 +74,8 @@ function Plasma.init(self)
 	self.MinHeight = self.H * self.PixHeight
 	self.MaxWidth = self.W * self.PixWidth
 	self.MaxHeight = self.H * self.PixHeight
-	return Frame.init(self)
+	
+	return Frame.new(class, self)
 end
 
 function Plasma:show(drawable)

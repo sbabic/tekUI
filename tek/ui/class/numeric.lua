@@ -47,7 +47,7 @@
 --	OVERRIDES::
 --		- Object.addClassNotifications()
 --		- Element:cleanup()
---		- Object.init()
+--		- Class.new()
 --		- Element:setup()
 --
 -------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.numeric", tek.ui.class.widget)
-_VERSION = "Numeric 5.0"
+_VERSION = "Numeric 5.1"
 local Numeric = _M
 Widget:newClass(Numeric)
 
@@ -83,14 +83,14 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 --	new: overrides
 -------------------------------------------------------------------------------
 
-function Numeric.init(self)
+function Numeric.new(class, self)
 	self = self or { }
 	self.Max = self.Max or 100
 	self.Min = self.Min or 1
 	self.Default = max(self.Min, min(self.Max, self.Default or self.Min))
 	self.Value = max(self.Min, min(self.Max, self.Value or self.Default))
 	self.Increment = self.Increment or 1
-	return Widget.init(self)
+	return Widget.new(class, self)
 end
 
 -------------------------------------------------------------------------------

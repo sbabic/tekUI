@@ -34,7 +34,6 @@
 --		- Area:askMinMax()
 --		- Area:cleanup()
 --		- Area:draw()
---		- Object.init()
 --		- Class.new()
 --		- Area:setup()
 --
@@ -56,7 +55,7 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 13.3"
+_VERSION = "PopList 13.4"
 local PopList = _M
 PopItem:newClass(PopList)
 
@@ -164,15 +163,6 @@ end
 
 ClassNotifications = addClassNotifications { Notifications = { } }
 
-function PopList.init(self)
-	self.ImageRect = { 0, 0, 0, 0 }
-	self.Image = self.Image or ArrowImage
-	self.Width = self.Width or "fill"
-	self.SelectedLine = self.SelectedLine or 0
-	self.ListHeight = self.ListHeight or false
-	return PopItem.init(self)
-end
-
 function PopList.new(class, self)
 	self = self or { }
 	self.ListObject = self.ListObject or List:new()
@@ -195,6 +185,13 @@ function PopList.new(class, self)
 			}
 		}
 	}
+	
+	self.ImageRect = { 0, 0, 0, 0 }
+	self.Image = self.Image or ArrowImage
+	self.Width = self.Width or "fill"
+	self.SelectedLine = self.SelectedLine or 0
+	self.ListHeight = self.ListHeight or false
+	
 	return PopItem.new(class, self)
 end
 

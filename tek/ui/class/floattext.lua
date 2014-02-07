@@ -45,8 +45,8 @@
 --		- Area:damage()
 --		- Area:draw()
 --		- Area:hide()
---		- Object.init()
 --		- Area:layout()
+--		- Class.new()
 --		- Area:setState()
 --		- Element:setup()
 --		- Area:show()
@@ -65,7 +65,7 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.frame)
-_VERSION = "FloatText 21.2"
+_VERSION = "FloatText 21.3"
 local FloatText = _M
 Frame:newClass(FloatText)
 
@@ -102,7 +102,8 @@ Properties = {
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function FloatText.init(self)
+function FloatText.new(class, self)
+	self = self or { }
 	self.Canvas = false
 	self.CanvasHeight = false
 	self.FHeight = false
@@ -118,7 +119,7 @@ function FloatText.init(self)
 	end
 	self.WidthsCache = false
 	self.WordSpacing = false
-	return Frame.init(self)
+	return Frame.new(class, self)
 end
 
 -------------------------------------------------------------------------------

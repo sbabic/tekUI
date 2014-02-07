@@ -77,8 +77,8 @@
 --	OVERRIDES::
 --		- Object.addClassNotifications()
 --		- Area:hide()
---		- Object.init()
 --		- Area:layout()
+--		- Class.new()
 --		- Area:passMsg()
 --		- Area:rethinkLayout()
 --		- Element:setup()
@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 42.1"
+_VERSION = "Window 43.0"
 local Window = _M
 Group:newClass(Window)
 
@@ -142,7 +142,8 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 --	init: overrides
 -------------------------------------------------------------------------------
 
-function Window.init(self)
+function Window.new(class, self)
+	self = self or { }
 	self.ActiveElement = false
 	-- Item in this window in which an active popup is anchored:
 	self.ActivePopup = false
@@ -237,7 +238,7 @@ function Window.init(self)
 	self.Top = self.Top or false
 	self.WindowFocus = false
 	self.WindowMinMax = { }
-	return Group.init(self)
+	return Group.new(class, self)
 end
 
 -------------------------------------------------------------------------------
@@ -851,7 +852,7 @@ function Window:update()
 					if damage == 1 then
 						 -- unconditionally slate the element for repaint:
 						e:setFlags(FL_REDRAW)
-					elseif damage == 2 then
+					elseif damage == 2 and r1 then -- FL_LAYOUT not realiable
 						 -- unconditionally slate the element and all its
 						 -- children for repaint:
 						e:damage(r1, r2, r3, r4)

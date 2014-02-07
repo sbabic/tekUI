@@ -5,14 +5,14 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="05-Feb-2014" />
+		<meta name="created" content="07-Feb-2014" />
 	</head>
 	<body>
 		<h1>
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 1.03
+			Version 1.04
 		</p>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -696,7 +696,7 @@ class = superclass()
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v14.1)</a></h2>
+		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v14.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -851,9 +851,13 @@ method(object, arg1, ...)
 		<div class="node"><h3><a name="Object:init" id="Object:init"><code>object = Object.init(object)</code></a></h3>
 			<p>
 				This function is called during <a href="#Object:new"><code>Object.new()</code></a> 
-				before passing control to <code>superclass.new()</code>. By convention, <code>new()</code> 
-				is used to claim resources (e.g. to create tables), whereas the <code>init()</code> 
-				function is used to initialize them with defaults.
+				before passing control to <code>superclass.new()</code>. The original intention was
+				that resources were to be claimed in <code>new()</code>, whereas defaults were to
+				be (re-)initialized during <code>init()</code>. As of 1.04, this usage pattern is
+				discouraged; all initializations should take place in <code>new()</code> now, as
+				this differentiation was insufficient to cover complex reinitializations,
+				and it interferes with fields like <code>Area.TrackDamage</code>, which are now
+				initialization-only.
 			</p>
 			<hr />
 		</div>
@@ -1590,7 +1594,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v45.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v46.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1713,6 +1717,29 @@ ui.Application:new { ...
 										Maximum number of microseconds between mouse clicks to be
 										recognized as a double click. Default: <code>32000</code>. Use a larger
 										value for touchscreens.
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>ThemeName</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Setting this variable overrides the <code>THEME</code> environment
+										variable and enforces the usage of the specified cascade, up to
+										the point where the application's author styles are considered.
+									</li>
+								</ul>
+							</blockquote>
+						</li>
+						<li style="list-style-type: none">
+							<code>UserStyles</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										Name of the user stylesheet file. Default: <code>&quot;user&quot;</code>. Can
+										be set to <strong>false</strong> to be disabled.
 									</li>
 								</ul>
 							</blockquote>
@@ -2040,7 +2067,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v39.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v40.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2109,11 +2136,10 @@ ui.Application:new {
 							<blockquote>
 								<p>
 									A string containing the names of author style sheet files
-									overlaying user and user agent styles. Multiple style
+									overlaying user agent and theme declaration. Multiple style
 									sheets are separated by spaces. The last style sheet has the
 									highest precedence, e.g. <code>&quot;desktop texture&quot;</code> would load the
-									style sheets <code>desktop.css</code> and <code>texture.css</code>, placing
-									<code>texture.css</code> on top of the cascade.
+									style sheets <code>desktop.css</code> and <code>texture.css</code>.
 								</p>
 							</blockquote>
 						</li>
@@ -2255,9 +2281,6 @@ ui.Application:new {
 					<ul>
 						<li style="list-style-type: none">
 							<a href="#Family:addMember"><code>Family:addMember()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> 
@@ -2452,7 +2475,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v53.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v54.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3044,6 +3067,12 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Area:beginPopup" id="Area:beginPopup"><code>beginPopup([baseitem])</code></a></h3>
+			<p>
+				Prepare element for being used in a popup.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Area:checkClearFlags" id="Area:checkClearFlags"><code>all_present = Area:checkClearFlags(chkflags[, clearflags])</code></a></h3>
 			<p>
 				Check for
@@ -3417,7 +3446,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v36.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v36.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3625,10 +3654,10 @@ end
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
@@ -3674,7 +3703,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v9.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v9.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3724,9 +3753,6 @@ end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
@@ -4322,7 +4348,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v20.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v20.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4462,7 +4488,7 @@ end
 							<a href="#Object:addClassNotifications"><code>Object.addClassNotifications()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
@@ -4545,7 +4571,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.family" id="tek.ui.class.family">Family (v2.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.family" id="tek.ui.class.family">Family (v2.6)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4605,7 +4631,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v21.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v21.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4721,10 +4747,10 @@ end
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
@@ -5028,7 +5054,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5064,10 +5090,10 @@ end
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Numeric:onSetValue"><code>Numeric:onSetValue()</code></a> 
@@ -5083,7 +5109,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v33.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v33.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5230,10 +5256,10 @@ end
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
@@ -5252,7 +5278,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v7.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v7.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5284,7 +5310,7 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
@@ -5367,7 +5393,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v3.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v3.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5484,7 +5510,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v31.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v31.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5722,10 +5748,10 @@ end
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Frame:onFocus"><code>Frame:onFocus()</code></a> 
@@ -5854,7 +5880,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v6.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v6.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5912,7 +5938,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v10.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v11.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5945,9 +5971,6 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -5961,7 +5984,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v5.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v5.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6067,7 +6090,7 @@ end
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:setup"><code>Element:setup()</code></a> 
@@ -6118,7 +6141,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.6)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6183,9 +6206,6 @@ end
 							<a href="#Element:cleanup"><code>Element:cleanup()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -6210,7 +6230,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v25.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v26.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6311,7 +6331,7 @@ end
 							<a href="#Element:getAttr"><code>Element:getAttr()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Widget:onClick"><code>Widget:onClick()</code></a> 
@@ -6330,7 +6350,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6399,9 +6419,6 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -6426,7 +6443,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v5.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v5.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6451,20 +6468,20 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-						<li style="list-style-type: none">
-							<a href="#Area:show"><code>Area:show()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:show"><code>Area:show()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v6.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v6.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6489,7 +6506,7 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Widget:onSelect"><code>Widget:onSelect()</code></a> 
@@ -6499,7 +6516,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v15.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v15.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6773,7 +6790,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v10.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v10.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6811,10 +6828,10 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 					</ul>
 				</blockquote>
@@ -6829,7 +6846,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v26.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v26.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6950,19 +6967,19 @@ end
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Widget:onFocus"><code>Widget:onFocus()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Widget:onHold"><code>Widget:onHold()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:setState"><code>Area:setState()</code></a> 
@@ -7020,7 +7037,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v28.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v28.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7204,7 +7221,7 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Element:onSetStyle"><code>Element:onSetStyle()</code></a> 
@@ -7254,7 +7271,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v18.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v18.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7308,9 +7325,6 @@ end
 							<a href="#Area:draw"><code>Area:draw()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
-						</li>
-						<li style="list-style-type: none">
 							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -7342,7 +7356,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v29.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v30.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7794,7 +7808,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v42.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v43.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8000,10 +8014,10 @@ end
 							<a href="#Area:hide"><code>Area:hide()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Object:init"><code>Object.init()</code></a> 
+							<a href="#Area:layout"><code>Area:layout()</code></a> 
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Area:layout"><code>Area:layout()</code></a> 
+							<a href="#Class:new"><code>Class.new()</code></a> 
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Area:passMsg"><code>Area:passMsg()</code></a> 
@@ -8225,7 +8239,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Wed Feb  5 20:55:40 2014
+					Document generated on Fri Feb  7 21:54:28 2014
 				</p>
 			</div>
 		</div>

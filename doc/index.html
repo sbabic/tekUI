@@ -11,7 +11,7 @@
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 1.03
+			Version 1.04
 		</p>
 		<hr />
 		<h2>
@@ -162,6 +162,9 @@
 							</li>
 							<li style="list-style-type: none">
 								5.5. <a href="#classdoc">Class documentation system</a> 
+							</li>
+							<li style="list-style-type: none">
+								5.6. <a href="#cssprecedence">Stylesheets precedence</a> 
 							</li>
 						</ul>
 					</blockquote>
@@ -429,14 +432,14 @@
 		<div class="node"><h2><a name="themes" id="themes">2.4. Style sheets and themes</a></h2>
 			<p>
 				TekUI comes with a cascading style sheets (CSS) engine for the
-				import of properties for element classes, custom classes, pseudo
+				declaration of styles for element classes, custom classes, pseudo
 				classes, as well as for individual, direct and hardcoded class
 				formattings.
 			</p>
 			<p>
 				The only admission to a more common appearance is that tekUI tries to
 				import the color scheme found in a GTK+ configuration file, if the
-				'desktop' style sheet is used (which is the default, see also
+				<code>&quot;desktop&quot;</code> style sheet is used (which is the default, see also
 				<a href="#envvariables">environment variables</a>). If you are using KDE and
 				check the <em>Apply colors to non-KDE applications</em> option, KDE, GTK+
 				and tekUI all share the same color scheme.
@@ -1820,6 +1823,54 @@ Class.function()
 				<a href="manual.html#tek.class.markup">markup notation reference</a>, which
 				can be found in <code>tek.class.markup</code>.
 			</p>
+		</div>
+		<div class="node"><h2><a name="cssprecedence" id="cssprecedence">5.6. Stylesheets precedence</a></h2>
+			<p>
+				TekUI uses a cascading stylesheets (CSS) engine, which borrows from
+				the W3C recommendations. The order of precedence is as follows:
+			</p>
+			<blockquote>
+				<ul>
+					<li>
+						Hardcoded class defaults
+					</li>
+					<li>
+						User agent: tekUI's built-in stylesheets, either <code>&quot;default&quot;</code> or
+						<code>&quot;minimal&quot;</code>. The implied default is <code>&quot;default&quot;</code>, unless the
+						first word in the <code>THEME</code> variable is <code>&quot;minimal&quot;</code>. <code>&quot;minimal&quot;</code> 
+						is hardwired into the ui library, while <code>&quot;default&quot;</code> is an actual
+						stylesheet file.
+					</li>
+					<li>
+						User: Names of stylesheet files from the <code>THEME</code> environment
+						variable, e.g. <code>&quot;stain gradient&quot;</code>. The default is <code>&quot;desktop&quot;</code>.
+					</li>
+					<li>
+						Author: Names of stylesheet files specified in
+						<code>Application.AuthorStyleSheets</code>.
+					</li>
+					<li>
+						Author: Styles specified in <code>Application.AuthorStyles</code>.
+					</li>
+					<li>
+						User important: The <code>user.css</code> stylesheet.
+					</li>
+				</ul>
+			</blockquote>
+			<p>
+				To shut off interferences from user styles, use a predefined cascade
+				by overwriting the <code>THEME</code> variable inside your application, e.g.:
+			</p>
+<pre>
+local ui = require &quot;tek.ui&quot;
+ui.ThemeName = &quot;mycompany&quot; -- also implies &quot;default&quot;
+</pre>
+			<p>
+				To also disable the <code>user.css</code> file:
+			</p>
+<pre>
+ui.UserStyles = false
+</pre>
 		</div>
 	</body>
 </html>
