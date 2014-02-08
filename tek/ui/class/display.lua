@@ -247,7 +247,8 @@ local PixmapCache = { }
 -------------------------------------------------------------------------------
 --	image, width, height, transparency = Display.createPixmap(picture):
 --	Creates a pixmap object from data in a picture file format. Currently
---	only the PPM file format is recognized.
+--	the PPM and PNG file formats are recognized (the latter if enabled in
+--	the build configuration).
 -------------------------------------------------------------------------------
 
 Display.createPixmap = Visual.createPixmap

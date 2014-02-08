@@ -38,6 +38,7 @@ typedef	TUINT16 RFBPixelRGB16;
 #define RGB16GetRFBPixelGreen(p)	((((p) & 0x03e0) >> 2) | (((p) & 0x0380) >> 7))
 #define RGB16GetRFBPixelRed(p)		((((p) & 0x001f) << 3) | (((p) & 0x001c) >> 2))
 
+#define ARGB32GetRFBPixelAlpha(p)	((p) >> 24)
 #define ARGB32GetRFBPixelRed(p)		(((p) >> 16) & 0xff)
 #define ARGB32GetRFBPixelGreen(p)	(((p) >> 8) & 0xff)
 #define ARGB32GetRFBPixelBlue(p)	((p) & 0xff)
@@ -355,7 +356,8 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBP
 LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBPen *pen);
 LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v, TINT x0, TINT y0, TINT x1, TINT y1,
 	TINT x2, TINT y2, struct RFBPen *pen);
-LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf, TINT rect[4], TINT totw, TUINT pixfmt);
+LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf,
+	TINT rect[4], TINT totw, TUINT pixfmt, TBOOL alpha);
 LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	TINT dx0, TINT dy0, struct THook *exposehook);
 

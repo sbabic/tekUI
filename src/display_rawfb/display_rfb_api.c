@@ -792,12 +792,14 @@ LOCAL void rfb_drawbuffer(RFBDISPLAY *mod, struct TVRequest *req)
 	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
 	TUINT pixfmt = TGetTag(req->tvr_Op.DrawBuffer.Tags, 
 		TVisual_PixelFormat, TVPIXFMT_ARGB32);
+	TBOOL alpha = TGetTag(req->tvr_Op.DrawBuffer.Tags, 
+		TVisual_AlphaChannel, TFALSE);
 	TINT rect[4];
 	rect[0] = req->tvr_Op.DrawBuffer.RRect[0] + v->rfbw_WinRect[0];
 	rect[1] = req->tvr_Op.DrawBuffer.RRect[1] + v->rfbw_WinRect[1];
 	rect[2] = req->tvr_Op.DrawBuffer.RRect[2];
 	rect[3] = req->tvr_Op.DrawBuffer.RRect[3];
-	fbp_drawbuffer(mod, v, (TUINT8 *)buf, rect, totw, pixfmt);
+	fbp_drawbuffer(mod, v, (TUINT8 *)buf, rect, totw, pixfmt, alpha);
 }
 
 /*****************************************************************************/

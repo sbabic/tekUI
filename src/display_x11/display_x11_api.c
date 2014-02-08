@@ -475,9 +475,17 @@ LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req)
 	struct X11Pen *pen = TAlloc(mod->x11_MemMgr, sizeof(struct X11Pen));
 	if (pen)
 	{
-		pen->color.red = ((rgb >> 16) & 0xff) << 8;
-		pen->color.green = ((rgb >> 8) & 0xff) << 8;
-		pen->color.blue = (rgb & 0xff) << 8;
+		TUINT r = (rgb >> 16) & 0xff;
+		TUINT g = (rgb >> 8) & 0xff;
+		TUINT b = rgb & 0xff;
+		
+		r = (r << 8) | r;
+		g = (g << 8) | g;
+		b = (b << 8) | b;
+		
+		pen->color.red = r;
+		pen->color.green = g;
+		pen->color.blue = b;
 		pen->color.flags = DoRed | DoGreen | DoBlue;
 		if (XAllocColor(mod->x11_Display, v->colormap, &pen->color))
 		{
@@ -486,9 +494,9 @@ LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req)
 			if (mod->x11_use_xft)
 			{
 				XRenderColor xrcolor;
-				xrcolor.red = ((rgb >> 16) & 0xff) << 8;
-				xrcolor.green = ((rgb >> 8) & 0xff) << 8;
-				xrcolor.blue = (rgb & 0xff) << 8;
+				xrcolor.red = r;
+				xrcolor.green = g;
+				xrcolor.blue = b;
 				xrcolor.alpha = 0xffff;
 				success = (*mod->x11_xftiface.XftColorAllocValue)
 					(mod->x11_Display, mod->x11_Visual, v->colormap, &xrcolor,

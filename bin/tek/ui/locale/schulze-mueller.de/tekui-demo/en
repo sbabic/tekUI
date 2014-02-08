@@ -172,7 +172,9 @@ GRAPHICS_DESCRIPTION = [[
 
 » The scaling and colorization of vector graphics is adaptive to the screen palette and element size. 
 
-» Stock images can be overlayed with bitmaps (or other vector graphics), but vector graphics are normally more resource-friendly than bitmaps.
+» Stock images can be overlaid with bitmaps (or other vector graphics), but vector graphics are normally more resource-friendly than bitmaps.
+
+» If the upper bitmaps icon shows the flags of Spain and Italy, then you have PNG support in tekUI, and if the blue background shines through, then the display driver in use supports rendering with alpha channel. Otherwise, if it shows the flags of Brazil and Germany, you have support for the PPM format only.
 ]];
 GRAPHICS_RADIOBUTTONS = "Radio Buttons";
 GRAPHICS_TITLE = "Graphics";

@@ -15,7 +15,8 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 local RadioImage1 = ui.getStockImage("radiobutton")
 local RadioImage2 = ui.getStockImage("radiobutton", 2)
 local BitMapImage1 = ui.loadImage(ui.ProgDir .. "/graphics/world.ppm")
-local BitMapImage2 = ui.loadImage(ui.ProgDir .. "/graphics/locale.ppm")
+local BitMapImage2 = ui.loadImage(ui.ProgDir .. "/graphics/locale_alpha.png")
+	or ui.loadImage(ui.ProgDir .. "/graphics/locale.ppm")
 local FileImage = ui.getStockImage("file")
 
 -------------------------------------------------------------------------------
@@ -76,9 +77,10 @@ local window = ui.Window:new
 			{
 				ui.ImageWidget:new
 				{
-					Mode = "button",
+					Mode = "inert",
 					Class = "button",
-					Image = BitMapImage2
+					Image = BitMapImage2,
+					Style = "background-color: #238",
 				},
 				ui.ImageWidget:new
 				{

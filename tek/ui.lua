@@ -134,7 +134,7 @@ local type = type
 module "tek.ui"
 _VERSION = "tekUI 46.0" -- module version string
 
-VERSION = 104 -- overall package version number
+VERSION = 105 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------
@@ -319,8 +319,9 @@ end
 
 -------------------------------------------------------------------------------
 --	imgobject = ui.loadImage(name): Loads an image from a file or retrieves
---	it from the image cache. Note that currently only the PPM file format is
---	recognized.
+--	it from the image cache. Currently supported are the PPM and PNG file
+--	formats. (PPM support is built-in, while PNG support may depend on the
+--	build configuration.)
 -------------------------------------------------------------------------------
 
 function loadImage(fname)

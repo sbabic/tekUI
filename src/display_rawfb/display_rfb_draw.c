@@ -948,7 +948,7 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 /*****************************************************************************/
 
 LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf, 
-	TINT rect[4], TINT totw, TUINT pixfmt)
+	TINT rect[4], TINT totw, TUINT pixfmt, TBOOL alpha)
 {
 	struct Coord res[2];
 	TINT xmin = rect[0];
@@ -985,7 +985,7 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf,
 		xs = xmin - rect[0]; 
 		ys = ymin - rect[1];
 		
-		switch ((pixfmt << 8) | RFBPIXFMT)	/* src | dst */
+		switch ((pixfmt << 8) | RFBPIXFMT | ((!!alpha) << 7))	/* src | dst */
 		{
 			case (TVPIXFMT_RGB16 << 8) | TVPIXFMT_ARGB32:
 				for (yd = ymin; yd <= ymax; yd++, ys++)
@@ -1001,6 +1001,7 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf,
 					}
 				}
 				break;
+				
 			case (TVPIXFMT_ARGB32 << 8) | TVPIXFMT_RGB16:
 				for (yd = ymin; yd <= ymax; yd++, ys++)
 				{
@@ -1015,11 +1016,40 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf,
 					}
 				}
 				break;
+				
 			case (TVPIXFMT_RGB16 << 8) | TVPIXFMT_RGB16:
 			case (TVPIXFMT_ARGB32 << 8) | TVPIXFMT_ARGB32:
 				numb = (xmax - xmin + 1) * sizeof(RFBPixel);
 				for (yd = ymin; yd <= ymax; yd++, ys++)
 					CopyLine(v, buf, totw, xs, ys, xmin, yd, numb);
+				break;
+				
+			case (TVPIXFMT_ARGB32 << 8) | (1 << 7) | TVPIXFMT_ARGB32:
+			case (TVPIXFMT_ARGB32 << 8) | (1 << 7) | TVPIXFMT_RGB16:
+				/* 32bit with alpha channel */
+				for (yd = ymin; yd <= ymax; yd++, ys++)
+				{
+					TINT xd;
+					RFBPixel *dp = v->rfbw_BufPtr + yd * v->rfbw_PixelPerLine;
+					xs = xmin - rect[0]; 
+					for (xd = xmin; xd <= xmax; xd++, xs++)
+					{
+						RFBPixelARGB32 spix = 
+							((RFBPixelARGB32 *) buf)[ys * totw + xs];
+						TUINT a = ARGB32GetRFBPixelAlpha(spix);
+						TUINT r = ARGB32GetRFBPixelRed(spix);
+						TUINT g = ARGB32GetRFBPixelGreen(spix);
+						TUINT b = ARGB32GetRFBPixelBlue(spix);
+						TUINT dpix = dp[xd];
+						TUINT dr = GetRFBPixelRed(dpix);
+						TUINT dg = GetRFBPixelGreen(dpix);
+						TUINT db = GetRFBPixelBlue(dpix);
+						dr += ((r - dr) * a) >> 8;
+						dg += ((g - dg) * a) >> 8;
+						db += ((b - db) * a) >> 8;
+						dp[xd] = RFBPixelFromRGB(dr, dg, db);
+					}
+				}
 				break;
 		}
 	}

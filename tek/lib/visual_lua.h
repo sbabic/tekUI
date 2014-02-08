@@ -133,8 +133,11 @@ typedef struct
 {
 	TUINT *pxm_Data;
 	TUINT pxm_Width, pxm_Height;
+	TUINT pxm_Flags;
 	TEKVisual *pxm_VisualBase;
 } TEKPixmap;
+
+#define PXMF_ALPHA	0x0001
 
 typedef struct
 {

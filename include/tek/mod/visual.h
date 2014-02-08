@@ -54,6 +54,7 @@ typedef TTAG TVPEN;
 #define TVisual_HaveClipboard		(TVISTAGS_ + 0x014)
 #define TVisual_SelectionType		(TVISTAGS_ + 0x015)
 #define TVisual_PixelFormat			(TVISTAGS_ + 0x016)
+#define TVisual_AlphaChannel		(TVISTAGS_ + 0x017)
 
 #define	TVisual_FontName			(TVISTAGS_ + 0x100)
 #define	TVisual_FontPxSize			(TVISTAGS_ + 0x101)

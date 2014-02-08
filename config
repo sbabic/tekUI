@@ -20,12 +20,13 @@ DISPLAY_DRIVER ?= x11
 
 #------------------------------------------------------------------------------
 # tekUI features:
-# ENABLE_GRADIENT - enable gradients (uses floating point arithmetics)
+# ENABLE_GRADIENT - enable color gradients
+# ENABLE_PNG - enable PNG support through libpng
 # ENABLE_FILENO - dispatches lines from a fd (normally stdin) to MSG_USER.
 # ENABLE_DGRAM - enables a datagram server on 127.0.0.1:20000 for the same.
 #------------------------------------------------------------------------------
 
-TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_FILENO # -DENABLE_DGRAM=20000
+TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_FILENO # -DENABLE_PNG -DENABLE_DGRAM=20000
 
 #------------------------------------------------------------------------------
 # Compiler configuration:
@@ -55,6 +56,7 @@ CC = $(CCPREFIX)gcc -fpic
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 PLATFORM_LIBS = -pthread
+# VISUAL_LIBS = -lpng
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Windows:
@@ -62,7 +64,7 @@ PLATFORM_LIBS = -pthread
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # PLATFORM_LIBS = -lmsvcrt -lkernel32 -lwinmm -luser32 -lshell32 -ladvapi32
-# LUA_DLLS = -L $(BASEDIR) -llua51
+# LUA_LIBS = -L $(BASEDIR) -llua51
 
 #------------------------------------------------------------------------------
 # Installation and system paths:
@@ -92,7 +94,7 @@ WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 # VNCSERVER_LIBS = -L$(PREFIX)/lib -lvncserver
 # VNCSERVER_DEFS = -DENABLE_VNCSERVER -I$(PREFIX)/include -DENABLE_VNCSERVER_COPYRECT
 RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
-RAWFB_SUB_DEFS = -DRFB_RENDER_DEVICE=x11
+RAWFB_SUB_DEFS = -DRFB_RENDER_DEVICE=x11 # -DRFB_DEPTH_24BIT
 RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS)
 RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) # -DFNT_DEFDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
 # Comment out RAWFB_SUB for a 'headless' GUI. VNC support makes this software

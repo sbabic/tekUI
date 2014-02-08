@@ -178,7 +178,7 @@ function ImageWidget:layout(r1, r2, r3, r4, markdamage)
 			if va == "center" then
 				y = y + floor((h - ih) / 2)
 			elseif va == "bottom" then
-				y = y + h - ih			
+				y = y + h - ih
 			end
 			if self.Image and not self.Image[4] then -- transparent?
 				self.Region:subRect(x, y, x + iw - 1, y + ih - 1)

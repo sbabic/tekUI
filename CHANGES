@@ -1,6 +1,12 @@
 
 == tekUI Changelog ==
 
+=== 1.05: ===
+
+ * Added PNG file format support
+ * Added loading images and rendering with alpha channel
+ * RawFB driver: Added support for drawing bitmaps with alpha channel
+
 === 1.04: ===
 
  * ui, Application: Added UserStyles variable

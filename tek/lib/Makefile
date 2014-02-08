@@ -23,31 +23,34 @@ DISPLAYWINLIBS = $(LIBDIR)/libdisplay_win.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekd
 DISPLAYRAWFBLIBS = $(LIBDIR)/libdisplay_rawfb.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a
 
 region$(DLLEXT): $(OBJDIR)/region.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/region.lo $(PLATFORM_LIBS) $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/region.lo $(PLATFORM_LIBS) $(LUA_LIBS)
 
 string$(DLLEXT): $(OBJDIR)/string.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/string.lo $(PLATFORM_LIBS) $(LUA_DLLS) -ltek
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/string.lo $(PLATFORM_LIBS) $(LUA_LIBS) -ltek
 
 support$(DLLEXT): $(OBJDIR)/support.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/support.lo $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/support.lo $(LUA_LIBS)
 
 exec$(DLLEXT): $(OBJDIR)/exec_lua.lo $(EXECLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_lua.lo -L$(LIBDIR) -lhal -lexec -ltekc -ltekdebug $(PLATFORM_LIBS) $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_lua.lo -L$(LIBDIR) -lhal -lexec -ltekc -ltekdebug $(PLATFORM_LIBS) $(LUA_LIBS)
 
 visual$(DLLEXT): $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo $(VISUALLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo -L$(LIBDIR) -lvisual -ltek -ltekdebug $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo -L$(LIBDIR) -lvisual -ltek -ltekdebug $(LUA_LIBS) $(VISUAL_LIBS)
 
 display/x11$(DLLEXT): $(OBJDIR)/x11_lua.lo $(DISPLAYX11LIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/x11_lua.lo -L$(LIBDIR) -ldisplay_x11 -ltek -ltekdebug $(X11_LIBS) $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/x11_lua.lo -L$(LIBDIR) -ldisplay_x11 -ltek -ltekdebug $(X11_LIBS) $(LUA_LIBS)
 
 display/directfb$(DLLEXT): $(OBJDIR)/directfb_lua.lo $(DISPLAYDFBLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/directfb_lua.lo -L$(LIBDIR) -ldisplay_directfb -ltek -ltekdebug $(DFB_LIBS) $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/directfb_lua.lo -L$(LIBDIR) -ldisplay_directfb -ltek -ltekdebug $(DFB_LIBS) $(LUA_LIBS)
 
 display/windows$(DLLEXT): $(OBJDIR)/windows_lua.lo $(DISPLAYWINLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/windows_lua.lo -L$(LIBDIR) -ldisplay_win -ltek -ltekdebug $(WIN_LIBS) $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/windows_lua.lo -L$(LIBDIR) -ldisplay_win -ltek -ltekdebug $(WIN_LIBS) $(LUA_LIBS)
+
+display/nanox$(DLLEXT): $(OBJDIR)/nanox_lua.lo $(DISPLAYNANOXLIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/nanox_lua.lo -L$(LIBDIR) -ldisplay_nanox -ltek -ltekdebug $(NANOX_LIBS) $(LUA_LIBS)
 
 display/rawfb$(DLLEXT): $(OBJDIR)/rawfb_lua.lo $(DISPLAYRAWFBLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/rawfb_lua.lo -L$(LIBDIR) -ldisplay_rawfb -ltek -ltekdebug $(RAWFB_LIBS) $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/rawfb_lua.lo -L$(LIBDIR) -ldisplay_rawfb -ltek -ltekdebug $(RAWFB_LIBS) $(LUA_LIBS)
 
 $(OBJDIR)/region.lo: region.c
 	$(CC) $(LIBCFLAGS) -o $@ -c region.c

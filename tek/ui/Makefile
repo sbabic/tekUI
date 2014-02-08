@@ -73,17 +73,17 @@ MODS_C = class/area$(DLLEXT) class/frame$(DLLEXT)
 MODS_L = layout/default$(DLLEXT)
 
 layout/default$(DLLEXT): $(OBJDIR)/default.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/default.lo $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/default.lo $(LUA_LIBS)
 $(OBJDIR)/default.lo: layout/default.c
 	$(CC) $(LIBCFLAGS) -o $@ -c layout/default.c
 
 class/area$(DLLEXT): $(OBJDIR)/area.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/area.lo $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/area.lo $(LUA_LIBS)
 $(OBJDIR)/area.lo: class/area.c
 	$(CC) $(LIBCFLAGS) -o $@ -c class/area.c
 
 class/frame$(DLLEXT): $(OBJDIR)/frame.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/frame.lo $(LUA_DLLS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/frame.lo $(LUA_LIBS)
 $(OBJDIR)/frame.lo: class/frame.c
 	$(CC) $(LIBCFLAGS) -o $@ -c class/frame.c
 

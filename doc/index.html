@@ -11,7 +11,7 @@
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 1.04
+			Version 1.05
 		</p>
 		<hr />
 		<h2>
@@ -614,6 +614,9 @@
 						LibVNCServer-0.9.9 (for the rawfb driver, disabled by default)
 					</li>
 					<li>
+						libpng (for PNG support, disbled by default)
+					</li>
+					<li>
 						MinGW (for the Windows platform)
 					</li>
 				</ul>
@@ -661,7 +664,7 @@
 						Ubuntu Linux (tested: 9.10, 8.04 and 7.10)
 					</li>
 					<li>
-						FreeBSD 7.0 (special precautions needed, see
+						FreeBSD 8.1, 7.0 (special precautions needed, see
 						<a href="#notefbsd">FreeBSD notes</a>)
 					</li>
 					<li>
@@ -722,7 +725,7 @@
 		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.5. Raw framebuffer notes</a></h3>
 			<p>
 				The raw framebuffer driver performs all rendering in a chunk of
-				memory that can be supplied by the user. Color depth may be 16 or
+				memory that can be supplied by the user. The color depth may be 16 or
 				32 bit. This driver is recursive in that another display driver may
 				be plugged into it as a visualization and input device. It was
 				originally intended to act as a template (or skeleton) for

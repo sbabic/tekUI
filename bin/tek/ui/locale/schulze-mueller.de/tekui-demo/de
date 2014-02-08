@@ -173,6 +173,8 @@ GRAPHICS_DESCRIPTION = [[
 » Die Skalierung und Farbe von Vektorgrafiken passt sich an die Bildschirmpalette und die Elementgröße an. 
 
 » Standardgrafiken können mit Bitmaps (oder anderen Vektorgrafiken) überlagert werden, aber Vektorgrafiken sind normalerweise ressourcenfreundlicher als Bitmaps.
+
+» Wenn das obere Bitmap-Icon die Flaggen von Spanien und Italien anzeigt, haben Sie PNG-Unterstützung in tekUI, und wenn der blaue Hintergrund durchscheint, unterstützt der gewählte Display-Treiber die Umsetzung von Alphakanälen. Andernfalls sollten die Flaggen von Brasilien und Deutschland gezeigt werden, und Sie haben lediglich Unterstützung für das PPM-Format.
 ]];
 GRAPHICS_RADIOBUTTONS = "Radioknöpfe";
 GRAPHICS_TITLE = "Grafiken";

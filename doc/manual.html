@@ -5,14 +5,14 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="07-Feb-2014" />
+		<meta name="created" content="08-Feb-2014" />
 	</head>
 	<body>
 		<h1>
 			tekUI GUI Toolkit
 		</h1>
 		<p>
-			Version 1.04
+			Version 1.05
 		</p>
 		<hr />
 		<div class="node"><h2><a name="ClassOverview" id="ClassOverview">Class Overview</a></h2>
@@ -2020,8 +2020,9 @@ ui.Application:new { ...
 		<div class="node"><h3><a name="ui:loadImage" id="ui:loadImage"><code>imgobject = ui.loadImage(name)</code></a></h3>
 			<p>
 				Loads an image from a file or retrieves
-				it from the image cache. Note that currently only the PPM file format is
-				recognized.
+				it from the image cache. Currently supported are the PPM and PNG file
+				formats. (PPM support is built-in, while PNG support may depend on the
+				build configuration.)
 			</p>
 			<hr />
 		</div>
@@ -4308,7 +4309,8 @@ end
 		<div class="node"><h3><a name="Display:createPixmap" id="Display:createPixmap"><code>image, width, height, transparency = Display.createPixmap(picture)</code></a></h3>
 			<p>
 				Creates a pixmap object from data in a picture file format. Currently
-				only the PPM file format is recognized.
+				the PPM and PNG file formats are recognized (the latter if enabled in
+				the build configuration).
 			</p>
 			<hr />
 		</div>
@@ -8239,7 +8241,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Fri Feb  7 21:54:28 2014
+					Document generated on Sat Feb  8 21:08:31 2014
 				</p>
 			</div>
 		</div>
