@@ -80,7 +80,6 @@
 --		- Area:layout()
 --		- Class.new()
 --		- Area:passMsg()
---		- Area:rethinkLayout()
 --		- Element:setup()
 --		- Area:show()
 --

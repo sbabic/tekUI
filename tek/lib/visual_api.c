@@ -1139,16 +1139,12 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	int Dg = Bg - Ag;
 	int Db = Bb - Ab;
 	
-#if 0
-	TUINT rgb0 = (Ar << 16) | (Ag << 8) | Ab;
-	TUINT rgb1 = (Br << 16) | (Bg << 8) | Bb;
-	TUINT rgb2 = (Dr << 16) | (Dg << 8) | Db;
-	if (rgb0 == rgb1 && rgb0 == rgb2)
+	if (w < 1 || w > 10000 || h < 1 || h > 10000 || w * h > 2000000)
 	{
-		TVisualFRectRGB(vis->vis_Visual, x0, y0, w, h, rgb0);
+		TDBPRINTF(TDB_WARN,("attempt to paint gradient of size %dx%d\n", w, h));
+		/*TVisualFRectRGB(vis->vis_Visual, x0, y0, w, h, rgb0);*/
 		return;
 	}
-#endif
 
 	vec r0 = gr->A.vec;
 	vec u = subVec(gr->B.vec, r0);

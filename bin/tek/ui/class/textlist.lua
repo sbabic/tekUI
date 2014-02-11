@@ -4,7 +4,7 @@ local db = require "tek.lib.debug"
 local ScrollGroup = ui.ScrollGroup
 
 module("tek.ui.class.textlist", tek.ui.class.scrollgroup)
-_VERSION = "TextList 1.2"
+_VERSION = "TextList 1.3"
 local TextList = _M
 ScrollGroup:newClass(TextList)
 
@@ -45,7 +45,7 @@ function TextList.new(class, self)
 					s.Step = self.LineHeight
 				end
 			end
-		end,
+		end
 	}
 	
 	self.ListCanvas = ui.Canvas:new
@@ -136,4 +136,11 @@ end
 function TextList:clear()
 	self.CurrentLatch = self.Latch
 	return self.ListText:newText()
+end
+
+
+function TextList:suspendUpdate()
+end
+
+function TextList:releaseUpdate()
 end

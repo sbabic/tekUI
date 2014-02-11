@@ -1449,6 +1449,17 @@ static void x11_drawbuffer_rgb16(X11DISPLAY *mod, struct TVRequest *req)
 
 LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 {
+	TINT x0 = req->tvr_Op.DrawBuffer.RRect[0];
+	TINT y0 = req->tvr_Op.DrawBuffer.RRect[1];
+	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
+	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
+	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
+	if (x0 < 0 || y0 < 0 || w <= 0 || h <= 0 || w > totw)
+	{
+		TDBPRINTF(TDB_WARN,("illegal arguments to x11_drawbuffer: x0=%d y0=%d w=%d h=%d tw=%d\n", x0, y0, w, h, totw));
+		return;
+	}
+	
 	TUINT pixfmt = TGetTag(req->tvr_Op.DrawBuffer.Tags, 
 		TVisual_PixelFormat, TVPIXFMT_ARGB32);
 	switch (pixfmt)

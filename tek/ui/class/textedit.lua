@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 18.1"
+_VERSION = "TextEdit 18.3"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -99,7 +99,7 @@ Properties = {
 
 function TextEdit.new(class, self)
 	self = self or { }
-	self.AutoIndent = true -- self.AutoIndent or false
+	self.AutoIndent = self.AutoIndent or false
 	self.AutoPosition = self.AutoPosition or false
 	self.AutoWrap = self.AutoWrap or false
 	self.BlinkCursor = self.BlinkCursor or false
@@ -265,13 +265,13 @@ function TextEdit:doMark(ncx, ncy)
 	if m then
 		local cy = self.CursorY
 		local y0, y1 = min(m[2], cy), max(m[2], cy)
-		self:suspendWindowUpdate()
+-- 		self:suspendWindowUpdate()
 		for y = y0, y1 do
 			self:damageLine(y)
 		end
 		self.Mark = false
-		self:updateWindow()
-		self:releaseWindowUpdate()
+-- 		self:updateWindow()
+-- 		self:releaseWindowUpdate()
 	else
 		self.Mark = { ncx or self.CursorX, ncy or self.CursorY }
 		return true
@@ -311,6 +311,7 @@ function TextEdit:eraseBlock(mx0, my0, mx1, my1)
 		line:erase(mx0, mx1 - 1)
 		self:changeLine(my0)
 		self:damageLine(my0)
+		self:setCursor(0)
 	else
 		local numremove = my1 - my0
 		local firstremove
@@ -661,11 +662,12 @@ function TextEdit:changeLine(lnr)
 		return
 	end
 	local olen = line[2]
-	line[2] = self:getTextWidth(line[1], 0, -1)
+	local nlen = self:getTextWidth(line[1], 0, -1)
+	line[2] = nlen
 	local tw = self.TextWidth
-	if line[2] > tw then
+	if nlen > tw then
 		self.TextWidth = line[2]
-	elseif olen == tw then
+	elseif olen ~= nlen and olen == tw then
 		self:recalcTextWidth()
 	end
 	if self.TextWidth ~= tw then
@@ -2201,25 +2203,24 @@ end
 -------------------------------------------------------------------------------
 
 function TextEdit:updateWindow()
-	if self.SuspendUpdateNest == 0 then
+-- 	if self.SuspendUpdateNest == 0 then
 		self.Window:update()
-		self.UpdateSuspended = false
-	else
-		self.UpdateSuspended = true
-	end
+-- 		self.UpdateSuspended = false
+-- 	else
+-- 		self.UpdateSuspended = true
+-- 	end
 end
 
 function TextEdit:suspendWindowUpdate()
-	self.SuspendUpdateNest = self.SuspendUpdateNest + 1
+-- 	self.SuspendUpdateNest = self.SuspendUpdateNest + 1
 end
 
 function TextEdit:releaseWindowUpdate()
-	self.SuspendUpdateNest = self.SuspendUpdateNest - 1
-	assert(self.SuspendUpdateNest >= 0)
-	if self.SuspendUpdateNest == 0 and self.UpdateSuspended then
-		self:updateWindow()
-		self.UpdateSuspended = true
-	end
+-- 	self.SuspendUpdateNest = self.SuspendUpdateNest - 1
+-- 	assert(self.SuspendUpdateNest >= 0)
+-- 	if self.SuspendUpdateNest == 0 and self.UpdateSuspended then
+-- 		self:updateWindow()
+-- 	end
 end
 
 

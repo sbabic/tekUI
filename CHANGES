@@ -1,6 +1,14 @@
 
 == tekUI Changelog ==
 
+ * config.h, config, Makefiles: Some Mac OS X support added
+ * FloatText:erase() did not check for a DamageRegion, corrected
+ * X11, Visual: some sanity checks added to drawbuffer and drawgradient
+ * TextEdit: disabled window update suspension, disabled AutoIndent by
+ default, corrections to cursor updates and text width recalculation
+ * EditWindow: enabled AutoIndent by default
+ * Input:handleKeyboard(), cursorSOF/EOF/SOL/EOL() added
+
 === 1.05: ===
 
  * Added PNG file format support

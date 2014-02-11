@@ -27,13 +27,15 @@ DISPLAY_DRIVER ?= x11
 #------------------------------------------------------------------------------
 
 TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_FILENO # -DENABLE_PNG -DENABLE_DGRAM=20000
+# TEKUI_LIBS = -lpng
 
 #------------------------------------------------------------------------------
 # Compiler configuration:
+# Comment in TSYS_POSIX if your platform is not listed in include/tek/config.h
 #------------------------------------------------------------------------------
 
 # CCPREFIX =
-CC = $(CCPREFIX)gcc -fpic
+CC = $(CCPREFIX)gcc -fpic # -DTSYS_POSIX
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # For Windows using MingW:
@@ -42,7 +44,7 @@ CC = $(CCPREFIX)gcc -fpic
 # CC = $(CCPREFIX)gcc -mno-cygwin -DWIN32
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Cross-build using MingW:
+# Cross-build using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # CCPREFIX = i586-mingw32-
@@ -56,7 +58,6 @@ CC = $(CCPREFIX)gcc -fpic
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 PLATFORM_LIBS = -pthread
-# VISUAL_LIBS = -lpng
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Windows:
@@ -84,9 +85,9 @@ SYS_LUA_SHARE = $(PREFIX)/share/lua/5.1
 LUA_DEFS = -I$(PREFIX)/include -I/usr/local/include/lua51 -I/usr/include/lua5.1
 
 FREETYPE_LIBS = -L$(PREFIX)/lib -lfreetype
-FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2
+FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2 -I/usr/X11/include/
 
-X11_LIBS = -L/usr/X11R6/lib -LX11 -lXext -lXxf86vm
+X11_LIBS = -L/usr/X11R6/lib -lX11 -lXext -lXxf86vm
 X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DENABLE_XFT -DENABLE_XVID
 
 WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
@@ -124,6 +125,8 @@ OPT = -O2 -fno-strict-aliasing
 INCL = -I. -Iinclude -I$(INCDIR)
 LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 MODCFLAGS = -shared -L $(LIBDIR)
+# For Mac OS X:
+# MODCFLAGS = -bundle -undefined dynamic_lookup -L $(LIBDIR)
 BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 
 #------------------------------------------------------------------------------

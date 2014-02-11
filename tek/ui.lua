@@ -134,7 +134,7 @@ local type = type
 module "tek.ui"
 _VERSION = "tekUI 46.0" -- module version string
 
-VERSION = 105 -- overall package version number
+VERSION = 106 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------

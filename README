@@ -323,7 +323,7 @@ this writing) are given below:
  * >=freetype-2.3.5 (for the x11, directfb and rawfb drivers)
  * >=DirectFB-0.9.25.1 (for the directfb driver)
  * LibVNCServer-0.9.9 (for the rawfb driver, disabled by default)
- * libpng (for PNG support, disbled by default)
+ * libpng (for PNG support, disabled by default)
  * MinGW (for the Windows platform)
 
 Lua 5.1, 5.2 and LuaJIT 2.0 are supported out of the box, if Lua 5.2
@@ -346,8 +346,7 @@ following modules are supported:
  
 ==( buildenv : 3.2. Adjusting the build environment )==
 
-TekUI was at some point tested and should compile and run out of the
-box on
+TekUI was at some point tested and should compile and run on:
 
  * Ubuntu Linux (tested: 9.10, 8.04 and 7.10)
  * FreeBSD 8.1, 7.0 (special precautions needed, see 
@@ -355,6 +354,7 @@ box on
  * Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
  amd64/2007.0, ppc/2007.0)
  * Windows (tested: 2000, Wine)
+ * Mac OS X (tested: X11 display driver)
 
 If building fails for you, you may have to adjust the build
 environment, which is located in the {{config}} file on the topmost

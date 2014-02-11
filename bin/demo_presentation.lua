@@ -114,8 +114,8 @@ local Presenter = ScrollText:new
 		{
 			"» The GUI runs managed",
 			"in a virtual machine and",
-			"cannot crash the device,",
-			"even if it is without a MMU.",
+			"cannot crash the device",
+			"or application.",
 		},
 		{
 			"» GUI code is compact,",

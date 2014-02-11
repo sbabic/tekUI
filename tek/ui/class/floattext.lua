@@ -65,7 +65,7 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.frame)
-_VERSION = "FloatText 21.3"
+_VERSION = "FloatText 21.4"
 local FloatText = _M
 Frame:newClass(FloatText)
 
@@ -152,16 +152,18 @@ end
 function FloatText:erase()
 	self.Reposition = false
 	local dr = self.DamageRegion
-	-- repaint intra-area damagerects:
-	local d = self.Window.Drawable
-	-- determine visible rectangle:
-	local _, _, r3 = self:getRect()
-	local ca = self.Canvas
-	local x0 = ca and ca.CanvasLeft or 0
-	local x1 = ca and x0 + ca.CanvasWidth - 1 or r3
-	d:setFont(self.FontHandle)
-	d:setBGPen(self:getBG())
-	dr:forEach(self.drawPatch, self, d, x0, x1, self.FGPen)
+	if dr then
+		-- repaint intra-area damagerects:
+		local d = self.Window.Drawable
+		-- determine visible rectangle:
+		local _, _, r3 = self:getRect()
+		local ca = self.Canvas
+		local x0 = ca and ca.CanvasLeft or 0
+		local x1 = ca and x0 + ca.CanvasWidth - 1 or r3
+		d:setFont(self.FontHandle)
+		d:setBGPen(self:getBG())
+		dr:forEach(self.drawPatch, self, d, x0, x1, self.FGPen)
+	end
 end
 
 -------------------------------------------------------------------------------

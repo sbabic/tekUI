@@ -42,7 +42,6 @@ tek.ui.class.canvas.textlist {
 							Id = "textlist",
 							BGPens = { "#000", "#800", "#fff" },
 							FGPens = { "#fff", "#fff", "#000" },
-							Weight = 0xc000,
 							HardScroll = true,
 							-- Latch = "bottom", -- default
 							Data = { 

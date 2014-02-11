@@ -24,7 +24,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.editwindow", tek.ui.class.window)
-_VERSION = "EditWindow 7.5"
+_VERSION = "EditWindow 7.6"
 local EditWindow = _M
 Window:newClass(EditWindow)
 
@@ -479,6 +479,7 @@ function EditWindow.createNewInput(self, L, shared, input_table, initial)
 	local autowrap = false
 	
 	local input = EditInput:new {
+		AutoIndent = true,
 -- 		AutoPosition = true,
 		InitialFocus = initial,
 		InputShared = shared,

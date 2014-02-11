@@ -35,7 +35,7 @@ exec$(DLLEXT): $(OBJDIR)/exec_lua.lo $(EXECLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_lua.lo -L$(LIBDIR) -lhal -lexec -ltekc -ltekdebug $(PLATFORM_LIBS) $(LUA_LIBS)
 
 visual$(DLLEXT): $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo $(VISUALLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo -L$(LIBDIR) -lvisual -ltek -ltekdebug $(LUA_LIBS) $(VISUAL_LIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo -L$(LIBDIR) -lvisual -ltek -ltekdebug $(LUA_LIBS) $(TEKUI_LIBS)
 
 display/x11$(DLLEXT): $(OBJDIR)/x11_lua.lo $(DISPLAYX11LIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/x11_lua.lo -L$(LIBDIR) -ldisplay_x11 -ltek -ltekdebug $(X11_LIBS) $(LUA_LIBS)

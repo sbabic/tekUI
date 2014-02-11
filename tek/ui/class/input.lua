@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 3.4"
+_VERSION = "Input 4.0"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -205,6 +205,10 @@ function EditInput:handleKeyboard(msg)
 	if msg[2] == MSG_KEYDOWN then
 		local code = msg[3]
 		local qual = msg[6]
+		msg = self.ScrollGroup:handleKeyboard(msg)
+		if not msg then
+			return false
+		end
 		if qual == 4 and code == 99 then -- CTRL-c
 			self:copyMark()
 			self.Window.Drawable:setAttrs { HaveClipboard = true }
@@ -289,6 +293,7 @@ function Input.new(class, self)
 		ScrollGroup = self,
 		Size = self.Size,
 		Style = self.Style or "",
+		UseFakeCanvasWidth = not not self.MultiLine,
 	}
 	
 	self.EditInput:newText(self.Text)
@@ -400,4 +405,24 @@ end
 
 function Input:activate(mode)
 	return self.EditInput:activate(mode)
+end
+
+function Input:handleKeyboard(msg)
+	return msg
+end
+
+function Input:cursorSOF()
+	return self.EditInput:cursorSOF()
+end
+
+function Input:cursorEOF()
+	return self.EditInput:cursorEOF()
+end
+
+function Input:cursorSOL()
+	return self.EditInput:cursorSOL()
+end
+
+function Input:cursorEOL()
+	return self.EditInput:cursorEOL()
 end
