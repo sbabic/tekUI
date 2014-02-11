@@ -98,7 +98,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 36.1"
+_VERSION = "Canvas 36.2"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -404,12 +404,14 @@ function Canvas:damage(r1, r2, r3, r4)
 	Frame.damage(self, r1, r2, r3, r4)
 	-- clip absolute:
 	local s1, s2, s3, s4 = self:getRect()
-	r1, r2, r3, r4 = intersect(r1, r2, r3, r4, s1, s2, s3, s4)
-	if r1 then
-		-- shift into canvas space:
-		local sx = self.CanvasLeft - s1
-		local sy = self.CanvasTop - s2
-		self.Child:damage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
+	if s1 then
+		r1, r2, r3, r4 = intersect(r1, r2, r3, r4, s1, s2, s3, s4)
+		if r1 then
+			-- shift into canvas space:
+			local sx = self.CanvasLeft - s1
+			local sy = self.CanvasTop - s2
+			self.Child:damage(r1 + sx, r2 + sy, r3 + sx, r4 + sy)
+		end
 	end
 end
 

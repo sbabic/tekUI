@@ -13,7 +13,8 @@ DLLEXT = .so
 
 #------------------------------------------------------------------------------
 # Default display driver [Choices: x11, rawfb, directfb, windows]:
-# If you change it, also adjust src/Makefile and tek/lib/Makefile.
+# If you enable rawfb, see RAWFB_SUB_DEVICE below and visit src/Makefile
+# and tek/lib/Makefile if you want to enable a sub driver.
 #------------------------------------------------------------------------------
 
 DISPLAY_DRIVER ?= x11
@@ -95,7 +96,7 @@ WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 # VNCSERVER_LIBS = -L$(PREFIX)/lib -lvncserver
 # VNCSERVER_DEFS = -DENABLE_VNCSERVER -I$(PREFIX)/include -DENABLE_VNCSERVER_COPYRECT
 RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
-RAWFB_SUB_DEFS = -DRFB_RENDER_DEVICE=x11 # -DRFB_DEPTH_24BIT
+RAWFB_SUB_DEFS = -DRFB_SUB_DEVICE=x11 # -DRFB_DEPTH_24BIT
 RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS)
 RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) # -DFNT_DEFDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
 # Comment out RAWFB_SUB for a 'headless' GUI. VNC support makes this software

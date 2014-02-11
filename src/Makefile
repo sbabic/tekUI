@@ -8,8 +8,5 @@ clean libs tools modules:
 	cd hal && $(MAKE) $@
 	cd exec && $(MAKE) $@
 	cd visual && $(MAKE) $@
-	cd display_x11 && $(MAKE) $@
-#	cd display_windows && $(MAKE) $@
-#	cd display_directfb && $(MAKE) $@
-#	cd display_nanox && $(MAKE) $@
-	cd display_rawfb && $(MAKE) $@
+	cd display_$(DISPLAY_DRIVER) && $(MAKE) $@
+# 	cd display_x11 && $(MAKE) $@

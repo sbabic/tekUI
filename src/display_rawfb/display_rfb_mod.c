@@ -8,10 +8,10 @@
 
 #include "display_rfb_mod.h"
 
-#if defined(RFB_RENDER_DEVICE)
+#if defined(RFB_SUB_DEVICE)
 #define STRHELP(x) #x
 #define STR(x) STRHELP(x)
-#define SUBDEVICE_NAME "display_" STR(RFB_RENDER_DEVICE)
+#define SUBDEVICE_NAME "display_" STR(RFB_SUB_DEVICE)
 #else
 #define SUBDEVICE_NAME TNULL
 #endif

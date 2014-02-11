@@ -4,7 +4,7 @@ local db = require "tek.lib.debug"
 local ScrollGroup = ui.ScrollGroup
 
 module("tek.ui.class.textlist", tek.ui.class.scrollgroup)
-_VERSION = "TextList 1.3"
+_VERSION = "TextList 1.4"
 local TextList = _M
 ScrollGroup:newClass(TextList)
 
@@ -58,8 +58,8 @@ function TextList.new(class, self)
 	}
 		
 	self.AcceptFocus = false
-	self.VSliderMode = "auto"
-	self.HSliderMode = "auto"
+	self.VSliderMode = self.VSliderMode or "on"
+	self.HSliderMode = self.HSliderMode or "off"
 	self.Child = self.ListCanvas
 	
 	return ScrollGroup.new(class, self)

@@ -15,17 +15,17 @@
 
 /*****************************************************************************/
 
-#if defined(RFB_RENDER_DEVICE)
+#if defined(RFB_SUB_DEVICE)
 
 #define STRHELP(x) #x
 #define STR(x) STRHELP(x)
-#define SUBDEVICE_NAME STR(RFB_RENDER_DEVICE)
+#define SUBDEVICE_NAME STR(RFB_SUB_DEVICE)
 #define TEK_LIB_DISPLAY_X11_CLASSNAME "tek.lib.display." SUBDEVICE_NAME "*"
 #define TEK_LIB_DISPLAY_X11_BASECLASSNAME "tek.lib.display." SUBDEVICE_NAME ".base*"
 
 #define NAMEHELP(fun, suffix) fun ## suffix
 #define NAME(fun, suffix) NAMEHELP(fun, suffix)
-#define SUBDEVICE_ENTRY NAME(tek_init_display_, RFB_RENDER_DEVICE)
+#define SUBDEVICE_ENTRY NAME(tek_init_display_, RFB_SUB_DEVICE)
 
 extern TMODENTRY TUINT SUBDEVICE_ENTRY(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
 
@@ -51,7 +51,7 @@ typedef struct
 static const struct TInitModule tek_lib_display_rawfb_initmodules[] =
 {
 	{ "display_rawfb", tek_init_display_rawfb, TNULL, 0 },
-#if defined(RFB_RENDER_DEVICE)
+#if defined(RFB_SUB_DEVICE)
 	{ "display_" SUBDEVICE_NAME, SUBDEVICE_ENTRY, TNULL, 0 },
 #endif
 	{ TNULL, TNULL, TNULL, 0 }

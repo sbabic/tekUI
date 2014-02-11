@@ -6,10 +6,8 @@ EXTRADEFS += $(LUA_DEFS) $(TEKUI_DEFS) -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
 
 ###############################################################################
 
-DISPLAYS = display/x11$(DLLEXT) display/rawfb$(DLLEXT)
-# DISPLAYS = display/windows$(DLLEXT)
-# DISPLAYS = display/directfb$(DLLEXT)
-# DISPLAYS = display/rawfb$(DLLEXT)
+DISPLAYS = display/$(DISPLAY_DRIVER)$(DLLEXT)
+# DISPLAYS += display/x11$(DLLEXT)
 
 ###############################################################################
 
