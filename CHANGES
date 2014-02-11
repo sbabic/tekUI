@@ -1,6 +1,8 @@
 
 == tekUI Changelog ==
 
+=== 1.06: ===
+
  * Serious regression fixed: Since 1.02, updating sliders was abysmally
  expensive and could disturb the refreshing of other elements
  * config.h, config, Makefiles: Some Mac OS X support added
