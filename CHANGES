@@ -1,6 +1,8 @@
 
 == tekUI Changelog ==
 
+ * Serious regression fixed: Since 1.02, updating sliders was abysmally
+ expensive and could disturb the refreshing of other elements
  * config.h, config, Makefiles: Some Mac OS X support added
  * FloatText:erase() did not check for a DamageRegion, corrected
  * X11, Visual: some sanity checks added to drawbuffer and drawgradient

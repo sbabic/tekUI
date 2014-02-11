@@ -107,7 +107,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 43.0"
+_VERSION = "Window 44.0"
 local Window = _M
 Group:newClass(Window)
 
@@ -888,6 +888,29 @@ function Window:layout(_, _, _, _, markdamage)
 	self.FreeRegion = false
 	local w, h = self.Drawable:getAttrs()
 	return Group.layout(self, 0, 0, w - 1, h - 1, markdamage)
+end
+
+-------------------------------------------------------------------------------
+--	relayout:
+-------------------------------------------------------------------------------
+
+function Window:relayout(e, x0, y0, x1, y1, markdamage)
+	local temp = { e }
+	while not e:instanceOf(Window) do
+		e = e:getParent()
+		insert(temp, e)
+	end
+	for i = #temp, 2, -1 do
+		local e = temp[i]
+		if not e:drawBegin() then
+			db.error("%s : cannot draw", e:getClassName())
+		end
+	end
+	local res = temp[1]:layout(x0, y0, x1, y1, markdamage)
+	for i = 2, #temp do
+		temp[i]:drawEnd()
+	end
+	return res
 end
 
 -------------------------------------------------------------------------------

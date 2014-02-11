@@ -75,9 +75,11 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 26.5"
+_VERSION = "Slider 26.6"
 local Slider = _M
 Numeric:newClass(Slider)
+
+local FL_REDRAW = ui.FL_REDRAW
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -395,7 +397,16 @@ end
 -------------------------------------------------------------------------------
 
 function Slider:updateSlider()
-	self:rethinkLayout(2)
+	local knob = self.Child
+	local x0, y0, x1, y1 = self:getKnobRect()
+	if x0 and self.Window:relayout(knob, x0, y0, x1, y1) then
+		self:updateBGRegion()
+		if self:checkFlags(FL_REDRAW) then
+			-- also redraw child if we're slated for redraw already:
+			knob:setFlags(FL_REDRAW)
+		end
+		self:setFlags(FL_REDRAW)
+	end	
 end
 
 -------------------------------------------------------------------------------
