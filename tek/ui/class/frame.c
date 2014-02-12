@@ -81,7 +81,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 22.1"
+_VERSION = "Frame 23.1"
 local Frame = _M
 Area:newClass(Frame)
 
@@ -99,7 +99,10 @@ Area:newClass(Frame)
 #define CLASS_NAME "tek.ui.class.frame"
 
 /* Version string: */
-#define CLASS_VERSION "Frame 22.1"
+#define CLASS_VERSION "Frame 23.1"
+
+/* Required tekui version: */
+#define TEKUI_VERSION 107
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
@@ -597,6 +600,10 @@ int luaopen_tek_ui_class_frame(lua_State *L)
 	lua_getglobal(L, "require");
 	lua_pushliteral(L, "tek.ui");
 	lua_call(L, 1, 1);
+	lua_getfield(L, -1, "checkVersion");
+	lua_pushinteger(L, TEKUI_VERSION);
+	lua_call(L, 1, 0);
+	
 	lua_getfield(L, -1, "loadLibrary");
 	lua_pushliteral(L, "region");	
 	lua_pushinteger(L, REGION_VERSION);

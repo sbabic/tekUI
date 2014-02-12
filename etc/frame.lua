@@ -81,14 +81,14 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui":checkVersion(107)
 local Area = ui.require("area", 46)
 local Region = ui.loadLibrary("region", 10)
 local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 23.0"
+_VERSION = "Frame 23.1"
 local Frame = _M
 Area:newClass(Frame)
 

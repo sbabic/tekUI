@@ -198,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 54.0"
+_VERSION = "Area 55.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -217,7 +217,10 @@ Element:newClass(Area)
 #define CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define CLASS_VERSION "Area 54.0"
+#define CLASS_VERSION "Area 55.0"
+
+/* Required tekui version: */
+#define TEKUI_VERSION 107
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
@@ -692,12 +695,13 @@ static int tek_ui_class_area_layout(lua_State *L)
 	lua_Integer sy = lua_tointeger(L, -1);
 	lua_pop(L, 2);
 	
-	TBOOL track = getnumfield(L, ISELF, "Flags") & TEKUI_FL_TRACKDAMAGE;
+	TUINT flags = getnumfield(L, ISELF, "Flags");
+	TBOOL track = flags & TEKUI_FL_TRACKDAMAGE;
 	TBOOL samesize = (dw == 0) && (dh == 0);
 	TBOOL validmove = (dx == 0) != (dy == 0);
 	
 	TBOOL can_copy = TFALSE;
-	if (validmove && (samesize || track))
+	if (validmove && (samesize || track) && !(flags & TEKUI_FL_DONOTBLIT))
 	{
 		lua_getfield(L, -2, "BlitObjects");
 		lua_pushvalue(L, ISELF);
@@ -1878,6 +1882,10 @@ int luaopen_tek_ui_class_area(lua_State *L)
 	lua_getglobal(L, "require");
 	lua_pushliteral(L, "tek.ui");
 	lua_call(L, 1, 1);
+	lua_getfield(L, -1, "checkVersion");
+	lua_pushinteger(L, TEKUI_VERSION);
+	lua_call(L, 1, 0);
+	
 	lua_getfield(L, -1, "loadLibrary");
 	lua_pushliteral(L, "region");	
 	lua_pushinteger(L, REGION_VERSION);

@@ -15,6 +15,7 @@
 --				ui.Application:new { ...
 --
 --	FUNCTIONS::
+--		- ui.checkVersion() - Checks tekUI global version
 --		- ui.createHook() - Creates a hook object
 --		- ui.destroyHook() - Destroys a hook object
 --		- ui.getStockImage() - Gets a stock image object
@@ -132,9 +133,9 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 46.0" -- module version string
+_VERSION = "tekUI 47.0" -- module version string
 
-VERSION = 106 -- overall package version number
+VERSION = 107 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------
@@ -292,6 +293,20 @@ end
 
 function require(name, version)
 	return loadClass("class", name, version, loadSimple)
+end
+
+-------------------------------------------------------------------------------
+--	ui = checkVersion(version): raises an error if the tekUI version number is
+--	less than the requested version. This can be used in the following idiom:
+--	  ui = require "tek.ui".checkVersion(107)
+-------------------------------------------------------------------------------
+
+function checkVersion(version)
+	assert(version)
+	if VERSION < version then
+		error("Need at least tek.ui version " .. version)
+	end
+	return _M
 end
 
 -------------------------------------------------------------------------------
@@ -1072,3 +1087,5 @@ FL_ERASEBG       = 0x1000 -- the element erases its background automatically
 FL_TRACKDAMAGE   = 0x2000 -- the element tracks intra-area damages
 FL_ACTIVATERMB   = 0x4000 -- (also) activate on right mouse button
 FL_INITIALFOCUS  = 0x8000 -- element is receiving the focus during show()
+FL_ISWINDOW     = 0x10000 -- the element is a window
+FL_DONOTBLIT    = 0x20000 -- redrawing the element should not initiate blits

@@ -11,6 +11,32 @@
 			tekUI Changelog
 		</h2>
 		<h3>
+			1.07:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					<a href="manual.html#ui:checkVersion"><code>ui.checkVersion()</code></a> added
+				</li>
+				<li>
+					ui, Area, Window: FL_ISWINDOW, FL_DONOTBLIT added and honoured
+				</li>
+				<li>
+					<a href="manual.html#Window:relayout"><code>Window:relayout()</code></a> uses FL_ISWINDOW to avoid expensive uses of <a href="manual.html#instanceOf"><code>instanceOf()</code></a> 
+				</li>
+				<li>
+					Slider knobs are no longer blitted
+				</li>
+				<li>
+					<a href="manual.html#Canvas:damage"><code>Canvas:damage()</code></a> did not check for rectangle, corrected
+				</li>
+				<li>
+					Build procedure: builds with just a single display driver can be configured
+					entirely via config file now
+				</li>
+			</ul>
+		</blockquote>
+		<h3>
 			1.06:
 		</h3>
 		<blockquote>

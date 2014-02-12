@@ -64,8 +64,8 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
-local Area = ui.require("area", 48)
+local ui = require "tek.ui".checkVersion(107)
+local Area = ui.require("area", 55)
 local Numeric = ui.require("numeric", 5)
 local Region = ui.loadLibrary("region", 10)
 local Widget = ui.require("widget", 25)
@@ -75,7 +75,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 26.6"
+_VERSION = "Slider 26.7"
 local Slider = _M
 Numeric:newClass(Slider)
 
@@ -103,6 +103,7 @@ function Slider.new(class, self)
 	self.BGRegion = false
 	self.Captured = false
 	self.Child = self.Child or Widget:new {
+		Flags = ui.FL_DONOTBLIT,
 		Class = "knob knob-" .. (self.Kind or "normal")
 	}
 	self.ClickDirection = false

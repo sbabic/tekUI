@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="11-Feb-2014" />
+		<meta name="created" content="12-Feb-2014" />
 	</head>
 	<body>
 		<h1>
@@ -1594,7 +1594,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v46.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v47.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1614,6 +1614,9 @@ ui.Application:new { ...
 			<div class="definition"><dfn>FUNCTIONS</dfn>
 				<blockquote>
 					<ul>
+						<li style="list-style-type: none">
+							<a href="#ui:checkVersion"><code>ui.checkVersion()</code></a> - Checks tekUI global version
+						</li>
 						<li style="list-style-type: none">
 							<a href="#ui:createHook"><code>ui.createHook()</code></a> - Creates a hook object
 						</li>
@@ -1916,6 +1919,14 @@ ui.Application:new { ...
 				</blockquote>
 				<hr />
 			</div>
+		</div>
+		<div class="node"><h3><a name="ui:checkVersion" id="ui:checkVersion"><code>ui = checkVersion(version)</code></a></h3>
+			<p>
+				raises an error if the tekUI version number is
+				less than the requested version. This can be used in the following idiom:
+				 ui = require &quot;tek.ui&quot;.checkVersion(107)
+			</p>
+			<hr />
 		</div>
 		<div class="node"><h3><a name="ui:createHook" id="ui:createHook"><code>hookobject = ui.createHook(realm, classname, parent[, table])</code></a></h3>
 			<p>
@@ -2476,7 +2487,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v54.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v55.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3447,7 +3458,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v36.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v36.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4782,7 +4793,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v22.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v23.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6848,7 +6859,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v26.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v26.7)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7810,7 +7821,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v44.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v44.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8238,7 +8249,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Tue Feb 11 16:16:16 2014
+					Document generated on Wed Feb 12 15:37:01 2014
 				</p>
 			</div>
 		</div>

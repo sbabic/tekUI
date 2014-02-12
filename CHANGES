@@ -1,6 +1,16 @@
 
 == tekUI Changelog ==
 
+=== 1.07: ===
+
+ * ui.checkVersion() added
+ * ui, Area, Window: FL_ISWINDOW, FL_DONOTBLIT added and honoured
+ * Window:relayout() uses FL_ISWINDOW to avoid expensive uses of instanceOf()
+ * Slider knobs are no longer blitted
+ * Canvas:damage() did not check for rectangle, corrected
+ * Build procedure: builds with just a single display driver can be configured
+ entirely via config file now
+
 === 1.06: ===
 
  * Serious regression fixed: Since 1.02, updating sliders was abysmally

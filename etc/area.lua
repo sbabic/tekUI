@@ -197,7 +197,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(107)
 local Element = ui.require("element", 19)
 local Region = ui.loadLibrary("region", 10)
 
@@ -213,7 +213,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 54.0"
+_VERSION = "Area 55.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -229,6 +229,7 @@ local FL_BUBBLEUP = FL_REDRAW + FL_REDRAWBORDER + FL_CHANGED
 local FL_AUTOPOSITION = ui.FL_AUTOPOSITION
 local FL_ERASEBG = ui.FL_ERASEBG
 local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
+local FL_DONOTBLIT = ui.FL_DONOTBLIT
 
 local HUGE = ui.HUGE
 
@@ -455,10 +456,11 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	-- * element's background is position-independent
 	
 	if validmove and (samesize or trackdamage) and
+		not self:checkFlags(FL_DONOTBLIT) and
 		not win.BlitObjects[self] then
 		local _, _, _, pos_independent = self:getBG()
 		if pos_independent then
-
+			
 			-- get source rect, incl. border:
 			local s1 = x0 - dx - m1
 			local s2 = y0 - dy - m2

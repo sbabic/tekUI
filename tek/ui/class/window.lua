@@ -86,7 +86,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(107)
 local Display = ui.require("display", 25)
 local Widget = ui.require("widget", 26)
 local Group = ui.require("group", 31)
@@ -107,7 +107,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 44.0"
+_VERSION = "Window 44.1"
 local Window = _M
 Group:newClass(Window)
 
@@ -125,6 +125,7 @@ local FL_REDRAW = ui.FL_REDRAW
 local FL_SHOW = ui.FL_SHOW
 local FL_UPDATE = ui.FL_UPDATE
 local FL_ACTIVATERMB = ui.FL_ACTIVATERMB
+local FL_ISWINDOW = ui.FL_ISWINDOW
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -157,6 +158,7 @@ function Window.new(class, self)
 	self.DblClickTimeout = self.DblClickTimeout or ui.DBLCLICKTIME
 	self.Drawable = false
 	self.EventMask = ui.MSG_ALL
+	self.Flags = ui.bor(self.Flags or 0, FL_ISWINDOW)
 	self.FocusElement = false
 	self.FullScreen = self.FullScreen or ui.FullScreen == "true"
 	self.HideOnEscape = self.HideOnEscape or false
@@ -896,7 +898,7 @@ end
 
 function Window:relayout(e, x0, y0, x1, y1, markdamage)
 	local temp = { e }
-	while not e:instanceOf(Window) do
+	while not e:checkFlags(FL_ISWINDOW) do
 		e = e:getParent()
 		insert(temp, e)
 	end

@@ -39,7 +39,7 @@ TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_FILENO # -DENABLE_PNG -DENABLE_DGRAM=200
 CC = $(CCPREFIX)gcc -fpic # -DTSYS_POSIX
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# For Windows using MingW:
+# For Windows using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # CC = $(CCPREFIX)gcc -mno-cygwin -DWIN32
