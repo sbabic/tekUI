@@ -132,7 +132,7 @@ typedef struct TEKPen
 typedef struct
 {
 	TUINT *pxm_Data;
-	TUINT pxm_Width, pxm_Height;
+	TINT pxm_Width, pxm_Height;
 	TUINT pxm_Flags;
 	TEKVisual *pxm_VisualBase;
 } TEKPixmap;

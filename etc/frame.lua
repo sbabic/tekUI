@@ -81,7 +81,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui":checkVersion(107)
+local ui = require "tek.ui".checkVersion(107)
 local Area = ui.require("area", 46)
 local Region = ui.loadLibrary("region", 10)
 local tonumber = tonumber

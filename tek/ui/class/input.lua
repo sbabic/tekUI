@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 4.0"
+_VERSION = "Input 4.1"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -396,6 +396,9 @@ function Input:onActivate()
 end
 
 function Input:onFocus()
+	if self.Focus then
+		self:setCursorMode(self.Focus and "active" or "hidden")
+	end
 	self.EditInput:setValue("Focus", self.Focus)
 end
 
