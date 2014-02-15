@@ -4,7 +4,7 @@
 **	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 **	See copyright notice in COPYRIGHT
 **
-**	Version: 1.2
+**	Version: 1.3
 */
 
 tek.ui.class.display {
@@ -14,6 +14,7 @@ tek.ui.class.display {
   rgb-focus: #fff;
   rgb-active: #ff8900;
   rgb-detail: #fff;
+  rgb-caption-detail: #fff;
   rgb-hover-detail: #0055ac;
   rgb-disabled-detail: #0055ac;
   rgb-disabled-detail-shine: #fff;

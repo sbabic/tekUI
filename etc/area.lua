@@ -197,7 +197,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(107)
+local ui = require "tek.ui".checkVersion(108)
 local Element = ui.require("element", 19)
 local Region = ui.loadLibrary("region", 10)
 
@@ -213,7 +213,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 55.0"
+_VERSION = "Area 56.1"
 local Area = _M
 Element:newClass(Area)
 
@@ -995,4 +995,18 @@ end
 function Area:beginPopup(baseitem)
 	self.Hilite = false
 	self.Focus = false
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure:
+-------------------------------------------------------------------------------
+
+function Area:reconfigure()
+	self.DamageRegion = false
+	self.MinMax = newregion()
+	self.Rect = newregion()
+	self.BGPen = false
+	self:setState()
+	self:checkClearFlags(FL_LAYOUT)
+	self:rethinkLayout(2, true)
 end

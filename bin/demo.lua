@@ -534,8 +534,35 @@ app = ui.Application:new
 									end,
 								}
 							}
+						},
+						ui.MenuItem:new
+						{
+							Text = L.MENU_SETTINGS,
+							Children =
+							{
+								ui.MenuItem:new
+								{
+									Text = L.MENU_OPEN_STYLESHEET,
+									onClick = function(self)
+										local app = self.Application
+										app:addCoroutine(function()
+											local status, path, select = app:requestFile
+											{
+												Path = "tek/ui/style",
+											}
+											if status == "selected" then
+												local fname = path .. "/" .. select[1]
+												if fname then
+													app.initStylesheets(app, fname)
+													app:reconfigure()
+												end
+											end
+										end)
+									end
+								}
+							}
 						}
-					}
+					},
 				},
 				ui.Text:new
 				{

@@ -65,7 +65,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(108)
 local Family = ui.require("family", 2)
 local Widget = ui.require("widget", 29)
 local Region = ui.loadLibrary("region", 10)
@@ -74,7 +74,7 @@ local intersect = Region.intersect
 local type = type
 
 module("tek.ui.class.group", tek.ui.class.widget)
-_VERSION = "Group 33.1"
+_VERSION = "Group 34.0"
 local Group = _M
 Widget:newClass(Group)
 
@@ -424,9 +424,13 @@ function Group:getBGElement()
 end
 
 -------------------------------------------------------------------------------
---	onActivateGroup:
+--	reconfigure()
 -------------------------------------------------------------------------------
 
--- function Group:onActivateGroup()
--- 	return true
--- end
+function Group:reconfigure()
+	Widget.reconfigure(self)
+	local c = self.Children
+	for i = 1, #c do
+		c[i]:reconfigure()
+	end
+end

@@ -81,7 +81,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 23.1"
+_VERSION = "Frame 24.0"
 local Frame = _M
 Area:newClass(Frame)
 
@@ -99,10 +99,10 @@ Area:newClass(Frame)
 #define CLASS_NAME "tek.ui.class.frame"
 
 /* Version string: */
-#define CLASS_VERSION "Frame 23.1"
+#define CLASS_VERSION "Frame 24.0"
 
 /* Required tekui version: */
-#define TEKUI_VERSION 107
+#define TEKUI_VERSION 108
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
@@ -219,6 +219,11 @@ static void newBorderObject(lua_State *L)
 		/* s: Properties, createHook(), "border", props["border-class"] or "default", self, {} */
 		lua_call(L, 4, 1);
 		lua_setfield(L, 1, "BorderObject");
+	}
+	else
+	{
+		lua_pushboolean(L, TFALSE);
+		lua_setfield(L, ISELF, "BorderObject");
 	}
 	lua_pop(L, 1);
 }
@@ -565,6 +570,21 @@ static int tek_ui_class_frame_setstate(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	reconfigure: overrides
+-----------------------------------------------------------------------------*/
+
+static int tek_ui_class_frame_reconfigure(lua_State *L)
+{
+	lua_getfield(L, ISUPERCLASS, "reconfigure");
+	lua_pushvalue(L, ISELF);
+	lua_call(L, 1, 0);
+	newBorderObject(L);
+	lua_pushboolean(L, TFALSE);
+	lua_setfield(L, ISELF, "BorderRegion");
+	return 0;
+}
+
 /*****************************************************************************/
 
 static const luaL_Reg classfuncs[] =
@@ -581,6 +601,7 @@ static const luaL_Reg classfuncs[] =
 	{ "getMargin", tek_ui_class_frame_getmargin },
 	{ "onSetStyle", tek_ui_class_frame_onsetstyle },
 	{ "setState", tek_ui_class_frame_setstate },
+	{ "reconfigure", tek_ui_class_frame_reconfigure },
 	{ NULL, NULL }
 };
 

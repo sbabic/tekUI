@@ -103,7 +103,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(108)
 local Display = ui.require("display", 24)
 local Family = ui.require("family", 2)
 
@@ -118,8 +118,10 @@ local coyield = coroutine.yield
 local floor = math.floor
 local getmsg = Display.getMsg
 local insert = table.insert
+local io_open = io.open
 local max = math.max
 local min = math.min
+local pairs = pairs
 local remove = table.remove
 local select = select
 local traceback = debug.traceback
@@ -128,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 40.0"
+_VERSION = "Application 41.0"
 local Application = _M
 Family:newClass(Application)
 
@@ -214,7 +216,7 @@ end
 --	initStyleSheets
 -------------------------------------------------------------------------------
 
-function Application.initStylesheets(self)
+function Application.initStylesheets(self, filename)
 
 	local props = { [0] = { } }
 	self.Properties = props
@@ -230,9 +232,27 @@ function Application.initStylesheets(self)
 	--	explicitely provides "minimal" as the first stylesheet.
 	
 	local stylesheets = { }
-	ui.ThemeName:gsub("%S+", function(name)
-		insert(stylesheets, name)
-	end)
+
+	if filename then
+		local s
+		local msg = "open failed"
+		local f = io_open(filename)
+		if f then
+			s, msg = ui.loadStyleSheet(f)
+		end
+		if s then
+			insert(stylesheets, s)
+		else
+			db.warn("failed to load/decode user stylesheet: %s", msg)
+		end
+	else
+		ui.ThemeName:gsub("%S+", function(name)
+			if name ~= "user" then
+				insert(stylesheets, name)
+			end
+		end)
+	end
+
 	if stylesheets[1] ~= "minimal" then
 		insert(stylesheets, 1, "minimal")
 		if stylesheets[2] ~= "default" then
@@ -240,11 +260,16 @@ function Application.initStylesheets(self)
 		end
 	end
 	for i = 1, #stylesheets do
-		local s, msg = ui.getStyleSheet(stylesheets[i])
+		local s = stylesheets[i]
+		if type(s) ~= "table" then
+			local msg
+			s, msg = ui.getStyleSheet(stylesheets[i])
+			if not s then
+				db.warn("failed to load/decode user stylesheet: %s", msg)
+			end
+		end
 		if s then
 			insert(props, 1, s)
-		else
-			db.info("failed to decode user stylesheet: %s", msg)
 		end
 	end
 	
@@ -277,13 +302,11 @@ function Application.initStylesheets(self)
 	end
 
 	-- 'user' stylesheet:
-	if ui.UserStyles then
-		local s, msg = ui.loadStyleSheet(ui.UserStyles)
-		if s then
-			insert(props, 1, s)
-		else
-			db.info("failed to decode user stylesheet: %s", msg)
-		end
+	local s, msg = ui.loadStyleSheet("user")
+	if s then
+		insert(props, 1, s)
+	else
+		db.info("failed to decode user stylesheet: %s", msg)
 	end
 
 end
@@ -1058,4 +1081,23 @@ end
 -------------------------------------------------------------------------------
 
 function Application:up()
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure()
+-------------------------------------------------------------------------------
+
+function Application:reconfigure()
+	local d = self.Display
+	d:decodeProperties(self.Properties)
+	self:decodeProperties()
+	local c = self.Children
+	for i = 1, #c do
+		if c[i].Status == "show" then
+			for k, v in pairs(c[i].PenTable) do
+				c[i].PenTable[k] = nil
+			end
+		end
+		c[i]:reconfigure()
+	end
 end

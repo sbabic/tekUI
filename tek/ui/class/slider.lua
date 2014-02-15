@@ -64,7 +64,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui".checkVersion(107)
+local ui = require "tek.ui".checkVersion(108)
 local Area = ui.require("area", 55)
 local Numeric = ui.require("numeric", 5)
 local Region = ui.loadLibrary("region", 10)
@@ -75,7 +75,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 26.7"
+_VERSION = "Slider 27.0"
 local Slider = _M
 Numeric:newClass(Slider)
 
@@ -569,4 +569,13 @@ function Slider:setState(bg, fg)
 		bg = self.Properties["background-color:active"]
 	end
 	Widget.setState(self, bg)
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure()
+-------------------------------------------------------------------------------
+
+function Slider:reconfigure()
+	Numeric.reconfigure(self)
+	self.Child:reconfigure()
 end

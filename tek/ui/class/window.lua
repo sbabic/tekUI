@@ -107,7 +107,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 44.1"
+_VERSION = "Window 44.2"
 local Window = _M
 Group:newClass(Window)
 
@@ -123,6 +123,7 @@ local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
 
 local FL_REDRAW = ui.FL_REDRAW
 local FL_SHOW = ui.FL_SHOW
+local FL_LAYOUT = ui.FL_LAYOUT
 local FL_UPDATE = ui.FL_UPDATE
 local FL_ACTIVATERMB = ui.FL_ACTIVATERMB
 local FL_ISWINDOW = ui.FL_ISWINDOW
@@ -856,7 +857,9 @@ function Window:update()
 					elseif damage == 2 and r1 then -- FL_LAYOUT not realiable
 						 -- unconditionally slate the element and all its
 						 -- children for repaint:
-						e:damage(r1, r2, r3, r4)
+						if e:checkFlags(FL_SHOW + FL_LAYOUT) then
+							e:damage(r1, r2, r3, r4)
+						end
 					end
 				end
 

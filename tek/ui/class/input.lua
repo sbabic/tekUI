@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 4.3"
+_VERSION = "Input 4.4"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -293,7 +293,7 @@ function Input.new(class, self)
 		ScrollGroup = self,
 		Size = self.Size,
 		Style = self.Style or "",
-		UseFakeCanvasWidth = not not self.MultiLine,
+		UseFakeCanvasWidth = true, --not not self.MultiLine,
 	}
 	
 	self.EditInput:newText(self.Text)

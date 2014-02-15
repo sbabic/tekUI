@@ -81,14 +81,14 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(107)
+local ui = require "tek.ui".checkVersion(108)
 local Area = ui.require("area", 46)
 local Region = ui.loadLibrary("region", 10)
 local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 23.1"
+_VERSION = "Frame 24.0"
 local Frame = _M
 Area:newClass(Frame)
 
@@ -138,6 +138,8 @@ function Frame:newBorderObject()
 				Legend = self.Legend, 
 				Style = self.Style 
 			})
+	else
+		self.BorderObject = false
 	end
 end
 
@@ -276,4 +278,14 @@ end
 function Frame:setState(bg)
 	Area.setState(self, bg)
 	self:setFlags(FL_REDRAWBORDER)
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure: 
+-------------------------------------------------------------------------------
+
+function Frame:reconfigure()
+	Area.reconfigure(self)
+	self:newBorderObject()
+	self.BorderRegion = false
 end

@@ -1,4 +1,12 @@
 
+/*
+**	tek/ui/style/dark.css - Example stylesheet
+**	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+**	See copyright notice in COPYRIGHT
+**
+**	Version: 1.1
+*/
+
 tek.ui.class.display {
 	rgb-background: #000;
 	rgb-hover: #225;
@@ -6,6 +14,7 @@ tek.ui.class.display {
 	rgb-focus: #225;
 	rgb-active: #225;
 	rgb-detail: #8cc;
+	rgb-caption-detail: #acc;
 	rgb-hover-detail: #fff;
 	rgb-disabled-detail: #335;
 	rgb-disabled-detail-shine: #000;

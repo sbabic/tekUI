@@ -1,6 +1,14 @@
 
 == tekUI Changelog ==
 
+=== 1.08: ===
+
+ * Added support for dynamic reconfiguration from stylesheets during runtime
+ * Area, Application: added reconfigure()
+ * Demo program: Added menu item "Open stylesheet..."
+ * Added a sanity check in Window:update()
+ * Added LUAVER variable in config to switch Lua install paths
+
 === 1.07: ===
 
  * ui.checkVersion() added

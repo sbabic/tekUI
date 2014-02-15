@@ -84,8 +84,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
-
+local ui = require "tek.ui".checkVersion(108)
 local Application = ui.require("application", 29)
 local Area = ui.require("area", 53)
 local Element = ui.require("element", 16)
@@ -98,7 +97,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 36.2"
+_VERSION = "Canvas 37.0"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -685,4 +684,13 @@ function Canvas:getMouseOver(msg)
 		end
 		return over, x, y
 	end
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure()
+-------------------------------------------------------------------------------
+
+function Canvas:reconfigure()
+	Frame.reconfigure(self)
+	self.Child:reconfigure()
 end

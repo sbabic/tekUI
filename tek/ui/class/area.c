@@ -198,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 55.0"
+_VERSION = "Area 56.1"
 local Area = _M
 Element:newClass(Area)
 
@@ -217,10 +217,10 @@ Element:newClass(Area)
 #define CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define CLASS_VERSION "Area 55.0"
+#define CLASS_VERSION "Area 56.1"
 
 /* Required tekui version: */
-#define TEKUI_VERSION 107
+#define TEKUI_VERSION 108
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
@@ -1820,6 +1820,32 @@ static int tek_ui_class_area_beginpopup(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	reconfigure()
+-----------------------------------------------------------------------------*/
+
+static int tek_ui_class_area_reconfigure(lua_State *L)
+{
+	setfieldbool(L, ISELF, "DamageRegion", TFALSE);
+	lua_getfield(L, IREGION, "new");
+	lua_call(L, 0, 1);
+	lua_setfield(L, ISELF, "MinMax");
+	lua_getfield(L, IREGION, "new");
+	lua_call(L, 0, 1);
+	lua_setfield(L, ISELF, "Rect");
+	setfieldbool(L, ISELF, "BGPen", TFALSE);
+	lua_getfield(L, ISELF, "setState");
+	lua_pushvalue(L, ISELF);
+	lua_call(L, 1, 0);
+	clrsetflags(L, TEKUI_FL_LAYOUT, 0, TFALSE);
+	lua_getfield(L, ISELF, "rethinkLayout");
+	lua_pushvalue(L, ISELF);
+	lua_pushinteger(L, 2);
+	lua_pushboolean(L, TTRUE);
+	lua_call(L, 3, 0);
+	return 0;
+}
+
 /*****************************************************************************/
 
 static const luaL_Reg classfuncs[] =
@@ -1863,6 +1889,7 @@ static const luaL_Reg classfuncs[] =
 	{ "hide", tek_ui_class_area_hide },
 	{ "show", tek_ui_class_area_show },
 	{ "beginPopup", tek_ui_class_area_beginpopup },
+	{ "reconfigure", tek_ui_class_area_reconfigure },
 	{ NULL, NULL }
 };
 

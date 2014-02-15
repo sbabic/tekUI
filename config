@@ -74,10 +74,11 @@ PLATFORM_LIBS = -pthread
 #------------------------------------------------------------------------------
 
 PREFIX ?= /usr/local
-LUA_LIB = $(PREFIX)/lib/lua/5.1
-LUA_SHARE = $(PREFIX)/share/lua/5.1
-SYS_LUA_LIB = $(PREFIX)/lib/lua/5.1
-SYS_LUA_SHARE = $(PREFIX)/share/lua/5.1
+LUAVER ?= 5.1
+LUA_LIB = $(PREFIX)/lib/lua/$(LUAVER)
+LUA_SHARE = $(PREFIX)/share/lua/$(LUAVER)
+SYS_LUA_LIB = $(PREFIX)/lib/lua/$(LUAVER)
+SYS_LUA_SHARE = $(PREFIX)/share/lua/$(LUAVER)
 
 #------------------------------------------------------------------------------
 # Other libraries:
