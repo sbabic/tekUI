@@ -32,7 +32,7 @@
 -------------------------------------------------------------------------------
 
 module "tek.lib.string"
-_VERSION = "String 1.1"
+_VERSION = "String 1.2"
 local String = _M
 
 ******************************************************************************/
@@ -45,7 +45,7 @@ local String = _M
 #include <tek/teklib.h>
 #include <tek/lib/tekui.h>
 
-#define TEK_LIB_STRING_VERSION	"String Library 1.1"
+#define TEK_LIB_STRING_VERSION	"String Library 1.2"
 #define TEK_LIB_STRING_NAME		"tek.lib.string"
 
 /*****************************************************************************/
@@ -1259,12 +1259,16 @@ static int tek_string_overwrite(lua_State *L)
 	tek_size p0 = luaL_optinteger(L, 3, 1);
 	struct TNode *next, *node;
 	
-	if (!getfirst(s->ts_Length, &p0, 1, s->ts_Length + 1))
+	if (!getfirst(s->ts_Length, &p0, 1, s->ts_Length))
 		luaL_error(L, "illegal position");
-	
+
 	initutf8reader(&rd, raws, rawlen);
 	
+#if defined(COMPACTION)
+	tek_string_unpack(L, s);
+#endif
 	node = s->ts_List.tlh_Head;
+	
 	for (; (next = node->tln_Succ); node = next)
 	{
 		tek_node *sn = (tek_node *) node;
