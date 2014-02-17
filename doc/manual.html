@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="15-Feb-2014" />
+		<meta name="created" content="17-Feb-2014" />
 	</head>
 	<body>
 		<h1>
@@ -1594,7 +1594,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v47.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v47.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2079,7 +2079,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v41.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v41.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2487,7 +2487,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v56.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v56.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3458,7 +3458,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v37.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v37.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3547,20 +3547,22 @@ end
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>KeepMinHeight &#091;IG&#093;</code> (boolean)
+							<code>KeepMinHeight &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Report the minimum height of the Canvas's child object as the
-									Canvas' minimum display height
+									Report the minimum height of the Canvas' child object as the
+									Canvas' minimum display height. The boolean will be translated
+									to the flag <code>FL_KEEPMINHEIGHT</code>, and is meaningless after
+									initialization.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>KeepMinWidth &#091;IG&#093;</code> (boolean)
+							<code>KeepMinWidth &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									Report the minimum width of the Canvas's child object as the
-									Canvas' minimum display width
+									Translates to the flag <code>FL_KEEPMINWIDTH</code>. See also
+									<code>KeepMinHeight</code>, above.
 								</p>
 							</blockquote>
 						</li>
@@ -4064,7 +4066,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v30.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v31.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4644,7 +4646,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v21.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v22.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5122,7 +5124,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v34.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v35.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5336,7 +5338,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.imagewidget" id="tek.ui.class.imagewidget">ImageWidget (v15.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.imagewidget" id="tek.ui.class.imagewidget">ImageWidget (v15.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5523,7 +5525,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v31.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v32.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6363,7 +6365,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6684,7 +6686,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v19.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v19.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7050,7 +7052,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v28.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v29.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7072,23 +7074,24 @@ end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<code>KeepMinHeight &#091;IG&#093;</code> (boolean)
+							<code>KeepMinHeight &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
 									After the initial size calculation, keep the minimal height of
 									the element and do not rethink the layout in response to a
 									possible new minimal height (e.g. resulting from a newly set
-									text).
+									text). The boolean (default <strong>false</strong>) will be translated
+									to the flag <code>FL_KEEPMINHEIGHT</code>, and is meaningless after
+									initialization.
 								</p>
 							</blockquote>
 						</li>
 						<li style="list-style-type: none">
-							<code>KeepMinWidth &#091;IG&#093;</code> (boolean)
+							<code>KeepMinWidth &#091;I&#093;</code> (boolean)
 							<blockquote>
 								<p>
-									After the initial size calculation, keep the minimal width of
-									the element and do not rethink the layout in response to a
-									possible new minimal width (e.g. resulting from a newly set text).
+									Translates to the flag <code>FL_KEEPMINWIDTH</code>. See also
+									<code>KeepMinHeight</code>, above.
 								</p>
 							</blockquote>
 						</li>
@@ -7284,7 +7287,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v18.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v19.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7821,7 +7824,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v44.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v44.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8173,7 +8176,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v8.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8249,7 +8252,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Sat Feb 15 12:20:22 2014
+					Document generated on Mon Feb 17 10:17:06 2014
 				</p>
 			</div>
 		</div>

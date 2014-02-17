@@ -74,7 +74,7 @@ local intersect = Region.intersect
 local type = type
 
 module("tek.ui.class.group", tek.ui.class.widget)
-_VERSION = "Group 34.0"
+_VERSION = "Group 35.0"
 local Group = _M
 Widget:newClass(Group)
 
@@ -117,15 +117,23 @@ function Group.new(class, self)
 end
 
 -------------------------------------------------------------------------------
+--	forEachChild(method, ...)
+-------------------------------------------------------------------------------
+
+function Group:forEachChild(method, ...)
+	local c = self:getChildren("init")
+	for i = 1, #c do
+		c[i][method](c[i], ...)
+	end
+end
+
+-------------------------------------------------------------------------------
 --	decodeProperties: overrides
 -------------------------------------------------------------------------------
 
 function Group:decodeProperties(p)
 	Widget.decodeProperties(self, p)
-	local c = self.Children
-	for i = 1, #c do
-		c[i]:decodeProperties(p)
-	end
+	self:forEachChild("decodeProperties", p)
 end
 
 -------------------------------------------------------------------------------
@@ -135,10 +143,7 @@ end
 function Group:setup(app, window)
 	Widget.setup(self, app, window)
 	self:setFlags(FL_CHANGED + FL_RECVINPUT + FL_RECVMOUSEMOVE)
-	local c = self.Children
-	for i = 1, #c do
-		c[i]:setup(app, window)
-	end
+	self:forEachChild("setup", app, window)
 end
 
 -------------------------------------------------------------------------------
@@ -146,12 +151,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:cleanup()
-	self:checkClearFlags(0, FL_RECVINPUT + FL_RECVMOUSEMOVE)
-	local c = self.Children
-	for i = 1, #c do
-		c[i]:cleanup()
-	end
 	Widget.cleanup(self)
+	self:checkClearFlags(0, FL_RECVINPUT + FL_RECVMOUSEMOVE)
+	self:forEachChild("cleanup")
 end
 
 -------------------------------------------------------------------------------
@@ -160,10 +162,7 @@ end
 
 function Group:show()
 	Widget.show(self)
-	local c = self.Children
-	for i = 1, #c do
-		c[i]:show()
-	end
+	self:forEachChild("show")
 end
 
 -------------------------------------------------------------------------------
@@ -171,12 +170,9 @@ end
 -------------------------------------------------------------------------------
 
 function Group:hide()
-	local c = self.Children
-	for i = 1, #c do
-		c[i]:hide()
-	end
-	self.FreeRegion = false
 	Widget.hide(self)
+	self.FreeRegion = false
+	self:forEachChild("hide")
 end
 
 -------------------------------------------------------------------------------
@@ -231,8 +227,9 @@ function Group:remMember(child)
 	end
 	local found = Family.remMember(self, child)
 	if child.Weight then
-		for i = 1, #self.Children do
-			self.Children[i].Weight = false
+		local c = self.Children
+		for i = 1, #c do
+			c[i].Weight = false
 		end
 	end
 	if show then
@@ -429,8 +426,5 @@ end
 
 function Group:reconfigure()
 	Widget.reconfigure(self)
-	local c = self.Children
-	for i = 1, #c do
-		c[i]:reconfigure()
-	end
+	self:forEachChild("reconfigure")
 end

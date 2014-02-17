@@ -86,7 +86,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(107)
+local ui = require "tek.ui".checkVersion(108)
 local Display = ui.require("display", 25)
 local Widget = ui.require("widget", 26)
 local Group = ui.require("group", 31)
@@ -103,11 +103,12 @@ local pairs = pairs
 local remove = table.remove
 local setmetatable = setmetatable
 local sort = table.sort
+local tonumber = tonumber
 local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 44.2"
+_VERSION = "Window 44.3"
 local Window = _M
 Group:newClass(Window)
 
@@ -240,6 +241,8 @@ function Window.new(class, self)
 	self.Top = self.Top or false
 	self.WindowFocus = false
 	self.WindowMinMax = { }
+	self.WinHeight = false
+	self.WinWidth = false
 	return Group.new(class, self)
 end
 
@@ -342,7 +345,7 @@ function Window:hide()
 		self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 		Group.hide(self)
 		local d = self.Drawable
-		self.Width, self.Height = d:getAttrs()
+		self.WinWidth, self.WinHeight = d:getAttrs()
 		d:close()
 		self.Drawable = false
 		self.ActiveElement = false
@@ -460,12 +463,23 @@ end
 -------------------------------------------------------------------------------
 
 function Window:askMinMax()
+
 	local mw, mh = self.MinWidth, self.MinHeight
 	self.MinWidth, self.MinHeight = 0, 0
-	local m1, m2, m3, m4 = Group.askMinMax(self, 0, 0, self.MaxWidth,
-		self.MaxHeight)
-	self.MinWidth = mw
-	self.MinHeight = mh
+	
+	local w = self:getAttr("Width")
+	local h = self:getAttr("Height")
+	local minw = self:getAttr("MinWidth")
+	local minh = self:getAttr("MinHeight")
+	local maxw = self:getAttr("MaxWidth")
+	local maxh = self:getAttr("MaxHeight")
+	
+	local m1, m2, m3, m4 = Group.askMinMax(self, 0, 0, maxw, maxh)
+	self.MinWidth, self.MinHeight = mw, mh
+	
+	mw = minw
+	mh = minh
+	
 	m1, m2 = max(mw, m1), max(mh, m2)
 	local x, y, w, h = self.Left, self.Top, self.Width, self.Height
 	if w == "fill" then
@@ -478,9 +492,10 @@ function Window:askMinMax()
 	h = type(h) == "number" and max(h, m2)
 	m3 = (m3 and m3 > 0 and m3 < HUGE) and m3
 	m4 = self.FullScreen and ui.HUGE or (m4 and m4 > 0 and m4 < HUGE) and m4
-	w = w or self.MaxWidth == 0 and m1 or w
-	h = h or self.MaxHeight == 0 and m2 or h
-	return m1, m2, m3, m4, x, y, w, h
+	w = w or maxw == 0 and m1 or w
+	h = h or maxh == 0 and m2 or h
+	
+	return m1, m2, m3, m4, x, y, self.WinWidth or w, self.WinHeight or h
 end
 
 -------------------------------------------------------------------------------
@@ -1257,5 +1272,19 @@ function Window:addBlit(x0, y0, x1, y1, dx, dy, c1, c2, c3, c4)
 		end
 	end
 end
+
+-------------------------------------------------------------------------------
+--	reconfigure:
+-------------------------------------------------------------------------------
+
+function Window:reconfigure()
+	Group.reconfigure(self)
+	if self.Status == "show" then
+		for k, v in pairs(self.PenTable) do
+			self.PenTable[k] = nil
+		end
+	end
+end
+
 
 return Window

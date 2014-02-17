@@ -104,7 +104,7 @@
 
 local db = require "tek.lib.debug"
 local ui = require "tek.ui".checkVersion(108)
-local Display = ui.require("display", 24)
+local Display = ui.require("display", 31)
 local Family = ui.require("family", 2)
 
 local assert = assert
@@ -130,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 41.0"
+_VERSION = "Application 41.1"
 local Application = _M
 Family:newClass(Application)
 
@@ -1089,15 +1089,11 @@ end
 
 function Application:reconfigure()
 	local d = self.Display
+	d:flushCaches()
 	d:decodeProperties(self.Properties)
 	self:decodeProperties()
 	local c = self.Children
 	for i = 1, #c do
-		if c[i].Status == "show" then
-			for k, v in pairs(c[i].PenTable) do
-				c[i].PenTable[k] = nil
-			end
-		end
 		c[i]:reconfigure()
 	end
 end

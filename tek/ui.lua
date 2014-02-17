@@ -133,7 +133,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 47.0" -- module version string
+_VERSION = "tekUI 47.1" -- module version string
 
 VERSION = 108 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
@@ -1087,5 +1087,7 @@ FL_ERASEBG       = 0x1000 -- the element erases its background automatically
 FL_TRACKDAMAGE   = 0x2000 -- the element tracks intra-area damages
 FL_ACTIVATERMB   = 0x4000 -- (also) activate on right mouse button
 FL_INITIALFOCUS  = 0x8000 -- element is receiving the focus during show()
-FL_ISWINDOW     = 0x10000 -- the element is a window
-FL_DONOTBLIT    = 0x20000 -- redrawing the element should not initiate blits
+FL_ISWINDOW      = 0x10000 -- the element is a window
+FL_DONOTBLIT     = 0x20000 -- redrawing the element should not initiate blits
+FL_KEEPMINWIDTH  = 0x40000 -- element maintains its minimal width
+FL_KEEPMINHEIGHT = 0x80000 -- element maintains its minimal height

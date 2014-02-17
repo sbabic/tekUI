@@ -198,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 56.1"
+_VERSION = "Area 56.2"
 local Area = _M
 Element:newClass(Area)
 
@@ -217,7 +217,7 @@ Element:newClass(Area)
 #define CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define CLASS_VERSION "Area 56.1"
+#define CLASS_VERSION "Area 56.2"
 
 /* Required tekui version: */
 #define TEKUI_VERSION 108
@@ -428,103 +428,12 @@ static int tek_ui_class_area_new(lua_State *L)
 static int tek_ui_class_area_setup(lua_State *L)
 {
 	lua_settop(L, 3);
-	
 	lua_getfield(L, ISUPERCLASS, "setup");
 	lua_pushvalue(L, ISELF);
 	lua_pushvalue(L, 2);
 	lua_pushvalue(L, 3);
 	lua_call(L, 3, 0);
-	
-	lua_getfield(L, ISELF, "Properties");
-	
-	lua_getfield(L, ISELF, "HAlign");
-	replacewithfieldiffalse(L, -2, "halign");
-	replacewithbooliffalse(L, TFALSE);
-	lua_setfield(L, ISELF, "HAlign");
-	
-	lua_getfield(L, ISELF, "VAlign");
-	replacewithfieldiffalse(L, -2, "valign");
-	replacewithbooliffalse(L, TFALSE);
-	lua_setfield(L, ISELF, "VAlign");
-	
-	/* p */
-	lua_getfield(L, ISELF, "MinWidth");
-	replacewithfieldiffalse(L, -2, "min-width");
-	/* p, minw */
-	lua_getfield(L, ISELF, "MinHeight");
-	replacewithfieldiffalse(L, -3, "min-height");
-	/* p, minw, minh */
-	
-	lua_getfield(L, ISELF, "MaxWidth");
-	replacewithfieldiffalse(L, -4, "max-width");
-	replacewithnumberifkey(L, "none", TEKUI_HUGE);
-	/* p, minw, minh, maxw */
-	lua_getfield(L, ISELF, "MaxHeight");
-	replacewithfieldiffalse(L, -5, "max-height");
-	replacewithnumberifkey(L, "none", TEKUI_HUGE);
-	/* p, minw, minh, maxw, maxh */
-	
-	lua_getfield(L, ISELF, "Width");
-	replacewithfieldiffalse(L, -6, "width");
-	const char *key = lua_tostring(L, -1);
-	if (key && !strcmp(key, "auto"))	
-	{
-		lua_pushinteger(L, 0);
-		/* p, minw, minh, maxw, maxh, w, 0 */
-		lua_replace(L, -4);
-	}
-	/* p, minw, minh, maxw, maxh, w */
-
-	lua_getfield(L, ISELF, "Height");
-	replacewithfieldiffalse(L, -7, "height");
-	key = lua_tostring(L, -1);
-	if (key && !strcmp(key, "auto"))	
-	{
-		lua_pushinteger(L, 0);
-		/* p, minw, minh, maxw, maxh, w, h, 0 */
-		lua_replace(L, -4);
-	}
-	/* p, minw, minh, maxw, maxh, w, h */
-	
-	replaceidxwithinteger(L, -6, -2);
-	replaceidxwithinteger(L, -5, -1);
-	replaceidxwithinteger(L, -4, -2);
-	replaceidxwithinteger(L, -3, -1);
-
-	if (lua_isnumber(L, -1))
-	{
-		lua_pushinteger(L, lua_tointeger(L, -1));
-		lua_replace(L, -2);
-	}
-	replacewithbooliffalse(L, TFALSE);
-	lua_setfield(L, ISELF, "Height");
-	
-	if (lua_isnumber(L, -1))
-	{
-		lua_pushinteger(L, lua_tointeger(L, -1));
-		lua_replace(L, -2);
-	}
-	replacewithbooliffalse(L, TFALSE);
-	lua_setfield(L, ISELF, "Width");
-	/* p, minw, minh, maxw, maxh */
-
-	lua_pushinteger(L, 
-		lua_isnumber(L, -1) ? lua_tointeger(L, -1) : TEKUI_HUGE);
-	lua_setfield(L, ISELF, "MaxHeight");
-	lua_pop(L, 1);
-	lua_pushinteger(L, 
-		lua_isnumber(L, -1) ? lua_tointeger(L, -1) : TEKUI_HUGE);
-	lua_setfield(L, ISELF, "MaxWidth");
-	lua_pop(L, 1);
-	lua_pushinteger(L, lua_isnumber(L, -1) ? lua_tointeger(L, -1) : 0);
-	lua_setfield(L, ISELF, "MinHeight");
-	lua_pop(L, 1);
-	lua_pushinteger(L, lua_isnumber(L, -1) ? lua_tointeger(L, -1) : 0);
-	lua_setfield(L, ISELF, "MinWidth");
-	lua_pop(L, 2);
-	
 	clrsetflags(L, 0, TEKUI_FL_SETUP, TFALSE);
-	
 	return 0;
 }
 	
@@ -1707,14 +1616,29 @@ static int tek_ui_class_area_askminmax(lua_State *L)
 	lua_Integer p2 = lua_tonumber(L, -3);
 	lua_Integer p3 = lua_tonumber(L, -2);
 	lua_Integer p4 = lua_tonumber(L, -1);
-	lua_getfield(L, ISELF, "MinWidth");
-	lua_getfield(L, ISELF, "MinHeight");
-	lua_getfield(L, ISELF, "MaxWidth");
-	lua_getfield(L, ISELF, "MaxHeight");
+	
+	lua_getfield(L, ISELF, "getAttr");
+	lua_pushvalue(L, ISELF);
+	lua_pushliteral(L, "MinWidth");
+	lua_call(L, 2, 1);
+	lua_getfield(L, ISELF, "getAttr");
+	lua_pushvalue(L, ISELF);
+	lua_pushliteral(L, "MinHeight");
+	lua_call(L, 2, 1);
+	lua_getfield(L, ISELF, "getAttr");
+	lua_pushvalue(L, ISELF);
+	lua_pushliteral(L, "MaxWidth");
+	lua_call(L, 2, 1);
+	lua_getfield(L, ISELF, "getAttr");
+	lua_pushvalue(L, ISELF);
+	lua_pushliteral(L, "MaxHeight");
+	lua_call(L, 2, 1);
+	
 	lua_Integer minw = lua_tonumber(L, -4);
 	lua_Integer minh = lua_tonumber(L, -3);
 	lua_Integer maxw = lua_tonumber(L, -2);
 	lua_Integer maxh = lua_tonumber(L, -1);
+	
 	m1 = TMAX(minw, m1 + p1 + p3);
 	m2 = TMAX(minh, m2 + p2 + p4);
 	m3 = TMAX(TMIN(maxw, m3 + p1 + p3), m1);
@@ -1846,6 +1770,129 @@ static int tek_ui_class_area_reconfigure(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	getattr()
+-----------------------------------------------------------------------------*/
+
+static int getattrfield(lua_State *L, const char *attr, const char *propname)
+{
+	lua_getfield(L, ISELF, attr);
+	if (!lua_toboolean(L, -1))
+	{
+		lua_pop(L, 1);
+		lua_getfield(L, ISELF, "Properties");
+		lua_getfield(L, -1, propname);
+		lua_remove(L, -2);
+	}
+	return lua_isnumber(L, -1);
+}
+
+static int getattrfield1(lua_State *L, const char *attr, const char *propname)
+{
+	getattrfield(L, attr, propname);
+	if (lua_isnumber(L, -1))
+	{
+		lua_pushinteger(L, lua_tonumber(L, -1));
+		lua_remove(L, -2);
+	}
+	else if (!lua_toboolean(L, -1))
+	{
+		lua_pop(L, 1);
+		lua_pushboolean(L, TFALSE);
+	}
+	return 1;
+}
+
+static int getattrfield2(lua_State *L, const char *attr, const char *propname)
+{
+	getattrfield(L, attr, propname);
+	if (!lua_toboolean(L, -1))
+	{
+		lua_pop(L, 1);
+		lua_pushboolean(L, TFALSE);
+	}
+	return 1;
+}
+
+static int getattrfield3(lua_State *L, const char *attr1, const char *prop1,
+	const char *attr2, const char *prop2)
+{
+	getattrfield(L, attr1, prop1);
+	if (!lua_isnumber(L, -1))
+	{
+		lua_pop(L, 1);
+		getattrfield(L, attr2, prop2);
+	}
+	lua_pushinteger(L, lua_tonumber(L, -1));
+	lua_remove(L, -2);
+	return 1;
+}
+
+static int getattrfield4(lua_State *L, const char *attr1, const char *prop1, 
+	const char *attr2, const char *prop2)
+{
+	int isnum1 = getattrfield(L, attr1, prop1);
+	int isnum2 = getattrfield(L, attr2, prop2);
+	size_t len;
+	const char *key = lua_tolstring(L, -1, &len);
+	if (len == 4 && !strcmp(key, "auto"))
+	{
+		lua_pop(L, 2);
+		lua_pushinteger(L, 0);
+		return 1;
+	}
+	key = lua_tolstring(L, -2, &len);
+	if (len == 4 && !strcmp(key, "none"))
+	{
+		lua_pop(L, 2);
+		lua_pushinteger(L, TEKUI_HUGE);
+		return 1;
+	}
+	if (isnum1)
+	{
+		lua_pushinteger(L, lua_tonumber(L, -2));
+		lua_remove(L, -2);
+		lua_remove(L, -3);
+		return 1;
+	}
+	if (isnum2)
+	{
+		lua_pushinteger(L, lua_tonumber(L, -1));
+		lua_remove(L, -2);
+		lua_remove(L, -3);
+		return 1;
+	}
+	lua_pop(L, 2);
+	lua_pushinteger(L, TEKUI_HUGE);
+	return 1;
+}
+
+static int tek_ui_class_area_getattr(lua_State *L)
+{
+	size_t len;
+	const char *key = lua_tolstring(L, 2, &len);
+	if (len == 5 && !strcmp(key, "Width"))
+		return getattrfield1(L, "Width", "width");
+	else if (len == 6 && !strcmp(key, "Height"))
+		return getattrfield1(L, "Height", "height");
+	else if (len == 6 && !strcmp(key, "HAlign"))
+		return getattrfield2(L, "HAlign", "halign");
+	else if (len == 6 && !strcmp(key, "VAlign"))
+		return getattrfield2(L, "VAlign", "valign");
+	else if (len == 8 && !strcmp(key, "MinWidth"))
+		return getattrfield3(L, "MinWidth", "min-width", "Width", "width");
+	else if (len == 9 && !strcmp(key, "MinHeight"))
+		return getattrfield3(L, "MinHeight", "min-height", "Height", "height");
+	else if (len == 8 && !strcmp(key, "MaxWidth"))
+		return getattrfield4(L, "MaxWidth", "max-width", "Width", "width");
+	else if (len == 9 && !strcmp(key, "MaxHeight"))
+		return getattrfield4(L, "MaxHeight", "max-height", "Height", "height");
+	lua_getfield(L, ISUPERCLASS, "getAttr");
+	lua_pushvalue(L, ISELF);
+	lua_call(L, 1, 1);
+	return 1;
+}
+
 /*****************************************************************************/
 
 static const luaL_Reg classfuncs[] =
@@ -1890,6 +1937,7 @@ static const luaL_Reg classfuncs[] =
 	{ "show", tek_ui_class_area_show },
 	{ "beginPopup", tek_ui_class_area_beginpopup },
 	{ "reconfigure", tek_ui_class_area_reconfigure },
+	{ "getAttr", tek_ui_class_area_getattr },
 	{ NULL, NULL }
 };
 

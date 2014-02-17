@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 30.5"
+_VERSION = "Display 31.0"
 local Display = _M
 Element:newClass(Display)
 
@@ -236,7 +236,7 @@ for szname, size in pairs(fontsizes) do
 		FontDefaults[key] = { propname, val }
 	end
 end
-	
+
 FontDefaults[""] = FontDefaults["ui-main"] -- default
 FontDefaults["ui-huge"] = FontDefaults["ui-xx-large"] -- alias name (no styles)
 
@@ -485,17 +485,10 @@ function Display:getFontAttrs(font)
 end
 
 -------------------------------------------------------------------------------
---	dumpColors()
+--	flushCaches()
 -------------------------------------------------------------------------------
 
--- function Display:dumpColors()
--- 	local p = self.Properties
--- 	for k, v in pairs(ColorDefaults) do
--- 		local v = p["rgb-"..k]
--- 		if v then
--- 			db.warn("rgb-%s: %s;", k, v)
--- -- 		else
--- -- 			db.warn("/*rgb-%s: %s;*/", k, ColorDefaults[k])
--- 		end
--- 	end
--- end
+function Display:flushCaches()
+	PixmapCache = { }
+	self.FontCache = { }
+end

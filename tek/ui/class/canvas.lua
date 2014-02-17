@@ -36,12 +36,14 @@
 --			The width of the canvas in pixels
 --		- {{Child [ISG]}} (object)
 --			The child element being managed by the Canvas
---		- {{KeepMinHeight [IG]}} (boolean)
---			Report the minimum height of the Canvas's child object as the
---			Canvas' minimum display height
---		- {{KeepMinWidth [IG]}} (boolean)
---			Report the minimum width of the Canvas's child object as the
---			Canvas' minimum display width
+--		- {{KeepMinHeight [I]}} (boolean)
+--			Report the minimum height of the Canvas' child object as the
+--			Canvas' minimum display height. The boolean will be translated
+--			to the flag {{FL_KEEPMINHEIGHT}}, and is meaningless after
+--			initialization.
+--		- {{KeepMinWidth [I]}} (boolean)
+--			Translates to the flag {{FL_KEEPMINWIDTH}}. See also
+--			{{KeepMinHeight}}, above.
 --		- {{UnusedRegion [G]}} ([[#tek.lib.region : Region]])
 --			Region of the Canvas which is not covered by its {{Child}}
 --		- {{UseChildBG [IG]}} (boolean)
@@ -86,10 +88,11 @@
 local db = require "tek.lib.debug"
 local ui = require "tek.ui".checkVersion(108)
 local Application = ui.require("application", 29)
-local Area = ui.require("area", 53)
+local Area = ui.require("area", 56)
 local Element = ui.require("element", 16)
 local Frame = ui.require("frame", 16)
 local Region = ui.loadLibrary("region", 9)
+local bor = ui.bor
 local floor = math.floor
 local max = math.max
 local min = math.min
@@ -97,7 +100,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 37.0"
+_VERSION = "Canvas 37.1"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -110,6 +113,8 @@ local FL_UPDATE = ui.FL_UPDATE
 local FL_RECVINPUT = ui.FL_RECVINPUT
 local FL_RECVMOUSEMOVE = ui.FL_RECVMOUSEMOVE
 local FL_AUTOPOSITION = ui.FL_AUTOPOSITION
+local FL_KEEPMINWIDTH = ui.FL_KEEPMINWIDTH
+local FL_KEEPMINHEIGHT = ui.FL_KEEPMINHEIGHT
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -139,8 +144,14 @@ function Canvas.new(class, self)
 	self.CanvasWidth = tonumber(self.CanvasWidth) or 0
 	self.NullArea = Area:new { MaxWidth = 0, MinWidth = 0 }
 	self.Child = self.Child or self.NullArea
-	self.KeepMinHeight = self.KeepMinHeight or false
-	self.KeepMinWidth = self.KeepMinWidth or false
+	local flags = 0
+	if self.KeepMinWidth then
+		flags = bor(flags, FL_KEEPMINWIDTH)
+	end
+	if self.KeepMinHeight then
+		flags = bor(flags, FL_KEEPMINHEIGHT)
+	end
+	self.Flags = bor(self.Flags or 0, flags)
 	self.OldCanvasLeft = self.CanvasLeft
 	self.OldCanvasTop = self.CanvasTop
 	self.OldChild = self.Child
@@ -229,16 +240,17 @@ end
 -------------------------------------------------------------------------------
 
 function Canvas:askMinMax(m1, m2, m3, m4)
-	local c1, c2, c3, c4 = self.Child:askMinMax(0, 0,
-		self.MaxWidth, self.MaxHeight)
+	local maxw = self:getAttr("MaxWidth")
+	local maxh = self:getAttr("MaxHeight")
+	local c1, c2, c3, c4 = self.Child:askMinMax(0, 0, maxw, maxh)
 	m1 = m1 + c1
 	m2 = m2 + c2
 	m3 = m3 + c3
 	m4 = m4 + c4
-	m1 = self.KeepMinWidth and m1 or 0
-	m2 = self.KeepMinHeight and m2 or 0
-	m3 = self.MaxWidth and max(self.MaxWidth, m1) or self.CanvasWidth
-	m4 = self.MaxHeight and max(self.MaxHeight, m2) or self.CanvasHeight
+	m1 = self:checkFlags(FL_KEEPMINWIDTH) and m1 or 0
+	m2 = self:checkFlags(FL_KEEPMINHEIGHT) and m2 or 0
+	m3 = maxw and max(maxw, m1) or self.CanvasWidth
+	m4 = maxh and max(maxh, m2) or self.CanvasHeight
 	return Frame.askMinMax(self, m1, m2, m3, m4)
 end
 

@@ -24,7 +24,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.layout.default", tek.ui.class.layout)
-_VERSION = "Default Layout 8.0"
+_VERSION = "Default Layout 8.1"
 local DefaultLayout = _M
 
 ******************************************************************************/
@@ -40,7 +40,10 @@ local DefaultLayout = _M
 #define CLASS_NAME "tek.ui.layout.default"
 
 /* Version: */
-#define CLASS_VERSION "Default Layout 8.0"
+#define CLASS_VERSION "Default Layout 8.1"
+
+/* Required tekui version: */
+#define TEKUI_VERSION 108
 
 /*****************************************************************************/
 
@@ -822,13 +825,16 @@ static int layout_layout(lua_State *L)
 				/* s: xywh, olist, ilist, children, c */
 
 				/**
-				**	a = c[A[5]]
+				**	a = c:getAttr(A[5])
 				**	if a == "free" or a == "fill" then
 				**		m3 = gr[i3] - gr[i1] + 1 - gp[i1] - gp[i3]
 				**	end
 				**/
-
-				lua_getfield(L, -1, A[4]);
+				
+				lua_getfield(L, -1, "getAttr");
+				lua_pushvalue(L, -2);
+				lua_pushstring(L, A[4]);
+				lua_call(L, 2, 1);
 				/* s: xywh, olist, ilist, children, c, c[A[5]] */
 				s = lua_tostring(L, -1);
 				if (s)
@@ -846,7 +852,7 @@ static int layout_layout(lua_State *L)
 
 				/**
 				** if m3 < isz then
-				**		a = c[A[1]]
+				**		a = c:getAttr(A[1])
 				**		if a == "center" then
 				**			xywh[i1] = xywh[i1] + floor((isz - m3) / 2)
 				**		elseif a == A[3] then
@@ -859,7 +865,10 @@ static int layout_layout(lua_State *L)
 
 				if (m3 < isz)
 				{
-					lua_getfield(L, -1, A[0]);
+					lua_getfield(L, -1, "getAttr");
+					lua_pushvalue(L, -2);
+					lua_pushstring(L, A[0]);
+					lua_call(L, 2, 1);
 					/* s: xywh, olist, ilist, children, c, c[A[1]] */
 					s = lua_tostring(L, -1);
 					if (s)
@@ -893,14 +902,14 @@ static int layout_layout(lua_State *L)
 				}
 
 				/**
-				**	a = c[A[6]]
+				**	a = c:getAttr(A[6])
 				**	if a == "fill" or a == "free" then
 				**		osz = oszmax
 				**	else
 				**		osz = min(olist[oidx][5], m4)
 				**		-- align if element does not fully occupy outer size:
 				**		if osz < oszmax then
-				**			a = c[A[2]]
+				**			a = c:getAttr(A[2])
 				**			if a == "center" then
 				**				xywh[i2] = xywh[i2] + floor((oszmax - osz) / 2)
 				**			elseif a == A[4] then
@@ -912,7 +921,10 @@ static int layout_layout(lua_State *L)
 				**/
 
 				/* outer size: */
-				lua_getfield(L, -1, A[5]);
+				lua_getfield(L, -1, "getAttr");
+				lua_pushvalue(L, -2);
+				lua_pushstring(L, A[5]);
+				lua_call(L, 2, 1);
 				/* s: xywh, olist, ilist, children, c, c[A[6]] */
 				s = lua_tostring(L, -1);
 				if (s && s[0] == 'f') /* "free" or "fill" */
@@ -930,7 +942,10 @@ static int layout_layout(lua_State *L)
 					/* s: xywh, olist, ilist, children, c, c[A[6]] */
 					if (osz < oszmax)
 					{
-						lua_getfield(L, -2, A[1]);
+						lua_getfield(L, -2, "getAttr");
+						lua_pushvalue(L, -3);
+						lua_pushstring(L, A[1]);
+						lua_call(L, 2, 1);
 						/* s: xywh, olist, ilist, children, c, c[A[6]], c[A[2]] */
 						s = lua_tostring(L, -1);
 						if (s)
@@ -1157,14 +1172,18 @@ static int layout_askMinMax(lua_State *L)
 				/* s: c */
 
 				/**
-				**	if c.Width == "fill" then
+				**	local cw = c:getAttr("Width")
+				**	if cw == "fill" then
 				**		mm3 = nil
-				**	elseif c.Width == "free" then
+				**	elseif cw == "free" then
 				**		mm3 = ui.HUGE
 				**	end
 				**/
 
-				lua_getfield(L, -1, "Width");
+				lua_getfield(L, -1, "getAttr");
+				lua_pushvalue(L, -2);
+				lua_pushstring(L, "Width");
+				lua_call(L, 2, 1);
 				/* s: c, c.Width */
 				s = lua_tostring(L, -1);
 				if (s)
@@ -1177,14 +1196,18 @@ static int layout_askMinMax(lua_State *L)
 				lua_pop(L, 1);
 
 				/**
-				**	if c.Height == "fill" then
+				**	local ch = c:getAttr("Height")
+				**	if ch == "fill" then
 				**		mm4 = nil
-				**	elseif c.Height == "free" then
+				**	elseif ch == "free" then
 				**		mm4 = ui.HUGE
 				**	end
 				**/
 
-				lua_getfield(L, -1, "Height");
+				lua_getfield(L, -1, "getAttr");
+				lua_pushvalue(L, -2);
+				lua_pushstring(L, "Height");
+				lua_call(L, 2, 1);
 				/* s: c, c.Height */
 				s = lua_tostring(L, -1);
 				if (s)
@@ -1457,6 +1480,15 @@ TMODENTRY int luaopen_tek_ui_layout_default(lua_State *L)
 	lua_getfield(L, -1, "newClass");
 	lua_insert(L, -2);
 	/* s: newClass(), superclass */
+
+	/* we do this just to check the version: */	
+	lua_getglobal(L, "require");
+	lua_pushliteral(L, "tek.ui");
+	lua_call(L, 1, 1);
+	lua_getfield(L, -1, "checkVersion");
+	lua_pushinteger(L, TEKUI_VERSION);
+	lua_call(L, 1, 0);
+	lua_pop(L, 1);
 	
 	/* pass superclass as upvalue: */
 	lua_pushvalue(L, -1);

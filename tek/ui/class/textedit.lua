@@ -42,7 +42,7 @@
 
 local db = require "tek.lib.debug"
 local String = require "tek.lib.string"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(108)
 local Region = ui.loadLibrary("region", 9)
 local Sizeable = ui.require("sizeable", 10)
 
@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 18.3"
+_VERSION = "TextEdit 19.0"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -679,17 +679,11 @@ function TextEdit:changeLine(lnr)
 end
 
 -------------------------------------------------------------------------------
---	setup: overrides
+--	initFont
 -------------------------------------------------------------------------------
 
-function TextEdit:setup(app, window)
-	Sizeable.setup(self, app, window)
-
+function TextEdit:initFont()
 	local props = self.Properties
-	
-	self.BGPens[PENIDX_MARK] = self.BGPens[PENIDX_MARK] or props["findmark-background-color"] or "list-alt"
-	self.FGPens[PENIDX_MARK] = self.FGPens[PENIDX_MARK] or props["findmark-color"] or "list-detail"
-	
 	local fname = self.FontName or props["font"]
 	local f = self.Application.Display:openFont(fname)
 	self.FontHandle = f
@@ -728,6 +722,30 @@ function TextEdit:setup(app, window)
 	self.LineHeight = lh + self.LineSpacing
 	self:initText()
 	self:updateCanvasSize()
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure: overrides
+-------------------------------------------------------------------------------
+
+function TextEdit:reconfigure()
+	Sizeable.reconfigure(self)
+	self:initFont()
+end
+
+-------------------------------------------------------------------------------
+--	setup: overrides
+-------------------------------------------------------------------------------
+
+function TextEdit:setup(app, window)
+	Sizeable.setup(self, app, window)
+
+	local props = self.Properties
+	self.BGPens[PENIDX_MARK] = self.BGPens[PENIDX_MARK] or props["findmark-background-color"] or "list-alt"
+	self.FGPens[PENIDX_MARK] = self.FGPens[PENIDX_MARK] or props["findmark-color"] or "list-detail"
+
+	self:initFont()
+	
 	self:addNotify("CursorX", ui.NOTIFY_ALWAYS, NOTIFY_CURSORX)
 	self:addNotify("CursorY", ui.NOTIFY_ALWAYS, NOTIFY_CURSORY)
 	self:addNotify("FileName", ui.NOTIFY_ALWAYS, NOTIFY_FILENAME)

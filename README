@@ -60,9 +60,9 @@
 
 TekUI is a small, freestanding and portable graphical user interface
 (GUI) toolkit written in Lua and C. It was initially developed for
-the X Window System and has been ported to DirectFB, Windows, Nano-X
-and a raw framebuffer since. A [[VNC server option][#noterawfb]] is
-available that allows the remote control of tekUI applications.
+the X Window System and has been ported to DirectFB, Windows, a raw
+framebuffer and other displays since. A [[VNC server option][#noterawfb]]
+is available that allows the remote control of tekUI applications.
 
 Its main focus is the rapid development of custom-made applications
 with a custom appearance, such as for embedded devices with a display

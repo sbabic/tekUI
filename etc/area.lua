@@ -213,7 +213,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 56.1"
+_VERSION = "Area 56.2"
 local Area = _M
 Element:newClass(Area)
 
@@ -284,37 +284,6 @@ end
 
 function Area:setup(app, win)
 	Element.setup(self, app, win)
-	local props = self.Properties
-	self.HAlign = self.HAlign or props["halign"] or false
-	self.VAlign = self.VAlign or props["valign"] or false
-	local w = self.Width or props["width"]
-	local h = self.Height or props["height"]
-	local minw = self.MinWidth or props["min-width"]
-	local minh = self.MinHeight or props["min-height"]
-	local maxw = self.MaxWidth or props["max-width"]
-	local maxh = self.MaxHeight or props["max-height"]
-	if maxw == "none" then
-		maxw = HUGE
-	end
-	if maxh == "none" then
-		maxh = HUGE
-	end
-	if w == "auto" then
-		maxw = 0
-	end
-	if h == "auto" then
-		maxh = 0
-	end
-	minw = tonumber(minw) or tonumber(w) or minw
-	minh = tonumber(minh) or tonumber(h) or minh
-	maxw = tonumber(maxw) or tonumber(w) or maxw
-	maxh = tonumber(maxh) or tonumber(h) or maxh
-	self.Width = tonumber(w) or w or false
-	self.Height = tonumber(h) or h or false
-	self.MinWidth = tonumber(minw) or 0
-	self.MinHeight = tonumber(minh) or 0
-	self.MaxWidth = tonumber(maxw) or HUGE
-	self.MaxHeight = tonumber(maxh) or HUGE
 	self:setFlags(FL_SETUP)
 end
 
@@ -324,11 +293,11 @@ end
 -------------------------------------------------------------------------------
 
 function Area:cleanup()
+	Element.cleanup(self)
 	self.DamageRegion = false
 	self.MinMax = newregion()
 	self.Rect = newregion()
 	self:checkClearFlags(FL_LAYOUT + FL_SETUP + FL_REDRAW)
-	Element.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
@@ -385,11 +354,15 @@ end
 
 function Area:askMinMax(m1, m2, m3, m4)
 	assert(self:checkFlags(FL_SETUP), "Element not set up")
+	local minw = self:getAttr("MinWidth")
+	local minh = self:getAttr("MinHeight")
+	local maxw = self:getAttr("MaxWidth")
+	local maxh = self:getAttr("MaxHeight")
 	local p1, p2, p3, p4 = self:getPadding()
-	m1 = max(self.MinWidth, m1 + p1 + p3)
-	m2 = max(self.MinHeight, m2 + p2 + p4)
-	m3 = max(min(self.MaxWidth, m3 + p1 + p3), m1)
-	m4 = max(min(self.MaxHeight, m4 + p2 + p4), m2)
+	m1 = max(minw, m1 + p1 + p3)
+	m2 = max(minh, m2 + p2 + p4)
+	m3 = max(min(maxw, m3 + p1 + p3), m1)
+	m4 = max(min(maxh, m4 + p2 + p4), m2)
 	local ma1, ma2, ma3, ma4 = self:getMargin()
 	m1 = m1 + ma1 + ma3
 	m2 = m2 + ma2 + ma4
@@ -1009,4 +982,64 @@ function Area:reconfigure()
 	self:setState()
 	self:checkClearFlags(FL_LAYOUT)
 	self:rethinkLayout(2, true)
+end
+
+-------------------------------------------------------------------------------
+--	getAttr:
+-------------------------------------------------------------------------------
+
+local attrs = {
+	Width = function(self)
+		local w = self.Width or self.Properties["width"]
+		return tonumber(w) or w or false
+	end,
+	Height = function(self)
+		local h = self.Height or self.Properties["height"]
+		return tonumber(h) or h or false
+	end,
+	HAlign = function(self)
+		return self.HAlign or self.Properties["halign"] or false
+	end,
+	VAlign = function(self)
+		return self.VAlign or self.Properties["valign"] or false
+	end,
+	MinWidth = function(self)
+		local props = self.Properties
+		local minw = self.MinWidth or props["min-width"]
+		return tonumber(minw) or tonumber(self.Width or props["width"]) or 0
+	end,
+	MinHeight = function(self)
+		local props = self.Properties
+		local minh = self.MinHeight or props["min-height"]
+		return tonumber(minh) or tonumber(self.Height or props["height"]) or 0
+	end,
+	MaxWidth = function(self)
+		local props = self.Properties
+		local maxw = self.MaxWidth or props["max-width"]
+		local w = self.Width or props["width"]
+		if w == "auto" then
+			maxw = 0
+		elseif maxw == "none" then
+			maxw = HUGE
+		end
+		return tonumber(maxw) or tonumber(w) or HUGE
+	end,
+	MaxHeight = function(self)
+		local props = self.Properties
+		local maxh = self.MaxHeight or props["max-height"]
+		local h = self.Height or props["height"]
+		if h == "auto" then
+			maxh = 0
+		elseif maxh == "none" then
+			maxh = HUGE
+		end
+		return tonumber(maxh) or tonumber(h) or HUGE
+	end,
+}
+
+function Area:getAttr(attr, ...)
+	if attrs[attr] then
+		return attrs[attr](self)
+	end
+	return Element.getAttr(self, attr, ...)
 end

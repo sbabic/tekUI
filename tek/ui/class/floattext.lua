@@ -65,7 +65,7 @@ local intersect = Region.intersect
 local remove = table.remove
 
 module("tek.ui.class.floattext", tek.ui.class.frame)
-_VERSION = "FloatText 21.4"
+_VERSION = "FloatText 22.0"
 local FloatText = _M
 Frame:newClass(FloatText)
 
@@ -123,15 +123,23 @@ function FloatText.new(class, self)
 end
 
 -------------------------------------------------------------------------------
+--	initFont
+-------------------------------------------------------------------------------
+
+function FloatText:initFont()
+	local f = self.Application.Display:openFont(self.Properties["font"])
+	self.FontHandle = f
+	self.FWidth, self.FHeight = f:getTextSize("W")
+end
+
+-------------------------------------------------------------------------------
 --	setup: overrides
 -------------------------------------------------------------------------------
 
 function FloatText:setup(app, window)
 	self.Canvas = self:getParent()
 	Frame.setup(self, app, window)
-	local f = self.Application.Display:openFont(self.Properties["font"])
-	self.FontHandle = f
-	self.FWidth, self.FHeight = f:getTextSize("W")
+	self:initFont()
 	self:prepareText()
 end
 
@@ -383,4 +391,14 @@ function FloatText:appendLine(text, movetail)
 	else
 		self:setValue("Text", self.Text .. "\n" .. text)
 	end
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure: overrides
+-------------------------------------------------------------------------------
+
+function FloatText:reconfigure()
+	Frame.reconfigure(self)
+	self:initFont()
+	self:prepareText()
 end

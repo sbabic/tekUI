@@ -17,15 +17,16 @@
 --		This class implements widgets with text.
 --
 --	ATTRIBUTES::
---		- {{KeepMinHeight [IG]}} (boolean)
+--		- {{KeepMinHeight [I]}} (boolean)
 --			After the initial size calculation, keep the minimal height of
 --			the element and do not rethink the layout in response to a
 --			possible new minimal height (e.g. resulting from a newly set
---			text).
---		- {{KeepMinWidth [IG]}} (boolean)
---			After the initial size calculation, keep the minimal width of
---			the element and do not rethink the layout in response to a
---			possible new minimal width (e.g. resulting from a newly set text).
+--			text). The boolean (default '''false''') will be translated
+--			to the flag {{FL_KEEPMINHEIGHT}}, and is meaningless after
+--			initialization.
+--		- {{KeepMinWidth [I]}} (boolean)
+--			Translates to the flag {{FL_KEEPMINWIDTH}}. See also
+--			{{KeepMinHeight}}, above.
 --		- {{Text [ISG]}} (string)
 --			The text that will be displayed on the element; it may span
 --			multiple lines (see also Text:makeTextRecords()). Setting this
@@ -81,10 +82,10 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
-
+local ui = require "tek.ui".checkVersion(108)
 local Widget = ui.require("widget", 25)
 
+local bor = ui.bor
 local floor = math.floor
 local insert = table.insert
 local max = math.max
@@ -93,7 +94,7 @@ local remove = table.remove
 local type = type
 
 module("tek.ui.class.text", tek.ui.class.widget)
-_VERSION = "Text 28.4"
+_VERSION = "Text 29.0"
 local Text = _M
 Widget:newClass(Text)
 
@@ -104,6 +105,8 @@ Widget:newClass(Text)
 local FL_CHANGED = ui.FL_CHANGED
 local FL_SETUP = ui.FL_SETUP
 local FL_REDRAW = ui.FL_REDRAW
+local FL_KEEPMINWIDTH = ui.FL_KEEPMINWIDTH
+local FL_KEEPMINHEIGHT = ui.FL_KEEPMINHEIGHT
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
@@ -122,8 +125,16 @@ ClassNotifications = addClassNotifications { Notifications = { } }
 
 function Text.new(class, self)
 	self = self or { }
-	self.KeepMinHeight = self.KeepMinHeight or false
-	self.KeepMinWidth = self.KeepMinWidth or false
+	local flags = 0
+	if self.KeepMinWidth then
+		flags = bor(flags, FL_KEEPMINWIDTH)
+	end
+	if self.KeepMinHeight then
+		flags = bor(flags, FL_KEEPMINHEIGHT)
+	end
+	self.Flags = bor(self.Flags or 0, flags)
+	self.InitialWidth = false
+	self.InitialHeight = false
 	self.Mode = self.Mode or "inert"
 	self.Text = self.Text or ""
 	self.TextRecords = self.TextRecords or false
@@ -188,17 +199,19 @@ end
 function Text:askMinMax(m1, m2, m3, m4)
 	local w, h = self:getTextSize()
 	local minw, minh = w, h
-	if self.KeepMinWidth then
-		if self.MinWidth == 0 then
-			self.MinWidth = w
+	if self:checkFlags(FL_KEEPMINWIDTH) then
+		if self.InitialWidth then
+			minw = self.InitialWidth
+		else
+			self.InitialWidth = minw
 		end
-		minw = self.MinWidth
 	end
-	if self.KeepMinHeight then
-		if self.MinHeight == 0 then
-			self.MinHeight = h
+	if self:checkFlags(FL_KEEPMINHEIGHT) then
+		if self.InitialHeight then
+			minh = self.InitialHeight
+		else
+			self.InitialHeight = minh
 		end
-		minh = self.MinHeight
 	end
 	m1 = m1 + minw
 	m2 = m2 + minh
@@ -386,7 +399,7 @@ end
 function Text:onSetText()
 	self:makeTextRecords(self.Text)
 	self:setFlags(FL_REDRAW)
-	local resizeable = not self.KeepMinWidth
+	local resizeable = not self:checkFlags(FL_KEEPMINWIDTH)
 	self:rethinkLayout(resizeable and 1 or 0, resizeable)
 end
 
@@ -396,5 +409,16 @@ end
 
 function Text:onSetStyle()
 	Widget.onSetStyle(self)
+	self:makeTextRecords(self.Text)
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure:
+-------------------------------------------------------------------------------
+
+function Text:reconfigure()
+	Widget.reconfigure(self)
+	self.InitialWidth = false
+	self.InitialHeight = false
 	self:makeTextRecords(self.Text)
 end

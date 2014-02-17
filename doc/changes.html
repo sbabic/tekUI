@@ -19,7 +19,9 @@
 					Added support for dynamic reconfiguration from stylesheets during runtime
 				</li>
 				<li>
-					Area, Application: added <a href="manual.html#reconfigure"><code>reconfigure()</code></a> 
+					Area: Width/Height, Min/Max/Width/Height are no longer consolidated during
+					<a href="manual.html#new"><code>new()</code></a>, but interpreted by the layouter during runtime by accessing them via
+					<a href="manual.html#getAttr"><code>getAttr()</code></a> 
 				</li>
 				<li>
 					Demo program: Added menu item &quot;Open stylesheet...&quot;
@@ -29,6 +31,12 @@
 				</li>
 				<li>
 					Added LUAVER variable in config to switch Lua install paths
+				</li>
+				<li>
+					Text, Canvas: KeepMinWidth/Height are now translated to flags
+				</li>
+				<li>
+					Rawfb: Topmost window is focused now after the focused window was closed
 				</li>
 			</ul>
 		</blockquote>

@@ -4,10 +4,14 @@
 === 1.08: ===
 
  * Added support for dynamic reconfiguration from stylesheets during runtime
- * Area, Application: added reconfigure()
+ * Area: Width/Height, Min/Max/Width/Height are no longer consolidated during
+ new(), but interpreted by the layouter during runtime by accessing them via
+ getAttr()
  * Demo program: Added menu item "Open stylesheet..."
  * Added a sanity check in Window:update()
  * Added LUAVER variable in config to switch Lua install paths
+ * Text, Canvas: KeepMinWidth/Height are now translated to flags
+ * Rawfb: Topmost window is focused now after the focused window was closed
 
 === 1.07: ===
 

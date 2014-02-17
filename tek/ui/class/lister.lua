@@ -110,7 +110,7 @@
 
 local db = require "tek.lib.debug"
 local List = require "tek.class.list"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(108)
 local Region = ui.loadLibrary("region", 10)
 local Text = ui.require("text", 28)
 
@@ -129,7 +129,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.lister", tek.ui.class.text)
-_VERSION = "Lister 31.1"
+_VERSION = "Lister 32.0"
 local Lister = _M
 Text:newClass(Lister)
 
@@ -222,6 +222,30 @@ function Lister:connect(parent)
 end
 
 -------------------------------------------------------------------------------
+--	initFont:
+-------------------------------------------------------------------------------
+
+function Lister:initFont()
+	local props = self.Properties
+	local f = self.Application.Display:openFont(props["font"])
+	self.FontHandle = f
+	self.FWidth, self.FHeight = f:getTextSize("x")
+	local _, b2, _, b4 = self.CursorObject:getBorder()
+	self.LineHeight = self.FHeight + b2 + b4
+	self.ColumnPadding = self.ColumnPadding or self.FWidth
+end
+
+-------------------------------------------------------------------------------
+--	reconfigure:
+-------------------------------------------------------------------------------
+
+function Lister:reconfigure()
+	Text.reconfigure(self)
+	self:initFont()
+	self:prepare(false)
+end
+
+-------------------------------------------------------------------------------
 --	setup: overrides
 -------------------------------------------------------------------------------
 
@@ -232,12 +256,7 @@ function Lister:setup(app, window)
 	local b = tonumber(props["cursor-width"]) or 1
 	self.CursorObject = ui.createHook("border", "default", self,
 		{ Border = { b, b, b, b } })
-	local f = self.Application.Display:openFont(props["font"])
-	self.FontHandle = f
-	self.FWidth, self.FHeight = f:getTextSize("x")
-	local _, b2, _, b4 = self.CursorObject:getBorder()
-	self.LineHeight = self.FHeight + b2 + b4
-	self.ColumnPadding = self.ColumnPadding or self.FWidth
+	self:initFont()
 	self:prepare(false)
 end
 
@@ -258,7 +277,7 @@ end
 -------------------------------------------------------------------------------
 
 function Lister:askMinMax(m1, m2, m3, m4)
-	m1 = m1 + self.MinWidth
+	m1 = m1 + self:getAttr("MinWidth")
 	m2 = m2 + self.FHeight
 	m3 = ui.HUGE
 	m4 = ui.HUGE

@@ -386,7 +386,9 @@ LOCAL void rfb_closevisual(RFBDISPLAY *mod, struct TVRequest *req)
 
 	TLock(mod->rfb_Lock);
 	
-	if (mod->rfb_FocusWindow == v)
+	TBOOL had_focus = mod->rfb_FocusWindow == v; 
+	
+	if (had_focus)
 		mod->rfb_FocusWindow = TNULL;
 	
 	TRemove(&v->rfbw_Node);
@@ -412,6 +414,9 @@ LOCAL void rfb_closevisual(RFBDISPLAY *mod, struct TVRequest *req)
 		rfb_vnc_exit(mod);
 #endif
 	}
+	else if (had_focus)
+		rfb_focuswindow(mod, (RFBWINDOW *) TFIRSTNODE(&mod->rfb_VisualList));
+	
 	TUnlock(mod->rfb_Lock);
 	
 	TFree(v);

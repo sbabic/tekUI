@@ -41,7 +41,7 @@
 
 local db = require "tek.lib.debug"
 local List = require "tek.class.list"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(108)
 
 local Canvas = ui.require("canvas", 36)
 local Widget = ui.require("widget", 25)
@@ -55,9 +55,11 @@ local insert = table.insert
 local max = math.max
 
 module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 13.4"
+_VERSION = "PopList 13.5"
 local PopList = _M
 PopItem:newClass(PopList)
+
+local FL_KEEPMINWIDTH = ui.FL_KEEPMINWIDTH
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -144,7 +146,7 @@ function PopLister:onActivate()
 end
 
 function PopLister:askMinMax(m1, m2, m3, m4)
-	m1 = m1 + self.MinWidth
+	m1 = m1 + self:getAttr("MinWidth")
 	m2 = m2 + self.CanvasHeight
 	m3 = ui.HUGE
 	m4 = m4 + self.CanvasHeight
@@ -202,7 +204,7 @@ end
 
 function PopList:askMinMax(m1, m2, m3, m4)
 	local lo = self.ListObject
-	if lo and not self.KeepMinWidth then
+	if lo and not self:checkFlags(FL_KEEPMINWIDTH) then
 		local tr = { }
 		local props = self.Lister.Properties
 		local font = self.Application.Display:openFont(props["font"])

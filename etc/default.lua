@@ -24,7 +24,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(108)
 local Layout = require "tek.ui.class.layout"
 local band = ui.band
 local assert = assert
@@ -38,7 +38,7 @@ local tonumber = tonumber
 local HUGE = ui.HUGE
 
 module("tek.ui.layout.default", tek.ui.class.layout)
-_VERSION = "Default Layout 8.0"
+_VERSION = "Default Layout 8.1"
 local DefaultLayout = _M
 Layout:newClass(DefaultLayout)
 
@@ -304,13 +304,13 @@ function DefaultLayout:layout(group, r1, r2, r3, r4, markdamage)
 				-- inner size:
 				isz = ilist[iidx][5] -- size
 
-				a = c[A[5]]
+				a = c:getAttr(A[5])
 				if a == "free" or a == "fill" then
 					m3 = gr[i3] - gr[i1] + 1 - gp[i1] - gp[i3]
 				end
 
 				if m3 < isz then
-					a = c[A[1]]
+					a = c:getAttr(A[1])
 					if a == "center" then
 						xywh[i1] = xywh[i1] + floor((isz - m3) / 2)
 					elseif a == A[3] then
@@ -321,14 +321,14 @@ function DefaultLayout:layout(group, r1, r2, r3, r4, markdamage)
 				end
 
 				-- outer size:
-				a = c[A[6]]
+				a = c:getAttr(A[6])
 				if a == "fill" or a == "free" then
 					osz = oszmax
 				else
 					osz = min(olist[oidx][5], m4)
 					-- align if element does not fully occupy outer size:
 					if osz < oszmax then
-						a = c[A[2]]
+						a = c:getAttr(A[2])
 						if a == "center" then
 							xywh[i2] = xywh[i2] + floor((oszmax - osz) / 2)
 						elseif a == A[4] then
@@ -387,16 +387,18 @@ function DefaultLayout:askMinMax(group, m1, m2, m3, m4)
 					cidx = cidx + 1
 
 					local mm1, mm2, mm3, mm4 = c:askMinMax(m1, m2, m3, m4)
-
-					if c.Width == "fill" then
+					
+					local cw = c:getAttr("Width")
+					if cw == "fill" then
 						mm3 = nil
-					elseif c.Width == "free" then
+					elseif cw == "free" then
 						mm3 = HUGE
 					end
 
-					if c.Height == "fill" then
+					local ch = c:getAttr("Height")
+					if ch == "fill" then
 						mm4 = nil
-					elseif c.Height == "free" then
+					elseif ch == "free" then
 						mm4 = HUGE
 					end
 

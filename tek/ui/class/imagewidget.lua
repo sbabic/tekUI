@@ -35,7 +35,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(108)
 local Widget = ui.require("widget", 25)
 local Region = ui.loadLibrary("region", 10)
 local floor = math.floor
@@ -45,7 +45,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.imagewidget", tek.ui.class.widget)
-_VERSION = "ImageWidget 15.0"
+_VERSION = "ImageWidget 15.1"
 local ImageWidget = _M
 Widget:newClass(ImageWidget)
 
@@ -91,8 +91,8 @@ end
 function ImageWidget:askMinMax(m1, m2, m3, m4)
 	local d = self.ImageData
 	
-	local mw = self.MinWidth
-	local mh = self.MinHeight
+	local mw = self:getAttr("MinWidth")
+	local mh = self:getAttr("MinHeight")
 	local iw = self.ImageWidth
 	local ih = self.ImageHeight
 	local ax = self.ImageAspectX

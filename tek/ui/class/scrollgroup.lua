@@ -53,8 +53,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
-
+local ui = require "tek.ui".checkVersion(108)
 local Group = ui.require("group", 31)
 local Region = ui.loadLibrary("region", 10)
 local ScrollBar = ui.require("scrollbar", 13)
@@ -68,7 +67,7 @@ local min = math.min
 local remove = table.remove
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 19.0"
+_VERSION = "ScrollGroup 19.1"
 local ScrollGroup = _M
 Group:newClass(ScrollGroup)
 
@@ -155,11 +154,11 @@ function ScrollGroup:askMinMax(m1, m2, m3, m4)
 	m1, m2, m3, m4 = Group.askMinMax(self, m1, m2, m3, m4)
 	local cb1, cb2, cb3, cb4 = self.Child:getMargin()
 	local b1, b2, b3, b4 = self:getMargin()
-	if self.HSliderMode == "auto" and self.Child.MinWidth == 0 then
+	if self.HSliderMode == "auto" and self.Child:getAttr("MinWidth") == 0 then
 		local n1 = self.Child:askMinMax(0, 0, 0, 0)
 		self.Child.MinWidth = n1 - cb1 - cb3 - b1 - b3
 	end
-	if self.VSliderMode == "auto" and self.Child.MinHeight == 0 then
+	if self.VSliderMode == "auto" and self.Child:getAttr("MinHeight") == 0 then
 		self.Child.MinHeight = m2 - cb2 - cb4 - b2 - b4
 	end
 	return m1, m2, m3, m4
