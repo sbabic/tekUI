@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 4.4"
+_VERSION = "Input 4.5"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -129,12 +129,9 @@ function EditInput:passMsg(msg)
 						local ts, tu = Display.getTime()
 						local ct = self.LastClickTime
 						if self.Window:checkDblClickTime(ct[1], ct[2], ts, tu) then
-							local w0, w1, cy = self:findCurrentWord()
-							if w0 then
-								self:setCursor(-1, w0, cy)
-								self:doMark()
-								self:setCursor(-1, w1, cy)
-							end
+							self:setCursor(-1, 1, cy)
+							self:doMark()
+							self:setCursor(-1, self:getLineLength(cy) + 1, cy)
 						end
 						ct[1], ct[2] = ts, tu
 					end

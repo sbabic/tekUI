@@ -32,7 +32,7 @@ function main(arg)
 		DragScroll = args.softscroll and 3 or false,
 		HardScroll = not args.softscroll,
 		BlinkCursor = not args.noblink,
-		CursorStyle = args.cursormode or "wholeline",
+		CursorStyle = args.cursormode or "bar+line",
 	}
 
 	app:addMember(editwindow)

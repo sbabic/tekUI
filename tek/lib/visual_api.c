@@ -1427,6 +1427,15 @@ tek_lib_visual_text(lua_State *L)
 #endif
 	}
 	
+#if defined(TEK_VISUAL_DEBUG)
+	if (vis->vis_VisBase->vis_Debug)
+	{
+		TVisualText(vis->vis_Visual, x0, y0, text, tlen, vis->vis_DebugPen1);
+		tek_lib_visual_debugwait(vis);
+		TVisualText(vis->vis_Visual, x0, y0, text, tlen, vis->vis_DebugPen2);
+		tek_lib_visual_debugwait(vis);
+	}
+#endif
 	TVisualText(vis->vis_Visual, x0, y0, text, tlen, fpen->pen_Pen);
 		
 	vis->vis_Dirty = TTRUE;

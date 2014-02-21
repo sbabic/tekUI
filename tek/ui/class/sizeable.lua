@@ -33,15 +33,17 @@ local ui = require "tek.ui"
 local Canvas = ui.require("canvas", 35)
 local Widget = ui.require("widget", 29)
 local Region = ui.loadLibrary("region", 10)
-
 local bor = ui.bor
+local max = math.max
+local min = math.min
 
 module("tek.ui.class.sizeable", tek.ui.class.widget)
-_VERSION = "Sizeable 10.1"
+_VERSION = "Sizeable 11.1"
 local Sizeable = _M
 Widget:newClass(Sizeable)
 
 local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
+local FL_DONOTBLIT = ui.FL_DONOTBLIT
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -50,6 +52,7 @@ local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 function Sizeable.new(class, self)
 	self.InsertX = false	-- internal
 	self.InsertY = false	-- internal
+	self.InsertNum = 0
 	self.EraseBG = false
 	self.Flags = bor(self.Flags or 0, FL_TRACKDAMAGE)
 	return Widget.new(class, self)
@@ -109,6 +112,10 @@ function Sizeable:blitAxis(r1, r2, r3, r4, dw, dh, insx, insy)
 	-- shift back:
 	d:shift(-sx, -sy)
 	
+	if d:isEmpty() then
+		return -- no damage!
+	end
+	
 	local dr = self.DamageRegion
 	if dr then
 		d:forEach(dr.orRect, dr)
@@ -143,16 +150,37 @@ function Sizeable:layout(x0, y0, x1, y1, markdamage)
 		local insy = self.InsertY
 		self.InsertX = false
 		self.InsertY = false
-		local redraw
-	
+		
+		local redraw = self.InsertNum > 0
+		
 		if dw ~= 0 and insx then
 			self:blitAxis(r1, r2, r3, r4, dw, 0, insx, 0)
-			redraw = true
 		end
 		if dh ~= 0 and insy then
 			self:blitAxis(r1, r2, r3, r4, 0, dh, 0, insy)
-			redraw = true
 		end
+	
+		if self.InsertNum > 1 then
+			-- refresh all:
+			local d1 = min(n1, r1)
+			local d2 = min(n2, r2)
+			local d3 = max(n3, r3)
+			local d4 = max(n4, r4)
+			local c1, c2, c3, c4 = self.Parent:getRect()
+			local sx, sy = self.Window.Drawable:setShift()
+			d1, d2, d3, d4 = Region.intersect(c1 - sx, c2 - sy, c3 - sx, c4 - sy, d1, d2, d3, d4)
+			if d1 then
+				local dr = self.DamageRegion
+				if dr then
+					dr:orRect(d1, d2, d3, d4)
+				else
+					self.DamageRegion = Region.new(d1, d2, d3, d4)
+				end
+			end
+		end
+		
+		self.InsertNum = 0
+		
 		if redraw then
 			self.Rect:setRect(n1, n2, n3, n4)
 			self:setFlags(ui.FL_REDRAW)
@@ -183,18 +211,55 @@ end
 -------------------------------------------------------------------------------
 
 function Sizeable:resize(dx, dy, insx, insy)
-	local resize
+	
+	local r1, r2, r3, r4 = self:getRect()
 	local c = self.Parent
+	local _, c2, _, c4 = c:getRect()
+	if not r1 or not c2 then
+		return
+	end
+	local resize
+	
 	if dx ~= 0 then
-		self.InsertX = insx
+		if self.InsertNum > 0 then
+			self.InsertX = false
+			self.InsertY = false
+		else
+			self.InsertX = insx
+		end
+		self.InsertNum = self.InsertNum + 1
 		c:setValue("CanvasWidth", c.CanvasWidth + dx)
 		resize = true
 	end
+	
 	if dy ~= 0 then
-		self.InsertY = insy
 		c:setValue("CanvasHeight", c.CanvasHeight + dy)
+		if self.InsertNum > 0 then
+			-- changes need to be consolidated
+			self.InsertX = false
+			self.InsertY = false
+		else
+			local cheight = c4 - c2 + 1
+			if insy + dx < c.CanvasTop then
+				-- insertion above canvas
+				-- neat HACK: insertion before canvastop
+				c:setFlags(FL_DONOTBLIT)
+				c:setValue("CanvasTop", c.CanvasTop + dy)
+				c:checkClearFlags(FL_DONOTBLIT)
+				c:rethinkLayout()
+				return
+			elseif insy > c.CanvasTop + cheight then
+				-- insertion below canvas
+				c:rethinkLayout()
+				return
+			end
+			-- insert by blitting
+			self.InsertY = insy
+		end
+		self.InsertNum = self.InsertNum + 1
 		resize = true
 	end
+	
 	if resize then
 		c:rethinkLayout()
 	end

@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 19.0"
+_VERSION = "TextEdit 20.1"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -111,7 +111,8 @@ function TextEdit.new(class, self)
 	self.Clipboard = self.Clipboard or false
 	self.CursorMode = "active" -- "hidden", "still"
 	self.Cursor = false
-	self.CursorStyle = self.CursorStyle or "line" -- "block", "wholeline"
+	-- cursor styles: "line", "block", "bar+line", "bar"
+	self.CursorStyle = self.CursorStyle or "line"
 	self.CursorThickness = self.CursorThickness or 1 -- in line mode, minus 1
 	self.CursorX = self.CursorX or 1
 	self.CursorY = self.CursorY or 1
@@ -130,7 +131,7 @@ function TextEdit.new(class, self)
 	self.LineSpacing = self.LineSpacing or 0
 	self.LockCursorX = false -- last line's remembered cursor position
 	self.Mark = false
-	self.MarkMode = self.MarkMode or "shift" -- "block", "shift"
+	self.MarkMode = self.MarkMode or "shift" -- "block", "shift", "none"
 	self.MaxLength = self.MaxLength or false
 	self.BGPens = self.BGPens or { }
 	self.FGPens = self.FGPens or { }
@@ -481,19 +482,22 @@ end
 -------------------------------------------------------------------------------
 
 function TextEdit:recalcTextWidth()
-	if self:checkFlags(FL_SETUP) then
+	local maxw = 0
+	if self.UseFakeCanvasWidth then
+		-- text width recalculation avoided
+		maxw = FAKECANVASWIDTH
+	elseif self:checkFlags(FL_SETUP) then
 		local d = self.Data
-		local maxw = 0
 		for i = 1, self:getNumLines() do
 			local line = d[i]
 			assert(type(line) ~= "string")
 			maxw = max(maxw, line[2])
 		end
-		if self.TextWidth ~= maxw then
-			self.TextWidth = maxw
-			-- self:layoutText()
-			return true
-		end
+	end
+	if self.TextWidth ~= maxw then
+		self.TextWidth = maxw
+		-- self:layoutText()
+		return true
 	end
 end
 
@@ -891,11 +895,12 @@ function TextEdit:drawPatch(r1, r2, r3, r4)
 	local c = self.Cursor
 	if c and intersect(r1, r2, r3, r4, c[1], c[2], c[3], c[4]) then
 		if c[6] == 1 then
-			if self.CursorStyle == "block" then
+			local cs = self.CursorStyle
+			if cs == "block" then
 				d:fillRect(c[1], c[2], c[7], c[4], "cursor")
 				d:drawText(c[1], c[2] + lo, c[7], c[4] + lo, c[5],
 					"cursor-detail")
-			else -- draw line cursor:
+			elseif cs == "line" or cs == "bar+line" then
 				d:fillRect(c[1], c[2], c[7], c[4], c[9])
 			end
 		end
@@ -910,9 +915,7 @@ end
 
 function TextEdit:onFocus()
 	Sizeable.onFocus(self)
-	if not self.ReadOnly then
-		self:setEditing(not self.Disabled and self.Focus)
-	end
+	self:setEditing(not self.Disabled and self.Focus)
 end
 
 -------------------------------------------------------------------------------
@@ -921,9 +924,7 @@ end
 
 function TextEdit:onSelect()
 	Sizeable.onSelect(self)
-	if not self.ReadOnly then
-		self:setEditing(not self.Disabled and self.Selected)
-	end
+	self:setEditing(not self.Disabled and self.Selected)
 end
 
 -------------------------------------------------------------------------------
@@ -934,16 +935,14 @@ function TextEdit:setEditing(onoff)
 	local old_editing = self.Editing
 	local w = self.Window
 	if onoff and not old_editing then
-		if not self.ReadOnly then
-			self:setCursor(-1)
-			self.Editing = true
-			if self:checkFlags(ui.FL_SETUP) then
-				w:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
-				w:addInputHandler(ui.MSG_KEYUP + ui.MSG_KEYDOWN, self,
-					self.handleKeyboard)
-			end
-			self:setValue("FileName", self.FileName, true)
+		self:setCursor(-1)
+		self.Editing = true
+		if self:checkFlags(ui.FL_SETUP) then
+			w:addInputHandler(ui.MSG_INTERVAL, self, self.updateInterval)
+			w:addInputHandler(ui.MSG_KEYUP + ui.MSG_KEYDOWN, self,
+				self.handleKeyboard)
 		end
+		self:setValue("FileName", self.FileName, true)
 	elseif not onoff and old_editing then
 		self:setCursor(0)
 		self.Editing = false
@@ -1207,7 +1206,8 @@ function TextEdit:getLinePens(cy, mode)
 	if self:checkBookmark(cy) then
 		return self:getPens("bookmark")
 	end
-	if self.CursorStyle == "wholeline" and cy == self.CursorY then
+	local cs = self.CursorStyle
+	if (cs == "bar+line" or cs == "bar") and cy == self.CursorY then
 		return self:getPens("cursorline")
 	end
 	return self:getPens()
@@ -1409,6 +1409,9 @@ function TextEdit:setCursor(bs, cx, cy, follow)
 		bs = obs
 	end
 
+	local nodamage = self.SuspendUpdateNest > 0 or
+		self.CursorMode == "hidden" or self.CursorStyle == "none"
+	
 	if cx or cy then
 		if cy and cy ~= ocy then
 			assert(cy <= self:getNumLines())
@@ -1416,7 +1419,7 @@ function TextEdit:setCursor(bs, cx, cy, follow)
 			self:setValue("CursorY", cy)
 			changed = true
 			local m = self.Mark
-			if m then
+			if m and not nodamage then
 				local y0, y1 = min(ocy, cy), max(ocy, cy)
 				for i = y0, y1 do
 					self:damageLine(i)
@@ -1465,18 +1468,23 @@ function TextEdit:setCursor(bs, cx, cy, follow)
 		local y0 = r2 + h * (cy - 1)
 		local y1 = y0 + h - 1
 
+		local cs = self.CursorStyle
+		local clchanged = ychanged and (cs == "bar" or cs == "bar+line")
+		
 		if c then
 			-- old cursor, and visible?
 			if c[6] and 
 				(c[1] ~= x0 or c[2] ~= y0 or c[3] ~= x1 or c[4] ~= y1) then
 				local x0 = min(x0, c[1])
 				local x1 = max(x1, c[3])
-				if ychanged and self.CursorStyle == "wholeline" then
+				if clchanged then
 					x0 = r1
 					x1 = r3
 				end
-				self.Parent:damageChild(x0, min(y0, c[2]),
-					x1, max(y1, c[4]))
+				if not nodamage then
+					self.Parent:damageChild(x0, min(y0, c[2]),
+						x1, max(y1, c[4]))
+				end
 			end
 		else
 			c = { }
@@ -1496,11 +1504,13 @@ function TextEdit:setCursor(bs, cx, cy, follow)
 			self.FollowCursor = follow
 		end
 		
-		if ychanged and self.CursorStyle == "wholeline" then
+		if clchanged then
 			x0 = r1
 			x1 = r3
 		end
-		self.Parent:damageChild(x0, y0, x1, y1)
+		if not nodamage then
+			self.Parent:damageChild(x0, y0, x1, y1)
+		end
 	end
 end
 
@@ -1740,7 +1750,7 @@ function TextEdit:getCursorByXY(x, y)
 end
 
 function TextEdit:setCursorByXY(x, y, opt)
-	if not self.ReadOnly and not self.Disabled then
+	if not self.Disabled then
 		self:setEditing(true)
 		local m1, m2 = self:getMargin()
 		x, y = self:getCursorByXY(x - m1, y - m2)
@@ -1768,7 +1778,6 @@ function TextEdit:deleteLine()
 			self:getLineText(cy):set("")
 			self:changeLine(cy)
 		end
--- 		self:setCursor(-1, cx, cy, 1)
 		self:setCursor(-1, 1, cy, 1)
 		self:releaseWindowUpdate()
 	end
@@ -1849,19 +1858,31 @@ function TextEdit:saveText(fname)
 end
 
 -------------------------------------------------------------------------------
---	doShiftMark(msg, mode)
+--	updateMark()
 -------------------------------------------------------------------------------
 
-function TextEdit:doShiftMark(msg, mode)
-	if self.MarkMode ~= "shift" then
-		return
+function TextEdit:updateMark()
+end
+
+-------------------------------------------------------------------------------
+--	updateCursorMark(msg, funcname)
+-------------------------------------------------------------------------------
+
+function TextEdit:updateCursorMark(msg, funcname)
+	if self.MarkMode == "shift" then
+		local qual = msg and msg[6]
+		local shift = qual and (qual >= 1 and qual <= 3)
+		if shift and not self.Mark then
+			self:doMark()
+		elseif not shift and self.Mark then
+			self:doMark()
+		end
 	end
-	local qual = msg and msg[6]
-	local shift = qual and (qual >= 1 and qual <= 3)
-	if shift and not self.Mark and (not mode or mode == "on") then
-		self:doMark()
-	elseif not shift and self.Mark and (not mode or mode == "off") then
-		self:doMark()
+	
+	self[funcname](self)
+	
+	if self.Mark then
+		self:updateMark()
 	end
 end
 
@@ -1894,6 +1915,7 @@ function TextEdit:handleKeyboard(msg)
 		local qual = msg[6]
 		local utf8code = msg[7]
 		local ml = self.MultiLine
+		local ro = self.ReadOnly
 		-- db.warn("code: %s - qual: %s", code, qual)
 		while true do
 			if qual == 4 and code == 8 then
@@ -1909,43 +1931,35 @@ function TextEdit:handleKeyboard(msg)
 				else
 					break -- do not aborb
 				end
-			elseif ml and code == 13 then
+			elseif code == 13 and ml and not ro then
 				self:insertShiftMark(msg)
 				self:enter()
-			elseif code == 8 then
+			elseif code == 8 and not ro then
 				if not self:insertShiftMark(msg) then
 					self:backSpace()
 				end
-			elseif code == 127 then
+			elseif code == 127 and not ro then
 				if not self:insertShiftMark(msg) then
 					self:delChar()
 				end
 			elseif code == 0xf010 then
-				self:doShiftMark(msg)
-				self:cursorLeft()
+				self:updateCursorMark(msg, "cursorLeft")
 			elseif code == 0xf011 then
-				self:doShiftMark(msg)
-				self:cursorRight()
+				self:updateCursorMark(msg, "cursorRight")
 			elseif ml and code == 0xf012 then
-				self:doShiftMark(msg)
-				self:cursorUp()
+				self:updateCursorMark(msg, "cursorUp")
 			elseif ml and code == 0xf013 then
-				self:doShiftMark(msg)
-				self:cursorDown()
+				self:updateCursorMark(msg, "cursorDown")
 			elseif ml and code == 0xf023 then
-				self:doShiftMark(msg)
-				self:pageUp()
+				self:updateCursorMark(msg, "pageUp")
 			elseif ml and code == 0xf024 then
-				self:doShiftMark(msg)
-				self:pageDown()
+				self:updateCursorMark(msg, "pageDown")
 			elseif code == 0xf025 then
-				self:doShiftMark(msg)
-				self:cursorSOL()
+				self:updateCursorMark(msg, "cursorSOL")
 			elseif code == 0xf026 then
-				self:doShiftMark(msg)
-				self:cursorEOL()
-			elseif code == 9 or (code > 31 and 
-				(code < 0xe000 or code > 0xf8ff)) then
+				self:updateCursorMark(msg, "cursorEOL")
+			elseif (code == 9 or (code > 31 and 
+				(code < 0xe000 or code > 0xf8ff))) and not ro then
 				self:suspendWindowUpdate()
 				self:insertShiftMark(msg)
 				if self:addChar(utf8code) then
@@ -2221,24 +2235,24 @@ end
 -------------------------------------------------------------------------------
 
 function TextEdit:updateWindow()
--- 	if self.SuspendUpdateNest == 0 then
+	if self.SuspendUpdateNest == 0 then
 		self.Window:update()
--- 		self.UpdateSuspended = false
--- 	else
--- 		self.UpdateSuspended = true
--- 	end
+		self.UpdateSuspended = false
+	else
+		self.UpdateSuspended = true
+	end
 end
 
 function TextEdit:suspendWindowUpdate()
--- 	self.SuspendUpdateNest = self.SuspendUpdateNest + 1
+	self.SuspendUpdateNest = self.SuspendUpdateNest + 1
 end
 
 function TextEdit:releaseWindowUpdate()
--- 	self.SuspendUpdateNest = self.SuspendUpdateNest - 1
--- 	assert(self.SuspendUpdateNest >= 0)
--- 	if self.SuspendUpdateNest == 0 and self.UpdateSuspended then
--- 		self:updateWindow()
--- 	end
+	self.SuspendUpdateNest = self.SuspendUpdateNest - 1
+	assert(self.SuspendUpdateNest >= 0)
+	if self.SuspendUpdateNest == 0 and self.UpdateSuspended then
+		self:updateWindow()
+	end
 end
 
 

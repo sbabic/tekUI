@@ -67,11 +67,12 @@ local min = math.min
 local remove = table.remove
 
 module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 19.1"
+_VERSION = "ScrollGroup 19.2"
 local ScrollGroup = _M
 Group:newClass(ScrollGroup)
 
 local FL_DRAW = ui.FL_SETUP + ui.FL_SHOW + ui.FL_LAYOUT
+local FL_DONOTBLIT = ui.FL_DONOTBLIT
 
 -------------------------------------------------------------------------------
 --	new:
@@ -317,7 +318,7 @@ function ScrollGroup:onSetCanvasLeft(x)
 			self.HSliderGroup.Slider:setValue("Value", x)
 		end
 		self.HValue = x
-		if dx ~= 0 then
+		if dx ~= 0 and not c:checkFlags(FL_DONOTBLIT) then
 			insert(self.BlitList, { dx, 0 })
 		end
 	end
@@ -342,7 +343,7 @@ function ScrollGroup:onSetCanvasTop(y)
 			self.VSliderGroup.Slider:setValue("Value", y)
 		end
 		self.VValue = y
-		if dy ~= 0 then
+		if dy ~= 0 and not c:checkFlags(FL_DONOTBLIT) then
 			insert(self.BlitList, { 0, dy })
 			self:setFlags(ui.FL_REDRAW)
 		end

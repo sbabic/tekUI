@@ -12,7 +12,7 @@ end
 
 ui.Application:new {
 	AuthorStyles = [[
-tek.ui.class.textedit.textlist {
+_textlist.textlist {
 	font: ui-fixed:18;
 	margin: 6;
 }
@@ -24,10 +24,10 @@ tek.ui.class.canvas.textlist {
 ]],
 	Children = {
 		ui.Window:new {
--- 			show = function(self)
--- 				ui.Window.show(self)
--- 				self.Drawable:setAttrs { Debug = true }
--- 			end,
+			show = function(self)
+				ui.Window.show(self)
+				self.Drawable:setAttrs { Debug = true }
+			end,
 			HideOnEscape = true,
 			Orientation = "vertical",
 			Children = { 
@@ -43,7 +43,18 @@ tek.ui.class.canvas.textlist {
 							BGPens = { "#000", "#800", "#fff" },
 							FGPens = { "#fff", "#fff", "#000" },
 							HardScroll = true,
-							-- Latch = "bottom", -- default
+							
+-- 							CursorStyle = "none", -- "bar", "bar+line", "none"
+-- 							MarkMode = "none", -- "shift", "block", "none"
+-- 							SelectMode = false, -- false, "block", "line", "lines"
+							
+							CursorStyle = "bar", -- "bar", "bar+line", "none"
+							SelectMode = "block", -- false, "block", "line", "lines"
+-- 							BlinkCursor = true,
+-- 							ReadOnly = tre,
+							
+							Latch = "top", -- default: "bottom"
+							
 							Data = { 
 "This is a new text/list class that allows",
 "for colorization and efficient resizing.",
@@ -91,6 +102,35 @@ tek.ui.class.canvas.textlist {
 								tw:addLine(getline(3, lnr), lnr)
 							end
 						},
+						ui.Button:new {
+							Width = "auto",
+							Text = "Add Bulk Top",
+							onClick = function(self)
+								local tw = self:getById("textlist")
+-- 								require "profiler".start("lua.prof")
+								tw:suspendUpdate()
+								for i = 1, 20 do
+									tw:addLine(getline(1, 1), 1)
+								end
+								tw:releaseUpdate()
+-- 								profiler.stop()
+							end
+						},
+						ui.Button:new {
+							Width = "auto",
+							Text = "Add Bulk Bottom",
+							onClick = function(self)
+								local tw = self:getById("textlist")
+-- 								require "profiler".start("lua.prof")
+								tw:suspendUpdate()
+								for i = 1, 20 do
+									local lnr = tw:getNumLines() + 1
+									tw:addLine(getline(3, lnr), lnr)
+								end
+								tw:releaseUpdate()
+-- 								profiler.stop()
+							end
+						},
 						ui.Area:new { Width = "free", Height = "auto" },
 						ui.Button:new {
 							Width = "auto",
@@ -106,3 +146,4 @@ tek.ui.class.canvas.textlist {
 		}
 	}
 }:run()
+
