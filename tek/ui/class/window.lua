@@ -86,7 +86,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(109)
 local Display = ui.require("display", 25)
 local Widget = ui.require("widget", 26)
 local Group = ui.require("group", 31)
@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 44.3"
+_VERSION = "Window 44.4"
 local Window = _M
 Group:newClass(Window)
 
@@ -920,16 +920,27 @@ function Window:relayout(e, x0, y0, x1, y1, markdamage)
 		e = e:getParent()
 		insert(temp, e)
 	end
+	local last = #temp + 1
+	local n = 0
 	for i = #temp, 2, -1 do
 		local e = temp[i]
 		if not e:drawBegin() then
-			db.error("%s : cannot draw", e:getClassName())
+			break
 		end
+		last = i
+		n = n + 1
 	end
-	local res = temp[1]:layout(x0, y0, x1, y1, markdamage)
-	for i = 2, #temp do
+	local res = false
+	if last == 2 then
+		res = temp[1]:layout(x0, y0, x1, y1, markdamage)
+	end
+	local j = 0
+	for i = last, #temp do
 		temp[i]:drawEnd()
+		j = j + 1
 	end
+	assert(j == n)
+	
 	return res
 end
 
@@ -1285,6 +1296,13 @@ function Window:reconfigure()
 		end
 	end
 end
+
+
+function Window:onSetInvisible()
+	-- no effect on windows
+	self.Invisible = false
+end
+
 
 
 return Window

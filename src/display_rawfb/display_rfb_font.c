@@ -1037,9 +1037,10 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 				TINT yy = y + pen.y;
 				RFBPixel *buf = v->rfbw_BufPtr + yy * v->rfbw_PixelPerLine;
 				TUINT8 *sbuf = sbit->buffer + y * sbit->width;
+				TINT px = pen.x;
 				for (x = cx; x < cw; x++)
 				{
-					TINT xx = x + pen.x;
+					TINT xx = x + px;
 					TUINT8 a = sbuf[x];
 					TUINT pix = buf[xx];
 					TUINT dr = GetRFBPixelRed(pix);

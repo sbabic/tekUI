@@ -38,12 +38,13 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.sizeable", tek.ui.class.widget)
-_VERSION = "Sizeable 11.1"
+_VERSION = "Sizeable 11.2"
 local Sizeable = _M
 Widget:newClass(Sizeable)
 
 local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 local FL_DONOTBLIT = ui.FL_DONOTBLIT
+local FL_LAYOUTSHOW = ui.FL_LAYOUT + ui.FL_SHOW
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -212,52 +213,53 @@ end
 
 function Sizeable:resize(dx, dy, insx, insy)
 	
-	local r1, r2, r3, r4 = self:getRect()
 	local c = self.Parent
-	local _, c2, _, c4 = c:getRect()
-	if not r1 or not c2 then
-		return
-	end
+	local layout = self:checkFlags(FL_LAYOUTSHOW)
 	local resize
 	
 	if dx ~= 0 then
-		if self.InsertNum > 0 then
-			self.InsertX = false
-			self.InsertY = false
-		else
-			self.InsertX = insx
-		end
-		self.InsertNum = self.InsertNum + 1
 		c:setValue("CanvasWidth", c.CanvasWidth + dx)
-		resize = true
+		if layout then
+			if self.InsertNum > 0 then
+				self.InsertX = false
+				self.InsertY = false
+			else
+				self.InsertX = insx
+			end
+			self.InsertNum = self.InsertNum + 1
+			resize = true
+		end
 	end
 	
 	if dy ~= 0 then
 		c:setValue("CanvasHeight", c.CanvasHeight + dy)
-		if self.InsertNum > 0 then
-			-- changes need to be consolidated
-			self.InsertX = false
-			self.InsertY = false
-		else
-			local cheight = c4 - c2 + 1
-			if insy + dx < c.CanvasTop then
-				-- insertion above canvas
-				-- neat HACK: insertion before canvastop
-				c:setFlags(FL_DONOTBLIT)
-				c:setValue("CanvasTop", c.CanvasTop + dy)
-				c:checkClearFlags(FL_DONOTBLIT)
-				c:rethinkLayout()
-				return
-			elseif insy > c.CanvasTop + cheight then
-				-- insertion below canvas
-				c:rethinkLayout()
-				return
+		if layout then
+			if self.InsertNum > 0 then
+				-- changes need to be consolidated
+				self.InsertX = false
+				self.InsertY = false
+			else
+				local _, c2, _, c4 = c:getRect()
+				local cheight = c4 - c2 + 1
+				if insy + dx < c.CanvasTop then
+					-- insertion above canvas
+					-- neat HACK: insertion before canvastop
+					c:setFlags(FL_DONOTBLIT)
+					c:setValue("CanvasTop", c.CanvasTop + dy)
+					c:checkClearFlags(FL_DONOTBLIT)
+					c:rethinkLayout()
+					return
+				elseif insy > c.CanvasTop + cheight then
+					-- insertion below canvas
+					c:rethinkLayout()
+					return
+				end
+				-- insert by blitting
+				self.InsertY = insy
 			end
-			-- insert by blitting
-			self.InsertY = insy
+			self.InsertNum = self.InsertNum + 1
+			resize = true
 		end
-		self.InsertNum = self.InsertNum + 1
-		resize = true
 	end
 	
 	if resize then

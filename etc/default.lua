@@ -24,7 +24,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(109)
 local Layout = require "tek.ui.class.layout"
 local band = ui.band
 local assert = assert
@@ -38,7 +38,7 @@ local tonumber = tonumber
 local HUGE = ui.HUGE
 
 module("tek.ui.layout.default", tek.ui.class.layout)
-_VERSION = "Default Layout 8.1"
+_VERSION = "Default Layout 9.0"
 local DefaultLayout = _M
 Layout:newClass(DefaultLayout)
 
@@ -114,10 +114,12 @@ function DefaultLayout:calcWeights(group)
 			if not c then
 				break
 			end
-			local w = c.Weight
-			if w then
-				wx[x] = (wx[x] or 0) + w
-				wy[y] = (wy[y] or 0) + w
+			if not c.Invisible then
+				local w = c.Weight
+				if w then
+					wx[x] = (wx[x] or 0) + w
+					wy[y] = (wy[y] or 0) + w
+				end
 			end
 			cidx = cidx + 1
 		end
@@ -290,67 +292,71 @@ function DefaultLayout:layout(group, r1, r2, r3, r4, markdamage)
 				if not c then
 					return
 				end
+				
+				if not c.Invisible then
 
-				-- x0, y0 of child rectangle:
-				xywh[1] = xywh[5]
-				xywh[2] = xywh[6]
+					-- x0, y0 of child rectangle:
+					xywh[1] = xywh[5]
+					xywh[2] = xywh[6]
 
-				-- element minmax:
-				mm = { c.MinMax:get() }
+					-- element minmax:
+					mm = { c.MinMax:get() }
 
-				-- max per inner and outer axis:
-				m3, m4 = mm[i3], mm[i4]
+					-- max per inner and outer axis:
+					m3, m4 = mm[i3], mm[i4]
 
-				-- inner size:
-				isz = ilist[iidx][5] -- size
+					-- inner size:
+					isz = ilist[iidx][5] -- size
 
-				a = c:getAttr(A[5])
-				if a == "free" or a == "fill" then
-					m3 = gr[i3] - gr[i1] + 1 - gp[i1] - gp[i3]
-				end
-
-				if m3 < isz then
-					a = c:getAttr(A[1])
-					if a == "center" then
-						xywh[i1] = xywh[i1] + floor((isz - m3) / 2)
-					elseif a == A[3] then
-						-- opposite side:
-						xywh[i1] = xywh[i1] + isz - m3
+					a = c:getAttr(A[5])
+					if a == "free" or a == "fill" then
+						m3 = gr[i3] - gr[i1] + 1 - gp[i1] - gp[i3]
 					end
-					isz = m3
-				end
 
-				-- outer size:
-				a = c:getAttr(A[6])
-				if a == "fill" or a == "free" then
-					osz = oszmax
-				else
-					osz = min(olist[oidx][5], m4)
-					-- align if element does not fully occupy outer size:
-					if osz < oszmax then
-						a = c:getAttr(A[2])
+					if m3 < isz then
+						a = c:getAttr(A[1])
 						if a == "center" then
-							xywh[i2] = xywh[i2] + floor((oszmax - osz) / 2)
-						elseif a == A[4] then
+							xywh[i1] = xywh[i1] + floor((isz - m3) / 2)
+						elseif a == A[3] then
 							-- opposite side:
-							xywh[i2] = xywh[i2] + oszmax - osz
+							xywh[i1] = xywh[i1] + isz - m3
+						end
+						isz = m3
+					end
+
+					-- outer size:
+					a = c:getAttr(A[6])
+					if a == "fill" or a == "free" then
+						osz = oszmax
+					else
+						osz = min(olist[oidx][5], m4)
+						-- align if element does not fully occupy outer size:
+						if osz < oszmax then
+							a = c:getAttr(A[2])
+							if a == "center" then
+								xywh[i2] = xywh[i2] + floor((oszmax - osz) / 2)
+							elseif a == A[4] then
+								-- opposite side:
+								xywh[i2] = xywh[i2] + oszmax - osz
+							end
 						end
 					end
+
+					-- x1, y1 of child rectangle:
+					xywh[i3] = xywh[i1] + isz - 1
+					xywh[i4] = xywh[i2] + osz - 1
+
+					-- enter recursion:
+					c:layout(xywh[1], xywh[2], xywh[3], xywh[4], markdamage)
+
+					-- punch a hole for the element into the background:
+					c:punch(group.FreeRegion)
+
+					-- update x0:
+					xywh[i5] = xywh[i5] + ilist[iidx][5] -- size
+
 				end
-
-				-- x1, y1 of child rectangle:
-				xywh[i3] = xywh[i1] + isz - 1
-				xywh[i4] = xywh[i2] + osz - 1
-
-				-- enter recursion:
-				c:layout(xywh[1], xywh[2], xywh[3], xywh[4], markdamage)
-
-				-- punch a hole for the element into the background:
-				c:punch(group.FreeRegion)
-
-				-- update x0:
-				xywh[i5] = xywh[i5] + ilist[iidx][5] -- size
-
+				
 				-- next child index:
 				cidx = cidx + 1
 			end
@@ -385,37 +391,39 @@ function DefaultLayout:askMinMax(group, m1, m2, m3, m4)
 				local c = children[cidx]
 				if c then
 					cidx = cidx + 1
-
-					local mm1, mm2, mm3, mm4 = c:askMinMax(m1, m2, m3, m4)
 					
-					local cw = c:getAttr("Width")
-					if cw == "fill" then
-						mm3 = nil
-					elseif cw == "free" then
-						mm3 = HUGE
+					if not c.Invisible then
+
+						local mm1, mm2, mm3, mm4 = c:askMinMax(m1, m2, m3, m4)
+						
+						local cw = c:getAttr("Width")
+						if cw == "fill" then
+							mm3 = nil
+						elseif cw == "free" then
+							mm3 = HUGE
+						end
+
+						local ch = c:getAttr("Height")
+						if ch == "fill" then
+							mm4 = nil
+						elseif ch == "free" then
+							mm4 = HUGE
+						end
+
+						mm3 = mm3 or ori == 2 and mm1
+						mm4 = mm4 or ori == 1 and mm2
+
+						minx[x] = max(minx[x] or 0, mm1)
+						miny[y] = max(miny[y] or 0, mm2)
+
+						if mm3 and (not maxx[x] or mm3 > maxx[x]) then
+							maxx[x] = max(mm3, minx[x])
+						end
+
+						if mm4 and (not maxy[y] or mm4 > maxy[y]) then
+							maxy[y] = max(mm4, miny[y])
+						end
 					end
-
-					local ch = c:getAttr("Height")
-					if ch == "fill" then
-						mm4 = nil
-					elseif ch == "free" then
-						mm4 = HUGE
-					end
-
-					mm3 = mm3 or ori == 2 and mm1
-					mm4 = mm4 or ori == 1 and mm2
-
-					minx[x] = max(minx[x] or 0, mm1)
-					miny[y] = max(miny[y] or 0, mm2)
-
-					if mm3 and (not maxx[x] or mm3 > maxx[x]) then
-						maxx[x] = max(mm3, minx[x])
-					end
-
-					if mm4 and (not maxy[y] or mm4 > maxy[y]) then
-						maxy[y] = max(mm4, miny[y])
-					end
-
 				end
 			end
 		end

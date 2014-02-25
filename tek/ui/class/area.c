@@ -198,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 56.2"
+_VERSION = "Area 57.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -217,10 +217,10 @@ Element:newClass(Area)
 #define CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define CLASS_VERSION "Area 56.2"
+#define CLASS_VERSION "Area 57.0"
 
 /* Required tekui version: */
-#define TEKUI_VERSION 108
+#define TEKUI_VERSION 109
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
@@ -364,6 +364,39 @@ static lua_Integer clrsetflags(lua_State *L, lua_Integer clr, lua_Integer set,
 }
 
 /*-----------------------------------------------------------------------------
+--	new: addclassnotifications
+-----------------------------------------------------------------------------*/
+
+static int tek_ui_class_area_addclassnotifications(lua_State *L)
+{
+	lua_getfield(L, ISUPERCLASS, "addNotify");
+	/* addNotify() */
+	lua_pushvalue(L, 1);
+	/* addNotify(), proto */
+	lua_pushliteral(L, "Invisible");
+	/* addNotify(), proto, "Invisible" */
+	lua_getfield(L, ISUPERCLASS, "NOTIFY_ALWAYS");
+	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS */
+	lua_newtable(L);
+	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { } */
+	lua_getfield(L, ISUPERCLASS, "NOTIFY_SELF");
+	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { }, NOTIFY_SELF */
+	lua_rawseti(L, -2, 1);
+	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { NOTIFY_SELF } */
+	lua_pushliteral(L, "onSetInvisible");
+	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { NOTIFY_SELF }, "onSetVisible" */
+	lua_rawseti(L, -2, 2);
+	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetVisible" } */
+	lua_call(L, 4, 0);
+	lua_getfield(L, ISUPERCLASS, "addClassNotifications");
+	lua_pushvalue(L, 1);
+	lua_call(L, 1, 1);
+	return 1;
+}
+
+/* TODO: ClassNotifications = ... */
+
+/*-----------------------------------------------------------------------------
 --	new: overrides
 -----------------------------------------------------------------------------*/
 
@@ -397,6 +430,7 @@ static int tek_ui_class_area_new(lua_State *L)
 	setfieldbooliffalse(L, -1, "VAlign", TFALSE);
 	setfieldbooliffalse(L, -1, "Weight", TFALSE);
 	setfieldbooliffalse(L, -1, "Width", TFALSE);
+	setfieldbooliffalse(L, -1, "Invisible", TFALSE);
 	
 	lua_Integer flags = getnumfield(L, -1, "Flags");
 	lua_getfield(L, -1, "AutoPosition");
@@ -1729,7 +1763,8 @@ static int tek_ui_class_area_show(lua_State *L)
 	lua_getfield(L, ISELF, "setState");
 	lua_pushvalue(L, ISELF);
 	lua_call(L, 1, 0);
-	clrsetflags(L, 0, TEKUI_FL_SHOW, TFALSE);
+	if (!getboolfield(L, ISELF, "Invisible"))
+		clrsetflags(L, 0, TEKUI_FL_SHOW, TFALSE);
 	return 0;
 }
 
@@ -1893,10 +1928,39 @@ static int tek_ui_class_area_getattr(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	onSetInvisible: overrides
+-----------------------------------------------------------------------------*/
+
+static int tek_ui_class_area_onsetinvisible(lua_State *L)
+{
+	if (getboolfield(L, ISELF, "Invisible"))
+		clrsetflags(L, TEKUI_FL_SHOW, 0, TFALSE);
+	else
+		clrsetflags(L, 0, TEKUI_FL_SHOW, TFALSE);
+	lua_getfield(L, ISELF, "getGroup");
+	lua_pushvalue(L, ISELF);
+	lua_call(L, 1, 1);
+	/* g */
+	lua_getfield(L, -1, "rethinkLayout");
+	/* g, "rethinkLayout" */
+	lua_pushvalue(L, -2);
+	/* g, "rethinkLayout", g */
+	lua_remove(L, -3);
+	/* "rethinkLayout", g */
+	lua_pushinteger(L, 2);
+	/* "rethinkLayout", g, 2 */
+	lua_pushboolean(L, 1);
+	/* "rethinkLayout", g, 2, true */
+	lua_call(L, 3, 0);
+	return 0;
+}
+
 /*****************************************************************************/
 
 static const luaL_Reg classfuncs[] =
 {
+	{ "addClassNotifications", tek_ui_class_area_addclassnotifications },
 	{ "new", tek_ui_class_area_new },
 	{ "setup", tek_ui_class_area_setup },
 	{ "cleanup", tek_ui_class_area_cleanup },
@@ -1938,6 +2002,7 @@ static const luaL_Reg classfuncs[] =
 	{ "beginPopup", tek_ui_class_area_beginpopup },
 	{ "reconfigure", tek_ui_class_area_reconfigure },
 	{ "getAttr", tek_ui_class_area_getattr },
+	{ "onSetInvisible", tek_ui_class_area_onsetinvisible },
 	{ NULL, NULL }
 };
 
@@ -1969,6 +2034,18 @@ int luaopen_tek_ui_class_area(lua_State *L)
 	tek_lua_register(L, CLASS_NAME, classfuncs, 3);
 	/* s: newClass(), superclass, class */
 	
+	
+	lua_getfield(L, -1, "addClassNotifications");
+	lua_newtable(L);
+	lua_newtable(L);
+	/* class, addClassNotifications(), { }, { } */
+	lua_setfield(L, -2, "Notifications");
+	/* class, addClassNotifications(), { Notifications = { } } */
+	lua_call(L, 1, 1);
+	/* class, notifications */
+	lua_setfield(L, -2, "ClassNotifications");
+	
+	
 	/* insert name and version: */
 	lua_pushliteral(L, CLASS_NAME);
 	lua_setfield(L, -2, "_NAME");
@@ -1978,5 +2055,6 @@ int luaopen_tek_ui_class_area(lua_State *L)
 	/* inherit: class = superclass.newClass(superclass, class) */
 	lua_call(L, 2, 1); 
 	/* s: class */
+
 	return 1;
 }

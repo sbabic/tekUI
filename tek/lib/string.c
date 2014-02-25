@@ -32,7 +32,7 @@
 -------------------------------------------------------------------------------
 
 module "tek.lib.string"
-_VERSION = "String 1.2"
+_VERSION = "String 1.3"
 local String = _M
 
 ******************************************************************************/
@@ -45,7 +45,7 @@ local String = _M
 #include <tek/teklib.h>
 #include <tek/lib/tekui.h>
 
-#define TEK_LIB_STRING_VERSION	"String Library 1.2"
+#define TEK_LIB_STRING_VERSION	"String Library 1.3"
 #define TEK_LIB_STRING_NAME		"tek.lib.string"
 
 /*****************************************************************************/
@@ -1774,6 +1774,7 @@ static int tek_string_gettextwidth(lua_State *L)
 		int x = 0;
 		int w0 = 0;
 		p0 = TMAX(p0, 1);
+		p1 = TMIN(p1, len);
 		
 		for (a = 1; a <= p1; ++a)
 		{

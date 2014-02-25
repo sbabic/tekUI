@@ -65,7 +65,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(109)
 local Family = ui.require("family", 2)
 local Widget = ui.require("widget", 29)
 local Region = ui.loadLibrary("region", 10)
@@ -74,7 +74,7 @@ local intersect = Region.intersect
 local type = type
 
 module("tek.ui.class.group", tek.ui.class.widget)
-_VERSION = "Group 35.0"
+_VERSION = "Group 35.1"
 local Group = _M
 Widget:newClass(Group)
 
@@ -303,7 +303,7 @@ function Group:draw()
 	local res = Widget.draw(self)
 	local c = self.Children
 	for i = 1, #c do
-		if c[i]:checkClearFlags(FL_UPDATE) then
+		if c[i]:checkClearFlags(FL_UPDATE) and not c[i].Invisible then
 			c[i]:draw()
 		end
 	end

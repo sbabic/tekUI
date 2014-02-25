@@ -197,7 +197,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(109)
 local Element = ui.require("element", 19)
 local Region = ui.loadLibrary("region", 10)
 
@@ -213,7 +213,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 56.2"
+_VERSION = "Area 57.0"
 local Area = _M
 Element:newClass(Area)
 
@@ -232,6 +232,13 @@ local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 local FL_DONOTBLIT = ui.FL_DONOTBLIT
 
 local HUGE = ui.HUGE
+
+function Area.addClassNotifications(proto)
+	addNotify(proto, "Invisible", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetInvisible" })
+	return Element.addClassNotifications(proto)
+end
+
+ClassNotifications = addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -259,6 +266,7 @@ function Area.new(class, self)
 	self.VAlign = self.VAlign or false
 	self.Weight = self.Weight or false
 	self.Width = self.Width or false
+	self.Invisible = self.Invisible or false
 	
 	local flags = 0
 	if self.AutoPosition == nil or self.AutoPosition then
@@ -306,7 +314,9 @@ end
 
 function Area:show()
 	self:setState()
-	self:setFlags(FL_SHOW)
+	if not self.Invisible then
+		self:setFlags(FL_SHOW)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -566,6 +576,7 @@ end
 local FL_REDRAW_OK = FL_LAYOUT + FL_SHOW + FL_SETUP + FL_REDRAW
 
 function Area:draw()
+	assert(not self.Invisible)
 	-- check layout, show, setup, redraw, and clear redraw:
 	if self:checkClearFlags(FL_REDRAW_OK, FL_REDRAW) then
 		if self:checkFlags(FL_ERASEBG) and self:drawBegin() then
@@ -1042,4 +1053,14 @@ function Area:getAttr(attr, ...)
 		return attrs[attr](self)
 	end
 	return Element.getAttr(self, attr, ...)
+end
+
+
+function Area:onSetInvisible()
+	if self.Invisible then
+		self:checkClearFlags(FL_SHOW)
+	else
+		self:setFlags(FL_SHOW)
+	end
+	self:getGroup():rethinkLayout(2, true)
 end
