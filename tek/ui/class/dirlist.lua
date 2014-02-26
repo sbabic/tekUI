@@ -89,7 +89,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 17.0"
+_VERSION = "DirList 17.1"
 local DirList = _M
 Group:newClass(DirList)
 
@@ -281,6 +281,11 @@ function DirList.new(class, self)
 		onEnter = function(locationfield)
 			Input.onEnter(locationfield)
 			self:setFileEntry(locationfield:getText())
+		end,
+		onSetChanged = function(locationfield)
+			-- disable selection, so that the location field
+			-- becomes the preferred selection:
+			self.Lister:changeSelection("none")
 		end,
 		Style = "valign: center",
 	}

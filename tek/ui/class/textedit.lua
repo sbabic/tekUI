@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 20.1"
+_VERSION = "TextEdit 20.2"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -467,7 +467,7 @@ function TextEdit:initText()
 	if self:checkFlags(FL_SETUP) then
 		local d = self.Data
 		if not d.Initialized then
-			for i = 1, self:getNumLines() do
+			for i = 1, self:getN() do
 				local line = d[i]
 				d[i] = self:createLine(line)
 			end
@@ -488,7 +488,7 @@ function TextEdit:recalcTextWidth()
 		maxw = FAKECANVASWIDTH
 	elseif self:checkFlags(FL_SETUP) then
 		local d = self.Data
-		for i = 1, self:getNumLines() do
+		for i = 1, self:getN() do
 			local line = d[i]
 			assert(type(line) ~= "string")
 			maxw = max(maxw, line[2])
@@ -507,7 +507,7 @@ end
 
 function TextEdit:getRealCanvasSize()
 	local maxw = self.TextWidth
-	local nlines = self:getNumLines()
+	local nlines = self:getN()
 	local m1, m2, m3, m4 = self:getMargin()
 	local w = maxw + m1 + m3 + self.FWidth
 	local h = self.LineHeight * nlines + m2 + m4
@@ -1110,8 +1110,17 @@ end
 --
 -------------------------------------------------------------------------------
 
-function TextEdit:getNumLines()
+function TextEdit:getN()
 	return #self.Data
+end
+
+function TextEdit:getNumLines()
+	local d = self.Data
+	local nl = #d
+	if nl == 1 and d[1][1]:len() == 0 then -- do not count empty line 1:
+		return 0
+	end
+	return nl
 end
 
 function TextEdit:getCursor(visual)
@@ -1414,7 +1423,7 @@ function TextEdit:setCursor(bs, cx, cy, follow)
 	
 	if cx or cy then
 		if cy and cy ~= ocy then
-			assert(cy <= self:getNumLines())
+			assert(cy <= self:getN())
 			ychanged = true
 			self:setValue("CursorY", cy)
 			changed = true
@@ -1520,7 +1529,7 @@ end
 -------------------------------------------------------------------------------
 
 function TextEdit:moveCursorPosition(cx, cy, dx, dy, lockcx)
-	local nlines = self:getNumLines()
+	local nlines = self:getN()
 	local len = self:getLineLength(cy)
 	cx = cx + dx
 	if dx > 0 and cx > len + 1 then
@@ -1620,7 +1629,7 @@ function TextEdit:delChar()
 	self:suspendWindowUpdate()
 	if cx < curlen + 1 then
 		self:remChar()
-	elseif cy < self:getNumLines() then
+	elseif cy < self:getN() then
 		local nextline = self:getLineText(cy + 1)
 		nextline:insert(curline, 1)
 		self:removeLine(cy)
@@ -1675,7 +1684,7 @@ function TextEdit:enter(followcursor)
 end
 
 function TextEdit:cursorEOF()
-	local cy = self:getNumLines()
+	local cy = self:getN()
 	local cx = self:getLineLength(cy) + 1
 	self.LockCursorX = cx -- false?
 	self:setCursor(-1, cx, cy, 1)
@@ -1740,7 +1749,7 @@ function TextEdit:getCursorByXY(x, y)
 	if cy < 1 then
 		return 1, 1
 	end
-	local nl = self:getNumLines()
+	local nl = self:getN()
 	if cy > nl then
 		local cx = self:getCursorByX(self:getLineText(nl), x)
 		return cx, nl
@@ -1760,7 +1769,7 @@ function TextEdit:setCursorByXY(x, y, opt)
 end
 
 function TextEdit:deleteLine()
-	local nl = self:getNumLines()
+	local nl = self:getN()
 	if nl > 0 then
 		self:suspendWindowUpdate()
 		local cx, cy = self:getCursor()
@@ -1839,7 +1848,7 @@ end
 function TextEdit:saveText(fname)
 	local f, msg = open(fname, "wb")
 	if f then
-		local numl = self:getNumLines()
+		local numl = self:getN()
 		local n = 0
 		for lnr = 1, numl do
 			f:write(self:getLineText(lnr):get())
@@ -2072,7 +2081,7 @@ end
 function TextEdit:find(search)
 	local sx, sy = self:moveCursorPosition(self.CursorX, self.CursorY, 1, 0, 
 		true)
-	local numl = self:getNumLines()
+	local numl = self:getN()
 	for y = 0, numl - 1 do
 		local cy = ((sy - 1 + y) % numl) + 1
 		local line = self:getLineText(cy)
@@ -2090,7 +2099,7 @@ end
 -------------------------------------------------------------------------------
 
 function TextEdit:clearMark()
-	local numl = self:getNumLines()
+	local numl = self:getN()
 	for y = 1, numl do
 		local line = self:getLineText(y)
 		local damage
@@ -2113,7 +2122,7 @@ end
 
 function TextEdit:markWord(text)
 	local marklen = String:new():set(text):len()
-	local numl = self:getNumLines()
+	local numl = self:getN()
 	for y = 1, numl do
 		local line = self:getLineText(y)
 		local p0 = 0

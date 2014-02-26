@@ -13,13 +13,15 @@
 --		and at arbitrary positions.
 --
 --	FUNCTIONS::
+--		- String:attachdata() - Attach a Lua value to a string
 --		- String.encodeutf8() - Encode codepoints to UTF-8
 --		- String:erase() - Erases a range of a string
 --		- String:find() - Finds the UTF-8 string in a string object
 --		- String.foreachutf8() - Iterate codepoints of an UTF-8 encoded string
---		- String:free() - Free string object
+--		- String:free() - Reset string object, free associated data
 --		- String:get() - Returns string
 --		- String:getchar() - Returns character UTF-8 encoded
+--		- String:getdata() - Retrieves Lua value associated with a string
 --		- String:getval() - Returns character and metadata
 --		- String:insert() - Appends or inserts string
 --		- String:len() - Returns string length
@@ -32,7 +34,7 @@
 -------------------------------------------------------------------------------
 
 module "tek.lib.string"
-_VERSION = "String 1.3"
+_VERSION = "String 2.0"
 local String = _M
 
 ******************************************************************************/
@@ -45,7 +47,7 @@ local String = _M
 #include <tek/teklib.h>
 #include <tek/lib/tekui.h>
 
-#define TEK_LIB_STRING_VERSION	"String Library 1.3"
+#define TEK_LIB_STRING_VERSION	"String Library 2.0"
 #define TEK_LIB_STRING_NAME		"tek.lib.string"
 
 /*****************************************************************************/
@@ -100,7 +102,7 @@ typedef struct TEKString
 	tek_size ts_UTF8Len[NUMFIELDS];
 #endif
 	int ts_NumReadAccess;
-	int ts_Collected;
+	int ts_RefData;
 } tek_string;
 
 /*****************************************************************************/
@@ -1509,6 +1511,7 @@ static int tek_string_new(lua_State *L)
 {
 	tek_string *s = lua_newuserdata(L, sizeof(tek_string));
 	memset(s, 0, sizeof(tek_string));
+	s->ts_RefData = LUA_NOREF;
 	TINITLIST(&s->ts_List);
 	/* s: udata */
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_STRING_NAME "*");
@@ -1523,29 +1526,30 @@ static int tek_string_new(lua_State *L)
 }
 
 /*-----------------------------------------------------------------------------
---	String:free(): Free resources held by a string object. The only need for
---	this function is to free the object as quickly as possible, preempting
---	garbage collection.
+--	String:free(): Free resources held by a string object
 -----------------------------------------------------------------------------*/
 
 static int tek_string_collect(lua_State *L)
 {
 	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
-	if (!s->ts_Collected)
+	if (s->ts_RefData != LUA_NOREF)
 	{
-		s->ts_Collected = 1;
-		tek_string_freelist(L, s);
+		lua_getmetatable(L, 1);
+		luaL_unref(L, -1, s->ts_RefData);
+		s->ts_RefData = LUA_NOREF;
+		lua_pop(L, 1);
+	}
+	tek_string_freelist(L, s);
 #if defined(COMPACTION)
-		tek_string_freeutf8(L, s);
+	tek_string_freeutf8(L, s);
 #endif
 #if defined(STATS)
-		s_numstr--;
-		dostats();
-		if (s_numstr == 0)
-			fprintf(stderr, "allocs=%d,max=%ld bytes=%ld,max=%ld\n", 
-				s_allocnum, s_maxnum, s_allocbytes, s_maxbytes);
+	s_numstr--;
+	dostats();
+	if (s_numstr == 0)
+		fprintf(stderr, "allocs=%d,max=%ld bytes=%ld,max=%ld\n", 
+			s_allocnum, s_maxnum, s_allocbytes, s_maxbytes);
 #endif
-	}
 	return 0;
 }
 
@@ -1809,6 +1813,43 @@ static int tek_string_gettextwidth(lua_State *L)
 	return 1;
 }
 
+
+/*
+**	text:attachdata(data): Attaches Lua data to a string
+*/
+
+static int tek_string_attachdata(lua_State *L)
+{
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
+	lua_getmetatable(L, 1);
+	luaL_unref(L, -1, s->ts_RefData);
+	if (lua_toboolean(L, 2))
+	{
+		lua_pushvalue(L, 2);
+		s->ts_RefData = luaL_ref(L, -2);
+	}
+	lua_pop(L, 1);
+	return 0;
+}
+
+
+/*
+**	data = text:getdata(): Retrieves a string's Lua data
+*/
+
+static int tek_string_getdata(lua_State *L)
+{
+	tek_string *s = luaL_checkudata(L, 1, TEK_LIB_STRING_NAME "*");
+	if (s->ts_RefData == LUA_NOREF)
+		return 0;
+	lua_getmetatable(L, 1);
+	lua_rawgeti(L, -1, s->ts_RefData);
+	lua_remove(L, -2);
+	return 1;
+}
+
+
+
 /*****************************************************************************/
 
 static const luaL_Reg tek_string_funcs[] =
@@ -1824,7 +1865,8 @@ static const luaL_Reg tek_string_methods[] =
 {
 	{ "__gc", tek_string_collect },
 	{ "__tostring", tek_string_sub },
-	
+	{ "free", tek_string_collect },
+
 	{ "set", tek_string_set },
 	{ "sub", tek_string_sub },
 	{ "get", tek_string_sub },
@@ -1836,11 +1878,15 @@ static const luaL_Reg tek_string_methods[] =
 	{ "getchar", tek_string_getchar },
 	{ "find", tek_string_find },
 	{ "setmetadata", tek_string_setmetadata },
+
+	{ "attachdata", tek_string_attachdata },
+	{ "getdata", tek_string_getdata },
 	
 	{ "compact", tek_string_compact },
 	{ "getVisualPos", tek_string_getvisualpos },
 	{ "forEachChar", tek_string_foreachchar },
 	{ "getTextWidth", tek_string_gettextwidth },
+	
 	{ NULL, NULL }
 };
 

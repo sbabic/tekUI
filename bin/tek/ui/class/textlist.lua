@@ -5,11 +5,12 @@ local ScrollGroup = ui.ScrollGroup
 local TextEdit = ui.TextEdit
 local Display = ui.require("display", 0)
 local concat = table.concat
+local max = math.max
 local min = math.min
 local tostring = tostring
 
 module("tek.ui.class.textlist", tek.ui.class.scrollgroup)
-_VERSION = "TextList 2.1"
+_VERSION = "TextList 2.2"
 local TextList = _M
 ScrollGroup:newClass(TextList)
 
@@ -268,15 +269,16 @@ end
 
 function TextList:addLine(text, lnr)
 	local input = self.ListText
+	local numl = input:getNumLines()
+	lnr = max(lnr or numl + 1, 1)
+	lnr = min(lnr, numl + 1)
+	
 	local cx, cy = input:getCursor()
 	local latch = self:getLatch()
 	input:suspendWindowUpdate()
 	local data = input.Data
-	local numl = input:getNumLines()
-	lnr = lnr or numl + 1
-	local empty = numl == 1 and input:getLineLength(1) == 0
 	
-	if not empty then
+	if numl > 0 then
 		if lnr > numl then
 			input:setCursor(0, -1, numl)
 			input:enter(0) -- do not follow
@@ -299,6 +301,8 @@ function TextList:addLine(text, lnr)
 	
 	input:setCursor(0, cx, cy, 0)
 	input:releaseWindowUpdate()
+	
+	return input:getLine(lnr)[1]
 end
 
 function TextList:changeLine(lnr, text)

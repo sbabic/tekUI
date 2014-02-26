@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="25-Feb-2014" />
+		<meta name="created" content="26-Feb-2014" />
 	</head>
 	<body>
 		<h1>
@@ -1400,7 +1400,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.string" id="tek.lib.string">String (v1.3)</a></h2>
+		<div class="node"><h2><a name="tek.lib.string" id="tek.lib.string">String (v2.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1417,6 +1417,9 @@ func(obj, x0, y0, x1, y1, ...)
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
+							<a href="#String:attachdata"><code>String:attachdata()</code></a> - Attach a Lua value to a string
+						</li>
+						<li style="list-style-type: none">
 							<a href="#String:encodeutf8"><code>String.encodeutf8()</code></a> - Encode codepoints to UTF-8
 						</li>
 						<li style="list-style-type: none">
@@ -1429,13 +1432,16 @@ func(obj, x0, y0, x1, y1, ...)
 							<a href="#String:foreachutf8"><code>String.foreachutf8()</code></a> - Iterate codepoints of an UTF-8 encoded string
 						</li>
 						<li style="list-style-type: none">
-							<a href="#String:free"><code>String:free()</code></a> - Free string object
+							<a href="#String:free"><code>String:free()</code></a> - Reset string object, free associated data
 						</li>
 						<li style="list-style-type: none">
 							<a href="#String:get"><code>String:get()</code></a> - Returns string
 						</li>
 						<li style="list-style-type: none">
 							<a href="#String:getchar"><code>String:getchar()</code></a> - Returns character UTF-8 encoded
+						</li>
+						<li style="list-style-type: none">
+							<a href="#String:getdata"><code>String:getdata()</code></a> - Retrieves Lua value associated with a string
 						</li>
 						<li style="list-style-type: none">
 							<a href="#String:getval"><code>String:getval()</code></a> - Returns character and metadata
@@ -1508,9 +1514,7 @@ func(obj, x0, y0, x1, y1, ...)
 		</div>
 		<div class="node"><h3><a name="String:free" id="String:free"><code>String:free()</code></a></h3>
 			<p>
-				Free resources held by a string object. The only need for
-				this function is to free the object as quickly as possible, preempting
-				garbage collection.
+				Free resources held by a string object
 			</p>
 			<hr />
 		</div>
@@ -3785,7 +3789,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v17.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v17.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7287,7 +7291,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v20.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v20.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8252,7 +8256,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Tue Feb 25 19:13:37 2014
+					Document generated on Wed Feb 26 09:43:14 2014
 				</p>
 			</div>
 		</div>
