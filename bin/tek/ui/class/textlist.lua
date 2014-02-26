@@ -10,7 +10,7 @@ local min = math.min
 local tostring = tostring
 
 module("tek.ui.class.textlist", tek.ui.class.scrollgroup)
-_VERSION = "TextList 2.2"
+_VERSION = "TextList 2.3"
 local TextList = _M
 ScrollGroup:newClass(TextList)
 
@@ -329,4 +329,8 @@ end
 
 function TextList:releaseUpdate()
 	self.ListText:releaseWindowUpdate()
+end
+
+function TextList:deleteLine(dy)
+	self.ListText:deleteLine(dy)
 end

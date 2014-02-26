@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 20.2"
+_VERSION = "TextEdit 20.3"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -1768,24 +1768,26 @@ function TextEdit:setCursorByXY(x, y, opt)
 	end
 end
 
-function TextEdit:deleteLine()
+function TextEdit:deleteLine(dy)
 	local nl = self:getN()
 	if nl > 0 then
 		self:suspendWindowUpdate()
 		local cx, cy = self:getCursor()
+		dy = dy or cy
 		if nl > 1 then
-			self:removeLine(cy, true)
+			self:removeLine(dy, true)
 			if cy == nl then
 				cy = cy - 1
 			end
 			local lh = self.LineHeight
-			self:resize(0, -lh, 0, lh * cy)
+			self:resize(0, -lh, 0, lh * dy)
 			self:damageLine(cy)
 			self:updateWindow()
 			self:updateCanvasSize()
 		else
-			self:getLineText(cy):set("")
-			self:changeLine(cy)
+			self:getLineText(1):set("")
+			self:changeLine(dy)
+			self:damageLine(dy)
 		end
 		self:setCursor(-1, 1, cy, 1)
 		self:releaseWindowUpdate()

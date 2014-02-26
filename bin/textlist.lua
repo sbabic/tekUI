@@ -24,10 +24,10 @@ tek.ui.class.canvas.textlist {
 ]],
 	Children = {
 		ui.Window:new {
-			show = function(self)
-				ui.Window.show(self)
-				self.Drawable:setAttrs { Debug = true }
-			end,
+-- 			show = function(self)
+-- 				ui.Window.show(self)
+-- 				self.Drawable:setAttrs { Debug = true }
+-- 			end,
 			HideOnEscape = true,
 			Orientation = "vertical",
 			Children = { 
@@ -73,9 +73,11 @@ tek.ui.class.canvas.textlist {
 					}
 				},
 				ui.Group:new {
+					Columns = 4,
+					SameSize = true,
 					Children = {
 						ui.Button:new {
-							Width = "auto",
+-- 							Width = "auto",
 							Text = "Add On Top",
 							InitialFocus = true,
 							onClick = function(self)
@@ -85,7 +87,7 @@ tek.ui.class.canvas.textlist {
 							end
 						},
 						ui.Button:new {
-							Width = "auto",
+-- 							Width = "auto",
 							Text = "Add In Center",
 							onClick = function(self)
 								local tw = self:getById("textlist")
@@ -94,7 +96,7 @@ tek.ui.class.canvas.textlist {
 							end
 						},
 						ui.Button:new {
-							Width = "auto",
+-- 							Width = "auto",
 							Text = "Add On Bottom",
 							onClick = function(self)
 								local tw = self:getById("textlist")
@@ -103,7 +105,7 @@ tek.ui.class.canvas.textlist {
 							end
 						},
 						ui.Button:new {
-							Width = "auto",
+-- 							Width = "auto",
 							Text = "Add Bulk Top",
 							onClick = function(self)
 								local tw = self:getById("textlist")
@@ -117,7 +119,7 @@ tek.ui.class.canvas.textlist {
 							end
 						},
 						ui.Button:new {
-							Width = "auto",
+-- 							Width = "auto",
 							Text = "Add Bulk Bottom",
 							onClick = function(self)
 								local tw = self:getById("textlist")
@@ -131,9 +133,25 @@ tek.ui.class.canvas.textlist {
 -- 								profiler.stop()
 							end
 						},
-						ui.Area:new { Width = "free", Height = "auto" },
 						ui.Button:new {
-							Width = "auto",
+-- 							Width = "auto",
+							Text = "Del Top",
+							onClick = function(self)
+								local tw = self:getById("textlist")
+								tw:deleteLine(1)
+							end
+						},
+						ui.Button:new {
+-- 							Width = "auto",
+							Text = "Del Bottom",
+							onClick = function(self)
+								local tw = self:getById("textlist")
+								local lnr = tw:getNumLines()
+								tw:deleteLine(lnr)
+							end
+						},
+						ui.Button:new {
+-- 							Width = "auto",
 							Text = "Clear",
 							onClick = function(self)
 								local tw = self:getById("textlist")
