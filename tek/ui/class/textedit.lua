@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 20.3"
+_VERSION = "TextEdit 20.4"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -1668,14 +1668,34 @@ function TextEdit:enter(followcursor)
 	self:resize(0, lh, 0, lh * cy)
 	self:damageLine(cy)
 	cy = cy + 1
-	local newline = self:newSubString(oldline, cx)
+	
 	local newcx = 1
-	if indentstr then
-		newline:insert(indentstr, 1)
-		newcx = indentstr:len() + 1
+	if cx <= 1 then
+		local newline = self:newString()
+		if indentstr then
+			newline:insert(indentstr, 1)
+			newcx = indentstr:len() + 1
+		end
+		self:insertLineStr(cy - 1, newline)
+	elseif cx >= oldline:len() then
+		local newline = self:newString()
+		if indentstr then
+			newline:insert(indentstr, 1)
+			newcx = indentstr:len() + 1
+		end
+		self:insertLineStr(cy, newline, -1)
+	else
+		local newline = self:newSubString(oldline, cx)
+		if indentstr then
+			newline:insert(indentstr, 1)
+			newcx = indentstr:len() + 1
+		end
+		self:insertLineStr(cy, newline, -1)
+		oldline:erase(cx, -1)
+		-- set userdata in both strings:
+		newline:attachdata(oldline:getdata())
 	end
-	self:insertLineStr(cy, newline, -1)
-	oldline:erase(cx, -1)
+	
 	self:changeLine(cy - 1)
 	self:changeLine(cy)
 	self:setCursor(-1, newcx, cy, followcursor == nil and 1)
