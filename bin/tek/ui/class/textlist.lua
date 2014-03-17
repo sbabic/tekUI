@@ -10,7 +10,7 @@ local min = math.min
 local tostring = tostring
 
 module("tek.ui.class.textlist", tek.ui.class.scrollgroup)
-_VERSION = "TextList 2.3"
+_VERSION = "TextList 2.5"
 local TextList = _M
 ScrollGroup:newClass(TextList)
 
@@ -252,7 +252,7 @@ function TextList.new(class, self)
 end
 
 function TextList:getLatch()
-	local top = self.VValue == 0
+	local top = self.VValue <= 0
 	local bot = self.VValue == self.VMax
 	local newlatch = false
 	local curlatch = self.CurrentLatch
@@ -302,13 +302,13 @@ function TextList:addLine(text, lnr)
 	input:setCursor(0, cx, cy, 0)
 	input:releaseWindowUpdate()
 	
-	return input:getLine(lnr)[1]
+	return input:getLineText(lnr)
 end
 
 function TextList:changeLine(lnr, text)
 	local input = self.ListText
 	local line = input:getLine(lnr)
-	line[1] = input:newString(text)
+	line[1]:set(text)
 	input:changeLine(lnr)
 	input:damageLine(lnr)
 	input:updateWindow()
@@ -333,4 +333,8 @@ end
 
 function TextList:deleteLine(dy)
 	self.ListText:deleteLine(dy)
+end
+
+function TextList:getLineText(lnr)
+	return self.ListText:getLineText(lnr)
 end

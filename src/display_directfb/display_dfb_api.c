@@ -481,6 +481,8 @@ dfb_drawbuffer(DFBDISPLAY *mod, struct TVRequest *req)
 	TINT xd = req->tvr_Op.DrawBuffer.RRect[0];
 	TINT yd = req->tvr_Op.DrawBuffer.RRect[1];
 	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
+	if (!buf)
+		return;
 	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
 	IDirectFBSurface *surface = NULL;
 	DFBSurfaceDescription dsc;

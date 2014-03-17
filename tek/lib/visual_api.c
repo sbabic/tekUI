@@ -431,7 +431,6 @@ LOCAL LUACFUNC TINT tek_msg_reply(lua_State *L)
 LOCAL LUACFUNC TINT tek_msg_len(lua_State *L)
 {
 	tek_msg *msg = luaL_checkudata(L, 1, "tek_msg*");
-	fprintf(stderr, "tek_msg_len\n");
 	lua_pushinteger(L, msg->numfields);
 	return 1;
 }
@@ -641,13 +640,13 @@ static TBOOL tek_lib_visual_load_png(struct TExecBase *TExecBase, struct pngmemr
 			png_error(png, "could not get palette");
 	}
 
-	row_pointers = (png_bytep *) calloc(rd->height, sizeof(png_bytep));
+	row_pointers = (png_bytep *) TAlloc0(TNULL, rd->height * sizeof(png_bytep));
 	if (!row_pointers) png_error(png, "no memory");
 
 	png_uint_32 rowbytes = png_get_rowbytes(png, pnginfo);
 	for (y = 0; y < rd->height; y++)
 	{
-		row_pointers[y] = (png_byte *) malloc(rowbytes);
+		row_pointers[y] = (png_byte *) TAlloc(TNULL, rowbytes);
 		if (!row_pointers[y]) png_error(png, "no memory");
 	}
 	
@@ -734,8 +733,8 @@ static TBOOL tek_lib_visual_load_png(struct TExecBase *TExecBase, struct pngmemr
 	png_destroy_read_struct(&png, &pnginfo, NULL);
 	
 	for (y = 0; y < rd->height; y++)
-		free(row_pointers[y]);
-	free(row_pointers);
+		TFree(row_pointers[y]);
+	TFree(row_pointers);
 	return TTRUE;
 }
 
@@ -1128,6 +1127,45 @@ static void
 tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	TINT x0, TINT y0, TINT w, TINT h, TINT ox, TINT oy)
 {
+	if (x0 < -32768 || x0 + w > 32768 || y0 < -32768 || y0 + h > 32768 ||
+		w < 1 || w > 10000 || h < 1 || h > 10000 || w * h > 2000000)
+	{
+		TDBPRINTF(TDB_WARN,("illegal gradient rect %d,%d,%d,%d\n", 
+			x0, y0, x0 + w - 1, y0 + h - 1));
+		return;
+	}
+	
+	TTAGITEM tags[2];
+	tags[0].tti_Tag = TTAG_DONE;
+
+#if defined(ENABLE_PIXMAP_CACHE)
+	struct 
+	{ 
+		TINT16 x0, y0, x1, y1;
+		TUINT8 r0, g0, b0, r1, g1, b1;
+	} ckey = 
+	{ 
+		gr->A.vec.x, gr->A.vec.y, gr->B.vec.x, gr->B.vec.y, 
+		gr->A.r, gr->A.g, gr->A.b, gr->B.r, gr->B.g, gr->B.b
+	};
+	
+	struct TVImageCacheRequest creq;
+	creq.tvc_CacheManager = vis->vis_CacheManager;
+	creq.tvc_Key = (TUINT8 *) &ckey;
+	creq.tvc_KeyLen = sizeof(ckey);
+	creq.tvc_OrigX = ox;
+	creq.tvc_OrigY = oy;
+	creq.tvc_Result = TVIMGCACHE_NOTFOUND;
+	
+	tags[0].tti_Tag = TVisual_CacheRequest;
+	tags[0].tti_Value = (TTAG) &creq;
+	tags[1].tti_Tag = TTAG_DONE;
+	
+	TVisualDrawBuffer(vis->vis_Visual, x0, y0, TNULL, w, h, w, tags);
+	if (creq.tvc_Result == TVIMGCACHE_FOUND)
+		return; /* cache used, painted successfully */
+#endif
+
 	int y, x;
 	int Ar = gr->A.r;
 	int Ag = gr->A.g;
@@ -1139,13 +1177,6 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	int Dg = Bg - Ag;
 	int Db = Bb - Ab;
 	
-	if (w < 1 || w > 10000 || h < 1 || h > 10000 || w * h > 2000000)
-	{
-		TDBPRINTF(TDB_WARN,("attempt to paint gradient of size %dx%d\n", w, h));
-		/*TVisualFRectRGB(vis->vis_Visual, x0, y0, w, h, rgb0);*/
-		return;
-	}
-
 	vec r0 = gr->A.vec;
 	vec u = subVec(gr->B.vec, r0);
 	
@@ -1269,7 +1300,10 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 	}
 
 	buf -= w * h;
-	TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, w, h, w, TNULL);
+	
+	/* paint and possibly store in cache: */
+	TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, w, h, w, tags);
+
 	TExecFree(vis->vis_ExecBase, buf);
 }
 

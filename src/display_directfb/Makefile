@@ -2,8 +2,8 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
-EXTRADEFS += $(DFB_DEFS) -DFNT_DEFDIR=\"$(LUA_SHARE)/tek/ui/font/\" \
-			-DCUR_DEFFILE=\"$(LUA_SHARE)/tek/ui/cursor/cursor-green.png\"
+EXTRADEFS += $(DIRECTFB_DEFS) -DFNT_DEFDIR=\"$(LUA_SHARE)/tek/ui/font/\" \
+	-DCUR_DEFFILE=\"$(LUA_SHARE)/tek/ui/cursor/cursor-green.png\"
 
 ###############################################################################
 
@@ -19,13 +19,10 @@ $(OBJDIR)/display_dfb_api.lo: \
 $(OBJDIR)/display_dfb_font.lo: \
 	display_dfb_font.c display_dfb_mod.h
 	$(CC) $(LIBCFLAGS) -o $@ -c display_dfb_font.c
-$(OBJDIR)/display_dfb_utf8.lo: \
-	display_dfb_utf8.c display_dfb_mod.h
-	$(CC) $(LIBCFLAGS) -o $@ -c display_dfb_utf8.c
 
 $(LIBDIR)/libdisplay_directfb.a: \
 	$(OBJDIR)/display_dfb_mod.lo $(OBJDIR)/display_dfb_api.lo \
-	$(OBJDIR)/display_dfb_font.lo $(OBJDIR)/display_dfb_utf8.lo
+	$(OBJDIR)/display_dfb_font.lo
 	$(AR) $@ $?
 
 ###############################################################################

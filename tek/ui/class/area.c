@@ -211,32 +211,32 @@ Element:newClass(Area)
 
 
 /* Name of superclass: */
-#define SUPERCLASS_NAME "tek.ui.class.element"
+#define AREA_SUPERCLASS_NAME "tek.ui.class.element"
 
 /* Name of this class: */
-#define CLASS_NAME "tek.ui.class.area"
+#define AREA_CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define CLASS_VERSION "Area 57.0"
+#define AREA_CLASS_VERSION "Area 57.0"
 
 /* Required tekui version: */
-#define TEKUI_VERSION 109
+#define AREA_TEKUI_VERSION 109
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10
 
 
 /* Stack index of self argument: */
-#define ISELF	1
+#define AREA_ISELF	1
 
 /* Stack index of superclass: */
-#define ISUPERCLASS	lua_upvalueindex(1)
+#define AREA_ISUPERCLASS	lua_upvalueindex(1)
 
 /* Stack index of tek.ui: */
-#define ITEKUI	lua_upvalueindex(2)
+#define AREA_ITEKUI	lua_upvalueindex(2)
 
 /* Stack index of Region library: */
-#define IREGION	lua_upvalueindex(3)
+#define AREA_IREGION	lua_upvalueindex(3)
 
 
 
@@ -309,7 +309,7 @@ static void replaceidxwithinteger(lua_State *L, int idx, int idx2)
 	}
 }
 
-static TBOOL getboolfield(lua_State *L, int idx, const char *key)
+static TBOOL area_getboolfield(lua_State *L, int idx, const char *key)
 {
 	lua_getfield(L, idx, key);
 	TBOOL res = lua_toboolean(L, -1);
@@ -337,19 +337,19 @@ static lua_Integer getnumfield(lua_State *L, int idx, const char *key)
 static lua_Integer clrsetflags(lua_State *L, lua_Integer clr, lua_Integer set,
 	TBOOL bubbleup)
 {
-	lua_getfield(L, ISELF, "Flags");
+	lua_getfield(L, AREA_ISELF, "Flags");
 	lua_Integer f = lua_tointeger(L, -1);
 	lua_Integer nf = (f & ~clr) | set;
 	if (nf != f)
 	{
 		lua_pushinteger(L, nf);
-		lua_setfield(L, ISELF, "Flags");
+		lua_setfield(L, AREA_ISELF, "Flags");
 	}
 	lua_pop(L, 1);
 	
 	if (bubbleup && (set & TEKUI_FL_BUBBLEUP) && !(nf & TEKUI_FL_UPDATE))
 	{
-		lua_pushvalue(L, ISELF);
+		lua_pushvalue(L, AREA_ISELF);
 		do
 		{
 			f = getnumfield(L, -1, "Flags");
@@ -369,17 +369,17 @@ static lua_Integer clrsetflags(lua_State *L, lua_Integer clr, lua_Integer set,
 
 static int tek_ui_class_area_addclassnotifications(lua_State *L)
 {
-	lua_getfield(L, ISUPERCLASS, "addNotify");
+	lua_getfield(L, AREA_ISUPERCLASS, "addNotify");
 	/* addNotify() */
 	lua_pushvalue(L, 1);
 	/* addNotify(), proto */
 	lua_pushliteral(L, "Invisible");
 	/* addNotify(), proto, "Invisible" */
-	lua_getfield(L, ISUPERCLASS, "NOTIFY_ALWAYS");
+	lua_getfield(L, AREA_ISUPERCLASS, "NOTIFY_ALWAYS");
 	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS */
 	lua_newtable(L);
 	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { } */
-	lua_getfield(L, ISUPERCLASS, "NOTIFY_SELF");
+	lua_getfield(L, AREA_ISUPERCLASS, "NOTIFY_SELF");
 	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { }, NOTIFY_SELF */
 	lua_rawseti(L, -2, 1);
 	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { NOTIFY_SELF } */
@@ -388,7 +388,7 @@ static int tek_ui_class_area_addclassnotifications(lua_State *L)
 	lua_rawseti(L, -2, 2);
 	/* addNotify(), proto, "Invisible", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetVisible" } */
 	lua_call(L, 4, 0);
-	lua_getfield(L, ISUPERCLASS, "addClassNotifications");
+	lua_getfield(L, AREA_ISUPERCLASS, "addClassNotifications");
 	lua_pushvalue(L, 1);
 	lua_call(L, 1, 1);
 	return 1;
@@ -404,15 +404,15 @@ static int tek_ui_class_area_new(lua_State *L)
 {
 	int narg = lua_gettop(L);
 	lua_settop(L, 2);
-	lua_pushvalue(L, ISELF);
+	lua_pushvalue(L, AREA_ISELF);
 	if (narg >= 2)
 		lua_pushvalue(L, 2);
 	else
 		lua_newtable(L);
 	/* class, self or { } */
-	callfield(L, IREGION, "new", 0, 1);
+	callfield(L, AREA_IREGION, "new", 0, 1);
 	lua_setfield(L, -2, "MinMax");
-	callfield(L, IREGION, "new", 0, 1);
+	callfield(L, AREA_IREGION, "new", 0, 1);
 	lua_setfield(L, -2, "Rect");
 	
 	setfieldbool(L, -1, "BGPen", TFALSE);
@@ -448,7 +448,7 @@ static int tek_ui_class_area_new(lua_State *L)
 	lua_pushinteger(L, flags);
 	lua_setfield(L, -2, "Flags");
 	
-	callfield(L, ISUPERCLASS, "new", 2, 1);
+	callfield(L, AREA_ISUPERCLASS, "new", 2, 1);
 	return 1;
 }
 
@@ -462,8 +462,8 @@ static int tek_ui_class_area_new(lua_State *L)
 static int tek_ui_class_area_setup(lua_State *L)
 {
 	lua_settop(L, 3);
-	lua_getfield(L, ISUPERCLASS, "setup");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISUPERCLASS, "setup");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_pushvalue(L, 2);
 	lua_pushvalue(L, 3);
 	lua_call(L, 3, 0);
@@ -478,16 +478,16 @@ static int tek_ui_class_area_setup(lua_State *L)
 	
 static int tek_ui_class_area_cleanup(lua_State *L)
 {
-	lua_getfield(L, ISUPERCLASS, "cleanup");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISUPERCLASS, "cleanup");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 0);
-	setfieldbool(L, ISELF, "DamageRegion", TFALSE);
-	lua_getfield(L, IREGION, "new");
+	setfieldbool(L, AREA_ISELF, "DamageRegion", TFALSE);
+	lua_getfield(L, AREA_IREGION, "new");
 	lua_call(L, 0, 1);
-	lua_setfield(L, ISELF, "MinMax");
-	lua_getfield(L, IREGION, "new");
+	lua_setfield(L, AREA_ISELF, "MinMax");
+	lua_getfield(L, AREA_IREGION, "new");
 	lua_call(L, 0, 1);
-	lua_setfield(L, ISELF, "Rect");
+	lua_setfield(L, AREA_ISELF, "Rect");
 	clrsetflags(L, TEKUI_FL_LAYOUT | TEKUI_FL_SETUP | TEKUI_FL_REDRAW, 0,
 		TFALSE);
 	return 0;
@@ -508,8 +508,8 @@ static int tek_ui_class_area_damage(lua_State *L)
 	if ((clrsetflags(L, 0, 0, TFALSE) & (TEKUI_FL_LAYOUT | TEKUI_FL_SHOW)) ==
 		(TEKUI_FL_LAYOUT | TEKUI_FL_SHOW))
 	{
-		lua_getfield(L, ISELF, "getRect");
-		lua_pushvalue(L, ISELF);
+		lua_getfield(L, AREA_ISELF, "getRect");
+		lua_pushvalue(L, AREA_ISELF);
 		lua_call(L, 1, 4);
 		lua_Integer r1 = lua_tointeger(L, 2);
 		lua_Integer r2 = lua_tointeger(L, 3);
@@ -527,13 +527,13 @@ static int tek_ui_class_area_damage(lua_State *L)
 			r3 = TMIN(s3, r3);
 			r4 = TMIN(s4, r4);
 			TBOOL track = 
-				getnumfield(L, ISELF, "Flags") & TEKUI_FL_TRACKDAMAGE;
+				getnumfield(L, AREA_ISELF, "Flags") & TEKUI_FL_TRACKDAMAGE;
 			TBOOL redraw = TFALSE;
 			if (!track)
 				redraw = clrsetflags(L, 0, 0, TFALSE) & TEKUI_FL_REDRAW;
 			if (track || !redraw)
 			{
-				lua_getfield(L, ISELF, "DamageRegion");
+				lua_getfield(L, AREA_ISELF, "DamageRegion");
 				if (lua_toboolean(L, -1))
 				{
 					lua_pushinteger(L, r1);
@@ -545,13 +545,13 @@ static int tek_ui_class_area_damage(lua_State *L)
 				else if (track)
 				{
 					lua_pop(L, 1);
-					lua_getfield(L, IREGION, "new");
+					lua_getfield(L, AREA_IREGION, "new");
 					lua_pushinteger(L, r1);
 					lua_pushinteger(L, r2);
 					lua_pushinteger(L, r3);
 					lua_pushinteger(L, r4);
 					lua_call(L, 4, 1);
-					lua_setfield(L, ISELF, "DamageRegion");
+					lua_setfield(L, AREA_ISELF, "DamageRegion");
 				}
 				clrsetflags(L, 0, TEKUI_FL_REDRAW, TTRUE);
 			}
@@ -571,8 +571,8 @@ static int tek_ui_class_area_layout(lua_State *L)
 {
 	lua_settop(L, 6);
 	
-	lua_pushvalue(L, ISELF);	
-	callfield(L, ISELF, "getMargin", 1, 4);
+	lua_pushvalue(L, AREA_ISELF);	
+	callfield(L, AREA_ISELF, "getMargin", 1, 4);
 	lua_Integer m1 = lua_tointeger(L, -4);
 	lua_Integer m2 = lua_tointeger(L, -3);
 	lua_Integer m3 = lua_tointeger(L, -2);
@@ -584,7 +584,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 	lua_Integer x1 = lua_tointeger(L, 4) - m3;
 	lua_Integer y1 = lua_tointeger(L, 5) - m4;
 
-	lua_getfield(L, ISELF, "Rect");
+	lua_getfield(L, AREA_ISELF, "Rect");
 	/* r */
 	
 	lua_getfield(L, -1, "get");
@@ -628,7 +628,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 	lua_Integer dw = x1 - x0 - r3 + r1;
 	lua_Integer dh = y1 - y0 - r4 + r2;
 	
-	lua_getfield(L, ISELF, "Window");
+	lua_getfield(L, AREA_ISELF, "Window");
 	lua_getfield(L, -1, "Drawable");
 	/* win, d */
 	lua_getfield(L, -1, "setShift");
@@ -638,7 +638,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 	lua_Integer sy = lua_tointeger(L, -1);
 	lua_pop(L, 2);
 	
-	TUINT flags = getnumfield(L, ISELF, "Flags");
+	TUINT flags = getnumfield(L, AREA_ISELF, "Flags");
 	TBOOL track = flags & TEKUI_FL_TRACKDAMAGE;
 	TBOOL samesize = (dw == 0) && (dh == 0);
 	TBOOL validmove = (dx == 0) != (dy == 0);
@@ -647,14 +647,14 @@ static int tek_ui_class_area_layout(lua_State *L)
 	if (validmove && (samesize || track) && !(flags & TEKUI_FL_DONOTBLIT))
 	{
 		lua_getfield(L, -2, "BlitObjects");
-		lua_pushvalue(L, ISELF);
+		lua_pushvalue(L, AREA_ISELF);
 		lua_gettable(L, -2);
 		TBOOL not_blitobject = !lua_toboolean(L, -1);
 		lua_pop(L, 2);
 		if (not_blitobject)
 		{
-			lua_pushvalue(L, ISELF);
-			callfield(L, ISELF, "getBG", 1, 4);
+			lua_pushvalue(L, AREA_ISELF);
+			callfield(L, AREA_ISELF, "getBG", 1, 4);
 			can_copy = lua_toboolean(L, -1);
 			lua_pop(L, 4);
 		}
@@ -679,7 +679,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 		lua_pop(L, 4);
 		if (is_c1)
 		{
-			lua_getfield(L, IREGION, "new");
+			lua_getfield(L, AREA_IREGION, "new");
 			lua_pushinteger(L, r1 + sx - m1);
 			lua_pushinteger(L, r2 + sy - m2);
 			lua_pushinteger(L, r3 + sx + m3);
@@ -719,7 +719,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 		{
 			/* win, d */
 			lua_getfield(L, -2, "BlitObjects");
-			lua_pushvalue(L, ISELF);
+			lua_pushvalue(L, AREA_ISELF);
 			lua_pushboolean(L, TTRUE);
 			/* win, d, blitobjects, self, true */
 			lua_settable(L, -3);
@@ -760,7 +760,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 	/* win, d */
 	if ((x0 == r1 && y0 == r2) && markdamage && track)
 	{
-		lua_getfield(L, IREGION, "new");
+		lua_getfield(L, AREA_IREGION, "new");
 		lua_pushinteger(L, x0);
 		lua_pushinteger(L, y0);
 		lua_pushinteger(L, x1);
@@ -796,8 +796,8 @@ static int tek_ui_class_area_layout(lua_State *L)
 		
 		lua_getfield(L, -1, "forEach");
 		lua_pushvalue(L, -2);
-		lua_getfield(L, ISELF, "damage");
-		lua_pushvalue(L, ISELF);
+		lua_getfield(L, AREA_ISELF, "damage");
+		lua_pushvalue(L, AREA_ISELF);
 		lua_call(L, 3, 0);
 		lua_pop(L, 1);
 	}
@@ -820,7 +820,7 @@ static int tek_ui_class_area_punch(lua_State *L)
 {
 	lua_getfield(L, 2, "subRegion");
 	lua_pushvalue(L, 2);
-	lua_getfield(L, ISELF, "Rect");
+	lua_getfield(L, AREA_ISELF, "Rect");
 	lua_call(L, 2, 0);
 	return 0;
 }
@@ -863,26 +863,26 @@ static int tek_ui_class_area_draw(lua_State *L)
 	if ((clrsetflags(L, TEKUI_FL_REDRAW, 0, TFALSE) & TEKUI_FL_REDRAWOK) == 
 		TEKUI_FL_REDRAWOK)
 	{
-		TBOOL erasebg = getnumfield(L, ISELF, "Flags") & TEKUI_FL_ERASEBG;
+		TBOOL erasebg = getnumfield(L, AREA_ISELF, "Flags") & TEKUI_FL_ERASEBG;
 		if (erasebg)
 		{
-			lua_getfield(L, ISELF, "drawBegin");
-			lua_pushvalue(L, ISELF);
+			lua_getfield(L, AREA_ISELF, "drawBegin");
+			lua_pushvalue(L, AREA_ISELF);
 			lua_call(L, 1, 1);
 			TBOOL drawbegin = lua_toboolean(L, -1);
 			lua_pop(L, 1);
 			if (drawbegin)
 			{
-				lua_getfield(L, ISELF, "erase");
-				lua_pushvalue(L, ISELF);
+				lua_getfield(L, AREA_ISELF, "erase");
+				lua_pushvalue(L, AREA_ISELF);
 				lua_call(L, 1, 1);
-				lua_getfield(L, ISELF, "drawEnd");
-				lua_pushvalue(L, ISELF);
+				lua_getfield(L, AREA_ISELF, "drawEnd");
+				lua_pushvalue(L, AREA_ISELF);
 				lua_call(L, 1, 0);
 			}
 		}
 		lua_pushboolean(L, TFALSE);
-		lua_setfield(L, ISELF, "DamageRegion");
+		lua_setfield(L, AREA_ISELF, "DamageRegion");
 		res = TTRUE;
 	}
 	lua_pushboolean(L, res);
@@ -897,8 +897,8 @@ static int tek_ui_class_area_draw(lua_State *L)
 static int tek_ui_class_area_getbyxy(lua_State *L)
 {
 	lua_settop(L, 3);
-	lua_getfield(L, ISELF, "getRect");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getRect");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 4);
 	if (lua_toboolean(L, -4))
 	{
@@ -911,7 +911,7 @@ static int tek_ui_class_area_getbyxy(lua_State *L)
 		lua_pop(L, 4);
 		if (x >= r1 && x <= r3 && y >= r2 && y <= r4)
 		{
-			lua_pushvalue(L, ISELF);
+			lua_pushvalue(L, AREA_ISELF);
 			return 1;
 		}
 	}
@@ -930,7 +930,7 @@ typedef struct { int r1, r2, r3, r4; } rect;
 static rect tek_ui_class_area_getmargin_int(lua_State *L)
 {
 	rect res;
-	lua_getfield(L, ISELF, "Properties");
+	lua_getfield(L, AREA_ISELF, "Properties");
 	lua_getfield(L, -1, "margin-left");
 	lua_getfield(L, -2, "margin-top");
 	lua_getfield(L, -3, "margin-right");
@@ -959,14 +959,14 @@ static int tek_ui_class_area_getmargin(lua_State *L)
 
 static int tek_ui_class_area_onsetstyle(lua_State *L)
 {
-	lua_getfield(L, ISUPERCLASS, "onSetStyle");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISUPERCLASS, "onSetStyle");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 0);
-	lua_getfield(L, ISELF, "setState");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "setState");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 0);
-	lua_getfield(L, ISELF, "rethinkLayout");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "rethinkLayout");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_pushinteger(L, 2);
 	lua_pushboolean(L, 1);
 	lua_call(L, 3, 0);
@@ -983,7 +983,7 @@ static int tek_ui_class_area_setstate(lua_State *L)
 {
 	if (!lua_toboolean(L, 2))
 	{
-		lua_getfield(L, ISELF, "Properties");
+		lua_getfield(L, AREA_ISELF, "Properties");
 		lua_getfield(L, -1, "background-color");
 		lua_remove(L, -2);
 		if (!lua_toboolean(L, -1))
@@ -997,18 +997,18 @@ static int tek_ui_class_area_setstate(lua_State *L)
 	if (bglen == 11 && !strcmp(bg, "transparent"))
 	{
 		lua_pop(L, 1);
-		lua_getfield(L, ISELF, "getBGElement");
-		lua_pushvalue(L, ISELF);
+		lua_getfield(L, AREA_ISELF, "getBGElement");
+		lua_pushvalue(L, AREA_ISELF);
 		lua_call(L, 1, 1);
 		lua_getfield(L, -1, "BGPen");
 		lua_remove(L, -2);
 	}
-	lua_getfield(L, ISELF, "BGPen");
+	lua_getfield(L, AREA_ISELF, "BGPen");
 	int equal = tek_lua_equal(L, -1, -2);
 	lua_pop(L, 1);
 	if (!equal)
 	{
-		lua_setfield(L, ISELF, "BGPen");
+		lua_setfield(L, AREA_ISELF, "BGPen");
 		clrsetflags(L, 0, TEKUI_FL_REDRAW, TTRUE);
 	}
 	else
@@ -1049,8 +1049,8 @@ static int tek_ui_class_area_getmsgfields(lua_State *L)
 		mx = lua_tointeger(L, -2);
 		my = lua_tointeger(L, -1);
 		lua_pop(L, 2);
-		lua_getfield(L, ISELF, "getParent");
-		lua_pushvalue(L, ISELF);
+		lua_getfield(L, AREA_ISELF, "getParent");
+		lua_pushvalue(L, AREA_ISELF);
 		lua_call(L, 1, 1);
 		while (!lua_isnil(L, -1))
 		{
@@ -1120,7 +1120,7 @@ static int tek_ui_class_area_setflags(lua_State *L)
 
 static int tek_ui_class_area_getminmax(lua_State *L)
 {
-	lua_getfield(L, ISELF, "MinMax");
+	lua_getfield(L, AREA_ISELF, "MinMax");
 	lua_getfield(L, -1, "get");
 	lua_insert(L, -2);
 	lua_call(L, 1, 4);
@@ -1134,7 +1134,7 @@ static int tek_ui_class_area_getminmax(lua_State *L)
 
 static int tek_ui_class_area_getpadding(lua_State *L)
 {
-	lua_getfield(L, ISELF, "Properties");
+	lua_getfield(L, AREA_ISELF, "Properties");
 	lua_getfield(L, -1, "padding-left");
 	lua_getfield(L, -2, "padding-top");
 	lua_getfield(L, -3, "padding-right");
@@ -1194,7 +1194,7 @@ static int tek_ui_class_area_getchildren(lua_State *L)
 
 static int tek_ui_class_area_getparent(lua_State *L)
 {
-	lua_getfield(L, ISELF, "Parent");
+	lua_getfield(L, AREA_ISELF, "Parent");
 	return 1;
 }
 
@@ -1208,7 +1208,7 @@ static int tek_ui_class_area_getrect(lua_State *L)
 {
 	if ((clrsetflags(L, 0, 0, TFALSE) & TEKUI_FL_DRAWOK) == TEKUI_FL_DRAWOK)
 	{
-		lua_getfield(L, ISELF, "Rect");
+		lua_getfield(L, AREA_ISELF, "Rect");
 		lua_getfield(L, -1, "get");
 		lua_insert(L, -2);
 		lua_call(L, 1, 4);
@@ -1231,7 +1231,7 @@ static int tek_ui_class_area_focusrect(lua_State *L)
 	lua_settop(L, 5);
 	if (!lua_toboolean(L, 2))
 	{
-		lua_getfield(L, ISELF, "Rect");
+		lua_getfield(L, AREA_ISELF, "Rect");
 		lua_getfield(L, -1, "get");
 		lua_insert(L, -2);
 		lua_call(L, 1, 4);
@@ -1254,8 +1254,8 @@ static int tek_ui_class_area_focusrect(lua_State *L)
 		r4 = lua_tointeger(L, 5);
 	}
 	
-	lua_getfield(L, ISELF, "getParent");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getParent");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 1);
 	if (lua_toboolean(L, -1))
 	{
@@ -1282,8 +1282,8 @@ static int tek_ui_class_area_focusrect(lua_State *L)
 
 static int tek_ui_class_area_getsiblings(lua_State *L)
 {
-	lua_getfield(L, ISELF, "getParent");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getParent");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 1);
 	if (lua_toboolean(L, -1))
 	{
@@ -1306,8 +1306,8 @@ static int tek_ui_class_area_getsiblings(lua_State *L)
 
 static int tek_ui_class_area_getgroup(lua_State *L)
 {
-	lua_getfield(L, ISELF, "getParent");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getParent");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 1);
 	if (lua_toboolean(L, -1))
 	{
@@ -1336,8 +1336,8 @@ static int tek_ui_class_area_getgroup(lua_State *L)
 
 static int tek_ui_class_area_findelement(lua_State *L, int *pn, int *pi)
 {
-	lua_getfield(L, ISELF, "getSiblings");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getSiblings");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 1);
 	if (lua_toboolean(L, -1))
 	{
@@ -1346,7 +1346,7 @@ static int tek_ui_class_area_findelement(lua_State *L, int *pn, int *pi)
 		for (i = 1; i <= n; ++i)
 		{
 			lua_rawgeti(L, -1, i);
-			int equal = tek_lua_equal(L, ISELF, -1);
+			int equal = tek_lua_equal(L, AREA_ISELF, -1);
 			lua_pop(L, 1);
 			if (equal)
 			{
@@ -1372,8 +1372,8 @@ static int tek_ui_class_area_getnext(lua_State *L)
 		const char *mode = lua_tolstring(L, 2, &modelen);
 		if (modelen == 9 && !strcmp(mode, "recursive"))
 		{
-			lua_getfield(L, ISELF, "getParent");
-			lua_pushvalue(L, ISELF);
+			lua_getfield(L, AREA_ISELF, "getParent");
+			lua_pushvalue(L, AREA_ISELF);
 			lua_call(L, 1, 1);
 			lua_getfield(L, -1, "getNext");
 			lua_insert(L, -2);
@@ -1408,8 +1408,8 @@ static int tek_ui_class_area_getprev(lua_State *L)
 		const char *mode = lua_tolstring(L, 2, &modelen);
 		if (modelen == 9 && !strcmp(mode, "recursive"))
 		{
-			lua_getfield(L, ISELF, "getParent");
-			lua_pushvalue(L, ISELF);
+			lua_getfield(L, AREA_ISELF, "getParent");
+			lua_pushvalue(L, AREA_ISELF);
 			lua_call(L, 1, 1);
 			lua_getfield(L, -1, "getPrev");
 			lua_insert(L, -2);
@@ -1473,22 +1473,22 @@ static int tek_ui_class_area_passmsg(lua_State *L)
 
 static int tek_ui_class_area_erase(lua_State *L)
 {
-	lua_getfield(L, ISELF, "Window");
+	lua_getfield(L, AREA_ISELF, "Window");
 	lua_getfield(L, -1, "Drawable");
 	lua_remove(L, -2);
 	/* d */
 	lua_getfield(L, -1, "setBGPen");
 	lua_pushvalue(L, -2);
 	/* d, setBGPen(), d */
-	lua_getfield(L, ISELF, "getBG");
+	lua_getfield(L, AREA_ISELF, "getBG");
 	/* d, setBGPen(), d, getBG() */
-	lua_pushvalue(L, ISELF);
+	lua_pushvalue(L, AREA_ISELF);
 	/* d, setBGPen(), d, getBG(), self */
 	lua_call(L, 1, 3);
 	/* d, setBGPen(), d, bg, tx, ty */
 	lua_call(L, 4, 0);
 	/* d */
-	lua_getfield(L, ISELF, "DamageRegion");
+	lua_getfield(L, AREA_ISELF, "DamageRegion");
 	/* d, dr */
 	if (lua_toboolean(L, -1))
 	{
@@ -1509,8 +1509,8 @@ static int tek_ui_class_area_erase(lua_State *L)
 		/* d, fillrect() */
 		lua_insert(L, -2);
 		/* fillrect, d */
-		lua_getfield(L, ISELF, "getRect");
-		lua_pushvalue(L, ISELF);
+		lua_getfield(L, AREA_ISELF, "getRect");
+		lua_pushvalue(L, AREA_ISELF);
 		lua_call(L, 1, 4);
 		/* fillrect, d, r1, r2, r3, r4 */
 		lua_call(L, 5, 0);
@@ -1527,8 +1527,8 @@ static int tek_ui_class_area_erase(lua_State *L)
 
 static int tek_ui_class_area_getbgelement(lua_State *L)
 {
-	lua_getfield(L, ISELF, "getParent");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getParent");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 1);
 	lua_getfield(L, -1, "getBGElement");
 	lua_insert(L, -2);
@@ -1548,8 +1548,8 @@ static int tek_ui_class_area_getbgelement(lua_State *L)
 static int tek_ui_class_area_getbg(lua_State *L)
 {
 	TBOOL scrollable = TFALSE;
-	lua_getfield(L, ISELF, "Properties");
-	lua_getfield(L, ISELF, "BGPen");
+	lua_getfield(L, AREA_ISELF, "Properties");
+	lua_getfield(L, AREA_ISELF, "BGPen");
 	/* p, bgpen */
 	TBOOL istransparent = TFALSE;
 	TBOOL bgpen = lua_toboolean(L, -1);
@@ -1558,8 +1558,8 @@ static int tek_ui_class_area_getbg(lua_State *L)
 		luaL_Buffer buf;
 		luaL_buffinit(L, &buf);
 		luaL_addlstring(&buf, "background-color", 16);
-		lua_getfield(L, ISELF, "getPseudoClass");
-		lua_pushvalue(L, ISELF);
+		lua_getfield(L, AREA_ISELF, "getPseudoClass");
+		lua_pushvalue(L, AREA_ISELF);
 		lua_call(L, 1, 1);
 		luaL_addvalue(&buf);
 		luaL_pushresult(&buf);
@@ -1575,8 +1575,8 @@ static int tek_ui_class_area_getbg(lua_State *L)
 	if (!bgpen || istransparent)
 	{
 		lua_pop(L, 1);
-		lua_getfield(L, ISELF, "getParent");
-		lua_pushvalue(L, ISELF);
+		lua_getfield(L, AREA_ISELF, "getParent");
+		lua_pushvalue(L, AREA_ISELF);
 		lua_call(L, 1, 1);
 		/* p, parent */
 		lua_getfield(L, -1, "getBG");
@@ -1597,8 +1597,8 @@ static int tek_ui_class_area_getbg(lua_State *L)
 		/* p, bgpen */
 		if (scrollable)
 		{
-			lua_getfield(L, ISELF, "getRect");
-			lua_pushvalue(L, ISELF);
+			lua_getfield(L, AREA_ISELF, "getRect");
+			lua_pushvalue(L, AREA_ISELF);
 			lua_call(L, 1, 2);
 			/* p, bgpen, tx, ty */
 		}
@@ -1611,7 +1611,7 @@ static int tek_ui_class_area_getbg(lua_State *L)
 	}
 	lua_remove(L, -4);
 	/* bgpen, tx, tx */
-	lua_getfield(L, ISELF, "Window");
+	lua_getfield(L, AREA_ISELF, "Window");
 	lua_getfield(L, -1, "isSolidPen");
 	lua_insert(L, -2);
 	/* bgpen, tx, tx, isSolidPen(), Window */
@@ -1643,28 +1643,28 @@ static int tek_ui_class_area_askminmax(lua_State *L)
 	lua_Integer m2 = lua_tonumber(L, 3);
 	lua_Integer m3 = lua_tonumber(L, 4);
 	lua_Integer m4 = lua_tonumber(L, 5);
-	lua_getfield(L, ISELF, "getPadding");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getPadding");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 4);
 	lua_Integer p1 = lua_tonumber(L, -4);
 	lua_Integer p2 = lua_tonumber(L, -3);
 	lua_Integer p3 = lua_tonumber(L, -2);
 	lua_Integer p4 = lua_tonumber(L, -1);
 	
-	lua_getfield(L, ISELF, "getAttr");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getAttr");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_pushliteral(L, "MinWidth");
 	lua_call(L, 2, 1);
-	lua_getfield(L, ISELF, "getAttr");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getAttr");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_pushliteral(L, "MinHeight");
 	lua_call(L, 2, 1);
-	lua_getfield(L, ISELF, "getAttr");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getAttr");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_pushliteral(L, "MaxWidth");
 	lua_call(L, 2, 1);
-	lua_getfield(L, ISELF, "getAttr");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getAttr");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_pushliteral(L, "MaxHeight");
 	lua_call(L, 2, 1);
 	
@@ -1677,8 +1677,8 @@ static int tek_ui_class_area_askminmax(lua_State *L)
 	m2 = TMAX(minh, m2 + p2 + p4);
 	m3 = TMAX(TMIN(maxw, m3 + p1 + p3), m1);
 	m4 = TMAX(TMIN(maxh, m4 + p2 + p4), m2);
-	lua_getfield(L, ISELF, "getMargin");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getMargin");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 4);
 	lua_Integer ma1 = lua_tonumber(L, -4);
 	lua_Integer ma2 = lua_tonumber(L, -3);
@@ -1689,7 +1689,7 @@ static int tek_ui_class_area_askminmax(lua_State *L)
 	m2 += ma2 + ma4;
 	m3 += ma1 + ma3;
 	m4 += ma2 + ma4;
-	lua_getfield(L, ISELF, "MinMax");
+	lua_getfield(L, AREA_ISELF, "MinMax");
 	lua_getfield(L, -1, "setRect");
 	lua_insert(L, -2);
 	lua_pushinteger(L, m1);
@@ -1726,15 +1726,15 @@ static int tek_ui_class_area_rethinklayout(lua_State *L)
 		TBOOL check_size = lua_toboolean(L, 3);
 		if (check_size)
 		{
-			lua_getfield(L, ISELF, "getGroup");
-			lua_pushvalue(L, ISELF);
+			lua_getfield(L, AREA_ISELF, "getGroup");
+			lua_pushvalue(L, AREA_ISELF);
 			lua_call(L, 1, 1);
 			clrsetflags(L, 0, TEKUI_FL_CHANGED, TTRUE);
 		}
-		lua_getfield(L, ISELF, "Window");
+		lua_getfield(L, AREA_ISELF, "Window");
 		lua_getfield(L, -1, "addLayout");
 		lua_insert(L, -2);
-		lua_pushvalue(L, ISELF);
+		lua_pushvalue(L, AREA_ISELF);
 		lua_pushinteger(L, lua_tointeger(L, 2));
 		lua_pushboolean(L, check_size);
 		lua_call(L, 4, 0);
@@ -1760,10 +1760,10 @@ static int tek_ui_class_area_hide(lua_State *L)
 
 static int tek_ui_class_area_show(lua_State *L)
 {
-	lua_getfield(L, ISELF, "setState");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "setState");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 0);
-	if (!getboolfield(L, ISELF, "Invisible"))
+	if (!area_getboolfield(L, AREA_ISELF, "Invisible"))
 		clrsetflags(L, 0, TEKUI_FL_SHOW, TFALSE);
 	return 0;
 }
@@ -1774,8 +1774,8 @@ static int tek_ui_class_area_show(lua_State *L)
 
 static int tek_ui_class_area_beginpopup(lua_State *L)
 {
-	setfieldbool(L, ISELF, "Hilite", TFALSE);
-	setfieldbool(L, ISELF, "Focus", TFALSE);
+	setfieldbool(L, AREA_ISELF, "Hilite", TFALSE);
+	setfieldbool(L, AREA_ISELF, "Focus", TFALSE);
 	return 0;
 }
 
@@ -1785,20 +1785,20 @@ static int tek_ui_class_area_beginpopup(lua_State *L)
 
 static int tek_ui_class_area_reconfigure(lua_State *L)
 {
-	setfieldbool(L, ISELF, "DamageRegion", TFALSE);
-	lua_getfield(L, IREGION, "new");
+	setfieldbool(L, AREA_ISELF, "DamageRegion", TFALSE);
+	lua_getfield(L, AREA_IREGION, "new");
 	lua_call(L, 0, 1);
-	lua_setfield(L, ISELF, "MinMax");
-	lua_getfield(L, IREGION, "new");
+	lua_setfield(L, AREA_ISELF, "MinMax");
+	lua_getfield(L, AREA_IREGION, "new");
 	lua_call(L, 0, 1);
-	lua_setfield(L, ISELF, "Rect");
-	setfieldbool(L, ISELF, "BGPen", TFALSE);
-	lua_getfield(L, ISELF, "setState");
-	lua_pushvalue(L, ISELF);
+	lua_setfield(L, AREA_ISELF, "Rect");
+	setfieldbool(L, AREA_ISELF, "BGPen", TFALSE);
+	lua_getfield(L, AREA_ISELF, "setState");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 0);
 	clrsetflags(L, TEKUI_FL_LAYOUT, 0, TFALSE);
-	lua_getfield(L, ISELF, "rethinkLayout");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "rethinkLayout");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_pushinteger(L, 2);
 	lua_pushboolean(L, TTRUE);
 	lua_call(L, 3, 0);
@@ -1811,11 +1811,11 @@ static int tek_ui_class_area_reconfigure(lua_State *L)
 
 static int getattrfield(lua_State *L, const char *attr, const char *propname)
 {
-	lua_getfield(L, ISELF, attr);
+	lua_getfield(L, AREA_ISELF, attr);
 	if (!lua_toboolean(L, -1))
 	{
 		lua_pop(L, 1);
-		lua_getfield(L, ISELF, "Properties");
+		lua_getfield(L, AREA_ISELF, "Properties");
 		lua_getfield(L, -1, propname);
 		lua_remove(L, -2);
 	}
@@ -1922,8 +1922,8 @@ static int tek_ui_class_area_getattr(lua_State *L)
 		return getattrfield4(L, "MaxWidth", "max-width", "Width", "width");
 	else if (len == 9 && !strcmp(key, "MaxHeight"))
 		return getattrfield4(L, "MaxHeight", "max-height", "Height", "height");
-	lua_getfield(L, ISUPERCLASS, "getAttr");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISUPERCLASS, "getAttr");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 1);
 	return 1;
 }
@@ -1934,12 +1934,12 @@ static int tek_ui_class_area_getattr(lua_State *L)
 
 static int tek_ui_class_area_onsetinvisible(lua_State *L)
 {
-	if (getboolfield(L, ISELF, "Invisible"))
+	if (area_getboolfield(L, AREA_ISELF, "Invisible"))
 		clrsetflags(L, TEKUI_FL_SHOW, 0, TFALSE);
 	else
 		clrsetflags(L, 0, TEKUI_FL_SHOW, TFALSE);
-	lua_getfield(L, ISELF, "getGroup");
-	lua_pushvalue(L, ISELF);
+	lua_getfield(L, AREA_ISELF, "getGroup");
+	lua_pushvalue(L, AREA_ISELF);
 	lua_call(L, 1, 1);
 	/* g */
 	lua_getfield(L, -1, "rethinkLayout");
@@ -1958,7 +1958,7 @@ static int tek_ui_class_area_onsetinvisible(lua_State *L)
 
 /*****************************************************************************/
 
-static const luaL_Reg classfuncs[] =
+static const luaL_Reg tek_ui_class_area_classfuncs[] =
 {
 	{ "addClassNotifications", tek_ui_class_area_addclassnotifications },
 	{ "new", tek_ui_class_area_new },
@@ -2011,7 +2011,7 @@ static const luaL_Reg classfuncs[] =
 int luaopen_tek_ui_class_area(lua_State *L)
 {
 	lua_getglobal(L, "require");
-	lua_pushliteral(L, SUPERCLASS_NAME);
+	lua_pushliteral(L, AREA_SUPERCLASS_NAME);
 	lua_call(L, 1, 1);
 	lua_getfield(L, -1, "newClass");
 	lua_insert(L, -2);
@@ -2023,7 +2023,7 @@ int luaopen_tek_ui_class_area(lua_State *L)
 	lua_pushliteral(L, "tek.ui");
 	lua_call(L, 1, 1);
 	lua_getfield(L, -1, "checkVersion");
-	lua_pushinteger(L, TEKUI_VERSION);
+	lua_pushinteger(L, AREA_TEKUI_VERSION);
 	lua_call(L, 1, 0);
 	
 	lua_getfield(L, -1, "loadLibrary");
@@ -2031,7 +2031,7 @@ int luaopen_tek_ui_class_area(lua_State *L)
 	lua_pushinteger(L, REGION_VERSION);
 	lua_call(L, 2, 1);
 	/* s: newClass(), superclass, superclass, tek.ui, Region */
-	tek_lua_register(L, CLASS_NAME, classfuncs, 3);
+	tek_lua_register(L, AREA_CLASS_NAME, tek_ui_class_area_classfuncs, 3);
 	/* s: newClass(), superclass, class */
 	
 	
@@ -2047,9 +2047,9 @@ int luaopen_tek_ui_class_area(lua_State *L)
 	
 	
 	/* insert name and version: */
-	lua_pushliteral(L, CLASS_NAME);
+	lua_pushliteral(L, AREA_CLASS_NAME);
 	lua_setfield(L, -2, "_NAME");
-	lua_pushliteral(L, CLASS_VERSION);
+	lua_pushliteral(L, AREA_CLASS_VERSION);
 	lua_setfield(L, -2, "_VERSION");
 
 	/* inherit: class = superclass.newClass(superclass, class) */

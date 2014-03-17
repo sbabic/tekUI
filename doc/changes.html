@@ -11,6 +11,74 @@
 			tekUI Changelog
 		</h2>
 		<h3>
+			1.09:
+		</h3>
+		<blockquote>
+			<ul>
+				<li>
+					Input: doubleclick marks the whole line now
+				</li>
+				<li>
+					Sizeable: No longer adds empty blit regions to the Window, added sanity
+					checks, added cases for insertions above and below the visible area, now
+					operates on not shown elements correctly
+				</li>
+				<li>
+					Sizeable, ScrollGroup: Added support for merging damages and for
+					suppressing blits
+				</li>
+				<li>
+					Area, default layouter: Invisible attribute added
+				</li>
+				<li>
+					String: <a href="manual.html#getTextWidth"><code>getTextWidth()</code></a> missing range check, <a href="manual.html#attachdata"><code>attachdata()</code></a>, <a href="manual.html#getdata"><code>getdata()</code></a> added
+				</li>
+				<li>
+					Window: relayout calls to drawBegin/drawEnd were not exactly paired in
+					error case, corrected
+				</li>
+				<li>
+					Area, Group: Invisible, <a href="manual.html#onSetVisible"><code>onSetVisible()</code></a> added
+				</li>
+				<li>
+					DirList: changing the location field clears the current selection so that
+					the location field becomes the preferred selection
+				</li>
+				<li>
+					TextList: <a href="manual.html#deleteLine"><code>deleteLine()</code></a> added, better hardscroll support
+				</li>
+				<li>
+					<a href="manual.html#TextEdit:deleteLine"><code>TextEdit:deleteLine()</code></a> can now delete any line, not just the cursor line,
+					<a href="manual.html#enter"><code>enter()</code></a> now handles metadata correctly, <a href="manual.html#getNumLines"><code>getNumLines()</code></a> does not count an empty
+					first line anymore, <a href="manual.html#setCursor"><code>setCursor()</code></a> no longer performs damages if window updates
+					are suspended or if the cursor is invisible, &quot;wholeline&quot; cursor mode renamed
+					to &quot;bar+line&quot;, &quot;bar&quot; mode added, the ReadOnly attribute does not inhibit
+					marking text anymore, <a href="manual.html#updateMark"><code>updateMark()</code></a> added, window update suspension mechanism
+					reactivated and other fixes
+				</li>
+				<li>
+					Removed redundant code from display drivers
+				</li>
+				<li>
+					Visual: added large number of pixel formats and conversions, added pixmap
+					caching (used for gradients)
+				</li>
+				<li>
+					x11 driver, rawfb driver: added pixmap caching, added support for more
+					pixel formats
+				</li>
+				<li>
+					DirList: list dblclicks are acted upon mouse press, not release now
+				</li>
+				<li>
+					Added compiler tool again, some infrastructure for amalgamized builds added
+				</li>
+				<li>
+					UI: minor fixes in ProgDir/ProgName detection and stylesheet loading
+				</li>
+			</ul>
+		</blockquote>
+		<h3>
 			1.08:
 		</h3>
 		<blockquote>

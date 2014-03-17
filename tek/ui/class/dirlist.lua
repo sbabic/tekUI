@@ -89,7 +89,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 17.1"
+_VERSION = "DirList 17.2"
 local DirList = _M
 Group:newClass(DirList)
 
@@ -312,8 +312,10 @@ function DirList.new(class, self)
 		AlignColumn = 1,
 		SelectMode = self.SelectMode or "single",
 		ListObject = self.DirList,
-		onClick = function(lister)
-			self:clickList()
+		onPress = function(lister)
+			if self.Pressed then
+				self:clickList()
+			end
 		end,
 		onSelectLine = function(lister)
 			Lister.onSelectLine(lister)

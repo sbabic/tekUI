@@ -14,6 +14,7 @@
 #include <tek/debug.h>
 #include <tek/exec.h>
 #include <tek/teklib.h>
+#include <tek/lib/utf8.h>
 
 #include <tek/proto/exec.h>
 #include <tek/mod/visual.h>
@@ -37,20 +38,6 @@
 
 /*****************************************************************************/
 
-struct utf8reader
-{
-	/* character reader callback: */
-	int (*readchar)(struct utf8reader *);
-	/* reader state: */
-	int accu, numa, min, bufc;
-	/* userdata to reader */
-	void *udata;
-};
-
-LOCAL int readutf8(struct utf8reader *rd);
-LOCAL unsigned char *encodeutf8(unsigned char *buf, int c);
-
-/*****************************************************************************/
 #ifndef CUR_DEFFILE
 #define CUR_DEFFILE			TEKHOST_SYSDIR"cursors/cursor-green.png"
 #endif

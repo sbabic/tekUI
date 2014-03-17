@@ -7,6 +7,10 @@
 */
 
 #include "display_rfb_mod.h"
+#include <tek/inline/exec.h>
+#if defined(RFB_PIXMAP_CACHE)
+#include <tek/lib/imgcache.h>
+#endif
 
 /*****************************************************************************/
 
@@ -158,9 +162,12 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_WinRect[2] = v->rfbw_WinRect[0] + width - 1;
 	v->rfbw_WinRect[3] = v->rfbw_WinRect[1] + height - 1;
 	
-	rfb_region_intersect(&v->rfbw_WinRect[0], &v->rfbw_WinRect[1], 
-		&v->rfbw_WinRect[2], &v->rfbw_WinRect[3], 
-		0, 0, mod->rfb_Width - 1, mod->rfb_Height - 1);
+	TINT fbrect[4];
+	fbrect[0] = 0;
+	fbrect[1] = 0;
+	fbrect[2] = mod->rfb_Width - 1;
+	fbrect[3] = mod->rfb_Height - 1;
+	region_intersect(v->rfbw_WinRect, fbrect);
 
 	v->rfbw_ClipRect[0] = v->rfbw_WinRect[0];
 	v->rfbw_ClipRect[1] = v->rfbw_WinRect[1];
@@ -234,8 +241,8 @@ LOCAL TBOOL rfb_ispointobscured(RFBDISPLAY *mod, TINT x, TINT y, RFBWINDOW *v)
 LOCAL struct Region *rfb_getlayers(RFBDISPLAY *mod, RFBWINDOW *v,
 	TINT dx, TINT dy)
 {
-	struct Pool *pool = &mod->rfb_RectPool;
-	struct Region *A = rfb_region_new(pool, TNULL);
+	struct RectPool *pool = &mod->rfb_RectPool;
+	struct Region *A = region_new(pool, TNULL);
 	if (A)
 	{
 		TINT drect[4];
@@ -249,9 +256,9 @@ LOCAL struct Region *rfb_getlayers(RFBDISPLAY *mod, RFBWINDOW *v,
 			drect[1] = bv->rfbw_WinRect[1] + dy;
 			drect[2] = bv->rfbw_WinRect[2] + dx;
 			drect[3] = bv->rfbw_WinRect[3] + dy;
-			if (!rfb_region_orrect(pool, A, drect, TFALSE))
+			if (!region_orrect(pool, A, drect, TFALSE))
 			{
-				rfb_region_destroy(pool, A);
+				region_destroy(pool, A);
 				return TNULL;
 			}
 		}
@@ -264,20 +271,20 @@ LOCAL struct Region *rfb_getlayers(RFBDISPLAY *mod, RFBWINDOW *v,
 LOCAL struct Region *rfb_getlayermask(RFBDISPLAY *mod, TINT *crect,
 	RFBWINDOW *v, TINT dx, TINT dy)
 {
-	struct Pool *pool = &mod->rfb_RectPool;
-	struct Region *A = rfb_region_new(pool, crect);
+	struct RectPool *pool = &mod->rfb_RectPool;
+	struct Region *A = region_new(pool, crect);
 	if (A)
 	{
 		TBOOL success = TFALSE;
 		struct Region *L = rfb_getlayers(mod, v, dx, dy);
 		if (L)
 		{
-			success = rfb_region_subregion(pool, A, L);
-			rfb_region_destroy(pool, L);
+			success = region_subregion(pool, A, L);
+			region_destroy(pool, L);
 		}
 		if (!success)
 		{
-			rfb_region_destroy(pool, A);
+			region_destroy(pool, A);
 			A = TNULL;
 		}
 	}
@@ -294,8 +301,8 @@ LOCAL struct Region *rfb_getlayermask(RFBDISPLAY *mod, TINT *crect,
 LOCAL TBOOL rfb_damage(RFBDISPLAY *mod, TINT drect[], RFBWINDOW *v)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
-	struct Pool *pool = &mod->rfb_RectPool;
-	struct Region *B, *A = rfb_region_new(pool, drect);
+	struct RectPool *pool = &mod->rfb_RectPool;
+	struct Region *B, *A = region_new(pool, drect);
 	if (A == TNULL) return TFALSE;
 
 	TDBPRINTF(TDB_INFO,("incoming damage: %d %d %d %d\n",
@@ -309,7 +316,7 @@ LOCAL TBOOL rfb_damage(RFBDISPLAY *mod, TINT drect[], RFBWINDOW *v)
 	
 	TLock(mod->rfb_InstanceLock);
 	
-	for (; success && !rfb_region_isempty(pool, A) &&
+	for (; success && !region_isempty(pool, A) &&
 		(next = node->tln_Succ); node = next)
 	{
 		RFBWINDOW *bv = (RFBWINDOW *) node;
@@ -320,17 +327,17 @@ LOCAL TBOOL rfb_damage(RFBDISPLAY *mod, TINT drect[], RFBWINDOW *v)
 				below = TTRUE;
 			else
 				/* above: subtract current from rect to be damaged: */
-				success = rfb_region_subrect(pool, A, bv->rfbw_WinRect);
+				success = region_subrect(pool, A, bv->rfbw_WinRect);
 			continue;
 		}
 		
 		if (bv->rfbw_InputMask & TITYPE_REFRESH)
 		{
 			success = TFALSE;
-			B = rfb_region_new(pool, bv->rfbw_WinRect);
+			B = region_new(pool, bv->rfbw_WinRect);
 			if (B)
 			{
-				if (rfb_region_andregion(pool, B, A))
+				if (region_andregion(pool, B, A))
 				{
 					struct TNode *next, *node = B->rg_Rects.rl_List.tlh_Head;
 					for (; (next = node->tln_Succ); node = next)
@@ -357,17 +364,17 @@ LOCAL TBOOL rfb_damage(RFBDISPLAY *mod, TINT drect[], RFBWINDOW *v)
 					}
 					success = TTRUE;
 				}
-				rfb_region_destroy(pool, B);
+				region_destroy(pool, B);
 			}
 		}
 		
 		if (success)
-			success = rfb_region_subrect(pool, A, bv->rfbw_WinRect);
+			success = region_subrect(pool, A, bv->rfbw_WinRect);
 	}
 	
 	TUnlock(mod->rfb_InstanceLock);
 	
-	rfb_region_destroy(pool, A);
+	region_destroy(pool, A);
 	return success;
 }
 
@@ -499,7 +506,7 @@ LOCAL void rfb_flush_clients(RFBDISPLAY *mod, TBOOL also_external)
 				TDoIO(&req->tvr_Req);
 			}
 
-			rfb_region_destroy(&mod->rfb_RectPool, D);
+			region_destroy(&mod->rfb_RectPool, D);
 			mod->rfb_DirtyRegion = TNULL;
 		}
 	}
@@ -534,13 +541,13 @@ LOCAL void rfb_copyrect_sub(RFBDISPLAY *mod, TINT *rect, TINT dx, TINT dy)
 
 /*****************************************************************************/
 
-static void setbgpen(RFBDISPLAY *mod, RFBWINDOW *v, TVPEN pen)
+static void rfb_setbgpen(RFBDISPLAY *mod, RFBWINDOW *v, TVPEN pen)
 {
 	if (pen != v->bgpen && pen != TVPEN_UNDEFINED)
 		v->bgpen = pen;
 }
 
-static TVPEN setfgpen(RFBDISPLAY *mod, RFBWINDOW *v, TVPEN pen)
+static TVPEN rfb_setfgpen(RFBDISPLAY *mod, RFBWINDOW *v, TVPEN pen)
 {
 	TVPEN oldpen = v->fgpen;
 	if (pen != oldpen && pen != TVPEN_UNDEFINED)
@@ -586,7 +593,7 @@ LOCAL void rfb_frect(RFBDISPLAY *mod, struct TVRequest *req)
 	RFBWINDOW *v = req->tvr_Op.FRect.Window;
 	TINT rect[4];
 	struct RFBPen *pen = (struct RFBPen *) req->tvr_Op.FRect.Pen;
-	setfgpen(mod, v, req->tvr_Op.FRect.Pen);
+	rfb_setfgpen(mod, v, req->tvr_Op.FRect.Pen);
 	rect[0] = req->tvr_Op.FRect.Rect[0] + v->rfbw_WinRect[0];
 	rect[1] = req->tvr_Op.FRect.Rect[1] + v->rfbw_WinRect[1];
 	rect[2] = req->tvr_Op.FRect.Rect[2];
@@ -600,7 +607,7 @@ LOCAL void rfb_line(RFBDISPLAY *mod, struct TVRequest *req)
 {
 	RFBWINDOW *v = req->tvr_Op.Line.Window;
 	struct RFBPen *pen = (struct RFBPen *) req->tvr_Op.Line.Pen;
-	setfgpen(mod, v, req->tvr_Op.Line.Pen);
+	rfb_setfgpen(mod, v, req->tvr_Op.Line.Pen);
 	TINT rect[4];
 	rect[0] = req->tvr_Op.Line.Rect[0] + v->rfbw_WinRect[0];
 	rect[1] = req->tvr_Op.Line.Rect[1] + v->rfbw_WinRect[1];
@@ -615,7 +622,7 @@ LOCAL void rfb_rect(RFBDISPLAY *mod, struct TVRequest *req)
 {
 	RFBWINDOW *v = req->tvr_Op.Rect.Window;
 	struct RFBPen *pen = (struct RFBPen *) req->tvr_Op.Rect.Pen;
-	setfgpen(mod, v, req->tvr_Op.Rect.Pen);
+	rfb_setfgpen(mod, v, req->tvr_Op.Rect.Pen);
 	TINT rect[4];
 	rect[0] = req->tvr_Op.Rect.Rect[0] + v->rfbw_WinRect[0];
 	rect[1] = req->tvr_Op.Rect.Rect[1] + v->rfbw_WinRect[1];
@@ -632,7 +639,7 @@ LOCAL void rfb_plot(RFBDISPLAY *mod, struct TVRequest *req)
 	TUINT x = req->tvr_Op.Plot.Rect[0] + v->rfbw_WinRect[0];
 	TUINT y = req->tvr_Op.Plot.Rect[1] + v->rfbw_WinRect[1];
 	struct RFBPen *pen = (struct RFBPen *) req->tvr_Op.Plot.Pen;
-	setfgpen(mod, v, req->tvr_Op.Plot.Pen);
+	rfb_setfgpen(mod, v, req->tvr_Op.Plot.Pen);
 	fbp_drawpoint(mod, v, x, y, pen);
 }
 
@@ -653,9 +660,9 @@ LOCAL void rfb_drawstrip(RFBDISPLAY *mod, struct TVRequest *req)
 	if (num < 3) return;
 
 	if (penarray)
-		setfgpen(mod, v, penarray[2]);
+		rfb_setfgpen(mod, v, penarray[2]);
 	else
-		setfgpen(mod, v, pen);
+		rfb_setfgpen(mod, v, pen);
 
 	x0 = array[0] + wx;
 	y0 = array[1] + wy;
@@ -677,7 +684,7 @@ LOCAL void rfb_drawstrip(RFBDISPLAY *mod, struct TVRequest *req)
 		y2 = array[i*2+1] + wy;
 
 		if (penarray)
-			setfgpen(mod, v, penarray[i]);
+			rfb_setfgpen(mod, v, penarray[i]);
 
 		fbp_drawtriangle(mod, v, x0, y0, x1, y1, x2, y2,
 			(struct RFBPen *) v->fgpen);
@@ -701,9 +708,9 @@ LOCAL void rfb_drawfan(RFBDISPLAY *mod, struct TVRequest *req)
 	if (num < 3) return;
 
 	if (penarray)
-		setfgpen(mod, v, penarray[2]);
+		rfb_setfgpen(mod, v, penarray[2]);
 	else
-		setfgpen(mod, v, pen);
+		rfb_setfgpen(mod, v, pen);
 
 	x0 = array[0] + wx;
 	y0 = array[1] + wy;
@@ -723,7 +730,7 @@ LOCAL void rfb_drawfan(RFBDISPLAY *mod, struct TVRequest *req)
 		y2 = array[i*2+1] + wy;
 
 		if (penarray)
-			setfgpen(mod, v, penarray[i]);
+			rfb_setfgpen(mod, v, penarray[i]);
 
 		fbp_drawtriangle(mod, v, x0, y0, x1, y1, x2, y2,
 			(struct RFBPen *) v->fgpen);
@@ -784,7 +791,7 @@ LOCAL void rfb_clear(RFBDISPLAY *mod, struct TVRequest *req)
 	TINT wh = v->rfbw_WinRect[3] - v->rfbw_WinRect[1] + 1;
 	TINT rect[4] = { 0, 0, ww, wh };
 	struct RFBPen *pen = (struct RFBPen *) req->tvr_Op.Clear.Pen;
-	setfgpen(mod, v, req->tvr_Op.Clear.Pen);
+	rfb_setfgpen(mod, v, req->tvr_Op.Clear.Pen);
 	fbp_drawfrect(mod, v, rect, pen);
 }
 
@@ -792,24 +799,45 @@ LOCAL void rfb_clear(RFBDISPLAY *mod, struct TVRequest *req)
 
 LOCAL void rfb_drawbuffer(RFBDISPLAY *mod, struct TVRequest *req)
 {
+	struct PixArray src;
+	TTAGITEM *tags = req->tvr_Op.DrawBuffer.Tags;
 	RFBWINDOW *v = req->tvr_Op.DrawBuffer.Window;
-	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
-	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
-	TUINT pixfmt = TGetTag(req->tvr_Op.DrawBuffer.Tags, 
-		TVisual_PixelFormat, TVPIXFMT_ARGB32);
-	TBOOL alpha = TGetTag(req->tvr_Op.DrawBuffer.Tags, 
-		TVisual_AlphaChannel, TFALSE);
-	TINT rect[4];
-	rect[0] = req->tvr_Op.DrawBuffer.RRect[0] + v->rfbw_WinRect[0];
-	rect[1] = req->tvr_Op.DrawBuffer.RRect[1] + v->rfbw_WinRect[1];
-	rect[2] = req->tvr_Op.DrawBuffer.RRect[2];
-	rect[3] = req->tvr_Op.DrawBuffer.RRect[3];
-	fbp_drawbuffer(mod, v, (TUINT8 *)buf, rect, totw, pixfmt, alpha);
+	TINT x = req->tvr_Op.DrawBuffer.RRect[0];
+	TINT y = req->tvr_Op.DrawBuffer.RRect[1];
+	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
+	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
+	src.buf = req->tvr_Op.DrawBuffer.Buf;
+	src.fmt = TGetTag(tags, TVisual_PixelFormat, TVPIXFMT_A8R8G8B8);
+	src.width = req->tvr_Op.DrawBuffer.TotWidth;
+	TBOOL alpha = TGetTag(tags, TVisual_AlphaChannel, TFALSE);
+
+#if defined(RFB_PIXMAP_CACHE)
+	struct TVImageCacheRequest *creq = (struct TVImageCacheRequest *) 
+		TGetTag(tags, TVisual_CacheRequest, TNULL);
+	if (creq)
+	{
+		struct ImageCacheState cstate;
+		cstate.src = src;
+		cstate.dst.fmt = alpha ? src.fmt : RFBPIXFMT;
+		cstate.convert = pixconv_convert;
+		int res = imgcache_lookup(&cstate, creq, x, y, w, h);
+		if (res != TVIMGCACHE_FOUND && src.buf != TNULL)
+			res = imgcache_store(&cstate, creq);
+		if (res == TVIMGCACHE_FOUND || res == TVIMGCACHE_STORED)
+			src = cstate.dst;
+	}
+#endif
+
+	if (!src.buf)
+		return;
+	
+	fbp_drawbuffer(mod, v, &src,
+		x + v->rfbw_WinRect[0], y + v->rfbw_WinRect[1], w, h, alpha);
 }
 
 /*****************************************************************************/
 
-static THOOKENTRY TTAG getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG rfb_getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct rfb_attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
@@ -868,7 +896,7 @@ LOCAL void rfb_getattrs(RFBDISPLAY *mod, struct TVRequest *req)
 	data.v = req->tvr_Op.GetAttrs.Window;
 	data.num = 0;
 	data.mod = mod;
-	TInitHook(&hook, getattrfunc, &data);
+	TInitHook(&hook, rfb_getattrfunc, &data);
 
 	TForEachTag(req->tvr_Op.GetAttrs.Tags, &hook);
 	req->tvr_Op.GetAttrs.Num = data.num;
@@ -876,7 +904,7 @@ LOCAL void rfb_getattrs(RFBDISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-static THOOKENTRY TTAG setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG rfb_setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct rfb_attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
@@ -899,7 +927,7 @@ LOCAL void rfb_setattrs(RFBDISPLAY *mod, struct TVRequest *req)
 	data.v = v;
 	data.num = 0;
 	data.mod = mod;
-	TInitHook(&hook, setattrfunc, &data);
+	TInitHook(&hook, rfb_setattrfunc, &data);
 
 	TForEachTag(req->tvr_Op.SetAttrs.Tags, &hook);
 	req->tvr_Op.SetAttrs.Num = data.num;
@@ -907,16 +935,16 @@ LOCAL void rfb_setattrs(RFBDISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-struct drawdata
+struct rfb_drawtagdata
 {
 	RFBWINDOW *v;
 	RFBDISPLAY *mod;
 	TINT x0, x1, y0, y1;
 };
 
-static THOOKENTRY TTAG drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG rfb_drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
-	struct drawdata *data = hook->thk_Data;
+	struct rfb_drawtagdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
 
 	switch (item->tti_Tag)
@@ -942,10 +970,10 @@ static THOOKENTRY TTAG drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			data->y1 = item->tti_Value;
 			break;
 		case TVisualDraw_FgPen:
-			setfgpen(data->mod, data->v, item->tti_Value);
+			rfb_setfgpen(data->mod, data->v, item->tti_Value);
 			break;
 		case TVisualDraw_BgPen:
-			setbgpen(data->mod, data->v, item->tti_Value);
+			rfb_setbgpen(data->mod, data->v, item->tti_Value);
 			break;
 		case TVisualDraw_Command:
 			switch (item->tti_Value)
@@ -989,11 +1017,11 @@ static THOOKENTRY TTAG drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
 LOCAL void rfb_drawtags(RFBDISPLAY *mod, struct TVRequest *req)
 {
 	struct THook hook;
-	struct drawdata data;
+	struct rfb_drawtagdata data;
 	data.v = req->tvr_Op.DrawTags.Window;
 	data.mod = mod;
 
-	TInitHook(&hook, drawtagfunc, &data);
+	TInitHook(&hook, rfb_drawtagfunc, &data);
 	TForEachTag(req->tvr_Op.DrawTags.Tags, &hook);
 }
 
@@ -1077,11 +1105,11 @@ LOCAL void rfb_getnextfont(RFBDISPLAY *mod, struct TVRequest *req)
 
 LOCAL void rfb_markdirty(RFBDISPLAY *mod, TINT *r)
 {
-	struct Pool *pool = &mod->rfb_RectPool;
+	struct RectPool *pool = &mod->rfb_RectPool;
 	if (!mod->rfb_DirtyRegion)
 	{
-		mod->rfb_DirtyRegion = rfb_region_new(pool, r);
+		mod->rfb_DirtyRegion = region_new(pool, r);
 		return;
 	}
-	rfb_region_orrect(pool, mod->rfb_DirtyRegion, r, TTRUE);
+	region_orrect(pool, mod->rfb_DirtyRegion, r, TTRUE);
 }

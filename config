@@ -22,12 +22,14 @@ DISPLAY_DRIVER ?= x11
 #------------------------------------------------------------------------------
 # tekUI features:
 # ENABLE_GRADIENT - enable color gradients
+# ENABLE_PIXMAP_CACHE - enable caching of pixmaps
 # ENABLE_PNG - enable PNG support through libpng
-# ENABLE_FILENO - dispatches lines from a fd (normally stdin) to MSG_USER.
-# ENABLE_DGRAM - enables a datagram server on 127.0.0.1:20000 for the same.
+# ENABLE_FILENO - dispatches lines from a fd (normally stdin) to MSG_USER
+# ENABLE_DGRAM - enables a datagram server on 127.0.0.1:20000 for the same
 #------------------------------------------------------------------------------
 
-TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_FILENO # -DENABLE_PNG -DENABLE_DGRAM=20000
+TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_PIXMAP_CACHE -DENABLE_FILENO
+# TEKUI_DEFS += -DENABLE_PNG -DENABLE_DGRAM=20000
 # TEKUI_LIBS = -lpng
 
 #------------------------------------------------------------------------------
@@ -42,7 +44,7 @@ CC = $(CCPREFIX)gcc -fpic # -DTSYS_POSIX
 # For Windows using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# CC = $(CCPREFIX)gcc -mno-cygwin -DWIN32
+# CC = $(CCPREFIX)gcc -DWIN32
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Cross-build using MinGW:
@@ -90,21 +92,21 @@ FREETYPE_LIBS = -L$(PREFIX)/lib -lfreetype
 FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2 -I/usr/X11/include/
 
 X11_LIBS = -L/usr/X11R6/lib -lX11 -lXext -lXxf86vm
-X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DENABLE_XFT -DENABLE_XVID
+X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DX11_PIXMAP_CACHE -DENABLE_XFT -DENABLE_XVID
 
 WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 
 # VNCSERVER_LIBS = -L$(PREFIX)/lib -lvncserver
 # VNCSERVER_DEFS = -DENABLE_VNCSERVER -I$(PREFIX)/include -DENABLE_VNCSERVER_COPYRECT
 RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
-RAWFB_SUB_DEFS = -DRFB_SUB_DEVICE=x11 # -DRFB_DEPTH_24BIT
+RAWFB_SUB_DEFS = -DRFB_SUB_DEVICE=x11
 RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS)
-RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) # -DFNT_DEFDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
+RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) -DRFB_PIXMAP_CACHE -DRFB_DEPTH_24BIT # -DFNT_DEFDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
 # Comment out RAWFB_SUB for a 'headless' GUI. VNC support makes this software
 # a combined work with LibVNCServer, see also src/display_rawfb/vnc/COPYING
 
-DFB_LIBS = `pkg-config --libs directfb`
-DFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
+DIRECTFB_LIBS = `pkg-config --libs directfb`
+DIRECTFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
 
 #------------------------------------------------------------------------------
 # Build paths:

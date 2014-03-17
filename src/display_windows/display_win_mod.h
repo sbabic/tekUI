@@ -14,6 +14,7 @@
 #include <tek/proto/exec.h>
 #include <tek/inline/exec.h>
 #include <tek/mod/visual.h>
+#include <tek/lib/utf8.h>
 
 #include <windows.h>
 

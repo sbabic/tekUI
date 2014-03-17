@@ -133,7 +133,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 47.2" -- module version string
+_VERSION = "tekUI 47.3" -- module version string
 
 VERSION = 109 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
@@ -161,6 +161,9 @@ end
 -- Modified package path to find modules in the local program directory:
 LocalPath = ProgDir and ProgDir .. "?.lua;" .. OldPath or OldPath
 LocalCPath = ProgDir and ProgDir .. "?.so;" .. OldCPath or OldCPath
+
+ProgDir = ProgDir or ""
+ProgName = ProgName or ""
 
 -- Name of the Default Theme:
 ThemeName = getenv("THEME") or "desktop"
@@ -884,6 +887,7 @@ function getStyleSheet(themename)
 	if themename == "desktop" then
 		local success, res = pcall(int_require, "tek.ui.style.desktop")
 		if success then
+			s = s or { }
 			res.importConfiguration(s)
 		else
 			db.warn("Failed to import desktop style:\n%s", res)

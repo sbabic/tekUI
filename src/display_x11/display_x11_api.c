@@ -1,6 +1,9 @@
 
+#include <assert.h>
 #include <string.h>
 #include "display_x11_mod.h"
+#include <tek/lib/imgcache.h>
+#include <tek/inline/exec.h>
 
 static void freepen(X11DISPLAY *mod, X11WINDOW *v, struct X11Pen *pen);
 static int x11_seteventmask(X11DISPLAY *mod, X11WINDOW *v, TUINT eventmask);
@@ -1155,6 +1158,46 @@ LOCAL void x11_drawtags(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
+static TUINT x11_getpixfmtfromimage(X11DISPLAY *mod, X11WINDOW *v)
+{
+	XImage *img = v->image;
+	TUINT rm = img->red_mask;
+	TUINT gm = img->green_mask;
+	TUINT bm = img->blue_mask;
+	TUINT d = img->bits_per_pixel;
+	TUINT pixfmt = TVPIXFMT_UNDEFINED;
+	switch (d)
+	{
+		case 16:
+			v->bpp = 2;
+			if (rm == 0x00007c00 && gm == 0x000003e0 && bm == 0x0000001f)
+				pixfmt = TVPIXFMT_0R5G5B5;
+			else if (rm == 0x0000f800 && gm == 0x000007e0 && bm == 0x0000001f)
+				pixfmt = TVPIXFMT_R5G6B5;
+			break;
+		case 24:
+			v->bpp = 4;
+			if (rm == 0x00ff0000 && gm == 0x0000ff00 && bm == 0x000000ff)
+				pixfmt = TVPIXFMT_08R8G8B8;
+			else if (rm == 0x000000ff && gm == 0x0000ff00 && bm == 0x00ff0000)
+				pixfmt = TVPIXFMT_08B8G8R8;
+			break;
+		case 32:
+			v->bpp = 4;
+			if (rm == 0x00ff0000 && gm == 0x0000ff00 && bm == 0x000000ff)
+				pixfmt = TVPIXFMT_08R8G8B8;
+			else if (rm == 0x0000ff00 && gm == 0x00ff0000 && bm == 0xff000000)
+				pixfmt = TVPIXFMT_B8G8R808;
+			else if (rm == 0xff000000 && gm == 0x00ff0000 && bm == 0x0000ff00)
+				pixfmt = TVPIXFMT_R8G8B808;
+			break;
+	}
+	assert(pixfmt != TVPIXFMT_UNDEFINED);
+	v->pixfmt = pixfmt;
+	TDBPRINTF(TDB_INFO,("pixfmt: %08x - bpp: %d\n", pixfmt, v->bpp));
+	return pixfmt;
+}
+
 static void x11_freeimage(X11DISPLAY *mod, X11WINDOW *v)
 {
 	if (v->image)
@@ -1166,12 +1209,12 @@ static void x11_freeimage(X11DISPLAY *mod, X11WINDOW *v)
 }
 
 static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
-	TUINT8 **bufptr, TINT *bytes_per_line)
+	TUINT8 **bufptr, TINT *pixel_per_line)
 {
-	if (w <= 0 || h <= 0 || mod->x11_Depth <= 0)
+	if (w <= 0 || h <= 0)
 		return TNULL;
 	
-	while (!v->image || w != v->imw || h != v->imh)
+	while (!v->image || w > v->imw || h > v->imh)
 	{
 		x11_freeimage(mod, v);
 		
@@ -1179,7 +1222,7 @@ static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
 		{
 			/* TODO: buffer more images, not just 1 */
 			v->image = XShmCreateImage(mod->x11_Display, mod->x11_Visual,
-				mod->x11_Depth, ZPixmap, TNULL, &v->shminfo, w, h);
+				mod->x11_DefaultDepth, ZPixmap, TNULL, &v->shminfo, w, h);
 			if (v->image)
 			{
 				v->image->data = x11_getsharedmemory(mod, v, 
@@ -1198,15 +1241,17 @@ static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
 		if (!v->image)
 		{
 			TAPTR TExecBase = TGetExecBase(mod);
-			
+			TUINT bpp = v->bpp;
+			if (bpp == 0)
+				bpp = mod->x11_DefaultBPP;
 			if (v->tempbuf) 
 				TFree(v->tempbuf);
-			v->tempbuf = TAlloc(TNULL, w * h * mod->x11_BPP);
+			v->tempbuf = TAlloc(TNULL, w * h * bpp);
 			if (v->tempbuf)
 			{
 				v->image = XCreateImage(mod->x11_Display, mod->x11_Visual,
-					mod->x11_Depth, ZPixmap, 0, NULL, w, h, mod->x11_BPP * 8, 
-					mod->x11_BPP * w);
+					mod->x11_DefaultDepth, ZPixmap, 0, NULL, w, h, bpp * 8, 
+					bpp * w);
 				if (v->image)
 				{
 					v->image->data = v->tempbuf;
@@ -1222,16 +1267,20 @@ static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
 		return TNULL;
 	}
 
+	if (v->pixfmt == TVPIXFMT_UNDEFINED)
+		x11_getpixfmtfromimage(mod, v);
+	
 	if (v->tempbuf)
 	{
 		*bufptr = (TUINT8 *) v->tempbuf;
-		*bytes_per_line = v->imw * mod->x11_BPP;
+		*pixel_per_line = v->imw;
 	}
 	else
 	{
 		*bufptr = (TUINT8 *) v->image->data;
-		*bytes_per_line = v->image->bytes_per_line;
+		*pixel_per_line = v->image->bytes_per_line / v->bpp;
 	}
+	
 	return v->image;
 }
 
@@ -1249,230 +1298,45 @@ static void x11_putimage(X11DISPLAY *mod, X11WINDOW *v, struct TVRequest *req,
 			x0, y0, w, h);
 }
 
-static void x11_drawbuffer_argb32(X11DISPLAY *mod, struct TVRequest *req)
-{
-	X11WINDOW *v = req->tvr_Op.DrawBuffer.Window;
-	TINT x0 = req->tvr_Op.DrawBuffer.RRect[0];
-	TINT y0 = req->tvr_Op.DrawBuffer.RRect[1];
-	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
-	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
-	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
-	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
-	int xx, yy;
-	TUINT p;
-	TUINT *sp = buf;
-	TUINT8 *dp;
-	TINT dtw;
-
-	if (!x11_getdrawimage(mod, v, w, h, &dp, &dtw))
-		return;
-
-	switch (mod->x11_DstFmt)
-	{
-		default:
-			TDBPRINTF(TDB_ERROR,("Cannot render to screen mode\n"));
-			break;
-
-		case (24 << 8) + (0 << 1) + 0:
-		case (32 << 8) + (0 << 1) + 0:
-			if (dtw == totw * 4 && !v->image_shm)
-			{
-				v->image->data = (char *) buf;
-			}
-			else
-			{
-				for (yy = 0; yy < h; ++yy)
-				{
-					memcpy(dp, sp, w * 4);
-					sp += totw;
-					dp += dtw;
-				}
-			}
-			break;
-
-		case (15 << 8) + (0 << 1) + 0:
-			for (yy = 0; yy < h; ++yy)
-			{
-				for (xx = 0; xx < w; xx++)
-				{
-					p = sp[xx];
-					((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 9) |
-						((p & 0x00f800) >> 6) |
-						((p & 0x0000f8) >> 3);
-
-				}
-				sp += totw;
-				dp += dtw;
-			}
-			break;
-
-		case (15 << 8) + (0 << 1) + 1:
-			for (yy = 0; yy < h; ++yy)
-			{
-				for (xx = 0; xx < w; xx++)
-				{
-					p = sp[xx];
-					/*		24->15 bit, host-swapped
-					**		........rrrrrrrrGGggggggbbbbbbbb
-					** ->	................gggbbbbb0rrrrrGG */
-					((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 17) |
-						((p & 0x00c000) >> 14) |
-						((p & 0x003800) << 2) |
-						((p & 0x0000f8) << 5);
-				}
-				sp += totw;
-				dp += dtw;
-			}
-			break;
-
-		case (16 << 8) + (0 << 1) + 0:
-			for (yy = 0; yy < h; ++yy)
-			{
-				for (xx = 0; xx < w; xx++)
-				{
-					p = sp[xx];
-					((TUINT16 *)dp)[xx] = ((p & 0xf80000) >> 8) |
-						((p & 0x00fc00) >> 5) |
-						((p & 0x0000f8) >> 3);
-
-				}
-				sp += totw;
-				dp += dtw;
-			}
-			break;
-
-		case (16 << 8) + (0 << 1) + 1:
-			for (yy = 0; yy < h; ++yy)
-			{
-				for (xx = 0; xx < w; xx++)
-				{
-					p = sp[xx];
-					/*		24->16 bit, host-swapped
-					**		........rrrrrrrrGGGgggggbbbbbbbb
-					** ->	................gggbbbbbrrrrrGGG */
-					((TUINT16 *) dp)[xx] = ((p & 0xf80000) >> 16) |
-						((p & 0x0000f8) << 5) |
-						((p & 0x00e000) >> 13) |
-						((p & 0x001c00) << 3);
-				}
-				sp += totw;
-				dp += dtw;
-			}
-			break;
-
-		case (24 << 8) + (0 << 1) + 1:
-			for (yy = 0; yy < h; ++yy)
-			{
-				for (xx = 0; xx < w; xx++)
-				{
-					p = sp[xx];
-					/*	24->24 bit, host-swapped */
-					((TUINT *) dp)[xx] = ((p & 0x00ff0000) >> 8) |
-						((p & 0x0000ff00) << 8) |
-						((p & 0x000000ff) << 24);
-				}
-				sp += totw;
-				dp += dtw;
-			}
-			break;
-	}
-
-	x11_putimage(mod, v, req, x0, y0, w, h);
-}
-
-
-static void x11_drawbuffer_rgb16(X11DISPLAY *mod, struct TVRequest *req)
-{
-	X11WINDOW *v = req->tvr_Op.DrawBuffer.Window;
-	TINT x0 = req->tvr_Op.DrawBuffer.RRect[0];
-	TINT y0 = req->tvr_Op.DrawBuffer.RRect[1];
-	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
-	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
-	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
-	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
-	int xx, yy;
-	TUINT p;
-	TUINT16 *sp = buf;
-	TUINT8 *dp;
-	TINT dtw;
-
-	if (!x11_getdrawimage(mod, v, w, h, &dp, &dtw))
-		return;
-	
-	switch (mod->x11_DstFmt)
-	{
-		default:
-			TDBPRINTF(TDB_ERROR,("Render to screen mode not implemented\n"));
-			break;
-			
-		case (16 << 8) + (0 << 1) + 0:
-			for (yy = 0; yy < h; ++yy)
-			{
-				// 		...c...8...4...0
-				// 		.bbbbbgggggrrrrr
-				//	->	rrrrrgggggGbbbbb
-				for (xx = 0; xx < w; xx++)
-				{
-					p = sp[xx];
-					/*	16->16 bit */
-					((TUINT16 *) dp)[xx] = 
-						((p & 0x7c00) >> 10) |
-						((p & 0x03e0) << 1) |
-						((p & 0x001f) << 11);
-				}
-				sp += totw;
-				dp += dtw;
-			}
-			break;
-			
-		case (24 << 8) + (0 << 1) + 0:
-			for (yy = 0; yy < h; ++yy)
-			{
-				for (xx = 0; xx < w; xx++)
-				{
-					p = sp[xx];
-					/*	16->24 bit, not swapped */
-					((TUINT *) dp)[xx] = 
-						((p & 0x1f) << 19) | ((p & 0x1c) << 14) |
-						((p & 0x3e0) << 6) | ((p & 0x380) << 1) |
-						((p & 0x7c00) >> 7) | ((p & 0x7000) >> 12);
-				}
-				sp += totw;
-				dp += dtw;
-			}
-			break;
-	}
-	
-	x11_putimage(mod, v, req, x0, y0, w, h);
-}
-
+/*****************************************************************************/
 
 LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 {
-	TINT x0 = req->tvr_Op.DrawBuffer.RRect[0];
-	TINT y0 = req->tvr_Op.DrawBuffer.RRect[1];
+	struct PixArray src, dst;
+	TTAGITEM *tags = req->tvr_Op.DrawBuffer.Tags;
+	X11WINDOW *v = req->tvr_Op.DrawBuffer.Window;
+	TINT x = req->tvr_Op.DrawBuffer.RRect[0];
+	TINT y = req->tvr_Op.DrawBuffer.RRect[1];
 	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
 	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
-	TINT totw = req->tvr_Op.DrawBuffer.TotWidth;
-	if (x0 < 0 || y0 < 0 || w <= 0 || h <= 0 || w > totw)
-	{
-		TDBPRINTF(TDB_WARN,("illegal arguments to x11_drawbuffer: x0=%d y0=%d w=%d h=%d tw=%d\n", x0, y0, w, h, totw));
-		return;
-	}
-	
-	TUINT pixfmt = TGetTag(req->tvr_Op.DrawBuffer.Tags, 
-		TVisual_PixelFormat, TVPIXFMT_ARGB32);
-	switch (pixfmt)
-	{
-		case TVPIXFMT_ARGB32:
-			x11_drawbuffer_argb32(mod, req);
-			break;
-		case TVPIXFMT_RGB16:
-			x11_drawbuffer_rgb16(mod, req);
-			break;
-	}
-}
+	src.buf = req->tvr_Op.DrawBuffer.Buf;
+	src.fmt = TGetTag(tags, TVisual_PixelFormat, TVPIXFMT_A8R8G8B8);
+	src.width = req->tvr_Op.DrawBuffer.TotWidth;
 
+#if defined(X11_PIXMAP_CACHE)
+	struct TVImageCacheRequest *creq = (struct TVImageCacheRequest *) 
+		TGetTag(tags, TVisual_CacheRequest, TNULL);
+	if (creq && v->pixfmt != TVPIXFMT_UNDEFINED)
+	{
+		struct ImageCacheState cstate;
+		cstate.src = src;
+		cstate.dst.fmt = v->pixfmt;
+		cstate.convert = pixconv_convert;
+		int res = imgcache_lookup(&cstate, creq, x, y, w, h);
+		if (res != TVIMGCACHE_FOUND && src.buf != TNULL)
+			res = imgcache_store(&cstate, creq);
+		if (res == TVIMGCACHE_FOUND || res == TVIMGCACHE_STORED)
+			src = cstate.dst;
+	}
+#endif
+	
+	if (!src.buf || !x11_getdrawimage(mod, v, w, h, &dst.buf, &dst.width))
+		return;
+
+	dst.fmt = v->pixfmt;
+	pixconv_convert(&src, &dst, 0, 0, w - 1, h - 1, 0, 0, 0, 0);
+	x11_putimage(mod, v, req, x, y, w, h);
+}
 
 /*****************************************************************************/
 /*

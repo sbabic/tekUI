@@ -22,9 +22,13 @@
 #include "../teklib/debug.c"
 #endif
 
+#include "../misc/utf8.c"
+#include "../misc/pixconv.c"
+#include "../misc/imgcache.c"
+#include "../misc/region.c"
+
 #include "display_rfb_mod.c"
 #include "display_rfb_api.c"
-#include "display_rfb_region.c"
 #include "display_rfb_font.c"
 #include "display_rfb_draw.c"
 #if defined(ENABLE_VNCSERVER)

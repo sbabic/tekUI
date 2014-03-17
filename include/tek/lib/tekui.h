@@ -30,12 +30,4 @@
 #define TEK_UI_OVERLAPRECT(d, s) \
 TEK_UI_OVERLAP((d)[0], (d)[1], (d)[2], (d)[3], (s)[0], (s)[1], (s)[2], (s)[3])
 
-typedef TINT RECTINT;
-
-struct RectNode
-{
-	struct TNode rn_Node;
-	RECTINT rn_Rect[4];
-};
-
 #endif

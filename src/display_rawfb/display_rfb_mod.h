@@ -1,4 +1,3 @@
-
 #ifndef _TEK_DISPLAY_RFB_MOD_H
 #define _TEK_DISPLAY_RFB_MOD_H
 
@@ -12,77 +11,23 @@
 #define NDEBUG
 #include <assert.h>
 
+#include <tek/debug.h>
+#include <tek/exec.h>
+#include <tek/teklib.h>
+#include <tek/mod/visual.h>
+#include <tek/lib/region.h>
+#include <tek/lib/utf8.h>
+#include <tek/lib/pixconv.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <freetype/ftglyph.h>
 #include <freetype/ftcache.h>
 
-#include <tek/debug.h>
-#include <tek/exec.h>
-#include <tek/teklib.h>
-
-#include <tek/proto/exec.h>
-#include <tek/mod/visual.h>
-
 #if defined(ENABLE_VNCSERVER)
 #include <rfb/rfb.h>
 #include <rfb/rfbregion.h>
 #endif
-
-/*****************************************************************************/
-
-typedef	TUINT32 RFBPixelARGB32;
-typedef	TUINT16 RFBPixelRGB16;
-
-#define RGB16GetRFBPixelBlue(p)		((((p) & 0x7c00) >> 7) | (((p) & 0x7000) >> 12))
-#define RGB16GetRFBPixelGreen(p)	((((p) & 0x03e0) >> 2) | (((p) & 0x0380) >> 7))
-#define RGB16GetRFBPixelRed(p)		((((p) & 0x001f) << 3) | (((p) & 0x001c) >> 2))
-
-#define ARGB32GetRFBPixelAlpha(p)	((p) >> 24)
-#define ARGB32GetRFBPixelRed(p)		(((p) >> 16) & 0xff)
-#define ARGB32GetRFBPixelGreen(p)	(((p) >> 8) & 0xff)
-#define ARGB32GetRFBPixelBlue(p)	((p) & 0xff)
-
-#define ARGB32FromRGB(r,g,b)		(((r)<<16) | ((g)<<8) | (b))
-#define RGB16FromRGB(r,g,b)			((((b) & 0xf8) << 7) | (((g) & 0xf8) << 2) | (((r) & 0xf8) >> 3))
-
-#define RGB16FromARGB32(p)			RGB16FromRGB(ARGB32GetRFBPixelRed(p),ARGB32GetRFBPixelGreen(p),ARGB32GetRFBPixelBlue(p))
-#define ARGB32FromRGB16(p)			ARGB32FromRGB(RGB16GetRFBPixelRed(p),RGB16GetRFBPixelGreen(p),RGB16GetRFBPixelBlue(p))
-
-
-#if defined(RFB_DEPTH_24BIT)
-
-typedef RFBPixelARGB32 RFBPixel;
-#define RFBPIXFMT TVPIXFMT_ARGB32
-#define RFB_BITS_PER_GUN 8
-#define GetRFBPixelRed(p)		ARGB32GetRFBPixelRed(p)
-#define GetRFBPixelGreen(p)		ARGB32GetRFBPixelGreen(p)
-#define GetRFBPixelBlue(p)		ARGB32GetRFBPixelBlue(p)
-#define RFBPixel2RGB32(p) 		(p)
-#define RGB2RFBPixel(p)			(p)
-#define RFBPixelFromRGB(r,g,b)	ARGB32FromRGB(r,g,b)
-
-#else
-
-typedef RFBPixelRGB16 RFBPixel;
-#define RFBPIXFMT TVPIXFMT_RGB16
-#define RFB_BITS_PER_GUN 5
-#define GetRFBPixelRed(p)		RGB16GetRFBPixelRed(p)
-#define GetRFBPixelGreen(p)		RGB16GetRFBPixelGreen(p)
-#define GetRFBPixelBlue(p)		RGB16GetRFBPixelBlue(p)
-#define RFBPixel2RGB32(p)		((GetRFBPixelRed(p) << 16) | (GetRFBPixelGreen(p) << 8) | GetRFBPixelBlue(p))
-#define RGB2RFBPixel(p) 		( (((p) & 0xf80000) >> 19) | (((p) & 0xf800) >> 6) | (((p) & 0xf8) << 7) )
-#define RFBPixelFromRGB(r,g,b)	RGB16FromRGB(r,g,b)
-
-#endif
-
-#define WritePixel(v, x, y, p) do { \
-	assert((x) >= (v)->rfbw_WinRect[0]); \
-	assert((x) <= (v)->rfbw_WinRect[2]); \
-	assert((y) >= (v)->rfbw_WinRect[1]); \
-	assert((y) <= (v)->rfbw_WinRect[3]); \
-	((RFBPixel *)(v)->rfbw_BufPtr)[(y) * (v)->rfbw_PixelPerLine + (x)] = (p); \
-} while(0)
 
 /*****************************************************************************/
 
@@ -100,61 +45,55 @@ typedef RFBPixelRGB16 RFBPixel;
 
 /*****************************************************************************/
 
+#if defined(RFB_DEPTH_24BIT)
+
+typedef TUINT32 RFBPixel;
+#define RFB_BITS_PER_GUN 8
+
+/* BGR: */
+#define RFBPIXFMT TVPIXFMT_08B8G8R8
+#define GetRFBPixelRed(p)		TVPIXFMT_ABGR32_GET_RED8(p)
+#define GetRFBPixelGreen(p)		TVPIXFMT_ABGR32_GET_GREEN8(p)
+#define GetRFBPixelBlue(p)		TVPIXFMT_ABGR32_GET_BLUE8(p)
+#define RGB2RFBPixel(p)			TVPIXFMT_ARGB32_TO_ABGR32(p)
+#define RFBPixelFromRGB(r,g,b)	TVPIXFMT_R_G_B_TO_ABGR32(r,g,b)
+
+/* RGB:
+#define RFBPIXFMT TVPIXFMT_08R8G8B8
+#define GetRFBPixelRed(p)		TVPIXFMT_ARGB32_GET_RED8(p)
+#define GetRFBPixelGreen(p)		TVPIXFMT_ARGB32_GET_GREEN8(p)
+#define GetRFBPixelBlue(p)		TVPIXFMT_ARGB32_GET_BLUE8(p)
+#define RGB2RFBPixel(p)			(p)
+#define RFBPixelFromRGB(r,g,b)	TVPIXFMT_R_G_B_TO_ARGB32(r,g,b)
+*/
+
+#else
+
+typedef TUINT16 RFBPixel;
+#define RFBPIXFMT TVPIXFMT_0B5G5R5
+#define RFB_BITS_PER_GUN 5
+#define GetRFBPixelRed(p)		TVPIXFMT_BGR15_GET_RED8(p)
+#define GetRFBPixelGreen(p)		TVPIXFMT_BGR15_GET_GREEN8(p)
+#define GetRFBPixelBlue(p)		TVPIXFMT_BGR15_GET_BLUE8(p)
+#define RGB2RFBPixel(p) 		TVPIXFMT_ARGB32_TO_BGR15(p)
+#define RFBPixelFromRGB(r,g,b)	TVPIXFMT_R_G_B_TO_BGR15(r,g,b)
+
+#endif
+
+#define WritePixel(v, x, y, p) do { \
+	assert((x) >= (v)->rfbw_WinRect[0]); \
+	assert((x) <= (v)->rfbw_WinRect[2]); \
+	assert((y) >= (v)->rfbw_WinRect[1]); \
+	assert((y) <= (v)->rfbw_WinRect[3]); \
+	((RFBPixel *)(v)->rfbw_BufPtr)[(y) * (v)->rfbw_PixelPerLine + (x)] = (p); \
+} while(0)
+
+/*****************************************************************************/
+
 #define RFB_DEF_WIDTH            600
 #define RFB_DEF_HEIGHT           400
 
 #define RFB_UTF8_BUFSIZE 4096
-
-/*****************************************************************************/
-/*
-**	Region management
-*/
-
-typedef TINT RECTINT;
-
-struct RectList
-{
-	struct TList rl_List;
-	TINT rl_NumNodes;
-};
-
-struct Pool
-{
-	struct RectList p_Rects;
-	struct TExecBase *p_ExecBase;
-};
-
-struct Region
-{
-	struct RectList rg_Rects;
-	struct Pool *rg_Pool;
-};
-
-struct RectNode
-{
-	struct TNode rn_Node;
-	TINT rn_Rect[4];
-};
-
-LOCAL struct Region *rfb_region_new(struct Pool *, TINT *s);
-LOCAL void rfb_region_destroy(struct Pool *, struct Region *region);
-LOCAL TBOOL rfb_region_overlap(struct Pool *, struct Region *region,
-	TINT s[]);
-LOCAL TBOOL rfb_region_subrect(struct Pool *, struct Region *region,
-	TINT s[]);
-LOCAL TBOOL rfb_region_subregion(struct Pool *, struct Region *dregion,
-	struct Region *sregion);
-LOCAL TBOOL rfb_region_andrect(struct Pool *, struct Region *region,
-	TINT s[], TINT dx, TINT dy);
-LOCAL TBOOL rfb_region_andregion(struct Pool *, struct Region *dregion,
-	struct Region *sregion);
-LOCAL TBOOL rfb_region_isempty(struct Pool *, struct Region *region);
-LOCAL TBOOL rfb_region_orrect(struct Pool *, struct Region *region, 
-	TINT r[], TBOOL opportunistic);
-LOCAL void rfb_region_initpool(struct Pool *pool, TAPTR TExecBase);
-LOCAL void rfb_region_destroypool(struct Pool *pool);
-LOCAL TBOOL rfb_region_intersect(TINT *d0, TINT *d1, TINT *d2, TINT *d3,
-	TINT s0, TINT s1, TINT s2, TINT s3);
 
 /*****************************************************************************/
 /*
@@ -263,7 +202,7 @@ typedef struct
 	/* list of all visuals: */
 	struct TList rfb_VisualList;
 	
-	struct Pool rfb_RectPool;
+	struct RectPool rfb_RectPool;
 	RFBPixel *rfb_BufPtr;
 	TBOOL rfb_BufferOwner;
 	TUINT rfb_InputMask;
@@ -356,8 +295,8 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBP
 LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBPen *pen);
 LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v, TINT x0, TINT y0, TINT x1, TINT y1,
 	TINT x2, TINT y2, struct RFBPen *pen);
-LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf,
-	TINT rect[4], TINT totw, TUINT pixfmt, TBOOL alpha);
+LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct PixArray *src,
+	TINT x, TINT y, TINT w, TINT h, TBOOL alpha);
 LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	TINT dx0, TINT dy0, struct THook *exposehook);
 
@@ -420,6 +359,8 @@ LOCAL void rfb_flush_clients(RFBDISPLAY *mod, TBOOL also_external);
 
 LOCAL RFBWINDOW *rfb_findcoord(RFBDISPLAY *mod, TINT x, TINT y);
 LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v);
+LOCAL TBOOL rfb_ispointobscured(RFBDISPLAY *mod, TINT x, TINT y, RFBWINDOW *v);
+LOCAL void rfb_copyrect_sub(RFBDISPLAY *mod, TINT *rect, TINT dx, TINT dy);
 
 #if defined(ENABLE_VNCSERVER)
 

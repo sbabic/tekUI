@@ -13,13 +13,14 @@ do { \
 		luaL_register(L, classname, nullreg); \
 		lua_insert(L, -1 - (nup)); \
 	} \
-	for (; ___cfuncs->name; ___cfuncs++) { \
-		int i; \
-		for (i = 0; i < (nup); i++) \
-			lua_pushvalue(L, -(nup)); \
-		lua_pushcclosure(L, ___cfuncs->func, nup); \
-		lua_setfield(L, -((nup) + 2), ___cfuncs->name); \
-	} \
+	if (___cfuncs) \
+		for (; ___cfuncs->name; ___cfuncs++) { \
+			int i; \
+			for (i = 0; i < (nup); i++) \
+				lua_pushvalue(L, -(nup)); \
+			lua_pushcclosure(L, ___cfuncs->func, nup); \
+			lua_setfield(L, -((nup) + 2), ___cfuncs->name); \
+		} \
 	lua_pop(L, nup); \
 } while (0)
 #else

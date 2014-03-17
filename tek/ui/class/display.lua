@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 31.0"
+_VERSION = "Display 31.1"
 local Display = _M
 Element:newClass(Display)
 
@@ -429,6 +429,7 @@ function Display:openFont(fontspec, override_size, override_attr)
 			return frec[1], frec
 		end
 	end
+	local orig_fontspec = fontspec
 	local fnames, size = fontspec:match("^%s*([^:]*)%s*%:?%s*(%d*)%s*$")
 	if override_size then
 		fontspec = fnames .. ":" .. override_size
@@ -450,7 +451,7 @@ function Display:openFont(fontspec, override_size, override_attr)
 		local defrec = FontDefaults[fname]
 		if defrec then
 			local aliases = props[defrec[1]] or defrec[2]
-			if aliases then
+			if aliases and aliases ~= orig_fontspec then
 				font = self:openFont(aliases, size, attr ~= "" and attr)
 			end
 		end

@@ -41,14 +41,14 @@ local window = ui.Window:new
 			Style = "height: fill",
 			Children =
 			{
-				CheckMark:new { Text = "10", Style = "font: ui-huge:10" },
-				CheckMark:new { Text = "14", Style = "font: ui-huge:14" },
-				CheckMark:new { Text = "18", Style = "font: ui-huge:18" },
-				CheckMark:new { Text = "24", Style = "font: ui-huge:24", 
+				CheckMark:new { Text = "xx-small", Style = "font: ui-xx-small" },
+				CheckMark:new { Text = "x-small", Style = "font: ui-x-small" },
+				CheckMark:new { Text = "small", Style = "font: ui-small" },
+				CheckMark:new { Text = "main", Style = "font: ui-main", 
 					Selected = true },
-				CheckMark:new { Text = "32", Style = "font: ui-huge:32" },
-				CheckMark:new { Text = "40", Style = "font: ui-huge:40" },
-				CheckMark:new { Text = "48", Style = "font: ui-huge:48" },
+				CheckMark:new { Text = "large", Style = "font: ui-large" },
+				CheckMark:new { Text = "x-large", Style = "font: ui-x-large" },
+				CheckMark:new { Text = "xx-large", Style = "font: ui-xx-large" },
 			}
 		},
 		Group:new
@@ -58,14 +58,14 @@ local window = ui.Window:new
 			Style = "height: fill",
 			Children =
 			{
-				RadioButton:new { Text = "10", Style = "font: ui-huge:10" },
-				RadioButton:new { Text = "14", Style = "font: ui-huge:14" },
-				RadioButton:new { Text = "18", Style = "font: ui-huge:18" },
-				RadioButton:new { Text = "24", Style = "font: ui-huge:24",
+				RadioButton:new { Text = "xx-small", Style = "font: ui-xx-small" },
+				RadioButton:new { Text = "x-small", Style = "font: ui-x-small" },
+				RadioButton:new { Text = "small", Style = "font: ui-small" },
+				RadioButton:new { Text = "main", Style = "font: ui-main",
 					Selected = true },
-				RadioButton:new { Text = "32", Style = "font: ui-huge:32" },
-				RadioButton:new { Text = "40", Style = "font: ui-huge:40" },
-				RadioButton:new { Text = "48", Style = "font: ui-huge:48" },
+				RadioButton:new { Text = "large", Style = "font: ui-large" },
+				RadioButton:new { Text = "x-large", Style = "font: ui-x-large" },
+				RadioButton:new { Text = "xx-large", Style = "font: ui-xx-large" },
 			}
 		},
 		Group:new

@@ -10,6 +10,9 @@
 #include <tek/mod/exec.h>
 #include <tek/proto/hal.h>
 #include "visual_lua.h"
+#if defined(ENABLE_PIXMAP_CACHE)
+#include <tek/lib/cachemanager.h>
+#endif
 
 #if !defined(DISPLAY_DRIVER)
 #define DISPLAY_DRIVER "x11"
@@ -160,6 +163,9 @@ tek_lib_visual_open(lua_State *L)
 	vis->vis_ExecBase = visbase->vis_ExecBase;
 	vis->vis_Font = visbase->vis_Font;
 	vis->vis_FontHeight = visbase->vis_FontHeight;
+#if defined(ENABLE_PIXMAP_CACHE)
+	vis->vis_CacheManager = visbase->vis_CacheManager;
+#endif
 	vis->vis_Drawdata.nump = 0;
 	vis->vis_Drawdata.points = TNULL;
 	vis->vis_Drawdata.pens = TNULL;
@@ -459,6 +465,9 @@ tek_lib_visual_close(lua_State *L)
 		TDestroy((struct THandle *) vis->vis_CmdRPort);
 		if (vis->vis_Base)
 		{
+#if defined(ENABLE_PIXMAP_CACHE)
+			TDestroy(vis->vis_CacheManager);
+#endif
 			TVisualCloseFont(vis->vis_Base, vis->vis_Font);
 			TCloseModule(vis->vis_Base);
 		}
@@ -596,12 +605,19 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 
 		/* Open the Visual module: */
 		vis->vis_Base = TOpenModule("visual", 0, TNULL);
-		if (vis->vis_Base == TNULL) break;
-
+		if (vis->vis_Base == TNULL)
+			break;
 		vis->vis_CmdRPort = TCreatePort(TNULL);
-		if (vis->vis_CmdRPort == TNULL) break;
+		if (vis->vis_CmdRPort == TNULL) 
+			break;
 		vis->vis_IMsgPort = TCreatePort(TNULL);
-		if (vis->vis_IMsgPort == TNULL) break;
+		if (vis->vis_IMsgPort == TNULL) 
+			break;
+#if defined(ENABLE_PIXMAP_CACHE)
+		vis->vis_CacheManager = cachemanager_create(TExecBase);
+		if (!vis->vis_CacheManager)
+			break;
+#endif
 		
 		/* Open a display: */
 		dtags[0].tti_Tag = TVisual_DisplayName;

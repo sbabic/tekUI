@@ -6,6 +6,7 @@
 */
 
 #include "display_x11_mod.h"
+#include <tek/inline/exec.h>
 
 static TAPTR x11_modopen(X11DISPLAY *mod, TTAGITEM *tags);
 static void x11_modclose(X11DISPLAY *mod);
@@ -163,49 +164,13 @@ static TMODAPI void x11_freereq(X11DISPLAY *mod, struct TVRequest *req)
 **	convert an utf8 encoded string to latin-1
 */
 
-struct readstringdata
+LOCAL TSTRPTR x11_utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string,
+	TINT utf8len, TINT *bytelen)
 {
-	const unsigned char *src;
-	size_t srclen;
-};
-
-static int readstring(struct utf8reader *rd)
-{
-	struct readstringdata *ud = rd->udata;
-	if (ud->srclen == 0)
-		return -1;
-	ud->srclen--;
-	return *ud->src++;
-}
-
-LOCAL TSTRPTR x11_utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len,
-	TINT *bytelen)
-{
-	struct utf8reader rd;
-	struct readstringdata rs;
 	TUINT8 *latin = mod->x11_utf8buffer;
-	TINT i = 0;
-	TINT c;
-
-	rs.src = (unsigned char *) utf8string;
-	rs.srclen = len;
-
-	rd.readchar = readstring;
-	rd.accu = 0;
-	rd.numa = 0;
-	rd.bufc = -1;
-	rd.udata = &rs;
-
-	while (i < X11_UTF8_BUFSIZE - 1 && (c = readutf8(&rd)) >= 0)
-	{
-		if (c < 256)
-			latin[i++] = c;
-		else
-			latin[i++] = 0xbf;
-	}
-
+	size_t len = utf8tolatin((const unsigned char *) utf8string, utf8len,
+		latin, X11_UTF8_BUFSIZE, 0xbf);
 	if (bytelen)
-		*bytelen = i;
-
+		*bytelen = len;
 	return (TSTRPTR) latin;
 }

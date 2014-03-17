@@ -38,7 +38,7 @@ local max = math.max
 local min = math.min
 
 module("tek.ui.class.sizeable", tek.ui.class.widget)
-_VERSION = "Sizeable 11.2"
+_VERSION = "Sizeable 11.3"
 local Sizeable = _M
 Widget:newClass(Sizeable)
 
@@ -241,7 +241,7 @@ function Sizeable:resize(dx, dy, insx, insy)
 			else
 				local _, c2, _, c4 = c:getRect()
 				local cheight = c4 - c2 + 1
-				if insy + dx < c.CanvasTop then
+				if dy > 0 and insy + dx < c.CanvasTop then
 					-- insertion above canvas
 					-- neat HACK: insertion before canvastop
 					c:setFlags(FL_DONOTBLIT)

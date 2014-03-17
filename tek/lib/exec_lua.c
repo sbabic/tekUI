@@ -42,7 +42,7 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	TTAGITEM tags[2];
 	TAPTR basetask;
 
-	lua_newtable(L);
+	tek_lua_register(L, "tek.lib.exec", NULL, 0);
 	/* s: libtab */
 	pexec = lua_newuserdata(L, sizeof(TAPTR));
 	/* s: libtab, udata */
@@ -70,6 +70,6 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 		luaL_error(L, "Failed to initialize TEKlib");
 
 	*pexec = TGetExecBase(basetask);
-
+	
 	return 1;
 }

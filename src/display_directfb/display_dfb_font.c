@@ -397,7 +397,7 @@ dfb_hostopenfont(DFBDISPLAY *mod, TTAGITEM *tags)
 			else
 			{
 				/* load failed, free fontnode */
-				TDBPRINTF(TDB_WARN,("X unable to load '%s'\n", fattr.fname));
+				TDBPRINTF(TDB_INFO,("X unable to load '%s'\n", fattr.fname));
 				TExecFree(exec, fn);
 			}
 		}
@@ -425,7 +425,7 @@ hostopenfont(DFBDISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 		fdsc.height = fattr->fpxsize;
 
 		sprintf(fontfile, "%s%s.ttf", FNT_DEFDIR, fattr->fname);
-		TDBPRINTF(TDB_INFO, ("? %s\n", fontfile));
+		TDBPRINTF(TDB_INFO,("? %s:%d\n", fontfile, fattr->fpxsize));
 
 		if (mod->dfb_DFB->CreateFont(mod->dfb_DFB, fontfile,
 			&fdsc, &fn->font) == DFB_OK)

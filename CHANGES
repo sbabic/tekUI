@@ -1,6 +1,38 @@
 
 == tekUI Changelog ==
 
+=== 1.09: ===
+
+ * Input: doubleclick marks the whole line now 
+ * Sizeable: No longer adds empty blit regions to the Window, added sanity
+ checks, added cases for insertions above and below the visible area, now
+ operates on not shown elements correctly
+ * Sizeable, ScrollGroup: Added support for merging damages and for
+ suppressing blits
+ * Area, default layouter: Invisible attribute added
+ * String: getTextWidth() missing range check, attachdata(), getdata() added
+ * Window: relayout calls to drawBegin/drawEnd were not exactly paired in 
+ error case, corrected
+ * Area, Group: Invisible, onSetVisible() added
+ * DirList: changing the location field clears the current selection so that
+ the location field becomes the preferred selection
+ * TextList: deleteLine() added, better hardscroll support
+ * TextEdit:deleteLine() can now delete any line, not just the cursor line,
+ enter() now handles metadata correctly, getNumLines() does not count an empty
+ first line anymore, setCursor() no longer performs damages if window updates
+ are suspended or if the cursor is invisible, "wholeline" cursor mode renamed
+ to "bar+line", "bar" mode added, the ReadOnly attribute does not inhibit
+ marking text anymore, updateMark() added, window update suspension mechanism
+ reactivated and other fixes
+ * Removed redundant code from display drivers
+ * Visual: added large number of pixel formats and conversions, added pixmap
+ caching (used for gradients)
+ * x11 driver, rawfb driver: added pixmap caching, added support for more 
+ pixel formats
+ * DirList: list dblclicks are acted upon mouse press, not release now
+ * Added compiler tool again, some infrastructure for amalgamized builds added
+ * UI: minor fixes in ProgDir/ProgName detection and stylesheet loading
+
 === 1.08: ===
 
  * Added support for dynamic reconfiguration from stylesheets during runtime

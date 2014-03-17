@@ -33,15 +33,6 @@ struct Slope
 
 /*****************************************************************************/
 
-TINLINE static void CopyLine(RFBWINDOW *v, TUINT8 *buf, TINT totw, TINT xs,
-	TINT ys, TINT xd, TINT yd, TINT numb)
-{
-	memcpy(&((RFBPixel *)v->rfbw_BufPtr)[(yd * v->rfbw_PixelPerLine + xd)],
-		   &((RFBPixel *)buf)[ys*totw+xs], numb);
-}
-
-/*****************************************************************************/
-
 TINLINE static void CopyLineOver(RFBWINDOW *v, TINT xs, TINT ys, TINT xd,
 	TINT yd, TINT numb)
 {
@@ -434,6 +425,8 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	TINT x, y;
 	TUINT ppl = v->rfbw_PixelPerLine;
 	
+	RFBPixel p = RGB2RFBPixel(pen->rgb);
+	
 	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -448,13 +441,12 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		
 		RFBPixel *buf = v->rfbw_BufPtr + ymin * ppl;
 
-		RFBPixel p = RGB2RFBPixel(pen->rgb);
 		for (y = ymin; y <= ymax; y++, buf += ppl)
 			for (x = xmin; x <= xmax; x++)
 				buf[x] = p;
 	}
 		
-	rfb_region_destroy(&mod->rfb_RectPool, R);
+	region_destroy(&mod->rfb_RectPool, R);
 }
 
 /*****************************************************************************/
@@ -528,7 +520,7 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		}
 	}
 	
-	rfb_region_destroy(&mod->rfb_RectPool, R);
+	region_destroy(&mod->rfb_RectPool, R);
 }
 
 /*****************************************************************************/
@@ -690,7 +682,7 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		
 	}
 	
-	rfb_region_destroy(&mod->rfb_RectPool, R);
+	region_destroy(&mod->rfb_RectPool, R);
 	
 }
 
@@ -942,22 +934,17 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 			}
 		}
 	}
-	rfb_region_destroy(&mod->rfb_RectPool, R);
+	region_destroy(&mod->rfb_RectPool, R);
 }
 
 /*****************************************************************************/
 
-LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf, 
-	TINT rect[4], TINT totw, TUINT pixfmt, TBOOL alpha)
+LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct PixArray *src,
+	TINT x, TINT y, TINT w, TINT h, TBOOL alpha)
 {
 	struct Coord res[2];
-	TINT xmin = rect[0];
-	TINT ymin = rect[1];
-	TINT xmax = rect[0] + rect[2] - 1;
-	TINT ymax = rect[1] + rect[3] - 1;
-	TINT yd, xs, ys, numb;
 
-	if (!cliprect(res, xmin, ymin, xmax, ymax,
+	if (!cliprect(res, x, y, x + w - 1, y + h - 1,
 		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2], 
 		v->rfbw_ClipRect[3]))
 		return;
@@ -970,90 +957,27 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf,
 	struct Region *R = rfb_getlayermask(mod, r, v, 0, 0);
 	if (R == TNULL)
 		return;
+	
+	struct PixArray dst;
+	dst.buf = (TUINT8 *) v->rfbw_BufPtr;
+	dst.fmt = RFBPIXFMT;
+	dst.width = v->rfbw_PixelPerLine;
 
 	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *r = (struct RectNode *) node;
-		
 		rfb_markdirty(mod, r->rn_Rect);
-		
-		xmin = r->rn_Rect[0];
-		ymin = r->rn_Rect[1];
-		xmax = r->rn_Rect[2];
-		ymax = r->rn_Rect[3];
-		xs = xmin - rect[0]; 
-		ys = ymin - rect[1];
-		
-		switch ((pixfmt << 8) | RFBPIXFMT | ((!!alpha) << 7))	/* src | dst */
-		{
-			case (TVPIXFMT_RGB16 << 8) | TVPIXFMT_ARGB32:
-				for (yd = ymin; yd <= ymax; yd++, ys++)
-				{
-					TINT xd;
-					RFBPixel *dp = v->rfbw_BufPtr + yd * v->rfbw_PixelPerLine;
-					xs = xmin - rect[0]; 
-					for (xd = xmin; xd <= xmax; xd++, xs++)
-					{
-						RFBPixelRGB16 pix = 
-							((RFBPixelRGB16 *) buf)[ys * totw + xs];
-						dp[xd] = ARGB32FromRGB16(pix);
-					}
-				}
-				break;
-				
-			case (TVPIXFMT_ARGB32 << 8) | TVPIXFMT_RGB16:
-				for (yd = ymin; yd <= ymax; yd++, ys++)
-				{
-					TINT xd;
-					RFBPixel *dp = v->rfbw_BufPtr + yd * v->rfbw_PixelPerLine;
-					xs = xmin - rect[0]; 
-					for (xd = xmin; xd <= xmax; xd++, xs++)
-					{
-						RFBPixelARGB32 pix = 
-							((RFBPixelARGB32 *) buf)[ys * totw + xs];
-						dp[xd] = RGB16FromARGB32(pix);
-					}
-				}
-				break;
-				
-			case (TVPIXFMT_RGB16 << 8) | TVPIXFMT_RGB16:
-			case (TVPIXFMT_ARGB32 << 8) | TVPIXFMT_ARGB32:
-				numb = (xmax - xmin + 1) * sizeof(RFBPixel);
-				for (yd = ymin; yd <= ymax; yd++, ys++)
-					CopyLine(v, buf, totw, xs, ys, xmin, yd, numb);
-				break;
-				
-			case (TVPIXFMT_ARGB32 << 8) | (1 << 7) | TVPIXFMT_ARGB32:
-			case (TVPIXFMT_ARGB32 << 8) | (1 << 7) | TVPIXFMT_RGB16:
-				/* 32bit with alpha channel */
-				for (yd = ymin; yd <= ymax; yd++, ys++)
-				{
-					TINT xd;
-					RFBPixel *dp = v->rfbw_BufPtr + yd * v->rfbw_PixelPerLine;
-					xs = xmin - rect[0]; 
-					for (xd = xmin; xd <= xmax; xd++, xs++)
-					{
-						RFBPixelARGB32 spix = 
-							((RFBPixelARGB32 *) buf)[ys * totw + xs];
-						TUINT a = ARGB32GetRFBPixelAlpha(spix);
-						TUINT r = ARGB32GetRFBPixelRed(spix);
-						TUINT g = ARGB32GetRFBPixelGreen(spix);
-						TUINT b = ARGB32GetRFBPixelBlue(spix);
-						TUINT dpix = dp[xd];
-						TUINT dr = GetRFBPixelRed(dpix);
-						TUINT dg = GetRFBPixelGreen(dpix);
-						TUINT db = GetRFBPixelBlue(dpix);
-						dr += ((r - dr) * a) >> 8;
-						dg += ((g - dg) * a) >> 8;
-						db += ((b - db) * a) >> 8;
-						dp[xd] = RFBPixelFromRGB(dr, dg, db);
-					}
-				}
-				break;
-		}
+		TINT x0 = r->rn_Rect[0];
+		TINT y0 = r->rn_Rect[1];
+		TINT x1 = r->rn_Rect[2];
+		TINT y1 = r->rn_Rect[3];
+		TINT sx = x0 - x;
+		TINT sy = y0 - y;
+		pixconv_convert(src, &dst, x0, y0, x1, y1, sx, sy, alpha, 0);
 	}
-	rfb_region_destroy(&mod->rfb_RectPool, R);
+	
+	region_destroy(&mod->rfb_RectPool, R);
 }
 
 /*****************************************************************************/
@@ -1061,7 +985,7 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, TUINT8 *buf,
 LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	TINT dx0, TINT dy0, struct THook *exposehook)
 {
-	struct Pool *pool = &mod->rfb_RectPool;
+	struct RectPool *pool = &mod->rfb_RectPool;
 	TINT dx = dx0 - rect[0];
 	TINT dy = dy0 - rect[1];
 	TINT dr[4];
@@ -1072,21 +996,16 @@ LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	dr[2] = dx1;
 	dr[3] = dy1;
 	
-	if (!rfb_region_intersect(&dr[0], &dr[1], &dr[2], &dr[3],
-		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2], 
-		v->rfbw_ClipRect[3]))
+	if (!region_intersect(dr, v->rfbw_ClipRect))
 		return;
 	
 	struct Region *R = rfb_getlayermask(mod, dr, v, 0, 0);
 	if (R == TNULL)
 		return;
 	
-// 	rfb_region_andrect(pool, R, v->rfbw_ClipRect, 0, 0);
-// 	rfb_region_andrect(pool, R, v->rfbw_ClipRect, dx, dy);
-	
 	if (R->rg_Rects.rl_NumNodes == 0)
 	{
-		rfb_region_destroy(pool, R);
+		region_destroy(pool, R);
 		return;
 	}
 	
@@ -1225,7 +1144,7 @@ LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		}
 	}
 
-	rfb_region_destroy(pool, R);
+	region_destroy(pool, R);
 	
 	if (exposehook)
 	{
@@ -1235,8 +1154,8 @@ LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		struct Region *L = rfb_getlayers(mod, v, dx, dy);
 		if (L)
 		{
-			if (rfb_region_subregion(pool, L, R) && 
-				rfb_region_andrect(pool, L, dr, 0, 0))
+			if (region_subregion(pool, L, R) && 
+				region_andrect(pool, L, dr, 0, 0))
 			{
 				TINT wx = v->rfbw_WinRect[0];
 				TINT wy = v->rfbw_WinRect[1];
@@ -1252,8 +1171,8 @@ LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 					TCallHookPkt(exposehook, v, (TTAG) r);
 				}
 			}
-			rfb_region_destroy(pool, L);
+			region_destroy(pool, L);
 		}
-		rfb_region_destroy(pool, R);
+		region_destroy(pool, R);
 	}
 }

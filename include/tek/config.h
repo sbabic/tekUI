@@ -8,7 +8,9 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
-#if defined(TSYS_POSIX) || defined(__linux) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#if defined(TSYS_POSIX) || defined(__unix__) || defined(unix) \
+	|| defined(__linux) || defined(__FreeBSD__) || defined(__NetBSD__) \
+	|| defined(__APPLE__)
 	#ifndef TSYS_POSIX
 		#define TSYS_POSIX
 	#endif

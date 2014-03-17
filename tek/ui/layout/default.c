@@ -32,18 +32,19 @@ local DefaultLayout = _M
 #include <string.h>
 #include <tek/lib/tek_lua.h>
 #include <tek/lib/tekui.h>
+#include <tek/lib/region.h>
 
 /* Name of superclass: */
-#define SUPERCLASS_NAME "tek.ui.class.layout"
+#define DEFLAYOUT_SUPERCLASS_NAME "tek.ui.class.layout"
 
 /* Name of this class: */
-#define CLASS_NAME "tek.ui.layout.default"
+#define DEFLAYOUT_CLASS_NAME "tek.ui.layout.default"
 
 /* Version: */
-#define CLASS_VERSION "Default Layout 9.0"
+#define DEFLAYOUT_CLASS_VERSION "Default Layout 9.0"
 
 /* Required tekui version: */
-#define TEKUI_VERSION 109
+#define DEFLAYOUT_TEKUI_VERSION 109
 
 /*****************************************************************************/
 
@@ -1460,7 +1461,7 @@ static int layout_new(lua_State *L)
 {
 	lua_getglobal(L, "require");
 	/* s: <require> */
-	lua_pushliteral(L, SUPERCLASS_NAME);
+	lua_pushliteral(L, DEFLAYOUT_SUPERCLASS_NAME);
 	/* s: <require>, "superclass" */
 	lua_call(L, 1, 1);
 	/* s: Layout */
@@ -1497,7 +1498,7 @@ static const luaL_Reg tek_ui_layout_default_funcs[] =
 TMODENTRY int luaopen_tek_ui_layout_default(lua_State *L)
 {
 	lua_getglobal(L, "require");
-	lua_pushliteral(L, SUPERCLASS_NAME);
+	lua_pushliteral(L, DEFLAYOUT_SUPERCLASS_NAME);
 	lua_call(L, 1, 1);
 	lua_getfield(L, -1, "newClass");
 	lua_insert(L, -2);
@@ -1508,20 +1509,20 @@ TMODENTRY int luaopen_tek_ui_layout_default(lua_State *L)
 	lua_pushliteral(L, "tek.ui");
 	lua_call(L, 1, 1);
 	lua_getfield(L, -1, "checkVersion");
-	lua_pushinteger(L, TEKUI_VERSION);
+	lua_pushinteger(L, DEFLAYOUT_TEKUI_VERSION);
 	lua_call(L, 1, 0);
 	lua_pop(L, 1);
 	
 	/* pass superclass as upvalue: */
 	lua_pushvalue(L, -1);
 	/* s: newClass(), superclass, superclass */
-	tek_lua_register(L, CLASS_NAME, tek_ui_layout_default_funcs, 1);
+	tek_lua_register(L, DEFLAYOUT_CLASS_NAME, tek_ui_layout_default_funcs, 1);
 	/* s: newClass(), superclass, class */
 	
 	/* insert name and version: */
-	lua_pushliteral(L, CLASS_NAME);
+	lua_pushliteral(L, DEFLAYOUT_CLASS_NAME);
 	lua_setfield(L, -2, "_NAME");
-	lua_pushliteral(L, CLASS_VERSION);
+	lua_pushliteral(L, DEFLAYOUT_CLASS_VERSION);
 	lua_setfield(L, -2, "_VERSION");
 	
 	/* inherit: class = superclass.newClass(superclass, class) */

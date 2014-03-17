@@ -619,12 +619,15 @@ fb_drawbuffer(WINDISPLAY *mod, struct TVRequest *req)
 	BITMAPINFOHEADER *bmi = &win->fbv_DrawBitMap;
 	bmi->biWidth = req->tvr_Op.DrawBuffer.TotWidth;
 	bmi->biHeight = -rrect[3];
+	TAPTR buf = req->tvr_Op.DrawBuffer.Buf;
+	if (!buf)
+		return;
 	SetDIBitsToDevice(win->fbv_HDC,
 		rrect[0], rrect[1],
 		rrect[2], rrect[3],
 		0, 0,
 		0, rrect[3],
-		req->tvr_Op.DrawBuffer.Buf,
+		buf,
 		(const void *) bmi,
 		DIB_RGB_COLORS);
 	win->fbv_Dirty = TTRUE;

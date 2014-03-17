@@ -71,7 +71,7 @@ struct LineReader
 	int State;
 };
 
-static int io_readchar(struct LineReader *r, char c)
+static int visual_io_readchar(struct LineReader *r, char c)
 {
 	if (r->State != 0)
 		return 0;
@@ -107,7 +107,7 @@ static int io_readchar(struct LineReader *r, char c)
 	return 0;
 }
 
-static int io_readline(struct LineReader *r, char **line, size_t *len)
+static int visual_io_readline(struct LineReader *r, char **line, size_t *len)
 {
 	int c;
 	while (r->ReadBytes > 0 || r->BufBytes > 0)
@@ -147,15 +147,15 @@ static int io_readline(struct LineReader *r, char **line, size_t *len)
 	return 0;
 }
 
-static int io_reader_init(struct LineReader *r, int fd, size_t maxlen)
+static int visual_io_reader_init(struct LineReader *r, int fd, size_t maxlen)
 {
 	r->File = fd;
 	r->ReadBytes = 0;
 	r->BufBytes = 0;
 	r->BufPos = 0;
 	r->MaxLen = maxlen;
-	r->ReadCharFunc = io_readchar;
-	r->ReadLineFunc = io_readline;
+	r->ReadCharFunc = visual_io_readchar;
+	r->ReadLineFunc = visual_io_readline;
 	r->Buffer = NULL;
 	r->Pos = 0;
 	r->Size = 0;
@@ -163,12 +163,12 @@ static int io_reader_init(struct LineReader *r, int fd, size_t maxlen)
 	return 1;
 }
 
-static void io_reader_exit(struct LineReader *r)
+static void visual_io_reader_exit(struct LineReader *r)
 {
 	free(r->Buffer);
 }
 
-static void io_reader_addbytes(struct LineReader *r, int nbytes)
+static void visual_io_reader_addbytes(struct LineReader *r, int nbytes)
 {
 	r->ReadBytes += nbytes;
 }
@@ -228,7 +228,7 @@ static void tek_lib_visual_io_exit(struct TTask *task)
 		close(iodata->fd_dgram);
 #endif
 #if defined(ENABLE_FILENO)
-	io_reader_exit(&iodata->linereader);
+	visual_io_reader_exit(&iodata->linereader);
 #endif
 	
 }
@@ -246,7 +246,7 @@ static TBOOL tek_lib_visual_io_init(struct TTask *task)
 #if defined(ENABLE_FILENO)
 	int fd = vis->vis_IOFileNo;
 	iodata->fd_stdin = fd == -1 ? STDIN_FILENO : fd;
-	io_reader_init(&iodata->linereader, iodata->fd_stdin, IOMAXMSGSIZE);
+	visual_io_reader_init(&iodata->linereader, iodata->fd_stdin, IOMAXMSGSIZE);
 	iodata->fdmax = TMAX(iodata->fdmax, iodata->fd_stdin);
 #endif
 	
@@ -330,8 +330,8 @@ static void tek_lib_visual_io_task(struct TTask *task)
 					{
 						char *line;
 						size_t len;
-						io_reader_addbytes(&iodata->linereader, nbytes);
-						while (io_readline(&iodata->linereader, &line, &len))
+						visual_io_reader_addbytes(&iodata->linereader, nbytes);
+						while (visual_io_readline(&iodata->linereader, &line, &len))
 						{
 							if (getusermsg(vis, &imsg, TITYPE_USER, len))
 							{

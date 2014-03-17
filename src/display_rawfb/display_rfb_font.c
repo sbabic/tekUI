@@ -16,6 +16,7 @@
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/proto/hal.h>
+#include <tek/inline/exec.h>
 
 #include "display_rfb_mod.h"
 
@@ -45,139 +46,6 @@ static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
 	struct fnt_attr *fattr);
 static TINT hostprepfont(RFBDISPLAY *mod, TAPTR font, TUINT32* text, 
 	TINT textlen);
-
-/*****************************************************************************/
-/*
-**	UTF-8 support
-*/
-
-struct readstringdata
-{
-	const unsigned char *src;
-	size_t srclen;
-};
-
-struct utf8reader
-{
-	/* character reader callback: */
-	int (*readchar)(struct utf8reader *);
-	/* reader state: */
-	int accu, numa, min, bufc;
-	/* userdata to reader */
-	void *udata;
-	struct readstringdata rsdata;
-};
-
-static int readutf8(struct utf8reader *rd)
-{
-	int c;
-	for (;;)
-	{
-		if (rd->bufc >= 0)
-		{
-			c = rd->bufc;
-			rd->bufc = -1;
-		}
-		else
-			c = rd->readchar(rd);
-		if (c < 0)
-			return c;
-
-		if (c == 254 || c == 255)
-			break;
-
-		if (c < 128)
-		{
-			if (rd->numa > 0)
-			{
-				rd->bufc = c;
-				break;
-			}
-			return c;
-		}
-		else if (c < 192)
-		{
-			if (rd->numa == 0)
-				break;
-			rd->accu <<= 6;
-			rd->accu += c - 128;
-			rd->numa--;
-			if (rd->numa == 0)
-			{
-				if (rd->accu == 0 || rd->accu < rd->min ||
-					(rd->accu >= 55296 && rd->accu <= 57343))
-					break;
-				c = rd->accu;
-				rd->accu = 0;
-				return c;
-			}
-		}
-		else
-		{
-			if (rd->numa > 0)
-			{
-				rd->bufc = c;
-				break;
-			}
-
-			if (c < 224)
-			{
-				rd->min = 128;
-				rd->accu = c - 192;
-				rd->numa = 1;
-			}
-			else if (c < 240)
-			{
-				rd->min = 2048;
-				rd->accu = c - 224;
-				rd->numa = 2;
-			}
-			else if (c < 248)
-			{
-				rd->min = 65536;
-				rd->accu = c - 240;
-				rd->numa = 3;
-			}
-			else if (c < 252)
-			{
-				rd->min = 2097152;
-				rd->accu = c - 248;
-				rd->numa = 4;
-			}
-			else
-			{
-				rd->min = 67108864;
-				rd->accu = c - 252;
-				rd->numa = 5;
-			}
-		}
-	}
-	/* bad char */
-	rd->accu = 0;
-	rd->numa = 0;
-	return 65533;
-}
-
-static int readstring(struct utf8reader *rd)
-{
-	struct readstringdata *ud = rd->udata;
-	if (ud->srclen == 0)
-		return -1;
-	ud->srclen--;
-	return *ud->src++;
-}
-
-static void initutf8reader(struct utf8reader *rd, 
-	const unsigned char *utf8text, size_t bytelen)
-{
-	rd->rsdata.src = utf8text;
-	rd->rsdata.srclen = bytelen;
-	rd->readchar = readstring;
-	rd->accu = 0;
-	rd->numa = 0;
-	rd->bufc = -1;
-	rd->udata = &rd->rsdata;
-}
 
 /*****************************************************************************/
 
@@ -930,10 +798,10 @@ LOCAL TINT rfb_hosttextsize(RFBDISPLAY *mod, TAPTR font, TSTRPTR text,
 	imgtype.height = myface->pxsize;
 	imgtype.flags = FT_LOAD_DEFAULT | FT_LOAD_RENDER;
 	
-	initutf8reader(&rd, (const unsigned char *) text, -1);
+	utf8initreader(&rd, (const unsigned char *) text, -1);
 	
 	int i = 0;
-	while (i++ < len && (c = readutf8(&rd)) > 0)
+	while (i++ < len && (c = utf8read(&rd)) > 0)
 	{
 		FTC_SBit sbit;
 		FT_UInt gindex = 
@@ -990,9 +858,9 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 	imgtype.height = myface->pxsize;
 	imgtype.flags = FT_LOAD_DEFAULT | FT_LOAD_RENDER;
 	
-	initutf8reader(&rd, (const unsigned char *) text, -1);
+	utf8initreader(&rd, (const unsigned char *) text, -1);
 	
-	while (i++ < len && (c = readutf8(&rd)) > 0)
+	while (i++ < len && (c = utf8read(&rd)) > 0)
 	{
 		FTC_SBit sbit;
 		FT_UInt gindex = 
@@ -1055,7 +923,7 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 		}
 	}
 	
-	rfb_region_destroy(&mod->rfb_RectPool, R);
+	region_destroy(&mod->rfb_RectPool, R);
 }
 
 /*****************************************************************************/

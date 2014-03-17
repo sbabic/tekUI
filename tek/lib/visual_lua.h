@@ -11,6 +11,7 @@
 #include <tek/proto/visual.h>
 #include <tek/proto/display.h>
 #include <tek/lib/tekui.h>
+#include <tek/lib/region.h>
 
 /*****************************************************************************/
 
@@ -108,15 +109,19 @@ typedef struct TEKVisual
 	int vis_refBGPen;
 	TINT vis_BGPenType;
 	
-	#if defined(TEK_VISUAL_DEBUG)
-	TBOOL vis_Debug;
-	TVPEN vis_DebugPen1;
-	TVPEN vis_DebugPen2;
-	#endif
-	
 	struct TTask *vis_IOTask;
 	TAPTR vis_IOData;
 	int vis_IOFileNo;
+	
+#if defined(ENABLE_PIXMAP_CACHE)
+	struct THandle *vis_CacheManager;
+#endif
+	
+#if defined(TEK_VISUAL_DEBUG)
+	TBOOL vis_Debug;
+	TVPEN vis_DebugPen1;
+	TVPEN vis_DebugPen2;
+#endif
 
 } TEKVisual;
 
@@ -224,4 +229,5 @@ LOCAL LUACFUNC TINT tek_msg_index(lua_State *L);
 LOCAL LUACFUNC TINT tek_msg_len(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getpaintinfo(lua_State *L);
+
 #endif

@@ -8,8 +8,9 @@
 */
 
 #include <tek/debug.h>
-#include <tek/exec.h>
 #include <tek/teklib.h>
+#include <tek/mod/visual.h>
+#include <tek/lib/utf8.h>
 
 #include <X11/X.h>
 #if defined(ENABLE_XFT)
@@ -26,15 +27,13 @@
 #include <X11/extensions/xf86vmode.h>
 #endif
 
-#include <tek/proto/exec.h>
-#include <tek/inline/exec.h>
-#include <tek/mod/visual.h>
-
 /*****************************************************************************/
 
 #define X11DISPLAY_VERSION		1
 #define X11DISPLAY_REVISION		1
 #define X11DISPLAY_NUMVECTORS	10
+
+#define X11_UTF8_BUFSIZE 4096
 
 #ifndef LOCAL
 #define LOCAL
@@ -43,23 +42,6 @@
 #ifndef EXPORT
 #define EXPORT TMODAPI
 #endif
-
-/*****************************************************************************/
-
-#define X11_UTF8_BUFSIZE 4096
-
-struct utf8reader
-{
-	/* character reader callback: */
-	int (*readchar)(struct utf8reader *);
-	/* reader state: */
-	int accu, numa, min, bufc;
-	/* userdata to reader */
-	void *udata;
-};
-
-LOCAL int readutf8(struct utf8reader *rd);
-LOCAL unsigned char *encodeutf8(unsigned char *buf, int c);
 
 /*****************************************************************************/
 
@@ -173,15 +155,12 @@ struct FcInterface
 	FcFontSet *(*FcFontSort)(FcConfig *config, FcPattern *p, FcBool trim,
 		FcCharSet **csp, FcResult *result);
 	FcBool (*FcPatternAddBool)(FcPattern *p, const char *object, FcBool b);
-	FcBool (*FcPatternAddDouble)(FcPattern *p, const char *object, double d);
 	FcBool (*FcPatternAddInteger)(FcPattern *p, const char *object, int i);
 	FcPattern *(*FcPatternBuild)(FcPattern *orig, ...);
 	void (*FcPatternDestroy)(FcPattern *p);
 	void (*FcPatternPrint)(const FcPattern *p);
 	FcResult (*FcPatternGetString)(const FcPattern *p, const char *object,
 		int n, FcChar8 **s);
-	FcResult (*FcPatternGetDouble)(const FcPattern *p, const char *object,
-		int n, double *d);
 	FcResult (*FcPatternGetInteger)(const FcPattern *p, const char *object,
 		int n, int *i);
 	FcResult (*FcPatternGetBool)(const FcPattern *p, const char *object,
@@ -224,9 +203,10 @@ typedef struct
 	TUINT x11_IReplyPortSignal;	
 	struct THook x11_IReplyHook;
 
-	TUINT x11_RGBOrder;
-	TUINT x11_DstFmt;	/* depth<<8 | rgborder<<1 | swap */
-	TINT x11_Depth, x11_BPP;
+	TINT x11_DefaultBPP;
+	TINT x11_DefaultDepth;
+	TINT x11_ByteOrder;
+	TBOOL x11_SwapByteOrder;
 
 	int x11_fd_display;
 	int x11_fd_sigpipe_read;
@@ -349,6 +329,9 @@ typedef struct
 	TBOOL changevidmode;
 	
 	size_t shmsize;
+	
+	TUINT pixfmt;
+	TUINT bpp;
 
 } X11WINDOW;
 

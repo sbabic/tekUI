@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include <unistd.h>
 #include <dlfcn.h>
 #include <sys/select.h>
@@ -12,6 +13,7 @@
 #endif
 
 #include "display_x11_mod.h"
+#include <tek/inline/exec.h>
 
 static void x11_exitinstance(X11DISPLAY *inst);
 static void x11_processevent(X11DISPLAY *mod);
@@ -254,92 +256,33 @@ static const TUINT8 endiancheck[4] = { 0x11,0x22,0x33,0x44 };
 
 static TBOOL getprops(X11DISPLAY *inst)
 {
-	XVisualInfo xvi;
 	int major, minor, pixmap;
-	
-	inst->x11_DstFmt = (ImageByteOrder(inst->x11_Display) !=
-		(*(TUINT *) endiancheck == 0x11223344 ? MSBFirst : LSBFirst)) ?
-			1 : 0;
-
-	if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 16,
-		DirectColor, &xvi))
-		inst->x11_Depth = 16;
-	else if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 15,
-		DirectColor, &xvi))
-		inst->x11_Depth = 15;
-	else if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 24,
-		DirectColor, &xvi))
-		inst->x11_Depth = 24;
-	else if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 32,
-		DirectColor, &xvi))
-		inst->x11_Depth = 32;
-	else if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 16,
-		TrueColor, &xvi))
-		inst->x11_Depth = 16;
-	else if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 24,
-		TrueColor, &xvi))
-		inst->x11_Depth = 24;
-	else if (XMatchVisualInfo(inst->x11_Display, inst->x11_Screen, 32,
-		TrueColor, &xvi))
-		inst->x11_Depth = 32;
-	else
-		inst->x11_Depth = 0;
-
-	if (inst->x11_Depth > 0)
-	{
-		unsigned long rmsk, gmsk, bmsk;
-		inst->x11_Visual = xvi.visual;
-
-		rmsk = xvi.red_mask;
-		gmsk = xvi.green_mask;
-		bmsk = xvi.blue_mask;
-
-		if ((rmsk > gmsk) && (gmsk > bmsk))
-			inst->x11_RGBOrder = 0;	/* RGB */
-// 		else if ((rmsk > bmsk) && (bmsk > gmsk))
-// 			inst->x11_PixFmt = TVPIXFMT_RBG;
-// 		else if ((bmsk > rmsk) && (rmsk > gmsk))
-// 			inst->x11_PixFmt = TVPIXFMT_BRG;
-// 		else if ((bmsk > gmsk) && (gmsk > rmsk))
-// 			inst->x11_PixFmt = TVPIXFMT_BGR;
-// 		else if ((gmsk > rmsk) && (rmsk > bmsk))
-// 			inst->x11_PixFmt = TVPIXFMT_GRB;
-// 		else if ((gmsk > bmsk) && (bmsk > rmsk))
-// 			inst->x11_PixFmt = TVPIXFMT_GBR;
-// 		else
-// 		{
-// 			TDBPRINTF(TDB_ERROR,("Display pixel format undefined!\n"));
-// 			inst->x11_PixFmt = TVPIXFMT_UNDEFINED;
-// 		}
-
-		if ((inst->x11_Depth == 16) && (xvi.red_mask != 0xf800))
-			inst->x11_Depth = 15;
-	}
-
-	switch (inst->x11_Depth)
-	{
-		case 15:
-		case 16:
-			inst->x11_BPP = 2;
-			break;
-		case 24:
-		case 32:
-			inst->x11_BPP = 4;
-			break;
-	}
-
-	inst->x11_DstFmt |= inst->x11_Depth << 8;
-	inst->x11_DstFmt |= inst->x11_RGBOrder << 1;
-	
-	TDBPRINTF(TDB_WARN, ("depth: %d - bpp: %d - order: %08x - destfmt: %08x\n", 
-		inst->x11_Depth, inst->x11_BPP, inst->x11_RGBOrder, inst->x11_DstFmt));
-
+	int order = *(TUINT *) endiancheck == 0x11223344 ? MSBFirst : LSBFirst;
+	TBOOL swap = ImageByteOrder(inst->x11_Display) != order;
+	inst->x11_ByteOrder = order;
+	inst->x11_SwapByteOrder = swap;
+	TDBPRINTF(20,("(msb=%d lsb=%d) order=%d swap=%d\n",
+		MSBFirst, LSBFirst, order, swap));
 	inst->x11_ShmAvail = (XShmQueryVersion(inst->x11_Display,
 		&major, &minor, &pixmap) == True && major > 0);
 	if (inst->x11_ShmAvail)
 		inst->x11_ShmEvent = XShmGetEventBase(inst->x11_Display) +
 			ShmCompletion;
-
+	inst->x11_DefaultDepth = DefaultDepth(inst->x11_Display, inst->x11_Screen);
+	switch (inst->x11_DefaultDepth)
+	{
+		case 24:
+		case 32:
+			inst->x11_DefaultBPP = 4;
+			break;
+		case 15:
+		case 16:
+		default:
+			inst->x11_DefaultBPP = 2;
+			break;
+	}
+	TDBPRINTF(TDB_INFO,("default depth: %d - bpp: %d\n",
+		inst->x11_DefaultDepth, inst->x11_DefaultBPP));
 	return TTRUE;
 }
 
@@ -1064,7 +1007,7 @@ static TBOOL processkey(X11DISPLAY *mod, X11WINDOW *v, XKeyEvent *ev,
 		if (newkey)
 		{
 			ptrdiff_t len =
-				(ptrdiff_t) encodeutf8(imsg->timsg_KeyCode, imsg->timsg_Code) -
+				(ptrdiff_t) utf8encode(imsg->timsg_KeyCode, imsg->timsg_Code) -
 				(ptrdiff_t) imsg->timsg_KeyCode;
 			imsg->timsg_KeyCode[len] = 0;
 			imsg->timsg_MouseX = mod->x11_MouseX;

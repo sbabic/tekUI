@@ -93,19 +93,19 @@ Area:newClass(Frame)
 
 
 /* Name of superclass: */
-#define SUPERCLASS_NAME "tek.ui.class.area"
+#define FRAME_SUPERCLASS_NAME "tek.ui.class.area"
 
 /* Name of this class: */
-#define CLASS_NAME "tek.ui.class.frame"
+#define FRAME_CLASS_NAME "tek.ui.class.frame"
 
 /* Version string: */
-#define CLASS_VERSION "Frame 24.0"
+#define FRAME_CLASS_VERSION "Frame 24.0"
 
 /* Required tekui version: */
-#define TEKUI_VERSION 108
+#define FRAME_TEKUI_VERSION 108
 
 /* Required major version of the Region library: */
-#define REGION_VERSION	10
+#define FRAME_REGION_VERSION	10
 
 
 /* Stack index of self argument: */
@@ -587,7 +587,7 @@ static int tek_ui_class_frame_reconfigure(lua_State *L)
 
 /*****************************************************************************/
 
-static const luaL_Reg classfuncs[] =
+static const luaL_Reg tek_ui_class_frame_classfuncs[] =
 {
 	{ "new", tek_ui_class_frame_new },
 	{ "setup", tek_ui_class_frame_setup },
@@ -610,7 +610,7 @@ static const luaL_Reg classfuncs[] =
 int luaopen_tek_ui_class_frame(lua_State *L)
 {
 	lua_getglobal(L, "require");
-	lua_pushliteral(L, SUPERCLASS_NAME);
+	lua_pushliteral(L, FRAME_SUPERCLASS_NAME);
 	lua_call(L, 1, 1);
 	lua_getfield(L, -1, "newClass");
 	lua_insert(L, -2);
@@ -622,21 +622,21 @@ int luaopen_tek_ui_class_frame(lua_State *L)
 	lua_pushliteral(L, "tek.ui");
 	lua_call(L, 1, 1);
 	lua_getfield(L, -1, "checkVersion");
-	lua_pushinteger(L, TEKUI_VERSION);
+	lua_pushinteger(L, FRAME_TEKUI_VERSION);
 	lua_call(L, 1, 0);
 	
 	lua_getfield(L, -1, "loadLibrary");
 	lua_pushliteral(L, "region");	
-	lua_pushinteger(L, REGION_VERSION);
+	lua_pushinteger(L, FRAME_REGION_VERSION);
 	lua_call(L, 2, 1);
 	/* s: newClass(), superclass, superclass, tek.ui, Region */
-	tek_lua_register(L, CLASS_NAME, classfuncs, 3);
+	tek_lua_register(L, FRAME_CLASS_NAME, tek_ui_class_frame_classfuncs, 3);
 	/* s: newClass(), superclass, class */
 	
 	/* insert name and version: */
-	lua_pushliteral(L, CLASS_NAME);
+	lua_pushliteral(L, FRAME_CLASS_NAME);
 	lua_setfield(L, -2, "_NAME");
-	lua_pushliteral(L, CLASS_VERSION);
+	lua_pushliteral(L, FRAME_CLASS_VERSION);
 	lua_setfield(L, -2, "_VERSION");
 
 	/* inherit: class = superclass.newClass(superclass, class) */

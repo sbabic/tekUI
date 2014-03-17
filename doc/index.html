@@ -105,7 +105,10 @@
 											3.2.5 <a href="#noterawfb">Raw framebuffer notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.6 <a href="#notefloat">Floating point support</a> 
+											3.2.6 <a href="#notedirectfb">DirectFB notes</a> 
+										</li>
+										<li style="list-style-type: none">
+											3.2.7 <a href="#notefloat">Floating point support</a> 
 										</li>
 									</ul>
 								</blockquote>
@@ -742,8 +745,19 @@
 				enable LibVNCServer support, enable the raw framebuffer and the
 				<code>VNCSERVER_</code> defines in the config file.
 			</p>
+			<p>
+				The rawfb driver's pixel format can be adjusted in display_rfb_mod.h.
+			</p>
 		</div>
-		<div class="node"><h3><a name="notefloat" id="notefloat">3.2.6 Floating point support</a></h3>
+		<div class="node"><h3><a name="notedirectfb" id="notedirectfb">3.2.6. DirectFB notes</a></h3>
+			<p>
+				The DirectFB is not very actively supported at this time. Some
+				adaptations are likely needed. In case of problems, consider using
+				the DirectFB driver only as a rendering back-end for the rawfb
+				driver. This combination has recently found working very well.
+			</p>
+		</div>
+		<div class="node"><h3><a name="notefloat" id="notefloat">3.2.7 Floating point support</a></h3>
 			<p>
 				TekUI is free of floating point arithmetics and works with a 32bit
 				integer version of the Lua virtual machine, with the following,
@@ -754,10 +768,6 @@
 					<li>
 						Support for color gradients (see <code>-DENABLE_GRADIENT</code> in the
 						config file) requires the <code>float</code> data type in the C library.
-					</li>
-					<li>
-						There are a few places in the x11 driver where the <code>double</code> data
-						type is used, if Xft support is enabled (see <code>-DENABLE_XFT</code>).
 					</li>
 					<li>
 						The desktop style needs floating point support in the Lua VM to

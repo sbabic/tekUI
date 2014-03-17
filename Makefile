@@ -8,12 +8,18 @@ all: libs modules # tools
 libs:
 	cd src && $(MAKE) $@
 
+tek/lib/tekui_classlib.c:
+	bin/compiler.lua -o $@ -l $$(cat tek/lib/MODLIST) -c -m64 -s
+
+dll: modules tek/lib/tekui_classlib.c
+	cd tek/lib && $(MAKE) $@
+
 modules: libs
 	cd src && $(MAKE) $@
 	cd tek/lib && $(MAKE) $@
 	cd tek/ui && $(MAKE) $@
 
-tools: modules
+tools: modules dll
 	cd src && $(MAKE) $@
 	cd tek/lib && $(MAKE) $@
 
@@ -26,6 +32,7 @@ clean:
 	cd src && $(MAKE) $@
 	cd tek/lib && $(MAKE) $@
 	cd tek/ui && $(MAKE) $@
+	-rm tek/lib/tekui_classlib.c
 
 help: default-help
 	@echo "Extra build targets for this Makefile:"

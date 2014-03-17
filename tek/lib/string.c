@@ -45,6 +45,7 @@ local String = _M
 #include <stdint.h>
 #include <tek/lib/tek_lua.h>
 #include <tek/teklib.h>
+#include <tek/lib/utf8.h>
 #include <tek/lib/tekui.h>
 
 #define TEK_LIB_STRING_VERSION	"String Library 2.0"
@@ -104,200 +105,6 @@ typedef struct TEKString
 	int ts_NumReadAccess;
 	int ts_RefData;
 } tek_string;
-
-/*****************************************************************************/
-
-struct readstringdata
-{
-	/* src string: */
-	const unsigned char *src;
-	/* src string length: */
-	size_t srclen;
-};
-
-struct utf8reader
-{
-	/* character reader callback: */
-	int (*readchar)(struct utf8reader *);
-	/* reader state: */
-	int accu, numa, min, bufc;
-	/* userdata to reader */
-	void *udata;
-	/* read from string state */
-	struct readstringdata rs;
-};
-
-static int readutf8(struct utf8reader *rd)
-{
-	int c;
-	for (;;)
-	{
-		if (rd->bufc >= 0)
-		{
-			c = rd->bufc;
-			rd->bufc = -1;
-		}
-		else
-			c = rd->readchar(rd);
-		if (c < 0)
-			return c;
-
-		if (c == 254 || c == 255)
-			break;
-
-		if (c < 128)
-		{
-			if (rd->numa > 0)
-			{
-				rd->bufc = c;
-				break;
-			}
-			return c;
-		}
-		else if (c < 192)
-		{
-			if (rd->numa == 0)
-				break;
-			rd->accu <<= 6;
-			rd->accu += c - 128;
-			rd->numa--;
-			if (rd->numa == 0)
-			{
-				if (rd->accu == 0 || rd->accu < rd->min ||
-					(rd->accu >= 55296 && rd->accu <= 57343))
-					break;
-				c = rd->accu;
-				rd->accu = 0;
-				return c;
-			}
-		}
-		else
-		{
-			if (rd->numa > 0)
-			{
-				rd->bufc = c;
-				break;
-			}
-
-			if (c < 224)
-			{
-				rd->min = 128;
-				rd->accu = c - 192;
-				rd->numa = 1;
-			}
-			else if (c < 240)
-			{
-				rd->min = 2048;
-				rd->accu = c - 224;
-				rd->numa = 2;
-			}
-			else if (c < 248)
-			{
-				rd->min = 65536;
-				rd->accu = c - 240;
-				rd->numa = 3;
-			}
-			else if (c < 252)
-			{
-				rd->min = 2097152;
-				rd->accu = c - 248;
-				rd->numa = 4;
-			}
-			else
-			{
-				rd->min = 67108864;
-				rd->accu = c - 252;
-				rd->numa = 5;
-			}
-		}
-	}
-	/* bad char */
-	rd->accu = 0;
-	rd->numa = 0;
-	return 65533;
-}
-
-/*
-**	Encode unicode char (31bit) to UTF-8 (up to 6 chars)
-**	Reserve at least 6 bytes free space in the destination buffer
-*/
-
-static unsigned char *encodeutf8(unsigned char *buf, int c)
-{
-	if (c < 128)
-	{
-		*buf++ = c;
-	}
-	else if (c < 2048)
-	{
-		*buf++ = 0xc0 + (c >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	else if (c < 65536)
-	{
-		*buf++ = 0xe0 + (c >> 12);
-		*buf++ = 0x80 + ((c & 0xfff) >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	else if (c < 2097152)
-	{
-		*buf++ = 0xf0 + (c >> 18);
-		*buf++ = 0x80 + ((c & 0x3ffff) >> 12);
-		*buf++ = 0x80 + ((c & 0xfff) >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	else if (c < 67108864)
-	{
-		*buf++ = 0xf8 + (c >> 24);
-		*buf++ = 0x80 + ((c & 0xffffff) >> 18);
-		*buf++ = 0x80 + ((c & 0x3ffff) >> 12);
-		*buf++ = 0x80 + ((c & 0xfff) >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	else
-	{
-		*buf++ = 0xfc + (c >> 30);
-		*buf++ = 0x80 + ((c & 0x3fffffff) >> 24);
-		*buf++ = 0x80 + ((c & 0xffffff) >> 18);
-		*buf++ = 0x80 + ((c & 0x3ffff) >> 12);
-		*buf++ = 0x80 + ((c & 0xfff) >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	return buf;
-}
-
-static int readstring(struct utf8reader *rd)
-{
-	struct readstringdata *ud = rd->udata;
-	if (ud->srclen == 0)
-		return -1;
-	ud->srclen--;
-	return *ud->src++;
-}
-
-static void initutf8reader(struct utf8reader *rd, const unsigned char *src,
-	size_t srclen)
-{
-	struct readstringdata *rs = &rd->rs;
-	rd->readchar = readstring;
-	rd->accu = 0;
-	rd->numa = 0;
-	rd->bufc = -1;
-	rd->udata = rs;
-	rs->src = src;
-	rs->srclen = srclen;
-}
-
-static tek_size getutf8len(const unsigned char *raws, tek_size rawlen)
-{
-	struct utf8reader rd;
-	int c;
-	tek_size reallen = 0;
-	initutf8reader(&rd, raws, rawlen);
-	while ((c = readutf8(&rd)) >= 0)
-		reallen++;
-	return reallen;
-}
 
 /*****************************************************************************/
 
@@ -573,21 +380,21 @@ static void tek_string_unpack(lua_State *L, tek_string *s)
 	}
 	assert(s->ts_UTF8[0]);
 	
-	initutf8reader(&rd[0], s->ts_UTF8[0], s->ts_UTF8Len[0]);
+	utf8initreader(&rd[0], s->ts_UTF8[0], s->ts_UTF8Len[0]);
 	for (i = 1; i < NUMFIELDS; ++i)
 	{
 		if (s->ts_UTF8[i])
-			initutf8reader(&rd[i], s->ts_UTF8[i], s->ts_UTF8Len[i]);
+			utf8initreader(&rd[i], s->ts_UTF8[i], s->ts_UTF8Len[i]);
 	}
 	
 	sn = tek_string_allocnode(L, s->ts_Length);
 	chars = sn->tsn_Data;
 	for (;;)
 	{
-		tek_char c = readutf8(&rd[0]);
+		tek_char c = utf8read(&rd[0]);
 		if (c < 0) break;
 		for (i = 1; i < NUMFIELDS; ++i)
-			chars->cdata[i] = s->ts_UTF8[i] ? readutf8(&rd[i]) : 0;
+			chars->cdata[i] = s->ts_UTF8[i] ? utf8read(&rd[i]) : 0;
 		chars++->cdata[0] = c;
 	}
 	TAddTail(&s->ts_List, &sn->tsn_Node);
@@ -625,13 +432,13 @@ static void tek_string_compact_int(lua_State *L, tek_string *s)
 		tek_node *sn = (tek_node *) node;
 		for (i = 0; i < sn->tsn_Length; ++i)
 		{
-			elen[0] += encodeutf8(utf8buf, sn->tsn_Data[i].cdata[0]) - utf8buf;
+			elen[0] += utf8encode(utf8buf, sn->tsn_Data[i].cdata[0]) - utf8buf;
 			for (j = 1; j < NUMFIELDS; ++j)
 			{
 				tek_char c = sn->tsn_Data[i].cdata[j];
 				if (c > 0)
 					have_data[j] = 1;
-				elen[j] += encodeutf8(utf8buf, c) - utf8buf;
+				elen[j] += utf8encode(utf8buf, c) - utf8buf;
 			}	
 		}
 	}
@@ -654,11 +461,11 @@ static void tek_string_compact_int(lua_State *L, tek_string *s)
 		tek_node *sn = (tek_node *) node;
 		for (i = 0; i < sn->tsn_Length; ++i)
 		{
-			utf8[0] = encodeutf8(utf8[0], sn->tsn_Data[i].cdata[0]);
+			utf8[0] = utf8encode(utf8[0], sn->tsn_Data[i].cdata[0]);
 			for (j = 1; j < NUMFIELDS; ++j)
 			{
 				if (have_data[j])
-					utf8[j] = encodeutf8(utf8[j], sn->tsn_Data[i].cdata[j]);
+					utf8[j] = utf8encode(utf8[j], sn->tsn_Data[i].cdata[j]);
 			}
 		}
 		TRemove(node);
@@ -774,7 +581,7 @@ static tek_char tek_string_getval_int(lua_State *L, tek_string *s,
 		for (i = 0; i < NUMFIELDS; ++i)
 		{
 			if (s->ts_UTF8[i])
-				initutf8reader(&rd[i], s->ts_UTF8[i] + rawpos[i], 
+				utf8initreader(&rd[i], s->ts_UTF8[i] + rawpos[i], 
 					s->ts_UTF8Len[i] - rawpos[i]);
 		}
 		
@@ -783,8 +590,8 @@ static tek_char tek_string_getval_int(lua_State *L, tek_string *s,
 			tek_char c[NUMFIELDS];
 			for (i = 0; i < NUMFIELDS; ++i)
 			{
-				rawpos[i] = rd[i].rs.src - s->ts_UTF8[i];
-				c[i] = s->ts_UTF8[i] ? readutf8(&rd[i]) : 0;
+				rawpos[i] = rd[i].rsdata.src - s->ts_UTF8[i];
+				c[i] = s->ts_UTF8[i] ? utf8read(&rd[i]) : 0;
 				assert(c[i] >= 0);
 			}
 			if (pos == p0)
@@ -837,7 +644,7 @@ static int tek_string_set(lua_State *L)
 	if (lua_type(L, 2) == LUA_TSTRING)
 	{
 		raws = (const unsigned char *) luaL_checklstring(L, 2, &rawlen);
-		inslen = getutf8len(raws, rawlen);
+		inslen = utf8getlen(raws, rawlen);
 	}
 	else if (lua_type(L, 2) == LUA_TNIL)
 		inslen = 0;
@@ -873,26 +680,26 @@ static int tek_string_set(lua_State *L)
 			for (j = p0; j <= p1; ++j)
 			{
 				c = tek_string_getval_int(L, s2, j, &e);
-				elen[0] += encodeutf8(utf8buf, c) - utf8buf;
+				elen[0] += utf8encode(utf8buf, c) - utf8buf;
 				for (i = 1; i < NUMFIELDS; ++i)
 				{
 					tek_char c = e.cdata[i];
 					if (c > 0)
 						have_data[i] = 1;
-					elen[i] += encodeutf8(utf8buf, c) - utf8buf;
+					elen[i] += utf8encode(utf8buf, c) - utf8buf;
 				}
 			}
 		}
 		else
 		{
 			tek_size pos = 0;
-			initutf8reader(&rd, raws, rawlen);
-			while ((c = readutf8(&rd)) >= 0)
+			utf8initreader(&rd, raws, rawlen);
+			while ((c = utf8read(&rd)) >= 0)
 			{
 				pos++;
 				if (pos < p0) continue;
 				if (pos > p1) break;
-				elen[0] += encodeutf8(utf8buf, c) - utf8buf;
+				elen[0] += utf8encode(utf8buf, c) - utf8buf;
 			}
 #if defined(SANITY_CHECKS)
 			assert(pos == inslen);
@@ -915,24 +722,24 @@ static int tek_string_set(lua_State *L)
 			for (j = p0; j <= p1; ++j)
 			{
 				c = tek_string_getval_int(L, s2, j, &e);
-				utf8[0] = encodeutf8(utf8[0], c);
+				utf8[0] = utf8encode(utf8[0], c);
 				for (i = 1; i < NUMFIELDS; ++i)
 				{
 					if (have_data[i])
-						utf8[i] = encodeutf8(utf8[i], e.cdata[i]);
+						utf8[i] = utf8encode(utf8[i], e.cdata[i]);
 				}
 			}
 		}
 		else
 		{
 			tek_size pos = 0;
-			initutf8reader(&rd, raws, rawlen);
-			while ((c = readutf8(&rd)) >= 0)
+			utf8initreader(&rd, raws, rawlen);
+			while ((c = utf8read(&rd)) >= 0)
 			{
 				pos++;
 				if (pos < p0) continue;
 				if (pos > p1) break;
-				utf8[0] = encodeutf8(utf8[0], c);
+				utf8[0] = utf8encode(utf8[0], c);
 			}
 #if defined(SANITY_CHECKS)
 			assert(pos == inslen);
@@ -952,8 +759,8 @@ static int tek_string_set(lua_State *L)
 		{
 			tek_size pos = 0;
 			tek_size i = 0, j;
-			initutf8reader(&rd, raws, rawlen);
-			while ((c = readutf8(&rd)) >= 0)
+			utf8initreader(&rd, raws, rawlen);
+			while ((c = utf8read(&rd)) >= 0)
 			{
 				pos++;
 				if (pos < p0) continue;
@@ -1026,7 +833,7 @@ static int tek_string_sub(lua_State *L)
 				if (pos < p0) continue;
 				if (pos > p1) goto done;
 				c = sn->tsn_Data[i].cdata[0];
-				len = encodeutf8(utf8buf, c) - utf8buf;
+				len = utf8encode(utf8buf, c) - utf8buf;
 				luaL_addlstring(&b, (const char *) utf8buf, len);
 			}
 		}
@@ -1096,8 +903,8 @@ static int tek_string_insert(lua_State *L)
 		size_t rawlen;
 		const unsigned char *raws = 
 			(const unsigned char *) luaL_checklstring(L, 2, &rawlen);
-		inslen = getutf8len(raws, rawlen);
-		initutf8reader(&rd, raws, rawlen);
+		inslen = utf8getlen(raws, rawlen);
+		utf8initreader(&rd, raws, rawlen);
 	}
 	else
 	{
@@ -1149,7 +956,7 @@ static int tek_string_insert(lua_State *L)
 	}
 	else
 	{
-		while ((c = readutf8(&rd)) >= 0)
+		while ((c = utf8read(&rd)) >= 0)
 		{
 			chars->cdata[0] = c;
 			for (j = 1; j < NUMFIELDS; ++j)
@@ -1264,7 +1071,7 @@ static int tek_string_overwrite(lua_State *L)
 	if (!getfirst(s->ts_Length, &p0, 1, s->ts_Length))
 		luaL_error(L, "illegal position");
 
-	initutf8reader(&rd, raws, rawlen);
+	utf8initreader(&rd, raws, rawlen);
 	
 #if defined(COMPACTION)
 	tek_string_unpack(L, s);
@@ -1288,7 +1095,7 @@ static int tek_string_overwrite(lua_State *L)
 			pos++;
 			if (pos < p0) continue;
 			
-			c = readutf8(&rd);
+			c = utf8read(&rd);
 			if (c < 0) break;
 			sn->tsn_Data[i].cdata[0] = c;
 			for (j = 1; j < NUMFIELDS; ++j)
@@ -1357,7 +1164,7 @@ static int tek_string_getchar(lua_State *L)
 		if (c >= 0)
 		{
 			unsigned char utf8buf[6];
-			size_t len = encodeutf8(utf8buf, c) - utf8buf;
+			size_t len = utf8encode(utf8buf, c) - utf8buf;
 			lua_pushlstring(L, (const char *) utf8buf, len);
 			return 1;
 		}
@@ -1391,20 +1198,20 @@ static int tek_string_find(lua_State *L)
 	if (!getfirst(s->ts_Length, &p0, 1, s->ts_Length))
 		return 0;
 
-	slen = getutf8len(raws, rawlen);
+	slen = utf8getlen(raws, rawlen);
 	if (slen == 0) return 0;
 	sbuf = tek_string_alloc(slen * sizeof(tek_char));
 	if (sbuf == NULL) luaL_error(L, "out of memory");
 
 
-	initutf8reader(&rd, raws, rawlen);
+	utf8initreader(&rd, raws, rawlen);
 	for (i = p0; i <= s->ts_Length; ++i)
 	{
 		tek_char c = tek_string_getval_int(L, s, i, TNULL);
 		assert(c >= 0);
 		if (rdlen < j)
 		{
-			sbuf[j-1] = readutf8(&rd);
+			sbuf[j-1] = utf8read(&rd);
 			assert(sbuf[j - 1]);
 			rdlen++;
 		}
@@ -1554,7 +1361,7 @@ static int tek_string_collect(lua_State *L)
 }
 
 /*-----------------------------------------------------------------------------
---	utf8string = String.encodeutf8(table or number[, ...]): If the first
+--	utf8string = String.utf8encode(table or number[, ...]): If the first
 --	argument is a table, encodes the numerically indexed codepoints in that
 --	table to an UTF-8 string; an optional second argument specifies the
 --	first position and an optional third argument the last position in the
@@ -1563,7 +1370,7 @@ static int tek_string_collect(lua_State *L)
 --	arguments as codepoints to an UTF-8 string.
 -----------------------------------------------------------------------------*/
 
-static int tek_string_encodeutf8(lua_State *L)
+static int tek_string_utf8encode(lua_State *L)
 {
 	luaL_Buffer b;
 	unsigned char utf8buf[6];
@@ -1587,7 +1394,7 @@ static int tek_string_encodeutf8(lua_State *L)
 			lua_rawgeti(L, 1, i + p0);
 			c = lua_tointeger(L, -1);
 			lua_pop(L, 1);
-			len = encodeutf8(utf8buf, c) - utf8buf;
+			len = utf8encode(utf8buf, c) - utf8buf;
 			luaL_addlstring(&b, (const char *) utf8buf, len);
 		}
 	}
@@ -1597,7 +1404,7 @@ static int tek_string_encodeutf8(lua_State *L)
 		for (i = 0; i < n; ++i)
 		{
 			lua_Integer c = lua_tointeger(L, i + 1);
-			size_t len = encodeutf8(utf8buf, c) - utf8buf;
+			size_t len = utf8encode(utf8buf, c) - utf8buf;
 			luaL_addlstring(&b, (const char *) utf8buf, len);
 		}
 	}
@@ -1617,12 +1424,12 @@ static int tek_string_encodeutf8(lua_State *L)
 static int tek_string_foreachutf8(lua_State *L)
 {
 	struct utf8reader rd;
-	struct readstringdata rs;
+	struct utf8readstringdata rs;
 	tek_char c;
 	int i = 0;
 	int cwidth = 1;
 	
-	rd.readchar = readstring;
+	rd.readchar = utf8readstring;
 	rd.accu = 0;
 	rd.numa = 0;
 	rd.bufc = -1;
@@ -1634,7 +1441,7 @@ static int tek_string_foreachutf8(lua_State *L)
 		/* insert each utf8 value into given table, 
 		starting at optional offset */
 		lua_Integer p0 = luaL_optinteger(L, 3, 1);
-		while ((c = readutf8(&rd)) >= 0)
+		while ((c = utf8read(&rd)) >= 0)
 		{
 			cwidth = TMAX(cwidth, c);
 			lua_pushinteger(L, c);
@@ -1645,7 +1452,7 @@ static int tek_string_foreachutf8(lua_State *L)
 	else if (lua_type(L, 2) == LUA_TFUNCTION)
 	{
 		/* call func(char, pos) for each unicode value */
-		while ((c = readutf8(&rd)) >= 0)
+		while ((c = utf8read(&rd)) >= 0)
 		{
 			cwidth = TMAX(cwidth, c);
 			lua_pushvalue(L, 2);
@@ -1657,7 +1464,7 @@ static int tek_string_foreachutf8(lua_State *L)
 	else
 	{
 		/* just determine the length and width */
-		while ((c = readutf8(&rd)) >= 0)
+		while ((c = utf8read(&rd)) >= 0)
 		{
 			cwidth = TMAX(cwidth, c);
 			i++;
@@ -1856,7 +1663,7 @@ static const luaL_Reg tek_string_funcs[] =
 {
 	{ "new", tek_string_new },
 	{ "free", tek_string_collect },
-	{ "encodeutf8", tek_string_encodeutf8 },
+	{ "encodeutf8", tek_string_utf8encode },
 	{ "foreachutf8", tek_string_foreachutf8 },
 	{ NULL, NULL }
 };

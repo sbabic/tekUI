@@ -17,6 +17,7 @@
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/proto/hal.h>
+#include <tek/inline/exec.h>
 
 #include "display_x11_mod.h"
 
@@ -59,13 +60,11 @@ TSTRPTR libfcsyms[LIBFC_NUMSYMS] =
 	"FcFontSetDestroy",
 	"FcFontSort",
 	"FcPatternAddBool",
-	"FcPatternAddDouble",
 	"FcPatternAddInteger",
 	"FcPatternBuild",
 	"FcPatternDestroy",
 	"FcPatternPrint",
 	"FcPatternGetString",
-	"FcPatternGetDouble",
 	"FcPatternGetInteger",
 	"FcPatternGetBool",
 	"FcInit",
@@ -356,12 +355,12 @@ fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TUINT pxsize)
 
 		if (fqnode->tags[0].tti_Value)
 		{
-			double fpxsize;
+			int fpxsize;
 			FcBool fscale = TFALSE;
 			TINT fslant, fweight, i = 1;
 			TBOOL fitalic = TFALSE, fbold = TFALSE;
 
-			if ((*mod->x11_fciface.FcPatternGetDouble)
+			if ((*mod->x11_fciface.FcPatternGetInteger)
 				(pattern, FC_PIXEL_SIZE, 0, &fpxsize) == FcResultMatch)
 			{
 				fqnode->tags[i].tti_Tag = TVisual_FontPxSize;
@@ -679,9 +678,9 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 
 	if (flag & FNT_MATCH_SIZE)
 	{
-		double fcsize;
-		(*mod->x11_fciface.FcPatternGetDouble)(pattern, FC_PIXEL_SIZE, 0, &fcsize);
-		if (fattr->fpxsize == fcsize)
+		int fcsize;
+		(*mod->x11_fciface.FcPatternGetInteger)(pattern, FC_PIXEL_SIZE, 0, &fcsize);
+		if ((int) fattr->fpxsize == fcsize)
 			match |= FNT_MATCH_SIZE;
 	}
 
@@ -826,7 +825,7 @@ hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 			mod->x11_Display,
 			mod->x11_Screen,
 			XFT_FAMILY, XftTypeString, fattr->fname,
-			XFT_PIXEL_SIZE, XftTypeDouble, (double) fattr->fpxsize,
+			XFT_PIXEL_SIZE, XftTypeInteger, fattr->fpxsize,
 			XFT_SLANT, XftTypeInteger,
 				(fattr->fitalic ? XFT_SLANT_ITALIC : XFT_SLANT_ROMAN),
 			XFT_WEIGHT, XftTypeInteger,
@@ -1018,8 +1017,8 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 			fonts don't seem to support FC_PIXEL_SIZE attribute  */
 		if (fattr->fpxsize != FNTQUERY_UNDEFINED && !fattr->fscale)
 		{
-			(*mod->x11_fciface.FcPatternAddDouble)
-				(pattern, FC_PIXEL_SIZE, (double) fattr->fpxsize);
+			(*mod->x11_fciface.FcPatternAddInteger)
+				(pattern, FC_PIXEL_SIZE, fattr->fpxsize);
 			matchflg |= FNT_MATCH_SIZE;
 		}
 

@@ -84,6 +84,8 @@ typedef TTAG TVPEN;
 #define TVisual_CmdRPort			(TVISTAGS_ + 0x116)
 #define TVisual_IMsgPort			(TVISTAGS_ + 0x117)
 
+#define TVisual_CacheRequest		(TVISTAGS_ + 0x118)
+
 /* Tagged rendering: */
 
 #define TVisualDraw_Command			(TVISTAGS_ + 0x300)
@@ -182,11 +184,88 @@ struct TVRequest
 **
 **	"native" endianness (register of said width stored in memory)
 **	unless otherwise noted
-*/
+**                                 _ order of color components 
+**                                | _ bytes per pixel
+**                                || _ flags: 8=memory_order 4=has_mask
+**                                ||| _ format identifying number
+**                                ||||
+**                                vvvv   */
+#define TVPIXFMT_UNDEFINED  0x00000000
+#define TVPIXFMT_CLUT8      0x00000100
+#define TVPIXFMT_08R8G8B8   0x88801401
+#define TVPIXFMT_A8R8G8B8   0x88801442
+#define TVPIXFMT_08B8G8R8   0x88802403
+#define TVPIXFMT_A8B8G8R8   0x88802444
+#define TVPIXFMT_R8G8B808   0x88803405
+#define TVPIXFMT_R8G8B8A8   0x88803446
+#define TVPIXFMT_B8G8R808   0x88804407
+#define TVPIXFMT_B8G8R8A8   0x88804448
+#define TVPIXFMT_R5G6B5     0x5650120b
+#define TVPIXFMT_0R5G5B5    0x5550120c
+#define TVPIXFMT_0B5G5R5    0x5550220d
 
-#define TVPIXFMT_UNDEFINED	0
-#define TVPIXFMT_ARGB32		1
-#define TVPIXFMT_RGB16		2
+/* access macros: */
+
+#define TVPIXFMT_BITS_RED(fmt) (((fmt) & 0xf0000000) >> 28)
+#define TVPIXFMT_BITS_GREEN(fmt) (((fmt) & 0xf0000000) >> 24)
+#define TVPIXFMT_BITS_BLUE(fmt) (((fmt) & 0xf0000000) >> 20)
+#define TVPIXFMT_COL_ORDER(fmt) (((fmt) & 0xf000) >> 12)
+#define TVPIXFMT_BYTES_PER_PIXEL(fmt) (((fmt) & 0x0f00) >> 8)
+#define TVPIXFMT_MEM_ORDER(fmt) (((fmt) & 0x0080) >> 7)
+#define TVPIXFMT_HAS_MASK(fmt) (((fmt) & 0x0040) >> 6)
+#define TVPIXFMT_ORDER_UNDEFINED	0
+#define TVPIXFMT_ORDER_XRGB			1
+#define TVPIXFMT_ORDER_XBGR			2
+#define TVPIXFMT_ORDER_RGBX			3
+#define TVPIXFMT_ORDER_BGRX			4
+
+#define TVPIXFMT_ARGB32_GET_ALPHA8(p)	((p) >> 24)
+#define TVPIXFMT_ARGB32_GET_RED8(p)		(((p) >> 16) & 0xff)
+#define TVPIXFMT_ARGB32_GET_GREEN8(p)	(((p) >> 8) & 0xff)
+#define TVPIXFMT_ARGB32_GET_BLUE8(p)	((p) & 0xff)
+
+#define TVPIXFMT_ABGR32_GET_ALPHA8(p)	((p) >> 24)
+#define TVPIXFMT_ABGR32_GET_RED8(p)		((p) & 0xff)
+#define TVPIXFMT_ABGR32_GET_GREEN8(p)	(((p) >> 8) & 0xff)
+#define TVPIXFMT_ABGR32_GET_BLUE8(p)	(((p) >> 16) & 0xff)
+
+#define TVPIXFMT_RGB15_GET_RED8(p)		((((p) & 0x7c00) >> 7) | (((p) & 0x7000) >> 12))
+#define TVPIXFMT_RGB15_GET_GREEN8(p)	((((p) & 0x03e0) >> 2) | (((p) & 0x0380) >> 7))
+#define TVPIXFMT_RGB15_GET_BLUE8(p)		((((p) & 0x001f) << 3) | (((p) & 0x001c) >> 2))
+
+#define TVPIXFMT_RGB16_GET_RED8(p)		((((p) & 0xf800) >> 8) | (((p) & 0xe000) >> 13))
+#define TVPIXFMT_RGB16_GET_GREEN8(p)	((((p) & 0x07e0) >> 3) | (((p) & 0x0600) >> 9))
+#define TVPIXFMT_RGB16_GET_BLUE8(p)		((((p) & 0x001f) << 3) | (((p) & 0x001c) >> 2))
+
+#define TVPIXFMT_BGR15_GET_RED8(p)		((((p) & 0x001f) << 3) | (((p) & 0x001c) >> 2))
+#define TVPIXFMT_BGR15_GET_GREEN8(p)	((((p) & 0x03e0) >> 2) | (((p) & 0x0380) >> 7))
+#define TVPIXFMT_BGR15_GET_BLUE8(p)		((((p) & 0x7c00) >> 7) | (((p) & 0x7000) >> 12))
+
+#define TVPIXFMT_R_G_B_TO_ARGB32(r,g,b)	(((r) << 16) | ((g) << 8) | (b))
+#define TVPIXFMT_R_G_B_TO_ABGR32(r,g,b)	(((b) << 16) | ((g) << 8) | (r))
+#define TVPIXFMT_R_G_B_TO_RGB15(r,g,b)	((((r) & 0xf8) << 7) | (((g) & 0xf8) << 2) | (((b) & 0xf8) >> 3))
+#define TVPIXFMT_R_G_B_TO_RGB16(r,g,b)	((((r) & 0xf8) << 8) | (((g) & 0xfc) << 3) | (((b) & 0xf8) >> 3))
+#define TVPIXFMT_R_G_B_TO_BGR15(r,g,b)	((((b) & 0xf8) << 7) | (((g) & 0xf8) << 2) | (((r) & 0xf8) >> 3))
+
+#define TVPIXFMT_RGB15_TO_ARGB32(p)		TVPIXFMT_R_G_B_TO_ARGB32(TVPIXFMT_RGB15_GET_RED8(p), TVPIXFMT_RGB15_GET_GREEN8(p), TVPIXFMT_RGB15_GET_BLUE8(p))
+#define TVPIXFMT_RGB16_TO_ARGB32(p)		TVPIXFMT_R_G_B_TO_ARGB32(TVPIXFMT_RGB16_GET_RED8(p), TVPIXFMT_RGB16_GET_GREEN8(p), TVPIXFMT_RGB16_GET_BLUE8(p))
+#define TVPIXFMT_BGR15_TO_ARGB32(p)		TVPIXFMT_R_G_B_TO_ARGB32(TVPIXFMT_BGR15_GET_RED8(p), TVPIXFMT_BGR15_GET_GREEN8(p), TVPIXFMT_BGR15_GET_BLUE8(p))
+
+#define TVPIXFMT_BGR15_TO_RGB16(p)		((((p) & 0x7c00) >> 10) | (((p) & 0x03e0) << 1) | (((p) & 0x001f) << 11))
+
+#define TVPIXFMT_ARGB32_TO_RGB15(p)		TVPIXFMT_R_G_B_TO_RGB15(TVPIXFMT_ARGB32_GET_RED8(p), TVPIXFMT_ARGB32_GET_GREEN8(p), TVPIXFMT_ARGB32_GET_BLUE8(p))
+#define TVPIXFMT_ARGB32_TO_RGB16(p)		TVPIXFMT_R_G_B_TO_RGB16(TVPIXFMT_ARGB32_GET_RED8(p), TVPIXFMT_ARGB32_GET_GREEN8(p), TVPIXFMT_ARGB32_GET_BLUE8(p))
+#define TVPIXFMT_ARGB32_TO_BGR15(p)		TVPIXFMT_R_G_B_TO_BGR15(TVPIXFMT_ARGB32_GET_RED8(p), TVPIXFMT_ARGB32_GET_GREEN8(p), TVPIXFMT_ARGB32_GET_BLUE8(p))
+
+#define TVPIXFMT_ABGR32_TO_RGB16(p)		TVPIXFMT_R_G_B_TO_RGB16(TVPIXFMT_ABGR32_GET_RED8(p), TVPIXFMT_ABGR32_GET_GREEN8(p), TVPIXFMT_ABGR32_GET_BLUE8(p))
+#define TVPIXFMT_ABGR32_TO_RGB15(p)		TVPIXFMT_R_G_B_TO_RGB15(TVPIXFMT_ABGR32_GET_RED8(p), TVPIXFMT_ABGR32_GET_GREEN8(p), TVPIXFMT_ABGR32_GET_BLUE8(p))
+
+#define TVPIXFMT_ARGB32_TO_ABGR32(p)	(((p) & 0xff000000) | (((p) & 0xff0000) >> 16) | ((p) & 0xff00) | (((p) & 0xff) << 16))
+#define TVPIXFMT_0RGB32_TO_0BGR32(p)	((((p) & 0xff0000) >> 16) | ((p) & 0xff00) | (((p) & 0xff) << 16))
+
+#define TVPIXFMT_RGB16_SWAP(p)			((((p) & 0xff00) >> 8) | (((p) & 0xff) << 8))
+#define TVPIXFMT_ARGB32_SWAP(p)			((((p) & 0xff000000) >> 24) | (((p) & 0xff0000) >> 8) | (((p) & 0xff00) << 8) | (((p) & 0xff) << 24))
+#define TVPIXFMT_0RGB32_SWAP(p)			((((p) & 0xff0000) >> 8) | (((p) & 0xff00) << 8) | (((p) & 0xff) << 24))
 
 /*****************************************************************************/
 /*
@@ -395,5 +474,24 @@ typedef struct TInputMessage
 #define TKEYQ_CTRL				(TKEYQ_LCTRL|TKEYQ_RCTRL)
 #define TKEYQ_ALT				(TKEYQ_LALT|TKEYQ_RALT)
 #define TKEYQ_PROP				(TKEYQ_LPROP|TKEYQ_RPROP)
+
+/*****************************************************************************/
+/*
+**	Cache request
+*/
+
+struct TVImageCacheRequest
+{
+	struct THandle *tvc_CacheManager;
+	TUINT8 *tvc_Key;
+	TSIZE tvc_KeyLen;
+	TINT tvc_OrigX, tvc_OrigY;
+	TINT tvc_Result;
+};
+
+#define TVIMGCACHE_FOUND		0
+#define TVIMGCACHE_NOTFOUND		1
+#define TVIMGCACHE_STORED		2
+#define TVIMGCACHE_STORE_FAILED	3
 
 #endif

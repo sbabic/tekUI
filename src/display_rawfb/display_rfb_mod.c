@@ -6,6 +6,7 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
+#include <tek/inline/exec.h>
 #include "display_rfb_mod.h"
 
 #if defined(RFB_SUB_DEVICE)
@@ -148,9 +149,9 @@ static void rfb_exittask(RFBDISPLAY *mod)
 	TDestroy((struct THandle *) mod->rfb_InstanceLock);
 	
 	if (mod->rfb_DirtyRegion)
-		rfb_region_destroy(&mod->rfb_RectPool, mod->rfb_DirtyRegion);
+		region_destroy(&mod->rfb_RectPool, mod->rfb_DirtyRegion);
 	
-	rfb_region_destroypool(&mod->rfb_RectPool);
+	region_destroypool(&mod->rfb_RectPool);
 }
 
 /*****************************************************************************/
@@ -166,7 +167,7 @@ static TBOOL rfb_inittask(struct TTask *task)
 		TSTRPTR subname;
 		
 		/* Initialize rectangle pool */
-		rfb_region_initpool(&mod->rfb_RectPool, TExecBase);
+		region_initpool(&mod->rfb_RectPool, TExecBase);
 		
 		/* list of free input messages: */
 		TInitList(&mod->rfb_IMsgPool);
@@ -335,7 +336,8 @@ static TBOOL rfb_passevent(RFBDISPLAY *mod, RFBWINDOW *v, TIMSG *omsg)
 	return TFALSE;
 }
 
-static RFBWINDOW *rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg, TBOOL focus)
+static RFBWINDOW *rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg,
+	TBOOL focus)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
 	TINT x = omsg->timsg_MouseX;
@@ -448,7 +450,7 @@ static void rfb_processevent(RFBDISPLAY *mod)
 **	Module init/exit
 */
 
-static void rfb_exit(RFBDISPLAY *mod)
+LOCAL void rfb_exit(RFBDISPLAY *mod)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
 	if (mod->rfb_Task)

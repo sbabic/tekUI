@@ -137,8 +137,8 @@ function EditInput:passMsg(msg)
 					end
 				else
 					self.MouseButtonPressed = false
-					self:setValue("Selected", false)
--- 					self:setActive(false)
+					self:setValue("Selected", false) -- only unselect
+					-- self:setActive(false) -- remove selection
 				end
 -- 			end
 		elseif msg[3] == 2 then

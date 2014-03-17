@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="26-Feb-2014" />
+		<meta name="created" content="17-Mar-2014" />
 	</head>
 	<body>
 		<h1>
@@ -1246,7 +1246,7 @@ function(...) out:write(...) end
 </pre>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v10.2)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v11.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1271,6 +1271,9 @@ function(...) out:write(...) end
 							<a href="#Region:forEach"><code>Region:forEach()</code></a> - Calls a function for each rectangle in a region
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Region:get"><code>Region:get()</code></a> - Gets a region's min/max extents
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Region:intersect"><code>Region.intersect()</code></a> - Returns the intersection of two rectangles
 						</li>
 						<li style="list-style-type: none">
@@ -1281,6 +1284,9 @@ function(...) out:write(...) end
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:orRect"><code>Region:orRect()</code></a> - <em>Or</em>s a rectangle to a region
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Region:orRegion"><code>Region:orRegion()</code></a> - <em>Or</em>s a region to a region
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:setRect"><code>Region:setRect()</code></a> - Resets a region to the given rectangle
@@ -1366,6 +1372,12 @@ func(obj, x0, y0, x1, y1, ...)
 		<div class="node"><h3><a name="Region:orRect" id="Region:orRect"><code>region:orRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Logical <em>or</em>s a rectangle to a region
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Region:orRegion" id="Region:orRegion"><code>region:orRegion(r)</code></a></h3>
+			<p>
+				Logically <em>or</em>s a region to a region
 			</p>
 			<hr />
 		</div>
@@ -1471,18 +1483,6 @@ func(obj, x0, y0, x1, y1, ...)
 				</blockquote>
 				<hr />
 			</div>
-		</div>
-		<div class="node"><h3><a name="String:encodeutf8" id="String:encodeutf8"><code>utf8string = String.encodeutf8(table or number[, ...])</code></a></h3>
-			<p>
-				If the first
-				argument is a table, encodes the numerically indexed codepoints in that
-				table to an UTF-8 string; an optional second argument specifies the
-				first position and an optional third argument the last position in the
-				table.
-				If the first argument is a number, encodes this and the following
-				arguments as codepoints to an UTF-8 string.
-			</p>
-			<hr />
 		</div>
 		<div class="node"><h3><a name="String:erase" id="String:erase"><code>String:erase([p0[, p1]])</code></a></h3>
 			<p>
@@ -1596,9 +1596,21 @@ func(obj, x0, y0, x1, y1, ...)
 				at position <code>p0</code> and extends to the position <code>p1</code>, which may be
 				negative to indicate the number of characters from the end of the string.
 			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="String:utf8encode" id="String:utf8encode"><code>utf8string = String.utf8encode(table or number[, ...])</code></a></h3>
+			<p>
+				If the first
+				argument is a table, encodes the numerically indexed codepoints in that
+				table to an UTF-8 string; an optional second argument specifies the
+				first position and an optional third argument the last position in the
+				table.
+				If the first argument is a number, encodes this and the following
+				arguments as codepoints to an UTF-8 string.
+			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v47.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v47.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3789,7 +3801,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v17.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v17.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4070,7 +4082,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v31.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v31.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6809,7 +6821,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v11.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v11.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7291,7 +7303,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v20.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v20.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8256,7 +8268,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Wed Feb 26 09:43:14 2014
+					Document generated on Mon Mar 17 15:42:27 2014
 				</p>
 			</div>
 		</div>

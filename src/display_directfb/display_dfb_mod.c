@@ -351,7 +351,7 @@ static TBOOL dfb_initinstance(struct TTask *task)
 		ftags[1].tti_Value = (TTAG) FNT_DEFPXSIZE;
 		ftags[2].tti_Tag = TTAG_DONE;
 		inst->dfb_fm.deffont = dfb_hostopenfont(inst, ftags);
-		if (inst->dfb_fm.deffont == TNULL) break;
+		/* if (inst->dfb_fm.deffont == TNULL) break; */
 
 		TDBPRINTF(TDB_INFO,("instance init successful\n"));
 		return TTRUE;
@@ -420,93 +420,35 @@ dfb_docmd(DFBDISPLAY *inst, struct TVRequest *req)
 {
 	switch (req->tvr_Req.io_Command)
 	{
-		case TVCMD_OPENWINDOW:
-			dfb_openvisual(inst, req);
-			break;
-		case TVCMD_CLOSEWINDOW:
-			dfb_closevisual(inst, req);
-			break;
-		case TVCMD_OPENFONT:
-			dfb_openfont(inst, req);
-			break;
-		case TVCMD_CLOSEFONT:
-			dfb_closefont(inst, req);
-			break;
-		case TVCMD_GETFONTATTRS:
-			dfb_getfontattrs(inst, req);
-			break;
-		case TVCMD_TEXTSIZE:
-			dfb_textsize(inst, req);
-			break;
-		case TVCMD_QUERYFONTS:
-			dfb_queryfonts(inst, req);
-			break;
-		case TVCMD_GETNEXTFONT:
-			dfb_getnextfont(inst, req);
-			break;
-		case TVCMD_SETINPUT:
-			dfb_setinput(inst, req);
-			break;
-		case TVCMD_GETATTRS:
-			dfb_getattrs(inst, req);
-			break;
-		case TVCMD_SETATTRS:
-			dfb_setattrs(inst, req);
-			break;
-		case TVCMD_ALLOCPEN:
-			dfb_allocpen(inst, req);
-			break;
-		case TVCMD_FREEPEN:
-			dfb_freepen(inst, req);
-			break;
-		case TVCMD_SETFONT:
-			dfb_setfont(inst, req);
-			break;
-		case TVCMD_CLEAR:
-			dfb_clear(inst, req);
-			break;
-		case TVCMD_RECT:
-			dfb_rect(inst, req);
-			break;
-		case TVCMD_FRECT:
-			dfb_frect(inst, req);
-			break;
-		case TVCMD_LINE:
-			dfb_line(inst, req);
-			break;
-		case TVCMD_PLOT:
-			dfb_plot(inst, req);
-			break;
-		case TVCMD_TEXT:
-			dfb_drawtext(inst, req);
-			break;
-		case TVCMD_DRAWSTRIP:
-			dfb_drawstrip(inst, req);
-			break;
-		case TVCMD_DRAWTAGS:
-			dfb_drawtags(inst, req);
-			break;
-		case TVCMD_DRAWFAN:
-			dfb_drawfan(inst, req);
-			break;
-		case TVCMD_DRAWARC:
-			dfb_drawarc(inst, req);
-			break;
-		case TVCMD_DRAWFARC:
-			dfb_drawfarc(inst, req);
-			break;
-		case TVCMD_COPYAREA:
-			dfb_copyarea(inst, req);
-			break;
-		case TVCMD_SETCLIPRECT:
-			dfb_setcliprect(inst, req);
-			break;
-		case TVCMD_UNSETCLIPRECT:
-			dfb_unsetcliprect(inst, req);
-			break;
-		case TVCMD_DRAWBUFFER:
-			dfb_drawbuffer(inst, req);
-			break;
+		case TVCMD_OPENWINDOW: dfb_openvisual(inst, req); break;
+		case TVCMD_CLOSEWINDOW: dfb_closevisual(inst, req); break;
+		case TVCMD_OPENFONT: dfb_openfont(inst, req); break;
+		case TVCMD_CLOSEFONT: dfb_closefont(inst, req); break;
+		case TVCMD_GETFONTATTRS: dfb_getfontattrs(inst, req); break;
+		case TVCMD_TEXTSIZE: dfb_textsize(inst, req); break;
+		case TVCMD_QUERYFONTS: dfb_queryfonts(inst, req); break;
+		case TVCMD_GETNEXTFONT: dfb_getnextfont(inst, req); break;
+		case TVCMD_SETINPUT: dfb_setinput(inst, req); break;
+		case TVCMD_GETATTRS: dfb_getattrs(inst, req); break;
+		case TVCMD_SETATTRS: dfb_setattrs(inst, req); break;
+		case TVCMD_ALLOCPEN: dfb_allocpen(inst, req); break;
+		case TVCMD_FREEPEN: dfb_freepen(inst, req); break;
+		case TVCMD_SETFONT: dfb_setfont(inst, req); break;
+		case TVCMD_CLEAR: dfb_clear(inst, req); break;
+		case TVCMD_RECT: dfb_rect(inst, req); break;
+		case TVCMD_FRECT: dfb_frect(inst, req); break;
+		case TVCMD_LINE: dfb_line(inst, req); break;
+		case TVCMD_PLOT: dfb_plot(inst, req); break;
+		case TVCMD_TEXT: dfb_drawtext(inst, req); break;
+		case TVCMD_DRAWSTRIP: dfb_drawstrip(inst, req); break;
+		case TVCMD_DRAWTAGS: dfb_drawtags(inst, req); break;
+		case TVCMD_DRAWFAN: dfb_drawfan(inst, req); break;
+		case TVCMD_DRAWARC: dfb_drawarc(inst, req); break;
+		case TVCMD_DRAWFARC: dfb_drawfarc(inst, req); break;
+		case TVCMD_COPYAREA: dfb_copyarea(inst, req); break;
+		case TVCMD_SETCLIPRECT: dfb_setcliprect(inst, req); break;
+		case TVCMD_UNSETCLIPRECT: dfb_unsetcliprect(inst, req); break;
+		case TVCMD_DRAWBUFFER: dfb_drawbuffer(inst, req); break;
 		default:
 			TDBPRINTF(TDB_ERROR,("Unknown command code: %d\n",
 			req->tvr_Req.io_Command));
@@ -930,7 +872,7 @@ static TBOOL processkey(DFBDISPLAY *mod, DFBWINDOW *v, DFBWindowEvent *ev, TBOOL
 		if (newkey)
 		{
 			TINTPTR len =
-				(TINTPTR) encodeutf8(imsg->timsg_KeyCode, imsg->timsg_Code) -
+				(TINTPTR) utf8encode(imsg->timsg_KeyCode, imsg->timsg_Code) -
 				(TINTPTR) imsg->timsg_KeyCode;
 			imsg->timsg_KeyCode[len] = 0;
 

@@ -699,7 +699,7 @@ static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type, TINT code)
 		ptrdiff_t len;
 		imsg->timsg_Code = code;
 		len = (ptrdiff_t)
-			encodeutf8(imsg->timsg_KeyCode, imsg->timsg_Code) -
+			utf8encode(imsg->timsg_KeyCode, imsg->timsg_Code) -
 			(ptrdiff_t) imsg->timsg_KeyCode;
 		imsg->timsg_KeyCode[len] = 0;
 		fb_sendimsg(mod, win, imsg);
@@ -959,49 +959,13 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 **	convert an utf8 encoded string to latin-1
 */
 
-struct readstringdata
-{
-	const unsigned char *src;
-	size_t srclen;
-};
-
-static int readstring(struct UTF8Reader *rd)
-{
-	struct readstringdata *ud = rd->udata;
-	if (ud->srclen == 0)
-		return -1;
-	ud->srclen--;
-	return *ud->src++;
-}
-
-LOCAL TSTRPTR fb_utf8tolatin(WINDISPLAY *mod, TSTRPTR utf8string, TINT len,
+LOCAL TSTRPTR fb_utf8tolatin(WINDISPLAY *mod, TSTRPTR utf8string, TINT utf8len,
 	TINT *bytelen)
 {
-	struct UTF8Reader rd;
-	struct readstringdata rs;
 	TUINT8 *latin = (TUINT8 *) mod->fbd_utf8buffer;
-	TINT i = 0;
-	TINT c;
-
-	rs.src = (unsigned char *) utf8string;
-	rs.srclen = len;
-
-	rd.readchar = readstring;
-	rd.accu = 0;
-	rd.numa = 0;
-	rd.bufc = -1;
-	rd.udata = &rs;
-
-	while (i < WIN_UTF8_BUFSIZE - 1 && (c = readutf8(&rd)) >= 0)
-	{
-		if (c < 256)
-			latin[i++] = c;
-		else
-			latin[i++] = 0xbf;
-	}
-
+	size_t len = utf8tolatin((const unsigned char *) utf8string, utf8len,
+		latin, WIN_UTF8_BUFSIZE, 0xbf);
 	if (bytelen)
-		*bytelen = i;
-
+		*bytelen = len;
 	return (TSTRPTR) latin;
 }

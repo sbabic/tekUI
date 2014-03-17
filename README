@@ -28,7 +28,8 @@
    - 3.2.3 [[#notewindows : Windows notes]]
    - 3.2.4 [[#notex11 : X11 notes]]
    - 3.2.5 [[#noterawfb : Raw framebuffer notes]]
-   - 3.2.6 [[#notefloat : Floating point support]]
+   - 3.2.6 [[#notedirectfb : DirectFB notes]]
+   - 3.2.7 [[#notefloat : Floating point support]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
@@ -412,7 +413,16 @@ the network. This works both "headless" and with a local display. To
 enable LibVNCServer support, enable the raw framebuffer and the
 {{VNCSERVER_}} defines in the config file.
 
-===( notefloat : 3.2.6 Floating point support )===
+The rawfb driver's pixel format can be adjusted in display_rfb_mod.h.
+
+===( notedirectfb : 3.2.6. DirectFB notes )===
+
+The DirectFB is not very actively supported at this time. Some
+adaptations are likely needed. In case of problems, consider using
+the DirectFB driver only as a rendering back-end for the rawfb
+driver. This combination has recently found working very well.
+
+===( notefloat : 3.2.7 Floating point support )===
 
 TekUI is free of floating point arithmetics and works with a 32bit
 integer version of the Lua virtual machine, with the following,
@@ -420,8 +430,6 @@ noncritical exceptions:
 
  * Support for color gradients (see {{-DENABLE_GRADIENT}} in the
  config file) requires the {{float}} data type in the C library. 
- * There are a few places in the x11 driver where the {{double}} data
- type is used, if Xft support is enabled (see {{-DENABLE_XFT}}).
  * The desktop style needs floating point support in the Lua VM to
  import GTK+ colors (falls back to the default colorscheme if
  unavailable at runtime).
