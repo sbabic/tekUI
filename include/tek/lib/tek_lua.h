@@ -30,7 +30,8 @@ do { \
 		lua_newtable(L); \
 		lua_insert(L, -1 - (nup)); \
 	} \
-	luaL_setfuncs(L, l, nup); \
+	if (l != NULL) \
+		luaL_setfuncs(L, l, nup); \
 } while (0)
 #endif
 

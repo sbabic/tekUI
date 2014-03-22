@@ -417,10 +417,11 @@ The rawfb driver's pixel format can be adjusted in display_rfb_mod.h.
 
 ===( notedirectfb : 3.2.6. DirectFB notes )===
 
-The DirectFB is not very actively supported at this time. Some
-adaptations are likely needed. In case of problems, consider using
-the DirectFB driver only as a rendering back-end for the rawfb
-driver. This combination has recently found working very well.
+The DirectFB display driver is not very actively supported at this
+time. Some adaptations are likely needed. In case of problems,
+consider using the DirectFB driver only as a rendering back-end for
+the rawfb driver. This combination has recently found working very
+well.
 
 ===( notefloat : 3.2.7 Floating point support )===
 
