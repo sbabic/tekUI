@@ -55,6 +55,7 @@ typedef TTAG TVPEN;
 #define TVisual_SelectionType		(TVISTAGS_ + 0x015)
 #define TVisual_PixelFormat			(TVISTAGS_ + 0x016)
 #define TVisual_AlphaChannel		(TVISTAGS_ + 0x017)
+#define TVisual_PopupWindow			(TVISTAGS_ + 0x018)
 
 #define	TVisual_FontName			(TVISTAGS_ + 0x100)
 #define	TVisual_FontPxSize			(TVISTAGS_ + 0x101)
@@ -290,8 +291,10 @@ typedef struct TInputMessage
 	TUINT timsg_Code;
 	/* Keyboard qualifiers: */
 	TUINT timsg_Qualifier;
-	/* Mouse position: */
+	/* Window relative mouse position: */
 	TINT timsg_MouseX, timsg_MouseY;
+	/* Screen absolute mouse position: */
+	TINT timsg_ScreenMouseX, timsg_ScreenMouseY;
 	/* Damage rect: */
 	TINT timsg_X, timsg_Y, timsg_Width, timsg_Height;
 	/* UTF-8 representation of keycode: */

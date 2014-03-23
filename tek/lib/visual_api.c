@@ -528,6 +528,12 @@ LOCAL LUACFUNC TINT tek_msg_index(lua_State *L)
 		case 10:
 			lua_pushinteger(L, imsg->timsg_Y + imsg->timsg_Height - 1);
 			break;
+		case 11:
+			lua_pushinteger(L, imsg->timsg_ScreenMouseX);
+			break;
+		case 12:
+			lua_pushinteger(L, imsg->timsg_ScreenMouseY);
+			break;
 	}
 	return 1;
 }
@@ -1744,7 +1750,7 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_setattrs(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TTAGITEM tags[7], *tp = tags;
+	TTAGITEM tags[11], *tp = tags;
 	tp = getminmax(L, tp, "MinWidth", TVisual_MinWidth);
 	tp = getminmax(L, tp, "MinHeight", TVisual_MinHeight);
 	tp = getminmax(L, tp, "MaxWidth", TVisual_MaxWidth);
@@ -1763,6 +1769,36 @@ tek_lib_visual_setattrs(lua_State *L)
 		tp++->tti_Value = lua_toboolean(L, -1);
 		lua_pop(L, 1);
 	}
+	
+	lua_getfield(L, 2, "Left");
+	if (lua_isnumber(L, -1))
+	{
+		tp->tti_Tag = TVisual_WinLeft;
+		tp++->tti_Value = lua_tonumber(L, -1);
+	}
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "Top");
+	if (lua_isnumber(L, -1))
+	{
+		tp->tti_Tag = TVisual_WinTop;
+		tp++->tti_Value = lua_tonumber(L, -1);
+	}
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "Width");
+	if (lua_isnumber(L, -1))
+	{
+		tp->tti_Tag = TVisual_Width;
+		tp++->tti_Value = lua_tonumber(L, -1);
+	}
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "Height");
+	if (lua_isnumber(L, -1))
+	{
+		tp->tti_Tag = TVisual_Height;
+		tp++->tti_Value = lua_tonumber(L, -1);
+	}
+	lua_pop(L, 1);
+	
 	tp->tti_Tag = TTAG_DONE;
 	
 	#if defined(TEK_VISUAL_DEBUG)

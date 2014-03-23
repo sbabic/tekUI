@@ -103,7 +103,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(109)
 local Display = ui.require("display", 31)
 local Family = ui.require("family", 2)
 
@@ -130,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 41.1"
+_VERSION = "Application 41.2"
 local Application = _M
 Family:newClass(Application)
 
@@ -148,7 +148,8 @@ local MSGTYPES = { MSG_USER }
 function Application.new(class, self)
 	
 	self = self or { }
-	
+	self.MouseX = 0 -- absolute mouse position
+	self.MouseY = 0	
 	self.Application = self
 	self.ApplicationId = self.ApplicationId or "unknown"
 	self.Author = self.Author or "unknown"
@@ -584,6 +585,8 @@ function Application:passMsgMouseMove(msg)
 		end
 		win.MouseX = msg[4]
 		win.MouseY = msg[5]
+		self.MouseX = msg[11]
+		self.MouseY = msg[12]
 		mpm[4] = msg[4]
 		mpm[5] = msg[5]
 		mpm[0] = msg[0] -- update timestamp

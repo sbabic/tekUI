@@ -113,6 +113,7 @@ static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 **	args.Left - Left position of the window
 **	args.Top - Top position of the window
 **	args.Borderless - open borderless window
+**	args.PopupWindow - window is  popup
 **	args.CenterWindow - open window centered
 **	args.MinWidth - minimum width of the window
 **	args.MinHeight - minimum height of the window
@@ -126,7 +127,7 @@ static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 LOCAL LUACFUNC TINT
 tek_lib_visual_open(lua_State *L)
 {
-	TTAGITEM tags[18], *tp = tags;
+	TTAGITEM tags[19], *tp = tags;
 	TEKVisual *visbase, *vis;
 
 	vis = lua_newuserdata(L, sizeof(TEKVisual));
@@ -217,6 +218,12 @@ tek_lib_visual_open(lua_State *L)
 
 	tp->tti_Tag = TVisual_Borderless;
 	lua_getfield(L, 1, "Borderless");
+	if (lua_isboolean(L, -1))
+		tp++->tti_Value = (TTAG) lua_toboolean(L, -1);
+	lua_pop(L, 1);
+	
+	tp->tti_Tag = TVisual_PopupWindow;
+	lua_getfield(L, 1, "PopupWindow");
 	if (lua_isboolean(L, -1))
 		tp++->tti_Value = (TTAG) lua_toboolean(L, -1);
 	lua_pop(L, 1);

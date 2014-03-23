@@ -19,7 +19,7 @@ LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v)
 	TAPTR TExecBase = TGetExecBase(mod);
 	TIMSG *imsg;
 	
-	if (v == mod->rfb_FocusWindow || (v && v->borderless))
+	if (v == mod->rfb_FocusWindow || (v && v->is_popup))
 		return;
 	
 	if (mod->rfb_FocusWindow)
@@ -58,19 +58,20 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v = TAlloc0(mod->rfb_MemMgr, sizeof(RFBWINDOW));
 	if (v == TNULL)
 		return;
+	
+	TINT minw = (TINT) TGetTag(tags, TVisual_MinWidth, -1);
+	TINT minh = (TINT) TGetTag(tags, TVisual_MinHeight, -1);
+	TINT maxw = (TINT) TGetTag(tags, TVisual_MaxWidth, RFB_HUGE);
+	TINT maxh = (TINT) TGetTag(tags, TVisual_MaxHeight, RFB_HUGE);
 
 	if (TISLISTEMPTY(&mod->rfb_VisualList))
 	{
 		/* Open root window */
-		
-		TINT minw = (TINT) TGetTag(tags, TVisual_MinWidth, 0);
-		TINT minh = (TINT) TGetTag(tags, TVisual_MinHeight, 0);
-
 		width = (TINT) TGetTag(tags, TVisual_Width, 
-			minw ? TMAX(minw, RFB_DEF_WIDTH) : 
+			minw > 0 ? TMAX(minw, RFB_DEF_WIDTH) : 
 				TMAX(mod->rfb_Width, RFB_DEF_WIDTH));
 		height = (TINT) TGetTag(tags, TVisual_Height, 
-			minh ? TMAX(minh, RFB_DEF_HEIGHT) : 
+			minh > 0 ? TMAX(minh, RFB_DEF_HEIGHT) : 
 				TMAX(mod->rfb_Height, RFB_DEF_HEIGHT));
 		
 		mod->rfb_Width = width;
@@ -127,10 +128,6 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	else
 	{
 		/* Not root window: */
-		TINT minw = (TINT) TGetTag(tags, TVisual_MinWidth, -1);
-		TINT minh = (TINT) TGetTag(tags, TVisual_MinHeight, -1);
-		TINT maxw = (TINT) TGetTag(tags, TVisual_MaxWidth, 1000000);
-		TINT maxh = (TINT) TGetTag(tags, TVisual_MaxHeight, 1000000);
 		
 		width = (TINT) TGetTag(tags, TVisual_Width, RFB_DEF_WIDTH);
 		height = (TINT) TGetTag(tags, TVisual_Height, RFB_DEF_HEIGHT);
@@ -174,6 +171,11 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_ClipRect[2] = v->rfbw_WinRect[2];
 	v->rfbw_ClipRect[3] = v->rfbw_WinRect[3];
 	
+	v->rfbw_MinWidth = minw;
+	v->rfbw_MinHeight = minh;
+	v->rfbw_MaxWidth = maxw;
+	v->rfbw_MaxHeight = maxh;
+	
 	v->rfbw_Modulo = mod->rfb_Modulo + (mod->rfb_Width - width);
 	v->rfbw_PixelPerLine = width + v->rfbw_Modulo;
 	
@@ -181,7 +183,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v->userdata = TGetTag(tags, TVisual_UserData, TNULL);
 	
 	v->borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
-	
+	v->is_popup = TGetTag(tags, TVisual_PopupWindow, TFALSE);
 	
 	v->rfbw_IMsgPort = req->tvr_Op.OpenWindow.IMsgPort;
 
@@ -746,14 +748,14 @@ LOCAL void rfb_copyarea(RFBDISPLAY *mod, struct TVRequest *req)
 	TINT dy = req->tvr_Op.CopyArea.DestY;
 	struct THook *exposehook = (struct THook *)
 		TGetTag(req->tvr_Op.CopyArea.Tags, TVisual_ExposeHook, TNULL);
-	TINT rect[4];
-	rect[0] = req->tvr_Op.CopyArea.Rect[0] + v->rfbw_WinRect[0];
-	rect[1] = req->tvr_Op.CopyArea.Rect[1] + v->rfbw_WinRect[1];
-	rect[2] = req->tvr_Op.CopyArea.Rect[2];
-	rect[3] = req->tvr_Op.CopyArea.Rect[3];
-	dx += v->rfbw_WinRect[0];
-	dy += v->rfbw_WinRect[1];
-	fbp_copyarea(mod, v, rect, dx, dy, exposehook);
+	TINT d[4];
+	d[0] = dx + v->rfbw_WinRect[0];
+	d[1] = dy + v->rfbw_WinRect[1];
+	d[2] = d[0] + req->tvr_Op.CopyArea.Rect[2] - 1;
+	d[3] = d[1] + req->tvr_Op.CopyArea.Rect[3] - 1;
+	dx -= req->tvr_Op.CopyArea.Rect[0];
+	dy -= req->tvr_Op.CopyArea.Rect[1];
+	fbp_copyarea(mod, v, dx, dy, d, exposehook);
 }
 
 /*****************************************************************************/
@@ -837,6 +839,166 @@ LOCAL void rfb_drawbuffer(RFBDISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
+LOCAL void rbp_move_expose(RFBDISPLAY *mod, RFBWINDOW *v, RFBWINDOW *predv,
+	TINT dx, TINT dy)
+{
+	struct RectPool *pool = &mod->rfb_RectPool;
+	struct Region *S = rfb_getlayers(mod, v, 0, 0);
+	struct Region *L = rfb_getlayers(mod, v, dx, dy);
+	region_subregion(pool, L, S);
+	region_andrect(pool, L, v->rfbw_WinRect, 0, 0);
+	
+	struct TNode *next, *node = L->rg_Rects.rl_List.tlh_Head;
+	for (; (next = node->tln_Succ); node = next)
+	{
+		struct RectNode *rn = (struct RectNode *) node;
+		TINT *r = rn->rn_Rect;
+		rfb_damage(mod, r, predv);
+	}
+	region_destroy(pool, L);
+	region_destroy(pool, S);
+}
+
+
+static void rfb_movewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y)
+{
+	TINT *wr = v->rfbw_WinRect;
+	TINT ww = wr[2] - wr[0] + 1;
+	TINT wh = wr[3] - wr[1] + 1;
+	
+	if (x < 0) 
+		x = 0;
+	if (x + ww > mod->rfb_Width)
+		x = mod->rfb_Width - ww;
+	if (y < 0) 
+		y = 0;
+	if (y + wh > mod->rfb_Height)
+		y = mod->rfb_Height - wh;
+	
+	TINT dx = x - wr[0];
+	TINT dy = y - wr[1];
+	if (dx == 0 && dy == 0)
+		return;
+	if (&v->rfbw_Node == TLASTNODE(&mod->rfb_VisualList))
+		return;
+	
+	TINT old[4];
+	memcpy(old, v->rfbw_WinRect, sizeof old);
+	
+	RFBWINDOW *succv = (RFBWINDOW *) v->rfbw_Node.tln_Succ;
+	TBOOL is_top = TFIRSTNODE(&mod->rfb_VisualList) == &v->rfbw_Node;
+	RFBWINDOW *predv = is_top ? TNULL : (RFBWINDOW *) v->rfbw_Node.tln_Pred;
+
+	/* dest rectangle */
+	TINT dr[4];
+	dr[0] = x;
+	dr[1] = y;
+	dr[2] = x + wr[2] - wr[0];
+	dr[3] = y + wr[3] - wr[1];
+	
+	/* remove the window from window stack */
+	TRemove(&v->rfbw_Node);
+	
+	TBOOL res = fbp_copyarea_int(mod, succv, dx, dy, dr);
+	
+	/* update dest/clip rectangle */
+	wr[0] += dx;
+	wr[1] += dy;
+	wr[2] += dx;
+	wr[3] += dy;
+	v->rfbw_ClipRect[0] += dx;
+	v->rfbw_ClipRect[1] += dy;
+	v->rfbw_ClipRect[2] += dx;
+	v->rfbw_ClipRect[3] += dy;
+
+	/* reinsert in window stack */
+	if (predv)
+	{
+		TInsert(&mod->rfb_VisualList, &v->rfbw_Node, &predv->rfbw_Node);
+		if (res)
+			rbp_move_expose(mod, v, predv, dx, dy);
+	}
+	else
+		TAddHead(&mod->rfb_VisualList, &v->rfbw_Node);
+	
+	struct RectPool *pool = &mod->rfb_RectPool;
+	struct Region *R = region_new(pool, old);
+	if (R)
+	{
+		region_subrect(pool, R, v->rfbw_WinRect);
+		struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
+		for (; (next = node->tln_Succ); node = next)
+		{
+			struct RectNode *r = (struct RectNode *) node;
+			rfb_damage(mod, r->rn_Rect, v);
+		}
+		region_destroy(pool, R);
+	}
+}
+
+/*****************************************************************************/
+
+static void rfb_resizewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT w, TINT h)
+{
+	TAPTR TExecBase = TGetExecBase(mod);
+	TINT *wr = v->rfbw_WinRect;
+	TINT x = wr[0];
+	TINT y = wr[1];
+	
+	if (w < 1)
+		w = 1;
+	if (h < 1)
+		h = 1;
+	if (x + w > mod->rfb_Width)
+		w = mod->rfb_Width - x;
+	if (y + h > mod->rfb_Height)
+		h = mod->rfb_Height - y;
+	
+	TINT oldw = wr[2] - x + 1;
+	TINT oldh = wr[3] - y + 1;
+	if (w != oldw || h != oldh)
+	{
+		TDBPRINTF(TDB_INFO,("new window size: %d,%d\n", w, h));
+		
+		TINT old[4];
+		memcpy(old, wr, sizeof old);
+		
+		wr[2] = x + w - 1;
+		wr[3] = y + h - 1;
+		
+		TIMSG *imsg;
+		if (rfb_getimsg(mod, v, &imsg, TITYPE_NEWSIZE))
+		{
+			imsg->timsg_X = x;
+			imsg->timsg_Y = y;
+			imsg->timsg_Width =	w;
+			imsg->timsg_Height = h;
+			TPutMsg(v->rfbw_IMsgPort, TNULL, imsg);
+			TDBPRINTF(TDB_TRACE,("send newsize %d %d %d->%d %d->%d\n", 
+				x, y, oldw, w, oldh, h));
+		}
+
+		if (w - oldw < 0 || h - oldh < 0)
+		{
+			struct RectPool *pool = &mod->rfb_RectPool;
+			struct Region *R = region_new(pool, old);
+			if (R)
+			{
+				region_subrect(pool, R, v->rfbw_WinRect);
+				struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
+				for (; (next = node->tln_Succ); node = next)
+				{
+					struct RectNode *r = (struct RectNode *) node;
+					rfb_damage(mod, r->rn_Rect, v);
+				}
+				region_destroy(pool, R);
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+
 static THOOKENTRY TTAG rfb_getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct rfb_attrdata *data = hook->thk_Data;
@@ -863,19 +1025,19 @@ static THOOKENTRY TTAG rfb_getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 		case TVisual_MinWidth:
 			*((TINT *) item->tti_Value) =
-				v->rfbw_WinRect[2] - v->rfbw_WinRect[0] + 1;
+				v->rfbw_MinWidth;
 			break;
 		case TVisual_MinHeight:
 			*((TINT *) item->tti_Value) =
-				v->rfbw_WinRect[3] - v->rfbw_WinRect[1] + 1;
+				v->rfbw_MinHeight;
 			break;
 		case TVisual_MaxWidth:
 			*((TINT *) item->tti_Value) =
-				v->rfbw_WinRect[2] - v->rfbw_WinRect[0] + 1;
+				v->rfbw_MaxWidth;
 			break;
 		case TVisual_MaxHeight:
 			*((TINT *) item->tti_Value) =
-				v->rfbw_WinRect[3] - v->rfbw_WinRect[1] + 1;
+				v->rfbw_MaxHeight;
 			break;
 		case TVisual_Device:
 			*((TAPTR *) item->tti_Value) = data->mod;
@@ -908,9 +1070,39 @@ static THOOKENTRY TTAG rfb_setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct rfb_attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
-	/*RFBWINDOW *v = data->v;*/
+	RFBWINDOW *v = data->v;
 	switch (item->tti_Tag)
 	{
+		case TVisual_WinLeft:
+			data->newx = (TINT) item->tti_Value;
+			break;
+		case TVisual_WinTop:
+			data->newy = (TINT) item->tti_Value;
+			break;
+		case TVisual_Width:
+			data->neww = (TINT) item->tti_Value;
+			break;
+		case TVisual_Height:
+			data->newh = (TINT) item->tti_Value;
+			break;
+		case TVisual_MinWidth:
+			v->rfbw_MinWidth = (TINT) item->tti_Value;
+			break;
+		case TVisual_MinHeight:
+			v->rfbw_MinHeight = (TINT) item->tti_Value;
+			break;
+		case TVisual_MaxWidth:
+		{
+			TINT maxw = (TINT) item->tti_Value;
+			v->rfbw_MaxWidth = maxw > 0 ? maxw : RFB_HUGE;
+			break;
+		}
+		case TVisual_MaxHeight:
+		{
+			TINT maxh = (TINT) item->tti_Value;
+			v->rfbw_MaxHeight = maxh > 0 ? maxh : RFB_HUGE;
+			break;
+		}
 		default:
 			return TTRUE;
 	}
@@ -924,13 +1116,28 @@ LOCAL void rfb_setattrs(RFBDISPLAY *mod, struct TVRequest *req)
 	struct THook hook;
 	RFBWINDOW *v = req->tvr_Op.SetAttrs.Window;
 
+	data.newx = v->rfbw_WinRect[0];
+	data.newy = v->rfbw_WinRect[1];
+	data.neww = v->rfbw_WinRect[2] - v->rfbw_WinRect[0] + 1;
+	data.newh = v->rfbw_WinRect[3] - v->rfbw_WinRect[1] + 1;
+	
 	data.v = v;
 	data.num = 0;
 	data.mod = mod;
 	TInitHook(&hook, rfb_setattrfunc, &data);
-
 	TForEachTag(req->tvr_Op.SetAttrs.Tags, &hook);
 	req->tvr_Op.SetAttrs.Num = data.num;
+
+	TINT x = data.newx;
+	TINT y = data.newy;
+	TINT w = data.neww;
+	TINT h = data.newh;
+	
+	w = TCLAMP(v->rfbw_MinWidth, w, v->rfbw_MaxWidth);
+	h = TCLAMP(v->rfbw_MinHeight, h, v->rfbw_MaxHeight);
+	
+	rfb_movewindow(mod, v, x, y);
+	rfb_resizewindow(mod, v, w, h);
 }
 
 /*****************************************************************************/

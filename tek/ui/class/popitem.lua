@@ -58,7 +58,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(109)
 local PopupWindow = ui.require("popupwindow", 5)
 local Text = ui.require("text", 28)
 ui.require("widget", 26)
@@ -66,7 +66,7 @@ local floor = math.floor
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 26.0"
+_VERSION = "PopItem 26.1"
 local PopItem = _M
 Text:newClass(PopItem)
 
@@ -294,6 +294,7 @@ function PopItem:beginPopup(baseitem)
 		MaxWidth = winw,
 		MaxHeight = winh,
 		Borderless = true,
+		PopupWindow = true,
 	}
 
 	local app = self.Application

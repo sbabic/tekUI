@@ -103,6 +103,8 @@ static int rfb_sendimsg(RFBDISPLAY *mod, RFBWINDOW *v,
 		imsg->timsg_Qualifier = mod->rfb_KeyQual;
 		imsg->timsg_MouseX = x - v->rfbw_WinRect[0];
 		imsg->timsg_MouseY = y - v->rfbw_WinRect[1];
+		imsg->timsg_ScreenMouseX = x;
+		imsg->timsg_ScreenMouseY = y;
 		TExecPutMsg(mod->rfb_ExecBase, v->rfbw_IMsgPort, TNULL, imsg);
 		return 1;
 	}
@@ -138,7 +140,12 @@ static void rfb_doremoteptr(int buttonMask, int x, int y, rfbClientPtr cl)
 		if (buttonMask & 0x08)
 			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_WHEELUP);
 		if (sent == 0)
+		{
 			rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEMOVE, 0);
+			RFBWINDOW *fv = mod->rfb_FocusWindow;
+			if (fv && fv != v)
+				rfb_sendimsg(mod, fv, x, y, TITYPE_MOUSEMOVE, 0);
+		}
 	}
 	TUnlock(mod->rfb_InstanceLock);
 	cd->oldbutton = buttonMask;

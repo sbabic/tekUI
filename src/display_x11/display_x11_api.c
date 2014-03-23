@@ -102,6 +102,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		TBOOL setfocus = TFALSE;
 		TINT sw, sh;
 		TBOOL borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
+		TBOOL popupwindow = TGetTag(tags, TVisual_PopupWindow, TFALSE);
 		TINT minw = (TINT) TGetTag(tags, TVisual_MinWidth, -1);
 		TINT minh = (TINT) TGetTag(tags, TVisual_MinHeight, -1);
 		TINT maxw = (TINT) TGetTag(tags, TVisual_MaxWidth, 1000000);
@@ -253,7 +254,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		v->winleft = TMAX(v->winleft, 0);
 		v->wintop = TMAX(v->wintop, 0);
 
-		if (borderless)
+		if (popupwindow || borderless)
 		{
 			swa_mask |= CWOverrideRedirect;
 			swa.override_redirect = True;
@@ -884,6 +885,12 @@ static THOOKENTRY TTAG setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	{
 		default:
 			return TTRUE;
+		case TVisual_WinLeft:
+			data->newx = (TINT) item->tti_Value;
+			break;
+		case TVisual_WinTop:
+			data->newy = (TINT) item->tti_Value;
+			break;
 		case TVisual_Width:
 			data->neww = (TINT) item->tti_Value;
 			break;
@@ -944,20 +951,23 @@ LOCAL void x11_setattrs(X11DISPLAY *mod, struct TVRequest *req)
 	struct attrdata data;
 	struct THook hook;
 	X11WINDOW *v = req->tvr_Op.SetAttrs.Window;
-	TINT neww, newh;
 
 	data.v = v;
 	data.num = 0;
 	data.mod = mod;
-	data.neww = -1;
-	data.newh = -1;
+	data.neww = v->winwidth;
+	data.newh = v->winheight;
+	data.newx = v->winleft;
+	data.newy = v->wintop;
 	TInitHook(&hook, setattrfunc, &data);
 
 	TForEachTag(req->tvr_Op.SetAttrs.Tags, &hook);
 	req->tvr_Op.SetAttrs.Num = data.num;
 
-	if (v->sizehints->max_width < 0) v->sizehints->max_width = 1000000;
-	if (v->sizehints->max_height < 0) v->sizehints->max_height = 1000000;
+	if (v->sizehints->max_width < 0) 
+		v->sizehints->max_width = 1000000;
+	if (v->sizehints->max_height < 0) 
+		v->sizehints->max_height = 1000000;
 
 	v->sizehints->min_width = TMAX(v->sizehints->min_width, 0);
 	v->sizehints->max_width = TMAX(v->sizehints->max_width,
@@ -966,13 +976,30 @@ LOCAL void x11_setattrs(X11DISPLAY *mod, struct TVRequest *req)
 	v->sizehints->max_height = TMAX(v->sizehints->max_height,
 		v->sizehints->min_height);
 
-	neww = data.neww < 0 ? v->winwidth : data.neww;
-	newh = data.newh < 0 ? v->winheight : data.newh;
-	if (neww < v->sizehints->min_width || newh < v->sizehints->min_height)
+	TINT w = data.neww;
+	TINT h = data.newh;
+	TINT x = data.newx;
+	TINT y = data.newy;
+	
+	TBOOL moveresize = TFALSE;
+	if (w < v->sizehints->min_width || h < v->sizehints->min_height)
 	{
-		neww = TMAX(neww, v->sizehints->min_width);
-		newh = TMAX(newh, v->sizehints->min_height);
-		XResizeWindow(mod->x11_Display, v->window, neww, newh);
+		w = TMAX(w, v->sizehints->min_width);
+		h = TMAX(h, v->sizehints->min_height);
+		moveresize = TTRUE;
+	}
+	
+	if (x != v->winleft || y != v->wintop || 
+		w != v->winwidth || h != v->winheight)
+	{
+		v->winleft = x;
+		v->wintop = y;
+		moveresize = TTRUE;
+	}
+	
+	if (moveresize)
+	{
+		XMoveResizeWindow(mod->x11_Display, v->window, x, y, w, h);
 		mod->x11_RequestInProgress = req;
 		v->waitforresize = TTRUE;
 	}

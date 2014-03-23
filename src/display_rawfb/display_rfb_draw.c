@@ -982,38 +982,58 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct PixArray *src,
 
 /*****************************************************************************/
 
-LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
-	TINT dx0, TINT dy0, struct THook *exposehook)
+LOCAL void fbp_doexpose(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
+	TINT *dr, struct THook *exposehook)
 {
 	struct RectPool *pool = &mod->rfb_RectPool;
-	TINT dx = dx0 - rect[0];
-	TINT dy = dy0 - rect[1];
-	TINT dr[4];
-	TINT dx1 = dx0 + rect[2] - 1;
-	TINT dy1 = dy0 + rect[3] - 1;
-	dr[0] = dx0;
-	dr[1] = dy0;
-	dr[2] = dx1;
-	dr[3] = dy1;
-	
-	if (!region_intersect(dr, v->rfbw_ClipRect))
-		return;
+	/* calculate damage from exposures of areas previously obscured */
+	struct Region *R = rfb_getlayers(mod, v, 0, 0);
+	struct Region *L = rfb_getlayers(mod, v, dx, dy);
+	if (L)
+	{
+		if (region_subregion(pool, L, R) && 
+			region_andrect(pool, L, dr, 0, 0))
+		{
+			TINT wx = v->rfbw_WinRect[0];
+			TINT wy = v->rfbw_WinRect[1];
+			struct TNode *next, *node = L->rg_Rects.rl_List.tlh_Head;
+			for (; (next = node->tln_Succ); node = next)
+			{
+				struct RectNode *rn = (struct RectNode *) node;
+				TINT *r = rn->rn_Rect;
+				r[0] -= wx;
+				r[1] -= wy;
+				r[2] -= wx;
+				r[3] -= wy;
+				TCallHookPkt(exposehook, v, (TTAG) r);
+			}
+		}
+		region_destroy(pool, L);
+	}
+	region_destroy(pool, R);
+}
+
+
+LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
+	TINT dx, TINT dy, TINT *dr)
+{
+	struct RectPool *pool = &mod->rfb_RectPool;
 	
 	struct Region *R = rfb_getlayermask(mod, dr, v, 0, 0);
 	if (R == TNULL)
-		return;
+		return TFALSE;
 	
 	if (R->rg_Rects.rl_NumNodes == 0)
 	{
 		region_destroy(pool, R);
-		return;
+		return TFALSE;
 	}
 	
 	TINT yinc = dy < 0 ? -1 : 1;
 	TINT y, i, h;
 	
-	dy0 = dr[1];
-	dy1 = dr[3];
+	TINT dy0 = dr[1];
+	TINT dy1 = dr[3];
 	h = dy1 - dy0 + 1;
 	if (yinc > 0)
 	{
@@ -1146,33 +1166,15 @@ LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 
 	region_destroy(pool, R);
 	
-	if (exposehook)
-	{
-		/* calculate damage from exposures of areas previously obscured */
-		
-		R = rfb_getlayers(mod, v, 0, 0);
-		struct Region *L = rfb_getlayers(mod, v, dx, dy);
-		if (L)
-		{
-			if (region_subregion(pool, L, R) && 
-				region_andrect(pool, L, dr, 0, 0))
-			{
-				TINT wx = v->rfbw_WinRect[0];
-				TINT wy = v->rfbw_WinRect[1];
-				struct TNode *next, *node = L->rg_Rects.rl_List.tlh_Head;
-				for (; (next = node->tln_Succ); node = next)
-				{
-					struct RectNode *rn = (struct RectNode *) node;
-					TINT *r = rn->rn_Rect;
-					r[0] -= wx;
-					r[1] -= wy;
-					r[2] -= wx;
-					r[3] -= wy;
-					TCallHookPkt(exposehook, v, (TTAG) r);
-				}
-			}
-			region_destroy(pool, L);
-		}
-		region_destroy(pool, R);
-	}
+	return TTRUE; /* do expose */
+}
+
+LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v,
+	TINT dx, TINT dy, TINT dr[4],
+	struct THook *exposehook)
+{
+	if (!region_intersect(dr, v->rfbw_ClipRect))
+		return;
+	if (fbp_copyarea_int(mod, v, dx, dy, dr) && exposehook)
+		fbp_doexpose(mod, v, dx, dy, dr, exposehook);
 }

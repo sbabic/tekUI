@@ -324,10 +324,14 @@ static TBOOL rfb_passevent(RFBDISPLAY *mod, RFBWINDOW *v, TIMSG *omsg)
 		{
 			TINT x = omsg->timsg_MouseX;
 			TINT y = omsg->timsg_MouseY;
+			mod->rfb_MouseX = x;
+			mod->rfb_MouseY = y;
 			imsg->timsg_Code = omsg->timsg_Code;
 			imsg->timsg_Qualifier = omsg->timsg_Qualifier;
 			imsg->timsg_MouseX = x - v->rfbw_WinRect[0];
 			imsg->timsg_MouseY = y - v->rfbw_WinRect[1];
+			imsg->timsg_ScreenMouseX = x;
+			imsg->timsg_ScreenMouseY = y;
 			memcpy(imsg->timsg_KeyCode, omsg->timsg_KeyCode, 8);
 			TPutMsg(v->rfbw_IMsgPort, TNULL, imsg);
 			return TTRUE;

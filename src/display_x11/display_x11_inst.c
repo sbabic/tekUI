@@ -157,8 +157,8 @@ getusermsg(X11DISPLAY *mod, TIMSG **msgptr, TUINT type, TSIZE size)
 		msg->timsg_ExtraSize = size;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->x11_KeyQual;
-		msg->timsg_MouseX = mod->x11_MouseX;
-		msg->timsg_MouseY = mod->x11_MouseY;
+		msg->timsg_ScreenMouseX = mod->x11_MouseX;
+		msg->timsg_ScreenMouseY = mod->x11_MouseY;
 		TGetSystemTime(&msg->timsg_TimeStamp);
 		*msgptr = msg;
 		return TTRUE;
@@ -456,93 +456,35 @@ static void x11_docmd(X11DISPLAY *inst, struct TVRequest *req)
 {
 	switch (req->tvr_Req.io_Command)
 	{
-		case TVCMD_OPENWINDOW:
-			x11_openvisual(inst, req);
-			break;
-		case TVCMD_CLOSEWINDOW:
-			x11_closevisual(inst, req);
-			break;
-		case TVCMD_OPENFONT:
-			x11_openfont(inst, req);
-			break;
-		case TVCMD_CLOSEFONT:
-			x11_closefont(inst, req);
-			break;
-		case TVCMD_GETFONTATTRS:
-			x11_getfontattrs(inst, req);
-			break;
-		case TVCMD_TEXTSIZE:
-			x11_textsize(inst, req);
-			break;
-		case TVCMD_QUERYFONTS:
-			x11_queryfonts(inst, req);
-			break;
-		case TVCMD_GETNEXTFONT:
-			x11_getnextfont(inst, req);
-			break;
-		case TVCMD_SETINPUT:
-			x11_setinput(inst, req);
-			break;
-		case TVCMD_GETATTRS:
-			x11_getattrs(inst, req);
-			break;
-		case TVCMD_SETATTRS:
-			x11_setattrs(inst, req);
-			break;
-		case TVCMD_ALLOCPEN:
-			x11_allocpen(inst, req);
-			break;
-		case TVCMD_FREEPEN:
-			x11_freepen(inst, req);
-			break;
-		case TVCMD_SETFONT:
-			x11_setfont(inst, req);
-			break;
-		case TVCMD_CLEAR:
-			x11_clear(inst, req);
-			break;
-		case TVCMD_RECT:
-			x11_rect(inst, req);
-			break;
-		case TVCMD_FRECT:
-			x11_frect(inst, req);
-			break;
-		case TVCMD_LINE:
-			x11_line(inst, req);
-			break;
-		case TVCMD_PLOT:
-			x11_plot(inst, req);
-			break;
-		case TVCMD_TEXT:
-			x11_drawtext(inst, req);
-			break;
-		case TVCMD_DRAWSTRIP:
-			x11_drawstrip(inst, req);
-			break;
-		case TVCMD_DRAWTAGS:
-			x11_drawtags(inst, req);
-			break;
-		case TVCMD_DRAWFAN:
-			x11_drawfan(inst, req);
-			break;
-		case TVCMD_COPYAREA:
-			x11_copyarea(inst, req);
-			break;
-		case TVCMD_SETCLIPRECT:
-			x11_setcliprect(inst, req);
-			break;
-		case TVCMD_UNSETCLIPRECT:
-			x11_unsetcliprect(inst, req);
-			break;
-		case TVCMD_DRAWBUFFER:
-			x11_drawbuffer(inst, req);
-			break;
-		case TVCMD_GETSELECTION:
-			x11_getselection(inst, req);
-			break;
-		case TVCMD_FLUSH:
-			XFlush(inst->x11_Display);
-			break;
+		case TVCMD_OPENWINDOW: x11_openvisual(inst, req); break;
+		case TVCMD_CLOSEWINDOW: x11_closevisual(inst, req); break;
+		case TVCMD_OPENFONT: x11_openfont(inst, req); break;
+		case TVCMD_CLOSEFONT: x11_closefont(inst, req); break;
+		case TVCMD_GETFONTATTRS: x11_getfontattrs(inst, req); break;
+		case TVCMD_TEXTSIZE: x11_textsize(inst, req); break;
+		case TVCMD_QUERYFONTS: x11_queryfonts(inst, req); break;
+		case TVCMD_GETNEXTFONT: x11_getnextfont(inst, req); break;
+		case TVCMD_SETINPUT: x11_setinput(inst, req); break;
+		case TVCMD_GETATTRS: x11_getattrs(inst, req); break;
+		case TVCMD_SETATTRS: x11_setattrs(inst, req); break;
+		case TVCMD_ALLOCPEN: x11_allocpen(inst, req); break;
+		case TVCMD_FREEPEN: x11_freepen(inst, req); break;
+		case TVCMD_SETFONT: x11_setfont(inst, req); break;
+		case TVCMD_CLEAR: x11_clear(inst, req); break;
+		case TVCMD_RECT: x11_rect(inst, req); break;
+		case TVCMD_FRECT: x11_frect(inst, req); break;
+		case TVCMD_LINE: x11_line(inst, req); break;
+		case TVCMD_PLOT: x11_plot(inst, req); break;
+		case TVCMD_TEXT: x11_drawtext(inst, req); break;
+		case TVCMD_DRAWSTRIP: x11_drawstrip(inst, req); break;
+		case TVCMD_DRAWTAGS: x11_drawtags(inst, req); break;
+		case TVCMD_DRAWFAN: x11_drawfan(inst, req); break;
+		case TVCMD_COPYAREA: x11_copyarea(inst, req); break;
+		case TVCMD_SETCLIPRECT: x11_setcliprect(inst, req); break;
+		case TVCMD_UNSETCLIPRECT: x11_unsetcliprect(inst, req); break;
+		case TVCMD_DRAWBUFFER: x11_drawbuffer(inst, req); break;
+		case TVCMD_GETSELECTION: x11_getselection(inst, req); break;
+		case TVCMD_FLUSH: XFlush(inst->x11_Display); break;
 		default:
 			TDBPRINTF(TDB_ERROR,("Unknown command code: %d\n",
 			req->tvr_Req.io_Command));
@@ -815,8 +757,10 @@ static TBOOL getimsg(X11DISPLAY *mod, X11WINDOW *v, TIMSG **msgptr, TUINT type)
 		msg->timsg_UserData = v->userdata;
 		msg->timsg_Type = type;
 		msg->timsg_Qualifier = mod->x11_KeyQual;
-		msg->timsg_MouseX = mod->x11_MouseX;
-		msg->timsg_MouseY = mod->x11_MouseY;
+		msg->timsg_ScreenMouseX = mod->x11_ScreenMouseX;
+		msg->timsg_ScreenMouseY = mod->x11_ScreenMouseY;
+		msg->timsg_MouseX = v->mousex;
+		msg->timsg_MouseY = v->mousey;
 		TGetSystemTime(&msg->timsg_TimeStamp);
 		*msgptr = msg;
 		return TTRUE;
@@ -824,6 +768,15 @@ static TBOOL getimsg(X11DISPLAY *mod, X11WINDOW *v, TIMSG **msgptr, TUINT type)
 	*msgptr = TNULL;
 	return TFALSE;
 }
+
+static void setmousepos(X11DISPLAY *mod, X11WINDOW *v, TINT x, TINT y)
+{
+	v->mousex = x;
+	v->mousey = y;
+	mod->x11_ScreenMouseX = x + v->winleft;
+	mod->x11_ScreenMouseY = y + v->wintop;
+}
+
 
 static TBOOL processkey(X11DISPLAY *mod, X11WINDOW *v, XKeyEvent *ev,
 	TBOOL keydown)
@@ -837,9 +790,8 @@ static TBOOL processkey(X11DISPLAY *mod, X11WINDOW *v, XKeyEvent *ev,
 	TUINT newqual;
 	TUINT evmask = v->eventmask;
 	TBOOL newkey = TFALSE;
-
-	mod->x11_MouseX = (TINT) ev->x;
-	mod->x11_MouseY = (TINT) ev->y;
+	
+	setmousepos(mod, v, ev->x, ev->y);
 
 	XLookupString(ev, buffer, 10, &keysym, &compose);
 
@@ -1010,8 +962,6 @@ static TBOOL processkey(X11DISPLAY *mod, X11WINDOW *v, XKeyEvent *ev,
 				(ptrdiff_t) utf8encode(imsg->timsg_KeyCode, imsg->timsg_Code) -
 				(ptrdiff_t) imsg->timsg_KeyCode;
 			imsg->timsg_KeyCode[len] = 0;
-			imsg->timsg_MouseX = mod->x11_MouseX;
-			imsg->timsg_MouseY = mod->x11_MouseY;
 			TAddTail(&v->imsgqueue, &imsg->timsg_Node);
 		}
 		else
@@ -1047,10 +997,12 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 				TReplyMsg(mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
 				v->waitforresize = TFALSE;
-				TDBPRINTF(TDB_WARN,("Released request (ConfigureNotify)\n"));
+				TDBPRINTF(TDB_INFO,("Released request (ConfigureNotify)\n"));
 			}
+			
 			v->winleft = ev->xconfigure.x;
 			v->wintop = ev->xconfigure.y;
+			
 			if ((v->winwidth != ev->xconfigure.width ||
 				v->winheight != ev->xconfigure.height))
 			{
@@ -1150,23 +1102,17 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 			break;
 
 		case MotionNotify:
-			mod->x11_MouseX = (TINT) ev->xmotion.x;
-			mod->x11_MouseY = (TINT) ev->xmotion.y;
+			setmousepos(mod, v, ev->xmotion.x, ev->xmotion.y);
 			if (v->eventmask & TITYPE_MOUSEMOVE)
 			{
 				if (getimsg(mod, v, &imsg, TITYPE_MOUSEMOVE))
-				{
-					imsg->timsg_MouseX = mod->x11_MouseX;
-					imsg->timsg_MouseY = mod->x11_MouseY;
 					TAddTail(&v->imsgqueue, &imsg->timsg_Node);
-				}
 			}
 			break;
 
 		case ButtonRelease:
 		case ButtonPress:
-			mod->x11_MouseX = (TINT) ev->xbutton.x;
-			mod->x11_MouseY = (TINT) ev->xbutton.y;
+			setmousepos(mod, v, ev->xbutton.x, ev->xbutton.y);
 			if (v->eventmask & TITYPE_MOUSEBUTTON)
 			{
 				if (getimsg(mod, v, &imsg, TITYPE_MOUSEBUTTON))
@@ -1208,8 +1154,6 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 								break;
 						}
 					}
-					imsg->timsg_MouseX = mod->x11_MouseX;
-					imsg->timsg_MouseY = mod->x11_MouseY;
 					TAddTail(&v->imsgqueue, &imsg->timsg_Node);
 				}
 			}

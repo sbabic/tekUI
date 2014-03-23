@@ -43,6 +43,8 @@
 #define EXPORT TMODAPI
 #endif
 
+#define RFB_HUGE 1000000
+
 /*****************************************************************************/
 
 #if defined(RFB_DEPTH_24BIT)
@@ -265,8 +267,15 @@ typedef struct rfb_window
 	/* Modulo, pixel per line */
 	TINT rfbw_Modulo;
 	TINT rfbw_PixelPerLine;
-	/* window is "borderless", i.e. a popup window: */
+	/* window is borderless: */
 	TBOOL borderless;
+	/* window is popup: */
+	TBOOL is_popup;
+	
+	TINT rfbw_MinWidth;
+	TINT rfbw_MinHeight;
+	TINT rfbw_MaxWidth;
+	TINT rfbw_MaxHeight;
 
 } RFBWINDOW;
 
@@ -282,6 +291,7 @@ struct rfb_attrdata
 	RFBWINDOW *v;
 	TAPTR font;
 	TINT num;
+	TINT neww, newh, newx, newy;
 };
 
 /*****************************************************************************/
@@ -297,8 +307,12 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v, TINT x0, TINT y0, TIN
 	TINT x2, TINT y2, struct RFBPen *pen);
 LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct PixArray *src,
 	TINT x, TINT y, TINT w, TINT h, TBOOL alpha);
-LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
-	TINT dx0, TINT dy0, struct THook *exposehook);
+LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
+	TINT d[4], struct THook *exposehook);
+LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
+	TINT *dr);
+LOCAL void fbp_doexpose(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
+	TINT *dr, struct THook *exposehook);
 
 /*****************************************************************************/
 

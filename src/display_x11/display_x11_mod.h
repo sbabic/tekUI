@@ -236,7 +236,7 @@ typedef struct
 	TINT x11_ShmEvent;
 
 	TINT x11_KeyQual;
-	TINT x11_MouseX, x11_MouseY;
+	TINT x11_ScreenMouseX, x11_ScreenMouseY;
 
 	TUINT8 x11_utf8buffer[X11_UTF8_BUFSIZE];
 
@@ -333,6 +333,8 @@ typedef struct
 	TUINT pixfmt;
 	TUINT bpp;
 
+	TINT mousex, mousey;
+	
 } X11WINDOW;
 
 struct attrdata
@@ -342,7 +344,7 @@ struct attrdata
 	TAPTR font;
 	TINT num;
 	TBOOL sizechanged;
-	TINT neww, newh;
+	TINT neww, newh, newx, newy;
 };
 
 /*****************************************************************************/
