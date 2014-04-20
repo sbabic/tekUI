@@ -138,7 +138,7 @@ local Frame = ui.require("frame", 17)
 local bor = ui.bor
 
 module("tek.ui.class.widget", tek.ui.class.frame)
-_VERSION = "Widget 30.1"
+_VERSION = "Widget 31.0"
 local Widget = _M
 Frame:newClass(Widget)
 
@@ -189,8 +189,10 @@ function Widget.new(class, self)
 	if self.InitialFocus then
 		flags = bor(flags, FL_INITIALFOCUS)
 	end
+	if self.NoFocus then
+		flags = bor(flags, ui.FL_NOFOCUS)
+	end
 	self.Flags = bor(self.Flags or 0, flags)
-	
 	self.Active = false
 	self.DblClick = false
 	self.EffectHook = false
@@ -199,7 +201,6 @@ function Widget.new(class, self)
 	self.KeyCode = self.KeyCode or false
 	self.Mode = self.Mode or "inert"
 	self.Pressed = false
-	
 	return Frame.new(class, self)
 end
 
@@ -369,9 +370,8 @@ end
 -------------------------------------------------------------------------------
 
 function Widget:onHilite()
-	local hilite = self.Hilite
 	if self.Mode == "button" then
-		self:setValue("Selected", self.Active and hilite)
+		self:setValue("Selected", self.Active and self.Hilite)
 	end
 	self:setState()
 end
@@ -473,7 +473,8 @@ end
 function Widget:checkFocus()
 	local m = self.Mode
 	return not self.Disabled and (m == "toggle" or m == "button" or
-		(m == "touch" and not self.Selected))
+		(m == "touch" and not self.Selected)) and
+		not self:checkFlags(ui.FL_NOFOCUS)
 end
 
 -------------------------------------------------------------------------------

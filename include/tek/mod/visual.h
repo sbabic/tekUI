@@ -56,6 +56,8 @@ typedef TTAG TVPEN;
 #define TVisual_PixelFormat			(TVISTAGS_ + 0x016)
 #define TVisual_AlphaChannel		(TVISTAGS_ + 0x017)
 #define TVisual_PopupWindow			(TVISTAGS_ + 0x018)
+#define TVisual_ScreenWidth			(TVISTAGS_ + 0x019)
+#define TVisual_ScreenHeight		(TVISTAGS_ + 0x01a)
 
 #define	TVisual_FontName			(TVISTAGS_ + 0x100)
 #define	TVisual_FontPxSize			(TVISTAGS_ + 0x101)

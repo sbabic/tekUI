@@ -248,6 +248,8 @@ typedef struct
 	TTAGITEM *x11_InitTags;
 	struct TMsgPort *x11_IMsgPort;
 	
+	TINT x11_ScreenWidth;
+	TINT x11_ScreenHeight;
 	TINT x11_FullScreenWidth;
 	TINT x11_FullScreenHeight;
 	TBOOL x11_FullScreen;

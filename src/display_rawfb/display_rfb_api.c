@@ -145,11 +145,11 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		}
 		else
 		{
-			TINT wx = (TINT) TGetTag(tags, TVisual_WinLeft, 0);
-			TINT wy = (TINT) TGetTag(tags, TVisual_WinTop, 0);
+			TINT wx = (TINT) TGetTag(tags, TVisual_WinLeft, -1);
+			TINT wy = (TINT) TGetTag(tags, TVisual_WinTop, -1);
 			
-			if (wx == 0) wx = (mod->rfb_Width - width) / 2;
-			if (wy == 0) wy = (mod->rfb_Height - height) / 2;
+			if (wx == -1) wx = (mod->rfb_Width - width) / 2;
+			if (wy == -1) wy = (mod->rfb_Height - height) / 2;
 				
 			v->rfbw_WinRect[0] = wx;
 			v->rfbw_WinRect[1] = wy;
@@ -1004,6 +1004,7 @@ static THOOKENTRY TTAG rfb_getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	struct rfb_attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
 	RFBWINDOW *v = data->v;
+	RFBDISPLAY *mod = data->mod;
 
 	switch (item->tti_Tag)
 	{
@@ -1016,6 +1017,12 @@ static THOOKENTRY TTAG rfb_getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 		case TVisual_Height:
 			*((TINT *) item->tti_Value) =
 				v->rfbw_WinRect[3] - v->rfbw_WinRect[1] + 1;
+			break;
+		case TVisual_ScreenWidth:
+			*((TINT *) item->tti_Value) = mod->rfb_Width;
+			break;
+		case TVisual_ScreenHeight:
+			*((TINT *) item->tti_Value) = mod->rfb_Height;
 			break;
 		case TVisual_WinLeft:
 			*((TINT *) item->tti_Value) = v->rfbw_WinRect[0];

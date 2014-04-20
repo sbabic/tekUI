@@ -133,7 +133,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 47.3" -- module version string
+_VERSION = "tekUI 48.0" -- module version string
 
 VERSION = 109 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
@@ -1095,3 +1095,4 @@ FL_ISWINDOW      = 0x10000 -- the element is a window
 FL_DONOTBLIT     = 0x20000 -- redrawing the element should not initiate blits
 FL_KEEPMINWIDTH  = 0x40000 -- element maintains its minimal width
 FL_KEEPMINHEIGHT = 0x80000 -- element maintains its minimal height
+FL_NOFOCUS       = 0x1000000 -- element does not accept the input focus

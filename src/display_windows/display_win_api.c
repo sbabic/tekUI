@@ -641,6 +641,7 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	struct attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
 	WINWINDOW *v = data->v;
+	WINDISPLAY *mod = data->mod;
 
 	switch (item->tti_Tag)
 	{
@@ -654,6 +655,12 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 		case TVisual_Height:
 			*((TINT *) item->tti_Value) = v->fbv_Height;
+			break;
+		case TVisual_ScreenWidth:
+			*((TINT *) item->tti_Value) = mod->fbd_ScreenWidth;
+			break;
+		case TVisual_ScreenHeight:
+			*((TINT *) item->tti_Value) = mod->fbd_ScreenHeight;
 			break;
 		case TVisual_WinLeft:
 			*((TINT *) item->tti_Value) = v->fbv_Left;

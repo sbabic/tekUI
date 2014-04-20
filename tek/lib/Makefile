@@ -23,10 +23,10 @@ DISPLAYWINLIBS = $(LIBDIR)/libdisplay_win.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekd
 DISPLAYRAWFBLIBS = $(LIBDIR)/libdisplay_rawfb.a $(LIBDIR)/libtek.a $(LIBDIR)/libtekdebug.a $(LIBDIR)/libregion.a $(LIBDIR)/libutf8.a $(LIBDIR)/libpixconv.a
 
 region$(DLLEXT): $(OBJDIR)/region.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/region.lo $(PLATFORM_LIBS) $(LUA_LIBS) -lregion
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/region.lo $(PLATFORM_LIBS) $(LUA_LIBS) -lregion -ltekdebug
 
 string$(DLLEXT): $(OBJDIR)/string.lo
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/string.lo $(PLATFORM_LIBS) $(LUA_LIBS) -ltek -lutf8
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/string.lo $(PLATFORM_LIBS) $(LUA_LIBS) -ltek -ltekdebug -lutf8
 
 support$(DLLEXT): $(OBJDIR)/support.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/support.lo $(LUA_LIBS)

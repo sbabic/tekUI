@@ -113,9 +113,9 @@ typedef struct
 	/* Command message port signal: */
 	TUINT fbd_CmdPortSignal;
 
-	/* Device open tags: */
-// 	TTAGITEM *fbd_OpenTags;
-
+	/* screen size: */
+	TINT fbd_ScreenWidth, fbd_ScreenHeight;
+	
 	/* pooled input messages: */
 	struct TList fbd_IMsgPool;
 	/* list of all visuals: */

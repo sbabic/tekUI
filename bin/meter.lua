@@ -49,8 +49,8 @@ local sintab =
 
 local MyGraph1 = ui.Meter:newClass()
 
-function MyGraph1:show(drawable)
-	ui.Meter.show(self, drawable)
+function MyGraph1:show()
+	ui.Meter.show(self)
 	self.Application:addInputHandler(ui.MSG_USER, self, self.updateData)
 end
 

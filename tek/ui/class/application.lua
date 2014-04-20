@@ -130,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 41.2"
+_VERSION = "Application 41.3"
 local Application = _M
 Family:newClass(Application)
 
@@ -800,9 +800,13 @@ function Application:getRequestWindow(ww, wh, overwindow)
 	end
 	local wx, wy
 	if ow then
-		local w, h, x, y = ow.Drawable:getAttrs()
+		local w, h, x, y, sw, sh = ow.Drawable:getAttrs("whxyWH")
 		wx = x + w / 2 - ww / 2
 		wy = y + h / 2 - wh / 2
+		wx = max(wx, 0)
+		wy = max(wy, 0)
+		wx = min(wx, sw - ww)
+		wy = min(wy, sh - wh)
 	end
 	return ww, wh, wx, wy
 end

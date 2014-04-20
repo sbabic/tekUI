@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 45.0"
+_VERSION = "Window 45.1"
 local Window = _M
 Group:newClass(Window)
 
@@ -977,9 +977,11 @@ function Window:setFocusElement(e)
 		if fe then
 			fe:setValue("Focus", false)
 		end
-		self.FocusElement = e or false
-		if e then
-			e:setValue("Focus", true)
+		if not e or e:checkFocus() then
+			self.FocusElement = e or false
+			if e then
+				e:setValue("Focus", true)
+			end
 		end
 	end
 end

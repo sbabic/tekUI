@@ -259,6 +259,8 @@ static TBOOL getprops(X11DISPLAY *inst)
 	int major, minor, pixmap;
 	int order = *(TUINT *) endiancheck == 0x11223344 ? MSBFirst : LSBFirst;
 	TBOOL swap = ImageByteOrder(inst->x11_Display) != order;
+	XWindowAttributes rootwa;
+	
 	inst->x11_ByteOrder = order;
 	inst->x11_SwapByteOrder = swap;
 	TDBPRINTF(20,("(msb=%d lsb=%d) order=%d swap=%d\n",
@@ -283,6 +285,12 @@ static TBOOL getprops(X11DISPLAY *inst)
 	}
 	TDBPRINTF(TDB_INFO,("default depth: %d - bpp: %d\n",
 		inst->x11_DefaultDepth, inst->x11_DefaultBPP));
+	
+	XGetWindowAttributes(inst->x11_Display,
+		DefaultRootWindow(inst->x11_Display), &rootwa);
+	inst->x11_ScreenWidth = WidthOfScreen(rootwa.screen);
+	inst->x11_ScreenHeight = HeightOfScreen(rootwa.screen);
+	
 	return TTRUE;
 }
 

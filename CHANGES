@@ -26,12 +26,14 @@
  reactivated and other fixes
  * Removed redundant code from display drivers
  * Visual: added large number of pixel formats and conversions, added pixmap
- caching (used for gradients)
+ caching (used for gradients), added screenwidth/height properties
  * x11 driver, rawfb driver: added pixmap caching, added support for more 
  pixel formats
  * DirList: list dblclicks are acted upon mouse press, not release now
  * Added compiler tool again, some infrastructure for amalgamized builds added
- * UI: minor fixes in ProgDir/ProgName detection and stylesheet loading
+ * UI: minor fixes in ProgDir/ProgName detection and stylesheet loading,
+ * Application: Dialogues are now confined to the visible screen
+ * Widget, UI: Added NoFocus attribute and FL_NOFOCUS
 
 === 1.08: ===
 

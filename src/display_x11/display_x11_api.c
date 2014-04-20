@@ -98,7 +98,6 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		XGCValues gcv;
 		TUINT gcv_mask;
 		struct FontNode *fn;
-		XWindowAttributes rootwa;
 		TBOOL setfocus = TFALSE;
 		TINT sw, sh;
 		TBOOL borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
@@ -108,14 +107,10 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		TINT maxw = (TINT) TGetTag(tags, TVisual_MaxWidth, 1000000);
 		TINT maxh = (TINT) TGetTag(tags, TVisual_MaxHeight, 1000000);
 		
-		/* gain access to root window properties: */
-		XGetWindowAttributes(mod->x11_Display,
-			DefaultRootWindow(mod->x11_Display), &rootwa);
-		
 		if (mod->x11_FullScreenWidth == 0)
 		{
-			sw = WidthOfScreen(rootwa.screen);
-			sh = HeightOfScreen(rootwa.screen);
+			sw = mod->x11_ScreenWidth;
+			sh = mod->x11_ScreenHeight;
 		}
 		else
 		{
@@ -362,6 +357,8 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 				v->window, None, CurrentTime);
 			mod->x11_FullScreenWidth = v->winwidth;
 			mod->x11_FullScreenHeight = v->winheight;
+			mod->x11_ScreenWidth = v->winwidth;
+			mod->x11_ScreenHeight = v->winheight;
 		}
 		#endif
 
@@ -818,6 +815,7 @@ static THOOKENTRY TTAG getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	struct attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
 	X11WINDOW *v = data->v;
+	X11DISPLAY *mod = data->mod;
 
 	switch (item->tti_Tag)
 	{
@@ -831,6 +829,12 @@ static THOOKENTRY TTAG getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 		case TVisual_Height:
 			*((TINT *) item->tti_Value) = v->winheight;
+			break;
+		case TVisual_ScreenWidth:
+			*((TINT *) item->tti_Value) = mod->x11_ScreenWidth;
+			break;
+		case TVisual_ScreenHeight:
+			*((TINT *) item->tti_Value) = mod->x11_ScreenHeight;
 			break;
 		case TVisual_WinLeft:
 			*((TINT *) item->tti_Value) = v->winleft;

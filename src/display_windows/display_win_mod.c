@@ -231,9 +231,9 @@ static TBOOL fb_initinstance(TAPTR task)
 
 	for (;;)
 	{
-// 		TTAGITEM *opentags = mod->fbd_OpenTags;
 		TTAGITEM ftags[3];
 		WNDCLASSEX wclass, pclass;
+		RECT rect;
 
 		mod->fbd_HInst = GetModuleHandle(NULL);
 		if (mod->fbd_HInst == TNULL)
@@ -294,7 +294,13 @@ static TBOOL fb_initinstance(TAPTR task)
 		ftags[1].tti_Value = (TTAG) FNT_DEFPXSIZE;
 		ftags[2].tti_Tag = TTAG_DONE;
 		mod->fbd_FontManager.deffont = fb_hostopenfont(mod, ftags);
-		if (mod->fbd_FontManager.deffont == TNULL) break;
+		/*
+		if (mod->fbd_FontManager.deffont == TNULL) 
+			break;
+		*/
+		GetWindowRect(GetDesktopWindow(), &rect);
+		mod->fbd_ScreenWidth = rect.right;
+		mod->fbd_ScreenHeight = rect.bottom;
 
 		TDBPRINTF(TDB_TRACE,("Instance init successful\n"));
 		return TTRUE;

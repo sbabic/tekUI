@@ -1644,11 +1644,11 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_getattrs(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TTAGITEM tags[7];
+	TTAGITEM tags[9];
 	size_t narg = 0, i;
 	const char *opts = lua_tolstring(L, 2, &narg);
 	
-	if (narg > 5)
+	if (narg > 8)
 		luaL_error(L, "too many attributes");
 	
 	if (narg == 0)
@@ -1670,6 +1670,12 @@ tek_lib_visual_getattrs(lua_State *L)
 				break;
 			case 'h':
 				tags[i].tti_Tag = TVisual_Height;
+				break;
+			case 'W':
+				tags[i].tti_Tag = TVisual_ScreenWidth;
+				break;
+			case 'H':
+				tags[i].tti_Tag = TVisual_ScreenHeight;
 				break;
 			case 'x':
 				tags[i].tti_Tag = TVisual_WinLeft;
@@ -1695,6 +1701,8 @@ tek_lib_visual_getattrs(lua_State *L)
 		{
 			case 'w':
 			case 'h':
+			case 'W':
+			case 'H':
 			case 'x':
 			case 'y':
 				lua_pushinteger(L, *((TINT *) &tags[i].tti_Value));
