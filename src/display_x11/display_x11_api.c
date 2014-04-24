@@ -99,20 +99,16 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		TUINT gcv_mask;
 		struct FontNode *fn;
 		TBOOL setfocus = TFALSE;
-		TINT sw, sh;
 		TBOOL borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
 		TBOOL popupwindow = TGetTag(tags, TVisual_PopupWindow, TFALSE);
 		TINT minw = (TINT) TGetTag(tags, TVisual_MinWidth, -1);
 		TINT minh = (TINT) TGetTag(tags, TVisual_MinHeight, -1);
 		TINT maxw = (TINT) TGetTag(tags, TVisual_MaxWidth, 1000000);
 		TINT maxh = (TINT) TGetTag(tags, TVisual_MaxHeight, 1000000);
+		TINT sw = mod->x11_ScreenWidth;
+		TINT sh = mod->x11_ScreenHeight;
 		
-		if (mod->x11_FullScreenWidth == 0)
-		{
-			sw = mod->x11_ScreenWidth;
-			sh = mod->x11_ScreenHeight;
-		}
-		else
+		if (mod->x11_FullScreenWidth != 0)
 		{
 			sw = mod->x11_FullScreenWidth;
 			sh = mod->x11_FullScreenHeight;
@@ -248,13 +244,16 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 
 		v->winleft = TMAX(v->winleft, 0);
 		v->wintop = TMAX(v->wintop, 0);
+		
+		if ((borderless || mod->x11_FullScreen) && mod->x11_NumWindows == 0)
+			v->is_root_window = TTRUE;
 
 		if (popupwindow || borderless)
 		{
 			swa_mask |= CWOverrideRedirect;
 			swa.override_redirect = True;
-			/* is borderless, and area smaller than half screen area */
-			save_under = v->winwidth * v->winheight < sw * sh / 2;
+			if (!v->is_root_window)
+				save_under = v->winwidth * v->winheight < sw * sh / 2;
 		}
 
 		if (save_under)
@@ -373,6 +372,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		mod->x11_RequestInProgress = req;
 
 		/* success: */
+		mod->x11_NumWindows++;
 		return;
 	}
 
@@ -431,6 +431,8 @@ LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req)
 		XFree(v->sizehints);
 
 	mod->x11_fm.defref--;
+	
+	mod->x11_NumWindows--;
 
 	TFree(v);
 }
@@ -448,7 +450,7 @@ static int x11_seteventmask(X11DISPLAY *mod, X11WINDOW *v, TUINT eventmask)
 		x11_mask |= KeyPressMask | KeyReleaseMask;
 	if (eventmask & TITYPE_KEYUP)
 		x11_mask |= KeyPressMask | KeyReleaseMask;
-	if (eventmask & TITYPE_MOUSEMOVE)
+	if (v->is_root_window || (eventmask & TITYPE_MOUSEMOVE))
 		x11_mask |= PointerMotionMask | OwnerGrabButtonMask |
 			ButtonMotionMask | ButtonPressMask | ButtonReleaseMask;
 	if (eventmask & TITYPE_MOUSEBUTTON)

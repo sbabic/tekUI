@@ -1014,7 +1014,6 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 			if ((v->winwidth != ev->xconfigure.width ||
 				v->winheight != ev->xconfigure.height))
 			{
-				v->waitforexpose = TTRUE;
 				v->winwidth = ev->xconfigure.width;
 				v->winheight = ev->xconfigure.height;
 				if (v->eventmask & TITYPE_NEWSIZE)
@@ -1044,15 +1043,12 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 			{
 				TReplyMsg(mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
-				v->waitforexpose = TFALSE;
 				TDBPRINTF(TDB_TRACE,("Released request (MapNotify)\n"));
 			}
 			break;
 
 		case Expose:
-			if (v->waitforexpose)
-				v->waitforexpose = TFALSE;
-			else if ((v->eventmask & TITYPE_REFRESH) &&
+			if ((v->eventmask & TITYPE_REFRESH) &&
 				getimsg(mod, v, &imsg, TITYPE_REFRESH))
 			{
 				imsg->timsg_X = ev->xexpose.x;
@@ -1110,13 +1106,24 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 			break;
 
 		case MotionNotify:
+		{
 			setmousepos(mod, v, ev->xmotion.x, ev->xmotion.y);
-			if (v->eventmask & TITYPE_MOUSEMOVE)
+			struct TNode *next, *node = mod->x11_vlist.tlh_Head;
+			for (; (next = node->tln_Succ); node = next)
 			{
-				if (getimsg(mod, v, &imsg, TITYPE_MOUSEMOVE))
-					TAddTail(&v->imsgqueue, &imsg->timsg_Node);
+				X11WINDOW *v = (X11WINDOW *) node;
+				if (v->eventmask & TITYPE_MOUSEMOVE)
+				{
+					if (getimsg(mod, v, &imsg, TITYPE_MOUSEMOVE))
+					{
+						v->mousex = mod->x11_ScreenMouseX - v->winleft;
+						v->mousey = mod->x11_ScreenMouseY - v->wintop;
+						TAddTail(&v->imsgqueue, &imsg->timsg_Node);
+					}
+				}
 			}
 			break;
+		}
 
 		case ButtonRelease:
 		case ButtonPress:

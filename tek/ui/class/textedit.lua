@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 20.4"
+_VERSION = "TextEdit 20.5"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -275,6 +275,7 @@ function TextEdit:doMark(ncx, ncy)
 -- 		self:releaseWindowUpdate()
 	else
 		self.Mark = { ncx or self.CursorX, ncy or self.CursorY }
+		self:damageLine(ncy or self.CursorY)
 		return true
 	end
 end

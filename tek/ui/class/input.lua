@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 4.5"
+_VERSION = "Input 4.6"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -129,9 +129,9 @@ function EditInput:passMsg(msg)
 						local ts, tu = Display.getTime()
 						local ct = self.LastClickTime
 						if self.Window:checkDblClickTime(ct[1], ct[2], ts, tu) then
-							self:setCursor(-1, 1, cy)
+							self:setCursor(-1, 1)
 							self:doMark()
-							self:setCursor(-1, self:getLineLength(cy) + 1, cy)
+							self:setCursor(-1, self:getLineLength() + 1)
 						end
 						ct[1], ct[2] = ts, tu
 					end
@@ -241,6 +241,15 @@ function EditInput:onSetChanged(changed)
 	self.ScrollGroup:setValue("Changed", changed)
 end
 
+function EditInput:setup(app, window)
+	TextEdit.setup(self, app, window)
+	if self.HardScroll and self.MultiLine then
+		local h = self.LineHeight
+		local s = self.ScrollGroup.VSliderGroup.Slider
+		s.Increment = h
+		s.Step = h
+	end
+end
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides

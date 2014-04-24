@@ -250,8 +250,12 @@ typedef struct
 	
 	TINT x11_ScreenWidth;
 	TINT x11_ScreenHeight;
+	
+	/* vidmode screensize: */
 	TINT x11_FullScreenWidth;
 	TINT x11_FullScreenHeight;
+	
+	/* fullscreen (logical): */
 	TBOOL x11_FullScreen;
 	
 	Atom x11_XA_TARGETS;
@@ -269,6 +273,8 @@ typedef struct
 	#if defined(ENABLE_X11_DGRAM)
 	int x11_UserFD;
 	#endif
+
+	TINT x11_NumWindows;
 
 } X11DISPLAY;
 
@@ -319,8 +325,6 @@ typedef struct
 	/* list of allocated pens: */
 	struct TList penlist;
 
-	/* HACK to consume an Expose event after ConfigureNotify: */
-	TBOOL waitforexpose;
 	TBOOL waitforresize;
 
 	XShmSegmentInfo shminfo;
@@ -336,6 +340,8 @@ typedef struct
 	TUINT bpp;
 
 	TINT mousex, mousey;
+	
+	TBOOL is_root_window;
 	
 } X11WINDOW;
 
