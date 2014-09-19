@@ -133,7 +133,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 48.0" -- module version string
+_VERSION = "tekUI 48.1" -- module version string
 
 VERSION = 109 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
@@ -923,13 +923,13 @@ KeyAliases =
 {
 	["IgnoreAltShift"] = { 0x0000, 0x00, 0x10, 0x20, 0x30 },
 	["IgnoreCase"] = { 0x0000, 0x00, 0x01, 0x02 },
-	["Shift"] = { 0x0000, 0x01, 0x02 },
+	["Shift"] = { 0x0000, 0x01, 0x02, 0x03 },
 	["LShift"] = { 0x0000, 0x01 },
 	["RShift"] = { 0x0000, 0x02 },
-	["Ctrl"] = { 0x0000, 0x04, 0x08 },
+	["Ctrl"] = { 0x0000, 0x04, 0x08, 0x0c },
 	["LCtrl"] = { 0x0000, 0x04 },
 	["RCtrl"] = { 0x0000, 0x08 },
-	["Alt"] = { 0x0000, 0x10, 0x20 },
+	["Alt"] = { 0x0000, 0x10, 0x20, 0x30 },
 	["LAlt"] = { 0x0000, 0x10 },
 	["RAlt"] = { 0x0000, 0x20 },
 	["Del"] = { 0x007f },

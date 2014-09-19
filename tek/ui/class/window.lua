@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 45.1"
+_VERSION = "Window 45.2"
 local Window = _M
 Group:newClass(Window)
 
@@ -667,7 +667,7 @@ local MsgHandlers =
 		elseif key == 9 then -- tab key:
 			if qual == 0 then -- no qualifier:
 				self:setFocusElement(self:getNextElement(fe))
-			elseif qual == 1 then -- shift qualifier:
+			elseif qual >= 1 and qual <= 3 then -- shift qualifier:
 				self:setFocusElement(self:getNextElement(fe, true))
 			end
 			return

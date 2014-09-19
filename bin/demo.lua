@@ -16,6 +16,15 @@ end
 local List = require "tek.class.list"
 local ui = require "tek.ui"
 local db = require "tek.lib.debug"
+local rdargs = require "tek.lib.args".read
+
+local ARGTEMPLATE = "-f=FULLSCREEN/S,-w=WIDTH/N,-h=HEIGHT/N,--help=HELP/S"
+local args = rdargs(ARGTEMPLATE, arg)
+if not args or args.help then
+	print(ARGTEMPLATE)
+	return
+end
+
 
 local APP_ID = "tekui-demo"
 local VENDOR = "schulze-mueller.de"
@@ -461,7 +470,7 @@ app = ui.Application:new
 			Id = "window-main",
 			HideOnEscape = true,
 			MinWidth = 0, MinHeight = 0,
-			Width = 800, Height = 600,
+			Width = args.width or 800, Height = args.height or 600,
 			MaxWidth = ui.HUGE, MaxHeight = ui.HUGE,
 
 			onHide = function(self)

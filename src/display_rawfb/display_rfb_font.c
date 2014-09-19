@@ -73,7 +73,7 @@ static const char *getfontdir()
 ** rfb_hostqueryfonts()
 */
 
-THOOKENTRY TTAG fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
+THOOKENTRY TTAG rfb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
@@ -554,7 +554,7 @@ LOCAL TAPTR rfb_hostqueryfonts(RFBDISPLAY *mod, TTAGITEM *tags)
 	{
 		fqh->handle.thn_Owner = mod;
 		/* connect destructor */
-		TInitHook(&fqh->handle.thn_Hook, fqhdestroy, fqh);
+		TInitHook(&fqh->handle.thn_Hook, rfb_fqhdestroy, fqh);
 		TInitList(&fqh->reslist);
 		/* init list iterator */
 		fqh->nptr = &fqh->reslist.tlh_Head;

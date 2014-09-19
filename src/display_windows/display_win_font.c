@@ -97,7 +97,7 @@ LOCAL TINT fb_hosttextsize(WINDISPLAY *mod, TAPTR font, TSTRPTR text,
 
 
 static THOOKENTRY TTAG
-fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
+fb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
@@ -193,7 +193,7 @@ LOCAL TAPTR fb_hostqueryfonts(WINDISPLAY *mod, TTAGITEM *tags)
 		return TNULL;
 
 	fqh->handle.thn_Owner = mod;
-	TInitHook(&fqh->handle.thn_Hook, fqhdestroy, fqh);
+	TInitHook(&fqh->handle.thn_Hook, fb_fqhdestroy, fqh);
 	TInitList(&fqh->reslist);
 
 	fqh->fpxsize = (TINT) TGetTag(tags, TVisual_FontPxSize, (TTAG) FNTQUERY_UNDEFINED);

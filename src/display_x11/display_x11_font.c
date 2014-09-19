@@ -185,7 +185,7 @@ static TAPTR initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms,
 */
 
 static THOOKENTRY TTAG
-fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
+x11_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
@@ -949,7 +949,7 @@ x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags)
 	{
 		fqh->handle.thn_Owner = mod;
 		/* connect destructor */
-		TInitHook(&fqh->handle.thn_Hook, fqhdestroy, fqh);
+		TInitHook(&fqh->handle.thn_Hook, x11_fqhdestroy, fqh);
 		TInitList(&fqh->reslist);
 		/* init list iterator */
 		fqh->nptr = &fqh->reslist.tlh_Head;
