@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "visual_lua.h"
 #if defined(ENABLE_PNG)
 #include <png.h>

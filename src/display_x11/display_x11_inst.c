@@ -1107,20 +1107,16 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 
 		case MotionNotify:
 		{
-			setmousepos(mod, v, ev->xmotion.x, ev->xmotion.y);
 			struct TNode *next, *node = mod->x11_vlist.tlh_Head;
+			setmousepos(mod, v, ev->xmotion.x, ev->xmotion.y);
+			v->mousex = mod->x11_ScreenMouseX - v->winleft;
+			v->mousey = mod->x11_ScreenMouseY - v->wintop;
 			for (; (next = node->tln_Succ); node = next)
 			{
 				X11WINDOW *v = (X11WINDOW *) node;
-				if (v->eventmask & TITYPE_MOUSEMOVE)
-				{
-					if (getimsg(mod, v, &imsg, TITYPE_MOUSEMOVE))
-					{
-						v->mousex = mod->x11_ScreenMouseX - v->winleft;
-						v->mousey = mod->x11_ScreenMouseY - v->wintop;
-						TAddTail(&v->imsgqueue, &imsg->timsg_Node);
-					}
-				}
+				if (v->eventmask & TITYPE_MOUSEMOVE &&
+					getimsg(mod, v, &imsg, TITYPE_MOUSEMOVE))
+					TAddTail(&v->imsgqueue, &imsg->timsg_Node);
 			}
 			break;
 		}
