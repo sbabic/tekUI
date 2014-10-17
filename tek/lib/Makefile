@@ -6,8 +6,10 @@ EXTRADEFS += $(LUA_DEFS) $(TEKUI_DEFS) -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
 
 ###############################################################################
 
+# primary display driver:
 DISPLAYS = display/$(DISPLAY_DRIVER)$(DLLEXT)
-# comment in additional sub display driver here:
+
+# comment in additional (sub-) display driver(s) here:
 # DISPLAYS += display/x11$(DLLEXT)
 # DISPLAYS += display/directfb$(DLLEXT)
 
@@ -35,7 +37,7 @@ exec$(DLLEXT): $(OBJDIR)/exec_lua.lo $(EXECLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/exec_lua.lo -L$(LIBDIR) -lhal -lexec -ltekc -ltekdebug $(PLATFORM_LIBS) $(LUA_LIBS)
 
 visual$(DLLEXT): $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo $(VISUALLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo -L$(LIBDIR) -lvisual -lcachemanager -ltek -ltekdebug $(LUA_LIBS) $(TEKUI_LIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/visual_lua.lo $(OBJDIR)/visual_api.lo $(OBJDIR)/visual_io.lo -L$(LIBDIR) -lvisual -lcachemanager -limgload -lpixconv -ltek -ltekdebug $(LUA_LIBS) $(TEKUI_LIBS)
 
 display/x11$(DLLEXT): $(OBJDIR)/x11_lua.lo $(DISPLAYX11LIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/x11_lua.lo -L$(LIBDIR) -ldisplay_x11 $(X11_LIBS) -lutf8 -lpixconv -limgcache -ltek -ltekdebug $(LUA_LIBS)
@@ -47,7 +49,7 @@ display/windows$(DLLEXT): $(OBJDIR)/windows_lua.lo $(DISPLAYWINLIBS)
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/windows_lua.lo -L$(LIBDIR) -ldisplay_win $(WIN_LIBS) -lutf8 -ltek -ltekdebug $(LUA_LIBS)
 
 display/rawfb$(DLLEXT): $(OBJDIR)/rawfb_lua.lo $(DISPLAYRAWFBLIBS)
-	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/rawfb_lua.lo -L$(LIBDIR) -ldisplay_rawfb $(RAWFB_LIBS) -lutf8 -lregion -limgcache -lpixconv -ltek -ltekdebug $(LUA_LIBS)
+	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/rawfb_lua.lo -L$(LIBDIR) -ldisplay_rawfb -limgload $(RAWFB_LIBS) -lutf8 -lregion -limgcache -lpixconv -ltek -ltekdebug $(LUA_LIBS)
 
 $(OBJDIR)/region.lo: region.c
 	$(CC) $(LIBCFLAGS) -o $@ -c region.c

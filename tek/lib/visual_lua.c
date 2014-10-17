@@ -46,6 +46,7 @@ static const luaL_Reg tek_lib_visual_funcs[] =
 	{ "getMsg", tek_lib_visual_getmsg },
 	{ "createPixmap", tek_lib_visual_createpixmap },
 	{ "createGradient", tek_lib_visual_creategradient },
+	{ "getDisplayAttrs", tek_lib_visual_getdisplayattrs },
 	{ TNULL, TNULL }
 };
 
@@ -113,7 +114,7 @@ static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 **	args.Left - Left position of the window
 **	args.Top - Top position of the window
 **	args.Borderless - open borderless window
-**	args.PopupWindow - window is  popup
+**	args.PopupWindow - window is popup
 **	args.CenterWindow - open window centered
 **	args.MinWidth - minimum width of the window
 **	args.MinHeight - minimum height of the window
@@ -127,7 +128,7 @@ static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 LOCAL LUACFUNC TINT
 tek_lib_visual_open(lua_State *L)
 {
-	TTAGITEM tags[19], *tp = tags;
+	TTAGITEM tags[20], *tp = tags;
 	TEKVisual *visbase, *vis;
 
 	vis = lua_newuserdata(L, sizeof(TEKVisual));
@@ -300,6 +301,13 @@ tek_lib_visual_open(lua_State *L)
 		tp++->tti_Value = (TTAG) lua_toboolean(L, -1);
 	lua_pop(L, 1);
 	
+	tp->tti_Tag = TVisual_ExtraArgs;
+	lua_getfield(L, 1, "ExtraArgs");
+	if (lua_isstring(L, -1))
+		tp++->tti_Value = (TTAG) lua_tostring(L, -1);
+	lua_pop(L, 1);
+
+	
 	lua_getfield(L, 1, "MsgFileNo");
 	if (lua_isnumber(L, -1))
 		visbase->vis_IOFileNo = lua_tointeger(L, -1);
@@ -317,6 +325,7 @@ tek_lib_visual_open(lua_State *L)
 	tp->tti_Tag = TVisual_IMsgPort;
 	tp++->tti_Value = (TTAG) visbase->vis_IMsgPort;
 
+	
 	tp->tti_Tag = TTAG_DONE;
 
 	vis->vis_Visual = TVisualOpen(visbase->vis_Base, tags);
@@ -608,7 +617,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	for (;;)
 	{
 		TTAGITEM ftags[2];
-		TTAGITEM dtags[3];
+		TTAGITEM dtags[4];
 
 		/* Open the Visual module: */
 		vis->vis_Base = TOpenModule("visual", 0, TNULL);
@@ -626,12 +635,15 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 			break;
 #endif
 		
+		vis->vis_HaveWindowManager = TTRUE;
 		/* Open a display: */
 		dtags[0].tti_Tag = TVisual_DisplayName;
 		dtags[0].tti_Value = (TTAG) "display_" DISPLAY_DRIVER;
 		dtags[1].tti_Tag = TVisual_IMsgPort;
 		dtags[1].tti_Value = (TTAG) vis->vis_IMsgPort;
-		dtags[2].tti_Tag = TTAG_DONE;
+		dtags[2].tti_Tag = TVisual_HaveWindowManager;
+		dtags[2].tti_Value = (TTAG) &vis->vis_HaveWindowManager;
+		dtags[3].tti_Tag = TTAG_DONE;
 		vis->vis_Display = TVisualOpenDisplay(vis->vis_Base, dtags);
 		if (vis->vis_Display == TNULL)
 		{

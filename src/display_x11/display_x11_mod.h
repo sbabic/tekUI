@@ -325,6 +325,8 @@ typedef struct
 	/* list of allocated pens: */
 	struct TList penlist;
 
+	/* HACK to consume an Expose event after ConfigureNotify: */
+	TBOOL waitforexpose;
 	TBOOL waitforresize;
 
 	XShmSegmentInfo shminfo;

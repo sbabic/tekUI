@@ -371,3 +371,8 @@ tek.ui.class.canvas.inputfield {
 	margin: 1;
 	padding: 0;
 }
+
+tek.ui.class.window.window-decoration {
+	border-width: 3;
+	border-style: solid;
+}

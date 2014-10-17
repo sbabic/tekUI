@@ -3,7 +3,23 @@
 
 === 1.09: ===
 
- * Input: doubleclick marks the whole line now 
+ * Added basic support for native Linux framebuffer and event interface.
+ Support can be compiled into the raw framebuffer display driver.
+ * Raw framebuffers automatically recognize the need for a backbuffer now,
+ e.g. when a VNC server is running on top a Linux framebuffer and the pixel
+ formats differ. Backbuffer support can also be enabled explicitely using
+ ui.ExtraArgs = "fb_backbuffer=true"
+ * Linux framebuffer keymaps are compiled-in for now, added tool etc/keymap2c
+ for conversion; default is /usr/share/keymaps/i386/qwerty/us.map.gz
+ * UI, Window: Added ui.Mode = "workbench" for displays without a window
+ manager, supporting rudimentary window decorations for close, drag, and
+ resize. Added HaveWindowManager attribute to displays and Visual interface
+ * Some restructuring and streamlining in pixel conversion and image loading
+ * VNC portnumber can be configured using VNC_PORTNUMBER as well as
+ ui.ExtraArgs = "vnc_portnumber=1234" 
+ * Displays, Area, Canvas: Some layouting and refresh glitches corrected
+ * Windows now better remember their window positions and sizes
+ * Input: doubleclick marks the whole line now
  * Sizeable: No longer adds empty blit regions to the Window, added sanity
  checks, added cases for insertions above and below the visible area, now
  operates on not shown elements correctly

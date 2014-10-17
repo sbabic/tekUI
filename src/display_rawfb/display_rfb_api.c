@@ -6,6 +6,7 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
+#include <assert.h>
 #include "display_rfb_mod.h"
 #include <tek/inline/exec.h>
 #if defined(RFB_PIXMAP_CACHE)
@@ -45,6 +46,41 @@ LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v)
 
 /*****************************************************************************/
 
+struct extraopenargs
+{
+	TUINT pixfmt;
+	TUINT vncportnr;
+	TBOOL backbuffer;
+};
+
+static TBOOL string2bool(const char *s)
+{
+	return !strcmp(s, "1") || !strcasecmp(s, "on") || !strcasecmp(s, "yes") ||
+		!strcasecmp(s, "true");
+}
+
+static void getextraopenargs(TTAGITEM *tags, struct extraopenargs *args)
+{
+	TSTRPTR extraarg = (TSTRPTR) TGetTag(tags, TVisual_ExtraArgs, TNULL);
+	memset(args, 0, sizeof *args);
+	if (extraarg)
+	{
+		char buf[2048];
+		char *s = buf, *ss, *t;
+		char temp[5];
+		strncpy(buf, extraarg, sizeof(buf) - 1);
+		buf[sizeof(buf) - 1] = 0;
+		while ((t = strtok_r(s, "\n", &ss)))
+		{
+			s = NULL;
+			sscanf(t, " fb_pixfmt = %08x ", &args->pixfmt);
+			sscanf(t, " vnc_portnumber = %d ", &args->vncportnr);
+			if (sscanf(t, " fb_backbuffer = %4s ", temp))
+				args->backbuffer = string2bool(temp);
+		}
+	}
+}
+
 LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
@@ -67,32 +103,69 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	if (TISLISTEMPTY(&mod->rfb_VisualList))
 	{
 		/* Open root window */
+		struct extraopenargs args;
+		getextraopenargs(tags, &args);
+
+		/* dimensions */		
 		width = (TINT) TGetTag(tags, TVisual_Width, 
-			minw > 0 ? TMAX(minw, RFB_DEF_WIDTH) : 
-				TMAX(mod->rfb_Width, RFB_DEF_WIDTH));
+			minw > 0 ? TMAX(minw, mod->rfb_DevWidth) : 
+				TMAX(mod->rfb_Width, mod->rfb_DevWidth));
 		height = (TINT) TGetTag(tags, TVisual_Height, 
-			minh > 0 ? TMAX(minh, RFB_DEF_HEIGHT) : 
-				TMAX(mod->rfb_Height, RFB_DEF_HEIGHT));
-		
+			minh > 0 ? TMAX(minh, mod->rfb_DevHeight) : 
+				TMAX(mod->rfb_Height, mod->rfb_DevHeight));
 		mod->rfb_Width = width;
 		mod->rfb_Height = height;
-		mod->rfb_Modulo = TGetTag(tags, TVisual_Modulo, 0);
-		mod->rfb_BytesPerPixel = sizeof(RFBPixel);
-		mod->rfb_BytesPerLine =
-			(mod->rfb_Width + mod->rfb_Modulo) * mod->rfb_BytesPerPixel;
-		mod->rfb_BufPtr = (RFBPixel *) TGetTag(tags, TVisual_BufPtr, TNULL);
-		if (mod->rfb_BufPtr == TNULL)
+		
+		/* determine pixel format */
+		TUINT pixfmt = TVPIXFMT_08R8G8B8;
+		if (mod->rfb_PixBuf.tpb_Format)
+			pixfmt = mod->rfb_PixBuf.tpb_Format;
+#if defined(RFBPIXFMT)
+		pixfmt = RFBPIXFMT;
+#endif
+#if defined(ENABLE_VNCSERVER)
+		if (pixfmt != TVPIXFMT_08B8G8R8 && pixfmt != TVPIXFMT_0B5G5R5)
+			pixfmt = TVPIXFMT_BYTES_PER_PIXEL(pixfmt) == 4 ? 
+				TVPIXFMT_08B8G8R8 : TVPIXFMT_0B5G5R5;
+#endif
+		if (args.pixfmt)
+			pixfmt = args.pixfmt;
+		pixfmt = TGetTag(tags, TVisual_PixelFormat, pixfmt);
+
+		if (mod->rfb_PixBuf.tpb_Data == TNULL)
 		{
-			mod->rfb_BufPtr = TAlloc0(mod->rfb_MemMgr,
-				mod->rfb_BytesPerLine * mod->rfb_Height);
-			if (mod->rfb_BufPtr == TNULL)
+			/* no buffer allocated yet; get one */
+			TUINT modulo = TGetTag(tags, TVisual_Modulo, 0);
+			TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(pixfmt);
+			mod->rfb_PixBuf.tpb_Format = pixfmt;
+			mod->rfb_PixBuf.tpb_BytesPerLine = (width + modulo) * bpp;
+			mod->rfb_PixBuf.tpb_Data = (TUINT8 *) TGetTag(tags, TVisual_BufPtr, TNULL);
+			if (mod->rfb_PixBuf.tpb_Data == TNULL)
+			{
+				mod->rfb_PixBuf.tpb_Data = TAlloc0(mod->rfb_MemMgr,
+					mod->rfb_PixBuf.tpb_BytesPerLine * mod->rfb_Height);
+				if (mod->rfb_PixBuf.tpb_Data == TNULL)
+					return;
+				/* we own the buffer: */
+				mod->rfb_Flags |= RFBFL_BUFFER_OWNER;
+			}
+		}
+		else if (pixfmt != mod->rfb_PixBuf.tpb_Format || args.backbuffer)
+		{
+			/* there is a buffer already, but the formats do not match */
+			TDBPRINTF(TDB_WARN,("Using backbuffer, format %08x\n", pixfmt));
+			TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(pixfmt);
+			mod->rfb_PixBuf.tpb_Format = pixfmt;
+			mod->rfb_PixBuf.tpb_BytesPerLine = bpp * mod->rfb_Width;
+			mod->rfb_PixBuf.tpb_Data = TAlloc0(mod->rfb_MemMgr, 
+				mod->rfb_Width * mod->rfb_Height * bpp);
+			if (mod->rfb_PixBuf.tpb_Data == TNULL)
 				return;
-			/* we own the buffer: */
-			mod->rfb_BufferOwner = TTRUE;
+			mod->rfb_Flags |= RFBFL_BUFFER_OWNER | RFBFL_BUFFER_DEVICE;
 		}
 
 #if defined(ENABLE_VNCSERVER)
-		rfb_vnc_init(mod);
+		rfb_vnc_init(mod, args.vncportnr);
 #endif
 		v->rfbw_WinRect[0] = 0;
 		v->rfbw_WinRect[1] = 0;
@@ -123,6 +196,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 			TDoIO(&mod->rfb_RndRequest->tvr_Req);
 			mod->rfb_RndInstance =
 				mod->rfb_RndRequest->tvr_Op.OpenWindow.Window;
+			v->rfbw_FullScreen = TTRUE;
 		}
 	}
 	else
@@ -138,6 +212,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		
 		if (TGetTag(tags, TVisual_FullScreen, TFALSE))
 		{
+			v->rfbw_FullScreen = TTRUE;
 			v->rfbw_WinRect[0] = 0;
 			v->rfbw_WinRect[1] = 0;
 			width = mod->rfb_Width;
@@ -176,8 +251,8 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_MaxWidth = maxw;
 	v->rfbw_MaxHeight = maxh;
 	
-	v->rfbw_Modulo = mod->rfb_Modulo + (mod->rfb_Width - width);
-	v->rfbw_PixelPerLine = width + v->rfbw_Modulo;
+	v->rfbw_PixBuf.tpb_Format = mod->rfb_PixBuf.tpb_Format;
+	v->rfbw_PixBuf.tpb_BytesPerLine = mod->rfb_PixBuf.tpb_BytesPerLine;
 	
 	v->rfbw_InputMask = (TUINT) TGetTag(tags, TVisual_EventMask, 0);
 	v->userdata = TGetTag(tags, TVisual_UserData, TNULL);
@@ -191,7 +266,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v->bgpen = TVPEN_UNDEFINED;
 	v->fgpen = TVPEN_UNDEFINED;
 
-	v->rfbw_BufPtr = mod->rfb_BufPtr;
+	v->rfbw_PixBuf.tpb_Data = mod->rfb_PixBuf.tpb_Data;
 
 	/* add window on top of window stack: */
 	TLock(mod->rfb_Lock);
@@ -217,7 +292,8 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 
 LOCAL TBOOL rfb_ispointobscured(RFBDISPLAY *mod, TINT x, TINT y, RFBWINDOW *v)
 {
-	if (x < 0 || x >= mod->rfb_Width || y < 0 || y >= mod->rfb_Height)
+	if (x < 0 || x >= mod->rfb_Width || y < 0 || 
+		y >= mod->rfb_Height)
 		return TTRUE;
 	
 	if (x < v->rfbw_ClipRect[0] || x > v->rfbw_ClipRect[2] ||
@@ -467,11 +543,28 @@ LOCAL void rfb_flush_clients(RFBDISPLAY *mod, TBOOL also_external)
 			if (also_external && mod->rfb_VNCTask)
 				rfb_vnc_flush(mod, D);
 #endif
+			/* flush to sub pixbuf: */
+			if (mod->rfb_Flags & RFBFL_BUFFER_DEVICE)
+			{
+				node = D->rg_Rects.rl_List.tlh_Head;
+				for (; (next = node->tln_Succ); node = next)
+				{
+					struct RectNode *r = (struct RectNode *) node;
+					TINT x0 = r->rn_Rect[0];
+					TINT y0 = r->rn_Rect[1];
+					TINT x1 = r->rn_Rect[2];
+					TINT y1 = r->rn_Rect[3];
+					pixconv_convert(&mod->rfb_PixBuf, &mod->rfb_DevBuf, 
+						x0, y0, x1, y1, x0, y0, TFALSE, TFALSE);
+				}
+			}
+			
+			/* flush to sub device: */
 			if (mod->rfb_RndDevice)
 			{
 				TTAGITEM tags[2];
 				tags[0].tti_Tag = TVisual_PixelFormat;
-				tags[0].tti_Value = RFBPIXFMT;
+				tags[0].tti_Value = mod->rfb_PixBuf.tpb_Format;
 				tags[1].tti_Tag = TTAG_DONE;
 				
 				/* TODO: do multiple flushes asynchronously */
@@ -494,8 +587,8 @@ LOCAL void rfb_flush_clients(RFBDISPLAY *mod, TBOOL also_external)
 					req->tvr_Op.DrawBuffer.RRect[1] = y0;
 					req->tvr_Op.DrawBuffer.RRect[2] = x1 - x0 + 1;
 					req->tvr_Op.DrawBuffer.RRect[3] = y1 - y0 + 1;
-					req->tvr_Op.DrawBuffer.Buf =
-						mod->rfb_BufPtr + (y0 * mod->rfb_Width + x0);
+					req->tvr_Op.DrawBuffer.Buf = 
+						TVPB_GETADDRESS(&mod->rfb_PixBuf, x0, y0);
 					TDoIO(&req->tvr_Req);
 				}
 				
@@ -521,24 +614,36 @@ LOCAL void rfb_flush(RFBDISPLAY *mod, struct TVRequest *req)
 
 LOCAL void rfb_copyrect_sub(RFBDISPLAY *mod, TINT *rect, TINT dx, TINT dy)
 {
-	if (!mod->rfb_RndDevice)
-		return;
-	TAPTR TExecBase = mod->rfb_ExecBase;
-	struct TVRequest *req = mod->rfb_RndRequest;
-	req->tvr_Req.io_Command = TVCMD_COPYAREA;
-	TINT x0 = rect[0] - dx;
-	TINT y0 = rect[1] - dy;
-	TINT x1 = rect[2] - dx;
-	TINT y1 = rect[3] - dy;
-	req->tvr_Op.CopyArea.Window = mod->rfb_RndInstance;
-	req->tvr_Op.CopyArea.Rect[0] = x0;
-	req->tvr_Op.CopyArea.Rect[1] = y0;
-	req->tvr_Op.CopyArea.Rect[2] = x1 - x0 + 1;
-	req->tvr_Op.CopyArea.Rect[3] = y1 - y0 + 1;
-	req->tvr_Op.CopyArea.DestX = x0 + dx;
-	req->tvr_Op.CopyArea.DestY = y0 + dy;
-	req->tvr_Op.CopyArea.Tags = TNULL;
-	TDoIO(&req->tvr_Req);
+	if (mod->rfb_Flags & RFBFL_BUFFER_DEVICE)
+	{
+		/* TODO: this is just a flush, not a copyrect */
+		TINT x0 = rect[0];
+		TINT y0 = rect[1];
+		TINT x1 = rect[2];
+		TINT y1 = rect[3];
+		pixconv_convert(&mod->rfb_PixBuf, &mod->rfb_DevBuf, 
+			x0, y0, x1, y1, x0, y0, TFALSE, TFALSE);
+	}
+	
+	if (mod->rfb_RndDevice)
+	{
+		TAPTR TExecBase = mod->rfb_ExecBase;
+		struct TVRequest *req = mod->rfb_RndRequest;
+		req->tvr_Req.io_Command = TVCMD_COPYAREA;
+		TINT x0 = rect[0] - dx;
+		TINT y0 = rect[1] - dy;
+		TINT x1 = rect[2] - dx;
+		TINT y1 = rect[3] - dy;
+		req->tvr_Op.CopyArea.Window = mod->rfb_RndInstance;
+		req->tvr_Op.CopyArea.Rect[0] = x0;
+		req->tvr_Op.CopyArea.Rect[1] = y0;
+		req->tvr_Op.CopyArea.Rect[2] = x1 - x0 + 1;
+		req->tvr_Op.CopyArea.Rect[3] = y1 - y0 + 1;
+		req->tvr_Op.CopyArea.DestX = x0 + dx;
+		req->tvr_Op.CopyArea.DestY = y0 + dy;
+		req->tvr_Op.CopyArea.Tags = TNULL;
+		TDoIO(&req->tvr_Req);
+	}
 }
 
 /*****************************************************************************/
@@ -748,14 +853,23 @@ LOCAL void rfb_copyarea(RFBDISPLAY *mod, struct TVRequest *req)
 	TINT dy = req->tvr_Op.CopyArea.DestY;
 	struct THook *exposehook = (struct THook *)
 		TGetTag(req->tvr_Op.CopyArea.Tags, TVisual_ExposeHook, TNULL);
-	TINT d[4];
-	d[0] = dx + v->rfbw_WinRect[0];
-	d[1] = dy + v->rfbw_WinRect[1];
-	d[2] = d[0] + req->tvr_Op.CopyArea.Rect[2] - 1;
-	d[3] = d[1] + req->tvr_Op.CopyArea.Rect[3] - 1;
-	dx -= req->tvr_Op.CopyArea.Rect[0];
-	dy -= req->tvr_Op.CopyArea.Rect[1];
-	fbp_copyarea(mod, v, dx, dy, d, exposehook);
+	TINT s[4];
+	TINT *w = v->rfbw_WinRect;
+	TINT *c = req->tvr_Op.CopyArea.Rect;
+	dx -= c[0];
+	dy -= c[1];
+	s[0] = c[0] + w[0];
+	s[1] = c[1] + w[1];
+	s[2] = c[2] + s[0] - 1;
+	s[3] = c[3] + s[1] - 1;
+	if (region_intersect(s, v->rfbw_WinRect))
+	{
+		s[0] += dx;
+		s[1] += dy;
+		s[2] += dx;
+		s[3] += dy;
+		fbp_copyarea(mod, v, dx, dy, s, exposehook);
+	}
 }
 
 /*****************************************************************************/
@@ -771,6 +885,7 @@ LOCAL void rfb_setcliprect(RFBDISPLAY *mod, struct TVRequest *req)
 		v->rfbw_ClipRect[0] + req->tvr_Op.ClipRect.Rect[2] - 1);
 	v->rfbw_ClipRect[3] = TMIN(v->rfbw_WinRect[3], 
 		v->rfbw_ClipRect[1] + req->tvr_Op.ClipRect.Rect[3] - 1);
+	v->rfbw_ClipRectSet = TTRUE;
 }
 
 /*****************************************************************************/
@@ -782,6 +897,7 @@ LOCAL void rfb_unsetcliprect(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_ClipRect[1] = v->rfbw_WinRect[1];
 	v->rfbw_ClipRect[2] = v->rfbw_WinRect[2];
 	v->rfbw_ClipRect[3] = v->rfbw_WinRect[3];
+	v->rfbw_ClipRectSet = TFALSE;
 }
 
 /*****************************************************************************/
@@ -801,16 +917,17 @@ LOCAL void rfb_clear(RFBDISPLAY *mod, struct TVRequest *req)
 
 LOCAL void rfb_drawbuffer(RFBDISPLAY *mod, struct TVRequest *req)
 {
-	struct PixArray src;
+	struct TVPixBuf src;
 	TTAGITEM *tags = req->tvr_Op.DrawBuffer.Tags;
 	RFBWINDOW *v = req->tvr_Op.DrawBuffer.Window;
 	TINT x = req->tvr_Op.DrawBuffer.RRect[0];
 	TINT y = req->tvr_Op.DrawBuffer.RRect[1];
 	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
 	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
-	src.buf = req->tvr_Op.DrawBuffer.Buf;
-	src.fmt = TGetTag(tags, TVisual_PixelFormat, TVPIXFMT_A8R8G8B8);
-	src.width = req->tvr_Op.DrawBuffer.TotWidth;
+	src.tpb_Data = req->tvr_Op.DrawBuffer.Buf;
+	src.tpb_Format = TGetTag(tags, TVisual_PixelFormat, TVPIXFMT_A8R8G8B8);
+	src.tpb_BytesPerLine =req->tvr_Op.DrawBuffer.TotWidth * 
+		TVPIXFMT_BYTES_PER_PIXEL(src.tpb_Format);
 	TBOOL alpha = TGetTag(tags, TVisual_AlphaChannel, TFALSE);
 
 #if defined(RFB_PIXMAP_CACHE)
@@ -820,17 +937,18 @@ LOCAL void rfb_drawbuffer(RFBDISPLAY *mod, struct TVRequest *req)
 	{
 		struct ImageCacheState cstate;
 		cstate.src = src;
-		cstate.dst.fmt = alpha ? src.fmt : RFBPIXFMT;
+		cstate.dst.tpb_Format = alpha ? 
+			src.tpb_Format : mod->rfb_PixBuf.tpb_Format;
 		cstate.convert = pixconv_convert;
 		int res = imgcache_lookup(&cstate, creq, x, y, w, h);
-		if (res != TVIMGCACHE_FOUND && src.buf != TNULL)
+		if (res != TVIMGCACHE_FOUND && src.tpb_Data != TNULL)
 			res = imgcache_store(&cstate, creq);
 		if (res == TVIMGCACHE_FOUND || res == TVIMGCACHE_STORED)
 			src = cstate.dst;
 	}
 #endif
 
-	if (!src.buf)
+	if (!src.tpb_Data)
 		return;
 	
 	fbp_drawbuffer(mod, v, &src,
@@ -966,6 +1084,13 @@ static void rfb_resizewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT w, TINT h)
 		wr[2] = x + w - 1;
 		wr[3] = y + h - 1;
 		
+		if (!v->rfbw_ClipRectSet)
+		{
+			TINT *c = v->rfbw_ClipRect;
+			c[2] = wr[2];
+			c[3] = wr[3];
+		}
+		
 		TIMSG *imsg;
 		if (rfb_getimsg(mod, v, &imsg, TITYPE_NEWSIZE))
 		{
@@ -1051,6 +1176,9 @@ static THOOKENTRY TTAG rfb_getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 		case TVisual_Window:
 			*((TAPTR *) item->tti_Value) = v;
+			break;
+		case TVisual_HaveWindowManager:
+			*((TBOOL *) item->tti_Value) = TFALSE;
 			break;
 	}
 	data->num++;

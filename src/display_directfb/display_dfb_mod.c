@@ -128,7 +128,12 @@ static TAPTR dfb_modopen(DFBDISPLAY *mod, TTAGITEM *tags)
 		mod->dfb_RefCount++;
 	TExecUnlock(mod->dfb_ExecBase, mod->dfb_Lock);
 	if (success)
+	{
+		/* Attributes that can be queried during open: */
+		TTAG p = TGetTag(tags, TVisual_HaveWindowManager, TNULL);
+		if (p) *((TBOOL *) p) = TFALSE;
 		return mod;
+	}
 	return TNULL;
 }
 
@@ -303,7 +308,7 @@ static TBOOL dfb_initinstance(struct TTask *task)
 		inst->dfb_Layer->SetBackgroundColor(inst->dfb_Layer, 0, 0, 0, 0);
 
 		/* init custom cursor */
-		inst->dfb_CursorSurface = loadimage(inst->dfb_DFB, CUR_DEFFILE);
+		inst->dfb_CursorSurface = loadimage(inst->dfb_DFB, DEF_CURSORFILE);
 		inst->dfb_Layer->SetCursorShape(inst->dfb_Layer, inst->dfb_CursorSurface, 0, 0);
 
 		if (inst->dfb_DFB->CreateInputEventBuffer(inst->dfb_DFB, DICAPS_ALL,

@@ -14,19 +14,6 @@
 #define LOCAL static
 #endif
 
-#ifndef TLIBAPI
-#define TLIBAPI static
-#endif
-
-#include "../teklib/teklib.c"
-#if defined(TDEBUG) && TDEBUG > 0
-#include "../teklib/debug.c"
-#endif
-
-#include "../misc/utf8.c"
-#include "../misc/pixconv.c"
-#include "../misc/imgcache.c"
-
 #include "display_x11_mod.c"
 #include "display_x11_api.c"
 #include "display_x11_inst.c"

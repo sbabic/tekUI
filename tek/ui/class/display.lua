@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 31.1"
+_VERSION = "Display 32.1"
 local Display = _M
 Element:newClass(Display)
 
@@ -255,6 +255,10 @@ Display.createPixmap = Visual.createPixmap
 Display.createGradient = Visual.createGradient
 
 -------------------------------------------------------------------------------
+
+Display.getDisplayAttrs = Visual.getDisplayAttrs
+
+-------------------------------------------------------------------------------
 --	image, width, height, transparency = Display.getPaint(imgspec): Gets a
 --	paint object, either by loading it from the filesystem, generating it,
 --	or by retrieving it from the cache.
@@ -272,6 +276,8 @@ function Display.getPaint(imgspec, display)
 		if f then
 			paint, w, h, trans = createPixmap(f:read("*a"))
 			f:close()
+		else
+			db.warn("cannot load image '%s'", location)
 		end
 	elseif imgtype == "gradient" then
 		local x0, y0, c0, x1, y1, c1 = 

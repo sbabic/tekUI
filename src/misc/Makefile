@@ -2,6 +2,8 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
+EXTRADEFS += $(TEKUI_DEFS)
+
 ###############################################################################
 
 LIBS = \
@@ -9,6 +11,7 @@ LIBS = \
 	$(LIBDIR)/libutf8.a \
 	$(LIBDIR)/libpixconv.a \
 	$(LIBDIR)/libimgcache.a \
+	$(LIBDIR)/libimgload.a \
 	$(LIBDIR)/libcachemanager.a
 
 $(OBJDIR)/libregion.lo: region.c
@@ -21,6 +24,8 @@ $(OBJDIR)/libimgcache.lo: imgcache.c
 	$(CC) $(LIBCFLAGS) -o $@ -c imgcache.c
 $(OBJDIR)/libcachemanager.lo: cachemanager.c
 	$(CC) $(LIBCFLAGS) -o $@ -c cachemanager.c
+$(OBJDIR)/libimgload.lo: imgload.c
+	$(CC) $(LIBCFLAGS) -o $@ -c imgload.c
 
 $(LIBDIR)/libregion.a: \
 	$(OBJDIR)/libregion.lo
@@ -36,6 +41,9 @@ $(LIBDIR)/libimgcache.a: \
 	$(AR) $@ $?
 $(LIBDIR)/libcachemanager.a: \
 	$(OBJDIR)/libcachemanager.lo
+	$(AR) $@ $?
+$(LIBDIR)/libimgload.a: \
+	$(OBJDIR)/libimgload.lo
 	$(AR) $@ $?
 
 ###############################################################################

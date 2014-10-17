@@ -213,7 +213,7 @@ local tonumber = tonumber
 local type = type
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 57.0"
+_VERSION = "Area 57.3"
 local Area = _M
 Element:newClass(Area)
 
@@ -428,6 +428,15 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 	local sx, sy = d:setShift()
 	local win = self.Window
 
+	-- get window/cliprect
+	local ww, wh = d:getAttrs("wh")
+	local c1, c2, c3, c4 = d:getClipRect()
+	if c1 then
+		c1, c2, c3, c4 = intersect(c1, c2, c3, c4, 0, 0, ww - 1, wh - 1)
+	else
+		c1, c2, c3, c4 = 0, 0, ww - 1, wh - 1
+	end
+	
 	local samesize = dw == 0 and dh == 0
 	local validmove = (dx == 0) ~= (dy == 0)
 	local trackdamage = self:checkFlags(FL_TRACKDAMAGE)
@@ -449,55 +458,42 @@ function Area:layout(x0, y0, x1, y1, markdamage)
 			local s2 = y0 - dy - m2
 			local s3 = x1 - dx + m3
 			local s4 = y1 - dy + m4
-
-			local can_copy
-
-			local c1, c2, c3, c4 = d:getClipRect()
-			if c1 then
-				-- if we have a cliprect, check if parts become visible that
-				-- were previously obscured (including borders and shift):
-				local r = newregion(r1 + sx - m1, r2 + sy - m2, r3 + sx + m3,
-					r4 + sy + m4)
-				r:subRect(c1, c2, c3, c4)
-				r:shift(dx, dy)
-				r:andRect(c1, c2, c3, c4)
-				if r:isEmpty() then
-					-- completely visible before and after:
-					can_copy = true
-				elseif trackdamage then
-					db.warn("partially visible (masked by cliprect)")
-				end
-			else
-				can_copy = true
-			end
-
-			if can_copy then
+			
+			local r = newregion(r1 + sx - m1, r2 + sy - m2, r3 + sx + m3, 
+				r4 + sy + m4)
+			r:subRect(c1, c2, c3, c4)
+			r:shift(dx, dy)
+			r:andRect(c1, c2, c3, c4)
+			
+			if r:isEmpty() then
+				-- completely visible before and after:
 				win.BlitObjects[self] = true
 				win:addBlit(s1 + sx, s2 + sy, s3 + sx, s4 + sy, dx, dy,
 					c1, c2, c3, c4)
 				if samesize then
-					-- something changed, no redraw. second value: border_ok hack
+					-- something changed, no redraw. second value: border_ok
 					return true, true
 				end
+				-- move oldrect to new pos
 				r1 = r1 + dx
 				r2 = r2 + dy
 				r3 = r3 + dx
 				r4 = r4 + dy
 			end
+			
 		end
 	end
-
-	if x0 == r1 and y0 == r2 then
-		-- did not move, size changed:
-		if markdamage and trackdamage then
-			-- if damage is to be marked and can be tracked:
+	
+	if trackdamage and markdamage then
+		-- if damage is to be marked and can be tracked:
+		if x0 == r1 and y0 == r2 then
+			-- did not move, size changed:
 			local r = newregion(x0, y0, x1, y1):subRect(r1, r2, r3, r4)
-			-- clip new damage through current cliprect, correct by shift:
-			local c1, c2, c3, c4 = d:getClipRect()
-			if c1 then
-				r:andRect(c1 - sx, c2 - sy, c3 - sx, c4 - sy)
-			end
+			-- clip new damage through current cliprect, corrected by shift:
+			r:andRect(c1 - sx, c2 - sy, c3 - sx, c4 - sy)
 			r:forEach(self.damage, self)
+		else
+			self:damage(x0, y0, x1, y1)
 		end
 	end
 

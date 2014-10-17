@@ -36,8 +36,9 @@ struct Slope
 TINLINE static void CopyLineOver(RFBWINDOW *v, TINT xs, TINT ys, TINT xd,
 	TINT yd, TINT numb)
 {
-	memmove(&((RFBPixel *)v->rfbw_BufPtr)[yd * v->rfbw_PixelPerLine + xd],
-		&((RFBPixel *)v->rfbw_BufPtr)[ys * v->rfbw_PixelPerLine + xs], numb);
+	TUINT8 *dst = TVPB_GETADDRESS(&v->rfbw_PixBuf, xd, yd);
+	TUINT8 *src = TVPB_GETADDRESS(&v->rfbw_PixBuf, xs, ys);
+	memmove(dst, src, numb);
 }
 
 /*****************************************************************************/
@@ -394,7 +395,8 @@ LOCAL void fbp_drawpoint(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y,
 	r[2] = x;
 	r[3] = y;
 	rfb_markdirty(mod, r);
-	WritePixel(v, x, y, RGB2RFBPixel(pen->rgb));
+	TUINT p = pixconv_rgbfmt(v->rfbw_PixBuf.tpb_Format, pen->rgb);
+	pixconv_setpixelbuf(&v->rfbw_PixBuf, x, y, p);
 }
 
 /*****************************************************************************/
@@ -422,10 +424,9 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	if (R == TNULL)
 		return;
 
-	TINT x, y;
-	TUINT ppl = v->rfbw_PixelPerLine;
-	
-	RFBPixel p = RGB2RFBPixel(pen->rgb);
+	TINT y;
+	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
+	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
 	
 	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
@@ -439,11 +440,9 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		xmax = r->rn_Rect[2];
 		ymax = r->rn_Rect[3];
 		
-		RFBPixel *buf = v->rfbw_BufPtr + ymin * ppl;
-
-		for (y = ymin; y <= ymax; y++, buf += ppl)
-			for (x = xmin; x <= xmax; x++)
-				buf[x] = p;
+		TUINT8 *buf = TVPB_GETADDRESS(&v->rfbw_PixBuf, xmin, ymin);
+		for (y = ymin; y <= ymax; y++, buf += v->rfbw_PixBuf.tpb_BytesPerLine)
+			pixconv_line_set(buf, dfmt, xmax - xmin + 1, p);
 	}
 		
 	region_destroy(&mod->rfb_RectPool, R);
@@ -454,7 +453,7 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], 
 	struct RFBPen *pen)
 {
-	TINT x, y;
+	TINT y;
 	
 	struct Coord res[2];
 	TINT xmin = rect[0];
@@ -477,8 +476,8 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	if (R == TNULL)
 		return;
 
-	RFBPixel p = RGB2RFBPixel(pen->rgb);
-	TUINT ppl = v->rfbw_PixelPerLine;
+	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
+	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
 	
 	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
@@ -492,31 +491,23 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		rfb_markdirty(mod, r->rn_Rect);
 	
 		if (y0 == ymin)
-		{
-			RFBPixel *buf = v->rfbw_BufPtr + ymin * ppl;
-			for (x = x0; x <= x1; x++)
-				buf[x] = p;
-		}
+			pixconv_buf_line_set(&v->rfbw_PixBuf, x0, ymin, x1 - x0 + 1, p);
 
 		if (y1 == ymax)
-		{
-			RFBPixel *buf = v->rfbw_BufPtr + ymax * ppl;
-			for (x = x0; x <= x1; x++)
-				buf[x] = p;
-		}
+			pixconv_buf_line_set(&v->rfbw_PixBuf, x0, ymax, x1 - x0 + 1, p);
 
 		if (x0 == xmin)
 		{
-			RFBPixel *buf = v->rfbw_BufPtr + y0 * ppl + xmin;
-			for (y = y0; y <= y1; y++, buf += ppl)
-				*buf = p;
+			TUINT8 *buf = TVPB_GETADDRESS(&v->rfbw_PixBuf, xmin, y0);
+			for (y = y0; y <= y1; y++, buf += v->rfbw_PixBuf.tpb_BytesPerLine)
+				pixconv_setpixel(buf, dfmt, p);
 		}
 
 		if (x1 == xmax)
 		{
-			RFBPixel *buf = v->rfbw_BufPtr + y0 * ppl + xmax;
-			for (y = y0; y <= y1; y++, buf += ppl)
-				*buf = p;
+			TUINT8 *buf = TVPB_GETADDRESS(&v->rfbw_PixBuf, xmax, y0);
+			for (y = y0; y <= y1; y++, buf += v->rfbw_PixBuf.tpb_BytesPerLine)
+				pixconv_setpixel(buf, dfmt, p);
 		}
 	}
 	
@@ -553,8 +544,9 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	if (R == TNULL)
 		return;
 	
-	RFBPixel p = RGB2RFBPixel(pen->rgb);
-	
+	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
+	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
+
 	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -578,7 +570,7 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		x = x0;
 		y = y0;
 
-		WritePixel(v, x, y, p);
+		pixconv_setpixelbuf(&v->rfbw_PixBuf, x, y, p);
 
 		if ((y0 <= y1) && (dy <= dx))
 		{
@@ -600,8 +592,7 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 					x++;
 					y++;
 				}
-
-				WritePixel(v, x, y, p);
+				pixconv_setpixelbuf(&v->rfbw_PixBuf, x, y, p);
 			}
 		}
 
@@ -625,8 +616,7 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 					x++;
 					y++;
 				}
-
-				WritePixel(v, x, y, p);
+				pixconv_setpixelbuf(&v->rfbw_PixBuf, x, y, p);
 			}
 		}
 
@@ -650,8 +640,7 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 					x++;
 					y--;
 				}
-
-				WritePixel(v, x, y, p);
+				pixconv_setpixelbuf(&v->rfbw_PixBuf, x, y, p);
 			}
 		}
 
@@ -675,15 +664,12 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 					x++;
 					y--;
 				}
-
-				WritePixel(v, x, y, p);
+				pixconv_setpixelbuf(&v->rfbw_PixBuf, x, y, p);
 			}
 		}
-		
 	}
 	
 	region_destroy(&mod->rfb_RectPool, R);
-	
 }
 
 /*****************************************************************************/
@@ -715,10 +701,9 @@ static void initslope(struct Slope *m, struct Coord *c1, struct Coord *c2)
 }
 
 static void hline(RFBWINDOW *v, struct Slope *ms, struct Slope *me, TINT y,
-	RFBPixel p)
+	TUINT p)
 {
 	TINT xs, xe, rs = 0, re = 0;
-	TINT x;
 
 	/* check, if we need to round up coordinates */
 	if (ms->n && abs(ms->cz)*2 >= ms->n)
@@ -738,12 +723,11 @@ static void hline(RFBWINDOW *v, struct Slope *ms, struct Slope *me, TINT y,
 		xe = me->S.x + re;
 	}
 	
-	for (x = xs; x <= xe; x++)
-		WritePixel(v, x, y, p);
+	pixconv_buf_line_set(&v->rfbw_PixBuf, xs, y, xe - xs + 1, p);
 }
 
 static void rendertriangle(RFBWINDOW *v, struct Coord v1, struct Coord v2,
-	struct Coord v3, RFBPixel p)
+	struct Coord v3, TUINT p)
 {
 	struct Coord A, B, C;
 	struct Slope mAB, mAC, mBC;
@@ -890,7 +874,8 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 	if (R == TNULL)
 		return;
 	
-	RFBPixel p = RGB2RFBPixel(pen->rgb);
+	TUINT p = pixconv_rgbfmt(v->rfbw_PixBuf.tpb_Format, pen->rgb);
+	
 	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -908,7 +893,7 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 			d[2] = res[0].x;
 			d[3] = res[0].y;
 			rfb_markdirty(mod, d);
-			WritePixel(v, res[0].x, res[0].y, p);
+			pixconv_setpixelbuf(&v->rfbw_PixBuf, res[0].x, res[0].y, p);
 		}
 		else if (outlen == 2)
 		{
@@ -939,7 +924,7 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 
 /*****************************************************************************/
 
-LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct PixArray *src,
+LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
 	TINT x, TINT y, TINT w, TINT h, TBOOL alpha)
 {
 	struct Coord res[2];
@@ -957,11 +942,6 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct PixArray *src,
 	struct Region *R = rfb_getlayermask(mod, r, v, 0, 0);
 	if (R == TNULL)
 		return;
-	
-	struct PixArray dst;
-	dst.buf = (TUINT8 *) v->rfbw_BufPtr;
-	dst.fmt = RFBPIXFMT;
-	dst.width = v->rfbw_PixelPerLine;
 
 	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
@@ -974,7 +954,7 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct PixArray *src,
 		TINT y1 = r->rn_Rect[3];
 		TINT sx = x0 - x;
 		TINT sy = y0 - y;
-		pixconv_convert(src, &dst, x0, y0, x1, y1, sx, sy, alpha, 0);
+		pixconv_convert(src, &v->rfbw_PixBuf, x0, y0, x1, y1, sx, sy, alpha, 0);
 	}
 	
 	region_destroy(&mod->rfb_RectPool, R);
@@ -1042,6 +1022,8 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 		dy1 = t;
 	}
 	
+	TINT bpp = TVPIXFMT_BYTES_PER_PIXEL(v->rfbw_PixBuf.tpb_Format);
+	
 	if (R->rg_Rects.rl_NumNodes == 1)
 	{
 		/* optimization for a single rectangle */
@@ -1062,9 +1044,6 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 			dy1 = t;
 		}
 		
-		/* update sub device */
-		rfb_copyrect_sub(mod, rn->rn_Rect, dx, dy);
-		
 #if defined(ENABLE_VNCSERVER)
 		if (mod->rfb_VNCTask)
 			rfb_vnc_copyrect(mod, v, dx, dy, x0, y0, x1, y1, yinc);
@@ -1073,9 +1052,12 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 		{
 			/* update own buffer */
 			for (i = 0, y = dy0; i < h; ++i, y -= yinc)
-				CopyLineOver(v, x0 - dx, y - dy, x0, y, 
-					(x1 - x0 + 1) * sizeof(RFBPixel));
+				CopyLineOver(v, x0 - dx, y - dy, x0, y, (x1 - x0 + 1) * bpp);
 		}
+		
+		/* update sub device */
+		rfb_copyrect_sub(mod, rn->rn_Rect, dx, dy);
+		
 	}
 	else
 	{
@@ -1149,8 +1131,7 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 						break;
 					}
 				}
-				CopyLineOver(v, x0 - dx, y - dy, x0, y, 
-					(x1 - x0 + 1) * sizeof(RFBPixel));
+				CopyLineOver(v, x0 - dx, y - dy, x0, y, (x1 - x0 + 1) * bpp);
 			}
 		}
 		

@@ -8,9 +8,6 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
-#define NDEBUG
-#include <assert.h>
-
 #include <tek/debug.h>
 #include <tek/exec.h>
 #include <tek/teklib.h>
@@ -45,65 +42,54 @@
 
 #define RFB_HUGE 1000000
 
-/*****************************************************************************/
+#define RFBFL_BUFFER_OWNER		0x0001
+#define RFBFL_BUFFER_DEVICE		0x0002
+#define RFBFL_PTR_VISIBLE		0x0100
+#define RFBFL_PTR_ALLOCATED		0x0200
+#define RFBFL_PTRMASK			0x0300
 
-#if defined(RFB_DEPTH_24BIT)
-
-typedef TUINT32 RFBPixel;
-#define RFB_BITS_PER_GUN 8
-
-/* BGR: */
-#define RFBPIXFMT TVPIXFMT_08B8G8R8
-#define GetRFBPixelRed(p)		TVPIXFMT_ABGR32_GET_RED8(p)
-#define GetRFBPixelGreen(p)		TVPIXFMT_ABGR32_GET_GREEN8(p)
-#define GetRFBPixelBlue(p)		TVPIXFMT_ABGR32_GET_BLUE8(p)
-#define RGB2RFBPixel(p)			TVPIXFMT_ARGB32_TO_ABGR32(p)
-#define RFBPixelFromRGB(r,g,b)	TVPIXFMT_R_G_B_TO_ABGR32(r,g,b)
-
-/* RGB:
-#define RFBPIXFMT TVPIXFMT_08R8G8B8
-#define GetRFBPixelRed(p)		TVPIXFMT_ARGB32_GET_RED8(p)
-#define GetRFBPixelGreen(p)		TVPIXFMT_ARGB32_GET_GREEN8(p)
-#define GetRFBPixelBlue(p)		TVPIXFMT_ARGB32_GET_BLUE8(p)
-#define RGB2RFBPixel(p)			(p)
-#define RFBPixelFromRGB(r,g,b)	TVPIXFMT_R_G_B_TO_ARGB32(r,g,b)
-*/
-
-#else
-
-typedef TUINT16 RFBPixel;
-#define RFBPIXFMT TVPIXFMT_0B5G5R5
-#define RFB_BITS_PER_GUN 5
-#define GetRFBPixelRed(p)		TVPIXFMT_BGR15_GET_RED8(p)
-#define GetRFBPixelGreen(p)		TVPIXFMT_BGR15_GET_GREEN8(p)
-#define GetRFBPixelBlue(p)		TVPIXFMT_BGR15_GET_BLUE8(p)
-#define RGB2RFBPixel(p) 		TVPIXFMT_ARGB32_TO_BGR15(p)
-#define RFBPixelFromRGB(r,g,b)	TVPIXFMT_R_G_B_TO_BGR15(r,g,b)
-
+#ifndef RFB_DEF_WIDTH
+#define RFB_DEF_WIDTH            640
+#endif
+#ifndef RFB_DEF_HEIGHT
+#define RFB_DEF_HEIGHT           480
 #endif
 
-#define WritePixel(v, x, y, p) do { \
-	assert((x) >= (v)->rfbw_WinRect[0]); \
-	assert((x) <= (v)->rfbw_WinRect[2]); \
-	assert((y) >= (v)->rfbw_WinRect[1]); \
-	assert((y) <= (v)->rfbw_WinRect[3]); \
-	((RFBPixel *)(v)->rfbw_BufPtr)[(y) * (v)->rfbw_PixelPerLine + (x)] = (p); \
-} while(0)
+#define RFB_UTF8_BUFSIZE 4096
 
 /*****************************************************************************/
 
-#define RFB_DEF_WIDTH            600
-#define RFB_DEF_HEIGHT           400
+#if defined(ENABLE_LINUXFB)
 
-#define RFB_UTF8_BUFSIZE 4096
+#include <linux/fb.h>
+#include <linux/input.h>
+
+struct RawKey
+{
+	TUINT16 qualifier; /* qualifier activated */
+	TUINT keycode; /* keycode activated independent of qualifier */
+	struct 
+	{
+		TUINT16 qualifier; /* qualifier */
+		TUINT keycode; /* keycode activated dependent on qualifier */
+	} qualkeys[5];
+};
+
+struct BackBuffer
+{
+	TUINT8 *data;
+	TINT x0, y0, x1, y1;
+};
+
+#endif /* defined(ENABLE_LINUXFB) */
 
 /*****************************************************************************/
 /*
 **	Fonts
 */
 
-#ifndef FNT_DEFDIR
-#define	FNT_DEFDIR          "tek/ui/font"
+#ifndef DEF_FONTDIR
+#define	DEF_FONTDIR          "tek/ui/font"
 #endif
 
 #define FNT_DEFNAME         "VeraMono"
@@ -205,21 +191,26 @@ typedef struct
 	struct TList rfb_VisualList;
 	
 	struct RectPool rfb_RectPool;
-	RFBPixel *rfb_BufPtr;
-	TBOOL rfb_BufferOwner;
 	TUINT rfb_InputMask;
 
-	TINT rfb_Width;
-	TINT rfb_Height;
-	TINT rfb_Modulo;
-	TINT rfb_BytesPerPixel;
-	TINT rfb_BytesPerLine;
+	/* pixel buffer exposed to drawing functions: */
+	struct TVPixBuf rfb_PixBuf;
+	/* pixel buffer exposed to the device: */
+	struct TVPixBuf rfb_DevBuf;
+	
+	/* Device width/height */
+	TINT rfb_DevWidth, rfb_DevHeight;
 
+	/* Actual width/height */
+	TINT rfb_Width, rfb_Height;
+	
+	TUINT rfb_Flags;
+
+	/* font rendering */
 	FT_Library rfb_FTLibrary;
 	FTC_Manager	rfb_FTCManager;
 	FTC_CMapCache rfb_FTCCMapCache;
 	FTC_SBitCache rfb_FTCSBitCache;
-
 	struct FontManager rfb_FontManager;
 
 	TINT rfb_MouseX;
@@ -240,7 +231,33 @@ typedef struct
 	TAPTR rfb_RFBMainTask;
 	TBOOL rfb_WaitSignal;
 #endif
-
+	
+#if defined(ENABLE_LINUXFB)
+	struct TVPixBuf rfb_MousePtrImage;
+	TINT rfb_MousePtrWidth, rfb_MousePtrHeight;
+	TINT rfb_MouseHotX, rfb_MouseHotY;
+	struct BackBuffer rfb_MousePtrBackBuffer;
+	int rfb_fbhnd;
+	struct fb_var_screeninfo rfb_orig_vinfo;
+	struct fb_var_screeninfo rfb_vinfo;
+	struct fb_fix_screeninfo rfb_finfo;
+	int rfb_fd_input_mouse;
+	int rfb_fd_input_kbd;
+	int rfb_fd_sigpipe_read;
+	int rfb_fd_sigpipe_write;
+	int rfb_fd_max;
+	struct input_absinfo rfb_absinfo[2];
+	int rfb_button_touch;
+	int rfb_abspos[2];
+	int rfb_absstart[2];
+	int rfb_startmouse[2];
+	int rfb_ttyfd;
+	int rfb_ttyoldmode;
+	struct RawKey *rfb_RawKeys[256];
+	int rfb_fd_inotify_input;
+	int rfb_fd_watch_input;
+#endif
+	
 } RFBDISPLAY;
 
 typedef struct rfb_window
@@ -250,8 +267,6 @@ typedef struct rfb_window
 	TINT rfbw_WinRect[4];
 	/* Clipping boundaries: */
 	TINT rfbw_ClipRect[4];
-	/* Buffer pointer to upper left edge of visual: */
-	RFBPixel *rfbw_BufPtr;
 	/* Current pens: */
 	TVPEN bgpen, fgpen;
 	/* list of allocated pens: */
@@ -264,18 +279,23 @@ typedef struct rfb_window
 	TUINT rfbw_InputMask;
 	/* userdata attached to this window, also propagated in messages: */
 	TTAG userdata;
-	/* Modulo, pixel per line */
-	TINT rfbw_Modulo;
-	TINT rfbw_PixelPerLine;
+	
+	/* Pixel buffer referring to upper left edge of visual: */
+	struct TVPixBuf rfbw_PixBuf;
+
 	/* window is borderless: */
 	TBOOL borderless;
 	/* window is popup: */
 	TBOOL is_popup;
+	/* window is fullscreen */
+	TBOOL rfbw_FullScreen;
 	
 	TINT rfbw_MinWidth;
 	TINT rfbw_MinHeight;
 	TINT rfbw_MaxWidth;
 	TINT rfbw_MaxHeight;
+	
+	TBOOL rfbw_ClipRectSet;
 
 } RFBWINDOW;
 
@@ -305,7 +325,7 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBP
 LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBPen *pen);
 LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v, TINT x0, TINT y0, TINT x1, TINT y1,
 	TINT x2, TINT y2, struct RFBPen *pen);
-LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct PixArray *src,
+LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
 	TINT x, TINT y, TINT w, TINT h, TBOOL alpha);
 LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
 	TINT d[4], struct THook *exposehook);
@@ -378,7 +398,7 @@ LOCAL void rfb_copyrect_sub(RFBDISPLAY *mod, TINT *rect, TINT dx, TINT dy);
 
 #if defined(ENABLE_VNCSERVER)
 
-int rfb_vnc_init(RFBDISPLAY *mod);
+int rfb_vnc_init(RFBDISPLAY *mod, int port);
 void rfb_vnc_exit(RFBDISPLAY *mod);
 void rfb_vnc_flush(RFBDISPLAY *mod, struct Region *D);
 void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,

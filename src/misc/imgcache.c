@@ -60,10 +60,10 @@ TLIBAPI TINT imgcache_lookup(struct ImageCacheState *cs, struct TVImageCacheRequ
 			{
 				int cw = cn->x1 - cn->x0 + 1;
 				/*int ch = cn->y1 - cn->y0 + 1;*/
-				cs->dst.buf = cn->buf + 
-					TVPIXFMT_BYTES_PER_PIXEL(cs->dst.fmt) * 
-					(cs->x0 - cn->x0 + (cs->y0 - cn->y0) * cw);
-				cs->dst.width = cw;
+				TINT bpp = TVPIXFMT_BYTES_PER_PIXEL(cs->dst.tpb_Format);
+				cs->dst.tpb_Data = cn->buf + 
+					bpp * (cs->x0 - cn->x0 + (cs->y0 - cn->y0) * cw);
+				cs->dst.tpb_BytesPerLine = cw * bpp;
 				TNodeUp(&cn->item.node); /* bubble up */
 				/*TDBPRINTF(TDB_INFO,("pixcache: found %dx%d fmt=%08x\n",
 					cw, ch, cs->dst.fmt));*/
@@ -97,9 +97,9 @@ TLIBAPI TINT imgcache_store(struct ImageCacheState *cs, struct TVImageCacheReque
 		return creq->tvc_Result = TVIMGCACHE_STORE_FAILED;
 	
 	TUINT numpixels = cs->w * cs->h;
+	TINT bpp = TVPIXFMT_BYTES_PER_PIXEL(cs->dst.tpb_Format);
 	struct ImageCacheNode *cn = iface->alloc(cache, 
-		sizeof(struct ImageCacheNode) + numpixels * 
-		TVPIXFMT_BYTES_PER_PIXEL(cs->dst.fmt));
+		sizeof(struct ImageCacheNode) + numpixels * bpp);
 	if (!cn)
 		return creq->tvc_Result = TVIMGCACHE_STORE_FAILED;
 	cn->buf = (TUINT8 *) (cn + 1);
@@ -109,8 +109,8 @@ TLIBAPI TINT imgcache_store(struct ImageCacheState *cs, struct TVImageCacheReque
 	cn->y0 = cs->y0;
 	cn->x1 = cs->x1;
 	cn->y1 = cs->y1;
-	cs->dst.buf = (TUINT8 *) (cn + 1);
-	cs->dst.width = cs->w;
+	cs->dst.tpb_Data = (TUINT8 *) (cn + 1);
+	cs->dst.tpb_BytesPerLine = cs->w * bpp;
 	cs->convert(&cs->src, &cs->dst, 0, 0, cs->w - 1, cs->h - 1, 0, 0, 0, 0);
 	struct TNode *next, *node = cr->list.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
@@ -127,7 +127,7 @@ TLIBAPI TINT imgcache_store(struct ImageCacheState *cs, struct TVImageCacheReque
 	TAddHead(&cr->list, &cn->handle.thn_Node);
 	cr->numitems++;
 	TDBPRINTF(TDB_INFO,("pixcache: stored %dx%d fmt=%08x\n",
-		cs->w, cs->h, cs->dst.fmt));
+		cs->w, cs->h, cs->dst.tpb_Format));
 	return creq->tvc_Result = TVIMGCACHE_STORED;
 }
 

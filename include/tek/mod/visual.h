@@ -86,8 +86,9 @@ typedef TTAG TVPEN;
 #define TVisual_UserData			(TVISTAGS_ + 0x115)
 #define TVisual_CmdRPort			(TVISTAGS_ + 0x116)
 #define TVisual_IMsgPort			(TVISTAGS_ + 0x117)
-
 #define TVisual_CacheRequest		(TVISTAGS_ + 0x118)
+#define TVisual_ExtraArgs			(TVISTAGS_ + 0x119)
+#define TVisual_HaveWindowManager	(TVISTAGS_ + 0x11a)
 
 /* Tagged rendering: */
 
@@ -189,7 +190,7 @@ struct TVRequest
 **	unless otherwise noted
 **                                 _ order of color components 
 **                                | _ bytes per pixel
-**                                || _ flags: 8=memory_order 4=has_mask
+**                                || _ flags: 8=reserved 4=has_alpha
 **                                ||| _ format identifying number
 **                                ||||
 **                                vvvv   */
@@ -214,8 +215,7 @@ struct TVRequest
 #define TVPIXFMT_BITS_BLUE(fmt) (((fmt) & 0xf0000000) >> 20)
 #define TVPIXFMT_COL_ORDER(fmt) (((fmt) & 0xf000) >> 12)
 #define TVPIXFMT_BYTES_PER_PIXEL(fmt) (((fmt) & 0x0f00) >> 8)
-#define TVPIXFMT_MEM_ORDER(fmt) (((fmt) & 0x0080) >> 7)
-#define TVPIXFMT_HAS_MASK(fmt) (((fmt) & 0x0040) >> 6)
+#define TVPIXFMT_HAS_ALPHA(fmt) (((fmt) & 0x0040) >> 6)
 #define TVPIXFMT_ORDER_UNDEFINED	0
 #define TVPIXFMT_ORDER_XRGB			1
 #define TVPIXFMT_ORDER_XBGR			2
@@ -479,6 +479,19 @@ typedef struct TInputMessage
 #define TKEYQ_CTRL				(TKEYQ_LCTRL|TKEYQ_RCTRL)
 #define TKEYQ_ALT				(TKEYQ_LALT|TKEYQ_RALT)
 #define TKEYQ_PROP				(TKEYQ_LPROP|TKEYQ_RPROP)
+
+/*****************************************************************************/
+
+struct TVPixBuf
+{
+	TUINT8 *tpb_Data;
+	TUINT tpb_Format;
+	TINT tpb_BytesPerLine;
+};
+
+#define TVPB_GETADDRESS(b, x, y) \
+	((b)->tpb_Data + (y) * (b)->tpb_BytesPerLine + \
+	(x) * TVPIXFMT_BYTES_PER_PIXEL((b)->tpb_Format))
 
 /*****************************************************************************/
 /*

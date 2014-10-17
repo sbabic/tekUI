@@ -417,14 +417,14 @@ hostopenfont(DFBDISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 	TAPTR exec = TGetExecBase(mod);
 	DFBFontDescription fdsc;
 	TSTRPTR fontfile = TExecAlloc0(exec, mod->dfb_MemMgr,
-		strlen(fattr->fname) + strlen(FNT_DEFDIR) + 5);
+		strlen(fattr->fname) + strlen(DEF_FONTDIR) + 5);
 
 	if (fontfile)
 	{
 		fdsc.flags = DFDESC_HEIGHT;
 		fdsc.height = fattr->fpxsize;
 
-		sprintf(fontfile, "%s%s.ttf", FNT_DEFDIR, fattr->fname);
+		sprintf(fontfile, "%s%s.ttf", DEF_FONTDIR, fattr->fname);
 		TDBPRINTF(TDB_INFO,("? %s:%d\n", fontfile, fattr->fpxsize));
 
 		if (mod->dfb_DFB->CreateFont(mod->dfb_DFB, fontfile,
@@ -540,7 +540,7 @@ hostqueryfonts(DFBDISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr *fa
 	TUINT matchflg = 0;
 
 	/* scan default font directory */
-	nfont = scandir(FNT_DEFDIR, &dirlist, 0, alphasort);
+	nfont = scandir(DEF_FONTDIR, &dirlist, 0, alphasort);
 	if (nfont < 0)
 	{
 		perror("scandir");
@@ -611,7 +611,7 @@ hostqueryfonts(DFBDISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr *fa
 
 	} /* endif fonts found */
 	else
-		TDBPRINTF(TDB_WARN,("X no fonts found in '%s'\n", FNT_DEFDIR));
+		TDBPRINTF(TDB_WARN,("X no fonts found in '%s'\n", DEF_FONTDIR));
 
 	while (nfont--)
 		free(dirlist[nfont]);

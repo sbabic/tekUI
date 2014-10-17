@@ -6,7 +6,6 @@ local Group = ui.Group
 local MenuItem = ui.MenuItem
 local PopItem = ui.PopItem
 local Spacer = ui.Spacer
-local Window = ui.Window
 
 local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 
@@ -14,13 +13,14 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 --	Create demo window:
 -------------------------------------------------------------------------------
 
-local window = Window:new
+local window = ui.Window:new
 {
 	Orientation = "vertical",
 	Id = "popups-window",
 	Title = L.POPUPS_TITLE,
 	Status = "hide",
 	HideOnEscape = true,
+	SizeButton = true,
 	Children =
 	{
 		Orientation = "vertical",

@@ -686,6 +686,9 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 		case TVisual_Window:
 			*((TAPTR *) item->tti_Value) = v;
 			break;
+		case TVisual_HaveWindowManager:
+			*((TBOOL *) item->tti_Value) = TTRUE;
+			break;
 	}
 	data->num++;
 	return TTRUE;

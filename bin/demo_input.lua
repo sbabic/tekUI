@@ -20,6 +20,7 @@ local window = ui.Window:new
 	HideOnEscape = true,
 	Height = "free",
 	Columns = 2,
+	SizeButton = true,
 	Children =
 	{
 		ui.Text:new

@@ -28,8 +28,9 @@ DISPLAY_DRIVER ?= x11
 # ENABLE_DGRAM - enables a datagram server on 127.0.0.1:20000 for the same
 #------------------------------------------------------------------------------
 
-TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_PIXMAP_CACHE -DENABLE_FILENO
-# TEKUI_DEFS += -DENABLE_PNG -DENABLE_DGRAM=20000
+TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_PIXMAP_CACHE 
+# TEKUI_DEFS += -DENABLE_FILENO -DENABLE_DGRAM=20000
+# TEKUI_DEFS += -DENABLE_PNG
 # TEKUI_LIBS = -lpng
 
 #------------------------------------------------------------------------------
@@ -37,20 +38,20 @@ TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_PIXMAP_CACHE -DENABLE_FILENO
 # Comment in TSYS_POSIX if your platform is not listed in include/tek/config.h
 #------------------------------------------------------------------------------
 
-# CCPREFIX =
-CC = $(CCPREFIX)gcc -fpic # -DTSYS_POSIX
+# CROSS_COMPILE =
+CC = $(CROSS_COMPILE)gcc -fpic # -DTSYS_POSIX
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # For Windows using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# CC = $(CCPREFIX)gcc -DWIN32
+# CC = $(CROSS_COMPILE)gcc -DWIN32
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Cross-build using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# CCPREFIX = i586-mingw32-
+# CROSS_COMPILE = i586-mingw32-
 
 #------------------------------------------------------------------------------
 # Platform libraries:
@@ -96,14 +97,19 @@ X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DX11_PIXMAP_CA
 
 WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 
+# The raw framebuffer can be visualized on a Linux framebuffer, on another
+# display driver, via VNC server, or any combination thereof.
+RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS) $(TEKUI_LIBS)
+RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) -DRFB_PIXMAP_CACHE # -DRFBPIXFMT=TVPIXFMT_R5G6B5 # -DDEF_FONTDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
+# Linux framebuffer support:
+RAWFB_DEFS += -DENABLE_LINUXFB
+# Comment in RAWFB_SUB for redirecting output to a different display driver:
+# RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
+# RAWFB_SUB_DEFS = -DRFB_SUB_DEVICE=x11
+# VNC support makes this software a combined work with LibVNCServer, see also
+# src/display_rawfb/vnc/COPYING:
 # VNCSERVER_LIBS = -L$(PREFIX)/lib -lvncserver
-# VNCSERVER_DEFS = -DENABLE_VNCSERVER -I$(PREFIX)/include -DENABLE_VNCSERVER_COPYRECT
-RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
-RAWFB_SUB_DEFS = -DRFB_SUB_DEVICE=x11
-RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS)
-RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) -DRFB_PIXMAP_CACHE -DRFB_DEPTH_24BIT # -DFNT_DEFDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
-# Comment out RAWFB_SUB for a 'headless' GUI. VNC support makes this software
-# a combined work with LibVNCServer, see also src/display_rawfb/vnc/COPYING
+# VNCSERVER_DEFS = -DENABLE_VNCSERVER -I$(PREFIX)/include -DENABLE_VNCSERVER_COPYRECT # -DRFBPIXFMT=TVPIXFMT_0B5G5R5
 
 DIRECTFB_LIBS = `pkg-config --libs directfb`
 DIRECTFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
@@ -137,7 +143,7 @@ BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 # Build tools:
 #------------------------------------------------------------------------------
 
-AR = $(CCPREFIX)ar rcu
+AR = $(CROSS_COMPILE)ar rcu
 RM = rm
 RMDIR = rm -r
 MKDIR = mkdir -p

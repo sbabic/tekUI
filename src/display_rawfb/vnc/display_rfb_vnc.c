@@ -12,6 +12,7 @@
 */
 
 #include <rfb/keysym.h>
+#include <tek/lib/utf8.h>
 #include "display_rfb_mod.h"
 #if defined(ENABLE_VNCSERVER_COPYRECT)
 #include <unistd.h>
@@ -21,57 +22,6 @@
 #define VNCSERVER_COPYRECT_MINPIXELS	10000
 
 static RFBDISPLAY *g_mod;
-
-/*****************************************************************************/
-
-/*
-**	Encode unicode char (31bit) to UTF-8 (up to 6 chars)
-**	Reserve AT LEAST 6 bytes free space in the destination buffer
-*/
-
-static unsigned char *rfb_encodeutf8(unsigned char *buf, int c)
-{
-	if (c < 128)
-	{
-		*buf++ = c;
-	}
-	else if (c < 2048)
-	{
-		*buf++ = 0xc0 + (c >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	else if (c < 65536)
-	{
-		*buf++ = 0xe0 + (c >> 12);
-		*buf++ = 0x80 + ((c & 0xfff) >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	else if (c < 2097152)
-	{
-		*buf++ = 0xf0 + (c >> 18);
-		*buf++ = 0x80 + ((c & 0x3ffff) >> 12);
-		*buf++ = 0x80 + ((c & 0xfff) >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	else if (c < 67108864)
-	{
-		*buf++ = 0xf8 + (c >> 24);
-		*buf++ = 0x80 + ((c & 0xffffff) >> 18);
-		*buf++ = 0x80 + ((c & 0x3ffff) >> 12);
-		*buf++ = 0x80 + ((c & 0xfff) >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	else
-	{
-		*buf++ = 0xfc + (c >> 30);
-		*buf++ = 0x80 + ((c & 0x3fffffff) >> 24);
-		*buf++ = 0x80 + ((c & 0xffffff) >> 18);
-		*buf++ = 0x80 + ((c & 0x3ffff) >> 12);
-		*buf++ = 0x80 + ((c & 0xfff) >> 6);
-		*buf++ = 0x80 + (c & 0x3f);
-	}
-	return buf;
-}
 
 /*****************************************************************************/
 
@@ -333,7 +283,7 @@ static void rfb_doremotekey(rfbBool keydown, rfbKeySym keysym, rfbClientPtr cl)
 			if (rfb_getimsg(mod, v, &imsg, evtype))
 			{
 				ptrdiff_t len =
-					(ptrdiff_t) rfb_encodeutf8(imsg->timsg_KeyCode, code) - 
+					(ptrdiff_t) utf8encode(imsg->timsg_KeyCode, code) - 
 					(ptrdiff_t) imsg->timsg_KeyCode;
 				imsg->timsg_KeyCode[len] = 0;
 				imsg->timsg_Code = code;
@@ -395,7 +345,7 @@ static THOOKENTRY TTAG rfb_vnc_dispatch(struct THook *hook,
 
 /*****************************************************************************/
 
-int rfb_vnc_init(RFBDISPLAY *mod)
+int rfb_vnc_init(RFBDISPLAY *mod, int port)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
 	TTAGITEM tags[2];
@@ -414,18 +364,37 @@ int rfb_vnc_init(RFBDISPLAY *mod)
 		mod->rfb_RFBMainTask = TFindTask(TNULL);
 		if (mod->rfb_RFBMainTask == TNULL)
 			break;
+		
+		TUINT fmt = mod->rfb_PixBuf.tpb_Format;
+		
 		rfbScreen = rfbGetScreen(0, NULL, mod->rfb_Width, 
-			mod->rfb_Height, RFB_BITS_PER_GUN, 3, sizeof(RFBPixel));
+			mod->rfb_Height, TVPIXFMT_BITS_RED(fmt), 3, 
+			TVPIXFMT_BYTES_PER_PIXEL(fmt));
+		
+		rfbScreen->paddedWidthInBytes = mod->rfb_PixBuf.tpb_BytesPerLine;
+		
 		if (rfbScreen == TNULL)
 			break;
 		
 		g_mod = mod;
 		mod->rfb_RFBScreen = rfbScreen;
 		rfbScreen->alwaysShared = TRUE;
-		rfbScreen->frameBuffer = (char *) mod->rfb_BufPtr;
+		rfbScreen->frameBuffer = (char *) mod->rfb_PixBuf.tpb_Data;
 		rfbScreen->ptrAddEvent = rfb_doremoteptr;
 		rfbScreen->kbdAddEvent = rfb_doremotekey;
 		rfbScreen->newClientHook = rfb_newclient;
+		
+		if (port == 0)
+		{
+			const char *s = getenv("VNC_PORTNUMBER");
+			if (s)
+				port = atoi(s);
+		}
+		if (port > 0)
+			rfbScreen->port = port;
+		else if (port < 0)
+			rfbScreen->autoPort = TRUE;
+		
 #if defined(VNCSERVER_HTTP_PATH)
 		rfbScreen->httpDir = VNCSERVER_HTTP_PATH;
 #endif
@@ -506,6 +475,7 @@ void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,
 	}
 
 #if defined(ENABLE_VNCSERVER_COPYRECT)
+	TUINT bpl = w * TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_PixBuf.tpb_Format);
 	if (w * h > VNCSERVER_COPYRECT_MINPIXELS)
 	{
 		char wrbuf = 0;
@@ -518,7 +488,7 @@ void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,
 		TExecWait(mod->rfb_ExecBase, mod->rfb_RFBReadySignal);
 		/* update own buffer */
 		for (i = 0, y = dy0; i < h; ++i, y -= yinc)
-			CopyLineOver(v, x0 - dx, y - dy, x0, y, w * sizeof(RFBPixel));
+			CopyLineOver(v, x0 - dx, y - dy, x0, y, bpl);
 		/* schedule copyrect */
 		rfbScheduleCopyRect(mod->rfb_RFBScreen, x0, y0, x1 + 1, y1 + 1,
 			dx, dy);
@@ -528,7 +498,7 @@ void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,
 	{
 		/* update own buffer */
 		for (i = 0, y = dy0; i < h; ++i, y -= yinc)
-			CopyLineOver(v, x0 - dx, y - dy, x0, y, w * sizeof(RFBPixel));
+			CopyLineOver(v, x0 - dx, y - dy, x0, y, bpl);
 		/* mark dirty */
 		rfbMarkRectAsModified(mod->rfb_RFBScreen, x0, y0, x1 + 1, y1 + 1);
 	}

@@ -550,6 +550,9 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 		case TVisual_MaxHeight:
 			*((TINT *) item->tti_Value) = v->wmaxheight;
 			break;
+		case TVisual_HaveWindowManager:
+			*((TBOOL *) item->tti_Value) = TFALSE;
+			break;
 	}
 	data->num++;
 	return TTRUE;

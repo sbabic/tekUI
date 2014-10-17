@@ -18,6 +18,11 @@ local ui = require "tek.ui"
 local db = require "tek.lib.debug"
 local rdargs = require "tek.lib.args".read
 
+--	In workbench mode, the demo windows become draggable and resizeable even if
+--	we are running on a display without a window manager. (See the attribute
+--	'RootWindow' below for disabling this facility for the main window.)
+ui.Mode = "workbench"
+
 local ARGTEMPLATE = "-f=FULLSCREEN/S,-w=WIDTH/N,-h=HEIGHT/N,--help=HELP/S"
 local args = rdargs(ARGTEMPLATE, arg)
 if not args or args.help then
@@ -114,6 +119,7 @@ app = ui.Application:new
 			MinWidth = 0,
 			MinHeight = 0;
 			HideOnEscape = true,
+			SizeButton = true,
 
 			UserData =
 			{
@@ -470,8 +476,11 @@ app = ui.Application:new
 			Id = "window-main",
 			HideOnEscape = true,
 			MinWidth = 0, MinHeight = 0,
-			Width = args.width or 800, Height = args.height or 600,
-			MaxWidth = ui.HUGE, MaxHeight = ui.HUGE,
+			Width = args.width,
+			Height = args.height,
+			MaxWidth = ui.HUGE, 
+			MaxHeight = ui.HUGE,
+			RootWindow = true, -- used in combination with workbench mode
 
 			onHide = function(self)
 				local app = self.Application

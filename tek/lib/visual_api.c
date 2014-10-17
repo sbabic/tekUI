@@ -1,9 +1,8 @@
 
 #include <string.h>
 #include "visual_lua.h"
-#if defined(ENABLE_PNG)
-#include <png.h>
-#endif
+#include <tek/lib/pixconv.h>
+#include <tek/lib/imgload.h>
 
 /*****************************************************************************/
 /*
@@ -179,6 +178,30 @@ tek_lib_visual_sleep(lua_State *L)
 	TWaitTime(&dt, 0);
 	lua_pop(L, 1);
 	return 0;
+}
+
+/*****************************************************************************/
+
+LOCAL LUACFUNC TINT
+tek_lib_visual_getdisplayattrs(lua_State *L)
+{
+	size_t narg = 0, i;
+	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
+	TEKVisual *vis = lua_touserdata(L, -1);
+	const char *opts = lua_tolstring(L, 1, &narg);
+	for (i = 0; i < narg; ++i)
+	{
+		switch (opts[i])
+		{
+			case 'M':
+				lua_pushboolean(L, vis->vis_HaveWindowManager);
+				break;
+			default:
+				luaL_error(L, "unknown attribute");
+		}
+	}
+	lua_remove(L, -narg - 1);
+	return narg;
 }
 
 /*****************************************************************************/
@@ -574,267 +597,29 @@ tek_lib_visual_getmsg(lua_State *L)
 
 /*****************************************************************************/
 
-#if defined(ENABLE_PNG)
-
-struct pngmemread
-{
-	png_bytep src;
-	size_t len;
-	size_t left;
-	TUINT width;
-	TUINT height;
-	TUINT *buf;
-	TUINT flags;
-};
-
-static void pngreadmem(png_structp png, png_bytep buf, png_size_t nbytes)
-{
-	struct pngmemread *rd = png_get_io_ptr(png);
-	nbytes = TMIN(rd->left, nbytes);
-	memcpy(buf, rd->src + rd->len - rd->left, nbytes);
-	rd->left -= nbytes;
-}
-
-static TBOOL tek_lib_visual_load_png(struct TExecBase *TExecBase, struct pngmemread *rd)
-{
-	unsigned int x, y;
-	png_structp png;
-	png_infop pnginfo = NULL;
-	png_bytep *row_pointers = NULL;
-	
-	if (png_sig_cmp(rd->src, 0, 8))
-		return TFALSE;
-	
-	png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (png == NULL)
-		return TFALSE;
-	
-	if (setjmp(png_jmpbuf(png)))
-	{
-		if (rd->height && row_pointers)
-		{
-			for (y = 0; y < rd->height; y++)
-			{
-				if (row_pointers[y])
-					free(row_pointers[y]);
-			}
-			free(row_pointers);
-		}
-		png_destroy_read_struct(&png, &pnginfo, NULL);
-		return TFALSE;
-	}
-	
-	pnginfo = png_create_info_struct(png);
-	if (!png) png_error(png, "no memory");
-	
-	png_set_read_fn(png, rd, pngreadmem);
-	
-	png_read_info(png, pnginfo);
-	
-	rd->width = png_get_image_width(png, pnginfo);
-	rd->height = png_get_image_height(png, pnginfo);
-	png_set_interlace_handling(png);
-	int numchan = png_get_channels(png, pnginfo);
-	int coltype = png_get_color_type(png, pnginfo);
-	png_set_packing(png);
-	png_read_update_info(png, pnginfo);
-	
-	png_color *palette = NULL;
-	int numpal = 0;
-	if (coltype == PNG_COLOR_TYPE_PALETTE)
-	{
-		if (png_get_PLTE(png, pnginfo, &palette, &numpal) != PNG_INFO_PLTE)
-			png_error(png, "could not get palette");
-	}
-
-	row_pointers = (png_bytep *) TAlloc0(TNULL, rd->height * sizeof(png_bytep));
-	if (!row_pointers) png_error(png, "no memory");
-
-	png_uint_32 rowbytes = png_get_rowbytes(png, pnginfo);
-	for (y = 0; y < rd->height; y++)
-	{
-		row_pointers[y] = (png_byte *) TAlloc(TNULL, rowbytes);
-		if (!row_pointers[y]) png_error(png, "no memory");
-	}
-	
-	/*fprintf(stderr, "numchan=%d coltype=%d width=%d rowbytes=%d numpal=%d\n", 
-		numchan, coltype, rd->width, rowbytes, numpal);*/
-	
-	png_read_image(png, row_pointers);
-	
-	TUINT *buf = TAlloc(TNULL, rd->width * rd->height * sizeof(TUINT));
-	if (!buf) png_error(png, "no memory");
-
-	typedef enum { PNG_PALETTE, PNG_GRAY, PNG_GRAYALPHA, PNG_RGB, 
-		PNG_RGB_ALPHA } pngtype_t;
-	pngtype_t mode;
-	if (palette)
-		mode = PNG_PALETTE;
-	else if (coltype == PNG_COLOR_TYPE_GRAY)
-		mode = PNG_GRAY;
-	else if (coltype == PNG_COLOR_TYPE_GRAY_ALPHA)
-	{
-		mode = PNG_GRAYALPHA;
-		rd->flags |= PXMF_ALPHA;
-	}
-	else if (numchan == 4)
-	{
-		mode = PNG_RGB_ALPHA;
-		rd->flags |= PXMF_ALPHA;
-	}
-	else
-		mode = PNG_RGB;
-	
-	rd->buf = buf;
-	for (y = 0; y < rd->height; ++y)
-	{
-		switch (mode)
-		{
-			case PNG_PALETTE:
-				for (x = 0; x < rd->width; ++x)
-				{
-					TUINT8 idx = row_pointers[y][x];
-					TUINT r = palette[idx].red;
-					TUINT g = palette[idx].green;
-					TUINT b = palette[idx].blue;
-					*buf++ = 0xff000000 | (r << 16) | (g << 8) | b;
-				}
-				break;
-			case PNG_GRAY:
-				for (x = 0; x < rd->width; ++x)
-				{
-					TUINT8 c = row_pointers[y][x];
-					*buf++ = 0xff000000 | (c << 16) | (c << 8) | c;
-				}
-				break;
-			case PNG_GRAYALPHA:
-				for (x = 0; x < rd->width * 2; x += 2)
-				{
-					TUINT8 c = row_pointers[y][x];
-					TUINT8 a = row_pointers[y][x + 1];
-					*buf++ = (a << 24) | (c << 16) | (c << 8) | c;
-				}
-				break;
-			case PNG_RGB_ALPHA:
-				for (x = 0; x < rd->width * 4; x += 4)
-				{
-					TUINT r = row_pointers[y][x];
-					TUINT g = row_pointers[y][x + 1];
-					TUINT b = row_pointers[y][x + 2];
-					TUINT a = row_pointers[y][x + 3];
-					*buf++ = (a << 24) | (r << 16) | (g << 8) | b;
-				}
-				break;
-			case PNG_RGB:
-				for (x = 0; x < rd->width * 3; x += 3)
-				{
-					TUINT r = row_pointers[y][x];
-					TUINT g = row_pointers[y][x + 1];
-					TUINT b = row_pointers[y][x + 2];
-					*buf++ = (r << 16) | (g << 8) | b;
-				}
-				break;
-		}
-	}
-
-	png_destroy_read_struct(&png, &pnginfo, NULL);
-	
-	for (y = 0; y < rd->height; y++)
-		TFree(row_pointers[y]);
-	TFree(row_pointers);
-	return TTRUE;
-}
-
-static TINT tek_lib_visual_createpixmap_from_png(lua_State *L)
+static TINT tek_lib_visual_createpixmap_from_img(lua_State *L)
 {
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	TEKVisual *vis = lua_touserdata(L, -1);
 	lua_pop(L, 1);
 	struct TExecBase *TExecBase = vis->vis_ExecBase;
-	struct pngmemread rd;
-	rd.width = 0;
-	rd.height = 0;
-	rd.flags = 0;
-	rd.src = (png_bytep) luaL_checklstring(L, 1, &rd.len);
-	rd.left = rd.len;
-	if (!tek_lib_visual_load_png(TExecBase, &rd))
+	size_t len;
+	const char *src = luaL_checklstring(L, 1, &len);
+	struct ImgLoader ld;
+	if (!(imgload_init_memory(&ld, TExecBase, src, len) &&
+		imgload_load(&ld)))
 		return 0;
 	TEKPixmap *pm = lua_newuserdata(L, sizeof(TEKPixmap));
 	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
 	lua_setmetatable(L, -2);
-	pm->pxm_Data = rd.buf;
-	pm->pxm_Width = rd.width;
-	pm->pxm_Height = rd.height;
-	pm->pxm_Flags = rd.flags;
+	pm->pxm_Image = ld.iml_Image;
+	pm->pxm_Width = ld.iml_Width;
+	pm->pxm_Height = ld.iml_Height;
 	pm->pxm_VisualBase = vis;
-	lua_pushinteger(L, rd.width);
-	lua_pushinteger(L, rd.height);
-	lua_pushboolean(L, rd.flags & PXMF_ALPHA);
+	lua_pushinteger(L, ld.iml_Width);
+	lua_pushinteger(L, ld.iml_Height);
+	lua_pushboolean(L, TVPIXFMT_HAS_ALPHA(pm->pxm_Image.tpb_Format));
 	return 4;
-}
-#endif
-
-static TINT
-tek_lib_visual_createpixmap_from_ppm(lua_State *L)
-{
-	size_t ppmlen;
-	TEKVisual *vis;
-	struct TExecBase *TExecBase;
-	const char *ppm = luaL_checklstring(L, 1, &ppmlen);
-	const char *srcbuf;
-	int tw, th, maxv;
-	TUINT *buf;
-	TEKPixmap *bm;
-	TUINT8 r, g, b;
-	int x, y;
-	
-	if (!((sscanf(ppm, "P6\n%d %d\n%d\n", &tw, &th, &maxv) == 3 ||
-		sscanf(ppm, "P6\n#%*80[^\n]\n%d %d\n%d\n", &tw, &th, &maxv) == 3) &&
-		maxv > 0 && maxv < 256))
-	{
-		/*luaL_argerror(L, 2, "invalid bitmap");*/
-		lua_pushnil(L);
-		lua_pushstring(L, "Invalid format");
-		return 2;
-	}
-	
-	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
-	vis = lua_touserdata(L, -1);
-	lua_pop(L, 1);
-	TExecBase = vis->vis_ExecBase;
-	
-	bm = lua_newuserdata(L, sizeof(TEKPixmap));
-	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
-	lua_setmetatable(L, -2);
-	
-	srcbuf = ppm + ppmlen - 3 * tw * th;
-	buf = TAlloc(TNULL, tw * th * sizeof(TUINT));
-	if (buf == TNULL)
-	{
-		lua_pushstring(L, "out of memory");
-		lua_error(L);
-	}
-	
-	bm->pxm_Data = buf;
-	bm->pxm_Width = tw;
-	bm->pxm_Height = th;
-	bm->pxm_Flags = 0;
-	bm->pxm_VisualBase = vis;
-	
-	for (y = 0; y < th; ++y)
-	{
-		for (x = 0; x < tw; ++x)
-		{
-			r = *srcbuf++;
-			g = *srcbuf++;
-			b = *srcbuf++;
-			*buf++ = (r << 16) | (g << 8) | b;
-		}
-	}
-	
-	lua_pushinteger(L, tw);
-	lua_pushinteger(L, th);
-	return 3;
 }
 
 static TINT
@@ -865,11 +650,13 @@ tek_lib_visual_createpixmap_from_table(lua_State *L)
 		lua_pushstring(L, "out of memory");
 		lua_error(L);
 	}
+
+	bm->pxm_Image.tpb_Data = (TUINT8 *) buf;
+	bm->pxm_Image.tpb_Format = TVPIXFMT_A8R8G8B8;
+	bm->pxm_Image.tpb_BytesPerLine = tw * 4;
 	
-	bm->pxm_Data = buf;
 	bm->pxm_Width = tw;
 	bm->pxm_Height = th;
-	bm->pxm_Flags = 0;
 	bm->pxm_VisualBase = vis;
 	
 	for (y = 0; y < th; ++y)
@@ -889,14 +676,7 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_createpixmap(lua_State *L)
 {
 	if (lua_isstring(L, 1))
-	{
-#if defined(ENABLE_PNG)
-		int nres = tek_lib_visual_createpixmap_from_png(L);
-		if (nres != 0)
-			return nres;
-#endif
-		return tek_lib_visual_createpixmap_from_ppm(L);
-	}
+		return tek_lib_visual_createpixmap_from_img(L);
 	return tek_lib_visual_createpixmap_from_table(L);
 }
 
@@ -904,12 +684,12 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_freepixmap(lua_State *L)
 {
 	TEKPixmap *bm = getpixmapptr(L, 1);
-	if (bm->pxm_Data)
+	if (bm->pxm_Image.tpb_Data)
 	{
 		TEKVisual *vis = bm->pxm_VisualBase;
 		struct TExecBase *TExecBase = vis->vis_ExecBase;
-		TFree(bm->pxm_Data);
-		bm->pxm_Data = TNULL;
+		TFree(bm->pxm_Image.tpb_Data);
+		bm->pxm_Image.tpb_Data = TNULL;
 	}
 	return 0;
 }
@@ -918,7 +698,7 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_getpixmap(lua_State *L)
 {
 	TEKPixmap *bm = getpixmapptr(L, 1);
-	if (bm->pxm_Data)
+	if (bm->pxm_Image.tpb_Data)
 	{
 		lua_Integer x = luaL_checkinteger(L, 2);
 		lua_Integer y = luaL_checkinteger(L, 3);
@@ -926,7 +706,7 @@ tek_lib_visual_getpixmap(lua_State *L)
 			luaL_argerror(L, 2, "Invalid position");
 		if (y < 0 || y >= bm->pxm_Height)
 			luaL_argerror(L, 3, "Invalid position");
-		lua_pushinteger(L, bm->pxm_Data[x + y * bm->pxm_Width]);
+		lua_pushinteger(L, pixconv_getpixelbuf(&bm->pxm_Image, x, y));
 		return 1;
 	}
 	return 0;
@@ -936,7 +716,7 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_setpixmap(lua_State *L)
 {
 	TEKPixmap *bm = getpixmapptr(L, 1);
-	if (bm->pxm_Data)
+	if (bm->pxm_Image.tpb_Data)
 	{
 		lua_Integer x = luaL_checkinteger(L, 2);
 		lua_Integer y = luaL_checkinteger(L, 3);
@@ -945,8 +725,7 @@ tek_lib_visual_setpixmap(lua_State *L)
 			luaL_argerror(L, 2, "Invalid position");
 		if (y < 0 || y >= bm->pxm_Height)
 			luaL_argerror(L, 3, "Invalid position");
-		bm->pxm_Data[x + y * bm->pxm_Width] = val;
-		return 1;
+		pixconv_setpixelbuf(&bm->pxm_Image, x, y, val);
 	}
 	return 0;
 }
@@ -1042,12 +821,12 @@ tek_lib_visual_frectpixmap(lua_State *L, TEKVisual *vis, TEKPixmap *pm,
 {
 	TINT tw = pm->pxm_Width;
 	TINT th = pm->pxm_Height;
-	TUINT *buf = pm->pxm_Data;
+	TUINT *buf = (TUINT *) pm->pxm_Image.tpb_Data;
 	TINT th0, yo;
 	TINT y = y0;
 	TTAGITEM tags[2];
 	tags[0].tti_Tag = TVisual_AlphaChannel;
-	tags[0].tti_Value = pm->pxm_Flags & PXMF_ALPHA;
+	tags[0].tti_Value = TVPIXFMT_HAS_ALPHA(pm->pxm_Image.tpb_Format);
 	tags[1].tti_Tag = TTAG_DONE;
 	
 	yo = (y0 - oy) % th;
@@ -1645,11 +1424,11 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_getattrs(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TTAGITEM tags[9];
+	TTAGITEM tags[10];
 	size_t narg = 0, i;
 	const char *opts = lua_tolstring(L, 2, &narg);
 	
-	if (narg > 8)
+	if (narg > 9)
 		luaL_error(L, "too many attributes");
 	
 	if (narg == 0)
@@ -1690,6 +1469,9 @@ tek_lib_visual_getattrs(lua_State *L)
 			case 'c':
 				tags[i].tti_Tag = TVisual_HaveClipboard;
 				break;
+			case 'M':
+				tags[i].tti_Tag = TVisual_HaveWindowManager;
+				break;
 			default:
 				luaL_error(L, "unknown attribute");
 		}
@@ -1710,6 +1492,7 @@ tek_lib_visual_getattrs(lua_State *L)
 				break;
 			case 's':
 			case 'c':
+			case 'M':
 				lua_pushboolean(L, *((TINT *) &tags[i].tti_Value));
 				break;
 		}
@@ -2061,13 +1844,12 @@ tek_lib_visual_drawpixmap(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 4);
 	TINT w = luaL_optinteger(L, 5, x0 + img->pxm_Width - 1) - x0 + 1;
 	TINT h = luaL_optinteger(L, 6, y0 + img->pxm_Height - 1) - y0 + 1;
-	TINT offs = 0; /*luaL_optinteger(L, 7, 0)*/;
 	TTAGITEM tags[2];
 	tags[0].tti_Tag = TVisual_AlphaChannel;
-	tags[0].tti_Value = img->pxm_Flags & PXMF_ALPHA;
+	tags[0].tti_Value = TVPIXFMT_HAS_ALPHA(img->pxm_Image.tpb_Format);
 	tags[1].tti_Tag = TTAG_DONE;
-	TVisualDrawBuffer(vis->vis_Visual, x0 + sx, y0 + sy, img->pxm_Data + offs,
-		w, h, img->pxm_Width, tags);
+	TVisualDrawBuffer(vis->vis_Visual, x0 + sx, y0 + sy,
+		img->pxm_Image.tpb_Data, w, h, img->pxm_Width, tags);
 	vis->vis_Dirty = TTRUE;
 	return 0;
 }

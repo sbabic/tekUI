@@ -876,6 +876,10 @@ static THOOKENTRY TTAG getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 		case TVisual_Window:
 			*((TAPTR *) item->tti_Value) = v;
 			break;
+		case TVisual_HaveWindowManager:
+			/* depends, but we assume it is started: */
+			*((TBOOL *) item->tti_Value) = TTRUE;
+			break;
 	}
 	data->num++;
 	return TTRUE;
@@ -1242,7 +1246,7 @@ static void x11_freeimage(X11DISPLAY *mod, X11WINDOW *v)
 }
 
 static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
-	TUINT8 **bufptr, TINT *pixel_per_line)
+	TUINT8 **bufptr, TINT *bytes_per_line)
 {
 	if (w <= 0 || h <= 0)
 		return TNULL;
@@ -1306,12 +1310,12 @@ static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
 	if (v->tempbuf)
 	{
 		*bufptr = (TUINT8 *) v->tempbuf;
-		*pixel_per_line = v->imw;
+		*bytes_per_line = v->imw * v->bpp;
 	}
 	else
 	{
 		*bufptr = (TUINT8 *) v->image->data;
-		*pixel_per_line = v->image->bytes_per_line / v->bpp;
+		*bytes_per_line = v->image->bytes_per_line;
 	}
 	
 	return v->image;
@@ -1335,16 +1339,17 @@ static void x11_putimage(X11DISPLAY *mod, X11WINDOW *v, struct TVRequest *req,
 
 LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 {
-	struct PixArray src, dst;
+	struct TVPixBuf src, dst;
 	TTAGITEM *tags = req->tvr_Op.DrawBuffer.Tags;
 	X11WINDOW *v = req->tvr_Op.DrawBuffer.Window;
 	TINT x = req->tvr_Op.DrawBuffer.RRect[0];
 	TINT y = req->tvr_Op.DrawBuffer.RRect[1];
 	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
 	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
-	src.buf = req->tvr_Op.DrawBuffer.Buf;
-	src.fmt = TGetTag(tags, TVisual_PixelFormat, TVPIXFMT_A8R8G8B8);
-	src.width = req->tvr_Op.DrawBuffer.TotWidth;
+	src.tpb_Data = req->tvr_Op.DrawBuffer.Buf;
+	src.tpb_Format = TGetTag(tags, TVisual_PixelFormat, TVPIXFMT_A8R8G8B8);
+	src.tpb_BytesPerLine = req->tvr_Op.DrawBuffer.TotWidth *
+		TVPIXFMT_BYTES_PER_PIXEL(src.tpb_Format);
 
 #if defined(X11_PIXMAP_CACHE)
 	struct TVImageCacheRequest *creq = (struct TVImageCacheRequest *) 
@@ -1353,20 +1358,21 @@ LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 	{
 		struct ImageCacheState cstate;
 		cstate.src = src;
-		cstate.dst.fmt = v->pixfmt;
+		cstate.dst.tpb_Format = v->pixfmt;
 		cstate.convert = pixconv_convert;
 		int res = imgcache_lookup(&cstate, creq, x, y, w, h);
-		if (res != TVIMGCACHE_FOUND && src.buf != TNULL)
+		if (res != TVIMGCACHE_FOUND && src.tpb_Data != TNULL)
 			res = imgcache_store(&cstate, creq);
 		if (res == TVIMGCACHE_FOUND || res == TVIMGCACHE_STORED)
 			src = cstate.dst;
 	}
 #endif
 	
-	if (!src.buf || !x11_getdrawimage(mod, v, w, h, &dst.buf, &dst.width))
+	if (!src.tpb_Data || !x11_getdrawimage(mod, v, w, h, &dst.tpb_Data, 
+		&dst.tpb_BytesPerLine))
 		return;
 
-	dst.fmt = v->pixfmt;
+	dst.tpb_Format = v->pixfmt;
 	pixconv_convert(&src, &dst, 0, 0, w - 1, h - 1, 0, 0, 0, 0);
 	x11_putimage(mod, v, req, x, y, w, h);
 }

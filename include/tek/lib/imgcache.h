@@ -33,9 +33,9 @@ struct ImageCacheState
 	struct ImageCacheRecord *cr;
 	struct CacheManagerIFace *cacheiface;
 	TUINT hashvalue;
-	struct PixArray src, dst;
+	struct TVPixBuf src, dst;
 	TINT x0, y0, x1, y1, w, h;
-	TINT (*convert)(struct PixArray *src, struct PixArray *dst, 
+	TINT (*convert)(struct TVPixBuf *src, struct TVPixBuf *dst, 
 		TINT x0, TINT y0, TINT x1, TINT y1, TINT sx, TINT sy, TBOOL alpha, 
 		TBOOL swap_byteorder);;
 };

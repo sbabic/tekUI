@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 45.2"
+_VERSION = "Window 46.1"
 local Window = _M
 Group:newClass(Window)
 
@@ -118,8 +118,11 @@ Group:newClass(Window)
 
 local HUGE = ui.HUGE
 
+local MSG_MOUSEMOVE = ui.MSG_MOUSEMOVE
+local MSG_MOUSEBUTTON = ui.MSG_MOUSEBUTTON
+
 local MSGTYPES = { ui.MSG_CLOSE, ui.MSG_FOCUS, ui.MSG_NEWSIZE, ui.MSG_REFRESH,
-	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, ui.MSG_MOUSEMOVE, ui.MSG_MOUSEBUTTON,
+	ui.MSG_MOUSEOVER, ui.MSG_KEYDOWN, MSG_MOUSEMOVE, MSG_MOUSEBUTTON,
 	ui.MSG_INTERVAL, ui.MSG_KEYUP, ui.MSG_REQSELECTION }
 
 local FL_REDRAW = ui.FL_REDRAW
@@ -139,6 +142,123 @@ function Window.addClassNotifications(proto)
 end
 
 ClassNotifications = addClassNotifications { Notifications = { } }
+
+
+
+-------------------------------------------------------------------------------
+--	DragButton
+-------------------------------------------------------------------------------
+
+local DragButton = ui.Button:newClass()
+
+function DragButton.new(class, self)
+	self = self or { }
+	self.Draggable = self.Draggable == nil or self.Draggable
+	self.StartX = false
+	self.StartY = false
+	self.NoFocus = true
+	self.Style = "border-width: 0; text-align: left"
+	return ui.Button.new(class, self)
+end
+
+function DragButton:startMove(x, y)
+	local wx, wy = self.Window.Drawable:getAttrs("xy")
+	self.StartX = x - wx
+	self.StartY = y - wy
+	return true
+end
+
+function DragButton:doMove(x, y)
+	local wx = x - self.StartX
+	local wy = y - self.StartY
+	self.Window.Drawable:setAttrs { Left = wx, Top = wy }
+end
+
+function DragButton:passMsg(msg)
+	if self.Draggable then
+		local sx, sy = self.Application.MouseX, self.Application.MouseY
+		if msg[2] == MSG_MOUSEMOVE then
+			if self.Window.MovingElement == self then
+				self:doMove(sx, sy)
+				-- do not pass message to other elements while dragging:
+				return false
+			end
+		elseif msg[2] == MSG_MOUSEBUTTON then
+			if msg[3] == 1 then -- leftdown:
+				if self.Window.HoverElement == self and not self.Disabled then
+					if self:startMove(sx, sy) then
+						self.Window:setMovingElement(self)
+					end
+				end
+			elseif msg[3] == 2 then -- leftup:
+				if self.Window.MovingElement == self then
+					self.Window:setMovingElement()
+				end
+			end
+		end
+	end
+	return ui.Button.passMsg(self, msg)
+end
+
+-------------------------------------------------------------------------------
+--	SizeButton
+-------------------------------------------------------------------------------
+
+local SizeButton = ui.ImageWidget:newClass()
+
+function SizeButton.new(class, self)
+	self = self or { }
+	self.StartX = false
+	self.StartY = false
+	self.WinWidth = false
+	self.WinHeight = false
+	self.NoFocus = true
+	self.Width = "auto"
+	self.Height = "fill"
+	self.Mode = "button"
+	self.Image = ui.getStockImage("arrowright")
+	self.Style = "border-width: 0"
+	return ui.ImageWidget.new(class, self)
+end
+
+function SizeButton:startMove(x, y)
+	self.StartX = x
+	self.StartY = y
+	self.WinWidth, self.WinHeight = self.Window.Drawable:getAttrs("wh")
+	return true
+end
+
+function SizeButton:doMove(x, y)
+	local ww = x - self.StartX + self.WinWidth
+	local wh = y - self.StartY + self.WinHeight
+	self.Window.Drawable:setAttrs { Width = ww, Height = wh }
+end
+
+function SizeButton:passMsg(msg)
+	local sx, sy = self.Application.MouseX, self.Application.MouseY
+	if msg[2] == ui.MSG_MOUSEBUTTON then
+		if msg[3] == 1 then -- leftdown:
+			if self.Window.HoverElement == self and not self.Disabled then
+				if self:startMove(sx, sy) then
+					self.Window:setMovingElement(self)
+				end
+			end
+		elseif msg[3] == 2 then -- leftup:
+ 			if self.Window.MovingElement == self then
+				self.Window:setMovingElement()
+			end
+		end
+	elseif msg[2] == ui.MSG_MOUSEMOVE then
+		if self.Window.MovingElement == self then
+			self:doMove(sx, sy)
+			-- do not pass message to other elements while dragging:
+			return false
+		end
+	end
+	return ui.ImageWidget.passMsg(self, msg)
+end
+
+
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -242,9 +362,90 @@ function Window.new(class, self)
 	self.Top = self.Top or false
 	self.WindowFocus = false
 	self.WindowMinMax = { }
-	self.WinHeight = false
-	self.WinWidth = false
-	return Group.new(class, self)
+	self.WinRect = false
+	
+	if self.PopupWindow then
+		self.CloseButton = false
+		self.DragButton = false
+		self.SizeButton = false
+		self.RootWindow = false
+	else
+		self.CloseButton = self.CloseButton == nil or self.CloseButton
+		self.DragButton = self.DragButton == nil or self.DragButton
+		self.SizeButton = self.SizeButton or false
+		self.RootWindow = self.RootWindow or false
+	end
+
+	if not (self.CloseButton or self.DragButton or self.SizeButton)
+		or self.RootWindow
+		or self.PopupWindow or self.Borderless or ui.Mode ~= "workbench" 
+		or Display.getDisplayAttrs("M") then
+		return Group.new(class, self)
+	end
+
+	-- add window decorations.
+	
+	local children = self.Children or { }
+	self.Children = false
+	
+	local sizebutton = self.SizeButton
+	local dragbutton = self.DragButton
+	local closebutton = self.CloseButton
+	
+	local wgroup = Group:new 
+	{
+		Orientation = self.Orientation or "horizontal",
+		Style = self.Style,
+		Columns = self.Columns,
+		Legend = self.Legend,
+		Children = children 
+	}
+	
+	self.Orientation = "vertical"
+	self.Columns = nil
+	self.Style = nil
+	self.Legend = nil
+	self.Children = { }
+	
+	self = Group.new(class, self)
+		
+	self:addStyleClass("window-decoration")
+
+	local topgroup = Group:new { Width = "fill" }
+	if closebutton then
+		topgroup:addMember(ui.ImageWidget:new
+		{
+			Style = "border-width: 0;",
+			Image = ui.getStockImage("radiobutton", 2),
+			Width = "auto",
+			Height = "fill",
+			Mode = "button",
+			onClick = function(self)
+				self.Window:hide()
+			end
+		})
+	end
+	
+	topgroup:addMember(DragButton:new { Width = "fill", Text = self.Title,
+		Draggable = dragbutton })
+	
+	self:addMember(topgroup)
+	self:addMember(wgroup)
+	
+	if sizebutton then
+		self:addMember(Group:new
+		{ 
+			Height = "auto",
+			Children =
+			{
+				ui.Area:new { },
+				SizeButton:new { },
+			}
+		})
+	end
+
+	return self
+	
 end
 
 -------------------------------------------------------------------------------
@@ -303,6 +504,7 @@ function Window:show()
 			EventMask = self.EventMask,
 			BlankCursor = ui.NoCursor,
 			MsgFileNo = ui.MsgFileNo, -- used when opening the 1st window
+			ExtraArgs = ui.ExtraArgs,
 			Pens = setmetatable(self.PenTable, {
 				__index = function(tab, col)
 					local key = col
@@ -347,7 +549,7 @@ function Window:hide()
 		self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 		Group.hide(self)
 		local d = self.Drawable
-		self.WinWidth, self.WinHeight = d:getAttrs()
+		self.WinRect = { d:getAttrs("xywh") }
 		d:close()
 		self.Drawable = false
 		self.ActiveElement = false
@@ -497,7 +699,11 @@ function Window:askMinMax()
 	w = w or maxw == 0 and m1 or w
 	h = h or maxh == 0 and m2 or h
 	
-	return m1, m2, m3, m4, x, y, self.WinWidth or w, self.WinHeight or h
+	local wr = self.WinRect
+	if wr then
+		return m1, m2, m3, m4, wr[1] or x, wr[2] or y, wr[3] or w, wr[4] or h
+	end
+	return m1, m2, m3, m4, x, y, w, h
 end
 
 -------------------------------------------------------------------------------

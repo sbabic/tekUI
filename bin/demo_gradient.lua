@@ -20,6 +20,7 @@ local window = ui.Window:new
 	Title = L.GRADIENT_TITLE,
 	Status = "hide",
 	HideOnEscape = true,
+	SizeButton = true,
 	Width = "fill",
 	Legend = L.GRADIENT_LEGEND_WINDOW_GROUP,
 	Children =

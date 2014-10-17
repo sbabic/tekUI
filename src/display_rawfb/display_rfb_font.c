@@ -62,7 +62,7 @@ static const char *getfontdir()
 {
 	char *fontdir = getenv("FONTDIR");
 	if (!fontdir)
-		fontdir = FNT_DEFDIR;
+		fontdir = DEF_FONTDIR;
 	return (const char *) fontdir;
 }
 
@@ -882,7 +882,7 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 			TINT *r = rn->rn_Rect;
 			rfb_markdirty(mod, r);
 
-			int x, y;
+			int y;
 			int cx = 0, cy = 0;
 			int cw = sbit->width;
 			int ch = sbit->height;
@@ -902,23 +902,10 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 					
 			for (y = cy; y < ch; y++)
 			{
-				TINT yy = y + pen.y;
-				RFBPixel *buf = v->rfbw_BufPtr + yy * v->rfbw_PixelPerLine;
-				TUINT8 *sbuf = sbit->buffer + y * sbit->width;
-				TINT px = pen.x;
-				for (x = cx; x < cw; x++)
-				{
-					TINT xx = x + px;
-					TUINT8 a = sbuf[x];
-					TUINT pix = buf[xx];
-					TUINT dr = GetRFBPixelRed(pix);
-					TUINT dg = GetRFBPixelGreen(pix);
-					TUINT db = GetRFBPixelBlue(pix);
-					dr += ((tr - dr) * a) >> 8;
-					dg += ((tg - dg) * a) >> 8;
-					db += ((tb - db) * a) >> 8;
-					buf[xx] = RFBPixelFromRGB(dr, dg, db);
-				}
+				TUINT8 *sbuf = sbit->buffer + y * sbit->width + cx;
+				TUINT8 *dbuf = TVPB_GETADDRESS(&v->rfbw_PixBuf, cx + pen.x, y + pen.y);
+				pixconv_writealpha(dbuf, sbuf, cw - cx, v->rfbw_PixBuf.tpb_Format,
+					tr, tg, tb);
 			}
 		}
 	}

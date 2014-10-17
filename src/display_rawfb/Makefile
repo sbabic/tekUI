@@ -2,7 +2,7 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
-EXTRADEFS += $(RAWFB_DEFS)
+EXTRADEFS += $(RAWFB_DEFS) $(TEKUI_DEFS)
 
 ###############################################################################
 

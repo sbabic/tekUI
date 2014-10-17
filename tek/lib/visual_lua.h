@@ -113,6 +113,8 @@ typedef struct TEKVisual
 	TAPTR vis_IOData;
 	int vis_IOFileNo;
 	
+	TBOOL vis_HaveWindowManager;
+	
 #if defined(ENABLE_PIXMAP_CACHE)
 	struct THandle *vis_CacheManager;
 #endif
@@ -136,13 +138,10 @@ typedef struct TEKPen
 
 typedef struct
 {
-	TUINT *pxm_Data;
+	struct TVPixBuf pxm_Image;
 	TINT pxm_Width, pxm_Height;
-	TUINT pxm_Flags;
 	TEKVisual *pxm_VisualBase;
 } TEKPixmap;
-
-#define PXMF_ALPHA	0x0001
 
 typedef struct
 {
@@ -184,6 +183,7 @@ LOCAL void tek_lib_visual_io_close(TEKVisual *vis);
 LOCAL LUACFUNC TINT tek_lib_visual_open(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_close(lua_State *L);
 LOCAL LUACFUNC int tek_lib_visual_getuserdata(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_getdisplayattrs(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_wait(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_sleep(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_openfont(lua_State *L);

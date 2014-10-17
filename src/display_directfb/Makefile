@@ -2,8 +2,8 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
-EXTRADEFS += $(DIRECTFB_DEFS) -DFNT_DEFDIR=\"$(LUA_SHARE)/tek/ui/font/\" \
-	-DCUR_DEFFILE=\"$(LUA_SHARE)/tek/ui/cursor/cursor-green.png\"
+EXTRADEFS += $(DIRECTFB_DEFS) -DDEF_FONTDIR=\"$(LUA_SHARE)/tek/ui/font/\" \
+	-DDEF_CURSORFILE=\"$(LUA_SHARE)/tek/ui/cursor/cursor-green.png\"
 
 ###############################################################################
 

@@ -15,6 +15,7 @@ local window = ui.Window:new
 	Status = "hide",
 	Orientation = "vertical",
 	HideOnEscape = true,
+	SizeButton = true,
 	Children =
 	{
 		ui.Group:new

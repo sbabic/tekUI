@@ -32,6 +32,7 @@ local window = ui.Window:new
 	Height = "fill",
 	HideOnEscape = true,
 	SameSize = "width",
+	SizeButton = true,
 	Children =
 	{
 		Group:new

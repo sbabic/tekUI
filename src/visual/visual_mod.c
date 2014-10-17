@@ -221,7 +221,7 @@ vis_modclose(struct TVisualBase *inst)
 				n++;
 			}
 			if (n > 0)
-				TDBPRINTF(TDB_WARN,("freed &d pending input message\n", n));
+				TDBPRINTF(TDB_WARN,("freed %d pending input message\n", n));
 		}
 
 		while ((node = TRemHead(&inst->vis_ReqPool)))

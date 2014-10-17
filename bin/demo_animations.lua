@@ -73,6 +73,7 @@ local window = ui.Window:new
 	Title = L.ANIMATIONS_TITLE,
 	Status = "hide",
 	HideOnEscape = true,
+	SizeButton = true,
 	Children =
 	{
 		ui.PageGroup:new

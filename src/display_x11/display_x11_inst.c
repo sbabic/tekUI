@@ -1014,12 +1014,17 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 			if ((v->winwidth != ev->xconfigure.width ||
 				v->winheight != ev->xconfigure.height))
 			{
+				v->waitforexpose = TTRUE;
 				v->winwidth = ev->xconfigure.width;
 				v->winheight = ev->xconfigure.height;
 				if (v->eventmask & TITYPE_NEWSIZE)
 				{
 					if (getimsg(mod, v, &imsg, TITYPE_NEWSIZE))
+					{
+						imsg->timsg_Width = v->winwidth;
+						imsg->timsg_Height = v->winheight;
 						TAddTail(&v->imsgqueue, &imsg->timsg_Node);
+					}
 					TDBPRINTF(TDB_TRACE,("Configure: NEWSIZE: %d %d\n",
 						v->winwidth, v->winheight));
 				}
@@ -1043,12 +1048,15 @@ static TBOOL x11_processvisualevent(X11DISPLAY *mod, X11WINDOW *v,
 			{
 				TReplyMsg(mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
+				v->waitforexpose = TFALSE;
 				TDBPRINTF(TDB_TRACE,("Released request (MapNotify)\n"));
 			}
 			break;
 
 		case Expose:
-			if ((v->eventmask & TITYPE_REFRESH) &&
+			if (v->waitforexpose)
+				v->waitforexpose = TFALSE;
+			else if ((v->eventmask & TITYPE_REFRESH) &&
 				getimsg(mod, v, &imsg, TITYPE_REFRESH))
 			{
 				imsg->timsg_X = ev->xexpose.x;

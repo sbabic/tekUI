@@ -18,6 +18,7 @@ local window = ui.Window:new
 	Title = L.LAYOUT_TITLE,
 	Status = "hide",
 	HideOnEscape = true,
+	SizeButton = true,
 	Children =
 	{
 		Group:new

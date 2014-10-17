@@ -38,12 +38,12 @@
 
 /*****************************************************************************/
 
-#ifndef CUR_DEFFILE
-#define CUR_DEFFILE			TEKHOST_SYSDIR"cursors/cursor-green.png"
+#ifndef DEF_CURSORFILE
+#define DEF_CURSORFILE			TEKHOST_SYSDIR"cursors/cursor-green.png"
 #endif
 
-#ifndef FNT_DEFDIR
-#define	FNT_DEFDIR			TEKHOST_SYSDIR"fonts/"
+#ifndef DEF_FONTDIR
+#define	DEF_FONTDIR			TEKHOST_SYSDIR"fonts/"
 #endif
 
 #define FNT_DEFNAME			"VeraMono"

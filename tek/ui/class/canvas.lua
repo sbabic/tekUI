@@ -100,7 +100,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 37.1"
+_VERSION = "Canvas 37.3"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -302,13 +302,6 @@ function Canvas:layout(r1, r2, r3, r4, markdamage)
 				sizechanged = true
 			end
 		until self.CanvasWidth == iw and self.CanvasHeight == ih
-
-		if not sizechanged and markdamage ~= false then
-			local t1, t2 = self:getRect()
-			if s1 ~= t1 and s2 ~= t2 then -- child unchanged, canvas moved on both axes
-				c:damage(0, 0, iw - 1, ih - 1)
-			end
-		end
 		
 		self:drawEnd()
 	

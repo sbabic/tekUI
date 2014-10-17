@@ -33,6 +33,7 @@
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
+  - 3.6. [[#extraargs : Global Lua runtime arguments]]
 
  - 4. [[#usersguide : User's Guide]]
   - 4.1. [[#helloworld : Hello, World!]]
@@ -61,9 +62,10 @@
 
 TekUI is a small, freestanding and portable graphical user interface
 (GUI) toolkit written in Lua and C. It was initially developed for
-the X Window System and has been ported to DirectFB, Windows, a raw
-framebuffer and other displays since. A [[VNC server option][#noterawfb]]
-is available that allows the remote control of tekUI applications.
+the X Window System and has been ported to Linux framebuffer, raw
+framebuffer, DirectFB, Windows, and other displays since. A 
+[[VNC server option][#noterawfb]] is available that allows the remote
+control of tekUI applications.
 
 Its main focus is the rapid development of custom-made applications
 with a custom appearance, such as for embedded devices with a display
@@ -98,10 +100,10 @@ FreeBSD, and it may work on other flavours of Unix with few
 modifications. A rudimentary Windows display driver and build setup
 is included, but not very well supported at this time.
 
-Display drivers are included for X11, Windows, DirectFB, and raw
-memory. See also [[TODO][todo.html]] for a list of known bugs
-and missing features, and [[#requirements]] for a list of the
-required libraries.
+Display drivers are included for X11, Linux framebuffer, Windows,
+DirectFB, and raw memory. See also [[TODO][todo.html]] for a list of
+known bugs and missing features, and [[#requirements]] for a list of
+the required libraries.
 
 ==( support : 1.3. Support and services )==
 
@@ -399,12 +401,22 @@ config file.
 ===( noterawfb : 3.2.5. Raw framebuffer notes )===
 
 The raw framebuffer driver performs all rendering in a chunk of
-memory that can be supplied by the user. The color depth may be 16 or
-32 bit. This driver is recursive in that another display driver may
-be plugged into it as a visualization and input device. It was
-originally intended to act as a template (or skeleton) for
-specializations in a target context, like custom hardware or a 3D
-game or simulation.
+memory that can be supplied by a native display or the application.
+
+It is recursive in that another tekUI display driver can be plugged
+into it as a visualization and input device. This was originally
+intended to act as a template (or skeleton) for specializations in
+a target context, like custom hardware or a 3D game or simulation,
+but it also comes in useful for providing a backbuffer for other
+display types.
+
+Support for the native Linux framebuffer (and input event interface)
+can be compiled into the raw framebuffer directly. It then adapts to
+the active screensize and pixel format automatically. The keymap is
+compiled in, by default /usr/share/keymaps/i386/qwerty/us.map.gz, and
+can be generated using a conversion tool, etc/keymap2c. Linux 
+framebuffer support has been tested on Intel i915 and Raspberry Pi
+(both under Gentoo Linux). Acceleration is not yet supported.
 
 A VNC server option (through 
 [[LibVNCServer][http://libvncserver.sourceforge.net/]]) is available
@@ -413,7 +425,9 @@ the network. This works both "headless" and with a local display. To
 enable LibVNCServer support, enable the raw framebuffer and the
 {{VNCSERVER_}} defines in the config file.
 
-The rawfb driver's pixel format can be adjusted in display_rfb_mod.h.
+Any combination of the subdrivers tekUI, Linux framebuffer, and VNC
+is valid. If none is selected, the GUI runs isolated from the outside
+world, albeit in a very portable way, in its chunk of memory.
 
 ===( notedirectfb : 3.2.6. DirectFB notes )===
 
@@ -489,6 +503,27 @@ conveniently invoked with
  configuration file.
  * {{FONTDIR}} - Raw framebuffer TTF font directory, overriding the
  hardcoded default ({{tek/ui/font}})
+
+==( extraargs : 3.6. Global Lua runtime arguments )==
+
+Some properties of tekUI are configurable globally during runtime,
+by modifying fields in the {{ui}} library:
+
+ * {{ui.ExtraArgs}} - mostly used for hints to display drivers,
+ currently supported:
+  * {{fb_backbuffer=<bool>}} - If enabled, use a backbuffer even if
+  it is not stricly needed
+  * {{fb_pixfmt=<hex>}} - Specify desired pixel format for the
+  framebuffer, e.g. {{5650120b}}. See {{include/tek/mod/visual.h}}
+  for the defines prefixed with {{TVPIXFMT_}}.
+  * {{vnc_portnumber=<nr>}} - specifies a VNC server's port number
+ * {{ui.FullScreen}} - boolean
+ * {{ui.Mode}} - set this to {{"workbench"}} for windows to receive
+ buttons for dragging, resizing, closing, etc. This is intended for
+ running tekUI in a desktop-like manner on display subsystems which
+ do not provide a window manager.
+ * {{ui.ThemeName}} - see also [[CSS precedence][#cssprecedence]]
+ * {{ui.UserStyles}} - see also [[CSS precedence][#cssprecedence]]
 
 ---------------------------------------------------------------------
 
@@ -1036,3 +1071,5 @@ by overwriting the {{THEME}} variable inside your application, e.g.:
 To also disable the {{user.css}} file:
 
   ui.UserStyles = false
+
+See also [[Global Lua runtime arguments][#extraargs]].

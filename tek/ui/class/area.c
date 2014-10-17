@@ -198,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 57.0"
+_VERSION = "Area 57.3"
 local Area = _M
 Element:newClass(Area)
 
@@ -217,7 +217,7 @@ Element:newClass(Area)
 #define AREA_CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define AREA_CLASS_VERSION "Area 57.0"
+#define AREA_CLASS_VERSION "Area 57.3"
 
 /* Required tekui version: */
 #define AREA_TEKUI_VERSION 109
@@ -637,6 +637,42 @@ static int tek_ui_class_area_layout(lua_State *L)
 	lua_Integer sx = lua_tointeger(L, -2);
 	lua_Integer sy = lua_tointeger(L, -1);
 	lua_pop(L, 2);
+
+	lua_getfield(L, -1, "getAttrs");
+	lua_pushvalue(L, -2);
+	lua_pushliteral(L, "wh");
+	lua_call(L, 2, 2);
+	lua_Integer w3 = lua_tointeger(L, -2) - 1;
+	lua_Integer w4 = lua_tointeger(L, -1) - 1;
+	lua_pop(L, 2);
+
+	lua_getfield(L, -1, "getClipRect");
+	lua_pushvalue(L, -2);
+	lua_call(L, 1, 4);
+	TBOOL is_c1 = lua_toboolean(L, -4);
+	lua_Integer c1 = lua_tointeger(L, -4);
+	lua_Integer c2 = lua_tointeger(L, -3);
+	lua_Integer c3 = lua_tointeger(L, -2);
+	lua_Integer c4 = lua_tointeger(L, -1);
+	lua_pop(L, 4);
+
+	if (is_c1)
+	{
+		if (TEK_UI_OVERLAP(c1, c2, c3, c4, 0, 0, w3, w4))
+		{
+			c1 = TMAX(c1, 0);
+			c2 = TMAX(c2, 0);
+			c3 = TMIN(c3, w3);
+			c4 = TMIN(c4, w4);
+		}
+	}
+	else
+	{
+		c1 = 0;
+		c2 = 0;
+		c3 = w3;
+		c4 = w4;
+	}
 	
 	TUINT flags = getnumfield(L, AREA_ISELF, "Flags");
 	TBOOL track = flags & TEKUI_FL_TRACKDAMAGE;
@@ -659,6 +695,7 @@ static int tek_ui_class_area_layout(lua_State *L)
 			lua_pop(L, 4);
 		}
 	}
+	
 	if (can_copy)
 	{
 		lua_Integer s1 = x0 - dx - m1;
@@ -666,55 +703,38 @@ static int tek_ui_class_area_layout(lua_State *L)
 		lua_Integer s3 = x1 - dx + m3;
 		lua_Integer s4 = y1 - dy + m4;
 		
-		can_copy = TFALSE;
-		
-		lua_getfield(L, -1, "getClipRect");
+		lua_getfield(L, AREA_IREGION, "new");
+		lua_pushinteger(L, r1 + sx - m1);
+		lua_pushinteger(L, r2 + sy - m2);
+		lua_pushinteger(L, r3 + sx + m3);
+		lua_pushinteger(L, r4 + sy + m4);
+		lua_call(L, 4, 1);
+		/* win, d, r */
+		lua_getfield(L, -1, "subRect");
 		lua_pushvalue(L, -2);
-		lua_call(L, 1, 4);
-		TBOOL is_c1 = lua_toboolean(L, -4);
-		lua_Integer c1 = lua_tointeger(L, -4);
-		lua_Integer c2 = lua_tointeger(L, -3);
-		lua_Integer c3 = lua_tointeger(L, -2);
-		lua_Integer c4 = lua_tointeger(L, -1);
-		lua_pop(L, 4);
-		if (is_c1)
-		{
-			lua_getfield(L, AREA_IREGION, "new");
-			lua_pushinteger(L, r1 + sx - m1);
-			lua_pushinteger(L, r2 + sy - m2);
-			lua_pushinteger(L, r3 + sx + m3);
-			lua_pushinteger(L, r4 + sy + m4);
-			lua_call(L, 4, 1);
-			/* win, d, r */
-			lua_getfield(L, -1, "subRect");
-			lua_pushvalue(L, -2);
-			lua_pushinteger(L, c1);
-			lua_pushinteger(L, c2);
-			lua_pushinteger(L, c3);
-			lua_pushinteger(L, c4);
-			lua_call(L, 5, 0);
-			lua_getfield(L, -1, "shift");
-			lua_pushvalue(L, -2);
-			lua_pushinteger(L, dx);
-			lua_pushinteger(L, dy);
-			lua_call(L, 3, 0);
-			lua_getfield(L, -1, "andRect");
-			lua_pushvalue(L, -2);
-			lua_pushinteger(L, c1);
-			lua_pushinteger(L, c2);
-			lua_pushinteger(L, c3);
-			lua_pushinteger(L, c4);
-			lua_call(L, 5, 0);
-			lua_getfield(L, -1, "isEmpty");
-			lua_pushvalue(L, -2);
-			lua_call(L, 1, 1);
-			if (lua_toboolean(L, -1))
-				can_copy = TTRUE;
-			lua_pop(L, 2);
-		}
-		else
-			can_copy = TTRUE;
-		
+		lua_pushinteger(L, c1);
+		lua_pushinteger(L, c2);
+		lua_pushinteger(L, c3);
+		lua_pushinteger(L, c4);
+		lua_call(L, 5, 0);
+		lua_getfield(L, -1, "shift");
+		lua_pushvalue(L, -2);
+		lua_pushinteger(L, dx);
+		lua_pushinteger(L, dy);
+		lua_call(L, 3, 0);
+		lua_getfield(L, -1, "andRect");
+		lua_pushvalue(L, -2);
+		lua_pushinteger(L, c1);
+		lua_pushinteger(L, c2);
+		lua_pushinteger(L, c3);
+		lua_pushinteger(L, c4);
+		lua_call(L, 5, 0);
+		lua_getfield(L, -1, "isEmpty");
+		lua_pushvalue(L, -2);
+		lua_call(L, 1, 1);
+		can_copy = lua_toboolean(L, -1);
+		lua_pop(L, 2);
+			
 		if (can_copy)
 		{
 			/* win, d */
@@ -733,16 +753,11 @@ static int tek_ui_class_area_layout(lua_State *L)
 			lua_pushinteger(L, s4 + sy);
 			lua_pushinteger(L, dx);
 			lua_pushinteger(L, dy);
-			if (is_c1)
-			{
 				lua_pushinteger(L, c1);
 				lua_pushinteger(L, c2);
 				lua_pushinteger(L, c3);
 				lua_pushinteger(L, c4);
 				lua_call(L, 11, 0);
-			}
-			else
-				lua_call(L, 7, 0);
 			if (samesize)
 			{
 				lua_pop(L, 2);
@@ -758,33 +773,24 @@ static int tek_ui_class_area_layout(lua_State *L)
 	}
 		
 	/* win, d */
-	if ((x0 == r1 && y0 == r2) && markdamage && track)
+	if (markdamage && track)
 	{
-		lua_getfield(L, AREA_IREGION, "new");
-		lua_pushinteger(L, x0);
-		lua_pushinteger(L, y0);
-		lua_pushinteger(L, x1);
-		lua_pushinteger(L, y1);
-		lua_call(L, 4, 1);
-		lua_getfield(L, -1, "subRect");
-		lua_insert(L, -2);
-		lua_pushinteger(L, r1);
-		lua_pushinteger(L, r2);
-		lua_pushinteger(L, r3);
-		lua_pushinteger(L, r4);
-		lua_call(L, 5, 1);
-		/* win, d, r */
-		lua_getfield(L, -2,	"getClipRect");
-		lua_pushvalue(L, -3);
-		lua_call(L, 1, 4);
-		TBOOL is_c1 = lua_toboolean(L, -4);
-		lua_Integer c1 = lua_tointeger(L, -4);
-		lua_Integer c2 = lua_tointeger(L, -3);
-		lua_Integer c3 = lua_tointeger(L, -2);
-		lua_Integer c4 = lua_tointeger(L, -1);
-		lua_pop(L, 4);
-		if (is_c1)
+		if (x0 == r1 && y0 == r2)
 		{
+			lua_getfield(L, AREA_IREGION, "new");
+			lua_pushinteger(L, x0);
+			lua_pushinteger(L, y0);
+			lua_pushinteger(L, x1);
+			lua_pushinteger(L, y1);
+			lua_call(L, 4, 1);
+			lua_getfield(L, -1, "subRect");
+			lua_insert(L, -2);
+			lua_pushinteger(L, r1);
+			lua_pushinteger(L, r2);
+			lua_pushinteger(L, r3);
+			lua_pushinteger(L, r4);
+			lua_call(L, 5, 1);
+			/* win, d, r */
 			lua_getfield(L, -1, "andRect");
 			lua_pushvalue(L, -2);
 			lua_pushinteger(L, c1 - sx);
@@ -792,14 +798,23 @@ static int tek_ui_class_area_layout(lua_State *L)
 			lua_pushinteger(L, c3 - sx);
 			lua_pushinteger(L, c4 - sy);
 			lua_call(L, 5, 0);
+			lua_getfield(L, -1, "forEach");
+			lua_pushvalue(L, -2);
+			lua_getfield(L, AREA_ISELF, "damage");
+			lua_pushvalue(L, AREA_ISELF);
+			lua_call(L, 3, 0);
+			lua_pop(L, 1);
 		}
-		
-		lua_getfield(L, -1, "forEach");
-		lua_pushvalue(L, -2);
-		lua_getfield(L, AREA_ISELF, "damage");
-		lua_pushvalue(L, AREA_ISELF);
-		lua_call(L, 3, 0);
-		lua_pop(L, 1);
+		else
+		{
+			lua_getfield(L, -2, "damage");
+			lua_pushvalue(L, -3);
+			lua_pushinteger(L, x0);
+			lua_pushinteger(L, y0);
+			lua_pushinteger(L, x1);
+			lua_pushinteger(L, y1);
+			lua_call(L, 5, 0);
+		}
 	}
 	
 	if (markdamage)

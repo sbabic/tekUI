@@ -53,7 +53,7 @@ local window = Window:new
 	Title = L.LIST_TITLE,
 	Status = "hide",
 	HideOnEscape = true,
-	
+	SizeButton = true,
 	Children =
 	{
 		ui.Group:new

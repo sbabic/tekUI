@@ -130,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 41.3"
+_VERSION = "Application 41.4"
 local Application = _M
 Family:newClass(Application)
 
@@ -852,7 +852,8 @@ function Application:requestFile(args)
 		MaxHeight = "none",
 		Center = center,
 		Children = { dirlist },
-		HideOnEscape = true
+		HideOnEscape = true,
+		SizeButton = true
 	}
 
 	Application.connect(window)

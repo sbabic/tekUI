@@ -5,7 +5,6 @@ local List = require "tek.class.list"
 local Button = ui.Button
 local Group = ui.Group
 local Text = ui.Text
-local Window = ui.Window
 
 local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 
@@ -13,13 +12,14 @@ local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 --	Create demo window:
 -------------------------------------------------------------------------------
 
-local window = Window:new
+local window = ui.Window:new
 {
 	Title = L.ALIGNMENT_TITLE,
 	Id = "alignment-window",
 	Orientation = "vertical",
 	Status = "hide",
 	HideOnEscape = true,
+	SizeButton = true,
 	Children =
 	{
 		Group:new
