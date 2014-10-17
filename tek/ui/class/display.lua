@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 32.1"
+_VERSION = "Display 32.2"
 local Display = _M
 Element:newClass(Display)
 
@@ -274,7 +274,7 @@ function Display.getPaint(imgspec, display)
 	if imgtype == "url" then
 		local f = open(location, "rb")
 		if f then
-			paint, w, h, trans = createPixmap(f:read("*a"))
+			paint, w, h, trans = createPixmap(f)
 			f:close()
 		else
 			db.warn("cannot load image '%s'", location)

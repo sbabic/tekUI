@@ -603,12 +603,25 @@ static TINT tek_lib_visual_createpixmap_from_img(lua_State *L)
 	TEKVisual *vis = lua_touserdata(L, -1);
 	lua_pop(L, 1);
 	struct TExecBase *TExecBase = vis->vis_ExecBase;
-	size_t len;
-	const char *src = luaL_checklstring(L, 1, &len);
 	struct ImgLoader ld;
-	if (!(imgload_init_memory(&ld, TExecBase, src, len) &&
-		imgload_load(&ld)))
-		return 0;
+	size_t len;
+	const char *src = lua_tolstring(L, 1, &len);
+	if (src)
+	{
+		if (!(imgload_init_memory(&ld, TExecBase, src, len) &&
+			imgload_load(&ld)))
+			return 0;
+	}
+	else
+	{
+		FILE **f = luaL_checkudata(L, 1, LUA_FILEHANDLE);
+		if (*f == NULL)
+			luaL_error(L, "attempt to use a closed file");
+		if (!(imgload_init_file(&ld, TExecBase, *f) &&
+			imgload_load(&ld)))
+			return 0;
+	}
+	
 	TEKPixmap *pm = lua_newuserdata(L, sizeof(TEKPixmap));
 	luaL_newmetatable(L, TEK_LIB_VISUALPIXMAP_CLASSNAME);
 	lua_setmetatable(L, -2);
@@ -675,9 +688,9 @@ tek_lib_visual_createpixmap_from_table(lua_State *L)
 LOCAL LUACFUNC TINT
 tek_lib_visual_createpixmap(lua_State *L)
 {
-	if (lua_isstring(L, 1))
-		return tek_lib_visual_createpixmap_from_img(L);
-	return tek_lib_visual_createpixmap_from_table(L);
+	if (lua_istable(L, 1))
+		return tek_lib_visual_createpixmap_from_table(L);
+	return tek_lib_visual_createpixmap_from_img(L);
 }
 
 LOCAL LUACFUNC TINT

@@ -19,6 +19,7 @@
  ui.ExtraArgs = "vnc_portnumber=1234" 
  * Displays, Area, Canvas: Some layouting and refresh glitches corrected
  * Windows now better remember their window positions and sizes
+ * createPixmap() can now read images from open file handles
  * Input: doubleclick marks the whole line now
  * Sizeable: No longer adds empty blit regions to the Window, added sanity
  checks, added cases for insertions above and below the visible area, now

@@ -250,7 +250,10 @@ static TBOOL imgload_read_file(struct ImgLoader *ld, TUINT8 *buf, TSIZE nbytes)
 
 static long imgload_seek_file(struct ImgLoader *ld, long offs, int whence)
 {
-	return fseek(ld->iml_Loader.File.fd, offs, whence);
+	long res = fseek(ld->iml_Loader.File.fd, offs, whence);
+	if (res != -1)
+		res = ftell(ld->iml_Loader.File.fd);
+	return res;
 }
 
 TBOOL imgload_init_file(struct ImgLoader *ld, struct TExecBase *TExecBase,
