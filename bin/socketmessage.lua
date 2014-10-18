@@ -103,6 +103,9 @@ message should show up in the field below.]]
 						self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
 					end,
 					msgUser = function(self, msg)
+						if msg[-1] == "quit" then
+							self.Application:quit()
+						end
 						self:setValue("Text", msg[-1])
 						return msg
 					end

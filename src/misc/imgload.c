@@ -183,7 +183,7 @@ static TBOOL imgload_load_png(struct ImgLoader *ld)
 static TBOOL imgload_load_ppm(struct ImgLoader *ld)
 {
 	struct TExecBase *TExecBase = ld->iml_ExecBase;
-	int tw, th, maxv, x, y;
+	int tw, th, maxv = 0, x, y;
 	char header[256];
 	if (!(*ld->iml_ReadFunc)(ld, (TUINT8 *) header, sizeof header))
 		return TFALSE;

@@ -25,7 +25,8 @@ DISPLAY_DRIVER ?= x11
 # ENABLE_PIXMAP_CACHE - enable caching of pixmaps
 # ENABLE_PNG - enable PNG support through libpng
 # ENABLE_FILENO - dispatches lines from a fd (normally stdin) to MSG_USER
-# ENABLE_DGRAM - enables a datagram server on 127.0.0.1:20000 for the same
+# ENABLE_DGRAM=portnr - enables a datagram server on addr:portnr for MSG_USER
+# ENABLE_DGRAM_ADDR=\"addr\" - set address to listen on (default 127.0.0.1)
 #------------------------------------------------------------------------------
 
 TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_PIXMAP_CACHE 

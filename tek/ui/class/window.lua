@@ -613,7 +613,7 @@ end
 --	addInterval(): Adds an interval timer to the window, which will
 --	furtheron generate MSG_INTERVAL messages 50 times per second. These
 --	messages cause a considerable load to the application, therefore each call
---	to this function should be paired with an matching call to
+--	to this function should be paired with a matching call to
 --	Window:remInterval(), which will cause the interval timer to stop when
 --	no clients are needing it anymore.
 -------------------------------------------------------------------------------

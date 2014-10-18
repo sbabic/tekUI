@@ -854,9 +854,8 @@
 			<blockquote>
 				<ul>
 					<li>
-						<code>NOCURSOR</code> - <code>&quot;true&quot;</code> to disable the mouse pointer over a
-						tekUI application. This may be useful when running on a touch
-						screen.
+						<code>FONTDIR</code> - Raw framebuffer TTF font directory, overriding the
+						hardcoded default (<code>tek/ui/font</code>)
 					</li>
 					<li>
 						<code>FULLSCREEN</code> - <code>&quot;true&quot;</code> to try opening an application in
@@ -864,33 +863,37 @@
 						the display driver in use.
 					</li>
 					<li>
-						<code>THEME</code> - Theme names corresponding to style sheet files in
-						<code>tek/ui/style/</code>. Multiple themes can be separated by spaces,
-						e.g. <code>&quot;desktop gradient&quot;</code>.
-						The default is <code>&quot;desktop&quot;</code>. The <em>desktop</em> theme tries
-						to import the color scheme found in a GTK2 configuration file.
-					</li>
-					<li>
 						<code>GTK2_RC_FILES</code> - Possible locations of a gtkrc-2.0
 						configuration file.
 					</li>
 					<li>
-						<code>FONTDIR</code> - Raw framebuffer TTF font directory, overriding the
-						hardcoded default (<code>tek/ui/font</code>)
+						<code>NOCURSOR</code> - <code>&quot;true&quot;</code> to disable the mouse pointer over a
+						tekUI application. This may be useful when running on a touch
+						screen.
+					</li>
+					<li>
+						<code>THEME</code> - Theme names corresponding to style sheet files in
+						<code>tek/ui/style/</code>. Multiple themes can be separated by spaces,
+						e.g. <code>&quot;desktop gradient&quot;</code>. The default is <code>&quot;desktop&quot;</code>. The
+						<em>desktop</em> theme tries to import the color scheme found in a GTK2
+						configuration file. See also <a href="#cssprecedence">CSS precedence</a>.
+					</li>
+					<li>
+						<code>VNC_PORTNUMBER</code> - Specifies a VNC server's port number.
 					</li>
 				</ul>
 			</blockquote>
 		</div>
 		<div class="node"><h2><a name="extraargs" id="extraargs">3.6. Global Lua runtime arguments</a></h2>
 			<p>
-				Some properties of tekUI are configurable globally during runtime,
-				by modifying fields in the <code>ui</code> library:
+				Some properties of tekUI are configurable globally from Lua,
+				by modifying fields in the <code>ui</code> library at program start:
 			</p>
 			<blockquote>
 				<ul>
 					<li>
 						<code>ui.ExtraArgs</code> - mostly used for hints to display drivers,
-						currently supported:
+						one argument per line, currently supported:
 						<blockquote>
 							<ul>
 								<li>
@@ -903,13 +906,13 @@
 									for the defines prefixed with <code>TVPIXFMT_</code>.
 								</li>
 								<li>
-									<code>vnc_portnumber=&lt;nr&gt;</code> - specifies a VNC server's port number
+									<code>vnc_portnumber=&lt;nr&gt;</code> - Overrides <code>VNC_PORTNUMBER</code>, see above
 								</li>
 							</ul>
 						</blockquote>
 					</li>
 					<li>
-						<code>ui.FullScreen</code> - boolean
+						<code>ui.FullScreen</code> - boolean, overrides <code>FULLSCREEN</code> (see above)
 					</li>
 					<li>
 						<code>ui.Mode</code> - set this to <code>&quot;workbench&quot;</code> for windows to receive
@@ -918,10 +921,22 @@
 						do not provide a window manager.
 					</li>
 					<li>
-						<code>ui.ThemeName</code> - see also <a href="#cssprecedence">CSS precedence</a> 
+						<code>ui.MsgFileNo</code> - Number of the file descriptor used for
+						dispatching lines to messages of type <code>MSG_USER</code>. Default: stdin
 					</li>
 					<li>
-						<code>ui.UserStyles</code> - see also <a href="#cssprecedence">CSS precedence</a> 
+						<code>ui.NoCursor</code> - Overrides <code>NOCURSOR</code>, see above
+					</li>
+					<li>
+						<code>ui.ShortcutMark</code> - Character to indicate that the following
+						character is used for a keyboard shortcut. Default: <code>&quot;_&quot;</code> 
+					</li>
+					<li>
+						<code>ui.ThemeName</code> - overrides <code>THEME</code>, see above. See also
+						<a href="#cssprecedence">CSS precedence</a>.
+					</li>
+					<li>
+						<code>ui.UserStyles</code> - see <a href="#cssprecedence">CSS precedence</a> 
 					</li>
 				</ul>
 			</blockquote>

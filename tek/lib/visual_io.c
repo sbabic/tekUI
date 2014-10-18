@@ -47,6 +47,11 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+#if !defined(ENABLE_DGRAM_ADDR)
+#define ENABLE_DGRAM_ADDR "127.0.0.1"
+#endif
+
 #endif
 
 #define IOMAXMSGSIZE 2048
@@ -260,7 +265,7 @@ static TBOOL tek_lib_visual_io_init(struct TTask *task)
 		struct sockaddr_in addr;
 		memset(&addr, 0, sizeof(struct sockaddr_in));
 		addr.sin_family = AF_INET;
-		addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+		addr.sin_addr.s_addr = inet_addr(ENABLE_DGRAM_ADDR);
 		addr.sin_port = htons(ENABLE_DGRAM);
 		if (bind(iodata->fd_dgram, 
 			(struct sockaddr *) &addr, sizeof addr) == -1)

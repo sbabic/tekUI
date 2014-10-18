@@ -105,6 +105,9 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		/* Open root window */
 		struct extraopenargs args;
 		getextraopenargs(tags, &args);
+		
+		if (!TGetTag(tags, TVisual_BlankCursor, TFALSE))
+			mod->rfb_Flags |= RFBFL_SHOWPTR;
 
 		/* dimensions */		
 		width = (TINT) TGetTag(tags, TVisual_Width, 

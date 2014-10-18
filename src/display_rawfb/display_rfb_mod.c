@@ -114,13 +114,15 @@ static TBOOL drawpointer(RFBDISPLAY *mod, TINT x0, TINT y0)
 		x1 = TMIN(x1, s2);
 		y1 = TMIN(y1, s3);
 		storebackbuf(mod, &mod->rfb_MousePtrBackBuffer, x0, y0, x1, y1);
-		pixconv_convert(&mod->rfb_MousePtrImage, &dst, x0, y0, x1, y1, 0, 0, TTRUE, TFALSE);
+		pixconv_convert(&mod->rfb_MousePtrImage, &dst, x0, y0, x1, y1, 0, 0, 
+			TTRUE, TFALSE);
 		return TTRUE;
 	}
 	return TFALSE;
 }
 
-static int rfb_findeventinput(const char *path, const char *what, char *fullname, size_t len)
+static int rfb_findeventinput(const char *path, const char *what,
+	char *fullname, size_t len)
 {
 	int found = 0;
 	DIR *dfd = opendir(path);
@@ -174,11 +176,16 @@ static void rfb_updateinput(RFBDISPLAY *mod)
 		{
 			if (fcntl(mod->rfb_fd_input_kbd, F_SETFL, O_NONBLOCK) == -1)
 			{
+				TDBPRINTF(TDB_ERROR,("Cannot access keyboard\n"));
 				close(mod->rfb_fd_input_kbd);
 				mod->rfb_fd_input_kbd = -1;
 			}
 		}
+		else
+			TDBPRINTF(TDB_WARN,("Cannot open %s\n", fullname));
 	}
+	else
+		TDBPRINTF(TDB_WARN,("No keyboard found\n"));
 	
 	if (rfb_findeventinput(EVPATH, "event-mouse", fullname, sizeof fullname))
 	{
@@ -187,11 +194,16 @@ static void rfb_updateinput(RFBDISPLAY *mod)
 		{
 			if (fcntl(mod->rfb_fd_input_mouse, F_SETFL, O_NONBLOCK) == -1)
 			{
+				TDBPRINTF(TDB_ERROR,("Cannot access mouse\n"));
 				close(mod->rfb_fd_input_mouse);
 				mod->rfb_fd_input_mouse = -1;
 			}
 		}
+		else
+			TDBPRINTF(TDB_WARN,("Cannot open %s\n", fullname));
 	}
+	else
+		TDBPRINTF(TDB_WARN,("No mouse found\n"));
 	
 	if (mod->rfb_fd_input_mouse)
 	{
@@ -211,7 +223,8 @@ static void rfb_updateinput(RFBDISPLAY *mod)
 	TDBPRINTF(20,("watch  : %d\n", mod->rfb_fd_watch_input));
 	TDBPRINTF(20,("mouse  : %d\n", mod->rfb_fd_input_mouse));
 	TDBPRINTF(20,("keyboard %d\n", mod->rfb_fd_input_kbd));*/
-	mod->rfb_fd_max = TMAX(mod->rfb_fd_sigpipe_read, mod->rfb_fd_inotify_input);
+	mod->rfb_fd_max = TMAX(mod->rfb_fd_sigpipe_read, 
+		mod->rfb_fd_inotify_input);
 	mod->rfb_fd_max = TMAX(mod->rfb_fd_max, mod->rfb_fd_input_mouse);
 	mod->rfb_fd_max = TMAX(mod->rfb_fd_max, mod->rfb_fd_input_kbd);
 	/*TDBPRINTF(20,("fd_max : %d\n", mod->rfb_fd_max));*/
@@ -223,7 +236,8 @@ static void rfb_initkeytable(RFBDISPLAY *mod)
 	struct RawKey **rkeys = mod->rfb_RawKeys;
 	int i;
 	memset(mod->rfb_RawKeys, 0, sizeof mod->rfb_RawKeys);
-	for (i = 0; i < (int) (sizeof rawkeyinit / sizeof(struct RawKeyInit)); ++i)
+	for (i = 0; 
+		i < (int) (sizeof rawkeyinit / sizeof(struct RawKeyInit)); ++i)
 	{
 		struct RawKeyInit *ri = &rawkeyinit[i];
 		rkeys[ri->index] = &ri->rawkey;
@@ -273,10 +287,12 @@ static void rfb_linux_wait(RFBDISPLAY *mod, TTIME *waitt)
 			for (;;)
 			{
 				int i;
-				ssize_t nread = (int) read(mod->rfb_fd_input_mouse, ie, sizeof ie);
+				ssize_t nread = (int) read(mod->rfb_fd_input_mouse, ie,
+					sizeof ie);
 				if (nread < (int) sizeof(struct input_event))
 					break;
-				for (i = 0; i < (int) (nread / sizeof(struct input_event)); ++i)
+				for (i = 0;
+					i < (int) (nread / sizeof(struct input_event)); ++i)
 					input_pending |= rfb_processmouseinput(mod, &ie[i]);
 			}
 			
@@ -301,10 +317,12 @@ static void rfb_linux_wait(RFBDISPLAY *mod, TTIME *waitt)
 			for (;;)
 			{
 				int i;
-				ssize_t nread = (int) read(mod->rfb_fd_input_kbd, ie, sizeof ie);
+				ssize_t nread = (int) read(mod->rfb_fd_input_kbd, ie,
+					sizeof ie);
 				if (nread < (int) sizeof(struct input_event))
 					break;
-				for (i = 0; i < (int) (nread / sizeof(struct input_event)); ++i)
+				for (i = 0;
+					i < (int) (nread / sizeof(struct input_event)); ++i)
 					rfb_processkbdinput(mod, &ie[i]);
 			}
 		}
@@ -446,8 +464,11 @@ static TUINT rfb_processmouseinput(RFBDISPLAY *mod, struct input_event *ev)
 					if (mod->rfb_button_touch)
 					{
 						int mx = ev->value - mod->rfb_absstart[0];
-						mx = mx * mod->rfb_Width / (mod->rfb_absinfo[0].maximum - mod->rfb_absinfo[0].minimum);
-						mod->rfb_MouseX = TCLAMP(0, mx + mod->rfb_startmouse[0], mod->rfb_Width - 1);
+						mx = mx * mod->rfb_Width /
+							(mod->rfb_absinfo[0].maximum - 
+							mod->rfb_absinfo[0].minimum);
+						mod->rfb_MouseX = TCLAMP(0, 
+							mx + mod->rfb_startmouse[0], mod->rfb_Width - 1);
 						input_pending |= TITYPE_MOUSEMOVE;
 					}
 					break;
@@ -458,8 +479,11 @@ static TUINT rfb_processmouseinput(RFBDISPLAY *mod, struct input_event *ev)
 					if (mod->rfb_button_touch)
 					{
 						int my = ev->value - mod->rfb_absstart[1];
-						my = my * mod->rfb_Height / (mod->rfb_absinfo[1].maximum - mod->rfb_absinfo[1].minimum);
-						mod->rfb_MouseY = TCLAMP(0, my + mod->rfb_startmouse[1], mod->rfb_Height - 1);
+						my = my * mod->rfb_Height / 
+							(mod->rfb_absinfo[1].maximum - 
+							mod->rfb_absinfo[1].minimum);
+						mod->rfb_MouseY = TCLAMP(0, 
+							my + mod->rfb_startmouse[1], mod->rfb_Height - 1);
 						input_pending |= TITYPE_MOUSEMOVE;
 					}
 					break;
@@ -486,7 +510,8 @@ static TUINT rfb_processmouseinput(RFBDISPLAY *mod, struct input_event *ev)
 					TIMSG *msg;
 					if (rfb_getimsg(mod, TNULL, &msg, TITYPE_MOUSEBUTTON))
 					{
-						msg->timsg_Code = ev->value < 0 ? TMBCODE_WHEELDOWN : TMBCODE_WHEELUP;
+						msg->timsg_Code = ev->value < 0 ? 
+							TMBCODE_WHEELDOWN : TMBCODE_WHEELUP;
 						rfb_passevent_by_mousexy(mod, msg, TFALSE);
 						TAddTail(&mod->rfb_IMsgPool, &msg->timsg_Node);
 					}
@@ -507,16 +532,20 @@ static void rfb_wake(RFBDISPLAY *inst)
 
 static void rfb_initpointer(RFBDISPLAY *mod)
 {
+#define _mpE 0x00000000
+#define _mpW 0xffffffff
+#define _mpB 0xff000000
+#define _mpG 0xffaaaaaa
 	static const TUINT def_ptrimg[] = 
 	{
-		0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0x88000000,
-		0xff000000, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x88000000,
-		0xff000000, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x88000000, 0x00000000,
-		0xff000000, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x88000000, 0x00000000, 0x00000000,
-		0xff000000, 0xffffffff, 0xffffffff, 0xffffffff, 0x88000000, 0x00000000, 0x00000000, 0x00000000,
-		0xff000000, 0xffffffff, 0xffffffff, 0x88000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0xff000000, 0xffffffff, 0x88000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x88000000, 0x88000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
+		_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,
+		_mpB,_mpW,_mpW,_mpW,_mpW,_mpW,_mpG,_mpB,
+		_mpB,_mpW,_mpW,_mpW,_mpW,_mpG,_mpB,_mpE,
+		_mpB,_mpW,_mpW,_mpW,_mpG,_mpB,_mpE,_mpE,
+		_mpB,_mpW,_mpW,_mpG,_mpW,_mpG,_mpB,_mpE,
+		_mpB,_mpW,_mpG,_mpB,_mpG,_mpW,_mpG,_mpB,
+		_mpB,_mpG,_mpB,_mpE,_mpB,_mpG,_mpG,_mpB,
+		_mpB,_mpB,_mpE,_mpE,_mpE,_mpB,_mpB,_mpE,
 	};
 	
 	mod->rfb_MousePtrImage.tpb_Data = (TUINT8 *) def_ptrimg;
@@ -590,8 +619,12 @@ static void rfb_exitlinuxfb(RFBDISPLAY *mod)
 	}
 }
 
-struct supportedfmt { TUINT rmsk, gmsk, bmsk, pixfmt; TUINT8 roffs,rlen, goffs,glen, boffs,blen; };
-static const struct supportedfmt supportedfmts[] =
+static const struct supportedfmt 
+{ 
+	TUINT rmsk, gmsk, bmsk, pixfmt; 
+	TUINT8 roffs, rlen, goffs, glen, boffs, blen;
+}
+supportedfmts[] =
 {
 	{ 0x00ff0000, 0x0000ff00, 0x000000ff, TVPIXFMT_08R8G8B8, 16,8, 8,8, 0,8 },
 	{ 0x000000ff, 0x0000ff00, 0x00ff0000, TVPIXFMT_08B8G8R8, 0,8, 8,8, 16,8 },
@@ -605,7 +638,8 @@ static const struct supportedfmt supportedfmts[] =
 #define MASKFROMBF(bf) ((0xffffffff << (bf)->offset) \
 	& (0xffffffff >> (32 - (bf)->offset - (bf)->length)))
 
-static void getmasksfromvinfo(struct fb_var_screeninfo *vinfo, TUINT *rmsk, TUINT *gmsk, TUINT *bmsk)
+static void getmasksfromvinfo(struct fb_var_screeninfo *vinfo, TUINT *rmsk, 
+	TUINT *gmsk, TUINT *bmsk)
 {
 	*rmsk = MASKFROMBF(&vinfo->red);
 	*gmsk = MASKFROMBF(&vinfo->green);
@@ -672,7 +706,8 @@ static TBOOL rfb_initlinuxfb(RFBDISPLAY *mod)
 		
 		mod->rfb_fd_inotify_input = inotify_init();
 		if (mod->rfb_fd_inotify_input != -1)
-			mod->rfb_fd_watch_input = inotify_add_watch(mod->rfb_fd_inotify_input,
+			mod->rfb_fd_watch_input = 
+				inotify_add_watch(mod->rfb_fd_inotify_input,
 				EVNOTIFYPATH, IN_CREATE | IN_DELETE);
 		if (mod->rfb_fd_watch_input == -1)
 			TDBPRINTF(TDB_WARN,("cannot watch input events\n"));
@@ -683,6 +718,8 @@ static TBOOL rfb_initlinuxfb(RFBDISPLAY *mod)
 			/*ioctl(mod->rfb_ttyfd, KDGETMODE, &mod->rfb_ttyoldmode);*/
 			ioctl(mod->rfb_ttyfd, KDSETMODE, KD_GRAPHICS);
 		}
+		else
+			TDBPRINTF(TDB_WARN,("Cannot access console device\n"));
 		
 		/* open framebuffer device */
 		mod->rfb_fbhnd = open("/dev/fb0", O_RDWR);
@@ -772,6 +809,8 @@ static void rfb_restoreptrbg(RFBDISPLAY *mod)
 
 static void rfb_drawptr(RFBDISPLAY *mod)
 {
+	if (!(mod->rfb_Flags & RFBFL_SHOWPTR))
+		return;
 	TINT mx = mod->rfb_MouseX - mod->rfb_MouseHotX;
 	TINT my = mod->rfb_MouseY - mod->rfb_MouseHotY;
 	if (mod->rfb_Flags & RFBFL_PTR_VISIBLE)
@@ -1312,13 +1351,15 @@ static void rfb_processevent(RFBDISPLAY *mod)
 				{
 					
 					if (mod->rfb_DirtyRegion)
-						region_destroy(&mod->rfb_RectPool, mod->rfb_DirtyRegion);
+						region_destroy(&mod->rfb_RectPool, 
+							mod->rfb_DirtyRegion);
 					mod->rfb_DirtyRegion = TNULL;
 		
 					
 					mod->rfb_Width = msg->timsg_Width;
 					mod->rfb_Height = msg->timsg_Height;
-					TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_PixBuf.tpb_Format);
+					TUINT bpp = 
+						TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_PixBuf.tpb_Format);
 					mod->rfb_PixBuf.tpb_BytesPerLine = mod->rfb_Width * bpp;
 					TFree(mod->rfb_PixBuf.tpb_Data);
 					mod->rfb_PixBuf.tpb_Data = TAlloc(mod->rfb_MemMgr,
@@ -1346,14 +1387,17 @@ static void rfb_processevent(RFBDISPLAY *mod)
 						TINT wh = v->rfbw_WinRect[3] - v->rfbw_WinRect[1] + 1;
 						
 						if (v->rfbw_MinWidth > 0 && ww < v->rfbw_MinWidth)
-							v->rfbw_WinRect[0] = v->rfbw_WinRect[2] - v->rfbw_MinWidth;
+							v->rfbw_WinRect[0] = 
+								v->rfbw_WinRect[2] - v->rfbw_MinWidth;
 						if (v->rfbw_MinHeight > 0 && wh < v->rfbw_MinHeight)
-							v->rfbw_WinRect[1] = v->rfbw_WinRect[3] - v->rfbw_MinHeight;
+							v->rfbw_WinRect[1] = 
+								v->rfbw_WinRect[3] - v->rfbw_MinHeight;
 						
 						region_intersect(v->rfbw_WinRect, r);
 						region_intersect(v->rfbw_ClipRect, r);
 						
-						v->rfbw_PixBuf.tpb_BytesPerLine = mod->rfb_PixBuf.tpb_BytesPerLine;
+						v->rfbw_PixBuf.tpb_BytesPerLine = 
+							mod->rfb_PixBuf.tpb_BytesPerLine;
 						v->rfbw_PixBuf.tpb_Data = mod->rfb_PixBuf.tpb_Data;
 
 						ww = v->rfbw_WinRect[2] - v->rfbw_WinRect[0] + 1;
