@@ -566,4 +566,17 @@ TLIBAPI void region_destroypool(struct RectPool *pool)
 		TFree(node);
 }
 
+TLIBAPI void region_shift(struct Region *region, TINT sx, TINT sy)
+{
+	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
+	for (; (next = node->tln_Succ); node = next)
+	{
+		struct RectNode *rn = (struct RectNode *) node;
+		rn->rn_Rect[0] += sx;
+		rn->rn_Rect[1] += sy;
+		rn->rn_Rect[2] += sx;
+		rn->rn_Rect[3] += sy;
+	}
+}
+
 #endif

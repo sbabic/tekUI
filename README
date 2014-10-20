@@ -488,42 +488,49 @@ conveniently invoked with
 
 ==( envvariables : 3.5. Environment variables )==
 
- * {{NOCURSOR}} - {{"true"}} to disable the mouse pointer over a
- tekUI application. This may be useful when running on a touch
- screen.
+ * {{FONTDIR}} - Raw framebuffer TTF font directory, overriding the
+ hardcoded default ({{tek/ui/font}})
  * {{FULLSCREEN}} - {{"true"}} to try opening an application in
  fullscreen mode. Fullscreen support varies and depends largely on
  the display driver in use.
- * {{THEME}} - Theme names corresponding to style sheet files in
- {{tek/ui/style/}}. Multiple themes can be separated by spaces,
- e.g. {{"desktop gradient"}}.
- The default is {{"desktop"}}. The ''desktop'' theme tries
- to import the color scheme found in a GTK2 configuration file.
  * {{GTK2_RC_FILES}} - Possible locations of a gtkrc-2.0
  configuration file.
- * {{FONTDIR}} - Raw framebuffer TTF font directory, overriding the
- hardcoded default ({{tek/ui/font}})
+ * {{NOCURSOR}} - {{"true"}} to disable the mouse pointer over a
+ tekUI application. This may be useful when running on a touch
+ screen.
+ * {{THEME}} - Theme names corresponding to style sheet files in
+ {{tek/ui/style/}}. Multiple themes can be separated by spaces,
+ e.g. {{"desktop gradient"}}. The default is {{"desktop"}}. The
+ ''desktop'' theme tries to import the color scheme found in a GTK2
+ configuration file. See also [[CSS precedence][#cssprecedence]].
+ * {{VNC_PORTNUMBER}} - Specifies a VNC server's port number.
 
 ==( extraargs : 3.6. Global Lua runtime arguments )==
 
-Some properties of tekUI are configurable globally during runtime,
-by modifying fields in the {{ui}} library:
+Some properties of tekUI are configurable globally from Lua,
+by modifying fields in the {{ui}} library at program start:
 
  * {{ui.ExtraArgs}} - mostly used for hints to display drivers,
- currently supported:
+ one argument per line, currently supported:
   * {{fb_backbuffer=<bool>}} - If enabled, use a backbuffer even if
   it is not stricly needed
   * {{fb_pixfmt=<hex>}} - Specify desired pixel format for the
   framebuffer, e.g. {{5650120b}}. See {{include/tek/mod/visual.h}}
   for the defines prefixed with {{TVPIXFMT_}}.
-  * {{vnc_portnumber=<nr>}} - specifies a VNC server's port number
- * {{ui.FullScreen}} - boolean
+  * {{vnc_portnumber=<nr>}} - Overrides {{VNC_PORTNUMBER}}, see above
+ * {{ui.FullScreen}} - boolean, overrides {{FULLSCREEN}} (see above)
  * {{ui.Mode}} - set this to {{"workbench"}} for windows to receive
  buttons for dragging, resizing, closing, etc. This is intended for
  running tekUI in a desktop-like manner on display subsystems which
  do not provide a window manager.
- * {{ui.ThemeName}} - see also [[CSS precedence][#cssprecedence]]
- * {{ui.UserStyles}} - see also [[CSS precedence][#cssprecedence]]
+ * {{ui.MsgFileNo}} - Number of the file descriptor used for 
+ dispatching lines to messages of type {{MSG_USER}}. Default: stdin
+ * {{ui.NoCursor}} - Overrides {{NOCURSOR}}, see above
+ * {{ui.ShortcutMark}} - Character to indicate that the following
+ character is used for a keyboard shortcut. Default: {{"_"}}
+ * {{ui.ThemeName}} - overrides {{THEME}}, see above. See also
+ [[CSS precedence][#cssprecedence]].
+ * {{ui.UserStyles}} - see [[CSS precedence][#cssprecedence]]
 
 ---------------------------------------------------------------------
 

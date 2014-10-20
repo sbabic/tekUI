@@ -15,6 +15,20 @@
 
 /*****************************************************************************/
 
+LOCAL void rfb_setrealcliprect(RFBDISPLAY *mod, RFBWINDOW *v)
+{
+	TINT s[4];
+	s[0] = 0;
+	s[1] = 0;
+	s[2] = mod->rfb_Width - 1;
+	s[3] = mod->rfb_Height - 1;
+	memcpy(v->rfbw_RealClipRect, v->rfbw_ClipRect, sizeof(TUINT) * 4);
+	if (!region_intersect(v->rfbw_RealClipRect, s))
+		v->rfbw_RealClipRect[0] = -1;
+}
+
+/*****************************************************************************/
+
 LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
@@ -234,6 +248,8 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		}
 	}
 	
+	v->rfbw_Display = mod;
+	
 	v->rfbw_WinRect[2] = v->rfbw_WinRect[0] + width - 1;
 	v->rfbw_WinRect[3] = v->rfbw_WinRect[1] + height - 1;
 	
@@ -289,6 +305,9 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		imsg->timsg_Height = height;
 		TPutMsg(v->rfbw_IMsgPort, TNULL, imsg);
 	}
+	
+	rfb_setrealcliprect(mod, v);
+	
 }
 
 /*****************************************************************************/
@@ -353,6 +372,8 @@ LOCAL struct Region *rfb_getlayermask(RFBDISPLAY *mod, TINT *crect,
 	RFBWINDOW *v, TINT dx, TINT dy)
 {
 	struct RectPool *pool = &mod->rfb_RectPool;
+	if (crect[0] == -1)
+		return TNULL;
 	struct Region *A = region_new(pool, crect);
 	if (A)
 	{
@@ -865,7 +886,7 @@ LOCAL void rfb_copyarea(RFBDISPLAY *mod, struct TVRequest *req)
 	s[1] = c[1] + w[1];
 	s[2] = c[2] + s[0] - 1;
 	s[3] = c[3] + s[1] - 1;
-	if (region_intersect(s, v->rfbw_WinRect))
+	if (region_intersect(s, v->rfbw_RealClipRect))
 	{
 		s[0] += dx;
 		s[1] += dy;
@@ -889,6 +910,7 @@ LOCAL void rfb_setcliprect(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_ClipRect[3] = TMIN(v->rfbw_WinRect[3], 
 		v->rfbw_ClipRect[1] + req->tvr_Op.ClipRect.Rect[3] - 1);
 	v->rfbw_ClipRectSet = TTRUE;
+	rfb_setrealcliprect(mod, v);
 }
 
 /*****************************************************************************/
@@ -901,6 +923,7 @@ LOCAL void rfb_unsetcliprect(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_ClipRect[2] = v->rfbw_WinRect[2];
 	v->rfbw_ClipRect[3] = v->rfbw_WinRect[3];
 	v->rfbw_ClipRectSet = TFALSE;
+	rfb_setrealcliprect(mod, v);
 }
 
 /*****************************************************************************/
@@ -984,18 +1007,6 @@ LOCAL void rbp_move_expose(RFBDISPLAY *mod, RFBWINDOW *v, RFBWINDOW *predv,
 static void rfb_movewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y)
 {
 	TINT *wr = v->rfbw_WinRect;
-	TINT ww = wr[2] - wr[0] + 1;
-	TINT wh = wr[3] - wr[1] + 1;
-	
-	if (x < 0) 
-		x = 0;
-	if (x + ww > mod->rfb_Width)
-		x = mod->rfb_Width - ww;
-	if (y < 0) 
-		y = 0;
-	if (y + wh > mod->rfb_Height)
-		y = mod->rfb_Height - wh;
-	
 	TINT dx = x - wr[0];
 	TINT dy = y - wr[1];
 	if (dx == 0 && dy == 0)
@@ -1020,7 +1031,22 @@ static void rfb_movewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y)
 	/* remove the window from window stack */
 	TRemove(&v->rfbw_Node);
 	
-	TBOOL res = fbp_copyarea_int(mod, succv, dx, dy, dr);
+	TINT s[4];
+	s[0] = 0;
+	s[1] = 0;
+	s[2] = mod->rfb_Width - 1;
+	s[3] = mod->rfb_Height - 1;
+
+	TBOOL res = TFALSE;
+	if (region_intersect(dr, s))
+	{
+		s[0] += dx;
+		s[1] += dy;
+		s[2] += dx;
+		s[3] += dy;
+		if (region_intersect(dr, s))
+			res = fbp_copyarea_int(mod, succv, dx, dy, dr);
+	}
 	
 	/* update dest/clip rectangle */
 	wr[0] += dx;
@@ -1031,6 +1057,8 @@ static void rfb_movewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y)
 	v->rfbw_ClipRect[1] += dy;
 	v->rfbw_ClipRect[2] += dx;
 	v->rfbw_ClipRect[3] += dy;
+	
+	rfb_setrealcliprect(mod, v);
 
 	/* reinsert in window stack */
 	if (predv)
@@ -1055,6 +1083,27 @@ static void rfb_movewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y)
 		}
 		region_destroy(pool, R);
 	}
+
+	if (res)
+	{
+		struct Region *R2 = region_new(pool, old);
+		TINT scr[4];
+		scr[0] = 0;
+		scr[1] = 0;
+		scr[2] = mod->rfb_Width - 1;
+		scr[3] = mod->rfb_Height - 1;
+		region_subrect(pool, R2, scr);
+		region_shift(R2, dx, dy);
+		region_andrect(pool, R2, scr, 0, 0);
+		struct TNode *next, *node = R2->rg_Rects.rl_List.tlh_Head;
+		for (; (next = node->tln_Succ); node = next)
+		{
+			struct RectNode *r = (struct RectNode *) node;
+			rfb_damage(mod, r->rn_Rect, predv);
+		}
+		region_destroy(pool, R2);
+	}
+	
 }
 
 /*****************************************************************************/
@@ -1070,10 +1119,6 @@ static void rfb_resizewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT w, TINT h)
 		w = 1;
 	if (h < 1)
 		h = 1;
-	if (x + w > mod->rfb_Width)
-		w = mod->rfb_Width - x;
-	if (y + h > mod->rfb_Height)
-		h = mod->rfb_Height - y;
 	
 	TINT oldw = wr[2] - x + 1;
 	TINT oldh = wr[3] - y + 1;
@@ -1093,6 +1138,8 @@ static void rfb_resizewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT w, TINT h)
 			c[2] = wr[2];
 			c[3] = wr[3];
 		}
+
+		rfb_setrealcliprect(mod, v);
 		
 		TIMSG *imsg;
 		if (rfb_getimsg(mod, v, &imsg, TITYPE_NEWSIZE))

@@ -264,10 +264,15 @@ typedef struct
 typedef struct rfb_window
 {
 	struct TNode rfbw_Node;
+	
+	RFBDISPLAY *rfbw_Display;
+	
 	/* Window extents: */
 	TINT rfbw_WinRect[4];
-	/* Clipping boundaries: */
+	/* Clipping boundaries (user): */
 	TINT rfbw_ClipRect[4];
+	/* Clipping boundaries (real): */
+	TINT rfbw_RealClipRect[4];
 	/* Current pens: */
 	TVPEN bgpen, fgpen;
 	/* list of allocated pens: */
@@ -396,6 +401,8 @@ LOCAL RFBWINDOW *rfb_findcoord(RFBDISPLAY *mod, TINT x, TINT y);
 LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v);
 LOCAL TBOOL rfb_ispointobscured(RFBDISPLAY *mod, TINT x, TINT y, RFBWINDOW *v);
 LOCAL void rfb_copyrect_sub(RFBDISPLAY *mod, TINT *rect, TINT dx, TINT dy);
+
+LOCAL void rfb_setrealcliprect(RFBDISPLAY *mod, RFBWINDOW *v);
 
 #if defined(ENABLE_VNCSERVER)
 

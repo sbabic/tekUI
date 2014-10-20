@@ -254,7 +254,7 @@ LOCAL void x11_exit(X11DISPLAY *mod)
 
 static const TUINT8 endiancheck[4] = { 0x11,0x22,0x33,0x44 };
 
-static TBOOL getprops(X11DISPLAY *inst)
+static TBOOL x11_getprops(X11DISPLAY *inst)
 {
 	int major, minor, pixmap;
 	int order = *(TUINT *) endiancheck == 0x11223344 ? MSBFirst : LSBFirst;
@@ -263,8 +263,6 @@ static TBOOL getprops(X11DISPLAY *inst)
 	
 	inst->x11_ByteOrder = order;
 	inst->x11_SwapByteOrder = swap;
-	TDBPRINTF(20,("(msb=%d lsb=%d) order=%d swap=%d\n",
-		MSBFirst, LSBFirst, order, swap));
 	inst->x11_ShmAvail = (XShmQueryVersion(inst->x11_Display,
 		&major, &minor, &pixmap) == True && major > 0);
 	if (inst->x11_ShmAvail)
@@ -366,7 +364,7 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		inst->x11_Screen = DefaultScreen(inst->x11_Display);
 		inst->x11_Visual = DefaultVisual(inst->x11_Display, inst->x11_Screen);
 
-		if (getprops(inst) == TFALSE)
+		if (x11_getprops(inst) == TFALSE)
 			break;
 
 		if (pipe(pipefd) != 0)

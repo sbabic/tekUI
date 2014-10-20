@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 46.1"
+_VERSION = "Window 46.2"
 local Window = _M
 Group:newClass(Window)
 
@@ -412,6 +412,10 @@ function Window.new(class, self)
 	self:addStyleClass("window-decoration")
 
 	local topgroup = Group:new { Width = "fill" }
+	
+	topgroup:addMember(DragButton:new { Width = "fill", Text = self.Title,
+		Draggable = dragbutton })
+	
 	if closebutton then
 		topgroup:addMember(ui.ImageWidget:new
 		{
@@ -426,8 +430,6 @@ function Window.new(class, self)
 		})
 	end
 	
-	topgroup:addMember(DragButton:new { Width = "fill", Text = self.Title,
-		Draggable = dragbutton })
 	
 	self:addMember(topgroup)
 	self:addMember(wgroup)
@@ -544,7 +546,7 @@ end
 -------------------------------------------------------------------------------
 
 function Window:hide()
-	self.Status = "hide"
+	self:setValue("Status", "hide")
 	if self.Drawable then
 		self:remInputHandler(ui.MSG_INTERVAL, self, self.handleHold)
 		Group.hide(self)

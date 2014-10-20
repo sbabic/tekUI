@@ -55,5 +55,6 @@ TLIBAPI TBOOL region_orrectlist(struct RectPool *pool, struct RectList *list, TI
 TLIBAPI TBOOL region_xorrect(struct RectPool *pool, struct Region *region, RECTINT s[]);
 TLIBAPI TBOOL region_orregion(struct Region *region, struct RectList *list, TBOOL opportunistic);
 TLIBAPI TBOOL region_getminmax(struct RectPool *pool, struct Region *region, TINT *minmax);
+TLIBAPI void region_shift(struct Region *region, TINT dx, TINT dy);
 
 #endif /* _TEK_LIB_REGION_H */

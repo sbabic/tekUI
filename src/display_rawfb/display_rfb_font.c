@@ -838,7 +838,7 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 	struct FontNode *myface = v->curfont;
 	if (!myface) return;
 
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
+	struct Region *R = rfb_getlayermask(mod, v->rfbw_RealClipRect, v, 0, 0);
 	if (R == TNULL)
 		return;
 	

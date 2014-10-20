@@ -372,7 +372,7 @@ tek.ui.class.canvas.inputfield {
 	padding: 0;
 }
 
-tek.ui.class.window.window-decoration {
+.window-decoration {
 	border-width: 3;
 	border-style: solid;
 }

@@ -445,10 +445,12 @@ static TUINT rfb_processmouseinput(RFBDISPLAY *mod, struct input_event *ev)
 				TIMSG *msg;
 				if (rfb_getimsg(mod, TNULL, &msg, TITYPE_MOUSEBUTTON))
 				{
-					TBOOL focus = bc & (TMBCODE_LEFTDOWN | 
-						TMBCODE_RIGHTDOWN | TMBCODE_MIDDLEDOWN);
 					msg->timsg_Code = bc;
-					rfb_passevent_by_mousexy(mod, msg, focus);
+					TBOOL down = bc & (TMBCODE_LEFTDOWN | 
+						TMBCODE_RIGHTDOWN | TMBCODE_MIDDLEDOWN);
+					RFBWINDOW *v = rfb_passevent_by_mousexy(mod, msg, down);
+					if (!down && v != mod->rfb_FocusWindow)
+						rfb_passevent_to_focus(mod, msg);
 					TAddTail(&mod->rfb_IMsgPool, &msg->timsg_Node);
 				}
 			}
@@ -841,7 +843,6 @@ static TBOOL rfb_checkcmdaffectsptr(RFBDISPLAY *mod, struct TVRequest *req)
 		case TVCMD_DRAWFAN:
 		case TVCMD_OPENWINDOW:
 		case TVCMD_CLOSEWINDOW:
-		case TVCMD_FLUSH:
 			return TTRUE;
 			
 		case TVCMD_OPENFONT:
@@ -857,6 +858,7 @@ static TBOOL rfb_checkcmdaffectsptr(RFBDISPLAY *mod, struct TVRequest *req)
 		case TVCMD_SETFONT:
 		case TVCMD_SETCLIPRECT:
 		case TVCMD_UNSETCLIPRECT:
+		case TVCMD_FLUSH:
 			return TFALSE;
 			
 		case TVCMD_RECT:
@@ -1290,11 +1292,12 @@ static RFBWINDOW *rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg,
 	TBOOL focus)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
-	TINT x = omsg->timsg_MouseX;
-	TINT y = omsg->timsg_MouseY;
+	TINT x = omsg->timsg_MouseX = TCLAMP(0, omsg->timsg_MouseX, mod->rfb_Width - 1);
+	TINT y = omsg->timsg_MouseY = TCLAMP(0, omsg->timsg_MouseY, mod->rfb_Height - 1);
 	TLock(mod->rfb_InstanceLock);
 	RFBWINDOW *v = rfb_findcoord(mod, x, y);
-	if (v)
+	if (v && (omsg->timsg_Type != TITYPE_MOUSEMOVE || 
+		(mod->rfb_FocusWindow == v || v->is_popup)))
 	{
 		if (focus)
 			rfb_focuswindow(mod, v);
@@ -1366,14 +1369,12 @@ static void rfb_processevent(RFBDISPLAY *mod)
 						mod->rfb_PixBuf.tpb_BytesPerLine * mod->rfb_Height);
 					
 					struct TNode *next, *node = mod->rfb_VisualList.tlh_Head;
-					TINT r[4];
-					r[0] = 0;
-					r[1] = 0;
-					r[2] = mod->rfb_Width - 1;
-					r[3] = mod->rfb_Height - 1;
 					for (; (next = node->tln_Succ); node = next)
 					{
 						RFBWINDOW *v = (RFBWINDOW *) node;
+						
+						rfb_setrealcliprect(mod, v);
+					
 						TINT w0 = v->rfbw_WinRect[2] - v->rfbw_WinRect[0] + 1;
 						TINT h0 = v->rfbw_WinRect[3] - v->rfbw_WinRect[1] + 1;
 						
@@ -1393,9 +1394,6 @@ static void rfb_processevent(RFBDISPLAY *mod)
 							v->rfbw_WinRect[1] = 
 								v->rfbw_WinRect[3] - v->rfbw_MinHeight;
 						
-						region_intersect(v->rfbw_WinRect, r);
-						region_intersect(v->rfbw_ClipRect, r);
-						
 						v->rfbw_PixBuf.tpb_BytesPerLine = 
 							mod->rfb_PixBuf.tpb_BytesPerLine;
 						v->rfbw_PixBuf.tpb_Data = mod->rfb_PixBuf.tpb_Data;
@@ -1412,6 +1410,13 @@ static void rfb_processevent(RFBDISPLAY *mod)
 								TPutMsg(v->rfbw_IMsgPort, TNULL, imsg);
 							}
 						}
+						
+						TINT drect[4];
+						drect[0] = 0;
+						drect[1] = 0;
+						drect[2] = ww - 1;
+						drect[3] = wh - 1;
+						rfb_damage(mod, drect, TNULL);
 						
 					}
 				}
@@ -1453,10 +1458,11 @@ static void rfb_processevent(RFBDISPLAY *mod)
 				
 			case TITYPE_MOUSEBUTTON:
 			{
-				/* set focus on mousebutton down */
-				TBOOL focus = msg->timsg_Code & (TMBCODE_LEFTDOWN | 
+				TBOOL down = msg->timsg_Code & (TMBCODE_LEFTDOWN | 
 					TMBCODE_RIGHTDOWN | TMBCODE_MIDDLEDOWN);
-				rfb_passevent_by_mousexy(mod, msg, focus);
+				RFBWINDOW *v = rfb_passevent_by_mousexy(mod, msg, down);
+				if (!down && v != mod->rfb_FocusWindow)
+					rfb_passevent_to_focus(mod, msg);
 				break;
 			}
 		}

@@ -253,6 +253,9 @@ static TUINT getoutcode(TINT x, TINT y, TINT xmin, TINT ymin, TINT xmax,
 static TBOOL cliprect(struct Coord res[2], TINT x0, TINT y0, TINT x1, TINT y1,
 	TINT xmin, TINT ymin, TINT xmax, TINT ymax)
 {
+	if (xmin < 0)
+		return TFALSE;
+	
 	TBOOL accept = TFALSE;
 	TBOOL done = TFALSE;
 	TUINT outc0, outc1, outc;
@@ -411,8 +414,8 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	TINT ymax = rect[1] + rect[3] - 1;
 	
 	if (!cliprect(res, xmin, ymin, xmax, ymax,
-		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2], 
-		v->rfbw_ClipRect[3]))
+		v->rfbw_RealClipRect[0], v->rfbw_RealClipRect[1], v->rfbw_RealClipRect[2], 
+		v->rfbw_RealClipRect[3]))
 		return;
 	
 	TINT r[4];
@@ -462,8 +465,8 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	TINT ymax = rect[1] + rect[3] - 1;
 
 	if (!cliprect(res, xmin, ymin, xmax, ymax,
-		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2],
-		v->rfbw_ClipRect[3]))
+		v->rfbw_RealClipRect[0], v->rfbw_RealClipRect[1], v->rfbw_RealClipRect[2],
+		v->rfbw_RealClipRect[3]))
 		return;
 	
 	/* get region of windows obscuring our clip */
@@ -540,7 +543,9 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		l3 = rect[3];
 	}
 
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
+	if (v->rfbw_RealClipRect[0] < 0)
+		return;
+	struct Region *R = rfb_getlayermask(mod, v->rfbw_RealClipRect, v, 0, 0);
 	if (R == TNULL)
 		return;
 	
@@ -870,7 +875,9 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 	struct Coord res[MAX_VERT];
 	TINT outlen;
 	
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
+	if (v->rfbw_RealClipRect[0] < 0)
+		return;
+	struct Region *R = rfb_getlayermask(mod, v->rfbw_RealClipRect, v, 0, 0);
 	if (R == TNULL)
 		return;
 	
@@ -930,8 +937,8 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
 	struct Coord res[2];
 
 	if (!cliprect(res, x, y, x + w - 1, y + h - 1,
-		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2], 
-		v->rfbw_ClipRect[3]))
+		v->rfbw_RealClipRect[0], v->rfbw_RealClipRect[1], v->rfbw_RealClipRect[2], 
+		v->rfbw_RealClipRect[3]))
 		return;
 
 	TINT r[4];
@@ -1154,7 +1161,7 @@ LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v,
 	TINT dx, TINT dy, TINT dr[4],
 	struct THook *exposehook)
 {
-	if (!region_intersect(dr, v->rfbw_ClipRect))
+	if (v->rfbw_RealClipRect[0] < 0 || !region_intersect(dr, v->rfbw_RealClipRect))
 		return;
 	if (fbp_copyarea_int(mod, v, dx, dy, dr) && exposehook)
 		fbp_doexpose(mod, v, dx, dy, dr, exposehook);

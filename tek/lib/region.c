@@ -28,7 +28,7 @@
 -------------------------------------------------------------------------------
 
 module "tek.lib.region"
-_VERSION = "Region 11.0"
+_VERSION = "Region 11.1"
 local Region = _M
 
 ******************************************************************************/
@@ -40,7 +40,7 @@ local Region = _M
 #include <tek/lib/region.h>
 #include <tek/proto/exec.h>
 
-#define TEK_LIB_REGION_VERSION "Region 10.2"
+#define TEK_LIB_REGION_VERSION "Region 11.1"
 #define TEK_LIB_REGION_NAME "tek.lib.region"
 #define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
 
@@ -294,15 +294,7 @@ static int tek_lib_region_shift(lua_State *L)
 	struct Region *region = tek_lib_region_check(L, 1);
 	lua_Number sx = luaL_checknumber(L, 2);
 	lua_Number sy = luaL_checknumber(L, 3);	
-	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
-	for (; (next = node->tln_Succ); node = next)
-	{
-		struct RectNode *rn = (struct RectNode *) node;
-		rn->rn_Rect[0] += sx;
-		rn->rn_Rect[1] += sy;
-		rn->rn_Rect[2] += sx;
-		rn->rn_Rect[3] += sy;
-	}
+	region_shift(region, sx, sy);
 	return 0;
 }
 
