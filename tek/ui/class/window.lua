@@ -108,7 +108,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 46.2"
+_VERSION = "Window 46.4"
 local Window = _M
 Group:newClass(Window)
 
@@ -143,13 +143,18 @@ end
 
 ClassNotifications = addClassNotifications { Notifications = { } }
 
-
-
 -------------------------------------------------------------------------------
 --	DragButton
 -------------------------------------------------------------------------------
 
-local DragButton = ui.Button:newClass()
+local function getpseudoclass(self)
+	if self.Window.WindowFocus then
+		return ":windowfocus"
+	end
+	return self:getSuper().getPseudoClass(self)
+end
+
+local DragButton = ui.Button:newClass { _NAME = "_window-decoration-dragbutton" }
 
 function DragButton.new(class, self)
 	self = self or { }
@@ -157,7 +162,7 @@ function DragButton.new(class, self)
 	self.StartX = false
 	self.StartY = false
 	self.NoFocus = true
-	self.Style = "border-width: 0; text-align: left"
+	self.Style = "border-width: 0; margin: 0"
 	return ui.Button.new(class, self)
 end
 
@@ -185,6 +190,10 @@ function DragButton:passMsg(msg)
 			end
 		elseif msg[2] == MSG_MOUSEBUTTON then
 			if msg[3] == 1 then -- leftdown:
+				if self:getByXY(msg[4], msg[5]) then
+					-- raise
+					self.Window.Drawable:setAttrs { WindowHints = "t" }
+				end
 				if self.Window.HoverElement == self and not self.Disabled then
 					if self:startMove(sx, sy) then
 						self.Window:setMovingElement(self)
@@ -200,11 +209,13 @@ function DragButton:passMsg(msg)
 	return ui.Button.passMsg(self, msg)
 end
 
+DragButton.getPseudoClass = getpseudoclass
+
 -------------------------------------------------------------------------------
 --	SizeButton
 -------------------------------------------------------------------------------
 
-local SizeButton = ui.ImageWidget:newClass()
+local SizeButton = ui.ImageWidget:newClass { _NAME = "_window-decoration-sizebutton" }
 
 function SizeButton.new(class, self)
 	self = self or { }
@@ -217,7 +228,7 @@ function SizeButton.new(class, self)
 	self.Height = "fill"
 	self.Mode = "button"
 	self.Image = ui.getStockImage("arrowright")
-	self.Style = "border-width: 0"
+	self.Style = "border-width: 0; margin: 0"
 	return ui.ImageWidget.new(class, self)
 end
 
@@ -258,7 +269,45 @@ function SizeButton:passMsg(msg)
 	return ui.ImageWidget.passMsg(self, msg)
 end
 
+SizeButton.getPseudoClass = getpseudoclass
 
+
+local SizeBottom = ui.Widget:newClass { _NAME = "_window-decoration-sizebottom" }
+
+function SizeBottom.new(class, self)
+	self = self or { }
+	self.Width = "free"
+	self.Height = "fill" 
+	self.Mode = "button" 
+	self.NoFocus = true
+	self.Style = "border-width: 0; margin: 0"
+	return ui.Widget.new(class, self)
+end
+
+SizeBottom.getPseudoClass = getpseudoclass
+
+-------------------------------------------------------------------------------
+--	CloseButton
+-------------------------------------------------------------------------------
+
+local CloseButton = ui.ImageWidget:newClass { _NAME = "_window-decoration-closebutton" }
+
+function CloseButton.new(class, self)
+	self = self or { }
+	self.StartX = false
+	self.StartY = false
+	self.WinWidth = false
+	self.WinHeight = false
+	self.NoFocus = true
+	self.Height = "fill"
+	self.MaxWidth = 20
+	self.Mode = "button"
+	self.Image = ui.getStockImage("radiobutton", 3)
+	self.Style = "border-width: 0; margin: 0"
+	return ui.ImageWidget.new(class, self)
+end
+
+CloseButton.getPseudoClass = getpseudoclass
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -282,7 +331,23 @@ function Window.new(class, self)
 	self.EventMask = ui.MSG_ALL
 	self.Flags = ui.bor(self.Flags or 0, FL_ISWINDOW)
 	self.FocusElement = false
-	self.FullScreen = self.FullScreen or ui.FullScreen == "true"
+	
+	self.PopupWindow = self.PopupWindow or false
+	if self.PopupWindow then
+		self.CloseButton = false
+		self.DragButton = false
+		self.SizeButton = false
+		self.RootWindow = false
+	else
+		self.CloseButton = self.CloseButton == nil or self.CloseButton
+		self.DragButton = self.DragButton == nil or self.DragButton
+		self.SizeButton = self.SizeButton or false
+		self.RootWindow = self.RootWindow or false
+	end
+
+	self.FullScreen = self.FullScreen or 
+		(self.RootWindow and ui.FullScreen == "true")
+	
 	self.HideOnEscape = self.HideOnEscape or false
 	self.HiliteElement = false
 	-- Active hold tick counter - number of ticks left to next hold event:
@@ -346,7 +411,6 @@ function Window.new(class, self)
 	self.PenTable = false
 	-- Root window in a cascade of popup windows:
 	self.PopupRootWindow = self.PopupRootWindow or false
-	self.PopupWindow = self.PopupWindow or false
 	self.RefreshMsg = false
 	self.RefreshMsgStore =
 	{
@@ -364,18 +428,6 @@ function Window.new(class, self)
 	self.WindowMinMax = { }
 	self.WinRect = false
 	
-	if self.PopupWindow then
-		self.CloseButton = false
-		self.DragButton = false
-		self.SizeButton = false
-		self.RootWindow = false
-	else
-		self.CloseButton = self.CloseButton == nil or self.CloseButton
-		self.DragButton = self.DragButton == nil or self.DragButton
-		self.SizeButton = self.SizeButton or false
-		self.RootWindow = self.RootWindow or false
-	end
-
 	if not (self.CloseButton or self.DragButton or self.SizeButton)
 		or self.RootWindow
 		or self.PopupWindow or self.Borderless or ui.Mode ~= "workbench" 
@@ -398,6 +450,7 @@ function Window.new(class, self)
 		Style = self.Style,
 		Columns = self.Columns,
 		Legend = self.Legend,
+		Class = "window-decoration-group",
 		Children = children 
 	}
 	
@@ -405,46 +458,65 @@ function Window.new(class, self)
 	self.Columns = nil
 	self.Style = nil
 	self.Legend = nil
+	self.Class = "window-decoration"
 	self.Children = { }
 	
 	self = Group.new(class, self)
 		
-	self:addStyleClass("window-decoration")
-
 	local topgroup = Group:new { Width = "fill" }
 	
-	topgroup:addMember(DragButton:new { Width = "fill", Text = self.Title,
-		Draggable = dragbutton })
+	if dragbutton then
+		dragbutton = DragButton:new { Width = "fill", Height = "fill",
+			Text = self.Title, Draggable = dragbutton }
+		dragbutton:addStyleClass("window-decoration-button")
+		topgroup:addMember(dragbutton)
+	end
 	
 	if closebutton then
-		topgroup:addMember(ui.ImageWidget:new
-		{
-			Style = "border-width: 0;",
-			Image = ui.getStockImage("radiobutton", 2),
-			Width = "auto",
-			Height = "fill",
-			Mode = "button",
+		closebutton = CloseButton:new {
 			onClick = function(self)
 				self.Window:hide()
 			end
-		})
+		}
+		closebutton:addStyleClass("window-decoration-button")
+		topgroup:addMember(closebutton)
 	end
-	
-	
+
 	self:addMember(topgroup)
 	self:addMember(wgroup)
+
+	local sizebottom
 	
 	if sizebutton then
+		sizebutton = SizeButton:new()
+		sizebutton:addStyleClass("window-decoration-button")
+		sizebottom = SizeBottom:new { }
+		sizebottom:addStyleClass("window-decoration-button")
 		self:addMember(Group:new
 		{ 
 			Height = "auto",
 			Children =
 			{
-				ui.Area:new { },
-				SizeButton:new { },
+				sizebottom,
+				sizebutton
 			}
 		})
 	end
+	
+	self:addNotify("WindowFocus", NOTIFY_ALWAYS, { NOTIFY_SELF, NOTIFY_FUNCTION, function()
+		if dragbutton then
+			dragbutton:setState()
+		end
+		if closebutton then
+			closebutton:setState()
+		end
+		if sizebutton then
+			sizebutton:setState()
+			if sizebottom then
+				sizebottom:setState()
+			end
+		end
+	end })
 
 	return self
 	

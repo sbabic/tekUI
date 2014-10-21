@@ -2,7 +2,7 @@
 /*
 **	tek/ui/style/default.css
 **
-**	Version: 3.2
+**	Version: 3.3
 */
 
 tek.ui.class.area {
@@ -372,7 +372,31 @@ tek.ui.class.canvas.inputfield {
 	padding: 0;
 }
 
+/***************************************/
+
 .window-decoration {
-	border-width: 3;
+	border-width: 2;
 	border-style: solid;
+}
+
+.window-decoration-group {
+	border-style: groove;
+	border-top-width: 2;
+	border-bottom-width: 2;
+}
+
+.window-decoration-button {
+	margin: 0;
+	border-width: 0;
+	padding: 2;
+}
+
+.window-decoration-button:windowfocus {
+	background-color: active;
+	color: active-detail;
+}
+
+_window-decoration-dragbutton {
+	text-align: left;
+	font: ui-menu;
 }

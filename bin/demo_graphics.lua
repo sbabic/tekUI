@@ -115,6 +115,7 @@ local window = ui.Window:new
 								padding: 4;
 								border-width: 10;
 								border-focus-width: 6;
+								min-width: 60;
 							]],
 							Image = FileImage
 						},

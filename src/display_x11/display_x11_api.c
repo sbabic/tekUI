@@ -291,6 +291,21 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 			swa_mask |= CWCursor;
 		}
 		#endif
+		
+		#if defined(ENABLE_XVID)
+		if (v->changevidmode)
+		{
+			XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
+				&mod->x11_VidMode);
+			XF86VidModeSetViewPort(mod->x11_Display, mod->x11_Screen, 0, 0);
+			/* damned! */
+			XSync(mod->x11_Display, False);
+			/* arrrgh!! */
+			TTIME waitt = { 700000 };
+			TWaitTime(&waitt, 0);
+			/* is my computer broken? Or just KDE? */
+		}
+		#endif
 
 		v->window = XCreateWindow(mod->x11_Display,
 			RootWindow(mod->x11_Display, mod->x11_Screen),
@@ -301,6 +316,9 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		if (v->window == TNULL)
 			break;
 
+		/*Xutf8SetWMProperties(mod->x11_Display, v->window, v->title, v->title, 
+			NULL, 0, v->sizehints, NULL, NULL);*/
+		
 		if (v->sizehints->flags)
 			XSetWMNormalHints(mod->x11_Display, v->window, v->sizehints);
 
@@ -318,6 +336,46 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		XSetWMProtocols(mod->x11_Display, v->window,
 			&v->atom_wm_delete_win, 1);
 
+		
+		if (mod->x11_FullScreen)
+			XMapRaised(mod->x11_Display, v->window);
+		else
+			XMapWindow(mod->x11_Display, v->window);
+
+		for (;;)
+		{
+			XEvent e;
+			XNextEvent(mod->x11_Display, &e);
+			if (e.type == MapNotify)
+				break;
+		}
+
+		#if defined(ENABLE_XVID)
+		if (v->changevidmode)
+		{
+	        XMoveWindow(mod->x11_Display, v->window, 0, 0);
+    	    XResizeWindow(mod->x11_Display, v->window, v->winwidth, v->winheight);
+			
+			XGrabKeyboard(mod->x11_Display, v->window, True,
+				GrabModeAsync, GrabModeAsync, CurrentTime);
+			XGrabPointer(mod->x11_Display, v->window, True, 
+				ButtonPressMask, GrabModeAsync, GrabModeAsync,
+				v->window, None, CurrentTime);
+			XWarpPointer(mod->x11_Display,None,v->window,0, 0, 0, 0, 0, 0);
+			XWarpPointer(mod->x11_Display,None,v->window,0, 0, 0, 0, 
+				v->winwidth/2, v->winheight/2);
+					
+			mod->x11_FullScreenWidth = v->winwidth;
+			mod->x11_FullScreenHeight = v->winheight;
+			mod->x11_ScreenWidth = v->winwidth;
+			mod->x11_ScreenHeight = v->winheight;
+		}
+		#endif
+
+		if (setfocus)
+			XSetInputFocus(mod->x11_Display, v->window, RevertToParent,
+				CurrentTime);
+		
 		gcv.function = GXcopy;
 		gcv.fill_style = FillSolid;
 		gcv.graphics_exposures = True;
@@ -327,9 +385,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		XCopyGC(mod->x11_Display,
 			DefaultGC(mod->x11_Display, mod->x11_Screen),
 			GCForeground | GCBackground, v->gc);
-
-		XMapWindow(mod->x11_Display, v->window);
-
+	
 		#if defined(ENABLE_XFT)
 		if (mod->x11_use_xft)
 		{
@@ -341,38 +397,14 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 
 		v->bgpen = TVPEN_UNDEFINED;
 		v->fgpen = TVPEN_UNDEFINED;
-
-		#if defined(ENABLE_XVID)
-		/* enter fullscreen vidmode? */
-		if (v->changevidmode)
-		{
-			XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
-				&mod->x11_VidMode);
-			XF86VidModeSetViewPort(mod->x11_Display, mod->x11_Screen, 0, 0);
-			XWarpPointer(mod->x11_Display, None, v->window,
-				0, 0, 0, 0, 0, 0);
-			XGrabPointer(mod->x11_Display, v->window, True, 
-				ButtonPressMask, GrabModeAsync, GrabModeAsync,
-				v->window, None, CurrentTime);
-			mod->x11_FullScreenWidth = v->winwidth;
-			mod->x11_FullScreenHeight = v->winheight;
-			mod->x11_ScreenWidth = v->winwidth;
-			mod->x11_ScreenHeight = v->winheight;
-		}
-		#endif
-
-		if (setfocus)
-			XSetInputFocus(mod->x11_Display, v->window, RevertToParent,
-				CurrentTime);
-
+		
 		TDBPRINTF(TDB_TRACE,("Created new window: %p\n", v->window));
 		TAddTail(&mod->x11_vlist, &v->node);
 
-		/* not yet mapped; register request in progress: */
-		mod->x11_RequestInProgress = req;
-
 		/* success: */
 		mod->x11_NumWindows++;
+		
+		/*mod->x11_RequestInProgress = req;*/
 		return;
 	}
 
@@ -387,17 +419,6 @@ LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req)
 	X11WINDOW *v = req->tvr_Op.OpenWindow.Window;
 	struct X11Pen *pen;
 	if (v == TNULL) return;
-
-	#if defined(ENABLE_XVID)
-	if (v->changevidmode)
-	{
-		XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
-			&mod->x11_OldMode);
-		XF86VidModeSetViewPort(mod->x11_Display, mod->x11_Screen, 0, 0);
-		mod->x11_FullScreenWidth = 0;
-		mod->x11_FullScreenHeight = 0;
-	}
-	#endif
 
 	TRemove(&v->node);
 	if (TISLISTEMPTY(&mod->x11_vlist))
@@ -414,6 +435,14 @@ LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req)
 	if (mod->x11_use_xft && v->draw)
 		(*mod->x11_xftiface.XftDrawDestroy)(v->draw);
 	#endif
+	
+	#if defined(ENABLE_XVID)
+	if (v->changevidmode)
+	{
+		XUngrabKeyboard(mod->x11_Display, CurrentTime);
+		XUngrabPointer(mod->x11_Display, CurrentTime);
+	}
+	#endif
 
 	if (v->window)
 		XUnmapWindow(mod->x11_Display, v->window);
@@ -421,6 +450,18 @@ LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req)
 		XFreeGC(mod->x11_Display, v->gc);
 	if (v->window)
 		XDestroyWindow(mod->x11_Display, v->window);
+	
+	#if defined(ENABLE_XVID)
+	if (v->changevidmode)
+	{
+		XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
+			&mod->x11_OldMode);
+		XFlush(mod->x11_Display);
+		mod->x11_FullScreenWidth = 0;
+		mod->x11_FullScreenHeight = 0;
+	}
+	#endif
+	
 
 	while ((pen = (struct X11Pen *) TRemHead(&v->penlist)))
 		freepen(mod, v, pen);

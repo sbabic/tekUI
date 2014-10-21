@@ -23,7 +23,9 @@ LOCAL void rfb_setrealcliprect(RFBDISPLAY *mod, RFBWINDOW *v)
 	s[2] = mod->rfb_Width - 1;
 	s[3] = mod->rfb_Height - 1;
 	memcpy(v->rfbw_RealClipRect, v->rfbw_ClipRect, sizeof(TUINT) * 4);
-	if (!region_intersect(v->rfbw_RealClipRect, s))
+	
+	if (!region_intersect(v->rfbw_RealClipRect, v->rfbw_WinRect) ||
+		!region_intersect(v->rfbw_RealClipRect, s))
 		v->rfbw_RealClipRect[0] = -1;
 }
 
@@ -188,6 +190,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		v->rfbw_WinRect[1] = 0;
 		v->rfbw_WinRect[2] = width - 1;
 		v->rfbw_WinRect[3] = height - 1;
+		/*v->is_root = TTRUE;*/
 
 		/* Open rendering instance: */
 		if (mod->rfb_RndDevice)
@@ -222,10 +225,9 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		
 		width = (TINT) TGetTag(tags, TVisual_Width, RFB_DEF_WIDTH);
 		height = (TINT) TGetTag(tags, TVisual_Height, RFB_DEF_HEIGHT);
+		
 		width = TCLAMP(minw, width, maxw);
 		height = TCLAMP(minh, height, maxh);
-		width = TMIN(width, mod->rfb_Width);
-		height = TMIN(height, mod->rfb_Height);
 		
 		if (TGetTag(tags, TVisual_FullScreen, TFALSE))
 		{
@@ -253,13 +255,6 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_WinRect[2] = v->rfbw_WinRect[0] + width - 1;
 	v->rfbw_WinRect[3] = v->rfbw_WinRect[1] + height - 1;
 	
-	TINT fbrect[4];
-	fbrect[0] = 0;
-	fbrect[1] = 0;
-	fbrect[2] = mod->rfb_Width - 1;
-	fbrect[3] = mod->rfb_Height - 1;
-	region_intersect(v->rfbw_WinRect, fbrect);
-
 	v->rfbw_ClipRect[0] = v->rfbw_WinRect[0];
 	v->rfbw_ClipRect[1] = v->rfbw_WinRect[1];
 	v->rfbw_ClipRect[2] = v->rfbw_WinRect[2];
@@ -886,13 +881,37 @@ LOCAL void rfb_copyarea(RFBDISPLAY *mod, struct TVRequest *req)
 	s[1] = c[1] + w[1];
 	s[2] = c[2] + s[0] - 1;
 	s[3] = c[3] + s[1] - 1;
+	
+	TINT old[4];
+	memcpy(old, s, sizeof(s));
+	
 	if (region_intersect(s, v->rfbw_RealClipRect))
 	{
 		s[0] += dx;
 		s[1] += dy;
 		s[2] += dx;
 		s[3] += dy;
-		fbp_copyarea(mod, v, dx, dy, s, exposehook);
+		if (fbp_copyarea(mod, v, dx, dy, s, exposehook) && exposehook)
+		{
+			/* also expose regions coming from outside the screen */
+			
+			struct RectPool *pool = &mod->rfb_RectPool;
+			struct Region *R2 = region_new(pool, old);
+			
+			TINT scr[4];
+			scr[0] = 0;
+			scr[1] = 0;
+			scr[2] = mod->rfb_Width - 1;
+			scr[3] = mod->rfb_Height - 1;
+			
+			region_subrect(pool, R2, scr);
+			region_shift(R2, dx, dy);
+			region_andrect(pool, R2, scr, 0, 0);
+			
+			fbp_doexpose(mod, v, R2, exposehook);
+			
+			region_destroy(pool, R2);
+		}
 	}
 }
 
@@ -901,14 +920,10 @@ LOCAL void rfb_copyarea(RFBDISPLAY *mod, struct TVRequest *req)
 LOCAL void rfb_setcliprect(RFBDISPLAY *mod, struct TVRequest *req)
 {
 	RFBWINDOW *v = req->tvr_Op.ClipRect.Window;
-	v->rfbw_ClipRect[0] = 
-		TMAX(0, v->rfbw_WinRect[0] + req->tvr_Op.ClipRect.Rect[0]);
-	v->rfbw_ClipRect[1] = 
-		TMAX(0, v->rfbw_WinRect[1] + req->tvr_Op.ClipRect.Rect[1]);
-	v->rfbw_ClipRect[2] = TMIN(v->rfbw_WinRect[2], 
-		v->rfbw_ClipRect[0] + req->tvr_Op.ClipRect.Rect[2] - 1);
-	v->rfbw_ClipRect[3] = TMIN(v->rfbw_WinRect[3], 
-		v->rfbw_ClipRect[1] + req->tvr_Op.ClipRect.Rect[3] - 1);
+	v->rfbw_ClipRect[0] = req->tvr_Op.ClipRect.Rect[0] + v->rfbw_WinRect[0];
+	v->rfbw_ClipRect[1] = req->tvr_Op.ClipRect.Rect[1] + v->rfbw_WinRect[1];
+	v->rfbw_ClipRect[2] = v->rfbw_ClipRect[0] + req->tvr_Op.ClipRect.Rect[2] - 1;
+	v->rfbw_ClipRect[3] = v->rfbw_ClipRect[1] + req->tvr_Op.ClipRect.Rect[3] - 1;
 	v->rfbw_ClipRectSet = TTRUE;
 	rfb_setrealcliprect(mod, v);
 }
@@ -1086,6 +1101,8 @@ static void rfb_movewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y)
 
 	if (res)
 	{
+		/* also expose regions coming from outside the screen */
+		
 		struct Region *R2 = region_new(pool, old);
 		TINT scr[4];
 		scr[0] = 0;
@@ -1288,6 +1305,9 @@ static THOOKENTRY TTAG rfb_setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			v->rfbw_MaxHeight = maxh > 0 ? maxh : RFB_HUGE;
 			break;
 		}
+		case TVisual_WindowHints:
+			data->hints = (TSTRPTR) item->tti_Value;
+			break;
 		default:
 			return TTRUE;
 	}
@@ -1297,6 +1317,7 @@ static THOOKENTRY TTAG rfb_setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 
 LOCAL void rfb_setattrs(RFBDISPLAY *mod, struct TVRequest *req)
 {
+	TAPTR TExecBase = TGetExecBase(mod);
 	struct rfb_attrdata data;
 	struct THook hook;
 	RFBWINDOW *v = req->tvr_Op.SetAttrs.Window;
@@ -1309,9 +1330,35 @@ LOCAL void rfb_setattrs(RFBDISPLAY *mod, struct TVRequest *req)
 	data.v = v;
 	data.num = 0;
 	data.mod = mod;
+	data.hints = TNULL;
 	TInitHook(&hook, rfb_setattrfunc, &data);
 	TForEachTag(req->tvr_Op.SetAttrs.Tags, &hook);
 	req->tvr_Op.SetAttrs.Num = data.num;
+	
+	TSTRPTR s = data.hints;
+	if (s)
+	{
+		TINT c;
+		while ((c = *s++))
+		{
+			switch (c)
+			{
+				case 't':
+				{
+					if (!v->is_popup && 
+						TFIRSTNODE(&mod->rfb_VisualList) != &v->rfbw_Node)
+					{
+						TLock(mod->rfb_Lock);
+						TRemove(&v->rfbw_Node);
+						TAddHead(&mod->rfb_VisualList, &v->rfbw_Node);
+						TUnlock(mod->rfb_Lock);
+						rfb_damage(mod, v->rfbw_WinRect, TNULL);
+					}
+					break;
+				}
+			}
+		}
+	}
 
 	TINT x = data.newx;
 	TINT y = data.newy;

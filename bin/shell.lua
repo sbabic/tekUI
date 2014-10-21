@@ -22,6 +22,9 @@ tek.ui.class.textedit.textlist {
 	font: ui-fixed:18;
 	margin: 0;
 }
+_textlist.textlist {
+	font: ui-fixed:18;
+}
 tek.ui.class.canvas.textlist {
 	border-style: inset;
 	border-width: 2;
@@ -48,6 +51,7 @@ _editinput {
 					HardScroll = true,
 					Latch = "bottom",
 					Height = "free",
+					Style = "font: ui-fixed:18"
 				},
 				ui.Handle:new { },
 				ui.Input:new

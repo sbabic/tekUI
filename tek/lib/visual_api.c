@@ -1555,7 +1555,7 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_setattrs(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
-	TTAGITEM tags[11], *tp = tags;
+	TTAGITEM tags[12], *tp = tags;
 	tp = getminmax(L, tp, "MinWidth", TVisual_MinWidth);
 	tp = getminmax(L, tp, "MinHeight", TVisual_MinHeight);
 	tp = getminmax(L, tp, "MaxWidth", TVisual_MaxWidth);
@@ -1601,6 +1601,13 @@ tek_lib_visual_setattrs(lua_State *L)
 	{
 		tp->tti_Tag = TVisual_Height;
 		tp++->tti_Value = lua_tonumber(L, -1);
+	}
+	lua_pop(L, 1);
+	lua_getfield(L, 2, "WindowHints");
+	if (lua_isstring(L, -1))
+	{
+		tp->tti_Tag = TVisual_WindowHints;
+		tp++->tti_Value = (TTAG) lua_tostring(L, -1);
 	}
 	lua_pop(L, 1);
 	

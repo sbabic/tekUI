@@ -383,6 +383,7 @@ int rfb_vnc_init(RFBDISPLAY *mod, int port)
 		rfbScreen->ptrAddEvent = rfb_doremoteptr;
 		rfbScreen->kbdAddEvent = rfb_doremotekey;
 		rfbScreen->newClientHook = rfb_newclient;
+		mod->rfb_Flags &= ~RFBFL_BUFFER_CAN_RESIZE;
 		
 		if (port == 0)
 		{

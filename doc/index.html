@@ -632,6 +632,11 @@
 				Lua 5.1, 5.2 and LuaJIT 2.0 are supported out of the box, if Lua 5.2
 				is compiled with <code>LUA_COMPAT_MODULE</code>.
 			</p>
+			<p>
+				You will almost certainly want to enable the PNG support in the build
+				configuration, otherwise only PPM and tekUI's internal, very basic
+				vector format is supported.
+			</p>
 		</div>
 		<div class="node"><h3><a name="luamodules" id="luamodules">3.1.1. External Lua modules</a></h3>
 			<p>
@@ -749,7 +754,8 @@
 				can be compiled into the raw framebuffer directly. It then adapts to
 				the active screensize and pixel format automatically. The keymap is
 				compiled in, by default /usr/share/keymaps/i386/qwerty/us.map.gz, and
-				can be generated using a conversion tool, etc/keymap2c. Linux
+				can be generated using a conversion tool, etc/keymap2c. For loading
+				a better mousepointer, enabling PNG support is recommended. Linux
 				framebuffer support has been tested on Intel i915 and Raspberry Pi
 				(both under Gentoo Linux). Acceleration is not yet supported.
 			</p>
@@ -859,8 +865,9 @@
 					</li>
 					<li>
 						<code>FULLSCREEN</code> - <code>&quot;true&quot;</code> to try opening an application in
-						fullscreen mode. Fullscreen support varies and depends largely on
-						the display driver in use.
+						fullscreen mode. Note that for this option to take effect, the
+						application's first window must have the <code>RootWindow</code> attribute
+						set as well.
 					</li>
 					<li>
 						<code>GTK2_RC_FILES</code> - Possible locations of a gtkrc-2.0

@@ -45,6 +45,7 @@
 #define RFBFL_BUFFER_OWNER		0x0001
 #define RFBFL_BUFFER_DEVICE		0x0002
 #define RFBFL_SHOWPTR			0x0004
+#define RFBFL_BUFFER_CAN_RESIZE	0x0008
 #define RFBFL_PTR_VISIBLE		0x0100
 #define RFBFL_PTR_ALLOCATED		0x0200
 #define RFBFL_PTRMASK			0x0300
@@ -318,6 +319,7 @@ struct rfb_attrdata
 	TAPTR font;
 	TINT num;
 	TINT neww, newh, newx, newy;
+	TSTRPTR hints;
 };
 
 /*****************************************************************************/
@@ -333,12 +335,12 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v, TINT x0, TINT y0, TIN
 	TINT x2, TINT y2, struct RFBPen *pen);
 LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
 	TINT x, TINT y, TINT w, TINT h, TBOOL alpha);
-LOCAL void fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
+LOCAL TBOOL fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
 	TINT d[4], struct THook *exposehook);
 LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
 	TINT *dr);
-LOCAL void fbp_doexpose(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
-	TINT *dr, struct THook *exposehook);
+LOCAL void fbp_doexpose(RFBDISPLAY *mod, RFBWINDOW *v, struct Region *L,
+	struct THook *exposehook);
 
 /*****************************************************************************/
 

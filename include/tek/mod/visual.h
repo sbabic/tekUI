@@ -89,6 +89,7 @@ typedef TTAG TVPEN;
 #define TVisual_CacheRequest		(TVISTAGS_ + 0x118)
 #define TVisual_ExtraArgs			(TVISTAGS_ + 0x119)
 #define TVisual_HaveWindowManager	(TVISTAGS_ + 0x11a)
+#define TVisual_WindowHints			(TVISTAGS_ + 0x11b)
 
 /* Tagged rendering: */
 

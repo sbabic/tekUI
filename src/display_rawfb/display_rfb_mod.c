@@ -794,6 +794,9 @@ static TBOOL rfb_initlinuxfb(RFBDISPLAY *mod)
 
 		rfb_updateinput(mod);
 		rfb_initkeytable(mod);
+		
+		mod->rfb_Flags &= ~RFBFL_BUFFER_CAN_RESIZE;
+		
 		return TTRUE;
 	}
 	
@@ -1102,6 +1105,8 @@ static TBOOL rfb_inittask(struct TTask *task)
 		mod->rfb_DevWidth = RFB_DEF_WIDTH;
 		mod->rfb_DevHeight = RFB_DEF_HEIGHT;
 		
+		mod->rfb_Flags = RFBFL_BUFFER_CAN_RESIZE;
+		
 #if defined(ENABLE_LINUXFB)
 		if (!rfb_initlinuxfb(mod))
 			break;
@@ -1350,14 +1355,13 @@ static void rfb_processevent(RFBDISPLAY *mod)
 				break;
 			}
 			case TITYPE_NEWSIZE:
-				if (mod->rfb_Flags & RFBFL_BUFFER_OWNER)
+				if ((mod->rfb_Flags & RFBFL_BUFFER_OWNER) &&
+					(mod->rfb_Flags & RFBFL_BUFFER_CAN_RESIZE))
 				{
-					
 					if (mod->rfb_DirtyRegion)
 						region_destroy(&mod->rfb_RectPool, 
 							mod->rfb_DirtyRegion);
 					mod->rfb_DirtyRegion = TNULL;
-		
 					
 					mod->rfb_Width = msg->timsg_Width;
 					mod->rfb_Height = msg->timsg_Height;
