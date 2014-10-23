@@ -40,7 +40,7 @@ _editinput {
 			HideOnEscape = true,
 			Title = "Lua Shell",
 			Orientation = "vertical",
-			Width = "free",
+			Width = 800,
 			Children =
 			{
 				ui.TextList:new 

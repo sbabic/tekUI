@@ -81,7 +81,7 @@ local window = ui.Window:new
 					Mode = "inert",
 					Class = "button",
 					Image = BitMapImage2,
-					Style = "background-color: #238",
+					Style = "background-color: gradient(0,0,#238,0,100,#aaf); padding: 4",
 				},
 				ui.ImageWidget:new
 				{

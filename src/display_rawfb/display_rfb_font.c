@@ -827,7 +827,7 @@ LOCAL TINT rfb_hosttextsize(RFBDISPLAY *mod, TAPTR font, TSTRPTR text,
 **  - a pen to color the text
 **
 ** NOTES:
-**  - the text is clipped against v->rfbw_ClipRect[4]
+**  - the text is clipped against v->rfbw_UserClipRect[4]
 */
 
 LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
@@ -838,7 +838,7 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 	struct FontNode *myface = v->curfont;
 	if (!myface) return;
 
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_RealClipRect, v, 0, 0);
+	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
 	if (R == TNULL)
 		return;
 	
@@ -880,7 +880,7 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 		{
 			struct RectNode *rn = (struct RectNode *) node;
 			TINT *r = rn->rn_Rect;
-			rfb_markdirty(mod, r);
+			rfb_markdirty(mod, v, r);
 
 			int y;
 			int cx = 0, cy = 0;

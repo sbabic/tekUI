@@ -397,7 +397,7 @@ LOCAL void fbp_drawpoint(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y,
 	r[1] = y;
 	r[2] = x;
 	r[3] = y;
-	rfb_markdirty(mod, r);
+	rfb_markdirty(mod, v, r);
 	TUINT p = pixconv_rgbfmt(v->rfbw_PixBuf.tpb_Format, pen->rgb);
 	pixconv_setpixelbuf(&v->rfbw_PixBuf, x, y, p);
 }
@@ -414,8 +414,8 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	TINT ymax = rect[1] + rect[3] - 1;
 	
 	if (!cliprect(res, xmin, ymin, xmax, ymax,
-		v->rfbw_RealClipRect[0], v->rfbw_RealClipRect[1], v->rfbw_RealClipRect[2], 
-		v->rfbw_RealClipRect[3]))
+		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2], 
+		v->rfbw_ClipRect[3]))
 		return;
 	
 	TINT r[4];
@@ -436,7 +436,7 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	{
 		struct RectNode *r = (struct RectNode *) node;
 		
-		rfb_markdirty(mod, r->rn_Rect);
+		rfb_markdirty(mod, v, r->rn_Rect);
 		
 		xmin = r->rn_Rect[0];
 		ymin = r->rn_Rect[1];
@@ -465,8 +465,8 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 	TINT ymax = rect[1] + rect[3] - 1;
 
 	if (!cliprect(res, xmin, ymin, xmax, ymax,
-		v->rfbw_RealClipRect[0], v->rfbw_RealClipRect[1], v->rfbw_RealClipRect[2],
-		v->rfbw_RealClipRect[3]))
+		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2],
+		v->rfbw_ClipRect[3]))
 		return;
 	
 	/* get region of windows obscuring our clip */
@@ -491,7 +491,7 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		TINT x1 = r->rn_Rect[2];
 		TINT y1 = r->rn_Rect[3];
 		
-		rfb_markdirty(mod, r->rn_Rect);
+		rfb_markdirty(mod, v, r->rn_Rect);
 	
 		if (y0 == ymin)
 			pixconv_buf_line_set(&v->rfbw_PixBuf, x0, ymin, x1 - x0 + 1, p);
@@ -543,9 +543,9 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		l3 = rect[3];
 	}
 
-	if (v->rfbw_RealClipRect[0] < 0)
+	if (v->rfbw_ClipRect[0] < 0)
 		return;
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_RealClipRect, v, 0, 0);
+	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
 	if (R == TNULL)
 		return;
 	
@@ -567,7 +567,7 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		TINT x1 = res[1].x;
 		TINT y1 = res[1].y;
 
-		rfb_markdirty(mod, (TINT *) res);
+		rfb_markdirty(mod, v, (TINT *) res);
 		
 		dx = x1 - x0;
 		dy = y1 - y0;
@@ -875,9 +875,9 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 	struct Coord res[MAX_VERT];
 	TINT outlen;
 	
-	if (v->rfbw_RealClipRect[0] < 0)
+	if (v->rfbw_ClipRect[0] < 0)
 		return;
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_RealClipRect, v, 0, 0);
+	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
 	if (R == TNULL)
 		return;
 	
@@ -899,13 +899,13 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 			d[1] = res[0].y;
 			d[2] = res[0].x;
 			d[3] = res[0].y;
-			rfb_markdirty(mod, d);
+			rfb_markdirty(mod, v, d);
 			pixconv_setpixelbuf(&v->rfbw_PixBuf, res[0].x, res[0].y, p);
 		}
 		else if (outlen == 2)
 		{
 			TINT rect[4] = {res[0].x, res[0].y, res[1].x, res[1].y};
-			rfb_markdirty(mod, rect);
+			rfb_markdirty(mod, v, rect);
 			fbp_drawline(mod, v, rect, pen);
 		}
 		else
@@ -916,7 +916,7 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 			d[1] = TMIN(TMIN(res[0].y, res[1].y), res[2].y);
 			d[2] = TMAX(TMAX(res[0].x, res[1].x), res[2].x);
 			d[3] = TMAX(TMAX(res[0].y, res[1].y), res[2].y);
-			rfb_markdirty(mod, d);
+			rfb_markdirty(mod, v, d);
 			
 			rendertriangle(v, res[0], res[1], res[2], p);
 			for (i = 2; i < outlen; i++)
@@ -937,8 +937,8 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
 	struct Coord res[2];
 
 	if (!cliprect(res, x, y, x + w - 1, y + h - 1,
-		v->rfbw_RealClipRect[0], v->rfbw_RealClipRect[1], v->rfbw_RealClipRect[2], 
-		v->rfbw_RealClipRect[3]))
+		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2], 
+		v->rfbw_ClipRect[3]))
 		return;
 
 	TINT r[4];
@@ -954,7 +954,7 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *r = (struct RectNode *) node;
-		rfb_markdirty(mod, r->rn_Rect);
+		rfb_markdirty(mod, v, r->rn_Rect);
 		TINT x0 = r->rn_Rect[0];
 		TINT y0 = r->rn_Rect[1];
 		TINT x1 = r->rn_Rect[2];
@@ -1133,7 +1133,7 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 			struct RectNode *rn = (struct RectNode *) n;
 			/* this would be incorrect, unfortunately: */
 			/* rfb_copyrect_sub(mod, rn->rn_Rect, dx, dy); */
-			rfb_markdirty(mod, rn->rn_Rect);
+			rfb_markdirty(mod, v, rn->rn_Rect);
 			TAddTail(&R->rg_Rects.rl_List, n);
 		}
 	}
@@ -1146,7 +1146,7 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 LOCAL TBOOL fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v,
 	TINT dx, TINT dy, TINT dr[4], struct THook *exposehook)
 {
-	if (v->rfbw_RealClipRect[0] < 0 || !region_intersect(dr, v->rfbw_RealClipRect))
+	if (v->rfbw_ClipRect[0] < 0 || !region_intersect(dr, v->rfbw_ClipRect))
 		return TFALSE;
 	TBOOL check_expose = fbp_copyarea_int(mod, v, dx, dy, dr);
 	if (check_expose && exposehook)

@@ -22,11 +22,11 @@ LOCAL void rfb_setrealcliprect(RFBDISPLAY *mod, RFBWINDOW *v)
 	s[1] = 0;
 	s[2] = mod->rfb_Width - 1;
 	s[3] = mod->rfb_Height - 1;
-	memcpy(v->rfbw_RealClipRect, v->rfbw_ClipRect, sizeof(TUINT) * 4);
+	memcpy(v->rfbw_ClipRect, v->rfbw_UserClipRect, sizeof(TUINT) * 4);
 	
-	if (!region_intersect(v->rfbw_RealClipRect, v->rfbw_WinRect) ||
-		!region_intersect(v->rfbw_RealClipRect, s))
-		v->rfbw_RealClipRect[0] = -1;
+	if (!region_intersect(v->rfbw_ClipRect, v->rfbw_WinRect) ||
+		!region_intersect(v->rfbw_ClipRect, s))
+		v->rfbw_ClipRect[0] = -1;
 }
 
 /*****************************************************************************/
@@ -36,7 +36,7 @@ LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v)
 	TAPTR TExecBase = TGetExecBase(mod);
 	TIMSG *imsg;
 	
-	if (v == mod->rfb_FocusWindow || (v && v->is_popup))
+	if (v == mod->rfb_FocusWindow || (v && (v->rfbw_Flags & RFBWFL_IS_POPUP)))
 		return;
 	
 	if (mod->rfb_FocusWindow)
@@ -115,6 +115,11 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	TINT minh = (TINT) TGetTag(tags, TVisual_MinHeight, -1);
 	TINT maxw = (TINT) TGetTag(tags, TVisual_MaxWidth, RFB_HUGE);
 	TINT maxh = (TINT) TGetTag(tags, TVisual_MaxHeight, RFB_HUGE);
+	TUINT flags = 0;
+	if (TGetTag(tags, TVisual_Borderless, TFALSE))
+		flags |= RFBWFL_BORDERLESS;
+	if (TGetTag(tags, TVisual_PopupWindow, TFALSE))
+		flags |= RFBWFL_IS_POPUP;
 
 	if (TISLISTEMPTY(&mod->rfb_VisualList))
 	{
@@ -122,8 +127,8 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		struct extraopenargs args;
 		getextraopenargs(tags, &args);
 		
-		if (!TGetTag(tags, TVisual_BlankCursor, TFALSE))
-			mod->rfb_Flags |= RFBFL_SHOWPTR;
+		if (TGetTag(tags, TVisual_BlankCursor, TFALSE))
+			mod->rfb_Flags &= ~RFBFL_SHOWPTR;
 
 		/* dimensions */		
 		width = (TINT) TGetTag(tags, TVisual_Width, 
@@ -183,15 +188,12 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 			mod->rfb_Flags |= RFBFL_BUFFER_OWNER | RFBFL_BUFFER_DEVICE;
 		}
 
+		rfb_initpointer(mod);
+		
 #if defined(ENABLE_VNCSERVER)
 		rfb_vnc_init(mod, args.vncportnr);
 #endif
-		v->rfbw_WinRect[0] = 0;
-		v->rfbw_WinRect[1] = 0;
-		v->rfbw_WinRect[2] = width - 1;
-		v->rfbw_WinRect[3] = height - 1;
-		/*v->is_root = TTRUE;*/
-
+		
 		/* Open rendering instance: */
 		if (mod->rfb_RndDevice)
 		{
@@ -216,7 +218,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 			TDoIO(&mod->rfb_RndRequest->tvr_Req);
 			mod->rfb_RndInstance =
 				mod->rfb_RndRequest->tvr_Op.OpenWindow.Window;
-			v->rfbw_FullScreen = TTRUE;
+			flags |= RFBWFL_FULLSCREEN;
 		}
 	}
 	else
@@ -231,9 +233,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		
 		if (TGetTag(tags, TVisual_FullScreen, TFALSE))
 		{
-			v->rfbw_FullScreen = TTRUE;
-			v->rfbw_WinRect[0] = 0;
-			v->rfbw_WinRect[1] = 0;
+			flags |= RFBWFL_FULLSCREEN;
 			width = mod->rfb_Width;
 			height = mod->rfb_Height;
 		}
@@ -251,14 +251,17 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	}
 	
 	v->rfbw_Display = mod;
+	v->rfbw_Flags = flags;
 	
 	v->rfbw_WinRect[2] = v->rfbw_WinRect[0] + width - 1;
 	v->rfbw_WinRect[3] = v->rfbw_WinRect[1] + height - 1;
 	
-	v->rfbw_ClipRect[0] = v->rfbw_WinRect[0];
-	v->rfbw_ClipRect[1] = v->rfbw_WinRect[1];
-	v->rfbw_ClipRect[2] = v->rfbw_WinRect[2];
-	v->rfbw_ClipRect[3] = v->rfbw_WinRect[3];
+	v->rfbw_UserClipRect[0] = v->rfbw_WinRect[0];
+	v->rfbw_UserClipRect[1] = v->rfbw_WinRect[1];
+	v->rfbw_UserClipRect[2] = v->rfbw_WinRect[2];
+	v->rfbw_UserClipRect[3] = v->rfbw_WinRect[3];
+	rfb_setrealcliprect(mod, v);
+	
 	
 	v->rfbw_MinWidth = minw;
 	v->rfbw_MinHeight = minh;
@@ -266,21 +269,26 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	v->rfbw_MaxHeight = maxh;
 	
 	v->rfbw_PixBuf.tpb_Format = mod->rfb_PixBuf.tpb_Format;
-	v->rfbw_PixBuf.tpb_BytesPerLine = mod->rfb_PixBuf.tpb_BytesPerLine;
+	/*if (flags & RFBWFL_BACKBUFFER)
+	{
+		TINT bpl = width * TVPIXFMT_BYTES_PER_PIXEL(v->rfbw_PixBuf.tpb_Format);
+		v->rfbw_PixBuf.tpb_BytesPerLine = bpl;
+		v->rfbw_PixBuf.tpb_Data = TAlloc(mod->rfb_MemMgr, bpl * height);
+	}
+	else*/
+	{
+		v->rfbw_PixBuf.tpb_BytesPerLine = mod->rfb_PixBuf.tpb_BytesPerLine;
+		v->rfbw_PixBuf.tpb_Data = mod->rfb_PixBuf.tpb_Data;
+	}
 	
 	v->rfbw_InputMask = (TUINT) TGetTag(tags, TVisual_EventMask, 0);
 	v->userdata = TGetTag(tags, TVisual_UserData, TNULL);
-	
-	v->borderless = TGetTag(tags, TVisual_Borderless, TFALSE);
-	v->is_popup = TGetTag(tags, TVisual_PopupWindow, TFALSE);
 	
 	v->rfbw_IMsgPort = req->tvr_Op.OpenWindow.IMsgPort;
 
 	TInitList(&v->penlist);
 	v->bgpen = TVPEN_UNDEFINED;
 	v->fgpen = TVPEN_UNDEFINED;
-
-	v->rfbw_PixBuf.tpb_Data = mod->rfb_PixBuf.tpb_Data;
 
 	/* add window on top of window stack: */
 	TLock(mod->rfb_Lock);
@@ -289,7 +297,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 	TUnlock(mod->rfb_Lock);
 
 	/* Reply instance: */
-	req->tvr_Op.OpenWindow.Window = v;		
+	req->tvr_Op.OpenWindow.Window = v;
 	
 	/* send refresh message: */
 	if (rfb_getimsg(mod, v, &imsg, TITYPE_REFRESH))
@@ -300,9 +308,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		imsg->timsg_Height = height;
 		TPutMsg(v->rfbw_IMsgPort, TNULL, imsg);
 	}
-	
-	rfb_setrealcliprect(mod, v);
-	
+
 }
 
 /*****************************************************************************/
@@ -313,8 +319,8 @@ LOCAL TBOOL rfb_ispointobscured(RFBDISPLAY *mod, TINT x, TINT y, RFBWINDOW *v)
 		y >= mod->rfb_Height)
 		return TTRUE;
 	
-	if (x < v->rfbw_ClipRect[0] || x > v->rfbw_ClipRect[2] ||
-		y < v->rfbw_ClipRect[1] || y > v->rfbw_ClipRect[3])
+	if (x < v->rfbw_UserClipRect[0] || x > v->rfbw_UserClipRect[2] ||
+		y < v->rfbw_UserClipRect[1] || y > v->rfbw_UserClipRect[3])
 		return TTRUE;
 	
 	struct TNode *next, *node = mod->rfb_VisualList.tlh_Head;
@@ -497,6 +503,9 @@ LOCAL void rfb_closevisual(RFBDISPLAY *mod, struct TVRequest *req)
 	
 	TRemove(&v->rfbw_Node);
 
+	/*if (v->rfbw_Flags & RFBWFL_BACKBUFFER)
+		TFree(v->rfbw_PixBuf.tpb_Data);*/
+	
 	while ((pen = (struct RFBPen *) TRemHead(&v->penlist)))
 	{
 		/* free pens */
@@ -885,7 +894,7 @@ LOCAL void rfb_copyarea(RFBDISPLAY *mod, struct TVRequest *req)
 	TINT old[4];
 	memcpy(old, s, sizeof(s));
 	
-	if (region_intersect(s, v->rfbw_RealClipRect))
+	if (region_intersect(s, v->rfbw_ClipRect))
 	{
 		s[0] += dx;
 		s[1] += dy;
@@ -920,11 +929,11 @@ LOCAL void rfb_copyarea(RFBDISPLAY *mod, struct TVRequest *req)
 LOCAL void rfb_setcliprect(RFBDISPLAY *mod, struct TVRequest *req)
 {
 	RFBWINDOW *v = req->tvr_Op.ClipRect.Window;
-	v->rfbw_ClipRect[0] = req->tvr_Op.ClipRect.Rect[0] + v->rfbw_WinRect[0];
-	v->rfbw_ClipRect[1] = req->tvr_Op.ClipRect.Rect[1] + v->rfbw_WinRect[1];
-	v->rfbw_ClipRect[2] = v->rfbw_ClipRect[0] + req->tvr_Op.ClipRect.Rect[2] - 1;
-	v->rfbw_ClipRect[3] = v->rfbw_ClipRect[1] + req->tvr_Op.ClipRect.Rect[3] - 1;
-	v->rfbw_ClipRectSet = TTRUE;
+	v->rfbw_UserClipRect[0] = req->tvr_Op.ClipRect.Rect[0] + v->rfbw_WinRect[0];
+	v->rfbw_UserClipRect[1] = req->tvr_Op.ClipRect.Rect[1] + v->rfbw_WinRect[1];
+	v->rfbw_UserClipRect[2] = v->rfbw_UserClipRect[0] + req->tvr_Op.ClipRect.Rect[2] - 1;
+	v->rfbw_UserClipRect[3] = v->rfbw_UserClipRect[1] + req->tvr_Op.ClipRect.Rect[3] - 1;
+	v->rfbw_UserClipRectSet = TTRUE;
 	rfb_setrealcliprect(mod, v);
 }
 
@@ -933,11 +942,11 @@ LOCAL void rfb_setcliprect(RFBDISPLAY *mod, struct TVRequest *req)
 LOCAL void rfb_unsetcliprect(RFBDISPLAY *mod, struct TVRequest *req)
 {
 	RFBWINDOW *v = req->tvr_Op.ClipRect.Window;
-	v->rfbw_ClipRect[0] = v->rfbw_WinRect[0];
-	v->rfbw_ClipRect[1] = v->rfbw_WinRect[1];
-	v->rfbw_ClipRect[2] = v->rfbw_WinRect[2];
-	v->rfbw_ClipRect[3] = v->rfbw_WinRect[3];
-	v->rfbw_ClipRectSet = TFALSE;
+	v->rfbw_UserClipRect[0] = v->rfbw_WinRect[0];
+	v->rfbw_UserClipRect[1] = v->rfbw_WinRect[1];
+	v->rfbw_UserClipRect[2] = v->rfbw_WinRect[2];
+	v->rfbw_UserClipRect[3] = v->rfbw_WinRect[3];
+	v->rfbw_UserClipRectSet = TFALSE;
 	rfb_setrealcliprect(mod, v);
 }
 
@@ -1068,10 +1077,10 @@ static void rfb_movewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y)
 	wr[1] += dy;
 	wr[2] += dx;
 	wr[3] += dy;
-	v->rfbw_ClipRect[0] += dx;
-	v->rfbw_ClipRect[1] += dy;
-	v->rfbw_ClipRect[2] += dx;
-	v->rfbw_ClipRect[3] += dy;
+	v->rfbw_UserClipRect[0] += dx;
+	v->rfbw_UserClipRect[1] += dy;
+	v->rfbw_UserClipRect[2] += dx;
+	v->rfbw_UserClipRect[3] += dy;
 	
 	rfb_setrealcliprect(mod, v);
 
@@ -1149,9 +1158,9 @@ static void rfb_resizewindow(RFBDISPLAY *mod, RFBWINDOW *v, TINT w, TINT h)
 		wr[2] = x + w - 1;
 		wr[3] = y + h - 1;
 		
-		if (!v->rfbw_ClipRectSet)
+		if (!v->rfbw_UserClipRectSet)
 		{
-			TINT *c = v->rfbw_ClipRect;
+			TINT *c = v->rfbw_UserClipRect;
 			c[2] = wr[2];
 			c[3] = wr[3];
 		}
@@ -1345,7 +1354,7 @@ LOCAL void rfb_setattrs(RFBDISPLAY *mod, struct TVRequest *req)
 			{
 				case 't':
 				{
-					if (!v->is_popup && 
+					if (!(v->rfbw_Flags & RFBWFL_IS_POPUP) && 
 						TFIRSTNODE(&mod->rfb_VisualList) != &v->rfbw_Node)
 					{
 						TLock(mod->rfb_Lock);
@@ -1542,7 +1551,7 @@ LOCAL void rfb_getnextfont(RFBDISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void rfb_markdirty(RFBDISPLAY *mod, TINT *r)
+LOCAL void rfb_markdirty(RFBDISPLAY *mod, RFBWINDOW *v, TINT *r)
 {
 	struct RectPool *pool = &mod->rfb_RectPool;
 	if (!mod->rfb_DirtyRegion)

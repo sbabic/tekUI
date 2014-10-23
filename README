@@ -519,7 +519,7 @@ by modifying fields in the {{ui}} library at program start:
  * {{ui.ExtraArgs}} - mostly used for hints to display drivers,
  one argument per line, currently supported:
   * {{fb_backbuffer=<bool>}} - If enabled, use a backbuffer even if
-  it is not stricly needed
+  it is not stricly needed. This can often improve performance
   * {{fb_pixfmt=<hex>}} - Specify desired pixel format for the
   framebuffer, e.g. {{5650120b}}. See {{include/tek/mod/visual.h}}
   for the defines prefixed with {{TVPIXFMT_}}.

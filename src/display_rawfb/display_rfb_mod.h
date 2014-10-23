@@ -42,13 +42,22 @@
 
 #define RFB_HUGE 1000000
 
+/* display flags */
 #define RFBFL_BUFFER_OWNER		0x0001
 #define RFBFL_BUFFER_DEVICE		0x0002
-#define RFBFL_SHOWPTR			0x0004
-#define RFBFL_BUFFER_CAN_RESIZE	0x0008
+#define RFBFL_BUFFER_CAN_RESIZE	0x0004
+#define RFBFL_CANSHOWPTR		0x0008
+#define RFBFL_SHOWPTR			0x0010
+#define RFBFL_BACKBUFFER		0x0020
 #define RFBFL_PTR_VISIBLE		0x0100
 #define RFBFL_PTR_ALLOCATED		0x0200
 #define RFBFL_PTRMASK			0x0300
+
+/* window flags */
+#define RFBWFL_IS_POPUP		0x0001
+#define RFBWFL_BORDERLESS	0x0002
+#define RFBWFL_FULLSCREEN	0x0004
+
 
 #ifndef RFB_DEF_WIDTH
 #define RFB_DEF_WIDTH            640
@@ -58,6 +67,12 @@
 #endif
 
 #define RFB_UTF8_BUFSIZE 4096
+
+#define RFB_OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
+((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))
+
+#define RFB_OVERLAPRECT(d, s) \
+RFB_OVERLAP((d)[0], (d)[1], (d)[2], (d)[3], (s)[0], (s)[1], (s)[2], (s)[3])
 
 /*****************************************************************************/
 
@@ -77,13 +92,14 @@ struct RawKey
 	} qualkeys[5];
 };
 
+#endif /* defined(ENABLE_LINUXFB) */
+
 struct BackBuffer
 {
 	TUINT8 *data;
-	TINT x0, y0, x1, y1;
+	TINT rect[4];
 };
 
-#endif /* defined(ENABLE_LINUXFB) */
 
 /*****************************************************************************/
 /*
@@ -225,6 +241,11 @@ typedef struct
 	
 	struct rfb_window *rfb_FocusWindow;
 	
+	struct TVPixBuf rfb_PtrImage;
+	TINT rfb_PtrWidth, rfb_PtrHeight;
+	TINT rfb_MouseHotX, rfb_MouseHotY;
+	struct BackBuffer rfb_PtrBackBuffer;
+	
 #if defined(ENABLE_VNCSERVER)
 	rfbScreenInfoPtr rfb_RFBScreen;
 	TAPTR rfb_VNCTask;
@@ -235,10 +256,6 @@ typedef struct
 #endif
 	
 #if defined(ENABLE_LINUXFB)
-	struct TVPixBuf rfb_MousePtrImage;
-	TINT rfb_MousePtrWidth, rfb_MousePtrHeight;
-	TINT rfb_MouseHotX, rfb_MouseHotY;
-	struct BackBuffer rfb_MousePtrBackBuffer;
 	int rfb_fbhnd;
 	struct fb_var_screeninfo rfb_orig_vinfo;
 	struct fb_var_screeninfo rfb_vinfo;
@@ -262,6 +279,7 @@ typedef struct
 	
 } RFBDISPLAY;
 
+
 typedef struct rfb_window
 {
 	struct TNode rfbw_Node;
@@ -271,9 +289,9 @@ typedef struct rfb_window
 	/* Window extents: */
 	TINT rfbw_WinRect[4];
 	/* Clipping boundaries (user): */
-	TINT rfbw_ClipRect[4];
+	TINT rfbw_UserClipRect[4];
 	/* Clipping boundaries (real): */
-	TINT rfbw_RealClipRect[4];
+	TINT rfbw_ClipRect[4];
 	/* Current pens: */
 	TVPEN bgpen, fgpen;
 	/* list of allocated pens: */
@@ -290,19 +308,14 @@ typedef struct rfb_window
 	/* Pixel buffer referring to upper left edge of visual: */
 	struct TVPixBuf rfbw_PixBuf;
 
-	/* window is borderless: */
-	TBOOL borderless;
-	/* window is popup: */
-	TBOOL is_popup;
-	/* window is fullscreen */
-	TBOOL rfbw_FullScreen;
+	TUINT rfbw_Flags;
 	
 	TINT rfbw_MinWidth;
 	TINT rfbw_MinHeight;
 	TINT rfbw_MaxWidth;
 	TINT rfbw_MaxHeight;
 	
-	TBOOL rfbw_ClipRectSet;
+	TBOOL rfbw_UserClipRectSet;
 
 } RFBWINDOW;
 
@@ -383,7 +396,7 @@ LOCAL TBOOL rfb_damage(RFBDISPLAY *mod, TINT drect[], RFBWINDOW *v);
 LOCAL struct Region *rfb_getlayers(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy);
 LOCAL struct Region *rfb_getlayermask(RFBDISPLAY *mod, TINT *crect,
 	RFBWINDOW *v, TINT dx, TINT dy);
-LOCAL void rfb_markdirty(RFBDISPLAY *mod, TINT *r);
+LOCAL void rfb_markdirty(RFBDISPLAY *mod, RFBWINDOW *v, TINT *r);
 LOCAL void rfb_schedulecopy(RFBDISPLAY *mod, TINT *r, TINT dx, TINT dy);
 
 LOCAL TAPTR rfb_hostopenfont(RFBDISPLAY *mod, TTAGITEM *tags);

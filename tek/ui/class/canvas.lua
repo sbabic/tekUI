@@ -100,7 +100,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 37.3"
+_VERSION = "Canvas 37.4"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -397,7 +397,7 @@ function Canvas:getBG()
 	end
 	cx, cy = self:getRect()
 	local bgpen, tx, ty, pos_independent = Frame.getBG(self)
-	return bgpen, tx - cx, ty - cy, pos_independent
+	return bgpen, (tx or 0) - cx, (ty or 0) - cy, pos_independent
 end
 
 -------------------------------------------------------------------------------

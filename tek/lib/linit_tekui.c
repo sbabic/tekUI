@@ -63,6 +63,7 @@
 #include "../../src/misc/pixconv.c"
 #include "../../src/misc/cachemanager.c"
 #include "../../src/misc/imgcache.c"
+#include "../../src/misc/imgload.c"
 
 #include "display/x11_lua.c"
 

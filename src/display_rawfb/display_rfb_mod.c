@@ -6,6 +6,7 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
+#include <assert.h>
 #include <string.h>
 #include <tek/inline/exec.h>
 #include <tek/lib/imgload.h>
@@ -23,6 +24,14 @@ static void rfb_processevent(RFBDISPLAY *mod);
 static RFBWINDOW *rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg,
 	TBOOL focus);
 static TBOOL rfb_passevent_to_focus(RFBDISPLAY *mod, TIMSG *omsg);
+static TINT rfb_cmdrectaffected(RFBDISPLAY *mod, struct TVRequest *req,
+	TINT r[4], TBOOL source_affect);
+
+#define DEF_PTRWIDTH	8
+#define DEF_PTRHEIGHT	8
+#ifndef DEF_CURSORFILE
+#define DEF_CURSORFILE	"tek/ui/cursor/cursor-black.png"
+#endif
 
 /*****************************************************************************/
 
@@ -40,86 +49,15 @@ static TBOOL rfb_passevent_to_focus(RFBDISPLAY *mod, TIMSG *omsg);
 #include <sys/inotify.h>
 #include <tek/lib/utf8.h>
 
-#ifndef DEF_CURSORFILE
-#define DEF_CURSORFILE	"tek/ui/cursor/cursor-black.png"
-#endif
-
 #define EVNOTIFYPATH "/dev/input"
 #define EVPATH "/dev/input/by-path/"
-
-#define DEF_PTRWIDTH	8
-#define DEF_PTRHEIGHT	8
 
 static TUINT rfb_processmouseinput(RFBDISPLAY *mod, struct input_event *ev);
 static void rfb_processkbdinput(RFBDISPLAY *mod, struct input_event *ev);
 
 #include "keymap.c"
 
-
-#define OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
-((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))
-
 /*****************************************************************************/
-
-static void storebackbuf(RFBDISPLAY *mod, struct BackBuffer *bbuf, TINT x0,
-	TINT y0, TINT x1, TINT y1)
-{
-	TUINT8 *bkdst = bbuf->data;
-	TUINT8 *bksrc = TVPB_GETADDRESS(&mod->rfb_DevBuf, x0, y0);
-	TUINT bpl = mod->rfb_DevBuf.tpb_BytesPerLine;
-	TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_DevBuf.tpb_Format);
-	TUINT srcbpl = mod->rfb_MousePtrWidth * bpp;
-	TINT y;
-	for (y = y0; y <= y1; ++y)
-	{
-		memcpy(bkdst, bksrc, srcbpl);
-		bksrc += bpl;
-		bkdst += srcbpl;
-	}
-	bbuf->x0 = x0;
-	bbuf->y0 = y0;
-	bbuf->x1 = x1;
-	bbuf->y1 = y1;
-}
-
-static void restorebackbuf(RFBDISPLAY *mod, struct BackBuffer *bbuf)
-{
-	TUINT8 *bksrc = bbuf->data;
-	TUINT8 *bkdst = TVPB_GETADDRESS(&mod->rfb_DevBuf, bbuf->x0, bbuf->y0);
-	TUINT bpl = mod->rfb_DevBuf.tpb_BytesPerLine;
-	TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_DevBuf.tpb_Format);
-	TUINT srcbpl = mod->rfb_MousePtrWidth * bpp;
-	TINT y;
-	for (y = bbuf->y0; y <= bbuf->y1; ++y)
-	{
-		memcpy(bkdst, bksrc, srcbpl);
-		bkdst += bpl;
-		bksrc += srcbpl;
-	}
-}
-
-static TBOOL drawpointer(RFBDISPLAY *mod, TINT x0, TINT y0)
-{
-	TINT s0 = 0;
-	TINT s1 = 0;
-	TINT s2 = mod->rfb_Width - 1;
-	TINT s3 = mod->rfb_Height - 1;
-	TINT x1 = x0 + mod->rfb_MousePtrWidth - 1;
-	TINT y1 = y0 + mod->rfb_MousePtrHeight - 1;
-	if (OVERLAP(s0, s1, s2, s3, x0, y0, x1, y1))
-	{
-		struct TVPixBuf dst = mod->rfb_DevBuf;
-		x0 = TMAX(x0, s0);
-		y0 = TMAX(y0, s1);
-		x1 = TMIN(x1, s2);
-		y1 = TMIN(y1, s3);
-		storebackbuf(mod, &mod->rfb_MousePtrBackBuffer, x0, y0, x1, y1);
-		pixconv_convert(&mod->rfb_MousePtrImage, &dst, x0, y0, x1, y1, 0, 0, 
-			TTRUE, TFALSE);
-		return TTRUE;
-	}
-	return TFALSE;
-}
 
 static int rfb_findeventinput(const char *path, const char *what,
 	char *fullname, size_t len)
@@ -532,62 +470,8 @@ static void rfb_wake(RFBDISPLAY *inst)
 		TDBPRINTF(TDB_ERROR,("could not send wakeup signal\n"));
 }
 
-static void rfb_initpointer(RFBDISPLAY *mod)
-{
-#define _mpE 0x00000000
-#define _mpW 0xffffffff
-#define _mpB 0xff000000
-#define _mpG 0xffaaaaaa
-	static const TUINT def_ptrimg[] = 
-	{
-		_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,
-		_mpB,_mpW,_mpW,_mpW,_mpW,_mpW,_mpG,_mpB,
-		_mpB,_mpW,_mpW,_mpW,_mpW,_mpG,_mpB,_mpE,
-		_mpB,_mpW,_mpW,_mpW,_mpG,_mpB,_mpE,_mpE,
-		_mpB,_mpW,_mpW,_mpG,_mpW,_mpG,_mpB,_mpE,
-		_mpB,_mpW,_mpG,_mpB,_mpG,_mpW,_mpG,_mpB,
-		_mpB,_mpG,_mpB,_mpE,_mpB,_mpG,_mpG,_mpB,
-		_mpB,_mpB,_mpE,_mpE,_mpE,_mpB,_mpB,_mpE,
-	};
-	
-	mod->rfb_MousePtrImage.tpb_Data = (TUINT8 *) def_ptrimg;
-	mod->rfb_MousePtrImage.tpb_Format = TVPIXFMT_A8R8G8B8;
-	mod->rfb_MousePtrImage.tpb_BytesPerLine = DEF_PTRWIDTH * 4;
-	mod->rfb_MousePtrWidth = DEF_PTRWIDTH;
-	mod->rfb_MousePtrHeight = DEF_PTRHEIGHT;
-	mod->rfb_MouseHotX = 0;
-	mod->rfb_MouseHotY = 0;
-	mod->rfb_Flags &= ~RFBFL_PTRMASK;
-
-	FILE *f = fopen(DEF_CURSORFILE, "rb");
-	if (!f)
-		return;
-
-	TAPTR TExecBase = TGetExecBase(mod);
-	struct ImgLoader ld;
-	if (imgload_init_file(&ld, TExecBase, f))
-	{
-		if (imgload_load(&ld))
-		{
-			mod->rfb_MousePtrImage = ld.iml_Image;
-			mod->rfb_MousePtrWidth = ld.iml_Width;
-			mod->rfb_MousePtrHeight = ld.iml_Height;
-			mod->rfb_Flags |= RFBFL_PTR_ALLOCATED;					
-		}
-	}
-
-	fclose(f);
-}
-
 static void rfb_exitlinuxfb(RFBDISPLAY *mod)
 {
-	TAPTR TExecBase = TGetExecBase(mod);
-	
-	TFree(mod->rfb_MousePtrBackBuffer.data);
-
-	if (mod->rfb_Flags & RFBFL_PTR_ALLOCATED)
-		TFree(mod->rfb_MousePtrImage.tpb_Data);
-	
 	if (mod->rfb_fd_input_kbd != -1)
 	{
 		close(mod->rfb_fd_input_kbd);
@@ -684,11 +568,10 @@ static TBOOL rfb_setvinfopixfmt(struct fb_var_screeninfo *vinfo, TUINT pixfmt)
 
 static TBOOL rfb_initlinuxfb(RFBDISPLAY *mod)
 {
-	TAPTR TExecBase = TGetExecBase(mod);
 	for (;;)
 	{
 		int pipefd[2];
-		TUINT pixfmt, bpp;
+		TUINT pixfmt;
 		
 		mod->rfb_fd_sigpipe_read = -1;
 		mod->rfb_fd_sigpipe_write = -1;
@@ -771,7 +654,6 @@ static TBOOL rfb_initlinuxfb(RFBDISPLAY *mod)
 			TDBPRINTF(TDB_ERROR,("Unsupported framebuffer pixel format\n"));
 			break;
 		}
-		bpp = TVPIXFMT_BYTES_PER_PIXEL(pixfmt);
 		
 		mod->rfb_DevWidth = mod->rfb_vinfo.xres;
 		mod->rfb_DevHeight = mod->rfb_vinfo.yres;
@@ -782,19 +664,13 @@ static TBOOL rfb_initlinuxfb(RFBDISPLAY *mod)
 		if ((TINTPTR) mod->rfb_DevBuf.tpb_Data == -1)
 			break;
 		memset(mod->rfb_DevBuf.tpb_Data, 0, mod->rfb_finfo.smem_len);
-
-		rfb_initpointer(mod);
-		
-		mod->rfb_MousePtrBackBuffer.data = TAlloc(mod->rfb_MemMgr,
-			bpp * mod->rfb_MousePtrWidth * mod->rfb_MousePtrHeight);
-		if (mod->rfb_MousePtrBackBuffer.data == TNULL)
-			break;
 		
 		mod->rfb_PixBuf = mod->rfb_DevBuf;
 
 		rfb_updateinput(mod);
 		rfb_initkeytable(mod);
-		
+
+		mod->rfb_Flags |= RFBFL_CANSHOWPTR | RFBFL_SHOWPTR;
 		mod->rfb_Flags &= ~RFBFL_BUFFER_CAN_RESIZE;
 		
 		return TTRUE;
@@ -804,12 +680,129 @@ static TBOOL rfb_initlinuxfb(RFBDISPLAY *mod)
 	return TFALSE;
 }
 
-static void rfb_restoreptrbg(RFBDISPLAY *mod)
+#endif /* defined(ENABLE_LINUXFB) */
+
+/*****************************************************************************/
+
+static TBOOL rfb_initpointer(RFBDISPLAY *mod)
 {
-	if (!(mod->rfb_Flags & RFBFL_PTR_VISIBLE))
-		return;
-	restorebackbuf(mod, &mod->rfb_MousePtrBackBuffer);
-	mod->rfb_Flags &= ~RFBFL_PTR_VISIBLE;
+	TAPTR TExecBase = TGetExecBase(mod);
+	if ((mod->rfb_Flags & (RFBFL_CANSHOWPTR | RFBFL_SHOWPTR)) != 
+		(RFBFL_CANSHOWPTR | RFBFL_SHOWPTR))
+		return TFALSE;
+	
+#define _mpE 0x00000000
+#define _mpW 0xffffffff
+#define _mpB 0xff000000
+#define _mpG 0xffaaaaaa
+	static const TUINT def_ptrimg[] = 
+	{
+		_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,_mpB,
+		_mpB,_mpW,_mpW,_mpW,_mpW,_mpW,_mpG,_mpB,
+		_mpB,_mpW,_mpW,_mpW,_mpW,_mpG,_mpB,_mpE,
+		_mpB,_mpW,_mpW,_mpW,_mpG,_mpB,_mpE,_mpE,
+		_mpB,_mpW,_mpW,_mpG,_mpW,_mpG,_mpB,_mpE,
+		_mpB,_mpW,_mpG,_mpB,_mpG,_mpW,_mpG,_mpB,
+		_mpB,_mpG,_mpB,_mpE,_mpB,_mpG,_mpG,_mpB,
+		_mpB,_mpB,_mpE,_mpE,_mpE,_mpB,_mpB,_mpE,
+	};
+	
+	mod->rfb_PtrImage.tpb_Data = (TUINT8 *) def_ptrimg;
+	mod->rfb_PtrImage.tpb_Format = TVPIXFMT_A8R8G8B8;
+	mod->rfb_PtrImage.tpb_BytesPerLine = DEF_PTRWIDTH * 4;
+	mod->rfb_PtrWidth = DEF_PTRWIDTH;
+	mod->rfb_PtrHeight = DEF_PTRHEIGHT;
+	mod->rfb_MouseHotX = 0;
+	mod->rfb_MouseHotY = 0;
+	mod->rfb_Flags &= ~(RFBFL_PTR_VISIBLE | RFBFL_PTR_ALLOCATED);
+
+	FILE *f = fopen(DEF_CURSORFILE, "rb");
+	if (f)
+	{
+		TAPTR TExecBase = TGetExecBase(mod);
+		struct ImgLoader ld;
+		if (imgload_init_file(&ld, TExecBase, f))
+		{
+			if (imgload_load(&ld))
+			{
+				mod->rfb_PtrImage = ld.iml_Image;
+				mod->rfb_PtrWidth = ld.iml_Width;
+				mod->rfb_PtrHeight = ld.iml_Height;
+				mod->rfb_Flags |= RFBFL_PTR_ALLOCATED;					
+			}
+		}
+		fclose(f);
+	}
+	
+	mod->rfb_PtrBackBuffer.data = TAlloc(mod->rfb_MemMgr,
+		TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_PixBuf.tpb_Format) *
+		mod->rfb_PtrWidth * mod->rfb_PtrHeight);
+	if (!mod->rfb_PtrBackBuffer.data)
+	{
+		mod->rfb_Flags &= ~RFBFL_SHOWPTR;
+		return TFALSE;
+	}
+	return TTRUE;
+}
+
+static void storebackbuf(RFBDISPLAY *mod, struct BackBuffer *bbuf, TINT x0,
+	TINT y0, TINT x1, TINT y1)
+{
+	TUINT8 *bkdst = bbuf->data;
+	TUINT8 *bksrc = TVPB_GETADDRESS(&mod->rfb_DevBuf, x0, y0);
+	TUINT bpl = mod->rfb_DevBuf.tpb_BytesPerLine;
+	TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_DevBuf.tpb_Format);
+	TUINT srcbpl = mod->rfb_PtrWidth * bpp;
+	TINT y;
+	for (y = y0; y <= y1; ++y)
+	{
+		memcpy(bkdst, bksrc, srcbpl);
+		bksrc += bpl;
+		bkdst += srcbpl;
+	}
+	bbuf->rect[0] = x0;
+	bbuf->rect[1] = y0;
+	bbuf->rect[2] = x1;
+	bbuf->rect[3] = y1;
+}
+
+static TBOOL drawpointer(RFBDISPLAY *mod, TINT x0, TINT y0)
+{
+	TINT s0 = 0;
+	TINT s1 = 0;
+	TINT s2 = mod->rfb_Width - 1;
+	TINT s3 = mod->rfb_Height - 1;
+	TINT x1 = x0 + mod->rfb_PtrWidth - 1;
+	TINT y1 = y0 + mod->rfb_PtrHeight - 1;
+	if (RFB_OVERLAP(s0, s1, s2, s3, x0, y0, x1, y1))
+	{
+		struct TVPixBuf dst = mod->rfb_DevBuf;
+		x0 = TMAX(x0, s0);
+		y0 = TMAX(y0, s1);
+		x1 = TMIN(x1, s2);
+		y1 = TMIN(y1, s3);
+		storebackbuf(mod, &mod->rfb_PtrBackBuffer, x0, y0, x1, y1);
+		pixconv_convert(&mod->rfb_PtrImage, &dst, x0, y0, x1, y1, 0, 0, 
+			TTRUE, TFALSE);
+		return TTRUE;
+	}
+	return TFALSE;
+}
+
+static void restorebackbuf(RFBDISPLAY *mod, struct BackBuffer *bbuf)
+{
+	TUINT8 *bksrc = bbuf->data;
+	TUINT8 *bkdst = TVPB_GETADDRESS(&mod->rfb_DevBuf, bbuf->rect[0], bbuf->rect[1]);
+	TUINT bpl = mod->rfb_DevBuf.tpb_BytesPerLine;
+	TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_DevBuf.tpb_Format);
+	TUINT srcbpl = mod->rfb_PtrWidth * bpp;
+	TINT y;
+	for (y = bbuf->rect[1]; y <= bbuf->rect[3]; ++y)
+	{
+		memcpy(bkdst, bksrc, srcbpl);
+		bkdst += bpl;
+		bksrc += srcbpl;
+	}
 }
 
 static void rfb_drawptr(RFBDISPLAY *mod)
@@ -820,120 +813,133 @@ static void rfb_drawptr(RFBDISPLAY *mod)
 	TINT my = mod->rfb_MouseY - mod->rfb_MouseHotY;
 	if (mod->rfb_Flags & RFBFL_PTR_VISIBLE)
 	{
-		if (mx == mod->rfb_MousePtrBackBuffer.x0 && 
-			my == mod->rfb_MousePtrBackBuffer.y0)
+		if (mx == mod->rfb_PtrBackBuffer.rect[0] && 
+			my == mod->rfb_PtrBackBuffer.rect[1])
 			return;
-		restorebackbuf(mod, &mod->rfb_MousePtrBackBuffer);
+		restorebackbuf(mod, &mod->rfb_PtrBackBuffer);
 	}
 	drawpointer(mod, mx, my);
 	mod->rfb_Flags |= RFBFL_PTR_VISIBLE;
 }
 
-static TBOOL rfb_checkcmdaffectsptr(RFBDISPLAY *mod, struct TVRequest *req)
+
+static void rfb_restoreptrbg(RFBDISPLAY *mod)
+{
+	if (!(mod->rfb_Flags & RFBFL_PTR_VISIBLE))
+		return;
+	restorebackbuf(mod, &mod->rfb_PtrBackBuffer);
+	mod->rfb_Flags &= ~RFBFL_PTR_VISIBLE;
+}
+
+
+static TINT rfb_cmdrectaffected(RFBDISPLAY *mod, struct TVRequest *req,
+	TINT r[4], TBOOL source_affect)
 {
 	RFBWINDOW *v = TNULL;
+	TINT *rect = TNULL;
+	TINT *xywh = TNULL;
 	TINT temprect[4];
-	TINT *rect = temprect;
-	
-	if (!(mod->rfb_Flags & RFBFL_PTR_VISIBLE))
-		return TFALSE;
-	
 	switch (req->tvr_Req.io_Command)
 	{
-		case TVCMD_SETATTRS:
-		case TVCMD_TEXT:
-		case TVCMD_DRAWSTRIP:
-		case TVCMD_DRAWFAN:
-		case TVCMD_OPENWINDOW:
-		case TVCMD_CLOSEWINDOW:
-			return TTRUE;
+		default:
+			/* not affected, no rect */
+			return 0;
 			
-		case TVCMD_OPENFONT:
-		case TVCMD_CLOSEFONT:
-		case TVCMD_GETFONTATTRS:
-		case TVCMD_TEXTSIZE:
-		case TVCMD_QUERYFONTS:
-		case TVCMD_GETNEXTFONT:
-		case TVCMD_SETINPUT:
-		case TVCMD_GETATTRS:
-		case TVCMD_ALLOCPEN:
-		case TVCMD_FREEPEN:
-		case TVCMD_SETFONT:
-		case TVCMD_SETCLIPRECT:
-		case TVCMD_UNSETCLIPRECT:
 		case TVCMD_FLUSH:
-			return TFALSE;
-			
+		case TVCMD_SETATTRS:
+			/* yes, affected, but no rect */
+			return -1;
+
+		case TVCMD_DRAWSTRIP:
+			v = req->tvr_Op.Strip.Window;
+			break;
+		case TVCMD_DRAWFAN:
+			v = req->tvr_Op.Fan.Window;
+			break;
+		case TVCMD_TEXT:
+			v = req->tvr_Op.Text.Window;
+			break;
 		case TVCMD_RECT:
 			v = req->tvr_Op.Rect.Window;
-			rect = req->tvr_Op.Rect.Rect;
+			xywh = req->tvr_Op.Rect.Rect;
 			break;
 		case TVCMD_FRECT:
 			v = req->tvr_Op.FRect.Window;
-			rect = req->tvr_Op.FRect.Rect;
+			xywh = req->tvr_Op.FRect.Rect;
 			break;
 		case TVCMD_LINE:
 			v = req->tvr_Op.Line.Window;
-			rect = req->tvr_Op.Line.Rect;
+			xywh = req->tvr_Op.Line.Rect;
 			break;
 		case TVCMD_DRAWBUFFER:
 			v = req->tvr_Op.DrawBuffer.Window;
-			rect = req->tvr_Op.DrawBuffer.RRect;
+			xywh = req->tvr_Op.DrawBuffer.RRect;
 			break;
 		case TVCMD_COPYAREA:
 		{
 			v = req->tvr_Op.CopyArea.Window;
-			TINT *r = req->tvr_Op.CopyArea.Rect;
-			TINT x0 = r[0];
-			TINT y0 = r[1];
-			TINT x1 = r[0] + r[2] - 1;
-			TINT y1 = r[1] + r[3] - 1;
-			TINT dx = req->tvr_Op.CopyArea.DestX - r[0];
-			TINT dy = req->tvr_Op.CopyArea.DestY - r[1];
-			x0 = TMIN(x0, x0 + dx);
-			y0 = TMIN(y0, y0 + dy);
-			x1 = TMAX(x1, x1 + dx);
-			y1 = TMAX(y1, y1 + dy);
-			temprect[0] = x0;
-			temprect[1] = y0;
-			temprect[2] = x1 - x0 + 1;
-			temprect[3] = y1 - y0 + 1;
+			TINT *s = req->tvr_Op.CopyArea.Rect;
+			TINT dx0 = req->tvr_Op.CopyArea.DestX;
+			TINT dy0 = req->tvr_Op.CopyArea.DestY;
+			TINT sx0 = s[0];
+			TINT sy0 = s[1];
+			TINT sx1 = s[0] + s[2] - 1;
+			TINT sy1 = s[1] + s[3] - 1;
+			TINT dx = dx0 - sx0;
+			TINT dy = dy0 - sy0;
+			TINT dx1 = sx1 + dx;
+			TINT dy1 = sy1 + dy;
+			rect = temprect;
+			if (source_affect)
+			{
+				rect[0] = TMIN(sx0, dx0);
+				rect[1] = TMIN(sy0, dy0);
+				rect[2] = TMAX(sx1, dx1);
+				rect[3] = TMAX(sy1, dy1);
+				break;
+			}
+			rect[0] = dx0;
+			rect[1] = dy0;
+			rect[2] = dx1;
+			rect[3] = dy1;
 			break;
 		}
 		case TVCMD_PLOT:
 			v = req->tvr_Op.Plot.Window;
-			temprect[0] = req->tvr_Op.Plot.Rect[0];
-			temprect[1] = req->tvr_Op.Plot.Rect[1];
-			temprect[2] = req->tvr_Op.Plot.Rect[0];
-			temprect[3] = req->tvr_Op.Plot.Rect[1];
+			rect = temprect;
+			rect[0] = req->tvr_Op.Plot.Rect[0];
+			rect[1] = req->tvr_Op.Plot.Rect[1];
+			rect[2] = req->tvr_Op.Plot.Rect[0];
+			rect[3] = req->tvr_Op.Plot.Rect[1];
 			break;
 	}
 	
-	if (v)
+	assert(v);
+	
+	if (v->rfbw_ClipRect[0] == -1)
+		return 0;
+
+	if (xywh)
 	{
-		TINT m0 = mod->rfb_MousePtrBackBuffer.x0;
-		TINT m1 = mod->rfb_MousePtrBackBuffer.y0;
-		TINT m2 = mod->rfb_MousePtrBackBuffer.x1;
-		TINT m3 = mod->rfb_MousePtrBackBuffer.y1;
-		TINT w0 = v->rfbw_WinRect[0];
-		TINT w1 = v->rfbw_WinRect[1];
-		TINT w2 = v->rfbw_WinRect[2];
-		TINT w3 = v->rfbw_WinRect[3];
-		if (rect)
-		{
-			w0 += rect[0];
-			w1 += rect[1];
-			w2 = w0 + rect[2] - 1;
-			w3 = w1 + rect[3] - 1;
-		}
-		return OVERLAP(m0, m1, m2, m3, w0, w1, w2, w3);
+		rect = temprect;
+		rect[0] = xywh[0];
+		rect[1] = xywh[1];
+		rect[2] = xywh[0] + xywh[2] - 1;
+		rect[3] = xywh[1] + xywh[3] - 1;
 	}
 	
-	return TTRUE;
+	if (rect)
+	{
+		r[0] = rect[0] + v->rfbw_WinRect[0];
+		r[1] = rect[1] + v->rfbw_WinRect[1];
+		r[2] = rect[2] + v->rfbw_WinRect[0];
+		r[3] = rect[3] + v->rfbw_WinRect[1];
+		TINT res = region_intersect(r, v->rfbw_ClipRect);
+		return res;
+	}
+	memcpy(r, v->rfbw_ClipRect, sizeof r);
+	return 1;
 }
-
-#endif /* defined(ENABLE_LINUXFB) */
-
 
 /*****************************************************************************/
 /*
@@ -1053,6 +1059,10 @@ static void rfb_exittask(RFBDISPLAY *mod)
 	rfb_exitlinuxfb(mod);
 #endif
 
+	TFree(mod->rfb_PtrBackBuffer.data);
+	if (mod->rfb_Flags & RFBFL_PTR_ALLOCATED)
+		TFree(mod->rfb_PtrImage.tpb_Data);
+	
 	/* free pooled input messages: */
 	while ((imsg = TRemHead(&mod->rfb_IMsgPool)))
 		TFree(imsg);
@@ -1177,23 +1187,31 @@ static void rfb_runtask(struct TTask *task)
 	{
 		if (sig & cmdportsignal)
 		{
-			/* do draw commands: */
-#if defined(ENABLE_LINUXFB)
-			TBOOL restored = TFALSE;
-#endif
+			TINT *mouserect = mod->rfb_PtrBackBuffer.rect;
+			TBOOL checkrect = mod->rfb_Flags & (RFBFL_PTR_VISIBLE | RFBFL_BACKBUFFER);
+			TBOOL ptr_visible = mod->rfb_Flags & RFBFL_PTR_VISIBLE;
+			TINT r[4];
+			
 			while ((req = TGetMsg(cmdport)))
 			{
-#if defined(ENABLE_LINUXFB)
-				if (!restored && (restored = rfb_checkcmdaffectsptr(mod, req)))
-					rfb_restoreptrbg(mod);
-#endif
+				if (checkrect)
+				{
+					TINT res = rfb_cmdrectaffected(mod, req, r, ptr_visible);
+					if (res != 0)
+					{
+						if (ptr_visible && (res < 0 || RFB_OVERLAPRECT(mouserect, r)))
+						{
+							rfb_restoreptrbg(mod);
+							checkrect = mod->rfb_Flags & RFBFL_BACKBUFFER;
+							ptr_visible = TFALSE;
+						}
+					}
+				}
 				rfb_docmd(mod, req);
 				TReplyMsg(req);
 			}
 		}
-#if defined(ENABLE_LINUXFB)
 		rfb_drawptr(mod);
-#endif
 		
 		/* check if time interval has expired: */
 		TGetSystemTime(&nowt);
@@ -1302,7 +1320,7 @@ static RFBWINDOW *rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg,
 	TLock(mod->rfb_InstanceLock);
 	RFBWINDOW *v = rfb_findcoord(mod, x, y);
 	if (v && (omsg->timsg_Type != TITYPE_MOUSEMOVE || 
-		(mod->rfb_FocusWindow == v || v->is_popup)))
+		(mod->rfb_FocusWindow == v || (v->rfbw_Flags & RFBWFL_IS_POPUP))))
 	{
 		if (focus)
 			rfb_focuswindow(mod, v);
@@ -1359,9 +1377,11 @@ static void rfb_processevent(RFBDISPLAY *mod)
 					(mod->rfb_Flags & RFBFL_BUFFER_CAN_RESIZE))
 				{
 					if (mod->rfb_DirtyRegion)
+					{
 						region_destroy(&mod->rfb_RectPool, 
 							mod->rfb_DirtyRegion);
-					mod->rfb_DirtyRegion = TNULL;
+						mod->rfb_DirtyRegion = TNULL;
+					}
 					
 					mod->rfb_Width = msg->timsg_Width;
 					mod->rfb_Height = msg->timsg_Height;
@@ -1382,7 +1402,7 @@ static void rfb_processevent(RFBDISPLAY *mod)
 						TINT w0 = v->rfbw_WinRect[2] - v->rfbw_WinRect[0] + 1;
 						TINT h0 = v->rfbw_WinRect[3] - v->rfbw_WinRect[1] + 1;
 						
-						if (v->rfbw_FullScreen)
+						if ((v->rfbw_Flags & RFBWFL_FULLSCREEN))
 						{
 							v->rfbw_WinRect[2] = mod->rfb_Width - 1;
 							v->rfbw_WinRect[3] = mod->rfb_Height - 1;

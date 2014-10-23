@@ -174,7 +174,7 @@ GRAPHICS_DESCRIPTION = [[
 
 » Stock images can be overlaid with bitmaps (or other vector graphics), but vector graphics are normally more resource-friendly than bitmaps.
 
-» If the upper bitmaps icon shows the flags of Spain and Italy, then you have PNG support in tekUI, and if the blue background shines through, then the display driver in use supports rendering with alpha channel. Otherwise, if it shows the flags of Brazil and Germany, you have support for the PPM format only.
+» If the upper bitmaps icon shows the flags of Spain and Italy, then PNG support is enabled. Otherwise, only the built-in PPM format is supported. If the image background spans the whole element and is not white, then the display driver supports alpha channel. If the element's background is a blue gradient, you have gradient support enabled in tekUI.
 ]];
 GRAPHICS_RADIOBUTTONS = "Radio Buttons";
 GRAPHICS_TITLE = "Graphics";

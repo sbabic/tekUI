@@ -89,7 +89,7 @@ local pcall = pcall
 local sort = table.sort
 
 module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 17.2"
+_VERSION = "DirList 17.3"
 local DirList = _M
 Group:newClass(DirList)
 
@@ -257,7 +257,8 @@ function DirList.new(class, self)
 		InitialFocus = self.FocusElement == "path",
 		onEnter = function(pathfield)
 			Input.onEnter(pathfield)
-			self:scanDir(pathfield:getText())
+			self.Path = pathfield:getText()
+			self:scanDir(self.Path)
 		end,
 		Style = "valign: center",
 	}
