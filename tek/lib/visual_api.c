@@ -842,6 +842,25 @@ tek_lib_visual_frectpixmap(lua_State *L, TEKVisual *vis, TEKPixmap *pm,
 	tags[0].tti_Value = TVPIXFMT_HAS_ALPHA(pm->pxm_Image.tpb_Format);
 	tags[1].tti_Tag = TTAG_DONE;
 	
+	if (vis->vis_HaveClipRect)
+	{
+		TINT c0 = vis->vis_ClipRect[0];
+		TINT c1 = vis->vis_ClipRect[1];
+		TINT c2 = vis->vis_ClipRect[2];
+		TINT c3 = vis->vis_ClipRect[3];
+		TINT x1 = x0 + w - 1;
+		TINT y1 = y0 + h - 1;
+		if (!TEK_UI_OVERLAP(x0, y0, x1, y1, c0, c1, c2, c3))
+			return;
+		x0 = TMAX(x0, c0);
+		y0 = TMAX(y0, c1);
+		x1 = TMIN(x1, c2);
+		y1 = TMIN(y1, c3);
+		w = x1 - x0 + 1;
+		h = y1 - y0 + 1;
+		y = y0;
+	}
+	
 	yo = (y0 - oy) % th;
 	if (yo < 0) yo += th;
 	th0 = th - yo;
@@ -1760,7 +1779,15 @@ tek_lib_visual_setcliprect(lua_State *L)
 	TINT y = luaL_checkinteger(L, 3);
 	TINT w = luaL_checkinteger(L, 4);
 	TINT h = luaL_checkinteger(L, 5);
+	
 	TVisualSetClipRect(vis->vis_Visual, x, y, w, h, TNULL);
+	
+	vis->vis_ClipRect[0] = x;
+	vis->vis_ClipRect[1] = y;
+	vis->vis_ClipRect[2] = x + w - 1;
+	vis->vis_ClipRect[3] = y + h - 1;
+	vis->vis_HaveClipRect = TTRUE;
+	
 	return 0;
 }
 
@@ -1771,6 +1798,7 @@ tek_lib_visual_unsetcliprect(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
 	TVisualUnsetClipRect(vis->vis_Visual);
+	vis->vis_HaveClipRect = TFALSE;
 	return 0;
 }
 

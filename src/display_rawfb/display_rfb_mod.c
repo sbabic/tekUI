@@ -934,11 +934,11 @@ static TINT rfb_cmdrectaffected(RFBDISPLAY *mod, struct TVRequest *req,
 		r[1] = rect[1] + v->rfbw_WinRect[1];
 		r[2] = rect[2] + v->rfbw_WinRect[0];
 		r[3] = rect[3] + v->rfbw_WinRect[1];
-		TINT res = region_intersect(r, v->rfbw_ClipRect);
-		return res;
 	}
-	memcpy(r, v->rfbw_ClipRect, sizeof r);
-	return 1;
+	else
+		memcpy(r, v->rfbw_WinRect, sizeof r);
+
+	return region_intersect(r, v->rfbw_ClipRect);
 }
 
 /*****************************************************************************/

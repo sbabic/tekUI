@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 20.5"
+_VERSION = "TextEdit 20.6"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -845,7 +845,9 @@ function TextEdit:drawPatch(r1, r2, r3, r4)
 	local l0, l1 
 	local password = self.PasswordChar
 
-	local bgpen = self:getBG()
+	local bgpen, tx, ty = self:getBG()
+	local m1, m2 = self:getMargin()
+	d:setBGPen(bgpen, tx - m1, ty - m2)
 
 --	if self.Wrap then
 --
@@ -890,7 +892,6 @@ function TextEdit:drawPatch(r1, r2, r3, r4)
 		d:fillRect(x2, y0, x1, y1, linebg)
 	end
 
-	d:setBGPen(bgpen)
 	r:forEach(d.fillRect, d)
 	
 	local c = self.Cursor

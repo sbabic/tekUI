@@ -24,9 +24,10 @@ tek.ui.class.textedit.textlist {
 }
 _textlist.textlist {
 	font: ui-fixed:18;
+	margin: 0;
 }
 tek.ui.class.canvas.textlist {
-	border-style: inset;
+	border-style: groove;
 	border-width: 2;
 }
 _editinput {

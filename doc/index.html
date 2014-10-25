@@ -632,11 +632,6 @@
 				Lua 5.1, 5.2 and LuaJIT 2.0 are supported out of the box, if Lua 5.2
 				is compiled with <code>LUA_COMPAT_MODULE</code>.
 			</p>
-			<p>
-				You will almost certainly want to enable the PNG support in the build
-				configuration, otherwise only PPM and tekUI's internal, very basic
-				vector format is supported.
-			</p>
 		</div>
 		<div class="node"><h3><a name="luamodules" id="luamodules">3.1.1. External Lua modules</a></h3>
 			<p>
@@ -733,7 +728,7 @@
 			<p>
 				The XFree86VidMode extension is linked against by default. It can
 				be disabled by removing <code>-DENABLE_XVID</code> from <code>X11_DEFS</code> in the
-				config file.
+				config file. Fullscreen support is problematic.
 			</p>
 		</div>
 		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.5. Raw framebuffer notes</a></h3>
@@ -753,10 +748,9 @@
 				Support for the native Linux framebuffer (and input event interface)
 				can be compiled into the raw framebuffer directly. It then adapts to
 				the active screensize and pixel format automatically. The keymap is
-				compiled in, by default /usr/share/keymaps/i386/qwerty/us.map.gz, and
-				can be generated using a conversion tool, etc/keymap2c. For loading
-				a better mousepointer, enabling PNG support is recommended. Linux
-				framebuffer support has been tested on Intel i915 and Raspberry Pi
+				compiled in, by default <code>/usr/share/keymaps/i386/qwerty/us.map.gz</code>,
+				and can be generated using a conversion tool, <code>etc/keymap2c</code>. Linux
+				framebuffer support has been tested on a Laptop and Raspberry Pi
 				(both under Gentoo Linux). Acceleration is not yet supported.
 			</p>
 			<p>
@@ -770,7 +764,21 @@
 			<p>
 				Any combination of the subdrivers tekUI, Linux framebuffer, and VNC
 				is valid. If none is selected, the GUI runs isolated from the outside
-				world, albeit in a very portable way, in its chunk of memory.
+				world, albeit in a very portable way, in its own chunk of memory.
+			</p>
+			<p>
+				The default configuration assumes the free fonts <em>DejaVuSans</em> and
+				<em>DejaVuSansMono</em> (in combination with their subtypes <em>Bold</em> and
+				<em>Oblique</em>) in the local directoy <code>tek/ui/font</code>, but you can also
+				point the <a href="#envvariables">environment variable</a> <code>FONTDIR</code> to a
+				directory containing these fonts. If they are unavailable, tekUI
+				performs various fallbacks, including to Bitstream <em>Vera</em>,
+				which is small enough to be included in tekUI's distribution.
+			</p>
+			<p>
+				A mouse pointer image is loaded from <code>DEF_CURSORFILE</code>, by default
+				<code>tek/ui/cursor/cursor-black.png</code>, with a fallback to a small,
+				built-in pointer image.
 			</p>
 		</div>
 		<div class="node"><h3><a name="notedirectfb" id="notedirectfb">3.2.6. DirectFB notes</a></h3>
@@ -778,8 +786,7 @@
 				The DirectFB display driver is not very actively supported at this
 				time. Some adaptations are likely needed. In case of problems,
 				consider using the DirectFB driver only as a rendering back-end for
-				the rawfb driver. This combination has recently found working very
-				well.
+				the rawfb driver.
 			</p>
 		</div>
 		<div class="node"><h3><a name="notefloat" id="notefloat">3.2.7 Floating point support</a></h3>
@@ -880,7 +887,7 @@
 					</li>
 					<li>
 						<code>THEME</code> - Theme names corresponding to style sheet files in
-						<code>tek/ui/style/</code>. Multiple themes can be separated by spaces,
+						<code>tek/ui/style</code>. Multiple themes can be separated by spaces,
 						e.g. <code>&quot;desktop gradient&quot;</code>. The default is <code>&quot;desktop&quot;</code>. The
 						<em>desktop</em> theme tries to import the color scheme found in a GTK2
 						configuration file. See also <a href="#cssprecedence">CSS precedence</a>.
@@ -904,16 +911,18 @@
 						<blockquote>
 							<ul>
 								<li>
-									<code>fb_backbuffer=&lt;bool&gt;</code> - If enabled, use a backbuffer even if
-									it is not stricly needed. This can often improve performance
+									<code>fb_backbuffer=boolean</code> - If enabled, use a backbuffer even if
+									it is not stricly needed. This can reduce flicker and sometimes
+									improve performance, although this varies widely. Raspberry Pi, for
+									example, was found to perform best on 16bit without backbuffer.
 								</li>
 								<li>
-									<code>fb_pixfmt=&lt;hex&gt;</code> - Specify desired pixel format for the
+									<code>fb_pixfmt=hexnumber</code> - Specify desired pixel format for the
 									framebuffer, e.g. <code>5650120b</code>. See <code>include/tek/mod/visual.h</code> 
 									for the defines prefixed with <code>TVPIXFMT_</code>.
 								</li>
 								<li>
-									<code>vnc_portnumber=&lt;nr&gt;</code> - Overrides <code>VNC_PORTNUMBER</code>, see above
+									<code>vnc_portnumber=num</code> - Overrides <code>VNC_PORTNUMBER</code>, see above
 								</li>
 							</ul>
 						</blockquote>
@@ -929,7 +938,8 @@
 					</li>
 					<li>
 						<code>ui.MsgFileNo</code> - Number of the file descriptor used for
-						dispatching lines to messages of type <code>MSG_USER</code>. Default: stdin
+						dispatching lines to messages of type <code>MSG_USER</code>. Default:
+						standard input. See also the <em>childprocess</em> example.
 					</li>
 					<li>
 						<code>ui.NoCursor</code> - Overrides <code>NOCURSOR</code>, see above

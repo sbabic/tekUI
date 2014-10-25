@@ -298,12 +298,11 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 			XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
 				&mod->x11_VidMode);
 			XF86VidModeSetViewPort(mod->x11_Display, mod->x11_Screen, 0, 0);
-			/* damned! */
+			/* damned, argh: */
 			XSync(mod->x11_Display, False);
-			/* arrrgh!! */
-			TTIME waitt = { 700000 };
-			TWaitTime(&waitt, 0);
-			/* is my computer broken? Or just KDE? */
+			/*TTIME waitt = { 900000 };
+			TWaitTime(&waitt, 0);*/
+			/* Is my computer broken? Or is it just KDE? */
 		}
 		#endif
 

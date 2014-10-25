@@ -100,7 +100,7 @@ local intersect = Region.intersect
 local tonumber = tonumber
 
 module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 37.4"
+_VERSION = "Canvas 37.5"
 local Canvas = _M
 Frame:newClass(Canvas)
 
@@ -391,6 +391,9 @@ function Canvas:getBG()
 		if bgpen then
 			if self.Properties["background-attachment"] ~= "fixed" then
 				cx, cy = self:getRect()
+				local m1, m2 = self:getMargin()
+				cx = cx - m1
+				cy = cy - m2
 			end
 			return bgpen, cx, cy, self.Window:isSolidPen(bgpen)
 		end

@@ -8,13 +8,12 @@ tek.ui.class.checkmark {
 }
 
 tek.ui.class.floattext {
-	color: shine;
-	background-image: url(bin/graphics/steel.ppm);
+	background-image: url(bin/graphics/back2.png);
 }
 
 tek.ui.class.group {
 	background-attachment: fixed;
-	background-image: url(bin/graphics/heated.ppm);
+	background-image: url(bin/graphics/back1.png);
 }
 
 tek.ui.class.handle {
@@ -22,11 +21,9 @@ tek.ui.class.handle {
 }
 
 tek.ui.class.imagewidget {
-	background-image: url(bin/graphics/alloy.ppm);
 }
 
 tek.ui.class.menuitem {
-	background-image: url(bin/graphics/brushed2.ppm);
 }
 tek.ui.class.menuitem:active {
 	background-color: menu-active;
@@ -39,43 +36,36 @@ tek.ui.class.menuitem:focus {
 }
 
 tek.ui.class.popupwindow {
-	background-image: url(bin/graphics/brushed2.ppm);
+	background-color: white;
 }
 
 tek.ui.class.slider {
-	background-image: url(bin/graphics/steel.ppm);
 }
 
 tek.ui.class.text {
-	background-image: url(bin/graphics/alloy.ppm);
+	background-image: url(bin/graphics/back2.png);
 }
 
 .caption {
-	background-image: url(bin/graphics/heated.ppm);
 }
 
 .gauge-fill {
-	background-image: url(bin/graphics/steel.ppm);
+	background-image: url(bin/graphics/back2.png);
 }
 
 .knob {
-	background-image: url(bin/graphics/alloy.ppm);
+	background-image: url(bin/graphics/back2.png);
 }
 
 .menubar {
-	background-image: url(bin/graphics/brushed2.ppm);
-}
-
-.menubar {
+	background-color: white;
 	background-attachment: fixed;
 }
 
 .page-button {
-	background-image: url(bin/graphics/heated.ppm);
 	background-attachment: fixed;
 }
 .page-button:active {
-	border-bottom-color: url(bin/graphics/heated.ppm);
 }
 
 .page-button-fill {

@@ -42,6 +42,9 @@
 --		- {{MouseX [G]}} (number)
 --		- {{MouseY [G]}} (number)
 --			The current window coordinates of the pointing device.
+-- 		- {{RootWindow [IG]}} (boolean)
+--			Hint that the window can be used as the background or main window
+--			that determines the size of the screen or display resolution.
 --		- {{Status [ISG]}} (string)
 --			Status of the Window, which can be:
 --				- {{"initializing"}} - The window is initializing
