@@ -414,9 +414,7 @@ Support for the native Linux framebuffer (and input event interface)
 can be compiled into the raw framebuffer directly. It then adapts to
 the active screensize and pixel format automatically. The keymap is
 compiled in, by default {{/usr/share/keymaps/i386/qwerty/us.map.gz}},
-and can be generated using a conversion tool, {{etc/keymap2c}}. Linux
-framebuffer support has been tested on a Laptop and Raspberry Pi
-(both under Gentoo Linux). Acceleration is not yet supported.
+and can be generated using a conversion tool, {{etc/keymap2c}}.
 
 A VNC server option (through 
 [[LibVNCServer][http://libvncserver.sourceforge.net/]]) is available
