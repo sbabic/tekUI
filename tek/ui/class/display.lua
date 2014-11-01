@@ -87,7 +87,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(110)
 
 local Element = ui.require("element", 17)
 local Visual = ui.loadLibrary("visual", 4)
@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 32.2"
+_VERSION = "Display 33.0"
 local Display = _M
 Element:newClass(Display)
 
@@ -264,7 +264,7 @@ Display.getDisplayAttrs = Visual.getDisplayAttrs
 --	or by retrieving it from the cache.
 -------------------------------------------------------------------------------
 
-function Display.getPaint(imgspec, display)
+function Display.getPaint(imgspec, display, width, height)
 	if PixmapCache[imgspec] then
 		db.trace("got cache copy for '%s'", imgspec)
 		return unpack(PixmapCache[imgspec])
@@ -274,7 +274,7 @@ function Display.getPaint(imgspec, display)
 	if imgtype == "url" then
 		local f = open(location, "rb")
 		if f then
-			paint, w, h, trans = createPixmap(f)
+			paint, w, h, trans = createPixmap(f, width, height)
 			f:close()
 		else
 			db.warn("cannot load image '%s'", location)

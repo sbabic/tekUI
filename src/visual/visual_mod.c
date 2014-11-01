@@ -250,45 +250,16 @@ vis_modclose(struct TVisualBase *inst)
 static TBOOL
 vis_init(struct TVisualBase *mod)
 {
-	for (;;)
-	{
-		mod->vis_Displays = vis_createhash(mod, TNULL);
-		if (mod->vis_Displays == TNULL) break;
-
-		return TTRUE;
-	}
-	vis_exit(mod);
-	return TFALSE;
+	TInitList(&mod->vis_Displays);
+	return TTRUE;
 }
 
 static void
 vis_exit(struct TVisualBase *mod)
 {
-	struct TExecBase *TExecBase = TGetExecBase(mod);
-	if (mod->vis_Displays)
-	{
-		struct TList dlist;
-		struct TNode *next, *node;
-
-		if (mod->vis_InitRequest)
-			TDisplayFreeReq((struct TDisplayBase *)
-				mod->vis_InitRequest->tvr_Req.io_Device,
-				mod->vis_InitRequest);
-
-		TInitList(&dlist);
-		vis_hashtolist(mod, mod->vis_Displays, &dlist);
-		for (node = dlist.tlh_Head; (next = node->tln_Succ); node = next)
-		{
-			#if defined(VISUAL_USE_INTERNAL_HASH)
-			struct TModule *dmod = (struct TModule *)
-				((struct vis_HashNode *) node)->value;
-			#else
-			struct TModule *dmod = (struct TModule *)
-				((struct THashNode *) node)->thn_Value;
-			#endif
-			TCloseModule(dmod);
-		}
-
-		vis_destroyhash(mod, mod->vis_Displays);
-	}
+	if (mod->vis_InitRequest)
+		TDisplayFreeReq((struct TDisplayBase *)
+			mod->vis_InitRequest->tvr_Req.io_Device,
+			mod->vis_InitRequest);
+	TDestroyList(&mod->vis_Displays);
 }

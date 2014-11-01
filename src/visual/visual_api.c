@@ -1,66 +1,6 @@
 
 #include "visual_mod.h"
-
-#if defined(TSYS_WINNT)
-#define DEF_DISPLAYNAME	"display_windows"
-#else
-#define DEF_DISPLAYNAME	"display_x11"
-#endif
-
-/*****************************************************************************/
-
-#if !defined(VISUAL_USE_INTERNAL_HASH)
-
-LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, TAPTR udata)
-{
-	struct TExecBase *TExecBase = TGetExecBase(mod);
-	mod->vis_UtilBase = TOpenModule("util", 0, TNULL);
-	if (mod->vis_UtilBase)
-	{
-		TTAGITEM tags[2];
-		TAPTR hash;
-		tags[0].tti_Tag = THash_Type;
-		tags[0].tti_Value = THASHTYPE_STRINGCOPY;
-		tags[1].tti_Tag = TTAG_DONE;
-		hash = TUtilCreateHash(mod->vis_UtilBase, tags);
-		if (hash)
-			return hash;
-		vis_destroyhash(mod, TNULL);
-	}
-	return TNULL;
-}
-
-LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash)
-{
-	struct TExecBase *TExecBase = TGetExecBase(mod);
-	if (hash)
-		TDestroy((struct THandle *) hash);
-	if (mod->vis_UtilBase)
-		TCloseModule(mod->vis_UtilBase);
-	mod->vis_UtilBase = TNULL;
-}
-
-LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash,
-	const TSTRPTR key, TTAG value)
-{
-	return TUtilPutHash(mod->vis_UtilBase, (struct THash *) hash,
-		(TTAG) key, value);
-}
-
-LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash,
-	const TSTRPTR key, TTAG *valp)
-{
-	return TUtilGetHash(mod->vis_UtilBase, (struct THash *) hash,
-		(TTAG) key, valp);
-}
-
-LOCAL TUINT vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash,
-	struct TList *list)
-{
-	return TUtilHashToList(mod->vis_UtilBase, (struct THash *) hash, list);
-}
-
-#endif
+#include <tek/string.h>
 
 /*****************************************************************************/
 
@@ -607,6 +547,18 @@ EXPORT void vis_unsetcliprect(struct TVisualBase *inst)
 
 /*****************************************************************************/
 
+static THOOKENTRY TTAG destroy_displayhandle(struct THook *hook, TAPTR obj, 
+	TTAG msg)
+{
+	if (msg != TMSG_DESTROY)
+		return 0;
+	struct vis_DisplayHandle *hnd = obj;
+	struct TExecBase *TExecBase = TGetExecBase(&hnd->handle);
+	TCloseModule(hnd->display);
+	TFree(hnd);
+	return 0;
+}
+
 EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
@@ -616,8 +568,7 @@ EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags)
 	if (display == TNULL)
 	{
 		TSTRPTR name;
-		TBOOL success;
-		TTAG hashval;
+		struct vis_DisplayHandle *hnd;
 
 		/* displayname in taglist? */
 		name = (TSTRPTR) TGetTag(tags, TVisual_DisplayName, TNULL);
@@ -628,25 +579,31 @@ EXPORT TAPTR vis_opendisplay(struct TVisualBase *mod, TTAGITEM *tags)
 
 		/* lookup display by name: */
 		TLock(mod->vis_Lock);
-		success = vis_gethash(mod, mod->vis_Displays, name, &hashval);
+		hnd = (struct vis_DisplayHandle *) TFindHandle(&mod->vis_Displays, name);
+		if (hnd)
+			display = hnd->display;
 		TUnlock(mod->vis_Lock);
 
-		if (success)
-			display = (TAPTR) hashval;
-		else
+		if (!display)
 		{
 			/* try to open named display: */
 			TDBPRINTF(TDB_INFO,("loading module %s\n", name));
 			display = TOpenModule(name, 0, tags);
 			if (display)
 			{
-				/* store display in hash: */
-				TLock(mod->vis_Lock);
-				success = vis_puthash(mod, mod->vis_Displays, name,
-					(TTAG) display);
-				TUnlock(mod->vis_Lock);
-
-				if (!success)
+				hnd = TAlloc(TNULL, sizeof *hnd + TStrLen(name) + 1);
+				if (hnd)
+				{
+					TStrCpy((TSTRPTR) (hnd + 1), name);
+					hnd->handle.thn_Name = (TSTRPTR) (hnd + 1);
+					hnd->handle.thn_Owner = TExecBase;
+					hnd->display = display;
+					TInitHook(&hnd->handle.thn_Hook, destroy_displayhandle, hnd);
+					TLock(mod->vis_Lock);
+					TAddHead(&mod->vis_Displays, &hnd->handle.thn_Node);
+					TUnlock(mod->vis_Lock);
+				}
+				else
 				{
 					TCloseModule(display);
 					display = TNULL;

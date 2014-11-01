@@ -19,10 +19,10 @@
 #endif
 
 #include "../teklib/teklib.c"
+#include "../teklib/string.c"
 #if defined(TDEBUG) && TDEBUG > 0
 #include "../teklib/debug.c"
 #endif
 
 #include "visual_mod.c"
 #include "visual_api.c"
-#include "visual_hash.c"

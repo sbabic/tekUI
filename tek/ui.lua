@@ -133,9 +133,9 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 49.0" -- module version string
+_VERSION = "tekUI 50.0" -- module version string
 
-VERSION = 109 -- overall package version number
+VERSION = 110 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------
@@ -346,8 +346,8 @@ end
 --	build configuration.)
 -------------------------------------------------------------------------------
 
-function loadImage(fname)
-	local img, w, h, trans = Display.getPaint("url("..fname..")")
+function loadImage(fname, w, h)
+	local img, w, h, trans = Display.getPaint("url("..fname..")", nil, w, h)
 	if img then
 		return Image:new { img, w, h, trans }
 	end

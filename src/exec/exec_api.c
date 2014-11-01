@@ -656,7 +656,7 @@ EXPORT TAPTR exec_GetMsg(struct TExecBase *TExecBase, struct TMsgPort *port)
 		}
 	}
 	else
-		TDBPRINTF(TDB_WARN,("port=TNULL\n"));
+		TDBPRINTF(TDB_INFO,("port=TNULL\n"));
 	return TNULL;
 }
 

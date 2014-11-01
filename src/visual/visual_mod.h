@@ -33,19 +33,19 @@
 
 #define VISUAL_MAXREQPERINSTANCE	64
 
+#if defined(TSYS_WINNT)
+#define DEF_DISPLAYNAME	"display_windows"
+#else
+#define DEF_DISPLAYNAME	"display_x11"
+#endif
+
 /*****************************************************************************/
 
-#if defined(VISUAL_USE_INTERNAL_HASH)
-struct vis_Hash;
-
-struct vis_HashNode
+struct vis_DisplayHandle
 {
-	struct TNode node;
-	TSTRPTR key;
-	TTAG value;
-	TUINT hash;
+	struct THandle handle;
+	struct TModule *display;
 };
-#endif
 
 struct vis_FontQueryHandle
 {
@@ -70,8 +70,8 @@ struct TVisualBase
 	TUINT vis_RefCount;
 	/* Flags: */
 	TUINT vis_Flags;
-	/* Hash of displays: */
-	struct vis_Hash *vis_Displays;
+	/* List of displays: */
+	struct TList vis_Displays;
 	/* Instance-specific: */
 	struct TVRequest *vis_InitRequest;
 	/* Display: */
@@ -94,20 +94,6 @@ struct TVisualBase
 
 #define TVISFL_CMDRPORT_OWNER	0x0001
 #define TVISFL_IMSGPORT_OWNER	0x0002
-
-/*****************************************************************************/
-
-LOCAL struct vis_Hash *vis_createhash(struct TVisualBase *mod, TAPTR udata);
-LOCAL void vis_destroyhash(struct TVisualBase *mod, struct vis_Hash *hash);
-LOCAL int vis_puthash(struct TVisualBase *mod, struct vis_Hash *hash,
-	const TSTRPTR key, TTAG value);
-LOCAL int vis_gethash(struct TVisualBase *mod, struct vis_Hash *hash,
-	const TSTRPTR key, TTAG *valp);
-LOCAL int vis_remhash(struct TVisualBase *mod, struct vis_Hash *hash,
-	const TSTRPTR key);
-LOCAL TUINT vis_hashtolist(struct TVisualBase *mod, struct vis_Hash *hash,
-	struct TList *list);
-LOCAL void vis_hashunlist(struct TVisualBase *mod, struct vis_Hash *hash);
 
 /*****************************************************************************/
 
