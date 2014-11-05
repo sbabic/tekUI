@@ -1,6 +1,11 @@
 
 == tekUI Changelog ==
 
+ * ImgLoad, Visual: Minor improvements in loading with alpha channel
+ * Visual module: Minor API corrections, added documentation
+ * Display: Some corrections in API documentation
+ * UI: loadImage() can now load from an open file
+
 === 1.09: ===
 
  * Added basic support for native Linux framebuffer and event interface.

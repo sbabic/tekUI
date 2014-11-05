@@ -18,12 +18,15 @@ struct ImgFileLoader
 	FILE *fd;
 };
 
+#define IMLFL_HAS_ALPHA	0x0001
+
 struct ImgLoader
 {
 	struct TExecBase *iml_ExecBase;
 	struct TVPixBuf iml_Image;
 	TUINT iml_Width;
 	TUINT iml_Height;
+	TUINT iml_Flags;
 	TBOOL (*iml_ReadFunc)(struct ImgLoader *ld, TUINT8 *buf, TSIZE nbytes);
 	long (*iml_SeekFunc)(struct ImgLoader *ld, long offs, int whence);
 	union 

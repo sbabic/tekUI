@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="25-Oct-2014" />
+		<meta name="created" content="05-Nov-2014" />
 	</head>
 	<body>
 		<h1>
@@ -223,6 +223,9 @@
 					</li>
 					<li>
 						<a href="#tek.lib.string">String</a> 
+					</li>
+					<li>
+						<a href="#tek.lib.visual">Visual</a> 
 					</li>
 					<li>
 						<a href="#tek.ui">ui</a> 
@@ -1610,7 +1613,781 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v49.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.visual" id="tek.lib.visual">Visual (v1.0)</a></h2>
+			<div class="definition"><dfn>FUNCTIONS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Visual:allocPen"><code>Visual:allocPen()</code></a> - Obtain a colored pen
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:blitRect"><code>Visual:blitRect()</code></a> - Move rectangular area
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:clearInput"><code>Visual:clearInput()</code></a> - Remove input sources
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:close"><code>Visual.close()</code></a> - Close a visual
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:closeFont"><code>Visual.closeFont()</code></a> - Close font
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:createGradient"><code>Visual.createGradient()</code></a> - Create gradient
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:createPixmap"><code>Visual.createPixmap()</code></a> - Create pixmap from file or table
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:drawImage"><code>Visual:drawImage()</code></a> - Draw simple vector image
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:drawLine"><code>Visual:drawLine()</code></a> - Draw line
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:drawPixmap"><code>Visual:drawPixmap()</code></a> - Draw pixmap
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:drawPoint"><code>Visual:drawPoint()</code></a> - Draw pixel
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:drawRect"><code>Visual:drawRect()</code></a> - Draw rectangle
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:drawRGB"><code>Visual:drawRGB()</code></a> - Draw table as RGB
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:drawText"><code>Visual:drawText()</code></a> - Draw text
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:fillRect"><code>Visual:fillRect()</code></a> - Fill rectangle
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:flush"><code>Visual:flush()</code></a> - Flush changes to display
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:freePen"><code>Visual:freePen()</code></a> - Release a colored pen
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getAttrs"><code>Visual:getAttrs()</code></a> - Retrieve attributes from a visual
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getClipRect"><code>Visual:getClipRect()</code></a> - Get active clipping rectangle
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getDisplayAttrs"><code>Visual.getDisplayAttrs()</code></a> - Get attributes from the display
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getFontAttrs"><code>Visual.getFontAttrs()</code></a> - Get font attributes
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getMsg"><code>Visual.getMsg()</code></a> - Get next input message
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getPaintInfo"><code>Visual:getPaintInfo()</code></a> - Get type of the background paint
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getTextSize"><code>Visual.getTextSize()</code></a> - Get size of a text when rendered with a font
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getTime"><code>Visual.getTime()</code></a> - Get system time
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:getUserdata"><code>Visual:getUserdata()</code></a> - Get a visual's userdata
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:open"><code>Visual.open()</code></a> - Open a visual
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:openFont"><code>Visual.openFont()</code></a> - Open a font
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:popClipRect"><code>Visual:popClipRect()</code></a> - Pop rectangle from stack of clip rects
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:pushClipRect"><code>Visual:pushClipRect()</code></a> - Push rectangle on stack of clip rects
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:setAttrs"><code>Visual:setAttrs()</code></a> - Set attributes in visual
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:setBGPen"><code>Visual:setBGPen()</code></a> - Set visual's background pen, pixmap or gradient
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:setClipRect"><code>Visual:setClipRect()</code></a> - Set clipping rectangle
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:setFont"><code>Visual:setFont()</code></a> - Set the visual's current font
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:setInput"><code>Visual:setInput()</code></a> - Add input sources
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visuak:getSelection"><code>Visuak:getSelection()</code></a> - Get visual's selection or clipboard
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:setShift"><code>Visual:setShift()</code></a> - Set coordinate displacement
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:setTextureOrigin"><code>Visual:setTextureOrigin()</code></a> - Set texture origin
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:sleep"><code>Visual.sleep()</code></a> - Wait for number of microseconds
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:textSize"><code>Visual:textSize()</code></a> - Get size of text when rendered with current font
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:unsetClipRect"><code>Visual:unsetClipRect()</code></a> - Unset clipping rectangle
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Visual:wait"><code>Visual.wait()</code></a> - Wait for any event from any window
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="Visual:allocPen" id="Visual:allocPen"><code>pen = Visual:allocPen(a, r, g, b)</code></a></h3>
+			<p>
+				Obtain a colored pen.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:blitRect" id="Visual:blitRect"><code>Visual:blitRect(x0, y0, x1, y1, dx, dy[, exposetable])</code></a></h3>
+			<p>
+				Blits the given
+				rectangle to the destination upper left position <code>dx</code>/<code>dy</code>. Source
+				areas of the blit that were previously obscured but are getting exposed by
+				blitting them into visibility show up as coordinate quartets (x0, y0, x1,
+				y1 each) in the optional <code>exposetable</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:clearInput" id="Visual:clearInput"><code>Visual:clearInput(inputmask)</code></a></h3>
+			<p>
+				For a visual, specifies a set of input
+				message types the caller wishes to remove from the set of messages to be
+				received. For the valid types, see <a href="#Visual:getMsg"><code>Visual.getMsg()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:close" id="Visual:close"><code>Visual.close()</code></a></h3>
+			<p>
+				Close visual.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:closeFont" id="Visual:closeFont"><code>Visual.closeFont(font)</code></a></h3>
+			<p>
+				Free font and associated resources.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:createGradient" id="Visual:createGradient"><code>gradient = Visual.createGradient(x0, y0, x1, y1, rgb0, rgb1)</code></a></h3>
+			<p>
+				If gradient
+				support is available, creates a gradient object with a gradient from the
+				coordinates x0,y0, with the color rgb0 to x1,y1, with the color rgb1.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:createPixmap" id="Visual:createPixmap"><code>pixmap = Visual.createPixmap(src[, width[, height[, alpha[, idx]]]])</code></a></h3>
+			<p>
+				Creates a pixmap object from some source. The <code>src</code> argument can be a
+				string, containing a loaded image in some file format (PPM or PNG), an open
+				file, or a table. In case of a string or a file, width and height determine
+				an optional size to scale the image to. If only one of width and height are
+				given, the image is scaled proprtionally. In case of a table, the width and
+				height arguments are mandatory, and the table is expected to contain RGB
+				values starting at table index <code>0</code>, unless another index is given.
+				The <code>alpha</code> argument can be used to override presence or absence of an
+				alpha channel; the default is determined by the picture, or none in the
+				case of a table source.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:drawImage" id="Visual:drawImage"><code>Visual:drawImage(table, x0, y0, x1, y1, pen_or_pentab)</code></a></h3>
+			<p>
+				Draw a table
+				containing a simple vector image into the specified rectangle, with the
+				specified table of pens, or a single pen. Image table format:
+			</p>
+<pre>
+{
+  &#091;1&#093; = { x0, y0, x1, y1, ... }, -- coordinates table
+  &#091;4&#093; = boolean, -- is_transparent
+  &#091;5&#093; = { -- table of primitive records
+    { &#091;1&#093;=fmtcode, &#091;2&#093;=nmpts, &#091;3&#093;={ indices }, &#091;4&#093;=pen_or_table },
+    ...
+  }
+}
+</pre>
+			<p>
+				<code>fmtcode</code> can be <code>0x1000</code> for a strip, <code>0x2000</code> for a fan.
+				The coordinates are in the range from 0 to 0xffff.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:drawLine" id="Visual:drawLine"><code>Visual:drawLine(x0, y0, x1, y1, pen)</code></a></h3>
+			<p>
+				Draw a line.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:drawPixmap" id="Visual:drawPixmap"><code>Visual:drawPixmap(pm, x0, y0, x1, y1)</code></a></h3>
+			<p>
+				Draw pixmap.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:drawPoint" id="Visual:drawPoint"><code>Visual:drawPoint(x, y, pen)</code></a></h3>
+			<p>
+				Draw a pixel.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:drawRGB" id="Visual:drawRGB"><code>Visual:drawRGB(table, x, y, w, h[, pw[, ph[, has_alpha]])</code></a></h3>
+			<p>
+				Draw a table
+				of RGB values as pixels. The table index starts at <code>0</code>. <code>pw</code> and <code>ph</code> 
+				are the &quot;thickness&quot; of pixels, whih allows to stretch the output by the
+				given factor. The default is <code>1</code> respectively. The boolean <code>has_alpha</code> 
+				determines whether the pixel values are to be interpreted as ARGB and
+				be rendered with alpha channel.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:drawRect" id="Visual:drawRect"><code>Visual:drawRect(x0, y0, x1, y1, pen)</code></a></h3>
+			<p>
+				Draw a rectangle
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:drawText" id="Visual:drawText"><code>Visual:drawText(x0, y0, x1, y1, text, fgpen[, bgpaint])</code></a></h3>
+			<p>
+				Draw the text into
+				the specified rectangle. <code>fgpen</code> must be a pen, bgpaint is optional and
+				may be a pen, a pixmap, or a gradient. For drawing background with a pixmap
+				or gradient, see also <a href="#Visual:setTextureOrigin"><code>Visual:setTextureOrigin()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:fillRect" id="Visual:fillRect"><code>Visual:fillRect(x0, y0, x1, y1[, paint])</code></a></h3>
+			<p>
+				Draw a filled rectangle.
+				<code>paint</code> may refer to a pen, a pixmap, or a gradient. For drawing with
+				a pixmap or gradient, see also <a href="#Visual:setTextureOrigin"><code>Visual:setTextureOrigin()</code></a>. If no paint
+				argument is specified, the visual's current background paint is used,
+				see also <a href="#Visual:setBGPen"><code>Visual:setBGPen()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:flush" id="Visual:flush"><code>Visual:flush()</code></a></h3>
+			<p>
+				Flush all changes to the visual to the display.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:freePen" id="Visual:freePen"><code>Visual:freePen(pen)</code></a></h3>
+			<p>
+				Release a colored pen
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getAttrs" id="Visual:getAttrs"><code>attr1, ... = Visual:getAttrs(attributes)</code></a></h3>
+			<p>
+				Retrieve attributes from a
+				visual. <code>attributes</code> is a string, in which individual characters
+				determine a property each, which are returned in the order of their
+				occurrence. Default: <code>&quot;whxy&quot;</code>. Attributes:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>&quot;w&quot;</code> - number, visual's width in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;h&quot;</code> - number, visual's height in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;W&quot;</code> - number, screen width in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;H&quot;</code> - number, screen height in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;x&quot;</code> - number, visual's left edge on the screen
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;y&quot;</code> - number, visual's top edge on the screen
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;s&quot;</code> - boolean, whether the visual has a selection
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;c&quot;</code> - boolean, whether the visual has a clipboard
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;M&quot;</code> - boolean, whether the screen has a window manager
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getClipRect" id="Visual:getClipRect"><code>x0, y0, x1, y1 = Visual:getClipRect()</code></a></h3>
+			<p>
+				Get the visual's clipping rectangle
+				that is in effect currently.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getDisplayAttrs" id="Visual:getDisplayAttrs"><code>attr1, ... = Visual.getDisplayAttrs(attrs)</code></a></h3>
+			<p>
+				Queries attributes from the
+				display. Returns one value for each character specified in the <code>attrs</code> 
+				string. Attributes:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>&quot;M&quot;</code> - The display provides a window manager (boolean)
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getFontAttrs" id="Visual:getFontAttrs"><code>table = Visual.getFontAttrs(font[, table])</code></a></h3>
+			<p>
+				Returns font attributes in
+				a table. Field keys as currently defined:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>&quot;Height&quot;</code> - Height in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;UlPosition&quot;</code> - Position of an underline, in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;UlThickness&quot;</code> - Thickness of an underline, in pixels
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getMsg" id="Visual:getMsg"><code>msg = Visual.getMsg()</code></a></h3>
+			<p>
+				Get next input message. Fields in a message are
+				indexed numerically:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>-1</code> - Userdata, e.g. the window object from which the message
+						originates, or the user message body in case of <code>ui.MSG_USER</code> 
+					</li>
+					<li style="list-style-type: none">
+						<code>0</code> - Timestamp of the message, milliseconds
+					</li>
+					<li style="list-style-type: none">
+						<code>1</code> - Timestamp of the message, seconds
+					</li>
+					<li style="list-style-type: none">
+						<code>2</code> - Message type. Types:
+						<blockquote>
+							<ul>
+								<li style="list-style-type: none">
+									<code>ui.MSG_CLOSE</code> - the user wishes to close the window
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_FOCUS</code> - the window received/lost the input focus
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_NEWSIZE</code> - the window has been resized
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_REFRESH</code> - a part of the window needs a repaint
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_MOUSEOVER</code> - the mouse moved over/out of the window
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_KEYDOWN</code> - a key was pressed down
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_MOUSEMOVE</code> - the mouse was moved
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_MOUSEBUTTON</code> - a mouse button was pressed
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_INTERVAL</code> - a timer interval has passed
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_KEYUP</code> - a key was released
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_USER</code> - a user message was send to the application
+								</li>
+								<li style="list-style-type: none">
+									<code>ui.MSG_REQSELECTION</code> - selection or clipboard requested
+								</li>
+							</ul>
+						</blockquote>
+					</li>
+					<li style="list-style-type: none">
+						<code>3</code> - Message code - depending on the message type, indicates
+						focus on/off, keycode, mouse button number, etc.
+					</li>
+					<li style="list-style-type: none">
+						<code>4</code> - Mouse X position on window
+					</li>
+					<li style="list-style-type: none">
+						<code>5</code> - Mouse Y position on window
+					</li>
+					<li style="list-style-type: none">
+						<code>6</code> - Keyboard Qualifier
+					</li>
+					<li style="list-style-type: none">
+						<code>7</code> - Keyboard message: UTF-8 representation of key code, or
+					</li>
+					<li style="list-style-type: none">
+						<code>7</code> - Refresh message: X position of damaged area
+					</li>
+					<li style="list-style-type: none">
+						<code>8</code> - Refresh message: Y position of damaged area
+					</li>
+					<li style="list-style-type: none">
+						<code>9</code> - Refresh message: Width of damaged area
+					</li>
+					<li style="list-style-type: none">
+						<code>10</code> - Refresh message: Height of damaged area
+					</li>
+					<li style="list-style-type: none">
+						<code>11</code> - Mouse X position on screen
+					</li>
+					<li style="list-style-type: none">
+						<code>12</code> - Mouse Y position on screen
+					</li>
+				</ul>
+			</blockquote>
+			<p>
+				A message will be acknowledged implicitely by garbage collection, or
+				by invoking the <code>msg:reply(&#091;table&#093;)</code> method on it, in which case extra
+				data can be returned to the sender. Valid fields in <code>table</code> are:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>UTF8Selection</code> - a string containing the selection buffer, in
+						reply to messages of the type <code>MSG_REQSELECTION</code> 
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getPaintInfo" id="Visual:getPaintInfo"><code>type = Visual:getPaintInfo()</code></a></h3>
+			<p>
+				Returns the type of background paint that
+				is currently effective:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>0</code> - undefined
+					</li>
+					<li style="list-style-type: none">
+						<code>1</code> - single-color pen
+					</li>
+					<li style="list-style-type: none">
+						<code>2</code> - pixmap
+					</li>
+					<li style="list-style-type: none">
+						<code>3</code> - gradient
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getSelection" id="Visual:getSelection"><code>string = Visual:getSelection([type])</code></a></h3>
+			<p>
+				Gets the visual's selection of the
+				specified type:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>1</code> - the selection (default)
+					</li>
+					<li style="list-style-type: none">
+						<code>2</code> - the clipboard
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getTextSize" id="Visual:getTextSize"><code>width, height = Visual.getTextSize(font, text)</code></a></h3>
+			<p>
+				Returns the width and
+				height of the specified text when rendered with the given font. See also
+				<a href="#Visual:textSize"><code>Visual:textSize()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getTime" id="Visual:getTime"><code>sec, millis = Visual.getTime()</code></a></h3>
+			<p>
+				Returns the system time in seconds and
+				milliseconds.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:getUserData" id="Visual:getUserData"><code>data = Visual:getUserData()</code></a></h3>
+			<p>
+				Get the user data attached to a visual.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:open" id="Visual:open"><code>visual = Visual.open([args])</code></a></h3>
+			<p>
+				Opens a visual. Possible keys and their
+				values in the <code>args</code> table:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>&quot;UserData&quot;</code> - Lua userdata attached to the visual
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Pens&quot;</code> - table, for looking up pens, pixmaps, and gradients
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Title&quot;</code> - string, window title (if applicable)
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Borderless&quot;</code> - bool, open window borderless (if applicable)
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;PopupWindow&quot;</code> - bool, the window is used for a popup
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Center&quot;</code> - bool, try to open the window centered on the screen
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;FullScreen&quot;</code> - bool, try to open in fullscreen mode
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Width&quot;</code> - number, width in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Height&quot;</code> - number, height in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Left&quot;</code> - number, left edge in pixels on the screen
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Top&quot;</code> - number, top edge in pixels on the screen
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;MinWidth&quot;</code> - number, min. width for the window to shrink to
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;MinHeight&quot;</code> - number, min. height for the window to shrink to
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;MaxWidth&quot;</code> - number, max. width for the window to grow to
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;MaxHeight&quot;</code> - number, max. height for the window to grow to
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;EventMask&quot;</code> - number, mask of input message types, see also
+						<a href="#Visual:getMsg"><code>Visual.getMsg()</code></a> for details
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;BlankCursor&quot;</code> - bool, clear the mouse pointer over the window
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;ExtraArgs&quot;</code> - string, extra arugments containing hints for the
+						underlying display driver
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;MsgFileNo&quot;</code> - number, of a file descriptor to read messages of
+						type <code>MSG_USER</code> from. Default: the file number of <code>stdin</code> 
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:openFont" id="Visual:openFont"><code>font = Visual.openFont([name[, size[, attrs]]])</code></a></h3>
+			<p>
+				Opens a named font and,
+				if successful, returns a handle on it. The size is measured in pixels.
+				<code>attrs</code> is a string with each character representing a hint:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>&quot;s&quot;</code> - the font should be scalable
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;b&quot;</code> - the font should be bold
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;i&quot;</code> - the font should be slanted to the right
+					</li>
+				</ul>
+			</blockquote>
+			<p>
+				It depends on the underlying font resource whether name, size, and
+				attributes must match exactly for this function to succeed, and which of
+				the attributes can and will be taken into account. In the case of the TTF
+				freetype library, for example, it may be more promising to use names of
+				fonts specifically crafted to be of the desired type, e.g.
+				<code>&quot;DejaVuSans-BoldOblique&quot;</code>, rather than <code>&quot;DejaVuSans&quot;</code> with the
+				attributes <code>&quot;ib&quot;</code>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:popClipRect" id="Visual:popClipRect"><code>Visual:popClipRect()</code></a></h3>
+			<p>
+				Pop a rectangle from the top of the stack
+				of clipping rectangles.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:pushClipRect" id="Visual:pushClipRect"><code>Visual:pushClipRect(x0, y0, x1, y1)</code></a></h3>
+			<p>
+				Push a rectangle on top of the stack
+				of clipping rectangles.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:setAttrs" id="Visual:setAttrs"><code>num = Visual:setAttrs(table)</code></a></h3>
+			<p>
+				Set attributes in a visual. Possible fields
+				in the <code>table</code>, as currently defined:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>&quot;MinWidth&quot;</code> - number, minimum width the visual may shrink to
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;MinHeight&quot;</code> - number, minimum height the visual may shrink to
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;MaxWidth&quot;</code> - number, minimum width the visual may grow to
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;MaxHeight&quot;</code> - number, minimum width the visual may grow to
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;HaveSelection&quot;</code> - boolean, indicates that the visual has the
+						selection
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;HaveClipboard&quot;</code> - boolean, indicates that the visual has the
+						clipboard
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Left&quot;</code> - number, left edge of the visual on the screen, in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Top&quot;</code> - number, top edge of the visual on the screen, in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Width&quot;</code> - number, width of the visual on the screen, in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;Height&quot;</code> - number, height of the visual on the screen, in pixels
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;WindowHints&quot;</code> - string, with each character acting as a hint
+						to window management. Currently defined:
+						<blockquote>
+							<ul>
+								<li style="list-style-type: none">
+									<code>&quot;t&quot;</code> - <em>top</em>, to raise the window on top of all others
+								</li>
+							</ul>
+						</blockquote>
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:setBGPen" id="Visual:setBGPen"><code>Visual:setBGPen(paint[, tx[, ty]])</code></a></h3>
+			<p>
+				Set the visual's pen, pixmap or
+				gradient for rendering backgrounds. Also, optionally, sets a pixmap's or
+				gradient's texture origin.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:setClipRect" id="Visual:setClipRect"><code>Visual:setClipRect(x0, y0, x1, y1)</code></a></h3>
+			<p>
+				Set clipping rectangle
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:setFont" id="Visual:setFont"><code>Visual:setFont(font)</code></a></h3>
+			<p>
+				Set the visual's current font.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:setInput" id="Visual:setInput"><code>Visual:setInput(inputmask)</code></a></h3>
+			<p>
+				For a visual, specifies a set of input
+				message types the caller wishes to add to the set of messages to be
+				received. For the valid types, see <a href="#Visual:getMsg"><code>Visual.getMsg()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:setShift" id="Visual:setShift"><code>Visual:setShift(sx, sy)</code></a></h3>
+			<p>
+				Set coordinate displacement in visual
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:setTextureOrigin" id="Visual:setTextureOrigin"><code>otx, oty = Visual:setTextureOrigin(tx, ty)</code></a></h3>
+			<p>
+				Sets the texture origin for
+				the drawing operations <a href="#Visual:fillRect"><code>Visual:fillRect()</code></a> and <a href="#Visual:drawText"><code>Visual:drawText()</code></a>, and
+				returns the old texture origin.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:sleep" id="Visual:sleep"><code>Visual.sleep(ms)</code></a></h3>
+			<p>
+				Suspends the caller waiting for the specified number of
+				microseconds
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:textSize" id="Visual:textSize"><code>width, height = Visual:textSize(text)</code></a></h3>
+			<p>
+				Get width and height of the given
+				text, if rendered with the visual's current font. See also
+				<a href="#Visual:getTextSize"><code>Visual.getTextSize()</code></a>.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:unsetClipRect" id="Visual:unsetClipRect"><code>Visual:unsetClipRect()</code></a></h3>
+			<p>
+				Unset clipping rectangle
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Visual:wait" id="Visual:wait"><code>Visual.wait()</code></a></h3>
+			<p>
+				Suspends the caller waiting for any event from any window.
+			</p>
+			<hr class="page-break" />
+		</div>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v50.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4082,7 +4859,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v32.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v33.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4141,16 +4918,16 @@ end
 							<a href="#Display:colorToRGB"><code>Display:colorToRGB()</code></a> - Converts a color specification to RGB
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:getTime"><code>Display:getTime()</code></a> - Gets system time
+							<a href="#Display:getTime"><code>Display.getTime()</code></a> - Gets system time
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Display:openFont"><code>Display:openFont()</code></a> - Opens a named font
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:openDrawable"><code>Display:openDrawable()</code></a> - Opens a visual
+							<a href="#Display:openDrawable"><code>Display.openDrawable()</code></a> - Opens a drawable
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Display:sleep"><code>Display:sleep()</code></a> - Sleeps for a period of time
+							<a href="#Display:sleep"><code>Display.sleep()</code></a> - Sleeps for a period of time
 						</li>
 					</ul>
 				</blockquote>
@@ -4337,9 +5114,8 @@ end
 		</div>
 		<div class="node"><h3><a name="Display:createPixmap" id="Display:createPixmap"><code>image, width, height, transparency = Display.createPixmap(picture)</code></a></h3>
 			<p>
-				Creates a pixmap object from data in a picture file format. Currently
-				the PPM and PNG file formats are recognized (the latter if enabled in
-				the build configuration).
+				Creates a pixmap object from a picture file or from a table.
+				See <a href="#Visual:createPixmap"><code>Visual.createPixmap()</code></a>.
 			</p>
 			<hr />
 		</div>
@@ -4352,19 +5128,19 @@ end
 		</div>
 		<div class="node"><h3><a name="Display:getPaint" id="Display:getPaint"><code>image, width, height, transparency = Display.getPaint(imgspec)</code></a></h3>
 			<p>
-				Gets a
-				paint object, either by loading it from the filesystem, generating it,
-				or by retrieving it from the cache.
+				Gets a paint object from a specifier, either by loading it from the
+				filesystem, generating it, or by retrieving it from the cache. To resolve
+				symbolic color names, a display instance must be given.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:getTime" id="Display:getTime"><code>Display:getTime()</code></a></h3>
+		<div class="node"><h3><a name="Display:getTime" id="Display:getTime"><code>Display.getTime()</code></a></h3>
 			<p>
 				Gets the system time.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Display:openDrawable" id="Display:openDrawable"><code>Display:openDrawable()</code></a></h3>
+		<div class="node"><h3><a name="Display:openDrawable" id="Display:openDrawable"><code>Display.openDrawable()</code></a></h3>
 			<p>
 				Open a drawable
 			</p>
@@ -4372,10 +5148,10 @@ end
 		</div>
 		<div class="node"><h3><a name="Display:openFont" id="Display:openFont"><code>font = openFont(fontspec[, size[, attr]])</code></a></h3>
 			<p>
-				Opens a font. For a discussion
-				of the fontname format, see <a href="#tek.ui.class.text">Text</a>.
-				The optional size and attr arguments allow to override their respective
-				values in the fontspec argument.
+				Opens a font, cached, and with
+				complex name resolution and fallbacks. For a discussion of the format
+				see <a href="#tek.ui.class.text">Text</a>. The optional size and attr arguments
+				allow to override their respective values in the fontspec argument.
 			</p>
 			<hr class="page-break" />
 		</div>
@@ -8277,7 +9053,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Sat Oct 25 13:08:23 2014
+					Document generated on Wed Nov  5 22:11:26 2014
 				</p>
 			</div>
 		</div>

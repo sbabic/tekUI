@@ -1,3 +1,60 @@
+/*-----------------------------------------------------------------------------
+--
+--	tek.lib.visual
+--	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
+--	See copyright notice in COPYRIGHT
+--
+--	FUNCTIONS::
+--		- Visual:allocPen() - Obtain a colored pen
+--		- Visual:blitRect() - Move rectangular area
+--		- Visual:clearInput() - Remove input sources
+--		- Visual.close() - Close a visual
+--		- Visual.closeFont() - Close font
+--		- Visual.createGradient() - Create gradient
+--		- Visual.createPixmap() - Create pixmap from file or table
+--		- Visual:drawImage() - Draw simple vector image
+--		- Visual:drawLine() - Draw line
+--		- Visual:drawPixmap() - Draw pixmap
+--		- Visual:drawPoint() - Draw pixel
+--		- Visual:drawRect() - Draw rectangle
+--		- Visual:drawRGB() - Draw table as RGB
+--		- Visual:drawText() - Draw text
+--		- Visual:fillRect() - Fill rectangle
+--		- Visual:flush() - Flush changes to display
+--		- Visual:freePen() - Release a colored pen
+--		- Visual:getAttrs() - Retrieve attributes from a visual
+--		- Visual:getClipRect() - Get active clipping rectangle
+--		- Visual.getDisplayAttrs() - Get attributes from the display
+--		- Visual.getFontAttrs() - Get font attributes
+--		- Visual.getMsg() - Get next input message
+--		- Visual:getPaintInfo() - Get type of the background paint
+--		- Visual.getTextSize() - Get size of a text when rendered with a font
+--		- Visual.getTime() - Get system time
+--		- Visual:getUserdata() - Get a visual's userdata
+--		- Visual.open() - Open a visual
+--		- Visual.openFont() - Open a font
+--		- Visual:popClipRect() - Pop rectangle from stack of clip rects
+--		- Visual:pushClipRect() - Push rectangle on stack of clip rects
+--		- Visual:setAttrs() - Set attributes in visual
+--		- Visual:setBGPen() - Set visual's background pen, pixmap or gradient
+--		- Visual:setClipRect() - Set clipping rectangle
+--		- Visual:setFont() - Set the visual's current font
+--		- Visual:setInput() - Add input sources
+--		- Visuak:getSelection() - Get visual's selection or clipboard
+--		- Visual:setShift() - Set coordinate displacement
+--		- Visual:setTextureOrigin() - Set texture origin
+--		- Visual.sleep() - Wait for number of microseconds
+--		- Visual:textSize() - Get size of text when rendered with current font
+--		- Visual:unsetClipRect() - Unset clipping rectangle
+--		- Visual.wait() - Wait for any event from any window
+--	
+-------------------------------------------------------------------------------
+
+module "tek.lib.visual"
+_VERSION = "Visual 1.0"
+local Visual = _M
+
+-----------------------------------------------------------------------------*/
 
 #include <string.h>
 #include "visual_lua.h"
@@ -145,7 +202,9 @@ static int getbgpaint(lua_State *L, TEKVisual *vis, int uidx,
 	return PAINT_UNDEFINED;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	Visual.wait(): Suspends the caller waiting for any event from any window.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_wait(lua_State *L)
@@ -160,10 +219,10 @@ tek_lib_visual_wait(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	Sleep specified number of microseconds
-*/
+/*-----------------------------------------------------------------------------
+--	Visual.sleep(ms): Suspends the caller waiting for the specified number of
+--	microseconds
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_sleep(lua_State *L)
@@ -180,7 +239,12 @@ tek_lib_visual_sleep(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	attr1, ... = Visual.getDisplayAttrs(attrs): Queries attributes from the
+--	display. Returns one value for each character specified in the {{attrs}}
+--	string. Attributes:
+--		- {{"M"}} - The display provides a window manager (boolean)
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_getdisplayattrs(lua_State *L)
@@ -204,7 +268,10 @@ tek_lib_visual_getdisplayattrs(lua_State *L)
 	return narg;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	sec, millis = Visual.getTime(): Returns the system time in seconds and
+--	milliseconds.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_gettime(lua_State *L)
@@ -221,11 +288,21 @@ tek_lib_visual_gettime(lua_State *L)
 	return 2;
 }
 
-/*****************************************************************************/
-/*
-**	openfont(name, pxsize, attr)
-**	attr: "b" bold, "i" italic, "s" scalable
-*/
+/*-----------------------------------------------------------------------------
+--	font = Visual.openFont([name[, size[, attrs]]]): Opens a named font and,
+--	if successful, returns a handle on it. The size is measured in pixels.
+--	{{attrs}} is a string with each character representing a hint:
+--		- {{"s"}} - the font should be scalable
+--		- {{"b"}} - the font should be bold
+--		- {{"i"}} - the font should be slanted to the right
+--	It depends on the underlying font resource whether name, size, and
+--	attributes must match exactly for this function to succeed, and which of
+--	the attributes can and will be taken into account. In the case of the TTF
+--	freetype library, for example, it may be more promising to use names of
+--	fonts specifically crafted to be of the desired type, e.g.
+--	{{"DejaVuSans-BoldOblique"}}, rather than {{"DejaVuSans"}} with the
+--	attributes {{"ib"}}.
+-----------------------------------------------------------------------------*/
 
 static TBOOL iTStrChr(TSTRPTR s, TINT c)
 {
@@ -318,7 +395,9 @@ tek_lib_visual_openfont(lua_State *L)
 	return 1;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	Visual.closeFont(font): Free font and associated resources.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_closefont(lua_State *L)
@@ -332,10 +411,11 @@ tek_lib_visual_closefont(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	return width, height of the specified font and text
-*/
+/*-----------------------------------------------------------------------------
+--	width, height = Visual.getTextSize(font, text): Returns the width and
+--	height of the specified text when rendered with the given font. See also
+--	Visual:textSize().
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_textsize_font(lua_State *L)
@@ -349,10 +429,13 @@ tek_lib_visual_textsize_font(lua_State *L)
 	return 2;
 }
 
-/*****************************************************************************/
-/*
-**	set font attributes in passed (or newly created) table
-*/
+/*-----------------------------------------------------------------------------
+--	table = Visual.getFontAttrs(font[, table]): Returns font attributes in
+--	a table. Field keys as currently defined:
+--		- {{"Height"}} - Height in pixels
+--		- {{"UlPosition"}} - Position of an underline, in pixels
+--		- {{"UlThickness"}} - Thickness of an underline, in pixels
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_getfontattrs(lua_State *L)
@@ -371,7 +454,11 @@ tek_lib_visual_getfontattrs(lua_State *L)
 	return 1;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	Visual:setInput(inputmask): For a visual, specifies a set of input
+--	message types the caller wishes to add to the set of messages to be
+--	received. For the valid types, see Visual.getMsg().
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_setinput(lua_State *L)
@@ -382,6 +469,12 @@ tek_lib_visual_setinput(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	Visual:clearInput(inputmask): For a visual, specifies a set of input
+--	message types the caller wishes to remove from the set of messages to be
+--	received. For the valid types, see Visual.getMsg().
+-----------------------------------------------------------------------------*/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_clearinput(lua_State *L)
 {
@@ -391,7 +484,9 @@ tek_lib_visual_clearinput(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	Visual:flush(): Flush all changes to the visual to the display.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_flush(lua_State *L)
@@ -490,7 +585,8 @@ LOCAL LUACFUNC TINT tek_msg_index(lua_State *L)
 			if (imsg->timsg_UserData > 0)
 			{
 				TEKVisual *refvis;
-				lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
+				lua_getfield(L, LUA_REGISTRYINDEX,
+					TEK_LIB_VISUAL_BASECLASSNAME);
 				/* s: visbase */
 				lua_getmetatable(L, -1);
 				/* s: visbase, reftab */
@@ -562,6 +658,45 @@ LOCAL LUACFUNC TINT tek_msg_index(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	msg = Visual.getMsg(): Get next input message. Fields in a message are
+--	indexed numerically:
+--		- {{-1}} - Userdata, e.g. the window object from which the message
+--		originates, or the user message body in case of {{ui.MSG_USER}}
+--		- {{0}} - Timestamp of the message, milliseconds
+--		- {{1}} - Timestamp of the message, seconds
+--		- {{2}} - Message type. Types:
+--			- {{ui.MSG_CLOSE}} - the user wishes to close the window
+--			- {{ui.MSG_FOCUS}} - the window received/lost the input focus
+--			- {{ui.MSG_NEWSIZE}} - the window has been resized
+--			- {{ui.MSG_REFRESH}} - a part of the window needs a repaint
+--			- {{ui.MSG_MOUSEOVER}} - the mouse moved over/out of the window
+--			- {{ui.MSG_KEYDOWN}} - a key was pressed down
+--			- {{ui.MSG_MOUSEMOVE}} - the mouse was moved
+--			- {{ui.MSG_MOUSEBUTTON}} - a mouse button was pressed
+--			- {{ui.MSG_INTERVAL}} - a timer interval has passed
+--			- {{ui.MSG_KEYUP}} - a key was released
+--			- {{ui.MSG_USER}} - a user message was send to the application
+--			- {{ui.MSG_REQSELECTION}} - selection or clipboard requested
+--		- {{3}} - Message code - depending on the message type, indicates
+--		focus on/off, keycode, mouse button number, etc.
+--		- {{4}} - Mouse X position on window
+--		- {{5}} - Mouse Y position on window
+--		- {{6}} - Keyboard Qualifier
+--		- {{7}} - Keyboard message: UTF-8 representation of key code, or
+--		- {{7}} - Refresh message: X position of damaged area
+--		- {{8}} - Refresh message: Y position of damaged area
+--		- {{9}} - Refresh message: Width of damaged area
+--		- {{10}} - Refresh message: Height of damaged area
+--		- {{11}} - Mouse X position on screen
+--		- {{12}} - Mouse Y position on screen
+--	A message will be acknowledged implicitely by garbage collection, or
+--	by invoking the {{msg:reply([table])}} method on it, in which case extra
+--	data can be returned to the sender. Valid fields in {{table}} are:
+--		- {{UTF8Selection}} - a string containing the selection buffer, in
+--		reply to messages of the type {{MSG_REQSELECTION}}
+-----------------------------------------------------------------------------*/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_getmsg(lua_State *L)
 {
@@ -628,10 +763,19 @@ static TINT tek_lib_visual_createpixmap_from_img(lua_State *L)
 	pm->pxm_Image = ld.iml_Image;
 	pm->pxm_Width = ld.iml_Width;
 	pm->pxm_Height = ld.iml_Height;
+	pm->pxm_Flags = ld.iml_Flags;
+	if (lua_isboolean(L, 4))
+	{
+		if (lua_toboolean(L, 4))
+			ld.iml_Flags |= IMLFL_HAS_ALPHA;
+		else
+			ld.iml_Flags &= ~IMLFL_HAS_ALPHA;
+	}
 	pm->pxm_VisualBase = vis;
-	lua_pushinteger(L, ld.iml_Width);
-	lua_pushinteger(L, ld.iml_Height);
-	lua_pushboolean(L, TVPIXFMT_HAS_ALPHA(pm->pxm_Image.tpb_Format));
+	
+	lua_pushinteger(L, pm->pxm_Width);
+	lua_pushinteger(L, pm->pxm_Height);
+	lua_pushboolean(L, ld.iml_Flags & IMLFL_HAS_ALPHA);
 	return 4;
 }
 
@@ -643,10 +787,12 @@ tek_lib_visual_createpixmap_from_table(lua_State *L)
 	TUINT *buf;
 	TEKPixmap *bm;
 	int x, y;
-	int tw = luaL_checkinteger(L, 1);
-	int th = luaL_checkinteger(L, 2);
-	int i = luaL_optinteger(L, 4, 0);
-	int lw = luaL_optinteger(L, 5, tw);
+	
+	int tw = luaL_checkinteger(L, 2);
+	int th = luaL_checkinteger(L, 3);
+	TBOOL has_alpha = lua_toboolean(L, 4);
+	int i = luaL_optinteger(L, 5, 0);
+	int lw = luaL_optinteger(L, 6, tw);
 	
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
@@ -670,13 +816,14 @@ tek_lib_visual_createpixmap_from_table(lua_State *L)
 	
 	bm->pxm_Width = tw;
 	bm->pxm_Height = th;
+	bm->pxm_Flags = has_alpha ? IMLFL_HAS_ALPHA : 0;
 	bm->pxm_VisualBase = vis;
 	
 	for (y = 0; y < th; ++y)
 	{
 		for (x = 0; x < tw; ++x)
 		{
-			lua_rawgeti(L, 3, i + x);
+			lua_rawgeti(L, 1, i + x);
 			*buf++ = lua_tointeger(L, -1);
 			lua_pop(L, 1);
 		}
@@ -684,6 +831,20 @@ tek_lib_visual_createpixmap_from_table(lua_State *L)
 	}
 	return 1;
 }
+
+/*-----------------------------------------------------------------------------
+--	pixmap = Visual.createPixmap(src[, width[, height[, alpha[, idx]]]]):
+--	Creates a pixmap object from some source. The {{src}} argument can be a
+--	string, containing a loaded image in some file format (PPM or PNG), an open
+--	file, or a table. In case of a string or a file, width and height determine
+--	an optional size to scale the image to. If only one of width and height are
+--	given, the image is scaled proprtionally. In case of a table, the width and
+--	height arguments are mandatory, and the table is expected to contain RGB
+--	values starting at table index {{0}}, unless another index is given.
+--	The {{alpha}} argument can be used to override presence or absence of an
+--	alpha channel; the default is determined by the picture, or none in the
+--	case of a table source.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_createpixmap(lua_State *L)
@@ -726,6 +887,21 @@ tek_lib_visual_getpixmap(lua_State *L)
 }
 
 LOCAL LUACFUNC TINT
+tek_lib_visual_getpixmapattr(lua_State *L)
+{
+	TEKPixmap *bm = getpixmapptr(L, 1);
+	if (bm->pxm_Image.tpb_Data)
+	{
+		lua_pushinteger(L, bm->pxm_Width);
+		lua_pushinteger(L, bm->pxm_Height);
+		lua_pushboolean(L, bm->pxm_Flags & IMLFL_HAS_ALPHA);
+		return 3;
+	}
+	return 0;
+}
+
+
+LOCAL LUACFUNC TINT
 tek_lib_visual_setpixmap(lua_State *L)
 {
 	TEKPixmap *bm = getpixmapptr(L, 1);
@@ -743,7 +919,9 @@ tek_lib_visual_setpixmap(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	pen = Visual:allocPen(a, r, g, b): Obtain a colored pen.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_allocpen(lua_State *L)
@@ -773,6 +951,10 @@ tek_lib_visual_allocpen(lua_State *L)
 	return 1;
 }
 
+/*-----------------------------------------------------------------------------
+--	Visual:freePen(pen): Release a colored pen
+-----------------------------------------------------------------------------*/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_freepen(lua_State *L)
 {
@@ -799,7 +981,9 @@ static void tek_lib_visual_debugwait(TEKVisual *vis)
 }
 #endif
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	Visual:drawRect(x0, y0, x1, y1, pen): Draw a rectangle
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_rect(lua_State *L)
@@ -839,7 +1023,7 @@ tek_lib_visual_frectpixmap(lua_State *L, TEKVisual *vis, TEKPixmap *pm,
 	TINT y = y0;
 	TTAGITEM tags[2];
 	tags[0].tti_Tag = TVisual_AlphaChannel;
-	tags[0].tti_Value = TVPIXFMT_HAS_ALPHA(pm->pxm_Image.tpb_Format);
+	tags[0].tti_Value = pm->pxm_Flags & IMLFL_HAS_ALPHA;
 	tags[1].tti_Tag = TTAG_DONE;
 	
 	if (vis->vis_HaveClipRect)
@@ -928,8 +1112,8 @@ static vec scaleVec(vec a, float b)
 	return c;
 }
 
-static void getS2(vec r0, vec u, int Ar, int Ag, int Ab, int Dr, int Dg, int Db, 
-	float *pr, float *pg, float *pb, float *pf, int x, int y)
+static void getS2(vec r0, vec u, int Ar, int Ag, int Ab, int Dr, int Dg, 
+	int Db, float *pr, float *pg, float *pb, float *pf, int x, int y)
 {
 	vec z = { x, y };
 	float s = mulVec(subVec(z, r0), u) / mulVec(u, u);
@@ -1057,7 +1241,8 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 			{
 				for (x = 0; x < w; ++x)
 				{
-					*buf++ = ((TUINT) cr << 16) | ((TUINT) cg << 8) | (TUINT) cb;
+					*buf++ = 
+						((TUINT) cr << 16) | ((TUINT) cg << 8) | (TUINT) cb;
 					cr += dr;
 					cg += dg;
 					cb += db;
@@ -1070,9 +1255,11 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 			for (x = 0; x < w; ++x)
 			{
 				if (cx < 1)
-					*buf++ = ((TUINT) Ar << 16) | ((TUINT) Ag << 8) | (TUINT) Ab;
+					*buf++ = 
+						((TUINT) Ar << 16) | ((TUINT) Ag << 8) | (TUINT) Ab;
 				else
-					*buf++ = ((TUINT) cr << 16) | ((TUINT) cg << 8) | (TUINT) cb;
+					*buf++ =
+						((TUINT) cr << 16) | ((TUINT) cg << 8) | (TUINT) cb;
 				cr += dr;
 				cg += dg;
 				cb += db;
@@ -1085,9 +1272,11 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 			for (x = 0; x < w; ++x)
 			{
 				if (cx > 255)
-					*buf++ = ((TUINT) Br << 16) | ((TUINT) Bg << 8) | (TUINT) Bb;
+					*buf++ =
+						((TUINT) Br << 16) | ((TUINT) Bg << 8) | (TUINT) Bb;
 				else
-					*buf++ = ((TUINT) cr << 16) | ((TUINT) cg << 8) | (TUINT) cb;
+					*buf++ =
+						((TUINT) cr << 16) | ((TUINT) cg << 8) | (TUINT) cb;
 				cr += dr;
 				cg += dg;
 				cb += db;
@@ -1100,11 +1289,14 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 			for (x = 0; x < w; ++x)
 			{
 				if (cx < 1)
-					*buf++ = ((TUINT) Ar << 16) | ((TUINT) Ag << 8) | (TUINT) Ab;
+					*buf++ =
+						((TUINT) Ar << 16) | ((TUINT) Ag << 8) | (TUINT) Ab;
 				else if (cx > 255)
-					*buf++ = ((TUINT) Br << 16) | ((TUINT) Bg << 8) | (TUINT) Bb;
+					*buf++ =
+						((TUINT) Br << 16) | ((TUINT) Bg << 8) | (TUINT) Bb;
 				else
-					*buf++ = ((TUINT) cr << 16) | ((TUINT) cg << 8) | (TUINT) cb;
+					*buf++ =
+						((TUINT) cr << 16) | ((TUINT) cg << 8) | (TUINT) cb;
 				cr += dr;
 				cg += dg;
 				cb += db;
@@ -1127,8 +1319,13 @@ tek_lib_visual_frectgradient(lua_State *L, TEKVisual *vis, TEKGradient *gr,
 
 #endif
 
-/*****************************************************************************/
-
+/*-----------------------------------------------------------------------------
+--	Visual:fillRect(x0, y0, x1, y1[, paint]): Draw a filled rectangle.
+--	{{paint}} may refer to a pen, a pixmap, or a gradient. For drawing with
+--	a pixmap or gradient, see also Visual:setTextureOrigin(). If no paint
+--	argument is specified, the visual's current background paint is used,
+--	see also Visual:setBGPen().
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_frect(lua_State *L)
@@ -1188,6 +1385,10 @@ tek_lib_visual_frect(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	Visual:drawLine(x0, y0, x1, y1, pen): Draw a line.
+-----------------------------------------------------------------------------*/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_line(lua_State *L)
 {
@@ -1212,6 +1413,10 @@ tek_lib_visual_line(lua_State *L)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	Visual:drawPoint(x, y, pen): Draw a pixel.
+-----------------------------------------------------------------------------*/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_plot(lua_State *L)
 {
@@ -1233,6 +1438,13 @@ tek_lib_visual_plot(lua_State *L)
 	vis->vis_Dirty = TTRUE;
 	return 0;
 }
+
+/*-----------------------------------------------------------------------------
+--	Visual:drawText(x0, y0, x1, y1, text, fgpen[, bgpaint]): Draw the text into
+--	the specified rectangle. {{fgpen}} must be a pen, bgpaint is optional and
+--	may be a pen, a pixmap, or a gradient. For drawing background with a pixmap
+--	or gradient, see also Visual:setTextureOrigin().
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_text(lua_State *L)
@@ -1294,25 +1506,21 @@ tek_lib_visual_text(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	drawimage(visual, image, r1, r2, r3, r4, pentab, override_pen)
-**
-**	Layout of vector image data structure:
-**
-**	{
-**		[1] = { x0, y0, x1, y1, ... }, -- coordinates (x/y)
-**		[4] = boolean -- is_transparent
-**		[5] = {  -- primitives
-**			{ [1]=fmtcode, [2]=numpts, [3]={ indices }, [4]=pen_or_pentable },
-**			...
-**		}
-**	}
-**
-**	format codes:
-**		0x1000 - strip
-**		0x2000 - fan
-*/
+/*-----------------------------------------------------------------------------
+--	Visual:drawImage(table, x0, y0, x1, y1, pen_or_pentab): Draw a table
+--	containing a simple vector image into the specified rectangle, with the
+--	specified table of pens, or a single pen. Image table format:
+--			{
+--			  [1] = { x0, y0, x1, y1, ... }, -- coordinates table
+--			  [4] = boolean, -- is_transparent
+--			  [5] = { -- table of primitive records
+--			    { [1]=fmtcode, [2]=nmpts, [3]={ indices }, [4]=pen_or_table },
+--			    ...
+--			  }
+--			}
+--	{{fmtcode}} can be {{0x1000}} for a strip, {{0x2000}} for a fan.
+--	The coordinates are in the range from 0 to 0xffff.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_drawimage(lua_State *L)
@@ -1392,7 +1600,7 @@ tek_lib_visual_drawimage(lua_State *L)
 		lua_rawgeti(L, -3, 3);
 		/* s: pentab, coords, primitives, prim[i], fmtcode, nump, indices */
 		lua_rawgeti(L, -4, 4);
-		/* s: pentab, coords, primitives, prim[i], fmtcode, nump, indices, pt */
+		/* s: pentab, coords, primitives, prim[i], fmtcode, nump, indices, p */
 		
 		pentab = lua_type(L, -1) == LUA_TTABLE ? coord + 2 * nump : TNULL;
 		if (pentab)
@@ -1450,7 +1658,21 @@ tek_lib_visual_drawimage(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	attr1, ... = Visual:getAttrs(attributes): Retrieve attributes from a
+--	visual. {{attributes}} is a string, in which individual characters
+--	determine a property each, which are returned in the order of their
+--	occurrence. Default: {{"whxy"}}. Attributes:
+--		- {{"w"}} - number, visual's width in pixels
+--		- {{"h"}} - number, visual's height in pixels
+--		- {{"W"}} - number, screen width in pixels
+--		- {{"H"}} - number, screen height in pixels
+--		- {{"x"}} - number, visual's left edge on the screen
+--		- {{"y"}} - number, visual's top edge on the screen
+--		- {{"s"}} - boolean, whether the visual has a selection
+--		- {{"c"}} - boolean, whether the visual has a clipboard
+--		- {{"M"}} - boolean, whether the screen has a window manager
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_getattrs(lua_State *L)
@@ -1532,7 +1754,9 @@ tek_lib_visual_getattrs(lua_State *L)
 	return narg;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	data = Visual:getUserData(): Get the user data attached to a visual.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_getuserdata(lua_State *L)
@@ -1569,6 +1793,26 @@ static TTAGITEM *getminmax(lua_State *L, TTAGITEM *tp, const char *keyname,
 	lua_pop(L, 1);
 	return tp;
 }
+
+/*-----------------------------------------------------------------------------
+--	num = Visual:setAttrs(table): Set attributes in a visual. Possible fields
+--	in the {{table}}, as currently defined:
+--		- {{"MinWidth"}} - number, minimum width the visual may shrink to
+--		- {{"MinHeight"}} - number, minimum height the visual may shrink to
+--		- {{"MaxWidth"}} - number, minimum width the visual may grow to
+--		- {{"MaxHeight"}} - number, minimum width the visual may grow to
+--		- {{"HaveSelection"}} - boolean, indicates that the visual has the
+--		selection
+--		- {{"HaveClipboard"}} - boolean, indicates that the visual has the
+--		clipboard
+--		- {{"Left"}} - number, left edge of the visual on the screen, in pixels
+--		- {{"Top"}} - number, top edge of the visual on the screen, in pixels
+--		- {{"Width"}} - number, width of the visual on the screen, in pixels
+--		- {{"Height"}} - number, height of the visual on the screen, in pixels
+--		- {{"WindowHints"}} - string, with each character acting as a hint
+--		to window management. Currently defined:
+--			- {{"t"}} - ''top'', to raise the window on top of all others
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_setattrs(lua_State *L)
@@ -1643,10 +1887,11 @@ tek_lib_visual_setattrs(lua_State *L)
 	return 1;
 }
 
-/*****************************************************************************/
-/*
-**	textsize_visual: return text width, height using the current font
-*/
+/*-----------------------------------------------------------------------------
+--	width, height = Visual:textSize(text): Get width and height of the given
+--	text, if rendered with the visual's current font. See also
+--	Visual.getTextSize().
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_textsize_visual(lua_State *L)
@@ -1660,10 +1905,9 @@ tek_lib_visual_textsize_visual(lua_State *L)
 	return 2;
 }
 
-/*****************************************************************************/
-/*
-**	setfont(font): attach a font to a visual
-*/
+/*-----------------------------------------------------------------------------
+--	Visual:setFont(font): Set the visual's current font.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_setfont(lua_State *L)
@@ -1722,6 +1966,14 @@ static TTAG hookfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	return 0;
 }
 
+/*-----------------------------------------------------------------------------
+--	Visual:blitRect(x0, y0, x1, y1, dx, dy[, exposetable]): Blits the given
+--	rectangle to the destination upper left position {{dx}}/{{dy}}. Source
+--	areas of the blit that were previously obscured but are getting exposed by
+--	blitting them into visibility show up as coordinate quartets (x0, y0, x1,
+--	y1 each) in the optional {{exposetable}}.
+-----------------------------------------------------------------------------*/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_copyarea(lua_State *L)
 {
@@ -1769,7 +2021,9 @@ tek_lib_visual_copyarea(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	Visual:setClipRect(x0, y0, x1, y1): Set clipping rectangle
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_setcliprect(lua_State *L)
@@ -1791,7 +2045,9 @@ tek_lib_visual_setcliprect(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	Visual:unsetClipRect(): Unset clipping rectangle
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_unsetcliprect(lua_State *L)
@@ -1802,7 +2058,9 @@ tek_lib_visual_unsetcliprect(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	Visual:setShift(sx, sy): Set coordinate displacement in visual
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_setshift(lua_State *L)
@@ -1817,10 +2075,14 @@ tek_lib_visual_setshift(lua_State *L)
 	return 2;
 }
 
-/*****************************************************************************/
-/*
-**	drawrgb(visual, x0, y0, table, width, height, pixwidth, pixheight)
-*/
+/*-----------------------------------------------------------------------------
+--	Visual:drawRGB(table, x, y, w, h[, pw[, ph[, has_alpha]]): Draw a table
+--	of RGB values as pixels. The table index starts at {{0}}. {{pw}} and {{ph}}
+--	are the "thickness" of pixels, whih allows to stretch the output by the
+--	given factor. The default is {{1}} respectively. The boolean {{has_alpha}}
+--	determines whether the pixel values are to be interpreted as ARGB and
+--	be rendered with alpha channel.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_drawrgb(lua_State *L)
@@ -1832,8 +2094,9 @@ tek_lib_visual_drawrgb(lua_State *L)
 	TINT y0 = luaL_checkinteger(L, 3) + sy;
 	TINT w = luaL_checkinteger(L, 5);
 	TINT h = luaL_checkinteger(L, 6);
-	TINT pw = luaL_checkinteger(L, 7);
-	TINT ph = luaL_checkinteger(L, 8);
+	TINT pw = luaL_optinteger(L, 7, 1);
+	TINT ph = luaL_optinteger(L, 8, 1);
+	TBOOL has_alpha = lua_toboolean(L, 9);
 	TUINT *buf;
 	TINT bw = w * pw;
 	TINT bh = h * ph;
@@ -1867,7 +2130,11 @@ tek_lib_visual_drawrgb(lua_State *L)
 			}
 		}
 
-		TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, bw, bh, bw, TNULL);
+		TTAGITEM tags[2];
+		tags[0].tti_Tag = TVisual_AlphaChannel;
+		tags[0].tti_Value = has_alpha;
+		tags[1].tti_Tag = TTAG_DONE;
+		TVisualDrawBuffer(vis->vis_Visual, x0, y0, buf, bw, bh, bw, tags);
 
 		TFree(buf);
 	}
@@ -1876,10 +2143,9 @@ tek_lib_visual_drawrgb(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	drawpixmap(visual, image, x0, y0, x1, y1)
-*/
+/*-----------------------------------------------------------------------------
+--	Visual:drawPixmap(pm, x0, y0, x1, y1): Draw pixmap.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_drawpixmap(lua_State *L)
@@ -1894,7 +2160,7 @@ tek_lib_visual_drawpixmap(lua_State *L)
 	TINT h = luaL_optinteger(L, 6, y0 + img->pxm_Height - 1) - y0 + 1;
 	TTAGITEM tags[2];
 	tags[0].tti_Tag = TVisual_AlphaChannel;
-	tags[0].tti_Value = TVPIXFMT_HAS_ALPHA(img->pxm_Image.tpb_Format);
+	tags[0].tti_Value = img->pxm_Flags & IMLFL_HAS_ALPHA;
 	tags[1].tti_Tag = TTAG_DONE;
 	TVisualDrawBuffer(vis->vis_Visual, x0 + sx, y0 + sy,
 		img->pxm_Image.tpb_Data, w, h, img->pxm_Width, tags);
@@ -1902,10 +2168,11 @@ tek_lib_visual_drawpixmap(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	settextureorigin(visual, tx, ty)
-*/
+/*-----------------------------------------------------------------------------
+--	otx, oty = Visual:setTextureOrigin(tx, ty): Sets the texture origin for
+--	the drawing operations Visual:fillRect() and Visual:drawText(), and
+--	returns the old texture origin.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT 
 tek_lib_visual_settextureorigin(lua_State *L)
@@ -1920,10 +2187,10 @@ tek_lib_visual_settextureorigin(lua_State *L)
 	return 2;
 }
 
-/*****************************************************************************/
-/*
-**	pushcliprect(x0, y0, x1, y1)
-*/
+/*-----------------------------------------------------------------------------
+--	Visual:pushClipRect(x0, y0, x1, y1): Push a rectangle on top of the stack
+--	of clipping rectangles.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT 
 tek_lib_visual_pushcliprect(lua_State *L)
@@ -1980,10 +2247,10 @@ tek_lib_visual_pushcliprect(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	popcliprect():
-*/
+/*-----------------------------------------------------------------------------
+--	Visual:popClipRect(): Pop a rectangle from the top of the stack
+--	of clipping rectangles.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT 
 tek_lib_visual_popcliprect(lua_State *L)
@@ -2034,10 +2301,10 @@ tek_lib_visual_popcliprect(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	getcliprect:
-*/
+/*-----------------------------------------------------------------------------
+--	x0, y0, x1, y1 = Visual:getClipRect(): Get the visual's clipping rectangle
+--	that is in effect currently.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT 
 tek_lib_visual_getcliprect(lua_State *L)
@@ -2054,10 +2321,11 @@ tek_lib_visual_getcliprect(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	setpen:
-*/
+/*-----------------------------------------------------------------------------
+--	Visual:setBGPen(paint[, tx[, ty]]): Set the visual's pen, pixmap or
+--	gradient for rendering backgrounds. Also, optionally, sets a pixmap's or
+--	gradient's texture origin.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT 
 tek_lib_visual_setbgpen(lua_State *L)
@@ -2080,10 +2348,12 @@ tek_lib_visual_setbgpen(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	getselection:
-*/
+/*-----------------------------------------------------------------------------
+--	string = Visual:getSelection([type]): Gets the visual's selection of the
+--	specified type:
+--		- {{1}} - the selection (default)
+--		- {{2}} - the clipboard
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT 
 tek_lib_visual_getselection(lua_State *L)
@@ -2106,10 +2376,11 @@ tek_lib_visual_getselection(lua_State *L)
 	return 0;
 }
 
-/*****************************************************************************/
-/*
-**	creategradient(x0,y0,x1,y1,rgb0,rgb1)
-*/
+/*-----------------------------------------------------------------------------
+--	gradient = Visual.createGradient(x0, y0, x1, y1, rgb0, rgb1): If gradient
+--	support is available, creates a gradient object with a gradient from the
+--	coordinates x0,y0, with the color rgb0 to x1,y1, with the color rgb1.
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L)
 {
@@ -2135,7 +2406,14 @@ LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L)
 	return 1;
 }
 
-/*****************************************************************************/
+/*-----------------------------------------------------------------------------
+--	type = Visual:getPaintInfo(): Returns the type of background paint that
+--	is currently effective:
+--		- {{0}} - undefined
+--		- {{1}} - single-color pen
+--		- {{2}} - pixmap
+--		- {{3}} - gradient
+-----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT tek_lib_visual_getpaintinfo(lua_State *L)
 {
@@ -2144,3 +2422,34 @@ LOCAL LUACFUNC TINT tek_lib_visual_getpaintinfo(lua_State *L)
 	lua_pushinteger(L, getbgpaint(L, vis, 2, &udata));
 	return 1;
 }
+
+/*-----------------------------------------------------------------------------
+--	visual = Visual.open([args]): Opens a visual. Possible keys and their
+--	values in the {{args}} table:
+--		- {{"UserData"}} - Lua userdata attached to the visual
+--		- {{"Pens"}} - table, for looking up pens, pixmaps, and gradients
+--		- {{"Title"}} - string, window title (if applicable)
+--		- {{"Borderless"}} - bool, open window borderless (if applicable)
+--		- {{"PopupWindow"}} - bool, the window is used for a popup
+--		- {{"Center"}} - bool, try to open the window centered on the screen
+--		- {{"FullScreen"}} - bool, try to open in fullscreen mode
+--		- {{"Width"}} - number, width in pixels
+--		- {{"Height"}} - number, height in pixels
+--		- {{"Left"}} - number, left edge in pixels on the screen
+--		- {{"Top"}} - number, top edge in pixels on the screen
+--		- {{"MinWidth"}} - number, min. width for the window to shrink to
+--		- {{"MinHeight"}} - number, min. height for the window to shrink to
+--		- {{"MaxWidth"}} - number, max. width for the window to grow to
+--		- {{"MaxHeight"}} - number, max. height for the window to grow to
+--		- {{"EventMask"}} - number, mask of input message types, see also
+--		Visual.getMsg() for details
+--		- {{"BlankCursor"}} - bool, clear the mouse pointer over the window
+--		- {{"ExtraArgs"}} - string, extra arugments containing hints for the
+--		underlying display driver
+--		- {{"MsgFileNo"}} - number, of a file descriptor to read messages of
+--		type {{MSG_USER}} from. Default: the file number of {{stdin}}
+-----------------------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------------------
+--	Visual.close(): Close visual.
+-----------------------------------------------------------------------------*/

@@ -105,11 +105,13 @@ static TBOOL imgload_load_png(struct ImgLoader *ld)
 	{
 		mode = PNG_GRAYALPHA;
 		dstfmt = TVPIXFMT_A8R8G8B8;
+		ld->iml_Flags |= IMLFL_HAS_ALPHA;
 	}
 	else if (numchan == 4)
 	{
 		mode = PNG_RGB_ALPHA;
 		dstfmt = TVPIXFMT_A8R8G8B8;
+		ld->iml_Flags |= IMLFL_HAS_ALPHA;
 	}
 	else
 		mode = PNG_RGB;

@@ -17,7 +17,7 @@ local assert = assert
 local type = type
 
 module("tek.ui.class.image", tek.class)
-_VERSION = "Image 2.2"
+_VERSION = "Image 3.0"
 local Image = _M
 Class:newClass(Image)
 
@@ -43,4 +43,10 @@ end
 
 function Image:askWidthHeight(w, h)
 	return self[2] or w, self[3] or h
+end
+
+function Image:getPixmap()
+	if not self[5] then
+		return self[1], self[2], self[3], self[4]
+	end
 end

@@ -24,10 +24,10 @@
 --		- Display:getFontAttrs() - Gets font attributes
 --		- Display.getPaint() - Gets a a paint object, cached
 --		- Display:colorToRGB() - Converts a color specification to RGB
---		- Display:getTime() - Gets system time
+--		- Display.getTime() - Gets system time
 --		- Display:openFont() - Opens a named font
---		- Display:openDrawable() - Opens a visual
---		- Display:sleep() - Sleeps for a period of time
+--		- Display.openDrawable() - Opens a drawable
+--		- Display.sleep() - Sleeps for a period of time
 --
 --	STYLE PROPERTIES::
 --		- {{font}}
@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 33.0"
+_VERSION = "Display 33.1"
 local Display = _M
 Element:newClass(Display)
 
@@ -246,9 +246,8 @@ local PixmapCache = { }
 
 -------------------------------------------------------------------------------
 --	image, width, height, transparency = Display.createPixmap(picture):
---	Creates a pixmap object from data in a picture file format. Currently
---	the PPM and PNG file formats are recognized (the latter if enabled in
---	the build configuration).
+--	Creates a pixmap object from a picture file or from a table.
+--	See Visual.createPixmap().
 -------------------------------------------------------------------------------
 
 Display.createPixmap = Visual.createPixmap
@@ -259,9 +258,10 @@ Display.createGradient = Visual.createGradient
 Display.getDisplayAttrs = Visual.getDisplayAttrs
 
 -------------------------------------------------------------------------------
---	image, width, height, transparency = Display.getPaint(imgspec): Gets a
---	paint object, either by loading it from the filesystem, generating it,
---	or by retrieving it from the cache.
+--	image, width, height, transparency = Display.getPaint(imgspec):
+--	Gets a paint object from a specifier, either by loading it from the
+--	filesystem, generating it, or by retrieving it from the cache. To resolve
+--	symbolic color names, a display instance must be given.
 -------------------------------------------------------------------------------
 
 function Display.getPaint(imgspec, display, width, height)
@@ -352,13 +352,13 @@ Display.getMsg = Visual.getMsg
 Display.sleep = Visual.sleep
 
 -------------------------------------------------------------------------------
---	Display:getTime(): Gets the system time.
+--	Display.getTime(): Gets the system time.
 -------------------------------------------------------------------------------
 
 Display.getTime = Visual.getTime
 
 -------------------------------------------------------------------------------
---	Display:openDrawable(): Open a drawable
+--	Display.openDrawable(): Open a drawable
 -------------------------------------------------------------------------------
 
 Display.openDrawable = Visual.open
@@ -420,10 +420,10 @@ function Display:colorToRGB(key)
 end
 
 -------------------------------------------------------------------------------
---	font = openFont(fontspec[, size[, attr]]): Opens a font. For a discussion
---	of the fontname format, see [[#tek.ui.class.text : Text]].
---	The optional size and attr arguments allow to override their respective
---	values in the fontspec argument.
+--	font = openFont(fontspec[, size[, attr]]): Opens a font, cached, and with
+--	complex name resolution and fallbacks. For a discussion of the format
+--	see [[#tek.ui.class.text : Text]]. The optional size and attr arguments
+--	allow to override their respective values in the fontspec argument.
 -------------------------------------------------------------------------------
 
 function Display:openFont(fontspec, override_size, override_attr)
@@ -462,7 +462,7 @@ function Display:openFont(fontspec, override_size, override_attr)
 			end
 		end
 		font = font or Visual.openFont(realname, size, attr)
-		local frec = { font, font and font:getAttrs { } }
+		local frec = { font, font and font:getFontAttrs { } }
 		fcache[fontspec] = frec
 		fcache[fcachename] = frec
 		if font then
@@ -477,7 +477,8 @@ end
 --	closeFont(font): Closes the specified font. Always returns '''false'''.
 -------------------------------------------------------------------------------
 
-function Display:closeFont(display, font)
+function Display:closeFont(font)
+	-- do nothing here, keep them cached, let gc take care of it
 	return false
 end
 

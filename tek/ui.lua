@@ -133,7 +133,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 50.0" -- module version string
+_VERSION = "tekUI 50.1" -- module version string
 
 VERSION = 110 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
@@ -346,8 +346,14 @@ end
 --	build configuration.)
 -------------------------------------------------------------------------------
 
-function loadImage(fname, w, h)
-	local img, w, h, trans = Display.getPaint("url("..fname..")", nil, w, h)
+function loadImage(file, w, h)
+	local img, trans
+	if type(file) == "string" then
+		-- this uses the picture cache
+		img, w, h, trans = Display.getPaint("url("..file..")", nil, w, h)
+	else -- assuming an open file
+		img, w, h, trans = Display.createPixmap(file, w, h)
+	end
 	if img then
 		return Image:new { img, w, h, trans }
 	end

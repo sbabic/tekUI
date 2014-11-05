@@ -40,7 +40,8 @@ static const luaL_Reg tek_lib_visual_funcs[] =
 	{ "sleep", tek_lib_visual_sleep },
 	{ "openFont", tek_lib_visual_openfont },
 	{ "closeFont", tek_lib_visual_closefont },
-	{ "textSize", tek_lib_visual_textsize_font },
+	{ "getFontAttrs", tek_lib_visual_getfontattrs },
+	{ "getTextSize", tek_lib_visual_textsize_font },
 	{ "getTime", tek_lib_visual_gettime },
 	{ "wait", tek_lib_visual_wait },
 	{ "getMsg", tek_lib_visual_getmsg },
@@ -89,7 +90,7 @@ static const luaL_Reg tek_lib_visual_methods[] =
 static const luaL_Reg tek_lib_visual_fontmethods[] =
 {
 	{ "__gc", tek_lib_visual_closefont },
-	{ "getAttrs", tek_lib_visual_getfontattrs },
+	{ "getFontAttrs", tek_lib_visual_getfontattrs },
 	{ "close", tek_lib_visual_closefont },
 	{ "getTextSize", tek_lib_visual_textsize_font },
 	{ TNULL, TNULL }
@@ -101,29 +102,11 @@ static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 	{ "free", tek_lib_visual_freepixmap },
 	{ "getPixel", tek_lib_visual_getpixmap },
 	{ "setPixel", tek_lib_visual_setpixmap },
+	{ "getAttrs", tek_lib_visual_getpixmapattr },
 	{ TNULL, TNULL }
 };
 
 /*****************************************************************************/
-/*
-**	visual_open { args }
-**	args.UserData - Lua Userdata
-**	args.Title - Title of Window
-**	args.Width - Width of the window
-**	args.Height - Height of the window
-**	args.Left - Left position of the window
-**	args.Top - Top position of the window
-**	args.Borderless - open borderless window
-**	args.PopupWindow - window is popup
-**	args.CenterWindow - open window centered
-**	args.MinWidth - minimum width of the window
-**	args.MinHeight - minimum height of the window
-**	args.MaxWidth - maximum width of the window
-**	args.MaxHeight - maximum height of the window
-**	args.BlankCursor - blank cursor
-**	args.Pens - pen table
-**	args.MsgFileNo - File number for user input messges
-*/
 
 LOCAL LUACFUNC TINT
 tek_lib_visual_open(lua_State *L)
