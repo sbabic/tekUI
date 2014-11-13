@@ -757,7 +757,9 @@
 				for this driver, which allows a tekUI application to be shared over
 				the network. This works both &quot;headless&quot; and with a local display. To
 				enable LibVNCServer support, enable the raw framebuffer and the
-				<code>VNCSERVER_</code> defines in the config file.
+				<code>VNCSERVER_</code> defines in the config file. Note: VNC support makes
+				this software a combined work with LibVNCServer, see also
+				<code>src/display_rawfb/vnc/COPYING</code>.
 			</p>
 			<p>
 				Any combination of the subdrivers tekUI, Linux framebuffer, and VNC
@@ -909,15 +911,21 @@
 						<blockquote>
 							<ul>
 								<li>
-									<code>fb_backbuffer=boolean</code> - If enabled, use a backbuffer even if
-									it is not stricly needed. This can reduce flicker and sometimes
-									improve performance, although this varies widely. Raspberry Pi, for
-									example, was found to perform best on 16bit without backbuffer.
+									<code>fb_backbuffer=boolean</code> - If enabled, the framebuffer driver
+									uses a backbuffer even if not stricly needed. This can reduce
+									flicker and sometimes improve performance, although this varies
+									widely. Raspberry Pi, for example, was found to perform best on
+									16bit without backbuffer.
 								</li>
 								<li>
 									<code>fb_pixfmt=hexnumber</code> - Specify desired pixel format for the
 									framebuffer, e.g. <code>5650120b</code>. See <code>include/tek/mod/visual.h</code> 
 									for the defines prefixed with <code>TVPIXFMT_</code>.
+								</li>
+								<li>
+									<code>fb_winbackbuffer=boolean</code> - If enabled, windows on a
+									framebuffer use their own backing-store and do not encumber the
+									application with refreshes when moved or otherwise exposed.
 								</li>
 								<li>
 									<code>vnc_portnumber=num</code> - Overrides <code>VNC_PORTNUMBER</code>, see above

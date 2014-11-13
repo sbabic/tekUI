@@ -16,7 +16,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 5.2"
+_VERSION = "Tunnel 5.3"
 local Tunnel = _M
 Frame:newClass(Tunnel)
 
@@ -74,6 +74,7 @@ function Tunnel:draw()
 		local p0, p1 = "dark", "bright"
 	
 		d:fillRect(r1, r2, r3, r4, p0)
+		d:pushClipRect(r1, r2, r3, r4)
 	
 		local sx = floor((r1 + r3) / 2)
 		local sy = floor((r2 + r4) / 2)
@@ -83,24 +84,21 @@ function Tunnel:draw()
 		local cy = self.cy
 	
 		for i = 1, self.numseg do
-	
 			local x = self.size[1] * self.viewz / z
 			local y = self.size[2] * self.viewz / z
-	
 			local dx = self.dx[cx] * z / 256
 			local dy = self.dx[cy] * z / 256
-	
-			local x0 = min(max(sx - x + dx, r1), r3)
-			local y0 = min(max(sy - y + dy, r2), r4)
-			local x1 = min(max(sx + x + dx, r1), r3)
-			local	y1 = min(max(sy + y + dy, r2), r4)
-			if x0 ~= r1 or x1 ~= r3 or y0 ~= r2 or y1 ~= r4 then
-				d:drawRect(x0, y0, x1, y1, p1)
-			end
+			local x0 = sx - x + dx
+			local y0 = sy - y + dy
+			local x1 = sx + x + dx
+			local y1 = sy + y + dy
+			d:drawRect(x0, y0, x1, y1, p1)
 			z = z + self.dist
 			cx = cx == self.ndx and 1 or cx + 1
 			cy = cy == self.ndx and 1 or cy + 1
 		end
+		
+		d:popClipRect()
 		return true
 	end
 end

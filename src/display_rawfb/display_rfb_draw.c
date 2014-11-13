@@ -250,82 +250,6 @@ static TUINT getoutcode(TINT x, TINT y, TINT xmin, TINT ymin, TINT xmax,
 
 /*****************************************************************************/
 
-static TBOOL cliprect(struct Coord res[2], TINT x0, TINT y0, TINT x1, TINT y1,
-	TINT xmin, TINT ymin, TINT xmax, TINT ymax)
-{
-	if (xmin < 0)
-		return TFALSE;
-	
-	TBOOL accept = TFALSE;
-	TBOOL done = TFALSE;
-	TUINT outc0, outc1, outc;
-
-	outc0 = getoutcode(x0, y0, xmin, ymin, xmax, ymax);
-	outc1 = getoutcode(x1, y1, xmin, ymin, xmax, ymax);
-
-	do
-	{
-		if (!(outc0 | outc1))
-		{
-			/* trivial accept and exit */
-			accept = TTRUE;
-			done = TTRUE;
-		}
-		else if (outc0 & outc1)
-		{
-			/* trivial reject and exit */
-			done = TTRUE;
-		}
-		else
-		{
-			/* move vertices to clipping edge */
-			TINT x = 0, y = 0;
-
-			outc = outc0 ? outc0 : outc1;
-			if (outc & OC_TOP)
-				y = ymax;
-			else if (outc & OC_BOTTOM)
-				y = ymin;
-			else if (outc & OC_RIGHT)
-				x = xmax;
-			else
-				x = xmin;
-
-			/* get ready for next pass */
-			if (outc == outc0)
-			{
-				if (outc & (OC_TOP | OC_BOTTOM))
-					y0 = y;
-				else
-					x0 = x;
-
-				outc0 = getoutcode(x0, y0, xmin, ymin, xmax, ymax);
-			}
-			else
-			{
-				if (outc & (OC_TOP | OC_BOTTOM))
-					y1 = y;
-				else
-					x1 = x;
-
-				outc1 = getoutcode(x1, y1, xmin, ymin, xmax, ymax);
-			}
-
-		} /* endif subdivide */
-
-	} while (done == TFALSE);
-
-	if (accept)
-	{
-		res[0].x = x0; res[0].y = y0;
-		res[1].x = x1; res[1].y = y1;
-	}
-
-	return accept;
-}
-
-/*****************************************************************************/
-
 static TBOOL clipline(struct Coord res[2], TINT x0, TINT y0, TINT x1, TINT y1,
 	TINT xmin, TINT ymin, TINT xmax, TINT ymax)
 {
@@ -407,48 +331,27 @@ LOCAL void fbp_drawpoint(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y,
 LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], 
 	struct RFBPen *pen)
 {
-	struct Coord res[2];
-	TINT xmin = rect[0];
-	TINT ymin = rect[1];
-	TINT xmax = rect[0] + rect[2] - 1;
-	TINT ymax = rect[1] + rect[3] - 1;
-	
-	if (!cliprect(res, xmin, ymin, xmax, ymax,
-		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2], 
-		v->rfbw_ClipRect[3]))
+	struct Region R;
+	if (!rfb_getlayermask(mod, &R, v->rfbw_ClipRect.r, v, 0, 0))
 		return;
-	
-	TINT r[4];
-	r[0] = res[0].x;
-	r[1] = res[0].y;
-	r[2] = res[1].x;
-	r[3] = res[1].y;
-	struct Region *R = rfb_getlayermask(mod, r, v, 0, 0);
-	if (R == TNULL)
-		return;
-
+	region_andrect(&mod->rfb_RectPool, &R, rect, 0, 0);
 	TINT y;
 	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
 	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
-	
-	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *r = (struct RectNode *) node;
-		
 		rfb_markdirty(mod, v, r->rn_Rect);
-		
-		xmin = r->rn_Rect[0];
-		ymin = r->rn_Rect[1];
-		xmax = r->rn_Rect[2];
-		ymax = r->rn_Rect[3];
-		
-		TUINT8 *buf = TVPB_GETADDRESS(&v->rfbw_PixBuf, xmin, ymin);
-		for (y = ymin; y <= ymax; y++, buf += v->rfbw_PixBuf.tpb_BytesPerLine)
-			pixconv_line_set(buf, dfmt, xmax - xmin + 1, p);
+		TINT x0 = r->rn_Rect[0];
+		TINT y0 = r->rn_Rect[1];
+		TINT x1 = r->rn_Rect[2];
+		TINT y1 = r->rn_Rect[3];
+		TUINT8 *buf = TVPB_GETADDRESS(&v->rfbw_PixBuf, x0, y0);
+		for (y = y0; y <= y1; y++, buf += v->rfbw_PixBuf.tpb_BytesPerLine)
+			pixconv_line_set(buf, dfmt, x1 - x0 + 1, p);
 	}
-		
-	region_destroy(&mod->rfb_RectPool, R);
+	region_free(&mod->rfb_RectPool, &R);
 }
 
 /*****************************************************************************/
@@ -456,33 +359,18 @@ LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], 
 	struct RFBPen *pen)
 {
+	struct Region R;
+	if (!rfb_getlayermask(mod, &R, v->rfbw_ClipRect.r, v, 0, 0))
+		return;
+	region_andrect(&mod->rfb_RectPool, &R, rect, 0, 0);
 	TINT y;
-	
-	struct Coord res[2];
 	TINT xmin = rect[0];
 	TINT ymin = rect[1];
-	TINT xmax = rect[0] + rect[2] - 1;
-	TINT ymax = rect[1] + rect[3] - 1;
-
-	if (!cliprect(res, xmin, ymin, xmax, ymax,
-		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2],
-		v->rfbw_ClipRect[3]))
-		return;
-	
-	/* get region of windows obscuring our clip */
-	struct RectNode rectnode;
-	rectnode.rn_Rect[0] = res[0].x; 
-	rectnode.rn_Rect[1] = res[0].y; 
-	rectnode.rn_Rect[2] = res[1].x; 
-	rectnode.rn_Rect[3] = res[1].y;
-	struct Region *R = rfb_getlayermask(mod, rectnode.rn_Rect, v, 0, 0);
-	if (R == TNULL)
-		return;
-
+	TINT xmax = rect[2];
+	TINT ymax = rect[3];
 	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
 	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
-	
-	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *r = (struct RectNode *) node;
@@ -490,31 +378,25 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		TINT y0 = r->rn_Rect[1];
 		TINT x1 = r->rn_Rect[2];
 		TINT y1 = r->rn_Rect[3];
-		
-		rfb_markdirty(mod, v, r->rn_Rect);
-	
 		if (y0 == ymin)
 			pixconv_buf_line_set(&v->rfbw_PixBuf, x0, ymin, x1 - x0 + 1, p);
-
 		if (y1 == ymax)
 			pixconv_buf_line_set(&v->rfbw_PixBuf, x0, ymax, x1 - x0 + 1, p);
-
 		if (x0 == xmin)
 		{
 			TUINT8 *buf = TVPB_GETADDRESS(&v->rfbw_PixBuf, xmin, y0);
 			for (y = y0; y <= y1; y++, buf += v->rfbw_PixBuf.tpb_BytesPerLine)
 				pixconv_setpixel(buf, dfmt, p);
 		}
-
 		if (x1 == xmax)
 		{
 			TUINT8 *buf = TVPB_GETADDRESS(&v->rfbw_PixBuf, xmax, y0);
 			for (y = y0; y <= y1; y++, buf += v->rfbw_PixBuf.tpb_BytesPerLine)
 				pixconv_setpixel(buf, dfmt, p);
 		}
+		rfb_markdirty(mod, v, r->rn_Rect);
 	}
-	
-	region_destroy(&mod->rfb_RectPool, R);
+	region_free(&mod->rfb_RectPool, &R);
 }
 
 /*****************************************************************************/
@@ -522,6 +404,10 @@ LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], 
 	struct RFBPen *pen)
 {
+	struct Region R;
+	if (!rfb_getlayermask(mod, &R, v->rfbw_ClipRect.r, v, 0, 0))
+		return;
+	
 	struct Coord res[2];
 	TINT dx, dy, d, x, y;
 	TINT incE, incNE, incSE, incN, incS;
@@ -543,16 +429,10 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		l3 = rect[3];
 	}
 
-	if (v->rfbw_ClipRect[0] < 0)
-		return;
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
-	if (R == TNULL)
-		return;
-	
 	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
 	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
 
-	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
@@ -674,7 +554,7 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4],
 		}
 	}
 	
-	region_destroy(&mod->rfb_RectPool, R);
+	region_free(&mod->rfb_RectPool, &R);
 }
 
 /*****************************************************************************/
@@ -875,15 +755,13 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 	struct Coord res[MAX_VERT];
 	TINT outlen;
 	
-	if (v->rfbw_ClipRect[0] < 0)
-		return;
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
-	if (R == TNULL)
+	struct Region R;
+	if (!rfb_getlayermask(mod, &R, v->rfbw_ClipRect.r, v, 0, 0))
 		return;
 	
 	TUINT p = pixconv_rgbfmt(v->rfbw_PixBuf.tpb_Format, pen->rgb);
 	
-	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
@@ -926,31 +804,19 @@ LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v,
 			}
 		}
 	}
-	region_destroy(&mod->rfb_RectPool, R);
+	region_free(&mod->rfb_RectPool, &R);
 }
 
 /*****************************************************************************/
 
 LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
-	TINT x, TINT y, TINT w, TINT h, TBOOL alpha)
+	TINT rect[4], TBOOL alpha)
 {
-	struct Coord res[2];
-
-	if (!cliprect(res, x, y, x + w - 1, y + h - 1,
-		v->rfbw_ClipRect[0], v->rfbw_ClipRect[1], v->rfbw_ClipRect[2], 
-		v->rfbw_ClipRect[3]))
+	struct Region R;
+	if (!rfb_getlayermask(mod, &R, v->rfbw_ClipRect.r, v, 0, 0))
 		return;
-
-	TINT r[4];
-	r[0] = res[0].x;
-	r[1] = res[0].y;
-	r[2] = res[1].x;
-	r[3] = res[1].y;
-	struct Region *R = rfb_getlayermask(mod, r, v, 0, 0);
-	if (R == TNULL)
-		return;
-
-	struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
+	region_andrect(&mod->rfb_RectPool, &R, rect, 0, 0);
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *r = (struct RectNode *) node;
@@ -959,12 +825,11 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
 		TINT y0 = r->rn_Rect[1];
 		TINT x1 = r->rn_Rect[2];
 		TINT y1 = r->rn_Rect[3];
-		TINT sx = x0 - x;
-		TINT sy = y0 - y;
+		TINT sx = x0 - rect[0];
+		TINT sy = y0 - rect[1];
 		pixconv_convert(src, &v->rfbw_PixBuf, x0, y0, x1, y1, sx, sy, alpha, 0);
 	}
-	
-	region_destroy(&mod->rfb_RectPool, R);
+	region_free(&mod->rfb_RectPool, &R);
 }
 
 /*****************************************************************************/
@@ -972,8 +837,8 @@ LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
 LOCAL void fbp_doexpose(RFBDISPLAY *mod, RFBWINDOW *v, struct Region *L,
 	struct THook *exposehook)
 {
-	TINT wx = v->rfbw_WinRect[0];
-	TINT wy = v->rfbw_WinRect[1];
+	TINT wx = v->rfbw_WinRect.r[0];
+	TINT wy = v->rfbw_WinRect.r[1];
 	struct TNode *next, *node = L->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -992,13 +857,13 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 {
 	struct RectPool *pool = &mod->rfb_RectPool;
 	
-	struct Region *R = rfb_getlayermask(mod, dr, v, 0, 0);
-	if (R == TNULL)
+	struct Region R;
+	if (!rfb_getlayermask(mod, &R, dr, v, 0, 0))
 		return TFALSE;
 	
-	if (R->rg_Rects.rl_NumNodes == 0)
+	if (R.rg_Rects.rl_NumNodes == 0)
 	{
-		region_destroy(pool, R);
+		region_free(pool, &R);
 		return TFALSE;
 	}
 	
@@ -1017,12 +882,12 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 	
 	TINT bpp = TVPIXFMT_BYTES_PER_PIXEL(v->rfbw_PixBuf.tpb_Format);
 	
-	if (R->rg_Rects.rl_NumNodes == 1)
+	if (R.rg_Rects.rl_NumNodes == 1)
 	{
 		/* optimization for a single rectangle */
 	
 		struct RectNode *rn = 
-			(struct RectNode *) TFIRSTNODE(&R->rg_Rects.rl_List);
+			(struct RectNode *) TFIRSTNODE(&R.rg_Rects.rl_List);
 		TINT x0 = rn->rn_Rect[0];
 		TINT y0 = rn->rn_Rect[1];
 		TINT x1 = rn->rn_Rect[2];
@@ -1038,7 +903,7 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 		}
 		
 #if defined(ENABLE_VNCSERVER)
-		if (mod->rfb_VNCTask)
+		if (mod->rfb_VNCTask && !(v->rfbw_Flags & RFBWFL_BACKBUFFER))
 			rfb_vnc_copyrect(mod, v, dx, dy, x0, y0, x1, y1, yinc);
 		else
 #endif
@@ -1049,8 +914,15 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 		}
 		
 		/* update sub device */
-		rfb_copyrect_sub(mod, rn->rn_Rect, dx, dy);
-		
+		TINT d[4];
+		d[0] = rn->rn_Rect[0];
+		d[1] = rn->rn_Rect[1];
+		d[2] = rn->rn_Rect[2];
+		d[3] = rn->rn_Rect[3];
+		if (v->rfbw_Flags & RFBWFL_BACKBUFFER)
+			rfb_markdirty(mod, v, d);
+		else
+			rfb_copyrect_sub(mod, d, dx, dy);
 	}
 	else
 	{
@@ -1059,7 +931,7 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 		TInitList(&r);
 		TInitList(&t);
 		
-		while ((n = TRemHead(&R->rg_Rects.rl_List)))
+		while ((n = TRemHead(&R.rg_Rects.rl_List)))
 			TAddTail(&r, n);
 			
 		for (i = 0, y = dy0; i < h; ++i, y -= yinc)
@@ -1134,11 +1006,11 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 			/* this would be incorrect, unfortunately: */
 			/* rfb_copyrect_sub(mod, rn->rn_Rect, dx, dy); */
 			rfb_markdirty(mod, v, rn->rn_Rect);
-			TAddTail(&R->rg_Rects.rl_List, n);
+			TAddTail(&R.rg_Rects.rl_List, n);
 		}
 	}
 
-	region_destroy(pool, R);
+	region_free(pool, &R);
 	
 	return TTRUE; /* do expose */
 }
@@ -1146,22 +1018,24 @@ LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v,
 LOCAL TBOOL fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v,
 	TINT dx, TINT dy, TINT dr[4], struct THook *exposehook)
 {
-	if (v->rfbw_ClipRect[0] < 0 || !region_intersect(dr, v->rfbw_ClipRect))
+	if (v->rfbw_ClipRect.r[0] < 0 || !region_intersect(dr, v->rfbw_ClipRect.r))
 		return TFALSE;
 	TBOOL check_expose = fbp_copyarea_int(mod, v, dx, dy, dr);
 	if (check_expose && exposehook)
 	{
 		struct RectPool *pool = &mod->rfb_RectPool;
-		struct Region *R = rfb_getlayers(mod, v, 0, 0);
-		struct Region *L = rfb_getlayers(mod, v, dx, dy);
-		if (L)
+		struct Region R, L;
+		if (rfb_getlayers(mod, &R, v, 0, 0))
 		{
-			if (region_subregion(pool, L, R) && 
-				region_andrect(pool, L, dr, 0, 0))
-				fbp_doexpose(mod, v, L, exposehook);
-			region_destroy(pool, L);
+			if (rfb_getlayers(mod, &L, v, dx, dy))
+			{
+				if (region_subregion(pool, &L, &R) &&
+					region_andrect(pool, &L, dr, 0, 0))
+					fbp_doexpose(mod, v, &L, exposehook);
+				region_free(pool, &L);
+			}
+			region_free(pool, &R);
 		}
-		region_destroy(pool, R);
 	}
 	return check_expose;
 }

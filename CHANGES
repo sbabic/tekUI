@@ -5,6 +5,8 @@
  * Visual module: Minor API corrections, added documentation
  * Display: Some corrections in API documentation
  * UI: loadImage() can now load from an open file
+ * Raw framebuffer: Improved region management, optimizations, added
+ support for window backing store
 
 === 1.09: ===
 

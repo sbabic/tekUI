@@ -93,27 +93,53 @@ LUA_DEFS = -I$(PREFIX)/include -I/usr/local/include/lua51 -I/usr/include/lua5.1
 FREETYPE_LIBS = -L$(PREFIX)/lib -lfreetype
 FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2 -I/usr/X11/include/
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# X11 defines and libraries:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 X11_LIBS = -L/usr/X11R6/lib -lX11 -lXext -lXxf86vm
 X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DX11_PIXMAP_CACHE -DENABLE_XFT -DENABLE_XVID
 
-WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
-
-# The raw framebuffer can be visualized on a Linux framebuffer, on another
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Raw framebuffer: Can be visualized on a Linux framebuffer, on another
 # display driver, via VNC server, or any combination thereof.
+# ENABLE_LINUXFB - enable Linux framebuffer and Linux event interface
+# DEF_FONTDIR - default TTF font directory
+# RFBPIXFMT - enforce framebuffer pixel format
+# ENABLE_WINBACKBUFFER - enable window backing store
+# ENABLE_BACKBUFFER - use a global backbuffer even if not strictly required
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS) $(TEKUI_LIBS)
-RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) -DRFB_PIXMAP_CACHE # -DRFBPIXFMT=TVPIXFMT_R5G6B5 # -DDEF_FONTDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
+RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) -DRFB_PIXMAP_CACHE 
+
+# RAWFB_DEFS += -DDEF_FONTDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
+# RAWFB_DEFS += -DRFBPIXFMT=TVPIXFMT_R5G6B5 
+# RAWFB_DEFS += -DENABLE_WINBACKBUFFER # -DENABLE_BACKBUFFER
+
 # Linux framebuffer support:
 RAWFB_DEFS += -DENABLE_LINUXFB
-# Comment in RAWFB_SUB for redirecting output to a different display driver:
+
+# Redirect output to a different display driver:
 # RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
 # RAWFB_SUB_DEFS = -DRFB_SUB_DEVICE=x11
-# VNC support makes this software a combined work with LibVNCServer, see also
-# src/display_rawfb/vnc/COPYING:
+
+# VNC support:
 # VNCSERVER_LIBS = -L$(PREFIX)/lib -lvncserver
 # VNCSERVER_DEFS = -DENABLE_VNCSERVER -I$(PREFIX)/include -DENABLE_VNCSERVER_COPYRECT # -DRFBPIXFMT=TVPIXFMT_0B5G5R5
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# DirectFB defines and libraries:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 DIRECTFB_LIBS = `pkg-config --libs directfb`
 DIRECTFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Windows defines and libraries:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 
 #------------------------------------------------------------------------------
 # Build paths:

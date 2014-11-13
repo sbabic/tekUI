@@ -21,7 +21,7 @@
 /* number of merge operations: */
 #define MERGE_NUMOPS					5
 /* max number of rects buffered for re-use: */
-#define MAXPOOLNODES 					512
+#define MAXPOOLNODES 					1024
 /* opportunistic merge min number of pixels: */
 #define OPPORTUNISTIC_MERGE_THRESHOLD	1000
 /* opportunistic merge ratio n/256: */
@@ -522,16 +522,29 @@ TLIBAPI TBOOL region_getminmax(struct RectPool *pool, struct Region *region,
 	return TTRUE;
 }
 
+TLIBAPI TBOOL region_init(struct RectPool *pool, struct Region *region, 
+	TINT *s)
+{
+	region->rg_Pool = pool;
+	region_initrectlist(&region->rg_Rects);
+	if (s && !region_insertrect(pool, &region->rg_Rects,
+		s[0], s[1], s[2], s[3]))
+		return TFALSE;
+	return TTRUE;
+}
+
+TLIBAPI void region_free(struct RectPool *pool, struct Region *region)
+{
+	region_freerects(pool, &region->rg_Rects);
+}
+
 TLIBAPI struct Region *region_new(struct RectPool *pool, TINT *s)
 {
 	struct TExecBase *TExecBase = pool->p_ExecBase;
 	struct Region *region = TAlloc(TNULL, sizeof(struct Region));
 	if (region)
 	{
-		region->rg_Pool = pool;
-		region_initrectlist(&region->rg_Rects);
-		if (s && !region_insertrect(pool, &region->rg_Rects,
-			s[0], s[1], s[2], s[3]))
+		if (!region_init(pool, region, s))
 		{
 			TFree(region);
 			region = TNULL;

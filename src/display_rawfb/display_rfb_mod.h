@@ -52,11 +52,17 @@
 #define RFBFL_PTR_VISIBLE		0x0100
 #define RFBFL_PTR_ALLOCATED		0x0200
 #define RFBFL_PTRMASK			0x0300
+#define RFBFL_WIN_BACKBUFFER	0x0400
+#define RFBFL_DIRTY				0x0800
 
 /* window flags */
-#define RFBWFL_IS_POPUP		0x0001
-#define RFBWFL_BORDERLESS	0x0002
-#define RFBWFL_FULLSCREEN	0x0004
+#define RFBWFL_IS_POPUP			0x0001
+#define RFBWFL_BORDERLESS		0x0002
+#define RFBWFL_FULLSCREEN		0x0004
+#define RFBWFL_IS_ROOT			0x0010
+#define RFBWFL_USERCLIP			0x0020
+#define RFBWFL_BACKBUFFER		0x0400
+#define RFBWFL_DIRTY			0x0800
 
 
 #ifndef RFB_DEF_WIDTH
@@ -237,7 +243,7 @@ typedef struct
 
 	TUINT32 rfb_unicodebuffer[RFB_UTF8_BUFSIZE];
 	
-	struct Region *rfb_DirtyRegion;
+	struct Region rfb_DirtyRegion;
 	
 	struct rfb_window *rfb_FocusWindow;
 	
@@ -286,12 +292,14 @@ typedef struct rfb_window
 	
 	RFBDISPLAY *rfbw_Display;
 	
-	/* Window extents: */
-	TINT rfbw_WinRect[4];
+	/* Window extents on screen: */
+	struct Rect rfbw_ScreenRect;
+	/* Window extents for drawing: */
+	struct Rect rfbw_WinRect;
 	/* Clipping boundaries (user): */
-	TINT rfbw_UserClipRect[4];
+	struct Rect rfbw_UserClipRect;
 	/* Clipping boundaries (real): */
-	TINT rfbw_ClipRect[4];
+	struct Rect rfbw_ClipRect;
 	/* Current pens: */
 	TVPEN bgpen, fgpen;
 	/* list of allocated pens: */
@@ -315,7 +323,7 @@ typedef struct rfb_window
 	TINT rfbw_MaxWidth;
 	TINT rfbw_MaxHeight;
 	
-	TBOOL rfbw_UserClipRectSet;
+	struct Region rfbw_DirtyRegion;
 
 } RFBWINDOW;
 
@@ -347,7 +355,7 @@ LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBP
 LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v, TINT x0, TINT y0, TINT x1, TINT y1,
 	TINT x2, TINT y2, struct RFBPen *pen);
 LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
-	TINT x, TINT y, TINT w, TINT h, TBOOL alpha);
+	TINT rect[4], TBOOL alpha);
 LOCAL TBOOL fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
 	TINT d[4], struct THook *exposehook);
 LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
@@ -393,9 +401,10 @@ LOCAL void rfb_drawbuffer(RFBDISPLAY *mod, struct TVRequest *req);
 LOCAL void rfb_flush(RFBDISPLAY *mod, struct TVRequest *req);
 
 LOCAL TBOOL rfb_damage(RFBDISPLAY *mod, TINT drect[], RFBWINDOW *v);
-LOCAL struct Region *rfb_getlayers(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy);
-LOCAL struct Region *rfb_getlayermask(RFBDISPLAY *mod, TINT *crect,
+LOCAL TBOOL rfb_getlayermask(RFBDISPLAY *mod, struct Region *A, TINT *crect,
 	RFBWINDOW *v, TINT dx, TINT dy);
+LOCAL TBOOL rfb_getlayers(RFBDISPLAY *mod, struct Region *A, RFBWINDOW *v,
+	TINT dx, TINT dy);
 LOCAL void rfb_markdirty(RFBDISPLAY *mod, RFBWINDOW *v, TINT *r);
 LOCAL void rfb_schedulecopy(RFBDISPLAY *mod, TINT *r, TINT dx, TINT dy);
 
@@ -418,6 +427,7 @@ LOCAL TBOOL rfb_ispointobscured(RFBDISPLAY *mod, TINT x, TINT y, RFBWINDOW *v);
 LOCAL void rfb_copyrect_sub(RFBDISPLAY *mod, TINT *rect, TINT dx, TINT dy);
 
 LOCAL void rfb_setrealcliprect(RFBDISPLAY *mod, RFBWINDOW *v);
+LOCAL void rfb_setwinrect(RFBDISPLAY *mod, RFBWINDOW *v);
 
 #if defined(ENABLE_VNCSERVER)
 
@@ -428,5 +438,8 @@ void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,
 	int x0, int y0, int x1, int y1, int yinc);
 
 #endif
+
+LOCAL TBOOL rfb_resizewinbuffer(RFBDISPLAY *mod, RFBWINDOW *v, 
+	TINT oldw, TINT oldh, TINT w, TINT h);
 
 #endif /* _TEK_DISPLAY_RFB_MOD_H */

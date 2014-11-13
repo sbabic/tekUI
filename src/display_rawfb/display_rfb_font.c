@@ -836,10 +836,11 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 	if (!text)
 		return;
 	struct FontNode *myface = v->curfont;
-	if (!myface) return;
-
-	struct Region *R = rfb_getlayermask(mod, v->rfbw_ClipRect, v, 0, 0);
-	if (R == TNULL)
+	if (!myface)
+		return;
+	
+	struct Region R;
+	if (!rfb_getlayermask(mod, &R, v->rfbw_ClipRect.r, v, 0, 0))
 		return;
 	
 	struct RFBPen *textpen = (struct RFBPen *) fgpen;
@@ -875,7 +876,7 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 		pen.y = posy + asc - sbit->top;
 		posx += sbit->xadvance;
 		
-		struct TNode *next, *node = R->rg_Rects.rl_List.tlh_Head;
+		struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			struct RectNode *rn = (struct RectNode *) node;
@@ -910,7 +911,7 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 		}
 	}
 	
-	region_destroy(&mod->rfb_RectPool, R);
+	region_free(&mod->rfb_RectPool, &R);
 }
 
 /*****************************************************************************/

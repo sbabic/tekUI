@@ -51,8 +51,8 @@ static int rfb_sendimsg(RFBDISPLAY *mod, RFBWINDOW *v,
 	{
 		imsg->timsg_Code = code;
 		imsg->timsg_Qualifier = mod->rfb_KeyQual;
-		imsg->timsg_MouseX = x - v->rfbw_WinRect[0];
-		imsg->timsg_MouseY = y - v->rfbw_WinRect[1];
+		imsg->timsg_MouseX = x - v->rfbw_ScreenRect.r[0];
+		imsg->timsg_MouseY = y - v->rfbw_ScreenRect.r[1];
 		imsg->timsg_ScreenMouseX = x;
 		imsg->timsg_ScreenMouseY = y;
 		TExecPutMsg(mod->rfb_ExecBase, v->rfbw_IMsgPort, TNULL, imsg);
@@ -475,8 +475,8 @@ void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,
 		dy1 = t;
 	}
 
-#if defined(ENABLE_VNCSERVER_COPYRECT)
 	TUINT bpl = w * TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_PixBuf.tpb_Format);
+#if defined(ENABLE_VNCSERVER_COPYRECT)
 	if (w * h > VNCSERVER_COPYRECT_MINPIXELS)
 	{
 		char wrbuf = 0;

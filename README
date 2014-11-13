@@ -421,7 +421,9 @@ A VNC server option (through
 for this driver, which allows a tekUI application to be shared over
 the network. This works both "headless" and with a local display. To
 enable LibVNCServer support, enable the raw framebuffer and the
-{{VNCSERVER_}} defines in the config file.
+{{VNCSERVER_}} defines in the config file. Note: VNC support makes
+this software a combined work with LibVNCServer, see also
+{{src/display_rawfb/vnc/COPYING}}.
 
 Any combination of the subdrivers tekUI, Linux framebuffer, and VNC
 is valid. If none is selected, the GUI runs isolated from the outside
@@ -522,13 +524,17 @@ by modifying fields in the {{ui}} library at program start:
 
  * {{ui.ExtraArgs}} - mostly used for hints to display drivers,
  one argument per line, currently supported:
-  * {{fb_backbuffer=boolean}} - If enabled, use a backbuffer even if
-  it is not stricly needed. This can reduce flicker and sometimes
-  improve performance, although this varies widely. Raspberry Pi, for
-  example, was found to perform best on 16bit without backbuffer.
+  * {{fb_backbuffer=boolean}} - If enabled, the framebuffer driver
+  uses a backbuffer even if not stricly needed. This can reduce
+  flicker and sometimes improve performance, although this varies
+  widely. Raspberry Pi, for example, was found to perform best on
+  16bit without backbuffer.
   * {{fb_pixfmt=hexnumber}} - Specify desired pixel format for the
   framebuffer, e.g. {{5650120b}}. See {{include/tek/mod/visual.h}}
   for the defines prefixed with {{TVPIXFMT_}}.
+  * {{fb_winbackbuffer=boolean}} - If enabled, windows on a
+  framebuffer use their own backing-store and do not encumber the
+  application with refreshes when moved or otherwise exposed.
   * {{vnc_portnumber=num}} - Overrides {{VNC_PORTNUMBER}}, see above
  * {{ui.FullScreen}} - boolean, overrides {{FULLSCREEN}} (see above)
  * {{ui.Mode}} - set this to {{"workbench"}} for windows to receive

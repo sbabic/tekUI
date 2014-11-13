@@ -11,6 +11,23 @@
 
 typedef TINT RECTINT;
 
+struct Rect
+{
+	RECTINT r[4];
+};
+
+#define REGION_RECT_WIDTH(rect) ((rect)->r[2] - (rect)->r[0] + 1)
+#define REGION_RECT_HEIGHT(rect) ((rect)->r[3] - (rect)->r[1] + 1)
+#define REGION_RECT_SET(rect, x0, y0, x1, y1) do { \
+	(rect)->r[0] = x0; \
+	(rect)->r[1] = y0; \
+	(rect)->r[2] = x1; \
+	(rect)->r[3] = y1; \
+} while(0);
+
+#define REGION_POINT_IN_RECT(rect, x, y) ((x) >= (rect)->r[0] && \
+	(x) <= (rect)->r[2] && (y) >= (rect)->r[1] && (y) <= (rect)->r[2])
+
 struct RectList
 {
 	struct TList rl_List;
@@ -38,6 +55,8 @@ struct RectNode
 TLIBAPI TBOOL region_intersect(TINT *d, TINT *s);
 TLIBAPI void region_initrectlist(struct RectList *rl);
 
+TLIBAPI TBOOL region_init(struct RectPool *pool, struct Region *region, TINT *s);
+TLIBAPI void region_free(struct RectPool *pool, struct Region *region);
 TLIBAPI struct Region *region_new(struct RectPool *, TINT *s);
 TLIBAPI void region_destroy(struct RectPool *, struct Region *region);
 TLIBAPI TBOOL region_overlap(struct RectPool *, struct Region *region, TINT s[]);
