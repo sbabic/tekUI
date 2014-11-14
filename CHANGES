@@ -6,7 +6,7 @@
  * Display: Some corrections in API documentation
  * UI: loadImage() can now load from an open file
  * Raw framebuffer: Improved region management, optimizations, added
- support for window backing store
+ support for window backing store, unified input handling
 
 === 1.09: ===
 

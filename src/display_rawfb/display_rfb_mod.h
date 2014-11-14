@@ -441,5 +441,6 @@ void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,
 
 LOCAL TBOOL rfb_resizewinbuffer(RFBDISPLAY *mod, RFBWINDOW *v, 
 	TINT oldw, TINT oldh, TINT w, TINT h);
+LOCAL TINT rfb_sendevent(RFBDISPLAY *mod, TUINT type, TUINT code, TINT x, TINT y);
 
 #endif /* _TEK_DISPLAY_RFB_MOD_H */

@@ -210,7 +210,7 @@ LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req)
 		{
 			/* there is a buffer already, but an extra backbuffer was
 			requested, or the formats do not match */
-			TDBPRINTF(TDB_WARN,("Using extra backbuffer, format %08x\n", pixfmt));
+			TDBPRINTF(TDB_WARN,("Using backbuffer, format %08x\n", pixfmt));
 			TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(pixfmt);
 			mod->rfb_PixBuf.tpb_Format = pixfmt;
 			mod->rfb_PixBuf.tpb_BytesPerLine = bpp * mod->rfb_Width;

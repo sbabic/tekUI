@@ -26,6 +26,9 @@ static RFBWINDOW *rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg,
 static TBOOL rfb_passevent_to_focus(RFBDISPLAY *mod, TIMSG *omsg);
 static TINT rfb_cmdrectaffected(RFBDISPLAY *mod, struct TVRequest *req,
 	TINT r[4], TBOOL source_affect);
+static void rfb_passevent_mousemove(RFBDISPLAY *mod, TIMSG *msg);
+static void rfb_passevent_mousebutton(RFBDISPLAY *mod, TIMSG *msg);
+static void rfb_passevent_keyboard(RFBDISPLAY *mod, TIMSG *msg);
 
 #define DEF_PTRWIDTH	8
 #define DEF_PTRHEIGHT	8
@@ -240,9 +243,7 @@ static void rfb_linux_wait(RFBDISPLAY *mod, TTIME *waitt)
 				TIMSG *msg;
 				if (rfb_getimsg(mod, TNULL, &msg, TITYPE_MOUSEMOVE))
 				{
-					if (rfb_passevent_by_mousexy(mod, msg, TFALSE) != 
-						mod->rfb_FocusWindow)
-						rfb_passevent_to_focus(mod, msg);
+					rfb_passevent_mousemove(mod, msg);
 					TAddTail(&mod->rfb_IMsgPool, &msg->timsg_Node);
 				}
 			}
@@ -330,12 +331,7 @@ static void rfb_processkbdinput(RFBDISPLAY *mod, struct input_event *ev)
 			msg->timsg_KeyCode[len] = 0;
 			msg->timsg_Code = code;
 			msg->timsg_Qualifier = qual & ~TKEYQ_RALT;
-			if (!rfb_passevent_to_focus(mod, msg))
-				rfb_passevent_by_mousexy(mod, msg, TTRUE);
-			
-			TDBPRINTF(TDB_DEBUG,("sending code=%d qual=%d\n", 
-				msg->timsg_Code, msg->timsg_Qualifier));
-				
+			rfb_passevent_keyboard(mod, msg);
 			/* put back prototype message */
 			TAddTail(&mod->rfb_IMsgPool, &msg->timsg_Node);
 		}		
@@ -384,11 +380,7 @@ static TUINT rfb_processmouseinput(RFBDISPLAY *mod, struct input_event *ev)
 				if (rfb_getimsg(mod, TNULL, &msg, TITYPE_MOUSEBUTTON))
 				{
 					msg->timsg_Code = bc;
-					TBOOL down = bc & (TMBCODE_LEFTDOWN | 
-						TMBCODE_RIGHTDOWN | TMBCODE_MIDDLEDOWN);
-					RFBWINDOW *v = rfb_passevent_by_mousexy(mod, msg, down);
-					if (!down && v != mod->rfb_FocusWindow)
-						rfb_passevent_to_focus(mod, msg);
+					rfb_passevent_mousebutton(mod, msg);
 					TAddTail(&mod->rfb_IMsgPool, &msg->timsg_Node);
 				}
 			}
@@ -937,7 +929,7 @@ static TINT rfb_cmdrectaffected(RFBDISPLAY *mod, struct TVRequest *req,
 		r[3] = rect[3] + v->rfbw_WinRect.r[1];
 	}
 	else
-		memcpy(r, v->rfbw_WinRect.r, sizeof r);
+		memcpy(r, v->rfbw_WinRect.r, 16);
 
 	return region_intersect(r, v->rfbw_ClipRect.r);
 }
@@ -1298,6 +1290,7 @@ static TBOOL rfb_passevent(RFBDISPLAY *mod, RFBWINDOW *v, TIMSG *omsg)
 		TIMSG *imsg;
 		if (rfb_getimsg(mod, v, &imsg, omsg->timsg_Type))
 		{
+			/* note: screen coordinates */
 			TINT x = omsg->timsg_MouseX;
 			TINT y = omsg->timsg_MouseY;
 			mod->rfb_MouseX = x;
@@ -1320,6 +1313,7 @@ static RFBWINDOW *rfb_passevent_by_mousexy(RFBDISPLAY *mod, TIMSG *omsg,
 	TBOOL focus)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
+	/* note: screen coordinates */
 	TINT x = omsg->timsg_MouseX = TCLAMP(0, omsg->timsg_MouseX, mod->rfb_Width - 1);
 	TINT y = omsg->timsg_MouseY = TCLAMP(0, omsg->timsg_MouseY, mod->rfb_Height - 1);
 	TLock(mod->rfb_InstanceLock);
@@ -1345,6 +1339,61 @@ static TBOOL rfb_passevent_to_focus(RFBDISPLAY *mod, TIMSG *omsg)
 		sent = rfb_passevent(mod, v, omsg);
 	TUnlock(mod->rfb_InstanceLock);
 	return sent;
+}
+
+static void rfb_passevent_mousebutton(RFBDISPLAY *mod, TIMSG *msg)
+{
+	TBOOL down = msg->timsg_Code & (TMBCODE_LEFTDOWN | 
+		TMBCODE_RIGHTDOWN | TMBCODE_MIDDLEDOWN);
+	RFBWINDOW *v = rfb_passevent_by_mousexy(mod, msg, down);
+	if (!down && v != mod->rfb_FocusWindow)
+		rfb_passevent_to_focus(mod, msg);
+}
+
+static void rfb_passevent_keyboard(RFBDISPLAY *mod, TIMSG *msg)
+{
+	/* pass keyboard events to focused window, else to the
+	** hovered window (also setting the focus): */
+	if (!rfb_passevent_to_focus(mod, msg))
+		rfb_passevent_by_mousexy(mod, msg, TTRUE);
+}
+
+static void rfb_passevent_mousemove(RFBDISPLAY *mod, TIMSG *msg)
+{
+	/* pass mouse movements to focused and hovered window: */
+	if (rfb_passevent_by_mousexy(mod, msg, TFALSE) != mod->rfb_FocusWindow)
+		rfb_passevent_to_focus(mod, msg);
+}
+
+LOCAL TINT rfb_sendevent(RFBDISPLAY *mod, TUINT type, TUINT code, TINT x,
+	TINT y)
+{
+	TIMSG *msg;
+	if (!rfb_getimsg(mod, TNULL, &msg, type))
+		return 0;
+	msg->timsg_Code = code;
+	msg->timsg_MouseX = x; 
+	msg->timsg_MouseY = y;
+	TINT res = 1;
+	switch (type)
+	{
+		case TITYPE_MOUSEMOVE:
+			rfb_passevent_mousemove(mod, msg);
+			break;
+		case TITYPE_MOUSEBUTTON:
+			rfb_passevent_mousebutton(mod, msg);
+			break;
+		case TITYPE_KEYUP:
+		case TITYPE_KEYDOWN:
+			rfb_passevent_keyboard(mod, msg);
+			break;
+		default:
+			TDBPRINTF(TDB_ERROR,("illegal message type\n"));
+			res = 0;
+	}
+	/* put back prototype message */
+	TAddTail(&mod->rfb_IMsgPool, &msg->timsg_Node);
+	return res;
 }
 
 /*****************************************************************************/
@@ -1456,7 +1505,7 @@ static void rfb_processevent(RFBDISPLAY *mod)
 					rfb_damage(mod, drect.r, TNULL);
 				}
 				else
-					TDBPRINTF(TDB_WARN,("unhandled event: NEWSIZE\n"));
+					TDBPRINTF(TDB_WARN,("Cannot resize this framebuffer\n"));
 				break;
 				
 			case TITYPE_CLOSE:
@@ -1478,28 +1527,16 @@ static void rfb_processevent(RFBDISPLAY *mod)
 				
 			case TITYPE_KEYUP:
 			case TITYPE_KEYDOWN:
-				/* pass keyboard events to focused window, else to the
-				 * hovered window (also setting the focus): */
-				if (!rfb_passevent_to_focus(mod, msg))
-					rfb_passevent_by_mousexy(mod, msg, TTRUE);
+				rfb_passevent_keyboard(mod, msg);
 				break;
 
 			case TITYPE_MOUSEMOVE:
-				/* pass mouse movements to focused and hovered window: */
-				if (rfb_passevent_by_mousexy(mod, msg, TFALSE) != 
-					mod->rfb_FocusWindow)
-					rfb_passevent_to_focus(mod, msg);
+				rfb_passevent_mousemove(mod, msg);
 				break;
 				
 			case TITYPE_MOUSEBUTTON:
-			{
-				TBOOL down = msg->timsg_Code & (TMBCODE_LEFTDOWN | 
-					TMBCODE_RIGHTDOWN | TMBCODE_MIDDLEDOWN);
-				RFBWINDOW *v = rfb_passevent_by_mousexy(mod, msg, down);
-				if (!down && v != mod->rfb_FocusWindow)
-					rfb_passevent_to_focus(mod, msg);
+				rfb_passevent_mousebutton(mod, msg);
 				break;
-			}
 		}
 		TReplyMsg(msg);
 	}

@@ -43,60 +43,31 @@ static enum rfbNewClientAction rfb_newclient(rfbClientPtr cl)
 	return RFB_CLIENT_ACCEPT;
 }
 
-static int rfb_sendimsg(RFBDISPLAY *mod, RFBWINDOW *v,
-	TINT x, TINT y, TUINT type, TUINT code)
-{
-	TIMSG *imsg;
-	if (rfb_getimsg(mod, v, &imsg, type))
-	{
-		imsg->timsg_Code = code;
-		imsg->timsg_Qualifier = mod->rfb_KeyQual;
-		imsg->timsg_MouseX = x - v->rfbw_ScreenRect.r[0];
-		imsg->timsg_MouseY = y - v->rfbw_ScreenRect.r[1];
-		imsg->timsg_ScreenMouseX = x;
-		imsg->timsg_ScreenMouseY = y;
-		TExecPutMsg(mod->rfb_ExecBase, v->rfbw_IMsgPort, TNULL, imsg);
-		return 1;
-	}
-	return 0;
-}
-
 static void rfb_doremoteptr(int buttonMask, int x, int y, rfbClientPtr cl)
 {
 	ClientData *cd = cl->clientData;
 	RFBDISPLAY *mod = g_mod;
 	TAPTR TExecBase = TGetExecBase(mod);
-	RFBWINDOW *v;
-	
 	TLock(mod->rfb_InstanceLock);
-	v = rfb_findcoord(mod, x, y);
-	if (v)
-	{
-		int sent = 0;
-		if (!(cd->oldbutton & 0x01) && (buttonMask & 0x01))
-			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_LEFTDOWN);
-		else if ((cd->oldbutton & 0x01) && !(buttonMask & 0x01))
-			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_LEFTUP);
-		if (!(cd->oldbutton & 0x02) && (buttonMask & 0x02))
-			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_MIDDLEDOWN);
-		else if ((cd->oldbutton & 0x02) && !(buttonMask & 0x02))
-			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_MIDDLEUP);
-		if (!(cd->oldbutton & 0x04) && (buttonMask & 0x04))
-			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_RIGHTDOWN);
-		else if ((cd->oldbutton & 0x04) && !(buttonMask & 0x04))
-			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_RIGHTUP);
-		if (buttonMask & 0x10)
-			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_WHEELDOWN);
-		if (buttonMask & 0x08)
-			sent += rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEBUTTON, TMBCODE_WHEELUP);
-		if (sent == 0)
-		{
-			rfb_sendimsg(mod, v, x, y, TITYPE_MOUSEMOVE, 0);
-			RFBWINDOW *fv = mod->rfb_FocusWindow;
-			if (fv && fv != v)
-				rfb_sendimsg(mod, fv, x, y, TITYPE_MOUSEMOVE, 0);
-		}
-	}
+	int sent = 0;
+	if (!(cd->oldbutton & 0x01) && (buttonMask & 0x01))
+		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_LEFTDOWN, x, y);
+	else if ((cd->oldbutton & 0x01) && !(buttonMask & 0x01))
+		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_LEFTUP, x, y);
+	if (!(cd->oldbutton & 0x02) && (buttonMask & 0x02))
+		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_MIDDLEDOWN, x, y);
+	else if ((cd->oldbutton & 0x02) && !(buttonMask & 0x02))
+		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_MIDDLEUP, x, y);
+	if (!(cd->oldbutton & 0x04) && (buttonMask & 0x04))
+		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_RIGHTDOWN, x, y);
+	else if ((cd->oldbutton & 0x04) && !(buttonMask & 0x04))
+		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_RIGHTUP, x, y);
+	if (buttonMask & 0x10)
+		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_WHEELDOWN, x, y);
+	if (buttonMask & 0x08)
+		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_WHEELUP, x, y);
+	if (sent == 0)
+		rfb_sendevent(mod, TITYPE_MOUSEMOVE, 0, x, y);
 	TUnlock(mod->rfb_InstanceLock);
 	cd->oldbutton = buttonMask;
 	rfbDefaultPtrAddEvent(buttonMask, x, y, cl);
