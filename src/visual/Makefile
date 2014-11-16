@@ -2,7 +2,7 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
-EXTRADEFS = -DVISUAL_USE_INTERNAL_HASH
+# EXTRADEFS =
 
 ###############################################################################
 

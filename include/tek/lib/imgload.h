@@ -36,11 +36,10 @@ struct ImgLoader
 	} iml_Loader;
 };
 
-TBOOL imgload_init_file(struct ImgLoader *ld, struct TExecBase *TExecBase, 
+TLIBAPI TBOOL imgload_init_file(struct ImgLoader *ld, struct TExecBase *TExecBase, 
 	FILE *fd);
-TBOOL imgload_init_memory(struct ImgLoader *ld, struct TExecBase *TExecBase,
+TLIBAPI TBOOL imgload_init_memory(struct ImgLoader *ld, struct TExecBase *TExecBase,
 	const char *src, size_t len);
-TBOOL imgload_load(struct ImgLoader *ld);
-void imgload_free(struct ImgLoader *ld);
+TLIBAPI TBOOL imgload_load(struct ImgLoader *ld);
 
 #endif /* _TEK_LIB_IMGLOAD_H */

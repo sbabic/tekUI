@@ -93,8 +93,11 @@ LUA_TEKUI_EXE_DLL = $(BASEDIR)/tekui_dll
 LUA_TEKUI_EXE_STANDALONE = $(BASEDIR)/tekui
 
 LUA_TEKUI_DEFS = $(LIBCFLAGS) -I $(LUADISTDIR)/src -I../../src/hal -DLUA_TEKUI_INCLUDE_CLASS_LIBRARY
+LUA_TEKUI_LIBS = -L$(LIBDIR) $(TEKUI_LIBS)
 LUA_TEKUI_DEFS += -I../../display_x11 $(X11_DEFS)
-LUA_TEKUI_LIBS = $(X11_LIBS) $(TEKUI_LIBS)
+LUA_TEKUI_LIBS += $(X11_LIBS)
+LUA_TEKUI_DEFS += -I../../display_rawfb $(RAWFB_DEFS)
+LUA_TEKUI_LIBS += $(RAWFB_LIBS) 
 
 $(LUA_TEKUI_DLL): $(OBJDIR)/linit_tekui.lo
 	$(CC) $(MODCFLAGS) -o $@ $(OBJDIR)/linit_tekui.lo $(LUA_DLLS)
@@ -109,7 +112,7 @@ $(LUA_TEKUI_EXE_DLL): $(LUA_TEKUI_DLL) $(OBJDIR)/luatekui.lo
 	$(CC) $(BINCFLAGS) -o $@ $(OBJDIR)/luatekui.lo -L$(BASEDIR) -lluatekui $(LUA_TEKUI_LIBS) -lreadline -lm -ldl -pthread
 	
 $(LUA_TEKUI_EXE_STANDALONE): $(OBJDIR)/linit_tekui.lo $(OBJDIR)/luatekui.lo $(LUADISTDIR)/src/lua.c
-	$(CC) $(BINCFLAGS) -o $@ $(OBJDIR)/luatekui.lo $(OBJDIR)/linit_tekui.lo -L$(BASEDIR) $(LUA_TEKUI_LIBS) -lreadline -lm -ldl -pthread
+	$(CC) $(BINCFLAGS) -o $@ $(OBJDIR)/luatekui.lo $(OBJDIR)/linit_tekui.lo -L$(BASEDIR) $(LUA_TEKUI_LIBS) -Wl,-E -lreadline -lm -ldl -pthread
 	
 ###############################################################################
 

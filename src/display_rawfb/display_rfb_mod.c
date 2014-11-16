@@ -10,12 +10,12 @@
 #include <string.h>
 #include <tek/inline/exec.h>
 #include <tek/lib/imgload.h>
+#include <tek/mod/display.h>
+
 #include "display_rfb_mod.h"
 
 #if defined(RFB_SUB_DEVICE)
-#define STRHELP(x) #x
-#define STR(x) STRHELP(x)
-#define SUBDEVICE_NAME "display_" STR(RFB_SUB_DEVICE)
+#define SUBDEVICE_NAME "display_" DISPLAY_NAME(RFB_SUB_DEVICE)
 #else
 #define SUBDEVICE_NAME TNULL
 #endif

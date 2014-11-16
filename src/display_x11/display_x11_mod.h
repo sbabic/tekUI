@@ -47,39 +47,39 @@
 
 #define DEFFONTNAME			"-misc-fixed-medium-r-normal-*-14-*-*-*-*-*-*-*"
 
-#define FNT_LENGTH			41
-#define FNT_DEFNAME			"fixed"
-#define FNT_WGHT_MEDIUM		"medium"
-#define	FNT_WGHT_BOLD		"bold"
-#define FNT_SLANT_R			"r"
-#define FNT_SLANT_I			"i"
-#define FNT_DEFPXSIZE		14
-#define	FNT_DEFREGENC		"iso8859-1"
-#define	FNT_WILDCARD		"*"
+#define X11FNT_LENGTH			41
+#define X11FNT_DEFNAME			"fixed"
+#define X11FNT_WGHT_MEDIUM		"medium"
+#define	X11FNT_WGHT_BOLD		"bold"
+#define X11FNT_SLANT_R			"r"
+#define X11FNT_SLANT_I			"i"
+#define X11FNT_DEFPXSIZE		14
+#define	X11FNT_DEFREGENC		"iso8859-1"
+#define	X11FNT_WILDCARD		"*"
 
-#define FNTQUERY_NUMATTR	(5+1)
-#define	FNTQUERY_UNDEFINED	0xffffffff
+#define X11FNTQUERY_NUMATTR	(5+1)
+#define	X11FNTQUERY_UNDEFINED	0xffffffff
 
-#define FNT_ITALIC			0x1
-#define	FNT_BOLD			0x2
-#define FNT_UNDERLINE		0x4
+#define X11FNT_ITALIC			0x1
+#define	X11FNT_BOLD			0x2
+#define X11FNT_UNDERLINE		0x4
 
-#define FNT_MATCH_NAME		0x01
-#define FNT_MATCH_SIZE		0x02
-#define FNT_MATCH_SLANT		0x04
-#define	FNT_MATCH_WEIGHT	0x08
-#define	FNT_MATCH_SCALE		0x10
+#define X11FNT_MATCH_NAME		0x01
+#define X11FNT_MATCH_SIZE		0x02
+#define X11FNT_MATCH_SLANT		0x04
+#define	X11FNT_MATCH_WEIGHT	0x08
+#define	X11FNT_MATCH_SCALE		0x10
 /* all mandatory properties: */
-#define FNT_MATCH_ALL		0x0f
+#define X11FNT_MATCH_ALL		0x0f
 
-struct FontMan
+struct X11FontMan
 {
 	struct TList openfonts;		/* list of opened fonts */
 	TAPTR deffont;				/* pointer to default font */
 	TINT defref;				/* count of references to default font */
 };
 
-struct FontNode
+struct X11FontHandle
 {
 	struct THandle handle;
 	XFontStruct *font;
@@ -90,13 +90,13 @@ struct FontNode
 	TUINT pxsize;
 };
 
-struct FontQueryNode
+struct X11FontQueryNode
 {
 	struct TNode node;
-	TTAGITEM tags[FNTQUERY_NUMATTR];
+	TTAGITEM tags[X11FNTQUERY_NUMATTR];
 };
 
-struct FontQueryHandle
+struct X11FontQueryHandle
 {
 	struct THandle handle;
 	struct TList reslist;
@@ -105,13 +105,13 @@ struct FontQueryHandle
 
 /* internal structures */
 
-struct fnt_node
+struct X11FontNode
 {
 	struct TNode node;
 	TSTRPTR fname;
 };
 
-struct fnt_attr
+struct X11FontAttr
 {
 	struct TList fnlist;	/* list of fontnames */
 	TSTRPTR fname;
@@ -221,7 +221,7 @@ typedef struct
 	struct FcInterface x11_fciface;
 	#endif
 
-	struct FontMan x11_fm;
+	struct X11FontMan x11_fm;
 
 	/* list of all visuals: */
 	struct TList x11_vlist;

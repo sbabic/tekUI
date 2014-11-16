@@ -7,12 +7,17 @@
 
 #include <tek/exec.h>
 
-/*****************************************************************************/
-/*
-**	Forward declarations
-*/
-
-/* Display module base structure: */
 struct TDisplayBase;
+
+typedef struct
+{
+	TAPTR Base;
+	TAPTR ExecBase;
+	TBOOL IsBase;
+
+} TEKDisplay;
+
+#define DISPLAY_STRHELP(x) #x
+#define DISPLAY_NAME(x) DISPLAY_STRHELP(x)
 
 #endif

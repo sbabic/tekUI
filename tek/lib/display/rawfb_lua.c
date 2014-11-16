@@ -12,16 +12,11 @@
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
+#include <tek/mod/display.h>
 
 /*****************************************************************************/
 
 #if defined(RFB_SUB_DEVICE)
-
-#define STRHELP(x) #x
-#define STR(x) STRHELP(x)
-#define SUBDEVICE_NAME STR(RFB_SUB_DEVICE)
-#define TEK_LIB_DISPLAY_X11_CLASSNAME "tek.lib.display." SUBDEVICE_NAME "*"
-#define TEK_LIB_DISPLAY_X11_BASECLASSNAME "tek.lib.display." SUBDEVICE_NAME ".base*"
 
 #define NAMEHELP(fun, suffix) fun ## suffix
 #define NAME(fun, suffix) NAMEHELP(fun, suffix)
@@ -40,24 +35,16 @@ extern TMODENTRY TUINT
 tek_init_display_rawfb(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
 static TCALLBACK TINT tek_lib_display_rawfb_close(lua_State *L);
 
-typedef struct
-{
-	TAPTR Base;
-	TAPTR ExecBase;
-	TBOOL IsBase;
-
-} TEKDisplay;
-
 static const struct TInitModule tek_lib_display_rawfb_initmodules[] =
 {
 	{ "display_rawfb", tek_init_display_rawfb, TNULL, 0 },
 #if defined(RFB_SUB_DEVICE)
-	{ "display_" SUBDEVICE_NAME, SUBDEVICE_ENTRY, TNULL, 0 },
+	{ "display_" DISPLAY_NAME(RFB_SUB_DEVICE), SUBDEVICE_ENTRY, TNULL, 0 },
 #endif
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
-static struct TModInitNode im_display = /* TODO: const */
+static struct TModInitNode rawfb_im_display =
 {
 	{ TNULL, TNULL },
 	(struct TInitModule *) tek_lib_display_rawfb_initmodules,
@@ -86,7 +73,7 @@ tek_lib_display_rawfb_close(lua_State *L)
 	{
 		/* collected base; remove TEKlib module: */
 		TExecRemModules(display->ExecBase,
-			(struct TModInitNode *) &im_display, 0);
+			(struct TModInitNode *) &rawfb_im_display, 0);
 		TDBPRINTF(TDB_TRACE,("display module removed\n"));
 	}
 	return 0;
@@ -163,7 +150,7 @@ int luaopen_tek_lib_display_rawfb(lua_State *L)
 	lua_pop(L, 5);
 
 	/* Add visual module to TEKlib's internal module list: */
-	TExecAddModules(exec, (struct TModInitNode *) &im_display, 0);
+	TExecAddModules(exec, (struct TModInitNode *) &rawfb_im_display, 0);
 
 	return 1;
 }

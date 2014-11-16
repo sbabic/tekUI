@@ -652,7 +652,7 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 				DISPLAY_DRIVER, vis->vis_FontHeight));
 		}
 		else
-			TDBPRINTF(TDB_WARN,("Driver '%s' supplied no default font\n", 
+			TDBPRINTF(TDB_INFO,("Driver '%s' supplied no default font\n", 
 				DISPLAY_DRIVER));
 
 		/* success: */

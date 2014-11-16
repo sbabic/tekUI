@@ -73,7 +73,7 @@ static const char *getfontdir()
 ** rfb_hostqueryfonts()
 */
 
-THOOKENTRY TTAG rfb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
+static THOOKENTRY TTAG rfb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{

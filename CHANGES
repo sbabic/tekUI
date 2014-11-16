@@ -1,6 +1,10 @@
 
 == tekUI Changelog ==
 
+ * Some cleanup in visibility of symbols, code and build system structure
+ * UI: Now evaluates arg, ProgDir, LocalPath, etc. as late as possible,
+ allowing the library to be embedded in precompiled form, warnings for
+ each missing locale key are shown only once now
  * ImgLoad, Visual: Minor improvements in loading with alpha channel
  * Visual module: Minor API corrections, added documentation
  * Display: Some corrections in API documentation

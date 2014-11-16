@@ -98,7 +98,7 @@ FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 X11_LIBS = -L/usr/X11R6/lib -lX11 -lXext -lXxf86vm
-X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DX11_PIXMAP_CACHE -DENABLE_XFT -DENABLE_XVID
+X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -DX11_PIXMAP_CACHE -DENABLE_XFT -DENABLE_XVID
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Raw framebuffer: Can be visualized on a Linux framebuffer, on another

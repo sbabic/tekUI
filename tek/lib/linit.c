@@ -34,6 +34,7 @@ static const luaL_Reg lualibs2[] = {
   { "tek.lib.region", luaopen_tek_lib_region },
   { "tek.lib.string", luaopen_tek_lib_string },
   { "tek.lib.display.x11", luaopen_tek_lib_display_x11 },
+/*{ "tek.lib.display.rawfb", luaopen_tek_lib_display_rawfb },*/
   { "tek.lib.visual", luaopen_tek_lib_visual },
   { "tek.lib.support", luaopen_tek_lib_support },
   { "tek.ui.layout.default", luaopen_tek_ui_layout_default },

@@ -3,8 +3,6 @@
 #define LOCAL static
 #define TLIBAPI static
 
-#define VISUAL_USE_INTERNAL_HASH
-
 #include "../../src/teklib/init.c"
 #include "../../src/teklib/posix/host.c"
 #include "../../src/teklib/debug.c"
@@ -15,7 +13,9 @@
 #include "../../src/exec/exec_all.c"
 #include "../../src/hal/hal_mod.c"
 #include "../../src/hal/posix/hal.c"
+
 #include "../../src/display_x11/display_x11_all.c"
+/*#include "../../src/display_rawfb/display_rfb_all.c"*/
 
 #define loslib_c
 #define luaall_c
@@ -66,6 +66,7 @@
 #include "../../src/misc/imgload.c"
 
 #include "display/x11_lua.c"
+/*#include "display/rawfb_lua.c"*/
 
 #include "../ui/layout/default.c"
 #include "../ui/class/area.c"

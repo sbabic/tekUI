@@ -12,6 +12,7 @@
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
+#include <tek/mod/display.h>
 
 #define TEK_LIB_DISPLAY_X11_CLASSNAME "tek.lib.display.x11*"
 #define TEK_LIB_DISPLAY_X11_BASECLASSNAME "tek.lib.display.x11.base*"
@@ -20,21 +21,13 @@ extern TMODENTRY TUINT
 tek_init_display_x11(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
 static TCALLBACK TINT tek_lib_display_x11_close(lua_State *L);
 
-typedef struct
-{
-	TAPTR Base;
-	TAPTR ExecBase;
-	TBOOL IsBase;
-
-} TEKDisplay;
-
 static const struct TInitModule tek_lib_display_x11_initmodules[] =
 {
 	{ "display_x11", tek_init_display_x11, TNULL, 0 },
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
-static struct TModInitNode im_display = /* TODO: const */
+static struct TModInitNode x11_im_display =
 {
 	{ TNULL, TNULL },
 	(struct TInitModule *) tek_lib_display_x11_initmodules,
@@ -63,7 +56,7 @@ tek_lib_display_x11_close(lua_State *L)
 	{
 		/* collected base; remove TEKlib module: */
 		TExecRemModules(display->ExecBase,
-			(struct TModInitNode *) &im_display, 0);
+			(struct TModInitNode *) &x11_im_display, 0);
 		TDBPRINTF(TDB_TRACE,("display module removed\n"));
 	}
 	return 0;
@@ -140,7 +133,7 @@ int luaopen_tek_lib_display_x11(lua_State *L)
 	lua_pop(L, 5);
 
 	/* Add visual module to TEKlib's internal module list: */
-	TExecAddModules(exec, (struct TModInitNode *) &im_display, 0);
+	TExecAddModules(exec, (struct TModInitNode *) &x11_im_display, 0);
 
 	return 1;
 }

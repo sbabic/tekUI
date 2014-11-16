@@ -110,7 +110,7 @@ local support = require "tek.lib.support"
 local Region = require "tek.lib.region"
 local Object = require "tek.class.object"
 local String = require "tek.lib.string"
-local arg = arg
+local _G = _G
 local assert = assert
 local error = error
 local floor = math.floor
@@ -133,7 +133,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 50.1" -- module version string
+_VERSION = "tekUI 51.0" -- module version string
 
 VERSION = 110 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
@@ -143,30 +143,12 @@ VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 -------------------------------------------------------------------------------
 
 -- Old package path:
-local OldPath = package and package.path or ""
-local OldCPath = package and package.cpath or ""
-
+OldPath = package and package.path or ""
+OldCPath = package and package.cpath or ""
 -- Path Separator:
-local p = package and package.config:sub(1, 1) or "/"
-PathSeparator = p
-
--- Get executable path and name:
-if arg and arg[0] then
-	ProgDir, ProgName = arg[0]:match(("^(.-%s?)([^%s]*)$"):format(p, p))
-	if ProgDir == "" then
-		ProgDir = "." .. p
-	end
-end
-
--- Modified package path to find modules in the local program directory:
-LocalPath = ProgDir and ProgDir .. "?.lua;" .. OldPath or OldPath
-LocalCPath = ProgDir and ProgDir .. "?.so;" .. OldCPath or OldCPath
-
-Mode = "default" -- Operation mode: "default", "workbench"
-
-ProgDir = ProgDir or ""
-ProgName = ProgName or ""
-
+PathSeparator = package and package.config:sub(1, 1) or "/"
+-- Operation mode: "default", "workbench"
+Mode = "default"
 -- Name of the Default Theme:
 ThemeName = getenv("THEME") or "desktop"
 -- Open in fullscreen mode by default?:
@@ -280,7 +262,7 @@ function loadClass(realm, name, version, loader)
 			end
 		end
 		name = LoaderPaths[realm] .. name
-		db.trace("Loading module %s v%s...", name, version)
+		db.trace("Loading module %s v%s...", name, version or "?")
 		package.path, package.cpath = LocalPath, LocalCPath
 		local success, result = (loader or loadProtected)(name, version)
 		package.path, package.cpath = OldPath, OldCPath
@@ -553,7 +535,9 @@ function getLocale(appname, vendorname, deflang, lang)
 	m2.app = encodeURL(appname or "unnown")
 	m2.__index = function(tab, key)
 		db.warn("Locale key not found: %s", key)
-		return key and key:gsub("_", " ") or ""
+		local key2 = key and key:gsub("_", " ")
+		tab[key] = key2
+		return key2 or ""
 	end
 	setmetatable(keys, m2)
 	lang = lang or getLanguage()
@@ -907,11 +891,49 @@ function getStyleSheet(themename)
 end
 
 -------------------------------------------------------------------------------
---	On-demand class loader:
+--	On-demand class loader and evaluation of ProgDir, LocalPath, LocalCPath
 -------------------------------------------------------------------------------
+
+local function getpaths(key, default)
+	local arg = _G.arg
+	local p = PathSeparator
+	if arg and arg[0] then
+		local pdir, pname = arg[0]:match(("^(.-%s?)([^%s]*)$"):format(p, p))
+		if pdir == "" then
+			pdir = "." .. p
+		end
+		ProgDir, ProgName = pdir, pname
+		-- Modified package path to find modules in the local program directory:
+		LocalPath = pdir .. "?.lua;" .. OldPath
+		LocalCPath = pdir .. "?.so;" .. OldCPath
+	end
+	return rawget(_M, key) or default
+end
+
+local accessors = 
+{
+	arg = function()
+		return _G.arg 
+	end,
+	ProgDir = function()
+		return getpaths("ProgDir", "")
+	end,
+	ProgName = function() 
+		return getpaths("ProgName", "")
+	end,
+	LocalPath = function() 
+		return getpaths("LocalPath", OldPath)
+	end,
+	LocalCPath = function() 
+		return getpaths("LocalCPath", OldCPath)
+	end,
+}
 
 setmetatable(_M, {
 	__index = function(tab, key)
+		if accessors[key] then
+			return accessors[key]()
+		end
 		local pname = key:lower()
 		local class = loadClass("class", pname, nil, loadSimple)
 		if class then

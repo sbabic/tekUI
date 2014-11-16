@@ -2,7 +2,7 @@
 /*
 **	tek/ui/style/default.css
 **
-**	Version: 3.3
+**	Version: 3.4
 */
 
 tek.ui.class.area {
@@ -372,7 +372,25 @@ tek.ui.class.canvas.inputfield {
 	padding: 0;
 }
 
-/***************************************/
+
+/*
+.button {
+	background-color: gradient(0,0,tint(background,border-shadow,30%),0,30,tint(background,border-shine,30%));
+}
+.button:hover {
+	background-color: gradient(0,0,tint(background,border-shadow,50%),0,30,tint(background,border-shine,70%));
+}
+.button:focus {
+	background-color: gradient(0,0,tint(background,border-shadow,50%),0,30,tint(background,border-shine,70%));
+}
+.button:active {
+	background-color: gradient(0,0,tint(background,border-shadow,30%),0,30,tint(background,border-shine,30%));
+}
+.button:disabled {
+	background-color: gradient(0,0,tint(background,border-shadow,50%),0,30,tint(background,border-shine,30%));
+}
+*/
+
 
 .window-decoration {
 	border-width: 2;

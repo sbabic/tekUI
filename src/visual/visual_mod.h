@@ -13,9 +13,6 @@
 #include <tek/mod/visual.h>
 #include <tek/inline/exec.h>
 #include <tek/proto/display.h>
-#if !defined(VISUAL_USE_INTERNAL_HASH)
-#include <tek/proto/util.h>
-#endif
 
 /*****************************************************************************/
 
@@ -56,11 +53,6 @@ struct TVisualBase
 {
 	/* Module header: */
 	struct TModule vis_Module;
-	
-	#if !defined(VISUAL_USE_INTERNAL_HASH)
-	/* Util module base ptr: */
-	TAPTR vis_UtilBase;
-	#endif
 	
 	/* Module global memory manager (thread safe): */
 	TAPTR vis_MemMgr;

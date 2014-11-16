@@ -386,9 +386,9 @@ LOCAL TBOOL x11_initinstance(struct TTask *task)
 		x11_initlibxft(inst);
 		
 		ftags[0].tti_Tag = TVisual_FontName;
-		ftags[0].tti_Value = (TTAG) FNT_DEFNAME;
+		ftags[0].tti_Value = (TTAG) X11FNT_DEFNAME;
 		ftags[1].tti_Tag = TVisual_FontPxSize;
-		ftags[1].tti_Value = (TTAG) FNT_DEFPXSIZE;
+		ftags[1].tti_Value = (TTAG) X11FNT_DEFPXSIZE;
 		ftags[2].tti_Tag = TTAG_DONE;
 
 		inst->x11_fm.deffont = x11_hostopenfont(inst, ftags);

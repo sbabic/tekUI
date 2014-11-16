@@ -25,7 +25,6 @@ local window = ui.Window:new
 	{
 		Group:new
 		{
-			SameSize = true,
 			Children =
 			{
 				Group:new

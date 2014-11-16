@@ -1072,7 +1072,7 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 	#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
 	{
-		XftFont *f = ((struct FontNode *) v->curfont)->xftfont;
+		XftFont *f = ((struct X11FontHandle *) v->curfont)->xftfont;
 		(*mod->x11_xftiface.XftDrawStringUtf8)(v->draw, &fgpen->xftcolor,
 			f, x, y + f->ascent, (FcChar8 *)text, len);
 	}
@@ -1082,7 +1082,7 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 		TSTRPTR latin = x11_utf8tolatin(mod, text, len, &len);
 		if (latin)
 		{
-			XFontStruct *f = ((struct FontNode *) v->curfont)->font;
+			XFontStruct *f = ((struct X11FontHandle *) v->curfont)->font;
 			XDrawString(mod->x11_Display, v->window, v->gc,
 				x, y + f->ascent, (char *) latin, len);
 		}

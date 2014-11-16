@@ -232,7 +232,7 @@ static TBOOL imgload_load_ppm(struct ImgLoader *ld)
 }
 
 
-TBOOL imgload_load(struct ImgLoader *ld)
+TLIBAPI TBOOL imgload_load(struct ImgLoader *ld)
 {
 #if defined(ENABLE_PNG)
 	if (imgload_load_png(ld))
@@ -258,7 +258,7 @@ static long imgload_seek_file(struct ImgLoader *ld, long offs, int whence)
 	return res;
 }
 
-TBOOL imgload_init_file(struct ImgLoader *ld, struct TExecBase *TExecBase,
+TLIBAPI TBOOL imgload_init_file(struct ImgLoader *ld, struct TExecBase *TExecBase,
 	FILE *fd)
 {
 	memset(ld, 0, sizeof *ld);
@@ -297,7 +297,7 @@ static long imgload_seek_mem(struct ImgLoader *ld, long offs, int whence)
 	return ld->iml_Loader.Memory.len - ld->iml_Loader.Memory.left;
 }
 
-TBOOL imgload_init_memory(struct ImgLoader *ld, struct TExecBase *TExecBase,
+TLIBAPI TBOOL imgload_init_memory(struct ImgLoader *ld, struct TExecBase *TExecBase,
 	const char *src, size_t len)
 {
 	memset(ld, 0, sizeof *ld);

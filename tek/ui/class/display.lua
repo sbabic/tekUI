@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 33.1"
+_VERSION = "Display 33.2"
 local Display = _M
 Element:newClass(Display)
 
@@ -189,9 +189,9 @@ local ColorDefaults =
 -------------------------------------------------------------------------------
 
 local FN_FIXED = "DejaVuSansMono,monospace,fixed,courier/s,VeraMono"
-local FN_FIXEDBOLD = "DejaVuSansMono-Bold,monospace/b,fixed/b,courier/bs,VeraMono/b"
-local FN_FIXEDITALIC = "DejaVuSansMono-Oblique,monospace/i,fixed/i,courier/is,VeraMono/i"
-local FN_FIXEDBOLDITALIC = "DejaVuSansMono-BoldOblique,monospace/bi,fixed/bi,courier/bis,VeraMono/bi"
+local FN_FIXEDBOLD = "DejaVuSansMono-Bold,DejaVuSansMono/b,monospace/b,fixed/b,courier/bs,VeraMono/b"
+local FN_FIXEDITALIC = "DejaVuSansMono-Oblique,DejaVuSansMono/i,monospace/i,fixed/i,courier/is,VeraMono/i"
+local FN_FIXEDBOLDITALIC = "DejaVuSansMono-BoldOblique,DejaVuSansMono/bi,monospace/bi,fixed/bi,courier/bis,VeraMono/bi"
 
 local FN_NORMAL = "DejaVuSans,sans-serif,helvetica/s,arial,Vera,times"
 local FN_BOLD = "DejaVuSans-Bold,DejaVuSans/b,sans-serif/b,helvetica/sb,arial/b,Vera/b,times/b"
@@ -466,6 +466,7 @@ function Display:openFont(fontspec, override_size, override_attr)
 		fcache[fontspec] = frec
 		fcache[fcachename] = frec
 		if font then
+			db.info("opened font %s:%s/%s", realname, size or "", attr)
 			fcache[font] = frec
 			return font, frec
 		end

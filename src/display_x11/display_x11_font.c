@@ -23,16 +23,16 @@
 
 /*****************************************************************************/
 
-static TBOOL hostopenfont(X11DISPLAY *mod, struct FontNode *fn,
-	struct fnt_attr *fattr);
+static TBOOL x11i_hostopenfont(X11DISPLAY *mod, struct X11FontHandle *fn,
+	struct X11FontAttr *fattr);
 #if defined(ENABLE_XFT)
-static void hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh,
-	struct fnt_attr *fattr);
-static TAPTR initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms,
-	TAPTR iface, TINT numsyms);
+static void x11i_hostqueryfonts_xft(X11DISPLAY *mod,
+	struct X11FontQueryHandle *fqh, struct X11FontAttr *fattr);
+static TAPTR x11i_initlib(X11DISPLAY *mod, TSTRPTR libname,
+	const TSTRPTR *libsyms, TAPTR iface, TINT numsyms);
 #endif
-static void hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh,
-	struct fnt_attr *fattr);
+static void x11i_hostqueryfonts_xlib(X11DISPLAY *mod,
+	struct X11FontQueryHandle *fqh, struct X11FontAttr *fattr);
 
 /*****************************************************************************/
 #if defined(ENABLE_XFT)
@@ -91,14 +91,14 @@ LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod)
  	#endif
 
 	/* init fontconfig (needed for font matching) */
-	mod->x11_libfchandle = initlib(mod, "libfontconfig.so", libfcsyms,
+	mod->x11_libfchandle = x11i_initlib(mod, "libfontconfig.so", libfcsyms,
 		(void *)&mod->x11_fciface, LIBFC_NUMSYMS);
 
 	if (mod->x11_libfchandle)
 	{
 		/* try to init libXft, if it fails, there will be no font
 		antialiasing at all :( */
-		mod->x11_libxfthandle = initlib(mod, "libXft.so", libxftsyms,
+		mod->x11_libxfthandle = x11i_initlib(mod, "libXft.so", libxftsyms,
 							(void *)&mod->x11_xftiface, LIBXFT_NUMSYMS);
 
 		if (mod->x11_libxfthandle)
@@ -139,8 +139,8 @@ LOCAL void x11_exitlibxft(X11DISPLAY *mod)
 ** to iface and return the libhandle obtained by dlopen or TNULL
 */
 #if defined(ENABLE_XFT)
-static TAPTR initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms,
-	TAPTR iface, TINT numsyms)
+static TAPTR x11i_initlib(X11DISPLAY *mod, TSTRPTR libname,
+	const TSTRPTR *libsyms, TAPTR iface, TINT numsyms)
 {
 	TAPTR libhandle = TNULL;
 
@@ -178,7 +178,7 @@ static TAPTR initlib(X11DISPLAY *mod, TSTRPTR libname, const TSTRPTR *libsyms,
 #endif
 
 /*****************************************************************************/
-/* FontQueryHandle destructor
+/* X11FontQueryHandle destructor
 ** free all memory associated with a fontqueryhandle including
 ** all fontquerynodes, a fontqueryhandle is obtained by calling
 ** x11_hostqueryfonts()
@@ -189,7 +189,7 @@ x11_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
-		struct FontQueryHandle *fqh = obj;
+		struct X11FontQueryHandle *fqh = obj;
 		X11DISPLAY *mod = fqh->handle.thn_Owner;
 		TAPTR TExecBase = TGetExecBase(mod);
 		struct TNode *node, *next;
@@ -197,7 +197,7 @@ x11_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 		node = fqh->reslist.tlh_Head;
 		for (; (next = node->tln_Succ); node = next)
 		{
-			struct FontQueryNode *fqn = (struct FontQueryNode *)node;
+			struct X11FontQueryNode *fqn = (struct X11FontQueryNode *)node;
 
 			/* remove from resultlist */
 			TRemove(&fqn->node);
@@ -294,7 +294,7 @@ fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 			if (slant)
 			{
 				/* italic attribute set? */
-				if (strncmp(FNT_SLANT_I, slant, strlen(FNT_SLANT_I)) == 0)
+				if (strncmp(X11FNT_SLANT_I, slant, strlen(X11FNT_SLANT_I)) == 0)
 					tag->tti_Value = (TTAG) TTRUE;
 				TFree(slant);
 			}
@@ -307,7 +307,7 @@ fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 			if (weight)
 			{
 				/* bold attribute set? */
-				if (strncmp(FNT_WGHT_BOLD, weight, strlen(FNT_WGHT_BOLD)) == 0)
+				if (strncmp(X11FNT_WGHT_BOLD, weight, strlen(X11FNT_WGHT_BOLD)) == 0)
 					tag->tti_Value = (TTAG) TTRUE;
 				TFree(weight);
 			}
@@ -323,21 +323,21 @@ fnt_getattr(X11DISPLAY *mod, TTAGITEM *tag, TSTRPTR fstring)
 ** a FcPattern
 */
 #if defined(ENABLE_XFT)
-static struct FontQueryNode *
+static struct X11FontQueryNode *
 fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TUINT pxsize)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
-	struct FontQueryNode *fqnode = TNULL;
+	struct X11FontQueryNode *fqnode = TNULL;
 
 	/* allocate fquery node */
-	fqnode = TAlloc0(mod->x11_MemMgr, sizeof(struct FontQueryNode));
+	fqnode = TAlloc0(mod->x11_MemMgr, sizeof(struct X11FontQueryNode));
 	if (fqnode)
 	{
 		FcChar8 *fname = TNULL;
 
 		/* fquerynode ready - fill in attributes */
- 		if ((*mod->x11_fciface.FcPatternGetString)(pattern, FC_FAMILY, 0, &fname)
- 				== FcResultMatch)
+ 		if ((*mod->x11_fciface.FcPatternGetString)(pattern, FC_FAMILY, 0,
+				&fname) == FcResultMatch)
  		{
  			/* got fontname, now copy it to fqnode */
  			TINT flen = strlen((char *) fname);
@@ -368,7 +368,7 @@ fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TUINT pxsize)
 			}
 			else
 			{
-				if (pxsize != FNTQUERY_UNDEFINED)
+				if (pxsize != X11FNTQUERY_UNDEFINED)
 				{
 					/* font pxsize argument got ignored when matching,
 					   now it is added back */
@@ -421,14 +421,14 @@ fnt_getfqnode_xft(X11DISPLAY *mod, FcPattern *pattern, TUINT pxsize)
 /* allocate a fontquerynode and fill in properties derived from
 ** a x11 fontname
 */
-static struct FontQueryNode *
+static struct X11FontQueryNode *
 fnt_getfqnode_xlib(X11DISPLAY *mod, TSTRPTR fontname)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
-	struct FontQueryNode *fqnode = TNULL;
+	struct X11FontQueryNode *fqnode = TNULL;
 
 	/* allocate fquery node */
-	fqnode = TAlloc0(mod->x11_MemMgr, sizeof(struct FontQueryNode));
+	fqnode = TAlloc0(mod->x11_MemMgr, sizeof(struct X11FontQueryNode));
 	if (fqnode)
 	{
 		/* fquerynode ready - fill in attributes */
@@ -469,7 +469,7 @@ fnt_getfqnode_xlib(X11DISPLAY *mod, TSTRPTR fontname)
 ** in our resultlist
 */
 static TBOOL
-fnt_checkfqnode(struct TList *rlist, struct FontQueryNode *fqnode)
+x11i_checkfqnode(struct TList *rlist, struct X11FontQueryNode *fqnode)
 {
 	TUINT8 flags;
 	TBOOL match = TFALSE;
@@ -483,25 +483,25 @@ fnt_checkfqnode(struct TList *rlist, struct FontQueryNode *fqnode)
 
 	for (node = rlist->tlh_Head; (next = node->tln_Succ); node = next)
 	{
-		struct FontQueryNode *fqn = (struct FontQueryNode *)node;
+		struct X11FontQueryNode *fqn = (struct X11FontQueryNode *)node;
 		flags = 0;
 
 		if (strlen((TSTRPTR) fqn->tags[0].tti_Value) == flen)
 		{
 			if (strncmp((TSTRPTR)fqn->tags[0].tti_Value, newfname, flen) == 0)
-				flags = FNT_MATCH_NAME;
+				flags = X11FNT_MATCH_NAME;
 		}
 
 		if ((TINT)fqn->tags[1].tti_Value == newpxsize)
-			flags |= FNT_MATCH_SIZE;
+			flags |= X11FNT_MATCH_SIZE;
 
 		if ((TBOOL)fqn->tags[2].tti_Value == newslant)
-			flags |= FNT_MATCH_SLANT;
+			flags |= X11FNT_MATCH_SLANT;
 
 		if ((TBOOL)fqn->tags[3].tti_Value == newweight)
-			flags |= FNT_MATCH_WEIGHT;
+			flags |= X11FNT_MATCH_WEIGHT;
 
-		if (flags == FNT_MATCH_ALL)
+		if (flags == X11FNT_MATCH_ALL)
 		{
 			/* fqnode is not unique */
 			match = TTRUE;
@@ -513,42 +513,12 @@ fnt_checkfqnode(struct TList *rlist, struct FontQueryNode *fqnode)
 }
 
 /*****************************************************************************/
-/* dump properties of a fontquerynode
-*/
-static void
-fnt_dumpnode(struct FontQueryNode *fqn)
-{
-	TDBPRINTF(10, ("-----------------------------------------------\n"));
-	TDBPRINTF(10, ("dumping fontquerynode @ %p\n", fqn));
-	TDBPRINTF(10, (" * FontName: %s\n", (TSTRPTR)fqn->tags[0].tti_Value));
-	TDBPRINTF(10, (" * PxSize:   %d\n", (TINT)fqn->tags[1].tti_Value));
-	TDBPRINTF(10, (" * Italic:   %s\n", (TBOOL)fqn->tags[2].tti_Value ? "on" : "off"));
-	TDBPRINTF(10, (" * Bold:     %s\n", (TBOOL)fqn->tags[3].tti_Value ? "on" : "off"));
-	TDBPRINTF(10, ("-----------------------------------------------\n"));
-}
-
-/*****************************************************************************/
-/* dump all fontquerynodes of a (result-)list
-*/
-static void
-fnt_dumplist(struct TList *rlist)
-{
-	struct TNode *node, *next;
-	node = rlist->tlh_Head;
-	for (; (next = node->tln_Succ); node = next)
-	{
-		struct FontQueryNode *fqn = (struct FontQueryNode *)node;
-		fnt_dumpnode(fqn);
-	}
-}
-
-/*****************************************************************************/
 /* parses a single fontname or a comma separated list of fontnames
 ** and returns a list of fontnames, spaces are NOT filtered, so
 ** "helvetica, fixed" will result in "helvetica" and " fixed"
 */
 static void
-fnt_getfnnodes(X11DISPLAY *mod, struct TList *fnlist, TSTRPTR fname)
+x11i_getfnnodes(X11DISPLAY *mod, struct TList *fnlist, TSTRPTR fname)
 {
 	TINT i, p = 0;
 	TBOOL lastrun = TFALSE;
@@ -566,11 +536,11 @@ fnt_getfnnodes(X11DISPLAY *mod, struct TList *fnlist, TSTRPTR fname)
 
 			if (ts)
 			{
-				struct fnt_node *fnn;
+				struct X11FontNode *fnn;
 
 				TCopyMem(fname+p, ts, len);
 
-				fnn = TAlloc0(mod->x11_MemMgr, sizeof(struct fnt_node));
+				fnn = TAlloc0(mod->x11_MemMgr, sizeof(struct X11FontNode));
 				if (fnn)
 				{
 					/* add fnnode to fnlist */
@@ -602,12 +572,12 @@ fnt_getfbold(TBOOL fbold)
 {
 	switch (fbold)
 	{
-	 	case FNTQUERY_UNDEFINED:
-	 		return FNT_WILDCARD;
+	 	case X11FNTQUERY_UNDEFINED:
+	 		return X11FNT_WILDCARD;
 	 	case TFALSE:
-			return FNT_WGHT_MEDIUM;
+			return X11FNT_WGHT_MEDIUM;
 		case TTRUE:
-			return	FNT_WGHT_BOLD;
+			return	X11FNT_WGHT_BOLD;
 	}
 
 	return TNULL;
@@ -621,12 +591,12 @@ fnt_getfitalic(TBOOL fitalic)
 {
 	switch (fitalic)
 	{
-	 	case FNTQUERY_UNDEFINED:
-	 		return FNT_WILDCARD;
+	 	case X11FNTQUERY_UNDEFINED:
+	 		return X11FNT_WILDCARD;
 	 	case TFALSE:
-			return FNT_SLANT_R;
+			return X11FNT_SLANT_R;
 		case TTRUE:
-			return	FNT_SLANT_I;
+			return	X11FNT_SLANT_I;
 	}
 
 	return TNULL;
@@ -640,18 +610,19 @@ fnt_getfitalic(TBOOL fitalic)
 #if defined(ENABLE_XFT)
 static TUINT
 fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
-	struct fnt_attr *fattr, TUINT flag)
+	struct X11FontAttr *fattr, TUINT flag)
 {
 	TUINT match = 0;
 	TAPTR TExecBase = TGetExecBase(mod);
 
-	if (flag & FNT_MATCH_NAME)
+	if (flag & X11FNT_MATCH_NAME)
 	{
 		TINT i, len;
 		FcChar8 *fcfname = NULL;
 		TSTRPTR tempname = TNULL;
 
-		(*mod->x11_fciface.FcPatternGetString)(pattern, FC_FAMILY, 0, &fcfname);
+		(*mod->x11_fciface.FcPatternGetString)(pattern, FC_FAMILY, 0,
+			&fcfname);
 
 		/* convert fontnames to lower case */
 		len = strlen(fname);
@@ -671,44 +642,48 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 
 		/* compare converted fontnames */
 		if (strncmp(fname, tempname, len) == 0)
-			match = FNT_MATCH_NAME;
+			match = X11FNT_MATCH_NAME;
 
 		TFree(tempname);
 	}
 
-	if (flag & FNT_MATCH_SIZE)
+	if (flag & X11FNT_MATCH_SIZE)
 	{
 		int fcsize;
-		(*mod->x11_fciface.FcPatternGetInteger)(pattern, FC_PIXEL_SIZE, 0, &fcsize);
+		(*mod->x11_fciface.FcPatternGetInteger)(pattern, FC_PIXEL_SIZE, 0,
+			&fcsize);
 		if ((int) fattr->fpxsize == fcsize)
-			match |= FNT_MATCH_SIZE;
+			match |= X11FNT_MATCH_SIZE;
 	}
 
-	if (flag & FNT_MATCH_SLANT)
+	if (flag & X11FNT_MATCH_SLANT)
 	{
 		int fcslant;
-		(*mod->x11_fciface.FcPatternGetInteger)(pattern, FC_SLANT, 0, &fcslant);
+		(*mod->x11_fciface.FcPatternGetInteger)(pattern, FC_SLANT, 0,
+			&fcslant);
 		if ((fcslant == FC_SLANT_ITALIC && fattr->fitalic == TTRUE) ||
 			(fcslant == FC_SLANT_ROMAN  && fattr->fitalic == TFALSE))
-			match |= FNT_MATCH_SLANT;
+			match |= X11FNT_MATCH_SLANT;
 	}
 
-	if (flag & FNT_MATCH_WEIGHT)
+	if (flag & X11FNT_MATCH_WEIGHT)
 	{
 		int fcweight;
-		(*mod->x11_fciface.FcPatternGetInteger)(pattern, FC_WEIGHT, 0, &fcweight);
+		(*mod->x11_fciface.FcPatternGetInteger)(pattern, FC_WEIGHT, 0,
+			&fcweight);
 		if ((fcweight == FC_WEIGHT_BOLD && fattr->fbold == TTRUE) ||
 			(fcweight == FC_WEIGHT_MEDIUM && fattr->fbold == TFALSE))
-			match |= FNT_MATCH_WEIGHT;
+			match |= X11FNT_MATCH_WEIGHT;
 	}
 
-	if (flag & FNT_MATCH_SCALE)
+	if (flag & X11FNT_MATCH_SCALE)
 	{
 		FcBool fcscale;
-		(*mod->x11_fciface.FcPatternGetBool)(pattern, FC_SCALABLE, 0, &fcscale);
+		(*mod->x11_fciface.FcPatternGetBool)(pattern, FC_SCALABLE, 0,
+			&fcscale);
 		if ((fcscale == FcTrue && fattr->fscale == TTRUE) ||
 			(fcscale == FcFalse && fattr->fscale == TFALSE))
-			match |= FNT_MATCH_SCALE;
+			match |= X11FNT_MATCH_SCALE;
 	}
 
 	return match;
@@ -762,33 +737,35 @@ fnt_matchfont_xft(X11DISPLAY *mod, FcPattern *pattern, TSTRPTR fname,
 LOCAL TAPTR
 x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags)
 {
-	struct fnt_attr fattr;
-	struct FontNode *fn;
+	struct X11FontAttr fattr;
+	struct X11FontHandle *fn;
 	TAPTR font = TNULL;
 	TAPTR TExecBase = TGetExecBase(mod);
 
 	/* fetch user specified attributes */
-	fattr.fname = (TSTRPTR) TGetTag(tags, TVisual_FontName, (TTAG) FNT_DEFNAME);
-	fattr.fpxsize = (TINT) TGetTag(tags, TVisual_FontPxSize, (TTAG) FNT_DEFPXSIZE);
+	fattr.fname =
+		(TSTRPTR) TGetTag(tags, TVisual_FontName, (TTAG) X11FNT_DEFNAME);
+	fattr.fpxsize = 
+		(TINT) TGetTag(tags, TVisual_FontPxSize, (TTAG) X11FNT_DEFPXSIZE);
 	fattr.fitalic = (TBOOL) TGetTag(tags, TVisual_FontItalic, (TTAG) TFALSE);
 	fattr.fbold = (TBOOL) TGetTag(tags, TVisual_FontBold, (TTAG) TFALSE);
 	fattr.fscale = (TBOOL) TGetTag(tags, TVisual_FontScaleable, (TTAG) TFALSE);
 
 	if (fattr.fname)
 	{
-		fn = TAlloc0(mod->x11_MemMgr, sizeof(struct FontNode));
+		fn = TAlloc0(mod->x11_MemMgr, sizeof(struct X11FontHandle));
 		if (fn)
 		{
 			fn->handle.thn_Owner = mod;
 
-			if (hostopenfont(mod, fn, &fattr))
+			if (x11i_hostopenfont(mod, fn, &fattr))
 			{
 				/* load succeeded, save font attributes */
 				fn->pxsize = fattr.fpxsize;
 				if (fattr.fitalic)
-					fn->attr = FNT_ITALIC;
+					fn->attr = X11FNT_ITALIC;
 				if (fattr.fbold)
-					fn->attr |= FNT_BOLD;
+					fn->attr |= X11FNT_BOLD;
 
 				/* append to the list of open fonts */
 				TDBPRINTF(TDB_INFO,("O '%s' %dpx\n", fattr.fname, fattr.fpxsize));
@@ -806,13 +783,13 @@ x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags)
 			TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 	}
 	else
-		TDBPRINTF(TDB_ERROR,("X invalid fontname '%s' specified\n", fattr.fname));
+		TDBPRINTF(TDB_ERROR,("X invalid fontname '%s'\n", fattr.fname));
 
 	return font;
 }
 
-static TBOOL
-hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
+static TBOOL x11i_hostopenfont(X11DISPLAY *mod, struct X11FontHandle *fn,
+	struct X11FontAttr *fattr)
 {
 	TBOOL succ = TFALSE;
 	TAPTR TExecBase = TGetExecBase(mod);
@@ -831,7 +808,7 @@ hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 			XFT_WEIGHT, XftTypeInteger,
 				(fattr->fbold ? XFT_WEIGHT_BOLD : XFT_WEIGHT_MEDIUM),
 			XFT_SCALABLE, XftTypeBool, fattr->fscale,
-			XFT_ENCODING, XftTypeString, FNT_DEFREGENC,
+			XFT_ENCODING, XftTypeString, X11FNT_DEFREGENC,
 			XFT_ANTIALIAS, XftTypeBool, TTRUE, NULL);
 
 		if (fn->xftfont)
@@ -842,16 +819,16 @@ hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 	{
 		/* load xlib font */
 		TSTRPTR fquery = TAlloc0(mod->x11_MemMgr,
-			FNT_LENGTH + strlen(fattr->fname));
+			X11FNT_LENGTH + strlen(fattr->fname));
 
 		if (fquery)
 		{
 			sprintf(fquery, "-*-%s-%s-%s-*-*-%d-*-*-*-*-*-%s",
 				fattr->fname,
-				fattr->fbold ? FNT_WGHT_BOLD : FNT_WGHT_MEDIUM,
-				fattr->fitalic ? FNT_SLANT_I : FNT_SLANT_R,
+				fattr->fbold ? X11FNT_WGHT_BOLD : X11FNT_WGHT_MEDIUM,
+				fattr->fitalic ? X11FNT_SLANT_I : X11FNT_SLANT_R,
 				fattr->fpxsize,
-				FNT_DEFREGENC
+				X11FNT_DEFREGENC
 			);
 
 			TDBPRINTF(TDB_TRACE,("? %s\n", fquery));
@@ -889,20 +866,20 @@ hostopenfont(X11DISPLAY *mod, struct FontNode *fn, struct fnt_attr *fattr)
 **
 **	tag name				| default¹
 **	------------------------+----------------------------
-**	 TVisual_FontName		| FNTQUERY_UNDEFINED
-**   TVisual_FontPxSize		| FNTQUERY_UNDEFINED
-**	 TVisual_FontItalic		| FNTQUERY_UNDEFINED
-**	 TVisual_FontBold		| FNTQUERY_UNDEFINED
-**	 TVisual_FontScaleable	| FNTQUERY_UNDEFINED
+**	 TVisual_FontName		| X11FNTQUERY_UNDEFINED
+**   TVisual_FontPxSize		| X11FNTQUERY_UNDEFINED
+**	 TVisual_FontItalic		| X11FNTQUERY_UNDEFINED
+**	 TVisual_FontBold		| X11FNTQUERY_UNDEFINED
+**	 TVisual_FontScaleable	| X11FNTQUERY_UNDEFINED
 **	 TVisual_FontNumResults	| INT_MAX
 **
 ** ¹ the defaults are used when the tag is missing
 **
 ** RETURN:
-** - a pointer to a FontQueryHandle, which is basically a list of
+** - a pointer to a X11FontQueryHandle, which is basically a list of
 **   taglists, referring to the fonts matched
 ** - use x11_hostgetnextfont() to traverse the list
-** - use TDestroy to free all memory associated with a FontQueryHandle
+** - use TDestroy to free all memory associated with a X11FontQueryHandle
 **
 ** EXAMPLES:
 ** - to match all available fonts, use an empty taglist
@@ -924,27 +901,31 @@ LOCAL TAPTR
 x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags)
 {
 	TSTRPTR fname = TNULL;
-	struct fnt_attr fattr;
+	struct X11FontAttr fattr;
 	struct TNode *node, *next;
-	struct FontQueryHandle *fqh = TNULL;
+	struct X11FontQueryHandle *fqh = TNULL;
 	TAPTR TExecBase = TGetExecBase(mod);
 
 	/* init fontname list */
 	TInitList(&fattr.fnlist);
 
 	/* fetch and parse fname */
-	fname = (TSTRPTR) TGetTag(tags, TVisual_FontName, (TTAG) FNT_WILDCARD);
-	if (fname)	fnt_getfnnodes(mod, &fattr.fnlist, fname);
+	fname = (TSTRPTR) TGetTag(tags, TVisual_FontName, (TTAG) X11FNT_WILDCARD);
+	if (fname)	x11i_getfnnodes(mod, &fattr.fnlist, fname);
 
 	/* fetch user specified attributes */
-	fattr.fpxsize = (TINT) TGetTag(tags, TVisual_FontPxSize, (TTAG) FNTQUERY_UNDEFINED);
-	fattr.fitalic = (TBOOL) TGetTag(tags, TVisual_FontItalic, (TTAG) FNTQUERY_UNDEFINED);
-	fattr.fbold = (TBOOL) TGetTag(tags, TVisual_FontBold, (TTAG) FNTQUERY_UNDEFINED);
-	fattr.fscale = (TBOOL) TGetTag(tags, TVisual_FontScaleable, (TTAG) FNTQUERY_UNDEFINED);
+	fattr.fpxsize = (TINT) 
+		TGetTag(tags, TVisual_FontPxSize, (TTAG) X11FNTQUERY_UNDEFINED);
+	fattr.fitalic = (TBOOL) 
+		TGetTag(tags, TVisual_FontItalic, (TTAG) X11FNTQUERY_UNDEFINED);
+	fattr.fbold = (TBOOL)
+		TGetTag(tags, TVisual_FontBold, (TTAG) X11FNTQUERY_UNDEFINED);
+	fattr.fscale = (TBOOL)
+		TGetTag(tags, TVisual_FontScaleable, (TTAG) X11FNTQUERY_UNDEFINED);
 	fattr.fnum = (TINT) TGetTag(tags, TVisual_FontNumResults, (TTAG) INT_MAX);
 
 	/* init result list */
-	fqh = TAlloc0(mod->x11_MemMgr, sizeof(struct FontQueryHandle));
+	fqh = TAlloc0(mod->x11_MemMgr, sizeof(struct X11FontQueryHandle));
 	if (fqh)
 	{
 		fqh->handle.thn_Owner = mod;
@@ -956,20 +937,18 @@ x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags)
 
 		#if defined(ENABLE_XFT)
 		if (mod->x11_use_xft)
-			hostqueryfonts_xft(mod, fqh, &fattr);
+			x11i_hostqueryfonts_xft(mod, fqh, &fattr);
 		else
 		#endif
-			hostqueryfonts_xlib(mod, fqh, &fattr);
-
-		TDB(TDB_INFO,(fnt_dumplist(&fqh->reslist)));
+			x11i_hostqueryfonts_xlib(mod, fqh, &fattr);
 	}
 	else
 		TDBPRINTF(TDB_FAIL, ("out of memory :(\n"));
 
-	/* free memory of fnt_nodes */
+	/* free memory of X11FontNodes */
 	for (node = fattr.fnlist.tlh_Head; (next = node->tln_Succ); node = next)
 	{
-		struct fnt_node *fnn = (struct fnt_node *)node;
+		struct X11FontNode *fnn = (struct X11FontNode *)node;
 		TFree(fnn->fname);
 		TRemove(&fnn->node);
 		TFree(fnn);
@@ -979,8 +958,8 @@ x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags)
 }
 
 #if defined(ENABLE_XFT)
-static void
-hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr *fattr)
+static void x11i_hostqueryfonts_xft(X11DISPLAY *mod,
+	struct X11FontQueryHandle *fqh, struct X11FontAttr *fattr)
 {
 	FcPattern *pattern = TNULL;
 	struct TNode *node, *next;
@@ -992,12 +971,12 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 	{
 		FcResult result;
 		FcFontSet *fontset = TNULL;
-		struct fnt_node *fnn = (struct fnt_node *)node;
+		struct X11FontNode *fnn = (struct X11FontNode *)node;
 
 		/* create a pattern to match fontname */
 		pattern = (*mod->x11_fciface.FcPatternBuild)(0,
 			FC_FAMILY, FcTypeString, fnn->fname,
-			XFT_ENCODING, FcTypeString, FNT_DEFREGENC,
+			XFT_ENCODING, FcTypeString, X11FNT_DEFREGENC,
 			FC_ANTIALIAS, FcTypeBool, FcTrue,
 			NULL);
 
@@ -1009,38 +988,38 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 
 		/* add attributes to pattern and build matchflag */
 
-		if (strncmp(fnn->fname, FNT_WILDCARD, 1) != 0)
-			matchflg = FNT_MATCH_NAME;
+		if (strncmp(fnn->fname, X11FNT_WILDCARD, 1) != 0)
+			matchflg = X11FNT_MATCH_NAME;
 
 		/* font pxsize attribute is ignored when the scaleable
 			attribute of the font is set, because some scaleable
 			fonts don't seem to support FC_PIXEL_SIZE attribute  */
-		if (fattr->fpxsize != FNTQUERY_UNDEFINED && !fattr->fscale)
+		if (fattr->fpxsize != X11FNTQUERY_UNDEFINED && !fattr->fscale)
 		{
 			(*mod->x11_fciface.FcPatternAddInteger)
 				(pattern, FC_PIXEL_SIZE, fattr->fpxsize);
-			matchflg |= FNT_MATCH_SIZE;
+			matchflg |= X11FNT_MATCH_SIZE;
 		}
 
-		if (fattr->fitalic != FNTQUERY_UNDEFINED)
+		if (fattr->fitalic != X11FNTQUERY_UNDEFINED)
 		{
 			(*mod->x11_fciface.FcPatternAddInteger) (pattern, FC_SLANT,
 				(fattr->fitalic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN));
-			matchflg |= FNT_MATCH_SLANT;
+			matchflg |= X11FNT_MATCH_SLANT;
 		}
 
-		if (fattr->fbold != FNTQUERY_UNDEFINED)
+		if (fattr->fbold != X11FNTQUERY_UNDEFINED)
 		{
 			(*mod->x11_fciface.FcPatternAddInteger)(pattern, FC_WEIGHT,
 				(fattr->fbold ? FC_WEIGHT_BOLD : FC_WEIGHT_MEDIUM));
-			matchflg |= FNT_MATCH_WEIGHT;
+			matchflg |= X11FNT_MATCH_WEIGHT;
 		}
 
-		if (fattr->fscale != FNTQUERY_UNDEFINED)
+		if (fattr->fscale != X11FNTQUERY_UNDEFINED)
 		{
 			(*mod->x11_fciface.FcPatternAddBool)(pattern, FC_SCALABLE,
 				fattr->fscale);
-			matchflg |= FNT_MATCH_SCALE;
+			matchflg |= X11FNT_MATCH_SCALE;
 		}
 
 		/* don't call FcConfigSubstitute because matching
@@ -1062,14 +1041,14 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 				if (fnt_matchfont_xft(mod, fontset->fonts[i], fnn->fname,
 					fattr, matchflg) == matchflg)
 				{
-					struct FontQueryNode *fqnode;
+					struct X11FontQueryNode *fqnode;
 
 					/* create fqnode and fill in attributes */
 					fqnode = fnt_getfqnode_xft(mod, fontset->fonts[i], fattr->fpxsize);
 					if(!fqnode)	break;
 
 					/* compare fqnode with nodes in result list */
-					if (fnt_checkfqnode(&fqh->reslist, fqnode) == 0)
+					if (x11i_checkfqnode(&fqh->reslist, fqnode) == 0)
 					{
 						if (fcount < fattr->fnum)
 						{
@@ -1110,8 +1089,8 @@ hostqueryfonts_xft(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr
 }
 #endif
 
-static void
-hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr *fattr)
+static void x11i_hostqueryfonts_xlib(X11DISPLAY *mod,
+	struct X11FontQueryHandle *fqh, struct X11FontAttr *fattr)
 {
 	TSTRPTR fquery = TNULL;
 	TCHR **fontlist = TNULL;
@@ -1121,11 +1100,11 @@ hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_att
 	for (node = fattr->fnlist.tlh_Head; (next = node->tln_Succ); node = next)
 	{
 		TINT i, numfonts = 0;
-		struct fnt_node *fnn = (struct fnt_node *)node;
+		struct X11FontNode *fnn = (struct X11FontNode *)node;
 
 		if (fnn->fname)
 		{
-			fquery = TAlloc0(mod->x11_MemMgr, FNT_LENGTH + strlen(fnn->fname));
+			fquery = TAlloc0(mod->x11_MemMgr, X11FNT_LENGTH + strlen(fnn->fname));
 			if (!fquery)
 			{
 				TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
@@ -1139,14 +1118,14 @@ hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_att
 		}
 
 		/* build fontquery name */
-		if (fattr->fpxsize == FNTQUERY_UNDEFINED)
+		if (fattr->fpxsize == X11FNTQUERY_UNDEFINED)
 		{
 			/* match pixel size using wildcard */
 			sprintf(fquery, "-*-%s-%s-%s-*-*-*-*-*-*-*-*-%s",
 				fnn->fname,
 				fnt_getfbold(fattr->fbold),
 				fnt_getfitalic(fattr->fitalic),
-				FNT_DEFREGENC
+				X11FNT_DEFREGENC
 			);
 		}
 		else
@@ -1157,7 +1136,7 @@ hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_att
 				fnt_getfbold(fattr->fbold),
 				fnt_getfitalic(fattr->fitalic),
 				fattr->fpxsize,
-				FNT_DEFREGENC
+				X11FNT_DEFREGENC
 			);
 		}
 
@@ -1170,7 +1149,7 @@ hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_att
 
 		for (i = 0; i < numfonts; i++)
 		{
-			struct FontQueryNode *fqnode;
+			struct X11FontQueryNode *fqnode;
 			TDBPRINTF(TDB_INFO,("! %s\n", fontlist[i]));
 
 			/* create fqnode and fill in attributes */
@@ -1178,7 +1157,7 @@ hostqueryfonts_xlib(X11DISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_att
 			if(!fqnode)	break;
 
 			/* compare fqnode with nodes in result list */
-			if (fnt_checkfqnode(&fqh->reslist, fqnode) == 0)
+			if (x11i_checkfqnode(&fqh->reslist, fqnode) == 0)
 			{
 				/* fqnode is unique, add to result list */
 				TAddTail(&fqh->reslist, &fqnode->node);
@@ -1226,7 +1205,7 @@ x11_hostsetfont(X11DISPLAY *mod, X11WINDOW *v, TAPTR font)
 		#endif
 		{
 			XGCValues gcv;
-			struct FontNode *fn = (struct FontNode *) font;
+			struct X11FontHandle *fn = (struct X11FontHandle *) font;
 			gcv.font = fn->font->fid;
 			XChangeGC(mod->x11_Display, v->gc, GCFont, &gcv);
 		}
@@ -1260,7 +1239,7 @@ x11_hostsetfont(X11DISPLAY *mod, X11WINDOW *v, TAPTR font)
 LOCAL TTAGITEM *
 x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle)
 {
-	struct FontQueryHandle *fqh = fqhandle;
+	struct X11FontQueryHandle *fqh = fqhandle;
 	struct TNode *next = *fqh->nptr;
 
 	if (next->tln_Succ == TNULL)
@@ -1270,7 +1249,7 @@ x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle)
 	}
 
 	fqh->nptr = (struct TNode **)next;
-	return ((struct FontQueryNode *)next)->tags;
+	return ((struct X11FontQueryNode *)next)->tags;
 }
 
 /*****************************************************************************/
@@ -1294,7 +1273,7 @@ x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle)
 LOCAL void
 x11_hostclosefont(X11DISPLAY *mod, TAPTR font)
 {
-	struct FontNode *fn = (struct FontNode *) font;
+	struct X11FontHandle *fn = (struct X11FontHandle *) font;
 	TAPTR TExecBase = TGetExecBase(mod);
 
 	if (font == mod->x11_fm.deffont)
@@ -1367,7 +1346,7 @@ LOCAL TINT
 x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text, TINT len)
 {
 	TINT width = 0;
-	struct FontNode *fn = (struct FontNode *) font;
+	struct X11FontHandle *fn = (struct X11FontHandle *) font;
 
 	#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
@@ -1426,7 +1405,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	struct attrdata *data = hook->thk_Data;
 	X11DISPLAY *mod = data->mod;
 	TTAGITEM *item = obj;
-	struct FontNode *fn = (struct FontNode *) data->font;
+	struct X11FontHandle *fn = (struct X11FontHandle *) data->font;
 
 	switch (item->tti_Tag)
 	{
@@ -1438,12 +1417,12 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 
 		case TVisual_FontItalic:
-			*((TTAG *) item->tti_Value) = (fn->attr & FNT_ITALIC) ?
+			*((TTAG *) item->tti_Value) = (fn->attr & X11FNT_ITALIC) ?
 				TTRUE : TFALSE;
 			break;
 
 		case TVisual_FontBold:
-			*((TTAG *) item->tti_Value) = (fn->attr & FNT_BOLD) ?
+			*((TTAG *) item->tti_Value) = (fn->attr & X11FNT_BOLD) ?
 				TTRUE : TFALSE;
 			break;
 
@@ -1468,10 +1447,12 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 		case TVisual_FontHeight:
 			#if defined(ENABLE_XFT)
 			if (mod->x11_use_xft)
-				*((TTAG *) item->tti_Value) = fn->xftfont->ascent + fn->xftfont->descent;
+				*((TTAG *) item->tti_Value) = 
+					fn->xftfont->ascent + fn->xftfont->descent;
 			else
 			#endif
-				*((TTAG *) item->tti_Value) = fn->font->ascent + fn->font->descent;
+				*((TTAG *) item->tti_Value) = 
+					fn->font->ascent + fn->font->descent;
 			break;
 
 		case TVisual_FontUlPosition:
