@@ -135,7 +135,7 @@ end
 --	main
 -------------------------------------------------------------------------------
 
-local template = "-f=FROM,-o=TO,-c=SOURCE/S,-s=STRIP/S,-l=LINK/M,-m64/S,-h=HELP/S"
+local template = "-f=FROM,-o=TO,-c=SOURCE/S,-s=STRIP/S,-l=LINK/M,-m64/S,-m32/S,-h=HELP/S"
 local args = Args.read(template, arg)
 if not args or args["-h"] then
 	print "Lua linker and compiler, with optional GUI"
@@ -145,7 +145,8 @@ if not args or args["-h"] then
 	print "  -c=SOURCE/S  Output as C source"
 	print "  -s=STRIP/S   Strip debug information"
 	print "  -l=LINK/M    List of modules to link, each as modname:filename"
-	print "  -m64/S       64 bit architecture (default: 32 bit)"
+	print "  -m32/S       32 bit architecture (default)"
+	print "  -m64/S       64 bit architecture"
 	print "  -h=HELP/S    This help"
 	return
 end
@@ -181,109 +182,8 @@ if from or (to and mods) then
 	return
 end
 
-
 -------------------------------------------------------------------------------
---	GUI main
--------------------------------------------------------------------------------
-
-local ui = require "tek.ui"
-local List = require "tek.class.list"
-local Input = ui.Input
-local APP_ID = "lua-compiler"
-local DOMAIN = "schulze-mueller.de"
-local PROGNAME = "Lua Compiler"
-local VERSION = "1.2"
-local AUTHOR = "Timm S. Müller"
-local COPYRIGHT = "© 2009-2014, Schulze-Müller GbR"
-
--------------------------------------------------------------------------------
---	FileButton class:
--------------------------------------------------------------------------------
-
-local FileButton = ui.ImageWidget:newClass()
-
-function FileButton.init(self)
-	self.Image = ui.getStockImage("file")
-	self.Mode = "button"
-	self.Class = "button"
-	self.Height = "fill"
-	self.Width = "fill"
-	self.MinWidth = 15
-	self.MinHeight = 17
-	self.ImageAspectX = 5
-	self.ImageAspectY = 7
-	self.Style = "padding: 2"
-	return ui.ImageWidget.init(self)
-end
-
-function FileButton:onClick()
-	self.Application:addCoroutine(function()
-		self:doRequest()
-	end)
-end
-
-function FileButton:doRequest()
-end
-
--------------------------------------------------------------------------------
-
-local function addmodule(app, classname, filename)
-	local group = app:getById("group-modules")
-	for i = 1, #group.Children, 3 do
-		local c = group.Children[i]
-		if c.Text == classname then
-			return 0 -- already present
-		end
-	end
-	local filefield = Input:new
-	{
-		Text = filename,
-		Width = "free",
-		VAlign = "center",
-	}
-	local selectbutton = FileButton:new
-	{
-		doRequest = function(self)
-			local path, part = splitpath(filefield:getText())
-			local status, path, select = app:requestFile
-			{
-				Title = "Select Lua module...",
-				Path = path,
-				Location = part
-			}
-			if status == "selected" and select[1] then
-				app.Settings.ModulePath = path
-				filefield:setValue("Enter", addpath(path, select[1]))
-				app:setStatus("Module selected.")
-			end
-		end,
-	}
-	local checkmark = ui.CheckMark:new
-	{
-		Width = "fill",
-		Selected = true,
-		Text = classname,
-		onSelect = function(self)
-			ui.CheckMark.onSelect(self)
-			local selected = self.Selected
-			filefield:setValue("Disabled", not selected)
-			selectbutton:setValue("Disabled", not selected)
-			local n = app:selectModules()
-			app:setStatus("%d modules selected", n)
-		end,
-	}
-	group:addMember(checkmark)
-	group:addMember(filefield)
-	group:addMember(selectbutton)
-	if #group.Children == 3 then
-		app:getById("button-all"):setValue("Disabled", false)
-		app:getById("button-none"):setValue("Disabled", false)
-		app:getById("button-invert"):setValue("Disabled", false)
-	end
-	app:selectModules()
-	return 1
-end
-
+--	Run application to sample modules:
 -------------------------------------------------------------------------------
 
 local function sample(fname)
@@ -335,36 +235,172 @@ end
 	return mods
 end
 
-local function gui_sample(self)
-	local app = self.Application
-	local filefield = app:getById("text-filename")
+-------------------------------------------------------------------------------
+--	GUI main
+-------------------------------------------------------------------------------
+
+local ui = require "tek.ui"
+local List = require "tek.class.list"
+local Input = ui.Input
+local APP_ID = "lua-compiler"
+local DOMAIN = "schulze-mueller.de"
+local PROGNAME = "Lua Compiler"
+local VERSION = "1.3"
+local AUTHOR = "Timm S. Müller"
+local COPYRIGHT = "© 2009-2014, Schulze-Müller GbR"
+
+-------------------------------------------------------------------------------
+--	FileButton class:
+-------------------------------------------------------------------------------
+
+local FileButton = ui.ImageWidget:newClass()
+
+function FileButton.init(self)
+	self.Image = ui.getStockImage("file")
+	self.Mode = "button"
+	self.Class = "button"
+	self.Height = "fill"
+	self.Width = "fill"
+	self.MinWidth = 15
+	self.MinHeight = 17
+	self.ImageAspectX = 5
+	self.ImageAspectY = 7
+	self.Style = "padding: 2"
+	return ui.ImageWidget.init(self)
+end
+
+function FileButton:onClick()
+	self.Application:addCoroutine(function()
+		self:doRequest()
+	end)
+end
+
+function FileButton:doRequest()
+end
+
+-------------------------------------------------------------------------------
+--	CompilerApp class:
+-------------------------------------------------------------------------------
+
+local CompilerApp = ui.Application:newClass()
+
+function CompilerApp.new(class, self)
+	self = self or { }
+	self.Settings = self.Settings or { }
+	self.Settings.ModulePath = self.Settings.ModulePath or ""
+	self.Settings.OutFileName = self.Settings.OutFileName or ""
+	return ui.Application.new(class, self)
+end
+
+function CompilerApp:addModule(classname, filename, enable)
+	enable = enable == nil or enable
+	local group = self:getById("group-modules")
+	for i = 1, #group.Children, 3 do
+		local c = group.Children[i]
+		if c.Text == classname then
+			return 0 -- already present
+		end
+	end
+	local filefield = Input:new
+	{
+		Disabled = not enable,
+		Text = filename,
+		Width = "free",
+		VAlign = "center",
+	}
+	local selectbutton = FileButton:new
+	{
+		Disabled = not enable,
+		doRequest = function(self)
+			local app = self.Application
+			local path, part = splitpath(filefield:getText())
+			local status, path, select = app:requestFile
+			{
+				Title = "Select Lua module...",
+				Path = path,
+				Location = part
+			}
+			if status == "selected" and select[1] then
+				app.Settings.ModulePath = path
+				filefield:setValue("Enter", addpath(path, select[1]))
+				app:setStatus("Module selected.")
+			end
+		end,
+	}
+	local checkmark = ui.CheckMark:new
+	{
+		Width = "fill",
+		Selected = enable,
+		Text = classname,
+		onSelect = function(self)
+			local app = self.Application
+			ui.CheckMark.onSelect(self)
+			local selected = self.Selected
+			filefield:setValue("Disabled", not selected)
+			selectbutton:setValue("Disabled", not selected)
+			local n = app:selectModules()
+			app:setStatus("%d modules selected", n)
+		end,
+	}
+	group:addMember(checkmark)
+	group:addMember(filefield)
+	group:addMember(selectbutton)
+	if #group.Children == 3 then
+		self:getById("button-all"):setValue("Disabled", false)
+		self:getById("button-none"):setValue("Disabled", false)
+		self:getById("button-invert"):setValue("Disabled", false)
+	end
+	self:selectModules()
+	return 1
+end
+
+function CompilerApp:getExcludeList()
+	local exclude = { }	
+	local excludefname = self:getById("text-exclude-filename"):getText()
+	if excludefname then
+		local f = io.open(excludefname)
+		if f then
+			for line in f:lines() do
+				line = line:match("^(.*)%:.*$")
+				if line then
+					table.insert(exclude, line)
+					exclude[line] = #exclude
+				end
+			end
+			f:close()
+		end
+	end
+	return exclude
+end
+
+function CompilerApp:sample()
+	local filefield = self:getById("text-filename")
 	local fname = filefield:getText()
-	app:addCoroutine(function()
+	local exclude = self:getById("check-exclude-modules").Selected and self:getExcludeList()
+	self:addCoroutine(function()
 		local mods = sample(fname)
 		local n = 0
 		for _, mod in ipairs(mods) do
 			local classname, filename = mod:match("^(.-)%s*=%s*(.*)$")
-			n = n + addmodule(app, classname, filename)
+			local disable = exclude and exclude[classname]
+			n = n + self:addModule(classname, filename, not disable)
 		end
-		app:setStatus("%d modules added.", n)
+		self:setStatus("%d modules added.", n)
 	end)
 end
 
--------------------------------------------------------------------------------
+function CompilerApp:compile()
 
-local function gui_compile(self)
-
-	local app = self.Application
-	app:addCoroutine(function()
+	self:addCoroutine(function()
 
 		local m64 = self:getById("popitem-architecture").SelectedLine == 2
 	
 		local savemode = -- 1 = binary, 2 == source
-			app:getById("popitem-savemode").SelectedLine
+			self:getById("popitem-savemode").SelectedLine
 		local ext = savemode == 1 and ".luac" or ".c"
 
-		local srcname = app:getById("text-filename"):getText()
-		local outname = app.Settings.OutFileName
+		local srcname = self:getById("text-filename"):getText()
+		local outname = self.Settings.OutFileName
 		if outname == "" then
 			outname = (srcname:match("^(.*)%.lua$") or srcname) .. ext
 		else
@@ -376,7 +412,7 @@ local function gui_compile(self)
 
 		local path, part = splitpath(outname)
 
-		local status, path, select = app:requestFile
+		local status, path, select = self:requestFile
 		{
 			Title = "Select File to Save...",
 			Path = path,
@@ -391,14 +427,14 @@ local function gui_compile(self)
 			local success, msg = true
 
 			if io.open(outname) then
-				success = app:easyRequest("Overwrite File",
+				success = self:easyRequest("Overwrite File",
 					("%s\nalready exists. Overwrite it?"):format(outname),
 					"_Overwrite", "_Cancel") == 1
 			end
 
 			if success then
 
-				local group = app:getById("group-modules")
+				local group = self:getById("group-modules")
 				local mods = { }
 				local modgroup = group.Children
 				success = true
@@ -413,7 +449,7 @@ local function gui_compile(self)
 							local text =
 								filename == "" and "No filename specified" or
 									"Cannot open file:\n" .. filename
-							success = app:easyRequest("Error",
+							success = self:easyRequest("Error",
 								"Error loading module " .. classname .. ":\n" ..
 								text,
 								"_Abort", "_Continue Anyway") == 1
@@ -428,13 +464,13 @@ local function gui_compile(self)
 					success, msg = pcall(compile, outname,
 						{ srcname, "-L", unpack(mods) }, m64)
 					if not success then
-						app:easyRequest("Error",
+						self:easyRequest("Error",
 							"Compilation failed:\n" .. msg, "_Okay")
 					else
 						local tmpname = outname .. ".tmp"
-						if app:getById("check-strip").Selected then
+						if self:getById("check-strip").Selected then
 							if not strip(outname) then
-								app:easyRequest("Error",
+								self:easyRequest("Error",
 									"Error stripping file:\n" .. outname, "_Okay")
 								success = false
 							end
@@ -443,94 +479,89 @@ local function gui_compile(self)
 							local size = stat(outname, "size")
 							if savemode == 2 then
 								if tocsource(outname) then
-									app:setStatus("C source saved, binary size: %d bytes", size)
+									self:setStatus("C source saved, binary size: %d bytes", size)
 								end
 							else
-								app:setStatus("Binary saved, size: %d bytes", size)
+								self:setStatus("Binary saved, size: %d bytes", size)
 							end
 						else
-							app:setStatus("Error saving file.")
+							self:setStatus("Error saving file.")
 						end
 					end
 				end
 			end
 		end
-
-		app.Settings.OutFileName = outname
-
+		self.Settings.OutFileName = outname
 	end)
 end
 
+function CompilerApp:setStatus(text, ...)
+	self:getById("text-status"):setValue("Text", text:format(...))
+end
 
-
-local app = ui.Application:new
-{
-	ApplicationId = APP_ID,
-	Domain = DOMAIN,
-
-	Settings =
-	{
-		OutFileName = "",
-		ModulePath = "",
-		TekUIPath = "/work/tekui/dev",
-		LuaPath = "/work/lua-5.1.4",
-	},
-
-	setStatus = function(self, text, ...)
-		self:getById("text-status"):setValue("Text",
-			text:format(...))
-	end,
-
-	deleteModules = function(self, mode)
-		local g = self:getById("group-modules")
-		local n, nd = 0, 0
-		if mode == "all" then
-			while #g.Children > 0 do
-				g:remMember(g.Children[1])
-				nd = nd + 1
-			end
-		elseif mode == "selected" then
-			for i = #g.Children - 2, 1, -3 do
-				local c = g.Children[i]
-				if c.Selected then
-					g:remMember(g.Children[i])
-					g:remMember(g.Children[i])
-					g:remMember(g.Children[i])
-					nd = nd + 1
-				else
-					n = n + 1
-				end
-			end
+function CompilerApp:deleteModules(mode)
+	local g = self:getById("group-modules")
+	local n, nd = 0, 0
+	if mode == "all" then
+		while #g.Children > 0 do
+			g:remMember(g.Children[1])
+			nd = nd + 1
 		end
-		if n == 0 then
-			self:getById("button-all"):setValue("Disabled", true)
-			self:getById("button-none"):setValue("Disabled", true)
-			self:getById("button-invert"):setValue("Disabled", true)
-		end
-		self.Application:selectModules()
-		return nd
-	end,
-
-	selectModules = function(self, mode)
-		local g = self:getById("group-modules")
-		local n = 0
-		for i = 1, #g.Children, 3 do
+	elseif mode == "selected" then
+		for i = #g.Children - 2, 1, -3 do
 			local c = g.Children[i]
-			if mode == "toggle" then
-				c:setValue("Selected", not c.Selected)
-			elseif mode == "all" then
-				c:setValue("Selected", true)
-			elseif mode == "none" then
-				c:setValue("Selected", false)
-			end
 			if c.Selected then
+				g:remMember(g.Children[i])
+				g:remMember(g.Children[i])
+				g:remMember(g.Children[i])
+				nd = nd + 1
+			else
 				n = n + 1
 			end
 		end
-		self:getById("button-delete"):setValue("Disabled", n == 0)
-		return n
-	end,
+	end
+	if n == 0 then
+		self:getById("button-all"):setValue("Disabled", true)
+		self:getById("button-none"):setValue("Disabled", true)
+		self:getById("button-invert"):setValue("Disabled", true)
+	end
+	self.Application:selectModules()
+	return nd
+end
 
+function CompilerApp:selectModules(mode)
+	local exclude = self:getExcludeList()
+	local g = self:getById("group-modules")
+	local n = 0
+	for i = 1, #g.Children, 3 do
+		local c = g.Children[i]
+		if mode == "toggle" then
+			c:setValue("Selected", not c.Selected)
+		elseif mode == "all" then
+			c:setValue("Selected", true)
+		elseif mode == "none" then
+			c:setValue("Selected", false)
+		elseif mode == "exclude" then
+			local classname = c.Text
+			local disable = exclude and exclude[classname]
+			c:setValue("Selected", not disable)
+		end
+		if c.Selected then
+			n = n + 1
+		end
+	end
+	self:getById("button-delete"):setValue("Disabled", n == 0)
+	return n
+end
+
+-------------------------------------------------------------------------------
+--	Application:
+-------------------------------------------------------------------------------
+
+CompilerApp:new
+{
+	ApplicationId = APP_ID,
+	Domain = DOMAIN,
 	Children =
 	{
 		ui.Window:new
@@ -589,108 +620,16 @@ local app = ui.Application:new
 					Style = "width: fill",
 					onClick = function(self)
 						self.Window:setValue("Status", "hide")
-					end,
+					end
 				}
 			}
 		},
-
--- 		ui.Window:new
--- 		{
--- 			Id = "window-config",
--- 			Status = "hide",
--- 			Title = "Lua compiler configuration",
--- 			Orientation = "vertical",
--- 			HideOnEscape = true,
--- 			Children =
--- 			{
--- 				ui.Group:new
--- 				{
--- 					Columns = 3,
--- 					Children =
--- 					{
--- 						ui.Text:new
--- 						{
--- 							Class = "caption",
--- 							Width = "fill",
--- 							Style = "text-align: right",
--- 							Text = "Path to tekUI:"
--- 						},
--- 						Input:new
--- 						{
--- 							Id = "path-tekui",
--- 							Disabled = true,
--- 							show = function(self, display, drawable)
--- 								self:setValue("Text", self.Application.Settings.TekUIPath)
--- 								return Input.show(self, display, drawable)
--- 							end,
--- 							onEnter = function(self)
--- 								Input.onEnter(self)
--- 								self.Application.Settings.TekUIPath = self:getText()
--- 							end,
--- 						},
--- 						FileButton:new
--- 						{
--- 							Disabled = true,
--- 							doRequest = function(self)
--- 								local pathfield = self:getById("path-tekui")
--- 								local status, path, select = self.Application:requestFile
--- 								{
--- 									Title = "Select tekUI path...",
--- 									Path = pathfield:getText()
--- 								}
--- 								if status == "selected" then
--- 									pathfield:setValue("Enter", path)
--- 								end
--- 							end,
--- 						},
--- 
--- 						ui.Text:new
--- 						{
--- 							Class = "caption",
--- 							Width = "fill",
--- 							Style = "text-align: right",
--- 							Text = "Path to Lua:"
--- 						},
--- 						Input:new
--- 						{
--- 							Id = "path-lua",
--- 							Disabled = true,
--- 							show = function(self, display, drawable)
--- 								self:setValue("Text", self.Application.Settings.LuaPath)
--- 								return Input.show(self, display, drawable)
--- 							end,
--- 							onEnter = function(self)
--- 								Input.onEnter(self)
--- 								self.Application.Settings.LuaPath = self:getText()
--- 							end,
--- 						},
--- 						FileButton:new
--- 						{
--- 							Disabled = true,
--- 							doRequest = function(self)
--- 								local pathfield = self:getById("path-lua")
--- 								local status, path, select = self.Application:requestFile
--- 								{
--- 									Title = "Select Lua path...",
--- 									Path = pathfield:getText()
--- 								}
--- 								if status == "selected" then
--- 									pathfield:setValue("Enter", path)
--- 								end
--- 							end,
--- 						}
--- 					}
--- 				}
--- 			}
--- 		},
-
 		ui.Window:new
 		{
 			Id = "window-main",
 			Title = "Lua compiler and module linker",
 			Orientation = "vertical",
 			HideOnEscape = true,
-
 			onHide = function(self)
 				local app = self.Application
 				app:addCoroutine(function()
@@ -702,7 +641,6 @@ local app = ui.Application:new
 					end
 				end)
 			end,
-
 			Children =
 			{
 				ui.Group:new
@@ -723,14 +661,6 @@ local app = ui.Application:new
 										self:getById("window-about"):setValue("Status", "show")
 									end
 								},
--- 								ui.Spacer:new { },
--- 								ui.MenuItem:new
--- 								{
--- 									Text = "_Configure...",
--- 									onClick = function(self)
--- 										self:getById("window-config"):setValue("Status", "show")
--- 									end,
--- 								},
 								ui.Spacer:new { },
 								ui.MenuItem:new
 								{
@@ -738,13 +668,12 @@ local app = ui.Application:new
 									Shortcut = "Ctrl+Q",
 									onClick = function(self)
 										self:getById("window-main"):onHide()
-									end,
+									end
 								}
 							}
 						}
 					}
 				},
-
 				ui.Group:new
 				{
 					Legend = "Compile and save to bytecode",
@@ -766,7 +695,6 @@ local app = ui.Application:new
 								Input:new
 								{
 									Id = "text-filename",
-									Height = "fill",
 									Style = "text-align: right",
 									onEnter = function(self)
 										Input.onEnter(self)
@@ -801,7 +729,51 @@ local app = ui.Application:new
 								}
 							}
 						},
-
+						ui.Group:new
+						{
+							Children =
+							{
+								ui.CheckMark:new 
+								{ 
+									Id = "check-exclude-modules",
+									Text = "Exclude modules from list:", 
+									Selected = true, 
+									Width = "auto" 
+								},
+								Input:new
+								{
+									Id = "text-exclude-filename",
+									Text = "tek/lib/MODLIST",
+									Style = "text-align: right",
+								},
+								FileButton:new
+								{
+									doRequest = function(self)
+										local app = self.Application
+										local filefield = app:getById("text-exclude-filename")
+										local path, part = splitpath(filefield:getText())
+										local status, path, select = app:requestFile
+										{
+											Title = "Select Module list file...",
+											Path = path,
+											Location = part
+										}
+										if status == "selected" and select[1] then
+											local newfname = addpath(path, select[1])
+											filefield:setValue("Enter", newfname)
+										end
+									end,
+								},
+								ui.Button:new 
+								{ 
+									Text = "Exclude now", 
+									Width = "auto",
+									onClick = function(self)
+										self.Application:selectModules("exclude")
+									end
+								}
+							}
+						},
 						ui.Group:new
 						{
 							Width = "fill",
@@ -841,8 +813,7 @@ local app = ui.Application:new
 															{ { "32 bit" } },
 															{ { "64 bit" } },
 														}
-													},
--- 													Width = "fill",
+													}
 												},
 												ui.Text:new
 												{
@@ -861,16 +832,13 @@ local app = ui.Application:new
 														{
 															{ { "Binary" } },
 															{ { "C Source" } },
--- 															{ { "Executable" } },
 														}
-													},
--- 													Width = "fill",
+													}
 												}
 											}
 										}
 									}
 								},
-
 								ui.Button:new
 								{
 									Id = "button-compile",
@@ -879,14 +847,13 @@ local app = ui.Application:new
 									Text = "Compile, Link, and _Save",
 									Disabled = true,
 									onClick = function(self)
-										gui_compile(self)
+										self.Application:compile()
 									end
 								}
 							}
 						}
 					}
 				},
-
 				ui.Group:new
 				{
 					Legend = "Modules to link",
@@ -905,10 +872,9 @@ local app = ui.Application:new
 									Disabled = true,
 									onClick = function(self)
 										self.Application:setStatus("Running sample...")
-										gui_sample(self)
+										self.Application:sample()
 									end
 								},
-
 								ui.PopItem:new
 								{
 									Id = "button-add",
@@ -933,19 +899,17 @@ local app = ui.Application:new
 														Input.onEnter(self)
 														local text = self:getText()
 														if text ~= "" then
-															addmodule(self.Application, text, "")
+															self.Application:addModule(text, "")
 															self.Application:setStatus("Module %s added - please select a file name for it.", text)
 														end
 														self.Window:finishPopup()
-													end,
+													end
 												}
 											}
 										}
 									}
 								},
-
 								ui.Spacer:new { },
-
 								ui.Button:new
 								{
 									Id = "button-all",
@@ -955,7 +919,6 @@ local app = ui.Application:new
 										self.Application:selectModules("all")
 									end
 								},
-
 								ui.Button:new
 								{
 									Id = "button-none",
@@ -965,7 +928,6 @@ local app = ui.Application:new
 										self.Application:selectModules("none")
 									end
 								},
-
 								ui.Button:new
 								{
 									Id = "button-invert",
@@ -975,7 +937,6 @@ local app = ui.Application:new
 										self.Application:selectModules("toggle")
 									end
 								},
-
 								ui.Button:new
 								{
 									Id = "button-delete",
@@ -997,7 +958,6 @@ local app = ui.Application:new
 										end)
 									end
 								}
-
 							}
 						},
 						ui.ScrollGroup:new
@@ -1014,33 +974,19 @@ local app = ui.Application:new
 								{
 									Columns = 3,
 									Id = "group-modules",
-									Orientation = "vertical",
+									Orientation = "vertical"
 								}
 							}
 						}
 					}
 				},
-
 				ui.Text:new
 				{
 					Id = "text-status",
 					Text = "Please select a Lua source.",
-					KeepMinWidth = true,
+					KeepMinWidth = true
 				}
-
 			}
 		}
-	},
-	
--- 	up = function(self)
--- 		self:addCoroutine(function()
--- 			self:easyRequest("Sorry", 
--- [[The Lua module compiler/linker may not be fully functional.
--- It once produced working blobs under Lua 5.1 on x86/32bit.
--- Please let the authors know if you happen to know a working
--- solution for 5.1, 5.2 and different architectures. Thank you!]], "Okay")
--- 		end)
--- 	end
-}
-
-app:run()
+	}
+}:run()

@@ -9,7 +9,7 @@ libs:
 	cd src && $(MAKE) $@
 
 tek/lib/tekui_classlib.c:
-	bin/compiler.lua -o $@ -l $$(cat tek/lib/MODLIST) -c -m64 -s
+	bin/compiler.lua -o $@ -l $$(cat tek/lib/MODLIST) -c $(LUAARCH) -s
 
 dll: modules tek/lib/tekui_classlib.c
 	cd tek/lib && $(MAKE) $@
@@ -37,6 +37,7 @@ clean:
 help: default-help
 	@echo "Extra build targets for this Makefile:"
 	@echo "-------------------------------------------------------------------------------"
+	@echo "tools ................... build standalone tekui executable"
 	@echo "distclean ............... remove all temporary files and directories"
 	@echo "docs .................... (re-)generate documentation"
 	@echo "kdiff ................... diffview of recent changes (using kdiff3)"

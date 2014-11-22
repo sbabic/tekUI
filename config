@@ -151,6 +151,7 @@ LIBDIR = $(BASEDIR)/lib/$(PLATFORM)
 OBJDIR = build/$(PLATFORM)
 BINDIR = $(BASEDIR)/bin
 MODDIR = $(BINDIR)/mod
+LUADISTDIR = $(BASEDIR)/../lua-5.1.5
 
 #------------------------------------------------------------------------------
 # Compiler flags:
@@ -165,6 +166,8 @@ MODCFLAGS = -shared -L $(LIBDIR)
 # For Mac OS X:
 # MODCFLAGS = -bundle -undefined dynamic_lookup -L $(LIBDIR)
 BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
+# for compilation of Lua code:
+LUAARCH = -m64 # -m32 for 32bit, -m64 for 64bit architecture
 
 #------------------------------------------------------------------------------
 # Build tools:

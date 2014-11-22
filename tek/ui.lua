@@ -133,7 +133,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 51.0" -- module version string
+_VERSION = "tekUI 52.0" -- module version string
 
 VERSION = 110 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
@@ -1107,24 +1107,24 @@ MSG_ALL          = 0x571f -- not including MSG_USER, MSG_INTERVAL
 --	Flags:
 -------------------------------------------------------------------------------
 
-FL_LAYOUT        = 0x0001 -- element has been layouted
-FL_REDRAW        = 0x0002 -- element needs a repaint
-FL_REDRAWBORDER  = 0x0004 -- element needs a border repaint
-FL_SETUP         = 0x0008 -- element is setup
-FL_SHOW          = 0x0010 -- element is being shown
-FL_CHANGED       = 0x0020 -- element has seen structural changes
-FL_POPITEM       = 0x0040 -- used to identify elements in popups
-FL_UPDATE        = 0x0080 -- flag bubbled up on setting REDRAW, CHANGED, ...
-FL_RECVINPUT     = 0x0100 -- element receives input
-FL_RECVMOUSEMOVE = 0x0200 -- element receives mouse movement events
-FL_CURSORFOCUS   = 0x0400 -- element can receive the focus using cursor keys
-FL_AUTOPOSITION  = 0x0800 -- element is positioned automatically when focused
-FL_ERASEBG       = 0x1000 -- the element erases its background automatically
-FL_TRACKDAMAGE   = 0x2000 -- the element tracks intra-area damages
-FL_ACTIVATERMB   = 0x4000 -- (also) activate on right mouse button
-FL_INITIALFOCUS  = 0x8000 -- element is receiving the focus during show()
-FL_ISWINDOW      = 0x10000 -- the element is a window
-FL_DONOTBLIT     = 0x20000 -- redrawing the element should not initiate blits
-FL_KEEPMINWIDTH  = 0x40000 -- element maintains its minimal width
-FL_KEEPMINHEIGHT = 0x80000 -- element maintains its minimal height
-FL_NOFOCUS       = 0x1000000 -- element does not accept the input focus
+FL_LAYOUT        = 0x0000001 -- element has been layouted
+FL_REDRAW        = 0x0000002 -- element needs a repaint
+FL_REDRAWBORDER  = 0x0000004 -- element needs a border repaint
+FL_SETUP         = 0x0000008 -- element is setup
+FL_SHOW          = 0x0000010 -- element is being shown
+FL_CHANGED       = 0x0000020 -- element has seen structural changes
+FL_POPITEM       = 0x0000040 -- used to identify elements in popups
+FL_UPDATE        = 0x0000080 -- flag bubbled up on setting REDRAW, CHANGED, ...
+FL_RECVINPUT     = 0x0000100 -- element receives input
+FL_RECVMOUSEMOVE = 0x0000200 -- element receives mouse movement events
+FL_CURSORFOCUS   = 0x0000400 -- element can receive the focus using cursor keys
+FL_AUTOPOSITION  = 0x0000800 -- element positioned automatically when focused
+FL_ERASEBG       = 0x0001000 -- the element erases its background automatically
+FL_TRACKDAMAGE   = 0x0002000 -- the element tracks intra-area damages
+FL_ACTIVATERMB   = 0x0004000 -- (also) activate on right mouse button
+FL_INITIALFOCUS  = 0x0008000 -- element is receiving the focus during show()
+FL_ISWINDOW      = 0x0010000 -- the element is a window
+FL_DONOTBLIT     = 0x0020000 -- redrawing the element should not initiate blits
+FL_KEEPMINWIDTH  = 0x0040000 -- element maintains its minimal width
+FL_KEEPMINHEIGHT = 0x0080000 -- element maintains its minimal height
+FL_NOFOCUS       = 0x0100000 -- element does not accept the input focus

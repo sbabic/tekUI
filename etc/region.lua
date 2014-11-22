@@ -36,7 +36,7 @@ local unpack = unpack or table.unpack
 
 module "tek.lib.region"
 
-_VERSION = "Region 10.1"
+_VERSION = "Region 11.1"
 
 local Region = _M
 
@@ -316,15 +316,17 @@ end
 -------------------------------------------------------------------------------
 
 function Region:get()
-	local minx = 1000000 -- ui.HUGE
-	local miny = 1000000
-	local maxx = 0
-	local maxy = 0
-	for _, r in ipairs(self.region) do
-		minx = min(minx, r[1])
-		miny = min(miny, r[2])
-		maxx = max(maxx, r[3])
-		maxy = max(maxy, r[4])
+	if #self.region > 0 then
+		local minx = 1000000 -- ui.HUGE
+		local miny = 1000000
+		local maxx = 0
+		local maxy = 0
+		for _, r in ipairs(self.region) do
+			minx = min(minx, r[1])
+			miny = min(miny, r[2])
+			maxx = max(maxx, r[3])
+			maxy = max(maxy, r[4])
+		end
+		return minx, miny, maxx, maxy
 	end
-	return minx, miny, maxx, maxy
 end

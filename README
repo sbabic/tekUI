@@ -470,6 +470,15 @@ The regular build procedure is invoked with
 
   # make all
 
+==== Building a tekui executable ====
+
+To build a standalone executable implementing a Lua interpreter,
+tekUI's C libraries and Lua class library, adjust {{LUAARCH}},
+{{LUADISTDIR}} in the {{config}} file, the exact classes to be
+included in {{tek/lib/MODLIST}}, and invoke
+
+  # make tools
+
 ==( installation : 3.4. Installation )==
 
 A system-wide installation of tekUI is not strictly required – in so

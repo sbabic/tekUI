@@ -11,6 +11,7 @@
  * UI: loadImage() can now load from an open file
  * Raw framebuffer: Improved region management, optimizations, added
  support for window backing store, unified input handling
+ * Compiler: added module exclude list, code cleanup, added documentation
 
 === 1.09: ===
 
