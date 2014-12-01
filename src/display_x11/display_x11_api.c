@@ -5,31 +5,17 @@
 #include <tek/lib/imgcache.h>
 #include <tek/inline/exec.h>
 
-static void freepen(X11DISPLAY *mod, X11WINDOW *v, struct X11Pen *pen);
-static int x11_seteventmask(X11DISPLAY *mod, X11WINDOW *v, TUINT eventmask);
-static void x11_freeimage(X11DISPLAY *mod, X11WINDOW *v);
-
-#define DEF_WINWIDTH 600
-#define DEF_WINHEIGHT 400
-
-/*****************************************************************************/
-/*
-**	This is awkward, since we are in a shared library and must
-**	check for availability of the extension in an error handler using
-**	a global variable. TODO: To fully work around this mess, we would
-**	additionally have to enclose XShmAttach() in a mutex.
-*/
-
 static TBOOL x11_shm_available = TTRUE;
 
 static int shm_errhandler(Display *d, XErrorEvent *evt)
 {
-	TDBPRINTF(TDB_ERROR,("Remote display - fallback to normal XPutImage\n"));
+	TDBPRINTF(TDB_ERROR, ("Remote display - fallback to normal XPutImage\n"));
 	x11_shm_available = TFALSE;
 	return 0;
 }
 
-static void x11_releasesharedmemory(X11DISPLAY *mod, X11WINDOW *v)
+static void x11_releasesharedmemory(struct X11Display *mod,
+	struct X11Window *v)
 {
 	if (v->shmsize > 0)
 	{
@@ -39,7 +25,8 @@ static void x11_releasesharedmemory(X11DISPLAY *mod, X11WINDOW *v)
 	}
 }
 
-static TAPTR x11_getsharedmemory(X11DISPLAY *mod, X11WINDOW *v, size_t size)
+static TAPTR x11_getsharedmemory(struct X11Display *mod, struct X11Window *v,
+	size_t size)
 {
 	if (!mod->x11_ShmAvail)
 		return TNULL;
@@ -50,12 +37,13 @@ static TAPTR x11_getsharedmemory(X11DISPLAY *mod, X11WINDOW *v, size_t size)
 	if (v->shminfo.shmid != -1)
 	{
 		XErrorHandler oldhnd;
+
 		v->shminfo.readOnly = False;
 		XSync(mod->x11_Display, 0);
 		oldhnd = XSetErrorHandler(shm_errhandler);
 		x11_shm_available = TTRUE;
 		XShmAttach(mod->x11_Display, &v->shminfo);
-		TDBPRINTF(TDB_TRACE,("shmattach size=%d\n", (int) size));
+		TDBPRINTF(TDB_TRACE, ("shmattach size=%d\n", (int) size));
 		XSync(mod->x11_Display, 0);
 		XSetErrorHandler(oldhnd);
 		if (x11_shm_available)
@@ -76,21 +64,152 @@ static TAPTR x11_getsharedmemory(X11DISPLAY *mod, X11WINDOW *v, size_t size)
 	return v->shminfo.shmaddr;
 }
 
-/*****************************************************************************/
+static void x11i_freepen(struct X11Display *mod, struct X11Window *v,
+	struct X11Pen *pen)
+{
+	TAPTR TExecBase = TGetExecBase(mod);
 
-LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
+	TRemove(&pen->node);
+	XFreeColors(mod->x11_Display, v->colormap, &pen->color.pixel, 1, 0);
+#if defined(ENABLE_XFT)
+	if (mod->x11_use_xft)
+		(*mod->x11_xftiface.XftColorFree) (mod->x11_Display, mod->x11_Visual,
+			v->colormap, &pen->xftcolor);
+#endif
+	TFree(pen);
+}
+
+static void x11_freepen(struct X11Display *mod, struct TVRequest *req)
+{
+	struct X11Window *v = req->tvr_Op.FreePen.Window;
+	struct X11Pen *pen = (struct X11Pen *) req->tvr_Op.FreePen.Pen;
+
+	x11i_freepen(mod, v, pen);
+}
+
+static void x11_freeimage(struct X11Display *mod, struct X11Window *v)
+{
+	if (v->image)
+	{
+		v->image->data = NULL;
+		XDestroyImage(v->image);
+		v->image = TNULL;
+	}
+}
+
+static void x11_closevisual(struct X11Display *mod, struct TVRequest *req)
+{
+	TAPTR TExecBase = TGetExecBase(mod);
+	struct X11Window *v = req->tvr_Op.OpenWindow.Window;
+	struct X11Pen *pen;
+
+	if (v == TNULL)
+		return;
+
+	TRemove(&v->node);
+	if (TISLISTEMPTY(&mod->x11_vlist))
+	{
+		/* last window closed - clear global fullscreen state */
+		mod->x11_FullScreen = TFALSE;
+	}
+
+	if (v->eventmask & TITYPE_INTERVAL)
+		mod->x11_NumInterval--;
+
+	x11_freeimage(mod, v);
+	TFree(v->tempbuf);
+	x11_releasesharedmemory(mod, v);
+
+#if defined(ENABLE_XFT)
+	if (mod->x11_use_xft && v->draw)
+		(*mod->x11_xftiface.XftDrawDestroy) (v->draw);
+#endif
+
+#if defined(ENABLE_XVID)
+	if (v->changevidmode)
+	{
+		XUngrabKeyboard(mod->x11_Display, CurrentTime);
+		XUngrabPointer(mod->x11_Display, CurrentTime);
+	}
+#endif
+
+	if (v->window)
+		XUnmapWindow(mod->x11_Display, v->window);
+	if (v->gc)
+		XFreeGC(mod->x11_Display, v->gc);
+	if (v->window)
+		XDestroyWindow(mod->x11_Display, v->window);
+
+#if defined(ENABLE_XVID)
+	if (v->changevidmode)
+	{
+		XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
+			&mod->x11_OldMode);
+		XFlush(mod->x11_Display);
+		mod->x11_FullScreenWidth = 0;
+		mod->x11_FullScreenHeight = 0;
+	}
+#endif
+
+	while ((pen = (struct X11Pen *) TRemHead(&v->penlist)))
+		x11i_freepen(mod, v, pen);
+
+	if (v->colormap)
+		XFreeColormap(mod->x11_Display, v->colormap);
+	if (v->sizehints)
+		XFree(v->sizehints);
+
+	mod->x11_fm.defref--;
+
+	mod->x11_NumWindows--;
+
+	TFree(v);
+}
+
+static int x11_seteventmask(struct X11Display *mod, struct X11Window *v,
+	TUINT eventmask)
+{
+	int x11_mask = v->base_mask;
+	TUINT oldmask = v->eventmask;
+
+	if (oldmask & TITYPE_INTERVAL)
+		mod->x11_NumInterval--;
+	if (eventmask & TITYPE_INTERVAL)
+		mod->x11_NumInterval++;
+
+	if (eventmask & TITYPE_REFRESH)
+		x11_mask |= StructureNotifyMask | ExposureMask;
+	if (eventmask & TITYPE_MOUSEOVER)
+		x11_mask |= LeaveWindowMask | EnterWindowMask;
+	if (eventmask & TITYPE_NEWSIZE)
+		x11_mask |= StructureNotifyMask;
+	if (eventmask & TITYPE_KEYDOWN)
+		x11_mask |= KeyPressMask | KeyReleaseMask;
+	if (eventmask & TITYPE_KEYUP)
+		x11_mask |= KeyPressMask | KeyReleaseMask;
+	if (v->is_root_window || (eventmask & TITYPE_MOUSEMOVE))
+		x11_mask |= PointerMotionMask | OwnerGrabButtonMask |
+			ButtonMotionMask | ButtonPressMask | ButtonReleaseMask;
+	if (eventmask & TITYPE_MOUSEBUTTON)
+		x11_mask |= ButtonPressMask | ButtonReleaseMask | OwnerGrabButtonMask;
+	v->eventmask = eventmask;
+	return x11_mask;
+}
+
+static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
 	TTAGITEM *tags = req->tvr_Op.OpenWindow.Tags;
-	X11WINDOW *v = TAlloc0(mod->x11_MemMgr, sizeof(X11WINDOW));
+	struct X11Window *v = TAlloc0(mod->x11_MemMgr, sizeof(struct X11Window));
 	XTextProperty title_prop;
 	TBOOL save_under = TFALSE;
 
 	req->tvr_Op.OpenWindow.Window = v;
-	if (v == TNULL) return;
+	if (v == TNULL)
+		return;
 
 	v->userdata = TGetTag(tags, TVisual_UserData, TNULL);
-	
+
 	for (;;)
 	{
 		XSetWindowAttributes swa;
@@ -107,7 +226,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		TINT maxh = (TINT) TGetTag(tags, TVisual_MaxHeight, 1000000);
 		TINT sw = mod->x11_ScreenWidth;
 		TINT sh = mod->x11_ScreenHeight;
-		
+
 		if (mod->x11_FullScreenWidth != 0)
 		{
 			sw = mod->x11_FullScreenWidth;
@@ -115,7 +234,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		}
 
 		swa_mask = CWColormap | CWEventMask;
-		
+
 		fn = mod->x11_fm.deffont;
 		v->curfont = fn;
 		mod->x11_fm.defref++;
@@ -136,29 +255,30 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 
 		/* size/position calculation: */
 
-		v->winwidth = (TINT) TGetTag(tags, TVisual_Width, DEF_WINWIDTH);
-		v->winheight = (TINT) TGetTag(tags, TVisual_Height, DEF_WINHEIGHT);
-		
+		v->winwidth = (TINT) TGetTag(tags, TVisual_Width, X11_DEF_WINWIDTH);
+		v->winheight = (TINT) TGetTag(tags, TVisual_Height, X11_DEF_WINHEIGHT);
+
 		v->winwidth = TCLAMP(minw, v->winwidth, maxw);
 		v->winheight = TCLAMP(minh, v->winheight, maxh);
 		v->winwidth = TMIN(v->winwidth, sw);
 		v->winheight = TMIN(v->winheight, sh);
 
 		v->changevidmode = TFALSE;
-		
+
 		if (TGetTag(tags, TVisual_FullScreen, TFALSE))
 		{
-			#if defined(ENABLE_XVID)
+#if defined(ENABLE_XVID)
 			if (mod->x11_FullScreenWidth == 0)
 			{
 				XF86VidModeModeInfo **modes;
 				int modeNum;
 				int i;
-				XF86VidModeGetAllModeLines(mod->x11_Display, 
+
+				XF86VidModeGetAllModeLines(mod->x11_Display,
 					mod->x11_Screen, &modeNum, &modes);
 				for (i = 0; i < modeNum; i++)
 				{
-					if ((modes[i]->hdisplay == v->winwidth) && 
+					if ((modes[i]->hdisplay == v->winwidth) &&
 						(modes[i]->vdisplay == v->winheight))
 					{
 						mod->x11_OldMode = *modes[0];
@@ -169,15 +289,15 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 				}
 				XFree(modes);
 			}
-			#endif
-			
+#endif
+
 			if (!v->changevidmode)
 			{
 				v->winwidth = sw;
 				v->winheight = sh;
 			}
 			v->winleft = 0;
-			v->wintop = 0;			
+			v->wintop = 0;
 			borderless = TTRUE;
 			setfocus = TTRUE;
 			mod->x11_FullScreen = TTRUE;
@@ -191,10 +311,10 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 			}
 			else
 			{
-				v->winleft = (int) TGetTag(tags, TVisual_WinLeft, (TTAG) -1);
-				v->wintop = (int) TGetTag(tags, TVisual_WinTop, (TTAG) -1);
+				v->winleft = (int) TGetTag(tags, TVisual_WinLeft, (TTAG) - 1);
+				v->wintop = (int) TGetTag(tags, TVisual_WinTop, (TTAG) - 1);
 			}
-			
+
 			if (mod->x11_FullScreen)
 			{
 				borderless = TTRUE;
@@ -206,20 +326,20 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 					v->wintop = (sh - v->winheight) / 2;
 			}
 		}
-		
+
 		if (v->winleft >= 0 || v->wintop >= 0)
 			v->sizehints->flags |= USPosition | USSize;
 
 		if (!borderless)
 		{
 			v->sizehints->min_width = (TINT)
-				TGetTag(tags, TVisual_MinWidth, (TTAG) -1);
+				TGetTag(tags, TVisual_MinWidth, (TTAG) - 1);
 			v->sizehints->min_height = (TINT)
-				TGetTag(tags, TVisual_MinHeight, (TTAG) -1);
+				TGetTag(tags, TVisual_MinHeight, (TTAG) - 1);
 			v->sizehints->max_width = (TINT)
-				TGetTag(tags, TVisual_MaxWidth, (TTAG) -1);
+				TGetTag(tags, TVisual_MaxWidth, (TTAG) - 1);
 			v->sizehints->max_height = (TINT)
-				TGetTag(tags, TVisual_MaxHeight, (TTAG) -1);
+				TGetTag(tags, TVisual_MaxHeight, (TTAG) - 1);
 
 			if (v->sizehints->max_width > 0)
 				v->winwidth = TMIN(v->winwidth, v->sizehints->max_width);
@@ -244,7 +364,7 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 
 		v->winleft = TMAX(v->winleft, 0);
 		v->wintop = TMAX(v->wintop, 0);
-		
+
 		if ((borderless || mod->x11_FullScreen) && mod->x11_NumWindows == 0)
 			v->is_root_window = TTRUE;
 
@@ -261,14 +381,12 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 			swa_mask |= CWSaveUnder;
 			swa.save_under = True;
 		}
-#if 0
-		else
-		{
-			swa_mask |= CWBackingStore;
-			swa.backing_store = True;
-		}
-#endif
-		
+		/*else
+		   {
+		   swa_mask |= CWBackingStore;
+		   swa.backing_store = True;
+		   } */
+
 		v->colormap = DefaultColormap(mod->x11_Display, mod->x11_Screen);
 		if (v->colormap == TNULL)
 			break;
@@ -284,15 +402,15 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 			swa.cursor = mod->x11_NullCursor;
 			swa_mask |= CWCursor;
 		}
-		#if defined(ENABLE_DEFAULTCURSOR)
+#if defined(ENABLE_DEFAULTCURSOR)
 		else
 		{
 			swa.cursor = mod->x11_DefaultCursor;
 			swa_mask |= CWCursor;
 		}
-		#endif
-		
-		#if defined(ENABLE_XVID)
+#endif
+
+#if defined(ENABLE_XVID)
 		if (v->changevidmode)
 		{
 			XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
@@ -301,28 +419,27 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 			/* damned, argh: */
 			XSync(mod->x11_Display, False);
 			/*TTIME waitt = { 900000 };
-			TWaitTime(&waitt, 0);*/
+			   TWaitTime(&waitt, 0); */
 			/* Is my computer broken? Or is it just KDE? */
 		}
-		#endif
+#endif
 
 		v->window = XCreateWindow(mod->x11_Display,
 			RootWindow(mod->x11_Display, mod->x11_Screen),
 			v->winleft, v->wintop, v->winwidth, v->winheight,
-			0, CopyFromParent, CopyFromParent, CopyFromParent,
-			swa_mask, &swa);
+			0, CopyFromParent, CopyFromParent, CopyFromParent, swa_mask, &swa);
 
 		if (v->window == TNULL)
 			break;
 
 		/*Xutf8SetWMProperties(mod->x11_Display, v->window, v->title, v->title, 
-			NULL, 0, v->sizehints, NULL, NULL);*/
-		
+		   NULL, 0, v->sizehints, NULL, NULL); */
+
 		if (v->sizehints->flags)
 			XSetWMNormalHints(mod->x11_Display, v->window, v->sizehints);
 
-		if (Xutf8TextListToTextProperty(mod->x11_Display, 
-			(char **) &v->title, 1, XUTF8StringStyle, &title_prop) ==
+		if (Xutf8TextListToTextProperty(mod->x11_Display,
+				(char **) &v->title, 1, XUTF8StringStyle, &title_prop) ==
 			Success)
 		{
 			XSetWMProperties(mod->x11_Display, v->window, &title_prop,
@@ -335,7 +452,6 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		XSetWMProtocols(mod->x11_Display, v->window,
 			&v->atom_wm_delete_win, 1);
 
-		
 		if (mod->x11_FullScreen)
 			XMapRaised(mod->x11_Display, v->window);
 		else
@@ -344,37 +460,39 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		for (;;)
 		{
 			XEvent e;
+
 			XNextEvent(mod->x11_Display, &e);
 			if (e.type == MapNotify)
 				break;
 		}
 
-		#if defined(ENABLE_XVID)
+#if defined(ENABLE_XVID)
 		if (v->changevidmode)
 		{
-	        XMoveWindow(mod->x11_Display, v->window, 0, 0);
-    	    XResizeWindow(mod->x11_Display, v->window, v->winwidth, v->winheight);
-			
+			XMoveWindow(mod->x11_Display, v->window, 0, 0);
+			XResizeWindow(mod->x11_Display, v->window, v->winwidth,
+				v->winheight);
+
 			XGrabKeyboard(mod->x11_Display, v->window, True,
 				GrabModeAsync, GrabModeAsync, CurrentTime);
-			XGrabPointer(mod->x11_Display, v->window, True, 
+			XGrabPointer(mod->x11_Display, v->window, True,
 				ButtonPressMask, GrabModeAsync, GrabModeAsync,
 				v->window, None, CurrentTime);
-			XWarpPointer(mod->x11_Display,None,v->window,0, 0, 0, 0, 0, 0);
-			XWarpPointer(mod->x11_Display,None,v->window,0, 0, 0, 0, 
-				v->winwidth/2, v->winheight/2);
-					
+			XWarpPointer(mod->x11_Display, None, v->window, 0, 0, 0, 0, 0, 0);
+			XWarpPointer(mod->x11_Display, None, v->window, 0, 0, 0, 0,
+				v->winwidth / 2, v->winheight / 2);
+
 			mod->x11_FullScreenWidth = v->winwidth;
 			mod->x11_FullScreenHeight = v->winheight;
 			mod->x11_ScreenWidth = v->winwidth;
 			mod->x11_ScreenHeight = v->winheight;
 		}
-		#endif
+#endif
 
 		if (setfocus)
 			XSetInputFocus(mod->x11_Display, v->window, RevertToParent,
 				CurrentTime);
-		
+
 		gcv.function = GXcopy;
 		gcv.fill_style = FillSolid;
 		gcv.graphics_exposures = True;
@@ -384,26 +502,27 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 		XCopyGC(mod->x11_Display,
 			DefaultGC(mod->x11_Display, mod->x11_Screen),
 			GCForeground | GCBackground, v->gc);
-	
-		#if defined(ENABLE_XFT)
+
+#if defined(ENABLE_XFT)
 		if (mod->x11_use_xft)
 		{
-			v->draw = (*mod->x11_xftiface.XftDrawCreate)(mod->x11_Display,
+			v->draw = (*mod->x11_xftiface.XftDrawCreate) (mod->x11_Display,
 				v->window, mod->x11_Visual, v->colormap);
-			if (!v->draw) break;
+			if (!v->draw)
+				break;
 		}
-		#endif
+#endif
 
 		v->bgpen = TVPEN_UNDEFINED;
 		v->fgpen = TVPEN_UNDEFINED;
-		
-		TDBPRINTF(TDB_TRACE,("Created new window: %p\n", v->window));
+
+		TDBPRINTF(TDB_TRACE, ("Created new window: %p\n", v->window));
 		TAddTail(&mod->x11_vlist, &v->node);
 
 		/* success: */
 		mod->x11_NumWindows++;
-		
-		/*mod->x11_RequestInProgress = req;*/
+
+		/*mod->x11_RequestInProgress = req; */
 		return;
 	}
 
@@ -412,120 +531,35 @@ LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req)
 	req->tvr_Op.OpenWindow.Window = TNULL;
 }
 
-LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_setinput(struct X11Display *mod, struct TVRequest *req)
 {
-	TAPTR TExecBase = TGetExecBase(mod);
-	X11WINDOW *v = req->tvr_Op.OpenWindow.Window;
-	struct X11Pen *pen;
-	if (v == TNULL) return;
-
-	TRemove(&v->node);
-	if (TISLISTEMPTY(&mod->x11_vlist))
-	{
-		/* last window closed - clear global fullscreen state */
-		mod->x11_FullScreen = TFALSE;
-	}
-
-	x11_freeimage(mod, v);
-	TFree(v->tempbuf);
-	x11_releasesharedmemory(mod, v);
-
-	#if defined(ENABLE_XFT)
-	if (mod->x11_use_xft && v->draw)
-		(*mod->x11_xftiface.XftDrawDestroy)(v->draw);
-	#endif
-	
-	#if defined(ENABLE_XVID)
-	if (v->changevidmode)
-	{
-		XUngrabKeyboard(mod->x11_Display, CurrentTime);
-		XUngrabPointer(mod->x11_Display, CurrentTime);
-	}
-	#endif
-
-	if (v->window)
-		XUnmapWindow(mod->x11_Display, v->window);
-	if (v->gc)
-		XFreeGC(mod->x11_Display, v->gc);
-	if (v->window)
-		XDestroyWindow(mod->x11_Display, v->window);
-	
-	#if defined(ENABLE_XVID)
-	if (v->changevidmode)
-	{
-		XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
-			&mod->x11_OldMode);
-		XFlush(mod->x11_Display);
-		mod->x11_FullScreenWidth = 0;
-		mod->x11_FullScreenHeight = 0;
-	}
-	#endif
-	
-
-	while ((pen = (struct X11Pen *) TRemHead(&v->penlist)))
-		freepen(mod, v, pen);
-
-	if (v->colormap)
-		XFreeColormap(mod->x11_Display, v->colormap);
-	if (v->sizehints)
-		XFree(v->sizehints);
-
-	mod->x11_fm.defref--;
-	
-	mod->x11_NumWindows--;
-
-	TFree(v);
-}
-
-static int x11_seteventmask(X11DISPLAY *mod, X11WINDOW *v, TUINT eventmask)
-{
-	int x11_mask = v->base_mask;
-	if (eventmask & TITYPE_REFRESH)
-		x11_mask |= StructureNotifyMask | ExposureMask;
-	if (eventmask & TITYPE_MOUSEOVER)
-		x11_mask |= LeaveWindowMask | EnterWindowMask;
-	if (eventmask & TITYPE_NEWSIZE)
-		x11_mask |= StructureNotifyMask;
-	if (eventmask & TITYPE_KEYDOWN)
-		x11_mask |= KeyPressMask | KeyReleaseMask;
-	if (eventmask & TITYPE_KEYUP)
-		x11_mask |= KeyPressMask | KeyReleaseMask;
-	if (v->is_root_window || (eventmask & TITYPE_MOUSEMOVE))
-		x11_mask |= PointerMotionMask | OwnerGrabButtonMask |
-			ButtonMotionMask | ButtonPressMask | ButtonReleaseMask;
-	if (eventmask & TITYPE_MOUSEBUTTON)
-		x11_mask |= ButtonPressMask | ButtonReleaseMask | OwnerGrabButtonMask;
-	v->eventmask = eventmask;
-	return x11_mask;
-}
-
-LOCAL void x11_setinput(X11DISPLAY *mod, struct TVRequest *req)
-{
-	X11WINDOW *v = req->tvr_Op.SetInput.Window;
+	struct X11Window *v = req->tvr_Op.SetInput.Window;
 	TUINT eventmask = req->tvr_Op.SetInput.Mask;
+
 	XSelectInput(mod->x11_Display, v->window,
 		x11_seteventmask(mod, v, eventmask));
 	/* spool out possible remaining messages: */
-	x11_sendimessages(mod, TFALSE);
+	x11_sendimessages(mod);
 
 }
 
-LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_allocpen(struct X11Display *mod, struct TVRequest *req)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
-	X11WINDOW *v = req->tvr_Op.AllocPen.Window;
+	struct X11Window *v = req->tvr_Op.AllocPen.Window;
 	TUINT rgb = req->tvr_Op.AllocPen.RGB;
 	struct X11Pen *pen = TAlloc(mod->x11_MemMgr, sizeof(struct X11Pen));
+
 	if (pen)
 	{
 		TUINT r = (rgb >> 16) & 0xff;
 		TUINT g = (rgb >> 8) & 0xff;
 		TUINT b = rgb & 0xff;
-		
+
 		r = (r << 8) | r;
 		g = (g << 8) | g;
 		b = (b << 8) | b;
-		
+
 		pen->color.red = r;
 		pen->color.green = g;
 		pen->color.blue = b;
@@ -533,10 +567,12 @@ LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req)
 		if (XAllocColor(mod->x11_Display, v->colormap, &pen->color))
 		{
 			TBOOL success = TTRUE;
-			#if defined(ENABLE_XFT)
+
+#if defined(ENABLE_XFT)
 			if (mod->x11_use_xft)
 			{
 				XRenderColor xrcolor;
+
 				xrcolor.red = r;
 				xrcolor.green = g;
 				xrcolor.blue = b;
@@ -545,7 +581,7 @@ LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req)
 					(mod->x11_Display, mod->x11_Visual, v->colormap, &xrcolor,
 					&pen->xftcolor);
 			}
-			#endif
+#endif
 			if (success)
 			{
 				TAddTail(&v->penlist, &pen->node);
@@ -560,73 +596,56 @@ LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req)
 	req->tvr_Op.AllocPen.Pen = TVPEN_UNDEFINED;
 }
 
-static void freepen(X11DISPLAY *mod, X11WINDOW *v, struct X11Pen *pen)
-{
-	TAPTR TExecBase = TGetExecBase(mod);
-	TRemove(&pen->node);
-	XFreeColors(mod->x11_Display, v->colormap, &pen->color.pixel, 1, 0);
-	#if defined(ENABLE_XFT)
-	if (mod->x11_use_xft)
-		(*mod->x11_xftiface.XftColorFree)(mod->x11_Display, mod->x11_Visual,
-			v->colormap, &pen->xftcolor);
-	#endif
-	TFree(pen);
-}
-
-LOCAL void x11_freepen(X11DISPLAY *mod, struct TVRequest *req)
-{
-	X11WINDOW *v = req->tvr_Op.FreePen.Window;
-	struct X11Pen *pen = (struct X11Pen *) req->tvr_Op.FreePen.Pen;
-	freepen(mod, v, pen);
-}
-
 /*****************************************************************************/
 
-static void setbgpen(X11DISPLAY *mod, X11WINDOW *v, TVPEN pen)
+static void setbgpen(struct X11Display *mod, struct X11Window *v, TVPEN pen)
 {
 	if (pen != v->bgpen && pen != TVPEN_UNDEFINED)
 	{
 		XGCValues gcv;
+
 		gcv.background = ((struct X11Pen *) pen)->color.pixel;
 		XChangeGC(mod->x11_Display, v->gc, GCBackground, &gcv);
 		v->bgpen = pen;
 	}
 }
 
-static TVPEN setfgpen(X11DISPLAY *mod, X11WINDOW *v, TVPEN pen)
+static TVPEN setfgpen(struct X11Display *mod, struct X11Window *v, TVPEN pen)
 {
 	TVPEN oldpen = v->fgpen;
+
 	if (pen != oldpen && pen != TVPEN_UNDEFINED)
 	{
 		XGCValues gcv;
+
 		gcv.foreground = ((struct X11Pen *) pen)->color.pixel;
 		XChangeGC(mod->x11_Display, v->gc, GCForeground, &gcv);
 		v->fgpen = pen;
-		if (oldpen == (TVPEN) 0xffffffff) oldpen = pen;
+		if (oldpen == (TVPEN) 0xffffffff)
+			oldpen = pen;
 	}
 	return oldpen;
 }
 
 /*****************************************************************************/
 
-#define OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
-((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))
-
-LOCAL void x11_frect(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_frect(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.FRect.Window;
+	struct X11Window *v = req->tvr_Op.FRect.Window;
 	TINT x0 = req->tvr_Op.FRect.Rect[0];
 	TINT y0 = req->tvr_Op.FRect.Rect[1];
 	TINT x1 = x0 + req->tvr_Op.FRect.Rect[2] - 1;
 	TINT y1 = y0 + req->tvr_Op.FRect.Rect[3] - 1;
-	if (!OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1, v->winheight - 1))
+
+	if (!REGION_OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1, 
+			v->winheight - 1))
 		return;
-	
+
 	x0 = TMAX(x0, 0);
 	y0 = TMAX(y0, 0);
 	x1 = TMIN(x1, v->winwidth - 1);
 	y1 = TMIN(y1, v->winheight - 1);
-	
+
 	setfgpen(mod, v, req->tvr_Op.FRect.Pen);
 	XFillRectangle(mod->x11_Display, v->window, v->gc,
 		x0, y0, x1 - x0 + 1, y1 - y0 + 1);
@@ -634,30 +653,33 @@ LOCAL void x11_frect(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_line(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_line(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.Line.Window;
+	struct X11Window *v = req->tvr_Op.Line.Window;
 	TINT x0 = req->tvr_Op.Line.Rect[0];
 	TINT y0 = req->tvr_Op.Line.Rect[1];
 	TINT x1 = req->tvr_Op.Line.Rect[2];
 	TINT y1 = req->tvr_Op.Line.Rect[3];
-	if (!OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1, v->winheight - 1))
+
+	if (!REGION_OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1,
+			v->winheight - 1))
 		return;
 	setfgpen(mod, v, req->tvr_Op.Line.Pen);
-	XDrawLine(mod->x11_Display, v->window, v->gc,
-		x0, y0, x1, y1);
+	XDrawLine(mod->x11_Display, v->window, v->gc, x0, y0, x1, y1);
 }
 
 /*****************************************************************************/
 
-LOCAL void x11_rect(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_rect(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.Rect.Window;
+	struct X11Window *v = req->tvr_Op.Rect.Window;
 	TINT x0 = req->tvr_Op.FRect.Rect[0];
 	TINT y0 = req->tvr_Op.FRect.Rect[1];
 	TINT x1 = x0 + req->tvr_Op.FRect.Rect[2] - 1;
 	TINT y1 = y0 + req->tvr_Op.FRect.Rect[3] - 1;
-	if (!OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1, v->winheight - 1))
+
+	if (!REGION_OVERLAP(x0, y0, x1, y1, 0, 0, v->winwidth - 1, 
+			v->winheight - 1))
 		return;
 	setfgpen(mod, v, req->tvr_Op.Rect.Pen);
 	XDrawRectangle(mod->x11_Display, v->window, v->gc,
@@ -666,28 +688,30 @@ LOCAL void x11_rect(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_plot(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_plot(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.Plot.Window;
+	struct X11Window *v = req->tvr_Op.Plot.Window;
 	TUINT x0 = req->tvr_Op.Plot.Rect[0];
 	TUINT y0 = req->tvr_Op.Plot.Rect[1];
+
 	setfgpen(mod, v, req->tvr_Op.Plot.Pen);
 	XDrawPoint(mod->x11_Display, v->window, v->gc, x0, y0);
 }
 
 /*****************************************************************************/
 
-LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_drawstrip(struct X11Display *mod, struct TVRequest *req)
 {
 	TINT i;
 	XPoint tri[3];
-	X11WINDOW *v = req->tvr_Op.Strip.Window;
+	struct X11Window *v = req->tvr_Op.Strip.Window;
 	TINT *array = req->tvr_Op.Strip.Array;
 	TINT num = req->tvr_Op.Strip.Num;
 	TTAGITEM *tags = req->tvr_Op.Strip.Tags;
 	TVPEN *penarray = (TVPEN *) TGetTag(tags, TVisual_PenArray, TNULL);
 
-	if (num < 3) return;
+	if (num < 3)
+		return;
 
 	if (penarray)
 	{
@@ -696,6 +720,7 @@ LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req)
 	else
 	{
 		TVPEN pen = (TVPEN) TGetTag(tags, TVisual_Pen, TVPEN_UNDEFINED);
+
 		setfgpen(mod, v, pen);
 	}
 
@@ -715,8 +740,8 @@ LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req)
 		tri[0].y = tri[1].y;
 		tri[1].x = tri[2].x;
 		tri[1].y = tri[2].y;
-		tri[2].x = (TINT16) array[i*2];
-		tri[2].y = (TINT16) array[i*2+1];
+		tri[2].x = (TINT16) array[i * 2];
+		tri[2].y = (TINT16) array[i * 2 + 1];
 
 		if (penarray)
 			setfgpen(mod, v, penarray[i]);
@@ -728,18 +753,19 @@ LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_drawfan(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_drawfan(struct X11Display *mod, struct TVRequest *req)
 {
 	TINT i;
 	XPoint tri[3];
-	X11WINDOW *v = req->tvr_Op.Fan.Window;
+	struct X11Window *v = req->tvr_Op.Fan.Window;
 	TINT *array = req->tvr_Op.Fan.Array;
 	TINT num = req->tvr_Op.Fan.Num;
 	TTAGITEM *tags = req->tvr_Op.Fan.Tags;
 	TVPEN pen = (TVPEN) TGetTag(tags, TVisual_Pen, TVPEN_UNDEFINED);
 	TVPEN *penarray = (TVPEN *) TGetTag(tags, TVisual_PenArray, TNULL);
 
-	if (num < 3) return;
+	if (num < 3)
+		return;
 
 	if (penarray)
 		setfgpen(mod, v, penarray[2]);
@@ -760,8 +786,8 @@ LOCAL void x11_drawfan(X11DISPLAY *mod, struct TVRequest *req)
 	{
 		tri[1].x = tri[2].x;
 		tri[1].y = tri[2].y;
-		tri[2].x = (TINT16) array[i*2];
-		tri[2].y = (TINT16) array[i*2+1];
+		tri[2].x = (TINT16) array[i * 2];
+		tri[2].y = (TINT16) array[i * 2 + 1];
 
 		if (penarray)
 			setfgpen(mod, v, penarray[i]);
@@ -773,9 +799,9 @@ LOCAL void x11_drawfan(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_copyarea(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_copyarea(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.CopyArea.Window;
+	struct X11Window *v = req->tvr_Op.CopyArea.Window;
 	TINT x = req->tvr_Op.CopyArea.Rect[0];
 	TINT y = req->tvr_Op.CopyArea.Rect[1];
 	TINT w = req->tvr_Op.CopyArea.Rect[2];
@@ -797,9 +823,9 @@ LOCAL void x11_copyarea(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_setcliprect(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_setcliprect(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.ClipRect.Window;
+	struct X11Window *v = req->tvr_Op.ClipRect.Window;
 	TINT x = req->tvr_Op.ClipRect.Rect[0];
 	TINT y = req->tvr_Op.ClipRect.Rect[1];
 	TINT w = req->tvr_Op.ClipRect.Rect[2];
@@ -819,32 +845,34 @@ LOCAL void x11_setcliprect(X11DISPLAY *mod, struct TVRequest *req)
 	/* set clip region */
 	XSetRegion(mod->x11_Display, v->gc, region);
 
-	#if defined(ENABLE_XFT)
+#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
-		(*mod->x11_xftiface.XftDrawSetClip)(v->draw, region);
-	#endif
+		(*mod->x11_xftiface.XftDrawSetClip) (v->draw, region);
+#endif
 
 	XDestroyRegion(region);
 }
 
 /*****************************************************************************/
 
-LOCAL void x11_unsetcliprect(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_unsetcliprect(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.ClipRect.Window;
-	/*XSetClipMask(mod->x11_Display, v->gc, None);*/
+	struct X11Window *v = req->tvr_Op.ClipRect.Window;
+
+	/*XSetClipMask(mod->x11_Display, v->gc, None); */
 	XSetRegion(mod->x11_Display, v->gc, mod->x11_HugeRegion);
-	#if defined(ENABLE_XFT)
+#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
-		(*mod->x11_xftiface.XftDrawSetClip)(v->draw, mod->x11_HugeRegion);
-	#endif
+		(*mod->x11_xftiface.XftDrawSetClip) (v->draw, mod->x11_HugeRegion);
+#endif
 }
 
 /*****************************************************************************/
 
-LOCAL void x11_clear(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_clear(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.Clear.Window;
+	struct X11Window *v = req->tvr_Op.Clear.Window;
+
 	setfgpen(mod, v, req->tvr_Op.Clear.Pen);
 	XFillRectangle(mod->x11_Display, v->window, v->gc,
 		0, 0, v->winwidth, v->winheight);
@@ -856,8 +884,8 @@ static THOOKENTRY TTAG getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
-	X11WINDOW *v = data->v;
-	X11DISPLAY *mod = data->mod;
+	struct X11Window *v = data->v;
+	struct X11Display *mod = data->mod;
 
 	switch (item->tti_Tag)
 	{
@@ -898,15 +926,17 @@ static THOOKENTRY TTAG getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 		case TVisual_HaveClipboard:
 		{
-			X11DISPLAY *mod = data->mod;
-			*((TINT *) item->tti_Value) = XGetSelectionOwner(mod->x11_Display, 
+			struct X11Display *mod = data->mod;
+
+			*((TINT *) item->tti_Value) = XGetSelectionOwner(mod->x11_Display,
 				mod->x11_XA_CLIPBOARD) == v->window;
 			break;
 		}
 		case TVisual_HaveSelection:
 		{
-			X11DISPLAY *mod = data->mod;
-			*((TINT *) item->tti_Value) = XGetSelectionOwner(mod->x11_Display, 
+			struct X11Display *mod = data->mod;
+
+			*((TINT *) item->tti_Value) = XGetSelectionOwner(mod->x11_Display,
 				mod->x11_XA_PRIMARY) == v->window;
 			break;
 		}
@@ -929,7 +959,7 @@ static THOOKENTRY TTAG setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	struct attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
-	X11WINDOW *v = data->v;
+	struct X11Window *v = data->v;
 
 	switch (item->tti_Tag)
 	{
@@ -961,14 +991,16 @@ static THOOKENTRY TTAG setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 		case TVisual_HaveSelection:
 		{
-			X11DISPLAY *mod = data->mod;
+			struct X11Display *mod = data->mod;
+
 			XSetSelectionOwner(mod->x11_Display, mod->x11_XA_PRIMARY,
 				item->tti_Value ? v->window : None, CurrentTime);
 			break;
 		}
 		case TVisual_HaveClipboard:
 		{
-			X11DISPLAY *mod = data->mod;
+			struct X11Display *mod = data->mod;
+
 			XSetSelectionOwner(mod->x11_Display, mod->x11_XA_CLIPBOARD,
 				item->tti_Value ? v->window : None, CurrentTime);
 			break;
@@ -980,7 +1012,7 @@ static THOOKENTRY TTAG setattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 
 /*****************************************************************************/
 
-LOCAL void x11_getattrs(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_getattrs(struct X11Display *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
@@ -996,11 +1028,11 @@ LOCAL void x11_getattrs(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_setattrs(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_setattrs(struct X11Display *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
-	X11WINDOW *v = req->tvr_Op.SetAttrs.Window;
+	struct X11Window *v = req->tvr_Op.SetAttrs.Window;
 
 	data.v = v;
 	data.num = 0;
@@ -1014,9 +1046,9 @@ LOCAL void x11_setattrs(X11DISPLAY *mod, struct TVRequest *req)
 	TForEachTag(req->tvr_Op.SetAttrs.Tags, &hook);
 	req->tvr_Op.SetAttrs.Num = data.num;
 
-	if (v->sizehints->max_width < 0) 
+	if (v->sizehints->max_width < 0)
 		v->sizehints->max_width = 1000000;
-	if (v->sizehints->max_height < 0) 
+	if (v->sizehints->max_height < 0)
 		v->sizehints->max_height = 1000000;
 
 	v->sizehints->min_width = TMAX(v->sizehints->min_width, 0);
@@ -1030,23 +1062,24 @@ LOCAL void x11_setattrs(X11DISPLAY *mod, struct TVRequest *req)
 	TINT h = data.newh;
 	TINT x = data.newx;
 	TINT y = data.newy;
-	
+
 	TBOOL moveresize = TFALSE;
+
 	if (w < v->sizehints->min_width || h < v->sizehints->min_height)
 	{
 		w = TMAX(w, v->sizehints->min_width);
 		h = TMAX(h, v->sizehints->min_height);
 		moveresize = TTRUE;
 	}
-	
-	if (x != v->winleft || y != v->wintop || 
+
+	if (x != v->winleft || y != v->wintop ||
 		w != v->winwidth || h != v->winheight)
 	{
 		v->winleft = x;
 		v->wintop = y;
 		moveresize = TTRUE;
 	}
-	
+
 	if (moveresize)
 	{
 		XMoveResizeWindow(mod->x11_Display, v->window, x, y, w, h);
@@ -1059,30 +1092,34 @@ LOCAL void x11_setattrs(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_drawtext(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.Text.Window;
+	struct X11Window *v = req->tvr_Op.Text.Window;
 	TSTRPTR text = req->tvr_Op.Text.Text;
 	TINT len = req->tvr_Op.Text.Length;
 	TUINT x = req->tvr_Op.Text.X;
 	TUINT y = req->tvr_Op.Text.Y;
 	struct X11Pen *fgpen = (struct X11Pen *) req->tvr_Op.Text.FgPen;
+
 	setfgpen(mod, v, (TVPEN) fgpen);
 
-	#if defined(ENABLE_XFT)
+#if defined(ENABLE_XFT)
 	if (mod->x11_use_xft)
 	{
 		XftFont *f = ((struct X11FontHandle *) v->curfont)->xftfont;
-		(*mod->x11_xftiface.XftDrawStringUtf8)(v->draw, &fgpen->xftcolor,
-			f, x, y + f->ascent, (FcChar8 *)text, len);
+
+		(*mod->x11_xftiface.XftDrawStringUtf8) (v->draw, &fgpen->xftcolor,
+			f, x, y + f->ascent, (FcChar8 *) text, len);
 	}
 	else
-	#endif
+#endif
 	{
 		TSTRPTR latin = x11_utf8tolatin(mod, text, len, &len);
+
 		if (latin)
 		{
 			XFontStruct *f = ((struct X11FontHandle *) v->curfont)->font;
+
 			XDrawString(mod->x11_Display, v->window, v->gc,
 				x, y + f->ascent, (char *) latin, len);
 		}
@@ -1091,7 +1128,7 @@ LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_openfont(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_openfont(struct X11Display *mod, struct TVRequest *req)
 {
 	req->tvr_Op.OpenFont.Font =
 		x11_hostopenfont(mod, req->tvr_Op.OpenFont.Tags);
@@ -1099,16 +1136,16 @@ LOCAL void x11_openfont(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_textsize(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_textsize(struct X11Display *mod, struct TVRequest *req)
 {
 	req->tvr_Op.TextSize.Width =
 		x11_hosttextsize(mod, req->tvr_Op.TextSize.Font,
-			req->tvr_Op.TextSize.Text, req->tvr_Op.TextSize.NumChars);
+		req->tvr_Op.TextSize.Text, req->tvr_Op.TextSize.NumChars);
 }
 
 /*****************************************************************************/
 
-LOCAL void x11_getfontattrs(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_getfontattrs(struct X11Display *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
@@ -1124,22 +1161,21 @@ LOCAL void x11_getfontattrs(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_setfont(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_setfont(struct X11Display *mod, struct TVRequest *req)
 {
-	x11_hostsetfont(mod, req->tvr_Op.SetFont.Window,
-		req->tvr_Op.SetFont.Font);
+	x11_hostsetfont(mod, req->tvr_Op.SetFont.Window, req->tvr_Op.SetFont.Font);
 }
 
 /*****************************************************************************/
 
-LOCAL void x11_closefont(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_closefont(struct X11Display *mod, struct TVRequest *req)
 {
 	x11_hostclosefont(mod, req->tvr_Op.CloseFont.Font);
 }
 
 /*****************************************************************************/
 
-LOCAL void x11_queryfonts(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_queryfonts(struct X11Display *mod, struct TVRequest *req)
 {
 	req->tvr_Op.QueryFonts.Handle =
 		x11_hostqueryfonts(mod, req->tvr_Op.QueryFonts.Tags);
@@ -1147,7 +1183,7 @@ LOCAL void x11_queryfonts(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-LOCAL void x11_getnextfont(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_getnextfont(struct X11Display *mod, struct TVRequest *req)
 {
 	req->tvr_Op.GetNextFont.Attrs =
 		x11_hostgetnextfont(mod, req->tvr_Op.GetNextFont.Handle);
@@ -1157,8 +1193,8 @@ LOCAL void x11_getnextfont(X11DISPLAY *mod, struct TVRequest *req)
 
 struct drawdata
 {
-	X11WINDOW *v;
-	X11DISPLAY *mod;
+	struct X11Window *v;
+	struct X11Display *mod;
 	Display *display;
 	Window window;
 	GC gc;
@@ -1219,10 +1255,11 @@ static THOOKENTRY TTAG drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
 	return TTRUE;
 }
 
-LOCAL void x11_drawtags(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_drawtags(struct X11Display *mod, struct TVRequest *req)
 {
 	struct THook hook;
 	struct drawdata data;
+
 	data.v = req->tvr_Op.DrawTags.Window;
 	data.mod = mod;
 	data.display = mod->x11_Display;
@@ -1235,7 +1272,8 @@ LOCAL void x11_drawtags(X11DISPLAY *mod, struct TVRequest *req)
 
 /*****************************************************************************/
 
-static TUINT x11_getpixfmtfromimage(X11DISPLAY *mod, X11WINDOW *v)
+static TUINT x11_getpixfmtfromimage(struct X11Display *mod,
+	struct X11Window *v)
 {
 	XImage *img = v->image;
 	TUINT rm = img->red_mask;
@@ -1243,6 +1281,7 @@ static TUINT x11_getpixfmtfromimage(X11DISPLAY *mod, X11WINDOW *v)
 	TUINT bm = img->blue_mask;
 	TUINT d = img->bits_per_pixel;
 	TUINT pixfmt = TVPIXFMT_UNDEFINED;
+
 	switch (d)
 	{
 		case 16:
@@ -1271,30 +1310,20 @@ static TUINT x11_getpixfmtfromimage(X11DISPLAY *mod, X11WINDOW *v)
 	}
 	assert(pixfmt != TVPIXFMT_UNDEFINED);
 	v->pixfmt = pixfmt;
-	TDBPRINTF(TDB_INFO,("pixfmt: %08x - bpp: %d\n", pixfmt, v->bpp));
+	TDBPRINTF(TDB_INFO, ("pixfmt: %08x - bpp: %d\n", pixfmt, v->bpp));
 	return pixfmt;
 }
 
-static void x11_freeimage(X11DISPLAY *mod, X11WINDOW *v)
-{
-	if (v->image)
-	{
-		v->image->data = NULL;
-		XDestroyImage(v->image);
-		v->image = TNULL;
-	}
-}
-
-static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
-	TUINT8 **bufptr, TINT *bytes_per_line)
+static XImage *x11_getdrawimage(struct X11Display *mod, struct X11Window *v,
+	TINT w, TINT h, TUINT8 ** bufptr, TINT *bytes_per_line)
 {
 	if (w <= 0 || h <= 0)
 		return TNULL;
-	
+
 	while (!v->image || w > v->imw || h > v->imh)
 	{
 		x11_freeimage(mod, v);
-		
+
 		if (mod->x11_ShmAvail)
 		{
 			/* TODO: buffer more images, not just 1 */
@@ -1302,7 +1331,7 @@ static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
 				mod->x11_DefaultDepth, ZPixmap, TNULL, &v->shminfo, w, h);
 			if (v->image)
 			{
-				v->image->data = x11_getsharedmemory(mod, v, 
+				v->image->data = x11_getsharedmemory(mod, v,
 					v->image->bytes_per_line * v->image->height);
 				if (v->image->data)
 				{
@@ -1319,15 +1348,16 @@ static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
 		{
 			TAPTR TExecBase = TGetExecBase(mod);
 			TUINT bpp = v->bpp;
+
 			if (bpp == 0)
 				bpp = mod->x11_DefaultBPP;
-			if (v->tempbuf) 
+			if (v->tempbuf)
 				TFree(v->tempbuf);
 			v->tempbuf = TAlloc(TNULL, w * h * bpp);
 			if (v->tempbuf)
 			{
 				v->image = XCreateImage(mod->x11_Display, mod->x11_Visual,
-					mod->x11_DefaultDepth, ZPixmap, 0, NULL, w, h, bpp * 8, 
+					mod->x11_DefaultDepth, ZPixmap, 0, NULL, w, h, bpp * 8,
 					bpp * w);
 				if (v->image)
 				{
@@ -1340,13 +1370,13 @@ static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
 				v->tempbuf = TNULL;
 			}
 		}
-		
+
 		return TNULL;
 	}
 
 	if (v->pixfmt == TVPIXFMT_UNDEFINED)
 		x11_getpixfmtfromimage(mod, v);
-	
+
 	if (v->tempbuf)
 	{
 		*bufptr = (TUINT8 *) v->tempbuf;
@@ -1357,12 +1387,12 @@ static XImage *x11_getdrawimage(X11DISPLAY *mod, X11WINDOW *v, TINT w, TINT h,
 		*bufptr = (TUINT8 *) v->image->data;
 		*bytes_per_line = v->image->bytes_per_line;
 	}
-	
+
 	return v->image;
 }
 
-static void x11_putimage(X11DISPLAY *mod, X11WINDOW *v, struct TVRequest *req,
-	TINT x0, TINT y0, TINT w, TINT h)
+static void x11_putimage(struct X11Display *mod, struct X11Window *v,
+	struct TVRequest *req, TINT x0, TINT y0, TINT w, TINT h)
 {
 	if (v->image_shm)
 	{
@@ -1377,39 +1407,42 @@ static void x11_putimage(X11DISPLAY *mod, X11WINDOW *v, struct TVRequest *req,
 
 /*****************************************************************************/
 
-LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_drawbuffer(struct X11Display *mod, struct TVRequest *req)
 {
 	struct TVPixBuf src, dst;
 	TTAGITEM *tags = req->tvr_Op.DrawBuffer.Tags;
-	X11WINDOW *v = req->tvr_Op.DrawBuffer.Window;
+	struct X11Window *v = req->tvr_Op.DrawBuffer.Window;
 	TINT x = req->tvr_Op.DrawBuffer.RRect[0];
 	TINT y = req->tvr_Op.DrawBuffer.RRect[1];
 	TINT w = req->tvr_Op.DrawBuffer.RRect[2];
 	TINT h = req->tvr_Op.DrawBuffer.RRect[3];
+
 	src.tpb_Data = req->tvr_Op.DrawBuffer.Buf;
 	src.tpb_Format = TGetTag(tags, TVisual_PixelFormat, TVPIXFMT_A8R8G8B8);
 	src.tpb_BytesPerLine = req->tvr_Op.DrawBuffer.TotWidth *
 		TVPIXFMT_BYTES_PER_PIXEL(src.tpb_Format);
 
 #if defined(X11_PIXMAP_CACHE)
-	struct TVImageCacheRequest *creq = (struct TVImageCacheRequest *) 
+	struct TVImageCacheRequest *creq = (struct TVImageCacheRequest *)
 		TGetTag(tags, TVisual_CacheRequest, TNULL);
 	if (creq && v->pixfmt != TVPIXFMT_UNDEFINED)
 	{
 		struct ImageCacheState cstate;
+
 		cstate.src = src;
 		cstate.dst.tpb_Format = v->pixfmt;
 		cstate.convert = pixconv_convert;
 		int res = imgcache_lookup(&cstate, creq, x, y, w, h);
+
 		if (res != TVIMGCACHE_FOUND && src.tpb_Data != TNULL)
 			res = imgcache_store(&cstate, creq);
 		if (res == TVIMGCACHE_FOUND || res == TVIMGCACHE_STORED)
 			src = cstate.dst;
 	}
 #endif
-	
-	if (!src.tpb_Data || !x11_getdrawimage(mod, v, w, h, &dst.tpb_Data, 
-		&dst.tpb_BytesPerLine))
+
+	if (!src.tpb_Data || !x11_getdrawimage(mod, v, w, h, &dst.tpb_Data,
+			&dst.tpb_BytesPerLine))
 		return;
 
 	dst.tpb_Format = v->pixfmt;
@@ -1422,56 +1455,57 @@ LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req)
 **	getselection:
 */
 
-LOCAL void x11_getselection(X11DISPLAY *mod, struct TVRequest *req)
+static void x11_getselection(struct X11Display *mod, struct TVRequest *req)
 {
-	X11WINDOW *v = req->tvr_Op.Rect.Window;
+	struct X11Window *v = req->tvr_Op.Rect.Window;
 	TAPTR TExecBase = TGetExecBase(mod);
 	Display *display = mod->x11_Display;
 	Window window = v->window;
 	TUINT8 *clip = NULL;
-	
-	Atom selatom = req->tvr_Op.GetSelection.Type == 2 ? 
+
+	Atom selatom = req->tvr_Op.GetSelection.Type == 2 ?
 		mod->x11_XA_PRIMARY : mod->x11_XA_CLIPBOARD;
-	
+
 	Window selectionowner = XGetSelectionOwner(display, selatom);
-	
+
 	req->tvr_Op.GetSelection.Data = TNULL;
 	req->tvr_Op.GetSelection.Length = 0;
-	
+
 	if (selectionowner != None && selectionowner != window)
 	{
 		unsigned char *data = NULL;
 		Atom type;
 		int format;
 		unsigned long len, bytesleft;
-	
+
 		XConvertSelection(display, selatom, mod->x11_XA_UTF8_STRING,
 			selatom, window, CurrentTime);
 		XFlush(display);
 		for (;;)
 		{
 			XEvent evt;
+
 			if (XCheckTypedEvent(display, SelectionNotify, &evt))
 			{
 				if (evt.xselection.requestor == window)
 					break;
 			}
 		}
-		
+
 		XGetWindowProperty(display, window, selatom, 0, 0, False,
 			AnyPropertyType, &type, &format, &len, &bytesleft, &data);
-	
+
 		if (data)
 		{
 			XFree(data);
-			data = NULL;		
+			data = NULL;
 		}
-		
+
 		if (bytesleft)
 		{
-			if (XGetWindowProperty(display, window, selatom, 0, 
-				bytesleft, False, AnyPropertyType,
-				&type, &format, &len, &bytesleft, &data) == Success)
+			if (XGetWindowProperty(display, window, selatom, 0,
+					bytesleft, False, AnyPropertyType,
+					&type, &format, &len, &bytesleft, &data) == Success)
 			{
 				clip = TAlloc(TNULL, len);
 				if (clip)
@@ -1483,7 +1517,104 @@ LOCAL void x11_getselection(X11DISPLAY *mod, struct TVRequest *req)
 				XFree(data);
 			}
 		}
-		
+
 		XDeleteProperty(display, window, selatom);
+	}
+}
+
+LOCAL void x11_docmd(struct X11Display *inst, struct TVRequest *req)
+{
+	switch (req->tvr_Req.io_Command)
+	{
+		case TVCMD_OPENWINDOW:
+			x11_openvisual(inst, req);
+			break;
+		case TVCMD_CLOSEWINDOW:
+			x11_closevisual(inst, req);
+			break;
+		case TVCMD_OPENFONT:
+			x11_openfont(inst, req);
+			break;
+		case TVCMD_CLOSEFONT:
+			x11_closefont(inst, req);
+			break;
+		case TVCMD_GETFONTATTRS:
+			x11_getfontattrs(inst, req);
+			break;
+		case TVCMD_TEXTSIZE:
+			x11_textsize(inst, req);
+			break;
+		case TVCMD_QUERYFONTS:
+			x11_queryfonts(inst, req);
+			break;
+		case TVCMD_GETNEXTFONT:
+			x11_getnextfont(inst, req);
+			break;
+		case TVCMD_SETINPUT:
+			x11_setinput(inst, req);
+			break;
+		case TVCMD_GETATTRS:
+			x11_getattrs(inst, req);
+			break;
+		case TVCMD_SETATTRS:
+			x11_setattrs(inst, req);
+			break;
+		case TVCMD_ALLOCPEN:
+			x11_allocpen(inst, req);
+			break;
+		case TVCMD_FREEPEN:
+			x11_freepen(inst, req);
+			break;
+		case TVCMD_SETFONT:
+			x11_setfont(inst, req);
+			break;
+		case TVCMD_CLEAR:
+			x11_clear(inst, req);
+			break;
+		case TVCMD_RECT:
+			x11_rect(inst, req);
+			break;
+		case TVCMD_FRECT:
+			x11_frect(inst, req);
+			break;
+		case TVCMD_LINE:
+			x11_line(inst, req);
+			break;
+		case TVCMD_PLOT:
+			x11_plot(inst, req);
+			break;
+		case TVCMD_TEXT:
+			x11_drawtext(inst, req);
+			break;
+		case TVCMD_DRAWSTRIP:
+			x11_drawstrip(inst, req);
+			break;
+		case TVCMD_DRAWTAGS:
+			x11_drawtags(inst, req);
+			break;
+		case TVCMD_DRAWFAN:
+			x11_drawfan(inst, req);
+			break;
+		case TVCMD_COPYAREA:
+			x11_copyarea(inst, req);
+			break;
+		case TVCMD_SETCLIPRECT:
+			x11_setcliprect(inst, req);
+			break;
+		case TVCMD_UNSETCLIPRECT:
+			x11_unsetcliprect(inst, req);
+			break;
+		case TVCMD_DRAWBUFFER:
+			x11_drawbuffer(inst, req);
+			break;
+		case TVCMD_GETSELECTION:
+			x11_getselection(inst, req);
+			break;
+		case TVCMD_FLUSH:
+			XFlush(inst->x11_Display);
+			break;
+		default:
+			TDBPRINTF(TDB_ERROR, ("Unknown command code: %d\n",
+					req->tvr_Req.io_Command));
 	}
 }

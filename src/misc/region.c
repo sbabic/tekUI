@@ -27,12 +27,6 @@
 /* opportunistic merge ratio n/256: */
 #define OPPORTUNISTIC_MERGE_RATIO		64		
 
-#define OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
-((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))
-
-#define OVERLAPRECT(d, s) \
-OVERLAP((d)[0], (d)[1], (d)[2], (d)[3], (s)[0], (s)[1], (s)[2], (s)[3])
-
 /*****************************************************************************/
 
 static void region_relinklist(struct TList *dlist, struct TList *slist)
@@ -156,7 +150,7 @@ static TBOOL region_cutrect(struct RectPool *pool, struct RectList *list,
 	TINT d2 = d[2];
 	TINT d3 = d[3];
 
-	if (!OVERLAPRECT(d, s))
+	if (!REGION_OVERLAPRECT(d, s))
 		return region_insertrect(pool, list, d[0], d[1], d[2], d[3]);
 
 	for (;;)
@@ -310,7 +304,7 @@ static TBOOL region_andrect_internal(struct RectList *temp,
 		TINT y0 = dr->rn_Rect[1];
 		TINT x1 = dr->rn_Rect[2];
 		TINT y1 = dr->rn_Rect[3];
-		if (OVERLAP(x0, y0, x1, y1, s0, s1, s2, s3))
+		if (REGION_OVERLAP(x0, y0, x1, y1, s0, s1, s2, s3))
 		{
 			success = region_insertrect(pool, temp,
 				TMAX(x0, s0), TMAX(y0, s1), TMIN(x1, s2), TMIN(y1, s3));
@@ -382,7 +376,7 @@ TLIBAPI TBOOL region_overlap(struct RectPool *pool, struct Region *region,
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
-		if (OVERLAPRECT(rn->rn_Rect, s))
+		if (REGION_OVERLAPRECT(rn->rn_Rect, s))
 			return TTRUE;
 	}
 	return TFALSE;
@@ -426,7 +420,7 @@ TLIBAPI TBOOL region_andregion(struct RectPool *pool, struct Region *dregion,
 
 TLIBAPI TBOOL region_intersect(TINT *d, TINT *s)
 {
-	if (OVERLAP(d[0], d[1], d[2], d[3], s[0], s[1], s[2], s[3]))
+	if (REGION_OVERLAP(d[0], d[1], d[2], d[3], s[0], s[1], s[2], s[3]))
 	{
 		d[0] = TMAX(d[0], s[0]);
 		d[1] = TMAX(d[1], s[1]);

@@ -21,11 +21,11 @@
 
 #define VNCSERVER_COPYRECT_MINPIXELS	10000
 
-static RFBDISPLAY *g_mod;
+static struct rfb_Display *g_mod;
 
 /*****************************************************************************/
 
-typedef struct 
+typedef struct
 {
 	int oldbutton;
 	int oldx, oldy;
@@ -46,24 +46,29 @@ static enum rfbNewClientAction rfb_newclient(rfbClientPtr cl)
 static void rfb_doremoteptr(int buttonMask, int x, int y, rfbClientPtr cl)
 {
 	ClientData *cd = cl->clientData;
-	RFBDISPLAY *mod = g_mod;
+	struct rfb_Display *mod = g_mod;
 	TAPTR TExecBase = TGetExecBase(mod);
+
 	TLock(mod->rfb_InstanceLock);
 	int sent = 0;
+
 	if (!(cd->oldbutton & 0x01) && (buttonMask & 0x01))
 		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_LEFTDOWN, x, y);
 	else if ((cd->oldbutton & 0x01) && !(buttonMask & 0x01))
 		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_LEFTUP, x, y);
 	if (!(cd->oldbutton & 0x02) && (buttonMask & 0x02))
-		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_MIDDLEDOWN, x, y);
+		sent +=
+			rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_MIDDLEDOWN, x, y);
 	else if ((cd->oldbutton & 0x02) && !(buttonMask & 0x02))
 		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_MIDDLEUP, x, y);
 	if (!(cd->oldbutton & 0x04) && (buttonMask & 0x04))
-		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_RIGHTDOWN, x, y);
+		sent +=
+			rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_RIGHTDOWN, x, y);
 	else if ((cd->oldbutton & 0x04) && !(buttonMask & 0x04))
 		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_RIGHTUP, x, y);
 	if (buttonMask & 0x10)
-		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_WHEELDOWN, x, y);
+		sent +=
+			rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_WHEELDOWN, x, y);
 	if (buttonMask & 0x08)
 		sent += rfb_sendevent(mod, TITYPE_MOUSEBUTTON, TMBCODE_WHEELUP, x, y);
 	if (sent == 0)
@@ -75,13 +80,13 @@ static void rfb_doremoteptr(int buttonMask, int x, int y, rfbClientPtr cl)
 
 static void rfb_doremotekey(rfbBool keydown, rfbKeySym keysym, rfbClientPtr cl)
 {
-	/*ClientData *cd = cl->clientData;*/
-	RFBDISPLAY *mod = g_mod;
+	/*ClientData *cd = cl->clientData; */
+	struct rfb_Display *mod = g_mod;
 	TUINT evtype = 0;
 	TUINT newqual;
 	TUINT evmask = TITYPE_KEYDOWN | TITYPE_KEYUP;
 	TBOOL newkey = TFALSE;
-	
+
 	switch (keysym)
 	{
 		case XK_Shift_L:
@@ -248,13 +253,14 @@ static void rfb_doremotekey(rfbBool keydown, rfbKeySym keysym, rfbClientPtr cl)
 		{
 			TAPTR TExecBase = TGetExecBase(mod);
 			TIMSG *imsg;
-			RFBWINDOW *v;
+			struct rfb_Window *v;
+
 			TLock(mod->rfb_InstanceLock);
-			v = (RFBWINDOW *) TFIRSTNODE(&mod->rfb_VisualList);
+			v = (struct rfb_Window *) TFIRSTNODE(&mod->rfb_VisualList);
 			if (rfb_getimsg(mod, v, &imsg, evtype))
 			{
 				ptrdiff_t len =
-					(ptrdiff_t) utf8encode(imsg->timsg_KeyCode, code) - 
+					(ptrdiff_t) utf8encode(imsg->timsg_KeyCode, code) -
 					(ptrdiff_t) imsg->timsg_KeyCode;
 				imsg->timsg_KeyCode[len] = 0;
 				imsg->timsg_Code = code;
@@ -271,15 +277,16 @@ static void rfb_doremotekey(rfbBool keydown, rfbKeySym keysym, rfbClientPtr cl)
 static void rfb_vnc_task(struct TTask *task)
 {
 	TAPTR TExecBase = TGetExecBase(task);
-	RFBDISPLAY *mod = TGetTaskData(task);
+	struct rfb_Display *mod = TGetTaskData(task);
 	TBOOL waitsig = TFALSE;
-	
+
 #if defined(ENABLE_VNCSERVER_COPYRECT)
 	int extra_fd = mod->rfb_RFBPipeFD[0];
+
 	FD_SET(extra_fd, &mod->rfb_RFBScreen->allFds);
 	fcntl(extra_fd, F_SETFL, O_NONBLOCK);
 #endif
-	
+
 	while (!(TSetSignal(0, 0) & TTASK_SIG_ABORT))
 	{
 #if defined(ENABLE_VNCSERVER_COPYRECT)
@@ -287,6 +294,7 @@ static void rfb_vnc_task(struct TTask *task)
 			mod->rfb_RFBScreen->maxFd = extra_fd;
 		int res = rfbProcessEvents(mod->rfb_RFBScreen, 10000);
 		char rdbuf[16];
+
 		if (read(extra_fd, rdbuf, 16) > 0)
 			waitsig = TTRUE;
 		if (res == 0 && waitsig)
@@ -316,15 +324,15 @@ static THOOKENTRY TTAG rfb_vnc_dispatch(struct THook *hook,
 
 /*****************************************************************************/
 
-int rfb_vnc_init(RFBDISPLAY *mod, int port)
+int rfb_vnc_init(struct rfb_Display *mod, int port)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
 	TTAGITEM tags[2];
 	struct THook dispatch;
 	rfbScreenInfoPtr rfbScreen;
-	
+
 	mod->rfb_RFBPipeFD[0] = -1;
-	
+
 	for (;;)
 	{
 		if (pipe(mod->rfb_RFBPipeFD) == -1)
@@ -335,18 +343,18 @@ int rfb_vnc_init(RFBDISPLAY *mod, int port)
 		mod->rfb_RFBMainTask = TFindTask(TNULL);
 		if (mod->rfb_RFBMainTask == TNULL)
 			break;
-		
+
 		TUINT fmt = mod->rfb_PixBuf.tpb_Format;
-		
-		rfbScreen = rfbGetScreen(0, NULL, mod->rfb_Width, 
-			mod->rfb_Height, TVPIXFMT_BITS_RED(fmt), 3, 
+
+		rfbScreen = rfbGetScreen(0, NULL, mod->rfb_Width,
+			mod->rfb_Height, TVPIXFMT_BITS_RED(fmt), 3,
 			TVPIXFMT_BYTES_PER_PIXEL(fmt));
-		
+
 		rfbScreen->paddedWidthInBytes = mod->rfb_PixBuf.tpb_BytesPerLine;
-		
+
 		if (rfbScreen == TNULL)
 			break;
-		
+
 		g_mod = mod;
 		mod->rfb_RFBScreen = rfbScreen;
 		rfbScreen->alwaysShared = TRUE;
@@ -355,10 +363,11 @@ int rfb_vnc_init(RFBDISPLAY *mod, int port)
 		rfbScreen->kbdAddEvent = rfb_doremotekey;
 		rfbScreen->newClientHook = rfb_newclient;
 		mod->rfb_Flags &= ~RFBFL_BUFFER_CAN_RESIZE;
-		
+
 		if (port == 0)
 		{
 			const char *s = getenv("VNC_PORTNUMBER");
+
 			if (s)
 				port = atoi(s);
 		}
@@ -366,13 +375,13 @@ int rfb_vnc_init(RFBDISPLAY *mod, int port)
 			rfbScreen->port = port;
 		else if (port < 0)
 			rfbScreen->autoPort = TRUE;
-		
+
 #if defined(VNCSERVER_HTTP_PATH)
 		rfbScreen->httpDir = VNCSERVER_HTTP_PATH;
 #endif
 		rfbInitServer(rfbScreen);
 		rfbScreen->cursor = rfbMakeXCursor(1, 1, " ", " ");
-		
+
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;
 		tags[1].tti_Tag = TTAG_DONE;
@@ -382,14 +391,15 @@ int rfb_vnc_init(RFBDISPLAY *mod, int port)
 			break;
 		return 1;
 	}
-	
+
 	rfb_vnc_exit(mod);
 	return 0;
 }
 
-void rfb_vnc_exit(RFBDISPLAY *mod)
+void rfb_vnc_exit(struct rfb_Display *mod)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
+
 	if (mod->rfb_VNCTask)
 	{
 		TSignal(mod->rfb_VNCTask, TTASK_SIG_ABORT);
@@ -414,16 +424,18 @@ void rfb_vnc_exit(RFBDISPLAY *mod)
 	}
 }
 
-void rfb_vnc_flush(RFBDISPLAY *mod, struct Region *D)
+void rfb_vnc_flush(struct rfb_Display *mod, struct Region *D)
 {
 	struct TNode *next, *node;
 	sraRegionPtr region = sraRgnCreate();
+
 	node = D->rg_Rects.rl_List.tlh_Head;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
-		sraRegionPtr rect = sraRgnCreateRect(rn->rn_Rect[0], rn->rn_Rect[1], 
+		sraRegionPtr rect = sraRgnCreateRect(rn->rn_Rect[0], rn->rn_Rect[1],
 			rn->rn_Rect[2] + 1, rn->rn_Rect[3] + 1);
+
 		sraRgnOr(region, rect);
 		sraRgnDestroy(rect);
 	}
@@ -431,31 +443,35 @@ void rfb_vnc_flush(RFBDISPLAY *mod, struct Region *D)
 	sraRgnDestroy(region);
 }
 
-void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy, 
-	int x0, int y0, int x1, int y1, int yinc)
+void rfb_vnc_copyrect(struct rfb_Display *mod, struct rfb_Window *v, int dx,
+	int dy, int x0, int y0, int x1, int y1, int yinc)
 {
 	int i, y;
 	int w = x1 - x0 + 1;
 	int h = y1 - y0 + 1;
 	int dy0 = y0;
 	int dy1 = y1;
+
 	if (yinc > 0)
 	{
 		int t = dy0;
+
 		dy0 = dy1;
 		dy1 = t;
 	}
 
 	TUINT bpl = w * TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_PixBuf.tpb_Format);
+
 #if defined(ENABLE_VNCSERVER_COPYRECT)
 	if (w * h > VNCSERVER_COPYRECT_MINPIXELS)
 	{
 		char wrbuf = 0;
+
 		/* flush dirty rects */
 		rfb_flush_clients(mod, TTRUE);
 		/* break rfbProcessEvents */
 		if (write(mod->rfb_RFBPipeFD[1], &wrbuf, 1) != 1)
-			TDBPRINTF(TDB_ERROR,("error writing to signalfd\n"));
+			TDBPRINTF(TDB_ERROR, ("error writing to signalfd\n"));
 		/* wait for completion of rfbProcessEvents */
 		TExecWait(mod->rfb_ExecBase, mod->rfb_RFBReadySignal);
 		/* update own buffer */

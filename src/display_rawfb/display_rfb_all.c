@@ -17,6 +17,9 @@
 #include "display_rfb_api.c"
 #include "display_rfb_font.c"
 #include "display_rfb_draw.c"
+#if defined(ENABLE_LINUXFB)
+#include "display_rfb_linux.c"
+#endif
 #if defined(ENABLE_VNCSERVER)
 #include "vnc/display_rfb_vnc.c"
 #endif

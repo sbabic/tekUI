@@ -10,6 +10,7 @@
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/mod/visual.h>
+#include <tek/lib/region.h>
 #include <tek/lib/utf8.h>
 
 #include <X11/X.h>
@@ -43,9 +44,10 @@
 #define EXPORT TMODAPI
 #endif
 
-/*****************************************************************************/
+#define X11_DEF_WINWIDTH 600
+#define X11_DEF_WINHEIGHT 400
 
-#define DEFFONTNAME			"-misc-fixed-medium-r-normal-*-14-*-*-*-*-*-*-*"
+/*****************************************************************************/
 
 #define X11FNT_LENGTH			41
 #define X11FNT_DEFNAME			"fixed"
@@ -69,6 +71,7 @@
 #define X11FNT_MATCH_SLANT		0x04
 #define	X11FNT_MATCH_WEIGHT	0x08
 #define	X11FNT_MATCH_SCALE		0x10
+
 /* all mandatory properties: */
 #define X11FNT_MATCH_ALL		0x0f
 
@@ -83,9 +86,9 @@ struct X11FontHandle
 {
 	struct THandle handle;
 	XFontStruct *font;
-	#if defined(ENABLE_XFT)
+#if defined(ENABLE_XFT)
 	XftFont *xftfont;
-	#endif
+#endif
 	TUINT attr;
 	TUINT pxsize;
 };
@@ -113,60 +116,59 @@ struct X11FontNode
 
 struct X11FontAttr
 {
-	struct TList fnlist;	/* list of fontnames */
+	struct TList fnlist;		/* list of fontnames */
 	TSTRPTR fname;
-	TUINT  fpxsize;
+	TUINT fpxsize;
 	TBOOL fitalic;
 	TBOOL fbold;
 	TBOOL fscale;
-	TINT  fnum;
+	TINT fnum;
 };
 
 #if defined(ENABLE_XFT)
 struct XftInterface
 {
-	XftFont *(*XftFontOpen)(Display *dpy, int screen, ...);
-	void (*XftFontClose)(Display *dpy, XftFont *pub);
-	void (*XftTextExtentsUtf8)(Display *dpy, XftFont *pub,
+	XftFont *(*XftFontOpen) (Display *dpy, int screen, ...);
+	void (*XftFontClose) (Display *dpy, XftFont *pub);
+	void (*XftTextExtentsUtf8) (Display *dpy, XftFont *pub,
 		_Xconst FcChar8 *string, int len, XGlyphInfo *extents);
-	void (*XftDrawStringUtf8)(XftDraw *draw, _Xconst XftColor *color, 
-		XftFont *pub, int x, int y, _Xconst FcChar8  *string, int len);
-	void (*XftDrawRect)(XftDraw *draw, _Xconst XftColor *color, int x, int y,
-		unsigned int width, unsigned int height);
-	FT_Face (*XftLockFace)(XftFont *pub);
-	void (*XftUnlockFace)(XftFont *pub);
-	Bool (*XftColorAllocValue)(Display *dpy, Visual *visual, Colormap cmap,
+	void (*XftDrawStringUtf8) (XftDraw *draw, _Xconst XftColor *color,
+		XftFont *pub, int x, int y, _Xconst FcChar8 *string, int len);
+	void (*XftDrawRect) (XftDraw *draw, _Xconst XftColor *color, int x,
+		int y, unsigned int width, unsigned int height);
+	 FT_Face(*XftLockFace) (XftFont *pub);
+	void (*XftUnlockFace) (XftFont *pub);
+	 Bool(*XftColorAllocValue) (Display *dpy, Visual *visual, Colormap cmap,
 		_Xconst XRenderColor *color, XftColor *result);
-	void (*XftColorFree)(Display *dpy, Visual *visual, Colormap  cmap,
+	void (*XftColorFree) (Display *dpy, Visual *visual, Colormap cmap,
 		XftColor *color);
-	XftDraw *(*XftDrawCreate)(Display *dpy, Drawable  drawable, Visual *visual,
-		Colormap colormap);
-	void (*XftDrawDestroy)(XftDraw *draw);
-	Bool (*XftDrawSetClip)(XftDraw *d, Region r);
+	XftDraw *(*XftDrawCreate) (Display *dpy, Drawable drawable,
+		Visual *visual, Colormap colormap);
+	void (*XftDrawDestroy) (XftDraw *draw);
+	 Bool(*XftDrawSetClip) (XftDraw *d, Region r);
 };
 
 #define LIBXFT_NUMSYMS	(sizeof(struct XftInterface) / sizeof(void (*)(void)))
 
-
 struct FcInterface
 {
-	void (*FcDefaultSubstitute)(FcPattern *pattern);
-	void (*FcFontSetDestroy)(FcFontSet *s);
-	FcFontSet *(*FcFontSort)(FcConfig *config, FcPattern *p, FcBool trim,
-		FcCharSet **csp, FcResult *result);
-	FcBool (*FcPatternAddBool)(FcPattern *p, const char *object, FcBool b);
-	FcBool (*FcPatternAddInteger)(FcPattern *p, const char *object, int i);
-	FcPattern *(*FcPatternBuild)(FcPattern *orig, ...);
-	void (*FcPatternDestroy)(FcPattern *p);
-	void (*FcPatternPrint)(const FcPattern *p);
-	FcResult (*FcPatternGetString)(const FcPattern *p, const char *object,
-		int n, FcChar8 **s);
-	FcResult (*FcPatternGetInteger)(const FcPattern *p, const char *object,
+	void (*FcDefaultSubstitute) (FcPattern *pattern);
+	void (*FcFontSetDestroy) (FcFontSet *s);
+	FcFontSet *(*FcFontSort) (FcConfig *config, FcPattern *p, FcBool trim,
+		FcCharSet ** csp, FcResult *result);
+	 FcBool(*FcPatternAddBool) (FcPattern *p, const char *object, FcBool b);
+	 FcBool(*FcPatternAddInteger) (FcPattern *p, const char *object, int i);
+	FcPattern *(*FcPatternBuild) (FcPattern *orig, ...);
+	void (*FcPatternDestroy) (FcPattern *p);
+	void (*FcPatternPrint) (const FcPattern *p);
+	 FcResult(*FcPatternGetString) (const FcPattern *p, const char *object,
+		int n, FcChar8 ** s);
+	 FcResult(*FcPatternGetInteger) (const FcPattern *p, const char *object,
 		int n, int *i);
-	FcResult (*FcPatternGetBool)(const FcPattern *p, const char *object,
+	 FcResult(*FcPatternGetBool) (const FcPattern *p, const char *object,
 		int n, FcBool *b);
-	FcBool (*FcInit)(void);
-	void (*FcFini)(void);
+	 FcBool(*FcInit) (void);
+	void (*FcFini) (void);
 };
 
 #define LIBFC_NUMSYMS	(sizeof(struct FcInterface) / sizeof(void (*)(void)))
@@ -175,7 +177,7 @@ struct FcInterface
 
 /*****************************************************************************/
 
-typedef struct
+struct X11Display
 {
 	/* Module header: */
 	struct TModule x11_Module;
@@ -189,8 +191,6 @@ typedef struct
 	TAPTR x11_Task;
 	/* Command message port: */
 	TAPTR x11_CmdPort;
-	/* Command message port signal: */
-	TUINT x11_CmdPortSignal;
 
 	/* X11 display: */
 	Display *x11_Display;
@@ -198,9 +198,8 @@ typedef struct
 	int x11_Screen;
 	/* default X11 visual: */
 	Visual *x11_Visual;
-	
+
 	TAPTR x11_IReplyPort;
-	TUINT x11_IReplyPortSignal;	
 	struct THook x11_IReplyHook;
 
 	TINT x11_DefaultBPP;
@@ -213,13 +212,13 @@ typedef struct
 	int x11_fd_sigpipe_write;
 	int x11_fd_max;
 
-	#if defined(ENABLE_XFT)
+#if defined(ENABLE_XFT)
 	TBOOL x11_use_xft;
 	TAPTR x11_libxfthandle;
 	struct XftInterface x11_xftiface;
 	TAPTR x11_libfchandle;
 	struct FcInterface x11_fciface;
-	#endif
+#endif
 
 	struct X11FontMan x11_fm;
 
@@ -241,53 +240,50 @@ typedef struct
 	TUINT8 x11_utf8buffer[X11_UTF8_BUFSIZE];
 
 	Cursor x11_NullCursor;
-	#if defined(ENABLE_DEFAULTCURSOR)
+#if defined(ENABLE_DEFAULTCURSOR)
 	Cursor x11_DefaultCursor;
-	#endif
+#endif
 
 	TTAGITEM *x11_InitTags;
 	struct TMsgPort *x11_IMsgPort;
-	
+
 	TINT x11_ScreenWidth;
 	TINT x11_ScreenHeight;
-	
+
 	/* vidmode screensize: */
 	TINT x11_FullScreenWidth;
 	TINT x11_FullScreenHeight;
-	
+
 	/* fullscreen (logical): */
 	TBOOL x11_FullScreen;
-	
+
 	Atom x11_XA_TARGETS;
 	Atom x11_XA_PRIMARY;
 	Atom x11_XA_CLIPBOARD;
 	Atom x11_XA_UTF8_STRING;
 	Atom x11_XA_STRING;
 	Atom x11_XA_COMPOUND_TEXT;
-	
-	#if defined(ENABLE_XVID)
+
+#if defined(ENABLE_XVID)
 	XF86VidModeModeInfo x11_OldMode;
 	XF86VidModeModeInfo x11_VidMode;
-	#endif
-
-	#if defined(ENABLE_X11_DGRAM)
-	int x11_UserFD;
-	#endif
+#endif
 
 	TINT x11_NumWindows;
+	TINT x11_NumInterval;
 
-} X11DISPLAY;
+};
 
 struct X11Pen
 {
 	struct TNode node;
 	XColor color;
-	#if defined(ENABLE_XFT)
+#if defined(ENABLE_XFT)
 	XftColor xftcolor;
-	#endif
+#endif
 };
 
-typedef struct
+struct X11Window
 {
 	struct TNode node;
 
@@ -303,7 +299,7 @@ typedef struct
 #if defined(ENABLE_XFT)
 	XftDraw *draw;
 #endif
-	TAPTR curfont; /* current active font */
+	TAPTR curfont;				/* current active font */
 
 	Atom atom_wm_delete_win;
 
@@ -333,24 +329,24 @@ typedef struct
 
 	/* userdata attached to this window, also propagated in messages: */
 	TTAG userdata;
-	
+
 	TBOOL changevidmode;
-	
+
 	size_t shmsize;
-	
+
 	TUINT pixfmt;
 	TUINT bpp;
 
 	TINT mousex, mousey;
-	
+
 	TBOOL is_root_window;
-	
-} X11WINDOW;
+
+};
 
 struct attrdata
 {
-	X11DISPLAY *mod;
-	X11WINDOW *v;
+	struct X11Display *mod;
+	struct X11Window *v;
 	TAPTR font;
 	TINT num;
 	TBOOL sizechanged;
@@ -359,60 +355,25 @@ struct attrdata
 
 /*****************************************************************************/
 
-LOCAL TBOOL x11_initlibxft(X11DISPLAY *mod);
-LOCAL void x11_exitlibxft(X11DISPLAY *mod);
+LOCAL TSTRPTR x11_utf8tolatin(struct X11Display *mod, TSTRPTR utf8string,
+	TINT len, TINT *bytelen);
 
-LOCAL TBOOL x11_init(X11DISPLAY *mod, TTAGITEM *tags);
-LOCAL void x11_exit(X11DISPLAY *mod);
+LOCAL void x11_docmd(struct X11Display *inst, struct TVRequest *req);
+
+LOCAL void x11_sendimessages(struct X11Display *mod);
 LOCAL TTASKENTRY void x11_taskfunc(struct TTask *task);
-LOCAL TTASKENTRY TBOOL x11_initinstance(struct TTask *task);
 
-LOCAL void x11_sendimessages(X11DISPLAY *mod, TBOOL do_interval);
-
-LOCAL void x11_openvisual(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_closevisual(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_setinput(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_allocpen(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_freepen(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_frect(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_rect(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_line(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_plot(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_drawstrip(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_clear(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_getattrs(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_setattrs(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_drawtext(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_openfont(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_getfontattrs(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_textsize(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_setfont(X11DISPLAY *mod, struct TVRequest *req);
-
-LOCAL void x11_closefont(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_queryfonts(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_getnextfont(X11DISPLAY *mod, struct TVRequest *req);
-
-LOCAL void x11_drawtags(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_drawfan(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_copyarea(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_setcliprect(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_unsetcliprect(X11DISPLAY *mod, struct TVRequest *req);
-LOCAL void x11_drawbuffer(X11DISPLAY *mod, struct TVRequest *req);
-
-LOCAL void x11_wake(X11DISPLAY *inst);
-
-LOCAL void x11_hostsetfont(X11DISPLAY *mod, X11WINDOW *v, TAPTR font);
-LOCAL TAPTR x11_hostopenfont(X11DISPLAY *mod, TTAGITEM *tags);
-LOCAL TAPTR x11_hostqueryfonts(X11DISPLAY *mod, TTAGITEM *tags);
-LOCAL void x11_hostclosefont(X11DISPLAY *mod, TAPTR font);
-LOCAL TINT x11_hosttextsize(X11DISPLAY *mod, TAPTR font, TSTRPTR text,
+LOCAL TBOOL x11_initlibxft(struct X11Display *mod);
+LOCAL void x11_exitlibxft(struct X11Display *mod);
+LOCAL void x11_hostsetfont(struct X11Display *mod, struct X11Window *v,
+	TAPTR font);
+LOCAL TAPTR x11_hostopenfont(struct X11Display *mod, TTAGITEM *tags);
+LOCAL TAPTR x11_hostqueryfonts(struct X11Display *mod, TTAGITEM *tags);
+LOCAL void x11_hostclosefont(struct X11Display *mod, TAPTR font);
+LOCAL TINT x11_hosttextsize(struct X11Display *mod, TAPTR font, TSTRPTR text,
 	TINT len);
 LOCAL THOOKENTRY TTAG x11_hostgetfattrfunc(struct THook *hook, TAPTR obj,
 	TTAG msg);
-LOCAL TTAGITEM *x11_hostgetnextfont(X11DISPLAY *mod, TAPTR fqhandle);
-LOCAL TSTRPTR x11_utf8tolatin(X11DISPLAY *mod, TSTRPTR utf8string, TINT len,
-	TINT *bytelen);
-
-LOCAL void x11_getselection(X11DISPLAY *mod, struct TVRequest *req);
+LOCAL TTAGITEM *x11_hostgetnextfont(struct X11Display *mod, TAPTR fqhandle);
 
 #endif /* _TEK_DISPLAY_X11_MOD_H */

@@ -62,8 +62,12 @@ static void tek_lib_region_checkrect(lua_State *L, int firstidx, TINT s[4])
 	int i;
 	for (i = 0; i < 4; ++i)
 		s[i] = luaL_checkinteger(L, firstidx + i);
-}
 
+	/*
+	** if (s[2] < s[0] || s[3] < s[1])
+	**	luaL_error(L, "Illegal rectangle %d,%d,%d,%d",s[0],s[1],s[2],s[3]);
+	*/
+}
 
 /*-----------------------------------------------------------------------------
 --	x0, y0, x1, y1 = Region.intersect(d1, d2, d3, d4, s1, s2, s3, s4):

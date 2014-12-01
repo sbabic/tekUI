@@ -28,9 +28,9 @@
 
 /*****************************************************************************/
 
-#define RFB_DISPLAY_VERSION      2
-#define RFB_DISPLAY_REVISION     0
-#define RFB_DISPLAY_NUMVECTORS   10
+#define RFB_DISPLAY_VERSION     2
+#define RFB_DISPLAY_REVISION    0
+#define RFB_DISPLAY_NUMVECTORS  10
 
 #ifndef LOCAL
 #define LOCAL
@@ -43,42 +43,37 @@
 #define RFB_HUGE 1000000
 
 /* display flags */
-#define RFBFL_BUFFER_OWNER		0x0001
-#define RFBFL_BUFFER_DEVICE		0x0002
-#define RFBFL_BUFFER_CAN_RESIZE	0x0004
-#define RFBFL_CANSHOWPTR		0x0008
-#define RFBFL_SHOWPTR			0x0010
-#define RFBFL_BACKBUFFER		0x0020
-#define RFBFL_PTR_VISIBLE		0x0100
-#define RFBFL_PTR_ALLOCATED		0x0200
-#define RFBFL_PTRMASK			0x0300
-#define RFBFL_WIN_BACKBUFFER	0x0400
-#define RFBFL_DIRTY				0x0800
+#define RFBFL_BUFFER_OWNER      0x0001
+#define RFBFL_BUFFER_DEVICE     0x0002
+#define RFBFL_BUFFER_CAN_RESIZE 0x0004
+#define RFBFL_CANSHOWPTR        0x0008
+#define RFBFL_SHOWPTR           0x0010
+#define RFBFL_BACKBUFFER        0x0020
+#define RFBFL_PTR_VISIBLE       0x0100
+#define RFBFL_PTR_ALLOCATED     0x0200
+#define RFBFL_PTRMASK           0x0300
+#define RFBFL_WIN_BACKBUFFER    0x0400
+#define RFBFL_DIRTY             0x0800
 
 /* window flags */
-#define RFBWFL_IS_POPUP			0x0001
-#define RFBWFL_BORDERLESS		0x0002
-#define RFBWFL_FULLSCREEN		0x0004
-#define RFBWFL_IS_ROOT			0x0010
-#define RFBWFL_USERCLIP			0x0020
-#define RFBWFL_BACKBUFFER		0x0400
-#define RFBWFL_DIRTY			0x0800
-
+#define RFBWFL_IS_POPUP         0x0001
+#define RFBWFL_BORDERLESS       0x0002
+#define RFBWFL_FULLSCREEN       0x0004
+#define RFBWFL_IS_ROOT          0x0010
+#define RFBWFL_USERCLIP         0x0020
+#define RFBWFL_BACKBUFFER       0x0400
+#define RFBWFL_DIRTY            0x0800
 
 #ifndef RFB_DEF_WIDTH
-#define RFB_DEF_WIDTH            640
+#define RFB_DEF_WIDTH           640
 #endif
 #ifndef RFB_DEF_HEIGHT
-#define RFB_DEF_HEIGHT           480
+#define RFB_DEF_HEIGHT          480
 #endif
 
-#define RFB_UTF8_BUFSIZE 4096
+#define RFB_UTF8_BUFSIZE        4096
 
-#define RFB_OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
-((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))
-
-#define RFB_OVERLAPRECT(d, s) \
-RFB_OVERLAP((d)[0], (d)[1], (d)[2], (d)[3], (s)[0], (s)[1], (s)[2], (s)[3])
+#define RFB_DIRTY_ALIGN         7
 
 /*****************************************************************************/
 
@@ -87,33 +82,35 @@ RFB_OVERLAP((d)[0], (d)[1], (d)[2], (d)[3], (s)[0], (s)[1], (s)[2], (s)[3])
 #include <linux/fb.h>
 #include <linux/input.h>
 
+#define RFB_RAWKEY_QUALS        5
+
 struct RawKey
 {
-	TUINT16 qualifier; /* qualifier activated */
-	TUINT keycode; /* keycode activated independent of qualifier */
-	struct 
+	TUINT16 qualifier;			/* qualifier activated */
+	TUINT keycode;				/* keycode active independent of qualifier */
+	struct
 	{
-		TUINT16 qualifier; /* qualifier */
-		TUINT keycode; /* keycode activated dependent on qualifier */
-	} qualkeys[5];
+		TUINT16 qualifier;		/* qualifier */
+		TUINT keycode;			/* keycode activated dependent on qualifier */
+	} qualkeys[RFB_RAWKEY_QUALS];
 };
 
 #endif /* defined(ENABLE_LINUXFB) */
 
-struct BackBuffer
+struct rfb_BackBuffer
 {
 	TUINT8 *data;
 	TINT rect[4];
 };
 
-
 /*****************************************************************************/
+
 /*
 **	Fonts
 */
 
 #ifndef DEF_FONTDIR
-#define	DEF_FONTDIR          "tek/ui/font"
+#define	DEF_FONTDIR         "tek/ui/font"
 #endif
 
 #define FNT_DEFNAME         "VeraMono"
@@ -133,18 +130,16 @@ struct BackBuffer
 #define FNT_MATCH_SLANT		0x04
 #define	FNT_MATCH_WEIGHT	0x08
 #define	FNT_MATCH_SCALE		0x10
+
 /* all mandatory properties: */
 #define FNT_MATCH_ALL		0x0f
 
-#define MAX_GLYPHS 256
-
-struct FontManager
+struct rfb_FontManager
 {
-	/* list of opened fonts */
 	struct TList openfonts;
 };
 
-struct FontNode
+struct rfb_FontNode
 {
 	struct THandle handle;
 	FT_Face face;
@@ -155,25 +150,22 @@ struct FontNode
 	TSTRPTR name;
 };
 
-struct FontQueryNode
+struct rfb_FontQueryNode
 {
 	struct TNode node;
 	TTAGITEM tags[FNTQUERY_NUMATTR];
 };
 
-struct FontQueryHandle
+struct rfb_FontQueryHandle
 {
 	struct THandle handle;
 	struct TList reslist;
 	struct TNode **nptr;
 };
 
-LOCAL FT_Error rfb_fontrequester(FTC_FaceID faceID, FT_Library lib, 
-	FT_Pointer reqData, FT_Face *face);
-
 /*****************************************************************************/
 
-typedef struct
+struct rfb_Display
 {
 	/* Module header: */
 	struct TModule rfb_Module;
@@ -187,7 +179,7 @@ typedef struct
 	struct TTask *rfb_Task;
 	/* Command message port: */
 	struct TMsgPort *rfb_CmdPort;
-	
+
 	/* Sub rendering device (optional): */
 	TAPTR rfb_RndDevice;
 	/* Replyport for render requests: */
@@ -198,60 +190,60 @@ typedef struct
 	struct TVRequest *rfb_RndRequest;
 	/* Own input message port receiving input from sub device: */
 	TAPTR rfb_RndIMsgPort;
-	
+
 	/* Device open tags: */
 	TTAGITEM *rfb_OpenTags;
-	
+
 	/* Module global memory manager (thread safe): */
 	struct TMemManager *rfb_MemMgr;
-	
+
 	/* Locking for instance data: */
 	struct TLock *rfb_InstanceLock;
-	
+
 	/* pooled input messages: */
 	struct TList rfb_IMsgPool;
 
 	/* list of all visuals: */
 	struct TList rfb_VisualList;
-	
+
 	struct RectPool rfb_RectPool;
-	TUINT rfb_InputMask;
 
 	/* pixel buffer exposed to drawing functions: */
 	struct TVPixBuf rfb_PixBuf;
 	/* pixel buffer exposed to the device: */
 	struct TVPixBuf rfb_DevBuf;
-	
+
 	/* Device width/height */
 	TINT rfb_DevWidth, rfb_DevHeight;
 
 	/* Actual width/height */
 	TINT rfb_Width, rfb_Height;
-	
+
 	TUINT rfb_Flags;
+	TINT rfb_NumInterval;
 
 	/* font rendering */
 	FT_Library rfb_FTLibrary;
-	FTC_Manager	rfb_FTCManager;
+	FTC_Manager rfb_FTCManager;
 	FTC_CMapCache rfb_FTCCMapCache;
 	FTC_SBitCache rfb_FTCSBitCache;
-	struct FontManager rfb_FontManager;
+	struct rfb_FontManager rfb_FontManager;
 
 	TINT rfb_MouseX;
 	TINT rfb_MouseY;
 	TINT rfb_KeyQual;
 
 	TUINT32 rfb_unicodebuffer[RFB_UTF8_BUFSIZE];
-	
+
 	struct Region rfb_DirtyRegion;
-	
-	struct rfb_window *rfb_FocusWindow;
-	
+
+	struct rfb_Window *rfb_FocusWindow;
+
 	struct TVPixBuf rfb_PtrImage;
 	TINT rfb_PtrWidth, rfb_PtrHeight;
 	TINT rfb_MouseHotX, rfb_MouseHotY;
-	struct BackBuffer rfb_PtrBackBuffer;
-	
+	struct rfb_BackBuffer rfb_PtrBackBuffer;
+
 #if defined(ENABLE_VNCSERVER)
 	rfbScreenInfoPtr rfb_RFBScreen;
 	TAPTR rfb_VNCTask;
@@ -260,7 +252,7 @@ typedef struct
 	TAPTR rfb_RFBMainTask;
 	TBOOL rfb_WaitSignal;
 #endif
-	
+
 #if defined(ENABLE_LINUXFB)
 	int rfb_fbhnd;
 	struct fb_var_screeninfo rfb_orig_vinfo;
@@ -282,16 +274,15 @@ typedef struct
 	int rfb_fd_inotify_input;
 	int rfb_fd_watch_input;
 #endif
-	
-} RFBDISPLAY;
 
+};
 
-typedef struct rfb_window
+struct rfb_Window
 {
 	struct TNode rfbw_Node;
-	
-	RFBDISPLAY *rfbw_Display;
-	
+
+	struct rfb_Display *rfbw_Display;
+
 	/* Window extents on screen: */
 	struct Rect rfbw_ScreenRect;
 	/* Window extents for drawing: */
@@ -301,33 +292,32 @@ typedef struct rfb_window
 	/* Clipping boundaries (real): */
 	struct Rect rfbw_ClipRect;
 	/* Current pens: */
-	TVPEN bgpen, fgpen;
+	TVPEN rfbw_BGPen, rfbw_FGPen;
 	/* list of allocated pens: */
-	struct TList penlist;
+	struct TList rfbw_PenList;
 	/* current active font */
-	TAPTR curfont;
+	TAPTR rfbw_CurrentFont;
 	/* Destination message port for input messages: */
 	TAPTR rfbw_IMsgPort;
 	/* mask of active events */
 	TUINT rfbw_InputMask;
 	/* userdata attached to this window, also propagated in messages: */
-	TTAG userdata;
-	
+	TTAG rfbw_UserData;
+
 	/* Pixel buffer referring to upper left edge of visual: */
 	struct TVPixBuf rfbw_PixBuf;
 
 	TUINT rfbw_Flags;
-	
+
 	TINT rfbw_MinWidth;
 	TINT rfbw_MinHeight;
 	TINT rfbw_MaxWidth;
 	TINT rfbw_MaxHeight;
-	
+
 	struct Region rfbw_DirtyRegion;
+};
 
-} RFBWINDOW;
-
-struct RFBPen
+struct rfb_Pen
 {
 	struct TNode node;
 	TUINT32 rgb;
@@ -335,8 +325,8 @@ struct RFBPen
 
 struct rfb_attrdata
 {
-	RFBDISPLAY *mod;
-	RFBWINDOW *v;
+	struct rfb_Display *mod;
+	struct rfb_Window *v;
 	TAPTR font;
 	TINT num;
 	TINT neww, newh, newx, newy;
@@ -344,103 +334,82 @@ struct rfb_attrdata
 };
 
 /*****************************************************************************/
-/*
-**	Framebuffer drawing primitives
-*/
 
-LOCAL void fbp_drawpoint(RFBDISPLAY *mod, RFBWINDOW *v, TINT x, TINT y, struct RFBPen *pen);
-LOCAL void fbp_drawfrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBPen *pen);
-LOCAL void fbp_drawrect(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBPen *pen);
-LOCAL void fbp_drawline(RFBDISPLAY *mod, RFBWINDOW *v, TINT rect[4], struct RFBPen *pen);
-LOCAL void fbp_drawtriangle(RFBDISPLAY *mod, RFBWINDOW *v, TINT x0, TINT y0, TINT x1, TINT y1,
-	TINT x2, TINT y2, struct RFBPen *pen);
-LOCAL void fbp_drawbuffer(RFBDISPLAY *mod, RFBWINDOW *v, struct TVPixBuf *src,
-	TINT rect[4], TBOOL alpha);
-LOCAL TBOOL fbp_copyarea(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
-	TINT d[4], struct THook *exposehook);
-LOCAL TBOOL fbp_copyarea_int(RFBDISPLAY *mod, RFBWINDOW *v, TINT dx, TINT dy,
-	TINT *dr);
-LOCAL void fbp_doexpose(RFBDISPLAY *mod, RFBWINDOW *v, struct Region *L,
-	struct THook *exposehook);
+LOCAL void fbp_drawfrect(struct rfb_Display *mod, struct rfb_Window *v,
+	TINT rect[4], struct rfb_Pen *pen);
+LOCAL void fbp_drawrect(struct rfb_Display *mod, struct rfb_Window *v,
+	TINT rect[4], struct rfb_Pen *pen);
+LOCAL void fbp_drawline(struct rfb_Display *mod, struct rfb_Window *v,
+	TINT rect[4], struct rfb_Pen *pen);
+LOCAL void fbp_drawtriangle(struct rfb_Display *mod, struct rfb_Window *v,
+	TINT x0, TINT y0, TINT x1, TINT y1, TINT x2, TINT y2, struct rfb_Pen *pen);
+LOCAL void fbp_drawbuffer(struct rfb_Display *mod, struct rfb_Window *v,
+	struct TVPixBuf *src, TINT rect[4], TBOOL alpha);
+LOCAL void fbp_doexpose(struct rfb_Display *mod, struct rfb_Window *v,
+	struct Region *L, struct THook *exposehook);
+LOCAL TBOOL fbp_copyarea_int(struct rfb_Display *mod, struct rfb_Window *v,
+	TINT dx, TINT dy, TINT *dr);
+LOCAL TBOOL fbp_copyarea(struct rfb_Display *mod, struct rfb_Window *v,
+	TINT dx, TINT dy, TINT d[4], struct THook *exposehook);
 
-/*****************************************************************************/
+LOCAL TBOOL rfb_initpointer(struct rfb_Display *mod);
+LOCAL TBOOL rfb_getimsg(struct rfb_Display *mod, struct rfb_Window *v,
+	TIMSG ** msgptr, TUINT type);
+LOCAL void rfb_putbackmsg(struct rfb_Display *mod, TIMSG *msg);
+LOCAL struct rfb_Window *rfb_passevent_by_mousexy(struct rfb_Display *mod,
+	TIMSG *omsg, TBOOL focus);
+LOCAL void rfb_passevent_mousebutton(struct rfb_Display *mod, TIMSG *msg);
+LOCAL void rfb_passevent_keyboard(struct rfb_Display *mod, TIMSG *msg);
+LOCAL void rfb_passevent_mousemove(struct rfb_Display *mod, TIMSG *msg);
+LOCAL TINT rfb_sendevent(struct rfb_Display *mod, TUINT type, TUINT code,
+	TINT x, TINT y);
+LOCAL TBOOL rfb_getlayers(struct rfb_Display *mod, struct Region *A,
+	struct rfb_Window *v, TINT dx, TINT dy);
+LOCAL TBOOL rfb_getlayermask(struct rfb_Display *mod, struct Region *A,
+	TINT *crect, struct rfb_Window *v, TINT dx, TINT dy);
+LOCAL TBOOL rfb_damage(struct rfb_Display *mod, TINT drect[],
+	struct rfb_Window *v);
+LOCAL void rfb_markdirty(struct rfb_Display *mod, struct rfb_Window *v,
+	TINT *r);
+LOCAL void rfb_setwinrect(struct rfb_Display *mod, struct rfb_Window *v);
+LOCAL void rfb_setrealcliprect(struct rfb_Display *mod, struct rfb_Window *v);
+LOCAL void rfb_focuswindow(struct rfb_Display *mod, struct rfb_Window *v);
+LOCAL void rfb_flush_clients(struct rfb_Display *mod, TBOOL also_external);
+LOCAL TBOOL rfb_resizewinbuffer(struct rfb_Display *mod, struct rfb_Window *v,
+	TINT oldw, TINT oldh, TINT w, TINT h);
+LOCAL void rfb_copyrect_sub(struct rfb_Display *mod, TINT *rect, TINT dx,
+	TINT dy);
 
-LOCAL TUINT32 *rfb_utf8tounicode(RFBDISPLAY *mod, TSTRPTR utf8string, TINT len,
-	TINT *bytelen);
-LOCAL TBOOL rfb_getimsg(RFBDISPLAY *mod, RFBWINDOW *v, TIMSG **msgptr,
-	TUINT type);
-
-LOCAL void rfb_exit(RFBDISPLAY *mod);
-LOCAL void rfb_openvisual(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_closevisual(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_setinput(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_allocpen(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_freepen(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_frect(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_rect(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_line(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_plot(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_drawstrip(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_clear(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_getattrs(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_setattrs(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_drawtext(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_openfont(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_getfontattrs(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_textsize(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_setfont(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_closefont(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_queryfonts(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_getnextfont(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_drawtags(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_drawfan(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_copyarea(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_setcliprect(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_unsetcliprect(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_drawbuffer(RFBDISPLAY *mod, struct TVRequest *req);
-LOCAL void rfb_flush(RFBDISPLAY *mod, struct TVRequest *req);
-
-LOCAL TBOOL rfb_damage(RFBDISPLAY *mod, TINT drect[], RFBWINDOW *v);
-LOCAL TBOOL rfb_getlayermask(RFBDISPLAY *mod, struct Region *A, TINT *crect,
-	RFBWINDOW *v, TINT dx, TINT dy);
-LOCAL TBOOL rfb_getlayers(RFBDISPLAY *mod, struct Region *A, RFBWINDOW *v,
-	TINT dx, TINT dy);
-LOCAL void rfb_markdirty(RFBDISPLAY *mod, RFBWINDOW *v, TINT *r);
-LOCAL void rfb_schedulecopy(RFBDISPLAY *mod, TINT *r, TINT dx, TINT dy);
-
-LOCAL TAPTR rfb_hostopenfont(RFBDISPLAY *mod, TTAGITEM *tags);
-LOCAL void rfb_hostclosefont(RFBDISPLAY *mod, TAPTR font);
-LOCAL void rfb_hostsetfont(RFBDISPLAY *mod, RFBWINDOW *v, TAPTR font);
-LOCAL TTAGITEM *rfb_hostgetnextfont(RFBDISPLAY *mod, TAPTR fqhandle);
-LOCAL TINT rfb_hosttextsize(RFBDISPLAY *mod, TAPTR font, TSTRPTR text, TINT len);
-LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
-	TINT len, TINT posx, TINT posy, TVPEN fgpen);
+LOCAL FT_Error rfb_fontrequester(FTC_FaceID faceID, FT_Library lib,
+	FT_Pointer reqData, FT_Face *face);
+LOCAL TAPTR rfb_hostopenfont(struct rfb_Display *mod, TTAGITEM *tags);
+LOCAL TAPTR rfb_hostqueryfonts(struct rfb_Display *mod, TTAGITEM *tags);
+LOCAL void rfb_hostsetfont(struct rfb_Display *mod, struct rfb_Window *v,
+	TAPTR font);
+LOCAL TTAGITEM *rfb_hostgetnextfont(struct rfb_Display *mod, TAPTR fqhandle);
+LOCAL void rfb_hostclosefont(struct rfb_Display *mod, TAPTR font);
+LOCAL TINT rfb_hosttextsize(struct rfb_Display *mod, TAPTR font, TSTRPTR text,
+	TINT len);
+LOCAL TVOID rfb_hostdrawtext(struct rfb_Display *mod, struct rfb_Window *v,
+	TSTRPTR text, TINT len, TINT posx, TINT posy, TVPEN fgpen);
 LOCAL THOOKENTRY TTAG rfb_hostgetfattrfunc(struct THook *hook, TAPTR obj,
 	TTAG msg);
-LOCAL TAPTR rfb_hostqueryfonts(RFBDISPLAY *mod, TTAGITEM *tags);
 
-LOCAL void rfb_flush_clients(RFBDISPLAY *mod, TBOOL also_external);
-
-LOCAL RFBWINDOW *rfb_findcoord(RFBDISPLAY *mod, TINT x, TINT y);
-LOCAL void rfb_focuswindow(RFBDISPLAY *mod, RFBWINDOW *v);
-LOCAL TBOOL rfb_ispointobscured(RFBDISPLAY *mod, TINT x, TINT y, RFBWINDOW *v);
-LOCAL void rfb_copyrect_sub(RFBDISPLAY *mod, TINT *rect, TINT dx, TINT dy);
-
-LOCAL void rfb_setrealcliprect(RFBDISPLAY *mod, RFBWINDOW *v);
-LOCAL void rfb_setwinrect(RFBDISPLAY *mod, RFBWINDOW *v);
+LOCAL void rfb_docmd(struct rfb_Display *mod, struct TVRequest *req);
 
 #if defined(ENABLE_VNCSERVER)
-
-int rfb_vnc_init(RFBDISPLAY *mod, int port);
-void rfb_vnc_exit(RFBDISPLAY *mod);
-void rfb_vnc_flush(RFBDISPLAY *mod, struct Region *D);
-void rfb_vnc_copyrect(RFBDISPLAY *mod, RFBWINDOW *v, int dx, int dy,
-	int x0, int y0, int x1, int y1, int yinc);
-
+int rfb_vnc_init(struct rfb_Display *mod, int port);
+void rfb_vnc_exit(struct rfb_Display *mod);
+void rfb_vnc_flush(struct rfb_Display *mod, struct Region *D);
+void rfb_vnc_copyrect(struct rfb_Display *mod, struct rfb_Window *v, int dx,
+	int dy, int x0, int y0, int x1, int y1, int yinc);
 #endif
 
-LOCAL TBOOL rfb_resizewinbuffer(RFBDISPLAY *mod, RFBWINDOW *v, 
-	TINT oldw, TINT oldh, TINT w, TINT h);
-LOCAL TINT rfb_sendevent(RFBDISPLAY *mod, TUINT type, TUINT code, TINT x, TINT y);
+#if defined(ENABLE_LINUXFB)
+LOCAL TBOOL rfb_linux_init(struct rfb_Display *mod);
+LOCAL void rfb_linux_exit(struct rfb_Display *mod);
+LOCAL void rfb_linux_wait(struct rfb_Display *mod, TTIME *waitt);
+LOCAL void rfb_linux_wake(struct rfb_Display *mod);
+#endif
 
 #endif /* _TEK_DISPLAY_RFB_MOD_H */

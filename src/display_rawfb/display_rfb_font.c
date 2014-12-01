@@ -33,26 +33,26 @@ struct fnt_attr
 	/* list of fontnames */
 	struct TList fnlist;
 	TSTRPTR fname;
-	TINT  fpxsize;
+	TINT fpxsize;
 	TBOOL fitalic;
 	TBOOL fbold;
 	TBOOL fscale;
-	TINT  fnum;
+	TINT fnum;
 };
 
-static TBOOL hostopenfont(RFBDISPLAY *mod, struct FontNode *fn,
+static TBOOL hostopenfont(struct rfb_Display *mod, struct rfb_FontNode *fn,
 	struct fnt_attr *fattr);
-static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
-	struct fnt_attr *fattr);
-static TINT hostprepfont(RFBDISPLAY *mod, TAPTR font, TUINT32* text, 
+static void hostqueryfonts(struct rfb_Display *mod,
+	struct rfb_FontQueryHandle *fqh, struct fnt_attr *fattr);
+static TINT hostprepfont(struct rfb_Display *mod, TAPTR font, TUINT32 *text,
 	TINT textlen);
 
 /*****************************************************************************/
 
-LOCAL FT_Error rfb_fontrequester(FTC_FaceID faceID, FT_Library lib, 
+LOCAL FT_Error rfb_fontrequester(FTC_FaceID faceID, FT_Library lib,
 	FT_Pointer reqData, FT_Face *face)
 {
-	struct FontNode *facenode = (struct FontNode *) faceID;
+	struct rfb_FontNode *facenode = (struct rfb_FontNode *) faceID;
 	return FT_New_Face(lib, facenode->name, 0, face);
 }
 
@@ -61,31 +61,32 @@ LOCAL FT_Error rfb_fontrequester(FTC_FaceID faceID, FT_Library lib,
 static const char *getfontdir()
 {
 	char *fontdir = getenv("FONTDIR");
+
 	if (!fontdir)
 		fontdir = DEF_FONTDIR;
 	return (const char *) fontdir;
 }
 
 /*****************************************************************************/
+
 /* FontQueryHandle destructor
 ** free all memory associated with a fontqueryhandle including
 ** all fontquerynodes, a fontqueryhandle is obtained by calling
-** rfb_hostqueryfonts()
-*/
+** rfb_hostqueryfonts() */
 
 static THOOKENTRY TTAG rfb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 {
 	if (msg == TMSG_DESTROY)
 	{
-		struct FontQueryHandle *fqh = obj;
-		RFBDISPLAY *mod = fqh->handle.thn_Owner;
+		struct rfb_FontQueryHandle *fqh = obj;
+		struct rfb_Display *mod = fqh->handle.thn_Owner;
 		TAPTR TExecBase = mod->rfb_ExecBase;
 		struct TNode *node, *next;
 
 		node = fqh->reslist.tlh_Head;
 		for (; (next = node->tln_Succ); node = next)
 		{
-			struct FontQueryNode *fqn = (struct FontQueryNode *)node;
+			struct rfb_FontQueryNode *fqn = (struct rfb_FontQueryNode *) node;
 
 			/* remove from resultlist */
 			TRemove(&fqn->node);
@@ -106,22 +107,22 @@ static THOOKENTRY TTAG rfb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 /*****************************************************************************/
-/* allocate a fontquerynode and fill in properties
-*/
 
-static struct FontQueryNode *fnt_getfqnode(RFBDISPLAY *mod, TSTRPTR filename,
-	TINT pxsize)
+/* allocate a fontquerynode and fill in properties */
+
+static struct rfb_FontQueryNode *fnt_getfqnode(struct rfb_Display *mod,
+	TSTRPTR filename, TINT pxsize)
 {
-	struct FontQueryNode *fqnode = TNULL;
+	struct rfb_FontQueryNode *fqnode = TNULL;
 	TAPTR TExecBase = TGetExecBase(mod);
 
 	/* allocate fquery node */
-	fqnode = TAlloc0(mod->rfb_MemMgr, sizeof(struct FontQueryNode));
+	fqnode = TAlloc0(mod->rfb_MemMgr, sizeof(struct rfb_FontQueryNode));
 	if (fqnode)
 	{
 		/* fquerynode ready - fill in attributes */
 		TSTRPTR myfname = TNULL;
-		TINT flen = strlen(filename) - 4; /* discard '.ttf' */
+		TINT flen = strlen(filename) - 4;	/* discard '.ttf' */
 
 		if (flen > 0)
 			myfname = TAlloc0(mod->rfb_MemMgr, flen + 1);
@@ -159,7 +160,7 @@ static struct FontQueryNode *fnt_getfqnode(RFBDISPLAY *mod, TSTRPTR filename,
 			fqnode = TNULL;
 		}
 
-	} /* endif fqnode */
+	}	/* endif fqnode */
 	else
 		TDBPRINTF(20, ("out of memory :(\n"));
 
@@ -167,46 +168,34 @@ static struct FontQueryNode *fnt_getfqnode(RFBDISPLAY *mod, TSTRPTR filename,
 }
 
 /*****************************************************************************/
-/* check if a font with similar properties is already contained
-** in our resultlist
-*/
 
-static TBOOL fnt_checkfqnode(struct TList *rlist, struct FontQueryNode *fqnode)
+/* check if a font with similar properties is already contained
+** in our resultlist */
+
+static TBOOL fnt_checkfqnode(struct TList *rlist,
+	struct rfb_FontQueryNode *fqnode)
 {
 	TUINT8 flags;
 	TBOOL match = TFALSE;
 	struct TNode *node, *next;
-	TSTRPTR newfname = (TSTRPTR)fqnode->tags[0].tti_Value;
-	TINT newpxsize = (TINT)fqnode->tags[1].tti_Value;
-
-	/* not yet
-	TBOOL newslant = (TBOOL)fqnode->tags[2].tti_Value;
-	TBOOL newweight = (TBOOL)fqnode->tags[3].tti_Value;
-	*/
-
+	TSTRPTR newfname = (TSTRPTR) fqnode->tags[0].tti_Value;
+	TINT newpxsize = (TINT) fqnode->tags[1].tti_Value;
 	TSIZE flen = strlen(newfname);
 
 	for (node = rlist->tlh_Head; (next = node->tln_Succ); node = next)
 	{
-		struct FontQueryNode *fqn = (struct FontQueryNode *)node;
+		struct rfb_FontQueryNode *fqn = (struct rfb_FontQueryNode *) node;
+
 		flags = 0;
 
 		if (strlen((TSTRPTR) fqn->tags[0].tti_Value) == flen)
 		{
-			if (strncmp((TSTRPTR)fqn->tags[0].tti_Value, newfname, flen) == 0)
+			if (strncmp((TSTRPTR) fqn->tags[0].tti_Value, newfname, flen) == 0)
 				flags = FNT_MATCH_NAME;
 		}
 
-		if ((TINT)fqn->tags[1].tti_Value == newpxsize)
+		if ((TINT) fqn->tags[1].tti_Value == newpxsize)
 			flags |= FNT_MATCH_SIZE;
-
-		/* not yet
-		if ((TBOOL)fqn->tags[2].tti_Value == newslant)
-			flags |= FNT_MATCH_SLANT;
-
-		if ((TBOOL)fqn->tags[3].tti_Value == newweight)
-			flags |= FNT_MATCH_WEIGHT;
-		*/
 
 		if (flags == FNT_MATCH_ALL)
 		{
@@ -219,45 +208,13 @@ static TBOOL fnt_checkfqnode(struct TList *rlist, struct FontQueryNode *fqnode)
 	return match;
 }
 
-#if 0
 /*****************************************************************************/
-/* dump properties of a fontquerynode
-*/
 
-static void fnt_dumpnode(struct FontQueryNode *fqn)
-{
-	TDBPRINTF(10, ("-----------------------------------------------\n"));
-	TDBPRINTF(10, ("dumping fontquerynode @ %p\n", fqn));
-	TDBPRINTF(10, (" * FontName: %s\n", (TSTRPTR)fqn->tags[0].tti_Value));
-	TDBPRINTF(10, (" * PxSize:   %d\n", (TINT)fqn->tags[1].tti_Value));
-	//TDBPRINTF(10, (" * Italic:   %s\n", (TBOOL)fqn->tags[2].tti_Value ? "on" : "off"));
-	//TDBPRINTF(10, (" * Bold:     %s\n", (TBOOL)fqn->tags[3].tti_Value ? "on" : "off"));
-	TDBPRINTF(10, ("-----------------------------------------------\n"));
-}
-
-/*****************************************************************************/
-/* dump all fontquerynodes of a (result-)list
-*/
-
-static void fnt_dumplist(struct TList *rlist)
-{
-	struct TNode *node, *next;
-	node = rlist->tlh_Head;
-	for (; (next = node->tln_Succ); node = next)
-	{
-		struct FontQueryNode *fqn = (struct FontQueryNode *)node;
-		fnt_dumpnode(fqn);
-	}
-}
-#endif
-
-/*****************************************************************************/
 /* parses a single fontname or a comma separated list of fontnames
 ** and returns a list of fontnames, spaces are NOT filtered, so
-** "helvetica, fixed" will result in "helvetica" and " fixed"
-*/
+** "helvetica, fixed" will result in "helvetica" and " fixed" */
 
-static void fnt_getfnnodes(RFBDISPLAY *mod, struct TList *fnlist, 
+static void fnt_getfnnodes(struct rfb_Display *mod, struct TList *fnlist,
 	TSTRPTR fname)
 {
 	TINT i, p = 0;
@@ -267,15 +224,18 @@ static void fnt_getfnnodes(RFBDISPLAY *mod, struct TList *fnlist,
 
 	for (i = 0; i < fnlen; i++)
 	{
-		if (i == fnlen - 1) lastrun = TTRUE;
+		if (i == fnlen - 1)
+			lastrun = TTRUE;
 
 		if (fname[i] == ',' || lastrun)
 		{
 			TINT len = (i > p) ? (lastrun ? (i - p + 1) : (i - p)) : fnlen + 1;
 			TSTRPTR ts = TAlloc0(mod->rfb_MemMgr, len + 1);
+
 			if (ts)
 			{
 				struct fnt_node *fnn;
+
 				memcpy(ts, fname + p, len);
 				fnn = TAlloc0(mod->rfb_MemMgr, sizeof(struct fnt_node));
 				if (fnn)
@@ -302,13 +262,13 @@ static void fnt_getfnnodes(RFBDISPLAY *mod, struct TList *fnlist,
 }
 
 /*****************************************************************************/
+
 /* examine filename according to the specified flags and set the
 ** corresponding bits in the flagfield the function returns
-** at the moment only FNT_MATCH_NAME is suppported
-*/
+** at the moment only FNT_MATCH_NAME is suppported */
 
-static TUINT fnt_matchfont(RFBDISPLAY *mod, TSTRPTR filename, TSTRPTR fname,
-	struct fnt_attr *fattr, TUINT flag)
+static TUINT fnt_matchfont(struct rfb_Display *mod, TSTRPTR filename,
+	TSTRPTR fname, struct fnt_attr *fattr, TUINT flag)
 {
 	TUINT match = 0;
 
@@ -331,7 +291,8 @@ static TUINT fnt_matchfont(RFBDISPLAY *mod, TSTRPTR filename, TSTRPTR fname,
 			for (i = 0; i < len; i++)
 				fname[i] = tolower(fname[i]);
 
-			tempname = TExecAlloc0(mod->rfb_ExecBase, mod->rfb_MemMgr, len+1);
+			tempname =
+				TExecAlloc0(mod->rfb_ExecBase, mod->rfb_MemMgr, len + 1);
 			if (!tempname)
 			{
 				TDBPRINTF(20, ("out of memory :(\n"));
@@ -349,15 +310,11 @@ static TUINT fnt_matchfont(RFBDISPLAY *mod, TSTRPTR filename, TSTRPTR fname,
 		}
 	}
 
-	/* not yet
-	if (flag & FNT_MATCH_SLANT)		;
-	if (flag & FNT_MATCH_WEIGHT)	;
-	*/
-
 	return match;
 }
 
 /*****************************************************************************/
+
 /* CALL:
 **	rfb_hostopenfont(visualbase, tags)
 **
@@ -391,35 +348,30 @@ static TUINT fnt_matchfont(RFBDISPLAY *mod, TSTRPTR filename, TSTRPTR fname,
 ** - the function will open the first matching font
 */
 
-static void rfb_freefontnode(RFBDISPLAY *mod, struct FontNode *fn)
+static void rfb_freefontnode(struct rfb_Display *mod, struct rfb_FontNode *fn)
 {
-	if (!fn) return;
+	if (!fn)
+		return;
 	TExecFree(mod->rfb_ExecBase, fn->name);
 	TExecFree(mod->rfb_ExecBase, fn);
 }
 
-LOCAL TAPTR rfb_hostopenfont(RFBDISPLAY *mod, TTAGITEM *tags)
+LOCAL TAPTR rfb_hostopenfont(struct rfb_Display *mod, TTAGITEM *tags)
 {
 	struct fnt_attr fattr;
-	struct FontNode *fn;
+	struct rfb_FontNode *fn;
 	TAPTR font = TNULL;
 
 	/* fetch user specified attributes */
-	fattr.fname = (TSTRPTR) TGetTag(tags, TVisual_FontName, 
+	fattr.fname = (TSTRPTR) TGetTag(tags, TVisual_FontName,
 		(TTAG) FNT_DEFNAME);
 	fattr.fpxsize = (TINT) TGetTag(tags, TVisual_FontPxSize,
 		(TTAG) FNT_DEFPXSIZE);
 
-	/* not yet
-	fattr.fitalic = (TBOOL) TGetTag(tags, TVisual_FontItalic, (TTAG) TFALSE);
-	fattr.fbold = (TBOOL) TGetTag(tags, TVisual_FontBold, (TTAG) TFALSE);
-	fattr.fscale = (TBOOL) TGetTag(tags, TVisual_FontScaleable, (TTAG) TFALSE);
-	*/
-
 	if (fattr.fname)
 	{
 		fn = TExecAlloc0(mod->rfb_ExecBase, mod->rfb_MemMgr,
-			sizeof(struct FontNode));
+			sizeof(struct rfb_FontNode));
 		if (fn)
 		{
 			fn->handle.thn_Owner = mod;
@@ -431,16 +383,9 @@ LOCAL TAPTR rfb_hostopenfont(RFBDISPLAY *mod, TTAGITEM *tags)
 				fn->ascent = fn->face->size->metrics.ascender >> 6;
 				fn->descent = fn->face->size->metrics.descender >> 6;
 
-				/* not yet
-				if (fattr.fitalic)
-					fn->attr = FNT_ITALIC;
-				if (fattr.fbold)
-					fn->attr |= FNT_BOLD;
-				*/
-
 				/* append to the list of open fonts */
-				TDBPRINTF(TDB_INFO, ("O '%s' %dpx\n", fattr.fname, 
-					fattr.fpxsize));
+				TDBPRINTF(TDB_INFO, ("O '%s' %dpx\n", fattr.fname,
+						fattr.fpxsize));
 				TAddTail(&mod->rfb_FontManager.openfonts,
 					&fn->handle.thn_Node);
 				font = (TAPTR) fn;
@@ -448,24 +393,25 @@ LOCAL TAPTR rfb_hostopenfont(RFBDISPLAY *mod, TTAGITEM *tags)
 			else
 			{
 				/* load failed, free fontnode */
-				TDBPRINTF(TDB_TRACE,("X unable to load '%s'\n", fattr.fname));
+				TDBPRINTF(TDB_TRACE, ("X unable to load '%s'\n", fattr.fname));
 				rfb_freefontnode(mod, fn);
 			}
 		}
 		else
-			TDBPRINTF(TDB_ERROR,("out of memory\n"));
+			TDBPRINTF(TDB_ERROR, ("out of memory\n"));
 	}
 	else
-		TDBPRINTF(TDB_ERROR,("X invalid fontname '%s' specified\n",
-			fattr.fname));
+		TDBPRINTF(TDB_ERROR, ("X invalid fontname '%s' specified\n",
+				fattr.fname));
 
 	return font;
 }
 
-static TBOOL hostopenfont(RFBDISPLAY *mod, struct FontNode *fn,
+static TBOOL hostopenfont(struct rfb_Display *mod, struct rfb_FontNode *fn,
 	struct fnt_attr *fattr)
 {
 	const char *fontdir = getfontdir();
+
 	fn->name = TExecAlloc0(mod->rfb_ExecBase, mod->rfb_MemMgr,
 		strlen(fattr->fname) + strlen(fontdir) + 6);
 	if (fn->name)
@@ -474,11 +420,11 @@ static TBOOL hostopenfont(RFBDISPLAY *mod, struct FontNode *fn,
 		if (FT_New_Face(mod->rfb_FTLibrary, fn->name, 0, &fn->face) == 0
 			&& FT_IS_SCALABLE(fn->face))
 		{
-			TDBPRINTF(TDB_TRACE,("opened font '%s'\n", fn->name));
+			TDBPRINTF(TDB_TRACE, ("opened font '%s'\n", fn->name));
 			FT_Set_Char_Size(fn->face, 0, fattr->fpxsize << 6, 72, 72);
 			return TTRUE;
 		}
-		TDBPRINTF(TDB_TRACE,("failed to open font '%s'\n", fn->name));
+		TDBPRINTF(TDB_TRACE, ("failed to open font '%s'\n", fn->name));
 		TExecFree(mod->rfb_ExecBase, fn->name);
 		fn->name = TNULL;
 	}
@@ -486,6 +432,7 @@ static TBOOL hostopenfont(RFBDISPLAY *mod, struct FontNode *fn,
 }
 
 /*****************************************************************************/
+
 /* CALL:
 **  rfb_hostqueryfonts(visualbase, tags)
 **
@@ -523,12 +470,12 @@ static TBOOL hostopenfont(RFBDISPLAY *mod, struct FontNode *fn,
 ** - this function won't open any fonts, to do so use rfb_hostopenfont()
 */
 
-LOCAL TAPTR rfb_hostqueryfonts(RFBDISPLAY *mod, TTAGITEM *tags)
+LOCAL TAPTR rfb_hostqueryfonts(struct rfb_Display *mod, TTAGITEM *tags)
 {
 	TSTRPTR fname = TNULL;
 	struct fnt_attr fattr;
 	struct TNode *node, *next;
-	struct FontQueryHandle *fqh = TNULL;
+	struct rfb_FontQueryHandle *fqh = TNULL;
 
 	/* init fontname list */
 	TInitList(&fattr.fnlist);
@@ -542,14 +489,10 @@ LOCAL TAPTR rfb_hostqueryfonts(RFBDISPLAY *mod, TTAGITEM *tags)
 	fattr.fpxsize = (TINT) TGetTag(tags, TVisual_FontPxSize,
 		(TTAG) FNT_DEFPXSIZE);
 	fattr.fnum = (TINT) TGetTag(tags, TVisual_FontNumResults, (TTAG) INT_MAX);
-	/* not yet
-	fattr.fitalic = (TBOOL) TGetTag(tags, TVisual_FontItalic, (TTAG) FNTQUERY_UNDEFINED);
-	fattr.fbold = (TBOOL) TGetTag(tags, TVisual_FontBold, (TTAG) FNTQUERY_UNDEFINED);
-	*/
 
 	/* init result list */
 	fqh = TExecAlloc0(mod->rfb_ExecBase, mod->rfb_MemMgr,
-		sizeof(struct FontQueryHandle));
+		sizeof(struct rfb_FontQueryHandle));
 	if (fqh)
 	{
 		fqh->handle.thn_Owner = mod;
@@ -560,10 +503,6 @@ LOCAL TAPTR rfb_hostqueryfonts(RFBDISPLAY *mod, TTAGITEM *tags)
 		fqh->nptr = &fqh->reslist.tlh_Head;
 
 		hostqueryfonts(mod, fqh, &fattr);
-		#if 0
-		TDB(10,(fnt_dumplist(&fqh->reslist)));
-		TDBPRINTF(10, ("***********************************************\n"));
-		#endif
 	}
 	else
 		TDBPRINTF(20, ("out of memory :(\n"));
@@ -571,7 +510,8 @@ LOCAL TAPTR rfb_hostqueryfonts(RFBDISPLAY *mod, TTAGITEM *tags)
 	/* free memory of fnt_nodes */
 	for (node = fattr.fnlist.tlh_Head; (next = node->tln_Succ); node = next)
 	{
-		struct fnt_node *fnn = (struct fnt_node *)node;
+		struct fnt_node *fnn = (struct fnt_node *) node;
+
 		TExecFree(mod->rfb_ExecBase, fnn->fname);
 		TRemove(&fnn->node);
 		TExecFree(mod->rfb_ExecBase, fnn);
@@ -580,8 +520,8 @@ LOCAL TAPTR rfb_hostqueryfonts(RFBDISPLAY *mod, TTAGITEM *tags)
 	return fqh;
 }
 
-static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
-	struct fnt_attr *fattr)
+static void hostqueryfonts(struct rfb_Display *mod,
+	struct rfb_FontQueryHandle *fqh, struct fnt_attr *fattr)
 {
 	TINT i, nfont, fcount = 0;
 	struct TNode *node, *next;
@@ -603,26 +543,19 @@ static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
 		for (node = fattr->fnlist.tlh_Head; (next = node->tln_Succ);
 			node = next)
 		{
-			struct fnt_node *fnn = (struct fnt_node *)node;
+			struct fnt_node *fnn = (struct fnt_node *) node;
 
 			/* build matchflag, font pxsize attribute is ignored,
 			   because it's not relevant when matching ttf fonts */
 
 			matchflg = FNT_MATCH_NAME;
 
-			/* not yet
-			if (fattr->fitalic != FNTQUERY_UNDEFINED)
-				matchflg |= FNT_MATCH_SLANT;
-			if (fattr->fbold != FNTQUERY_UNDEFINED)
-				matchflg |= FNT_MATCH_WEIGHT;
-			*/
-
 			for (i = 0; i < nfont; i++)
 			{
 				if (fnt_matchfont(mod, dirlist[i]->d_name, fnn->fname,
-					fattr, matchflg) == matchflg)
+						fattr, matchflg) == matchflg)
 				{
-					struct FontQueryNode *fqnode;
+					struct rfb_FontQueryNode *fqnode;
 
 					/* create fqnode and fill in attributes */
 					fqnode = fnt_getfqnode(mod, dirlist[i]->d_name,
@@ -643,7 +576,7 @@ static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
 						{
 							/* max count of desired results reached */
 							TExecFree(mod->rfb_ExecBase,
-								(TSTRPTR)fqnode->tags[0].tti_Value);
+								(TSTRPTR) fqnode->tags[0].tti_Value);
 							TExecFree(mod->rfb_ExecBase, fqnode);
 							break;
 						}
@@ -651,9 +584,9 @@ static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
 					else
 					{
 						/* fqnode is not unique, destroy it */
-						TDBPRINTF(10,("X node is not unique\n"));
+						TDBPRINTF(10, ("X node is not unique\n"));
 						TExecFree(mod->rfb_ExecBase,
-							(TSTRPTR)fqnode->tags[0].tti_Value);
+							(TSTRPTR) fqnode->tags[0].tti_Value);
 						TExecFree(mod->rfb_ExecBase, fqnode);
 					}
 				}
@@ -662,9 +595,9 @@ static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
 			if (fcount == fattr->fnum)
 				break;
 
-		} /* end of fnlist iteration */
+		}	/* end of fnlist iteration */
 
-	} /* endif fonts found */
+	}	/* endif fonts found */
 	else
 		TDBPRINTF(10, ("X no fonts found in '%s'\n", fontdir));
 
@@ -674,6 +607,7 @@ static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
 }
 
 /*****************************************************************************/
+
 /* CALL:
 **  rfb_hostsetfont(visual, fontpointer)
 **
@@ -688,15 +622,17 @@ static void hostqueryfonts(RFBDISPLAY *mod, struct FontQueryHandle *fqh,
 ** - if a font is active it can't be closed
 */
 
-LOCAL void rfb_hostsetfont(RFBDISPLAY *mod, RFBWINDOW *v, TAPTR font)
+LOCAL void rfb_hostsetfont(struct rfb_Display *mod, struct rfb_Window *v,
+	TAPTR font)
 {
 	if (font)
-		v->curfont = font;
+		v->rfbw_CurrentFont = font;
 	else
 		TDBPRINTF(20, ("invalid font specified\n"));
 }
 
 /*****************************************************************************/
+
 /* CALL:
 **  rfb_hostgetnextfont(visualbase, fontqueryhandle)
 **
@@ -717,9 +653,9 @@ LOCAL void rfb_hostsetfont(RFBDISPLAY *mod, RFBWINDOW *v, TAPTR font)
 **    iterator is reset to the head of the list
 */
 
-LOCAL TTAGITEM *rfb_hostgetnextfont(RFBDISPLAY *mod, TAPTR fqhandle)
+LOCAL TTAGITEM *rfb_hostgetnextfont(struct rfb_Display *mod, TAPTR fqhandle)
 {
-	struct FontQueryHandle *fqh = fqhandle;
+	struct rfb_FontQueryHandle *fqh = fqhandle;
 	struct TNode *next = *fqh->nptr;
 
 	if (next->tln_Succ == TNULL)
@@ -728,11 +664,12 @@ LOCAL TTAGITEM *rfb_hostgetnextfont(RFBDISPLAY *mod, TAPTR fqhandle)
 		return TNULL;
 	}
 
-	fqh->nptr = (struct TNode **)next;
-	return ((struct FontQueryNode *)next)->tags;
+	fqh->nptr = (struct TNode **) next;
+	return ((struct rfb_FontQueryNode *) next)->tags;
 }
 
 /*****************************************************************************/
+
 /* CALL:
 **  rfb_hostclosefont(visualbase, fontpointer)
 **
@@ -750,9 +687,9 @@ LOCAL TTAGITEM *rfb_hostgetnextfont(RFBDISPLAY *mod, TAPTR fqhandle)
 **	  will be ignored
 */
 
-LOCAL void rfb_hostclosefont(RFBDISPLAY *mod, TAPTR font)
+LOCAL void rfb_hostclosefont(struct rfb_Display *mod, TAPTR font)
 {
-	struct FontNode *fn = (struct FontNode *) font;
+	struct rfb_FontNode *fn = (struct rfb_FontNode *) font;
 
 	/* free fbfont */
 	if (fn->face)
@@ -769,6 +706,7 @@ LOCAL void rfb_hostclosefont(RFBDISPLAY *mod, TAPTR font)
 }
 
 /*****************************************************************************/
+
 /* CALL:
 **  rfb_hosttextsize(visualbase, fontpointer, textstring)
 **
@@ -784,36 +722,38 @@ LOCAL void rfb_hostclosefont(RFBDISPLAY *mod, TAPTR font)
 **  - the width of the textstring in pixel
 */
 
-LOCAL TINT rfb_hosttextsize(RFBDISPLAY *mod, TAPTR font, TSTRPTR text,
+LOCAL TINT rfb_hosttextsize(struct rfb_Display *mod, TAPTR font, TSTRPTR text,
 	TINT len)
 {
-	struct FontNode *myface = font;
+	struct rfb_FontNode *myface = font;
 	FTC_ImageTypeRec imgtype;
 	struct utf8reader rd;
 	int c;
 	TINT w = 0;
-	
+
 	imgtype.face_id = myface;
 	imgtype.width = myface->pxsize;
 	imgtype.height = myface->pxsize;
 	imgtype.flags = FT_LOAD_DEFAULT | FT_LOAD_RENDER;
-	
+
 	utf8initreader(&rd, (const unsigned char *) text, -1);
-	
+
 	int i = 0;
+
 	while (i++ < len && (c = utf8read(&rd)) > 0)
 	{
 		FTC_SBit sbit;
-		FT_UInt gindex = 
+		FT_UInt gindex =
 			FTC_CMapCache_Lookup(mod->rfb_FTCCMapCache, myface, -1, c);
-		if (FTC_SBitCache_Lookup(mod->rfb_FTCSBitCache, &imgtype, gindex, 
-			&sbit, NULL) == 0)
+		if (FTC_SBitCache_Lookup(mod->rfb_FTCSBitCache, &imgtype, gindex,
+				&sbit, NULL) == 0)
 			w += sbit->xadvance;
 	}
 	return w;
 }
 
 /*****************************************************************************/
+
 /* CALL:
 **  rfb_hostdrawtext(visualbase, text, textlen, text pos x, text pos y,
 **		textpen)
@@ -830,64 +770,71 @@ LOCAL TINT rfb_hosttextsize(RFBDISPLAY *mod, TAPTR font, TSTRPTR text,
 **  - the text is clipped against v->rfbw_UserClipRect[4]
 */
 
-LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
-	TINT len, TINT posx, TINT posy, TVPEN fgpen)
+LOCAL TVOID rfb_hostdrawtext(struct rfb_Display *mod, struct rfb_Window *v,
+	TSTRPTR text, TINT len, TINT posx, TINT posy, TVPEN fgpen)
 {
 	if (!text)
 		return;
-	struct FontNode *myface = v->curfont;
+	struct rfb_FontNode *myface = v->rfbw_CurrentFont;
+
 	if (!myface)
 		return;
-	
+
 	struct Region R;
+
 	if (!rfb_getlayermask(mod, &R, v->rfbw_ClipRect.r, v, 0, 0))
 		return;
-	
-	struct RFBPen *textpen = (struct RFBPen *) fgpen;
+
+	struct rfb_Pen *textpen = (struct rfb_Pen *) fgpen;
 	FTC_ImageTypeRec imgtype;
 	struct utf8reader rd;
-	
+
 	TINT asc = myface->ascent;
 	TUINT tr = (textpen->rgb >> 16) & 0xff;
 	TUINT tg = (textpen->rgb >> 8) & 0xff;
 	TUINT tb = textpen->rgb & 0xff;
 	int i = 0;
 	int c;
-	
+
 	imgtype.face_id = myface;
 	imgtype.width = myface->pxsize;
 	imgtype.height = myface->pxsize;
 	imgtype.flags = FT_LOAD_DEFAULT | FT_LOAD_RENDER;
-	
+
 	utf8initreader(&rd, (const unsigned char *) text, -1);
-	
+
 	while (i++ < len && (c = utf8read(&rd)) > 0)
 	{
 		FTC_SBit sbit;
-		FT_UInt gindex = 
+		FT_UInt gindex =
 			FTC_CMapCache_Lookup(mod->rfb_FTCCMapCache, myface, -1, c);
 		if (FTC_SBitCache_Lookup(mod->rfb_FTCSBitCache, &imgtype, gindex,
-			&sbit, NULL))
+				&sbit, NULL))
 			continue;
-		
-		struct { int x, y; } pen;
-		
+
+		struct
+		{
+			int x, y;
+		} pen;
+
 		pen.x = posx + sbit->left;
 		pen.y = posy + asc - sbit->top;
 		posx += sbit->xadvance;
-		
+
 		struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+
 		for (; (next = node->tln_Succ); node = next)
 		{
 			struct RectNode *rn = (struct RectNode *) node;
 			TINT *r = rn->rn_Rect;
+
 			rfb_markdirty(mod, v, r);
 
 			int y;
 			int cx = 0, cy = 0;
 			int cw = sbit->width;
 			int ch = sbit->height;
-			
+
 			/* clipping tests */
 			if (r[0] > pen.x)
 				cx = r[0] - pen.x;
@@ -900,21 +847,23 @@ LOCAL TVOID rfb_hostdrawtext(RFBDISPLAY *mod, RFBWINDOW *v, TSTRPTR text,
 
 			if (r[3] < pen.y + sbit->height)
 				ch -= (pen.y + sbit->height) - r[3] - 1;
-					
+
 			for (y = cy; y < ch; y++)
 			{
 				TUINT8 *sbuf = sbit->buffer + y * sbit->width + cx;
-				TUINT8 *dbuf = TVPB_GETADDRESS(&v->rfbw_PixBuf, cx + pen.x, y + pen.y);
-				pixconv_writealpha(dbuf, sbuf, cw - cx, v->rfbw_PixBuf.tpb_Format,
-					tr, tg, tb);
+				TUINT8 *dbuf =
+					TVPB_GETADDRESS(&v->rfbw_PixBuf, cx + pen.x, y + pen.y);
+				pixconv_writealpha(dbuf, sbuf, cw - cx,
+					v->rfbw_PixBuf.tpb_Format, tr, tg, tb);
 			}
 		}
 	}
-	
+
 	region_free(&mod->rfb_RectPool, &R);
 }
 
 /*****************************************************************************/
+
 /* CALL:
 **	rfb_getfattrs(visualbase, fontpointer, taglist);
 **
@@ -948,7 +897,7 @@ LOCAL THOOKENTRY TTAG rfb_hostgetfattrfunc(struct THook *hook, TAPTR obj,
 {
 	struct rfb_attrdata *data = hook->thk_Data;
 	TTAGITEM *item = obj;
-	struct FontNode *fn = (struct FontNode *) data->font;
+	struct rfb_FontNode *fn = (struct rfb_FontNode *) data->font;
 
 	switch (item->tti_Tag)
 	{
@@ -959,17 +908,6 @@ LOCAL THOOKENTRY TTAG rfb_hostgetfattrfunc(struct THook *hook, TAPTR obj,
 			*((TINT *) item->tti_Value) = fn->pxsize;
 			break;
 
-		/* not yet
-		case TVisual_FontItalic:
-			*((TINT *) item->tti_Value) = (fn->attr & FNT_ITALIC) ?
-				TTRUE : TFALSE;
-			break;
-
-		case TVisual_FontBold:
-			*((TINT *) item->tti_Value) = (fn->attr & FNT_BOLD) ?
-				TTRUE : TFALSE;
-			break;
-		*/
 		case TVisual_FontAscent:
 			*((TINT *) item->tti_Value) = fn->ascent;
 			break;
@@ -989,7 +927,7 @@ LOCAL THOOKENTRY TTAG rfb_hostgetfattrfunc(struct THook *hook, TAPTR obj,
 			*((TINT *) item->tti_Value) = TMAX(1, fn->height / 32);
 			break;
 
-		/* ... */
+			/* ... */
 	}
 	data->num++;
 	return TTRUE;

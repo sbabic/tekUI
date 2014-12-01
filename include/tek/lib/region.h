@@ -28,6 +28,12 @@ struct Rect
 #define REGION_POINT_IN_RECT(rect, x, y) ((x) >= (rect)->r[0] && \
 	(x) <= (rect)->r[2] && (y) >= (rect)->r[1] && (y) <= (rect)->r[2])
 
+#define REGION_OVERLAP(d0, d1, d2, d3, s0, s1, s2, s3) \
+	((s2) >= (d0) && (s0) <= (d2) && (s3) >= (d1) && (s1) <= (d3))
+#define REGION_OVERLAPRECT(d, s) REGION_OVERLAP((d)[0], (d)[1], \
+	(d)[2], (d)[3], (s)[0], (s)[1], (s)[2], (s)[3])
+
+
 struct RectList
 {
 	struct TList rl_List;

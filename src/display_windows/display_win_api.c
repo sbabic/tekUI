@@ -206,7 +206,7 @@ static void fb_dowindow(TAPTR task)
 			DispatchMessage(&msg);
 		}
 
-// 		PostMessage(win->fbv_HWnd, WM_USER, 0, 0);
+		/*PostMessage(win->fbv_HWnd, WM_USER, 0, 0);*/
 		sig = TSetSignal(0, TTASK_SIG_ABORT);
 
 	} while (!(sig & TTASK_SIG_ABORT));
@@ -847,9 +847,7 @@ drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
 
 				case TVCMD_RECT:
 				{
-// 					TINT r[] = { data->x0, data->y0, data->x1-data->x0, data->y1-data->y0 };
-// 					struct FBPen *pen = (struct FBPen *) data->v->fgpen;
-// 					fbp_drawrect(data->v, r, pen);
+					/* TODO */
 					break;
 				}
 				case TVCMD_LINE:

@@ -101,7 +101,7 @@ $(OBJDIR)/linit_tekui.lo: linit_tekui.c
 $(OBJDIR)/luatekui.lo: $(LUADISTDIR)/src/lua.c
 	$(CC) -DLUA_USE_LINUX $(LUA_TEKUI_DEFS) -c -o $@ $(LUADISTDIR)/src/lua.c
 
-$(LUA_TEKUI_EXE_STANDALONE): $(OBJDIR)/linit_tekui.lo $(OBJDIR)/luatekui.lo $(LUADISTDIR)/src/lua.c
+$(LUA_TEKUI_EXE_STANDALONE): $(OBJDIR)/linit_tekui.lo $(OBJDIR)/luatekui.lo
 	$(CC) -o $@ $(OBJDIR)/luatekui.lo $(OBJDIR)/linit_tekui.lo -L$(BASEDIR) $(LUA_TEKUI_LIBS) -Wl,-E -lreadline -lm -ldl -pthread
 	
 ###############################################################################
