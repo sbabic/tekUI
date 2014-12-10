@@ -111,7 +111,7 @@ static const luaL_Reg tek_lib_visual_pixmapmethods[] =
 LOCAL LUACFUNC TINT
 tek_lib_visual_open(lua_State *L)
 {
-	TTAGITEM tags[20], *tp = tags;
+	TTAGITEM tags[22], *tp = tags;
 	TEKVisual *visbase, *vis;
 
 	vis = lua_newuserdata(L, sizeof(TEKVisual));
