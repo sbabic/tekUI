@@ -57,19 +57,19 @@
 #define X11FNT_SLANT_I			"i"
 #define X11FNT_DEFPXSIZE		14
 #define	X11FNT_DEFREGENC		"iso8859-1"
-#define	X11FNT_WILDCARD		"*"
+#define	X11FNT_WILDCARD			"*"
 
 #define X11FNTQUERY_NUMATTR	(5+1)
 #define	X11FNTQUERY_UNDEFINED	0xffffffff
 
 #define X11FNT_ITALIC			0x1
-#define	X11FNT_BOLD			0x2
+#define	X11FNT_BOLD				0x2
 #define X11FNT_UNDERLINE		0x4
 
 #define X11FNT_MATCH_NAME		0x01
 #define X11FNT_MATCH_SIZE		0x02
 #define X11FNT_MATCH_SLANT		0x04
-#define	X11FNT_MATCH_WEIGHT	0x08
+#define	X11FNT_MATCH_WEIGHT		0x08
 #define	X11FNT_MATCH_SCALE		0x10
 
 /* all mandatory properties: */
@@ -119,61 +119,22 @@ struct X11FontAttr
 	struct TList fnlist;		/* list of fontnames */
 	TSTRPTR fname;
 	TUINT fpxsize;
+	TUINT flags;
 	TBOOL fitalic;
 	TBOOL fbold;
 	TBOOL fscale;
 	TINT fnum;
 };
 
-#if defined(ENABLE_XFT)
-struct XftInterface
-{
-	XftFont *(*XftFontOpen) (Display *dpy, int screen, ...);
-	void (*XftFontClose) (Display *dpy, XftFont *pub);
-	void (*XftTextExtentsUtf8) (Display *dpy, XftFont *pub,
-		_Xconst FcChar8 *string, int len, XGlyphInfo *extents);
-	void (*XftDrawStringUtf8) (XftDraw *draw, _Xconst XftColor *color,
-		XftFont *pub, int x, int y, _Xconst FcChar8 *string, int len);
-	void (*XftDrawRect) (XftDraw *draw, _Xconst XftColor *color, int x,
-		int y, unsigned int width, unsigned int height);
-	 FT_Face(*XftLockFace) (XftFont *pub);
-	void (*XftUnlockFace) (XftFont *pub);
-	 Bool(*XftColorAllocValue) (Display *dpy, Visual *visual, Colormap cmap,
-		_Xconst XRenderColor *color, XftColor *result);
-	void (*XftColorFree) (Display *dpy, Visual *visual, Colormap cmap,
-		XftColor *color);
-	XftDraw *(*XftDrawCreate) (Display *dpy, Drawable drawable,
-		Visual *visual, Colormap colormap);
-	void (*XftDrawDestroy) (XftDraw *draw);
-	 Bool(*XftDrawSetClip) (XftDraw *d, Region r);
-};
-
-#define LIBXFT_NUMSYMS	(sizeof(struct XftInterface) / sizeof(void (*)(void)))
-
-struct FcInterface
-{
-	void (*FcDefaultSubstitute) (FcPattern *pattern);
-	void (*FcFontSetDestroy) (FcFontSet *s);
-	FcFontSet *(*FcFontSort) (FcConfig *config, FcPattern *p, FcBool trim,
-		FcCharSet ** csp, FcResult *result);
-	 FcBool(*FcPatternAddBool) (FcPattern *p, const char *object, FcBool b);
-	 FcBool(*FcPatternAddInteger) (FcPattern *p, const char *object, int i);
-	FcPattern *(*FcPatternBuild) (FcPattern *orig, ...);
-	void (*FcPatternDestroy) (FcPattern *p);
-	void (*FcPatternPrint) (const FcPattern *p);
-	 FcResult(*FcPatternGetString) (const FcPattern *p, const char *object,
-		int n, FcChar8 ** s);
-	 FcResult(*FcPatternGetInteger) (const FcPattern *p, const char *object,
-		int n, int *i);
-	 FcResult(*FcPatternGetBool) (const FcPattern *p, const char *object,
-		int n, FcBool *b);
-	 FcBool(*FcInit) (void);
-	void (*FcFini) (void);
-};
-
-#define LIBFC_NUMSYMS	(sizeof(struct FcInterface) / sizeof(void (*)(void)))
-
-#endif
+#define X11FL_SWAPBYTEORDER		0x0001
+#define X11FL_USE_XFT			0x0002
+#define X11FL_SHMAVAIL			0x0004
+#define X11FL_FULLSCREEN		0x0008
+#define X11WFL_IMG_SHM			0x0010
+#define X11WFL_WAIT_EXPOSE		0x0020
+#define X11WFL_WAIT_RESIZE		0x0040
+#define X11WFL_CHANGE_VIDMODE	0x0080
+#define X11WFL_IS_ROOTWINDOW	0x0100
 
 /*****************************************************************************/
 
@@ -202,23 +163,16 @@ struct X11Display
 	TAPTR x11_IReplyPort;
 	struct THook x11_IReplyHook;
 
+	TUINT x11_Flags;
+	
 	TINT x11_DefaultBPP;
 	TINT x11_DefaultDepth;
 	TINT x11_ByteOrder;
-	TBOOL x11_SwapByteOrder;
 
 	int x11_fd_display;
 	int x11_fd_sigpipe_read;
 	int x11_fd_sigpipe_write;
 	int x11_fd_max;
-
-#if defined(ENABLE_XFT)
-	TBOOL x11_use_xft;
-	TAPTR x11_libxfthandle;
-	struct XftInterface x11_xftiface;
-	TAPTR x11_libfchandle;
-	struct FcInterface x11_fciface;
-#endif
 
 	struct X11FontMan x11_fm;
 
@@ -231,7 +185,6 @@ struct X11Display
 	struct THook *x11_CopyExposeHook;
 
 	Region x11_HugeRegion;
-	TBOOL x11_ShmAvail;
 	TINT x11_ShmEvent;
 
 	TINT x11_KeyQual;
@@ -254,9 +207,6 @@ struct X11Display
 	TINT x11_FullScreenWidth;
 	TINT x11_FullScreenHeight;
 
-	/* fullscreen (logical): */
-	TBOOL x11_FullScreen;
-
 	Atom x11_XA_TARGETS;
 	Atom x11_XA_PRIMARY;
 	Atom x11_XA_CLIPBOARD;
@@ -271,7 +221,6 @@ struct X11Display
 
 	TINT x11_NumWindows;
 	TINT x11_NumInterval;
-
 };
 
 struct X11Pen
@@ -305,11 +254,12 @@ struct X11Window
 
 	TUINT base_mask;
 	TUINT eventmask;
+	
+	TUINT flags;
 
 	TVPEN bgpen, fgpen;
 
 	XImage *image;
-	TBOOL image_shm;
 	char *tempbuf;
 	int imw, imh;
 
@@ -321,16 +271,10 @@ struct X11Window
 	/* list of allocated pens: */
 	struct TList penlist;
 
-	/* HACK to consume an Expose event after ConfigureNotify: */
-	TBOOL waitforexpose;
-	TBOOL waitforresize;
-
 	XShmSegmentInfo shminfo;
 
 	/* userdata attached to this window, also propagated in messages: */
 	TTAG userdata;
-
-	TBOOL changevidmode;
 
 	size_t shmsize;
 
@@ -338,9 +282,6 @@ struct X11Window
 	TUINT bpp;
 
 	TINT mousex, mousey;
-
-	TBOOL is_root_window;
-
 };
 
 struct attrdata

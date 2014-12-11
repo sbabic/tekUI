@@ -14,7 +14,7 @@ DLLEXT = .so
 #------------------------------------------------------------------------------
 # Default display driver [Choices: x11, rawfb, directfb, windows]:
 # If you enable rawfb, see RAWFB_SUB_DEVICE below and visit src/Makefile
-# and tek/lib/Makefile if you want to enable a sub driver.
+# and tek/lib/Makefile if you want to stack it on top of another driver.
 #------------------------------------------------------------------------------
 
 DISPLAY_DRIVER ?= x11
@@ -85,20 +85,29 @@ SYS_LUA_LIB = $(PREFIX)/lib/lua/$(LUAVER)
 SYS_LUA_SHARE = $(PREFIX)/share/lua/$(LUAVER)
 
 #------------------------------------------------------------------------------
-# Other libraries:
+# Libraries:
 #------------------------------------------------------------------------------
 
 LUA_DEFS = -I$(PREFIX)/include -I/usr/local/include/lua51 -I/usr/include/lua5.1
 
-FREETYPE_LIBS = -L$(PREFIX)/lib -lfreetype
-FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2 -I/usr/X11/include/
+FREETYPE_DIR = $(PREFIX)
+FREETYPE_INCDIR = $(FREETYPE_DIR)/include
+FREETYPE_LIBDIR = $(FREETYPE_DIR)/lib
+FREETYPE_LIBS = -L$(FREETYPE_LIBDIR) -lfreetype
+FREETYPE_DEFS = -I$(FREETYPE_INCDIR) -I$(FREETYPE_INCDIR)/freetype2 -I$(X11_INCDIR)/freetype2 -I/usr/include/freetype2
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # X11 defines and libraries:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-X11_LIBS = -L/usr/X11R6/lib -lX11 -lXext -lXxf86vm
-X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -DX11_PIXMAP_CACHE -DENABLE_XFT -DENABLE_XVID
+X11_DIR = /usr/X11R6
+X11_INCDIR = $(X11_DIR)/include
+X11_LIBDIR = $(X11_DIR)/lib
+X11_LIBS = -L$(X11_LIBDIR) -lX11 -lXext -lXxf86vm
+X11_DEFS = -I$(X11_INCDIR) -DX11_PIXMAP_CACHE -DENABLE_XVID
+# For Xft (antialiased fonts) support:
+X11_DEFS += -DENABLE_XFT $(FREETYPE_DEFS) 
+X11_LIBS += -lXft
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Raw framebuffer: Can be visualized on a Linux framebuffer, on another

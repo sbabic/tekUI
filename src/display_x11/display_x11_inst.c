@@ -279,11 +279,11 @@ static TBOOL x11_processvisualevent(struct X11Display *mod,
 			break;
 
 		case ConfigureNotify:
-			if (mod->x11_RequestInProgress && v->waitforresize)
+			if (mod->x11_RequestInProgress && (v->flags & X11WFL_WAIT_RESIZE))
 			{
 				TReplyMsg(mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
-				v->waitforresize = TFALSE;
+				v->flags &= ~X11WFL_WAIT_RESIZE;
 				TDBPRINTF(TDB_INFO, ("Released request (ConfigureNotify)\n"));
 			}
 
@@ -293,7 +293,7 @@ static TBOOL x11_processvisualevent(struct X11Display *mod,
 			if ((v->winwidth != ev->xconfigure.width ||
 					v->winheight != ev->xconfigure.height))
 			{
-				v->waitforexpose = TTRUE;
+				v->flags |= X11WFL_WAIT_EXPOSE;
 				v->winwidth = ev->xconfigure.width;
 				v->winheight = ev->xconfigure.height;
 				if (v->eventmask & TITYPE_NEWSIZE)
@@ -327,14 +327,14 @@ static TBOOL x11_processvisualevent(struct X11Display *mod,
 			{
 				TReplyMsg(mod->x11_RequestInProgress);
 				mod->x11_RequestInProgress = TNULL;
-				v->waitforexpose = TFALSE;
+				v->flags |= X11WFL_WAIT_EXPOSE;
 				TDBPRINTF(TDB_TRACE, ("Released request (MapNotify)\n"));
 			}
 			break;
 
 		case Expose:
-			if (v->waitforexpose)
-				v->waitforexpose = TFALSE;
+			if (v->flags & X11WFL_WAIT_EXPOSE)
+				v->flags &= ~X11WFL_WAIT_EXPOSE;
 			else if ((v->eventmask & TITYPE_REFRESH) &&
 				x11_getimsg(mod, v, &imsg, TITYPE_REFRESH))
 			{
@@ -584,6 +584,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 	struct TMsgPort *cmdport = TGetUserPort(task);
 	TUINT cmdportsignal = TGetPortSignal(cmdport);
 	TUINT ireplysignal = TGetPortSignal(inst->x11_IReplyPort);
+	TUINT waitsigs = cmdportsignal | ireplysignal | TTASK_SIG_ABORT;
 
 	/* interval time: 1/50s: */
 	TTIME intt = { 20000 };
@@ -710,7 +711,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 		x11_sendimessages(inst);
 
 		/* get signal state: */
-		sig = TSetSignal(0, TTASK_SIG_ABORT);
+		sig = TSetSignal(0, waitsigs);
 
 	}
 	while (!(sig & TTASK_SIG_ABORT));

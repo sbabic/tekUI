@@ -28,7 +28,7 @@ static void x11_releasesharedmemory(struct X11Display *mod,
 static TAPTR x11_getsharedmemory(struct X11Display *mod, struct X11Window *v,
 	size_t size)
 {
-	if (!mod->x11_ShmAvail)
+	if (!(mod->x11_Flags & X11FL_SHMAVAIL))
 		return TNULL;
 	if (v->shmsize > 0 && size <= v->shmsize)
 		return v->shminfo.shmaddr;
@@ -56,7 +56,7 @@ static TAPTR x11_getsharedmemory(struct X11Display *mod, struct X11Window *v,
 			shmdt(v->shminfo.shmaddr);
 			shmctl(v->shminfo.shmid, IPC_RMID, 0);
 			/* ah, just forget it altogether: */
-			mod->x11_ShmAvail = TFALSE;
+			mod->x11_Flags &= ~X11FL_SHMAVAIL;
 			v->shmsize = 0;
 			return TNULL;
 		}
@@ -72,8 +72,8 @@ static void x11i_freepen(struct X11Display *mod, struct X11Window *v,
 	TRemove(&pen->node);
 	XFreeColors(mod->x11_Display, v->colormap, &pen->color.pixel, 1, 0);
 #if defined(ENABLE_XFT)
-	if (mod->x11_use_xft)
-		(*mod->x11_xftiface.XftColorFree) (mod->x11_Display, mod->x11_Visual,
+	if (mod->x11_Flags & X11FL_USE_XFT)
+		XftColorFree(mod->x11_Display, mod->x11_Visual,
 			v->colormap, &pen->xftcolor);
 #endif
 	TFree(pen);
@@ -110,7 +110,7 @@ static void x11_closevisual(struct X11Display *mod, struct TVRequest *req)
 	if (TISLISTEMPTY(&mod->x11_vlist))
 	{
 		/* last window closed - clear global fullscreen state */
-		mod->x11_FullScreen = TFALSE;
+		mod->x11_Flags &= ~X11FL_FULLSCREEN;
 	}
 
 	if (v->eventmask & TITYPE_INTERVAL)
@@ -121,12 +121,12 @@ static void x11_closevisual(struct X11Display *mod, struct TVRequest *req)
 	x11_releasesharedmemory(mod, v);
 
 #if defined(ENABLE_XFT)
-	if (mod->x11_use_xft && v->draw)
-		(*mod->x11_xftiface.XftDrawDestroy) (v->draw);
+	if ((mod->x11_Flags & X11FL_USE_XFT) && v->draw)
+		XftDrawDestroy(v->draw);
 #endif
 
 #if defined(ENABLE_XVID)
-	if (v->changevidmode)
+	if (v->flags & X11WFL_CHANGE_VIDMODE)
 	{
 		XUngrabKeyboard(mod->x11_Display, CurrentTime);
 		XUngrabPointer(mod->x11_Display, CurrentTime);
@@ -141,7 +141,7 @@ static void x11_closevisual(struct X11Display *mod, struct TVRequest *req)
 		XDestroyWindow(mod->x11_Display, v->window);
 
 #if defined(ENABLE_XVID)
-	if (v->changevidmode)
+	if (v->flags & X11WFL_CHANGE_VIDMODE)
 	{
 		XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
 			&mod->x11_OldMode);
@@ -187,7 +187,7 @@ static int x11_seteventmask(struct X11Display *mod, struct X11Window *v,
 		x11_mask |= KeyPressMask | KeyReleaseMask;
 	if (eventmask & TITYPE_KEYUP)
 		x11_mask |= KeyPressMask | KeyReleaseMask;
-	if (v->is_root_window || (eventmask & TITYPE_MOUSEMOVE))
+	if ((v->flags & X11WFL_IS_ROOTWINDOW) || (eventmask & TITYPE_MOUSEMOVE))
 		x11_mask |= PointerMotionMask | OwnerGrabButtonMask |
 			ButtonMotionMask | ButtonPressMask | ButtonReleaseMask;
 	if (eventmask & TITYPE_MOUSEBUTTON)
@@ -263,7 +263,7 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 		v->winwidth = TMIN(v->winwidth, sw);
 		v->winheight = TMIN(v->winheight, sh);
 
-		v->changevidmode = TFALSE;
+		v->flags &= ~X11WFL_CHANGE_VIDMODE;
 
 		if (TGetTag(tags, TVisual_FullScreen, TFALSE))
 		{
@@ -283,7 +283,7 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 					{
 						mod->x11_OldMode = *modes[0];
 						mod->x11_VidMode = *modes[i];
-						v->changevidmode = TTRUE;
+						v->flags |= X11WFL_CHANGE_VIDMODE;
 						break;
 					}
 				}
@@ -291,7 +291,7 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 			}
 #endif
 
-			if (!v->changevidmode)
+			if (!(v->flags & X11WFL_CHANGE_VIDMODE))
 			{
 				v->winwidth = sw;
 				v->winheight = sh;
@@ -300,7 +300,7 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 			v->wintop = 0;
 			borderless = TTRUE;
 			setfocus = TTRUE;
-			mod->x11_FullScreen = TTRUE;
+			mod->x11_Flags |= X11FL_FULLSCREEN;
 		}
 		else
 		{
@@ -315,7 +315,7 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 				v->wintop = (int) TGetTag(tags, TVisual_WinTop, (TTAG) - 1);
 			}
 
-			if (mod->x11_FullScreen)
+			if (mod->x11_Flags & X11FL_FULLSCREEN)
 			{
 				borderless = TTRUE;
 				if (!TGetTag(tags, TVisual_Borderless, TFALSE))
@@ -365,14 +365,15 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 		v->winleft = TMAX(v->winleft, 0);
 		v->wintop = TMAX(v->wintop, 0);
 
-		if ((borderless || mod->x11_FullScreen) && mod->x11_NumWindows == 0)
-			v->is_root_window = TTRUE;
+		if ((borderless || (mod->x11_Flags & X11FL_FULLSCREEN))
+			&& mod->x11_NumWindows == 0)
+			v->flags |= X11WFL_IS_ROOTWINDOW;
 
 		if (popupwindow || borderless)
 		{
 			swa_mask |= CWOverrideRedirect;
 			swa.override_redirect = True;
-			if (!v->is_root_window)
+			if (!(v->flags & X11WFL_IS_ROOTWINDOW))
 				save_under = v->winwidth * v->winheight < sw * sh / 2;
 		}
 
@@ -382,10 +383,10 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 			swa.save_under = True;
 		}
 		/*else
-		   {
-		   swa_mask |= CWBackingStore;
-		   swa.backing_store = True;
-		   } */
+		{
+			swa_mask |= CWBackingStore;
+			swa.backing_store = True;
+		}*/
 
 		v->colormap = DefaultColormap(mod->x11_Display, mod->x11_Screen);
 		if (v->colormap == TNULL)
@@ -411,7 +412,7 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 #endif
 
 #if defined(ENABLE_XVID)
-		if (v->changevidmode)
+		if (v->flags & X11WFL_CHANGE_VIDMODE)
 		{
 			XF86VidModeSwitchToMode(mod->x11_Display, mod->x11_Screen,
 				&mod->x11_VidMode);
@@ -452,7 +453,7 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 		XSetWMProtocols(mod->x11_Display, v->window,
 			&v->atom_wm_delete_win, 1);
 
-		if (mod->x11_FullScreen)
+		if (mod->x11_Flags & X11FL_FULLSCREEN)
 			XMapRaised(mod->x11_Display, v->window);
 		else
 			XMapWindow(mod->x11_Display, v->window);
@@ -467,7 +468,7 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 		}
 
 #if defined(ENABLE_XVID)
-		if (v->changevidmode)
+		if (v->flags & X11WFL_CHANGE_VIDMODE)
 		{
 			XMoveWindow(mod->x11_Display, v->window, 0, 0);
 			XResizeWindow(mod->x11_Display, v->window, v->winwidth,
@@ -504,9 +505,9 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 			GCForeground | GCBackground, v->gc);
 
 #if defined(ENABLE_XFT)
-		if (mod->x11_use_xft)
+		if (mod->x11_Flags & X11FL_USE_XFT)
 		{
-			v->draw = (*mod->x11_xftiface.XftDrawCreate) (mod->x11_Display,
+			v->draw = XftDrawCreate(mod->x11_Display,
 				v->window, mod->x11_Visual, v->colormap);
 			if (!v->draw)
 				break;
@@ -569,7 +570,7 @@ static void x11_allocpen(struct X11Display *mod, struct TVRequest *req)
 			TBOOL success = TTRUE;
 
 #if defined(ENABLE_XFT)
-			if (mod->x11_use_xft)
+			if (mod->x11_Flags & X11FL_USE_XFT)
 			{
 				XRenderColor xrcolor;
 
@@ -577,9 +578,8 @@ static void x11_allocpen(struct X11Display *mod, struct TVRequest *req)
 				xrcolor.green = g;
 				xrcolor.blue = b;
 				xrcolor.alpha = 0xffff;
-				success = (*mod->x11_xftiface.XftColorAllocValue)
-					(mod->x11_Display, mod->x11_Visual, v->colormap, &xrcolor,
-					&pen->xftcolor);
+				success = XftColorAllocValue(mod->x11_Display, mod->x11_Visual,
+					v->colormap, &xrcolor, &pen->xftcolor);
 			}
 #endif
 			if (success)
@@ -846,8 +846,8 @@ static void x11_setcliprect(struct X11Display *mod, struct TVRequest *req)
 	XSetRegion(mod->x11_Display, v->gc, region);
 
 #if defined(ENABLE_XFT)
-	if (mod->x11_use_xft)
-		(*mod->x11_xftiface.XftDrawSetClip) (v->draw, region);
+	if (mod->x11_Flags & X11FL_USE_XFT)
+		XftDrawSetClip(v->draw, region);
 #endif
 
 	XDestroyRegion(region);
@@ -862,8 +862,8 @@ static void x11_unsetcliprect(struct X11Display *mod, struct TVRequest *req)
 	/*XSetClipMask(mod->x11_Display, v->gc, None); */
 	XSetRegion(mod->x11_Display, v->gc, mod->x11_HugeRegion);
 #if defined(ENABLE_XFT)
-	if (mod->x11_use_xft)
-		(*mod->x11_xftiface.XftDrawSetClip) (v->draw, mod->x11_HugeRegion);
+	if (mod->x11_Flags & X11FL_USE_XFT)
+		XftDrawSetClip(v->draw, mod->x11_HugeRegion);
 #endif
 }
 
@@ -1084,7 +1084,7 @@ static void x11_setattrs(struct X11Display *mod, struct TVRequest *req)
 	{
 		XMoveResizeWindow(mod->x11_Display, v->window, x, y, w, h);
 		mod->x11_RequestInProgress = req;
-		v->waitforresize = TTRUE;
+		v->flags |= X11WFL_WAIT_RESIZE;
 	}
 
 	XSetWMNormalHints(mod->x11_Display, v->window, v->sizehints);
@@ -1104,11 +1104,11 @@ static void x11_drawtext(struct X11Display *mod, struct TVRequest *req)
 	setfgpen(mod, v, (TVPEN) fgpen);
 
 #if defined(ENABLE_XFT)
-	if (mod->x11_use_xft)
+	if (mod->x11_Flags & X11FL_USE_XFT)
 	{
 		XftFont *f = ((struct X11FontHandle *) v->curfont)->xftfont;
 
-		(*mod->x11_xftiface.XftDrawStringUtf8) (v->draw, &fgpen->xftcolor,
+		XftDrawStringUtf8(v->draw, &fgpen->xftcolor,
 			f, x, y + f->ascent, (FcChar8 *) text, len);
 	}
 	else
@@ -1324,7 +1324,7 @@ static XImage *x11_getdrawimage(struct X11Display *mod, struct X11Window *v,
 	{
 		x11_freeimage(mod, v);
 
-		if (mod->x11_ShmAvail)
+		if (mod->x11_Flags & X11FL_SHMAVAIL)
 		{
 			/* TODO: buffer more images, not just 1 */
 			v->image = XShmCreateImage(mod->x11_Display, mod->x11_Visual,
@@ -1337,7 +1337,7 @@ static XImage *x11_getdrawimage(struct X11Display *mod, struct X11Window *v,
 				{
 					v->imw = w;
 					v->imh = h;
-					v->image_shm = TTRUE;
+					v->flags |= X11WFL_IMG_SHM;
 					break;
 				}
 				x11_freeimage(mod, v);
@@ -1394,7 +1394,7 @@ static XImage *x11_getdrawimage(struct X11Display *mod, struct X11Window *v,
 static void x11_putimage(struct X11Display *mod, struct X11Window *v,
 	struct TVRequest *req, TINT x0, TINT y0, TINT w, TINT h)
 {
-	if (v->image_shm)
+	if (v->flags & X11WFL_IMG_SHM)
 	{
 		XShmPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
 			x0, y0, w, h, 1);
@@ -1446,7 +1446,8 @@ static void x11_drawbuffer(struct X11Display *mod, struct TVRequest *req)
 		return;
 
 	dst.tpb_Format = v->pixfmt;
-	pixconv_convert(&src, &dst, 0, 0, w - 1, h - 1, 0, 0, 0, 0);
+	pixconv_convert(&src, &dst, 0, 0, w - 1, h - 1, 0, 0, 0, 
+		mod->x11_Flags & X11FL_SWAPBYTEORDER);
 	x11_putimage(mod, v, req, x, y, w, h);
 }
 

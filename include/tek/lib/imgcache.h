@@ -37,7 +37,7 @@ struct ImageCacheState
 	TINT x0, y0, x1, y1, w, h;
 	TINT (*convert)(struct TVPixBuf *src, struct TVPixBuf *dst, 
 		TINT x0, TINT y0, TINT x1, TINT y1, TINT sx, TINT sy, TBOOL alpha, 
-		TBOOL swap_byteorder);;
+		TBOOL swap_byteorder);
 };
 
 TLIBAPI TINT imgcache_lookup(struct ImageCacheState *cs, struct TVImageCacheRequest *creq, TINT x, TINT y, TINT w, TINT h);

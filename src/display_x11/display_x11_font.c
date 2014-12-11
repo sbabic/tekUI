@@ -32,135 +32,26 @@ static TAPTR x11i_initlib(struct X11Display *mod, TSTRPTR libname,
 static void x11i_hostqueryfonts_xlib(struct X11Display *mod,
 	struct X11FontQueryHandle *fqh, struct X11FontAttr *fattr);
 
-#if defined(ENABLE_XFT)
-static const TSTRPTR libxftsyms[LIBXFT_NUMSYMS] = {
-	"XftFontOpen",
-	"XftFontClose",
-	"XftTextExtentsUtf8",
-	"XftDrawStringUtf8",
-	"XftDrawRect",
-	"XftLockFace",
-	"XftUnlockFace",
-	"XftColorAllocValue",
-	"XftColorFree",
-	"XftDrawCreate",
-	"XftDrawDestroy",
-	"XftDrawSetClip",
-};
-
-static const TSTRPTR libfcsyms[LIBFC_NUMSYMS] = {
-	"FcDefaultSubstitute",
-	"FcFontSetDestroy",
-	"FcFontSort",
-	"FcPatternAddBool",
-	"FcPatternAddInteger",
-	"FcPatternBuild",
-	"FcPatternDestroy",
-	"FcPatternPrint",
-	"FcPatternGetString",
-	"FcPatternGetInteger",
-	"FcPatternGetBool",
-	"FcInit",
-	"FcFini",
-};
-#endif
-
 /*****************************************************************************/
-/* try to open libfontconfig and libxft and bind all symbols
-** if initlibxft() succeeds g->use_xft is set to TTRUE
-** undefining ENABLE_XFT can be used to enforce xlib based font rendering */
 
 LOCAL TBOOL x11_initlibxft(struct X11Display *mod)
 {
 #if defined(ENABLE_XFT)
-
-	/* init fontconfig (needed for font matching) */
-	mod->x11_libfchandle = x11i_initlib(mod, "libfontconfig.so", libfcsyms,
-		(void *) &mod->x11_fciface, LIBFC_NUMSYMS);
-
-	if (mod->x11_libfchandle)
-	{
-		/* try to init libXft, if it fails, there will be no font
-		   antialiasing at all :( */
-		mod->x11_libxfthandle = x11i_initlib(mod, "libXft.so", libxftsyms,
-			(void *) &mod->x11_xftiface, LIBXFT_NUMSYMS);
-
-		if (mod->x11_libxfthandle)
-		{
-			if ((*mod->x11_fciface.FcInit) ())
-				mod->x11_use_xft = TTRUE;
-			else
-				TDBPRINTF(TDB_ERROR, ("fontconfig init failed\n"));
-		}
-	}
-
-	if (!mod->x11_use_xft)
-		TDBPRINTF(TDB_WARN, ("defaulting to xlib based font rendering\n"));
-
-	return mod->x11_use_xft;
-
+	if (FcInit())
+		mod->x11_Flags |= X11FL_USE_XFT;
+	return mod->x11_Flags & X11FL_USE_XFT;
 #else
-
 	return TFALSE;
-
 #endif
 }
 
 LOCAL void x11_exitlibxft(struct X11Display *mod)
 {
 #if defined(ENABLE_XFT)
-	if (mod->x11_libfchandle)
-		(*mod->x11_fciface.FcFini) ();
-	if (mod->x11_libfchandle)
-		dlclose(mod->x11_libfchandle);
-	if (mod->x11_libxfthandle)
-		dlclose(mod->x11_libxfthandle);
+	if (mod->x11_Flags & X11FL_USE_XFT)
+		FcFini();
 #endif
 }
-
-/*****************************************************************************/
-/* dlopen the library named libname, bind numsyms symbols from libsyms[]
-** to iface and return the libhandle obtained by dlopen or TNULL */
-
-#if defined(ENABLE_XFT)
-static TAPTR x11i_initlib(struct X11Display *mod, TSTRPTR libname,
-	const TSTRPTR *libsyms, TAPTR iface, TINT numsyms)
-{
-	TAPTR libhandle = TNULL;
-
-	/* try to open lib */
-	libhandle = dlopen(libname, RTLD_NOW);
-	if (libhandle)
-	{
-		TINT i;
-
-		/* clear any old error conditions */
-		dlerror();
-
-		for (i = 0; i < numsyms; i++)
-		{
-			((void **) iface)[i] = dlsym(libhandle, libsyms[i]);
-			if (dlerror())
-				break;
-		}
-
-		if (i != numsyms)
-		{
-			/* missing symbols */
-			TDBPRINTF(TDB_ERROR, ("%s initialisation failed\n", libname));
-			dlclose(libhandle);
-			libhandle = TNULL;
-		}
-	}
-	else
-	{
-		/* lib not found */
-		TDBPRINTF(TDB_ERROR, ("failed to open %s\n", libname));
-	}
-
-	return libhandle;
-}
-#endif
 
 /*****************************************************************************/
 /* X11FontQueryHandle destructor
@@ -324,7 +215,7 @@ static struct X11FontQueryNode *fnt_getfqnode_xft(struct X11Display *mod,
 		FcChar8 *fname = TNULL;
 
 		/* fquerynode ready - fill in attributes */
-		if ((*mod->x11_fciface.FcPatternGetString) (pattern, FC_FAMILY, 0,
+		if (FcPatternGetString(pattern, FC_FAMILY, 0,
 				&fname) == FcResultMatch)
 		{
 			/* got fontname, now copy it to fqnode */
@@ -348,8 +239,8 @@ static struct X11FontQueryNode *fnt_getfqnode_xft(struct X11Display *mod,
 			TINT fslant, fweight, i = 1;
 			TBOOL fitalic = TFALSE, fbold = TFALSE;
 
-			if ((*mod->x11_fciface.FcPatternGetInteger)
-				(pattern, FC_PIXEL_SIZE, 0, &fpxsize) == FcResultMatch)
+			if (FcPatternGetInteger(pattern, FC_PIXEL_SIZE, 0, 
+				&fpxsize) == FcResultMatch)
 			{
 				fqnode->tags[i].tti_Tag = TVisual_FontPxSize;
 				fqnode->tags[i++].tti_Value = (TTAG) fpxsize;
@@ -365,8 +256,8 @@ static struct X11FontQueryNode *fnt_getfqnode_xft(struct X11Display *mod,
 				}
 			}
 
-			if ((*mod->x11_fciface.FcPatternGetInteger)
-				(pattern, FC_SLANT, 0, &fslant) == FcResultMatch)
+			if (FcPatternGetInteger(pattern, FC_SLANT, 0, 
+				&fslant) == FcResultMatch)
 			{
 				if (fslant == FC_SLANT_ITALIC)
 					fitalic = TTRUE;
@@ -374,8 +265,8 @@ static struct X11FontQueryNode *fnt_getfqnode_xft(struct X11Display *mod,
 				fqnode->tags[i++].tti_Value = (TTAG) fitalic;
 			}
 
-			if ((*mod->x11_fciface.FcPatternGetInteger)
-				(pattern, FC_WEIGHT, 0, &fweight) == FcResultMatch)
+			if (FcPatternGetInteger(pattern, FC_WEIGHT, 0, 
+				&fweight) == FcResultMatch)
 			{
 				if (fweight == FC_WEIGHT_BOLD)
 					fbold = TTRUE;
@@ -383,8 +274,8 @@ static struct X11FontQueryNode *fnt_getfqnode_xft(struct X11Display *mod,
 				fqnode->tags[i++].tti_Value = (TTAG) fbold;
 			}
 
-			if ((*mod->x11_fciface.FcPatternGetBool)
-				(pattern, FC_SCALABLE, 0, &fscale) == FcResultMatch)
+			if (FcPatternGetBool(pattern, FC_SCALABLE, 0, 
+				&fscale) == FcResultMatch)
 			{
 				fqnode->tags[i].tti_Tag = TVisual_FontScaleable;
 				fqnode->tags[i++].tti_Value = (TTAG) fscale;
@@ -392,14 +283,14 @@ static struct X11FontQueryNode *fnt_getfqnode_xft(struct X11Display *mod,
 
 			fqnode->tags[i].tti_Tag = TTAG_DONE;
 
-		}						/* endif fqnode->tags[0].tti_Value */
+		} /* endif fqnode->tags[0].tti_Value */
 		else
 		{
 			TFree(fqnode);
 			fqnode = TNULL;
 		}
 
-	}							/* endif fqnode */
+	} /* endif fqnode */
 	else
 		TDBPRINTF(TDB_FAIL, ("out of memory :(\n"));
 
@@ -611,8 +502,7 @@ fnt_matchfont_xft(struct X11Display *mod, FcPattern *pattern, TSTRPTR fname,
 		FcChar8 *fcfname = NULL;
 		TSTRPTR tempname = TNULL;
 
-		(*mod->x11_fciface.FcPatternGetString) (pattern, FC_FAMILY, 0,
-			&fcfname);
+		FcPatternGetString(pattern, FC_FAMILY, 0, &fcfname);
 
 		/* convert fontnames to lower case */
 		len = strlen(fname);
@@ -641,8 +531,7 @@ fnt_matchfont_xft(struct X11Display *mod, FcPattern *pattern, TSTRPTR fname,
 	{
 		int fcsize;
 
-		(*mod->x11_fciface.FcPatternGetInteger) (pattern, FC_PIXEL_SIZE, 0,
-			&fcsize);
+		FcPatternGetInteger(pattern, FC_PIXEL_SIZE, 0, &fcsize);
 		if ((int) fattr->fpxsize == fcsize)
 			match |= X11FNT_MATCH_SIZE;
 	}
@@ -651,8 +540,7 @@ fnt_matchfont_xft(struct X11Display *mod, FcPattern *pattern, TSTRPTR fname,
 	{
 		int fcslant;
 
-		(*mod->x11_fciface.FcPatternGetInteger) (pattern, FC_SLANT, 0,
-			&fcslant);
+		FcPatternGetInteger(pattern, FC_SLANT, 0, &fcslant);
 		if ((fcslant == FC_SLANT_ITALIC && fattr->fitalic == TTRUE) ||
 			(fcslant == FC_SLANT_ROMAN && fattr->fitalic == TFALSE))
 			match |= X11FNT_MATCH_SLANT;
@@ -662,8 +550,7 @@ fnt_matchfont_xft(struct X11Display *mod, FcPattern *pattern, TSTRPTR fname,
 	{
 		int fcweight;
 
-		(*mod->x11_fciface.FcPatternGetInteger) (pattern, FC_WEIGHT, 0,
-			&fcweight);
+		FcPatternGetInteger(pattern, FC_WEIGHT, 0, &fcweight);
 		if ((fcweight == FC_WEIGHT_BOLD && fattr->fbold == TTRUE) ||
 			(fcweight == FC_WEIGHT_MEDIUM && fattr->fbold == TFALSE))
 			match |= X11FNT_MATCH_WEIGHT;
@@ -673,8 +560,7 @@ fnt_matchfont_xft(struct X11Display *mod, FcPattern *pattern, TSTRPTR fname,
 	{
 		FcBool fcscale;
 
-		(*mod->x11_fciface.FcPatternGetBool) (pattern, FC_SCALABLE, 0,
-			&fcscale);
+		FcPatternGetBool(pattern, FC_SCALABLE, 0, &fcscale);
 		if ((fcscale == FcTrue && fattr->fscale == TTRUE) ||
 			(fcscale == FcFalse && fattr->fscale == TFALSE))
 			match |= X11FNT_MATCH_SCALE;
@@ -789,10 +675,10 @@ static TBOOL x11i_hostopenfont(struct X11Display *mod,
 	TAPTR TExecBase = TGetExecBase(mod);
 
 #if defined(ENABLE_XFT)
-	if (mod->x11_use_xft)
+	if (mod->x11_Flags & X11FL_USE_XFT)
 	{
 		/* load xft font */
-		fn->xftfont = (*mod->x11_xftiface.XftFontOpen) (mod->x11_Display,
+		fn->xftfont = XftFontOpen(mod->x11_Display,
 			mod->x11_Screen,
 			XFT_FAMILY, XftTypeString, fattr->fname,
 			XFT_PIXEL_SIZE, XftTypeInteger, fattr->fpxsize,
@@ -927,7 +813,7 @@ LOCAL TAPTR x11_hostqueryfonts(struct X11Display *mod, TTAGITEM *tags)
 		fqh->nptr = &fqh->reslist.tlh_Head;
 
 #if defined(ENABLE_XFT)
-		if (mod->x11_use_xft)
+		if (mod->x11_Flags & X11FL_USE_XFT)
 			x11i_hostqueryfonts_xft(mod, fqh, &fattr);
 		else
 #endif
@@ -966,8 +852,7 @@ static void x11i_hostqueryfonts_xft(struct X11Display *mod,
 		struct X11FontNode *fnn = (struct X11FontNode *) node;
 
 		/* create a pattern to match fontname */
-		pattern = (*mod->x11_fciface.FcPatternBuild) (0,
-			FC_FAMILY, FcTypeString, fnn->fname,
+		pattern = FcPatternBuild(0, FC_FAMILY, FcTypeString, fnn->fname,
 			XFT_ENCODING, FcTypeString, X11FNT_DEFREGENC,
 			FC_ANTIALIAS, FcTypeBool, FcTrue, NULL);
 
@@ -988,41 +873,35 @@ static void x11i_hostqueryfonts_xft(struct X11Display *mod,
 		   fonts don't seem to support FC_PIXEL_SIZE attribute  */
 		if (fattr->fpxsize != X11FNTQUERY_UNDEFINED && !fattr->fscale)
 		{
-			(*mod->x11_fciface.FcPatternAddInteger)
-				(pattern, FC_PIXEL_SIZE, fattr->fpxsize);
+			FcPatternAddInteger(pattern, FC_PIXEL_SIZE, fattr->fpxsize);
 			matchflg |= X11FNT_MATCH_SIZE;
 		}
 
 		if (fattr->fitalic != X11FNTQUERY_UNDEFINED)
 		{
-			(*mod->x11_fciface.FcPatternAddInteger) (pattern, FC_SLANT,
+			FcPatternAddInteger(pattern, FC_SLANT,
 				(fattr->fitalic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN));
 			matchflg |= X11FNT_MATCH_SLANT;
 		}
 
 		if (fattr->fbold != X11FNTQUERY_UNDEFINED)
 		{
-			(*mod->x11_fciface.FcPatternAddInteger) (pattern, FC_WEIGHT,
+			FcPatternAddInteger(pattern, FC_WEIGHT,
 				(fattr->fbold ? FC_WEIGHT_BOLD : FC_WEIGHT_MEDIUM));
 			matchflg |= X11FNT_MATCH_WEIGHT;
 		}
 
 		if (fattr->fscale != X11FNTQUERY_UNDEFINED)
 		{
-			(*mod->x11_fciface.FcPatternAddBool) (pattern, FC_SCALABLE,
-				fattr->fscale);
+			FcPatternAddBool(pattern, FC_SCALABLE, fattr->fscale);
 			matchflg |= X11FNT_MATCH_SCALE;
 		}
 
 		/* don't call FcConfigSubstitute because matching
 		   should be as exact as possible */
-		TDB(TDB_TRACE, ((*mod->x11_fciface.FcPatternPrint) (pattern)));
-		(*mod->x11_fciface.FcDefaultSubstitute) (pattern);
-		TDB(TDB_TRACE, ((*mod->x11_fciface.FcPatternPrint) (pattern)));
+		FcDefaultSubstitute(pattern);
 
-		fontset =
-			(*mod->x11_fciface.FcFontSort) (NULL, pattern, FcFalse, TNULL,
-			&result);
+		fontset = FcFontSort(NULL, pattern, FcFalse, TNULL, &result);
 		if (fontset)
 		{
 			TINT i;
@@ -1071,18 +950,18 @@ static void x11i_hostqueryfonts_xft(struct X11Display *mod,
 				}
 			}
 
-			(*mod->x11_fciface.FcFontSetDestroy) (fontset);
+			FcFontSetDestroy(fontset);
 
-		}						/* endif fontset */
+		}	/* endif fontset */
 		else
 			TDBPRINTF(TDB_ERROR, ("X query failed\n"));
 
-		(*mod->x11_fciface.FcPatternDestroy) (pattern);
+		FcPatternDestroy(pattern);
 
 		if (fcount == fattr->fnum)
 			break;
 
-	}							/* end of fnlist iteration */
+	}	/* end of fnlist iteration */
 }
 #endif
 
@@ -1112,7 +991,7 @@ static void x11i_hostqueryfonts_xlib(struct X11Display *mod,
 		else
 		{
 			TDBPRINTF(TDB_ERROR, ("X invalid fontname '%s' specified\n",
-					fnn->fname));
+				fnn->fname));
 			continue;
 		}
 
@@ -1168,14 +1047,14 @@ static void x11i_hostqueryfonts_xlib(struct X11Display *mod,
 				TFree(fqnode);
 			}
 
-		}						/* end of fontlist iteration */
+		} /* end of fontlist iteration */
 
 		TFree(fquery);
 
 		if (fontlist)
 			XFreeFontNames(fontlist);
 
-	}							/* end of fnlist iteration */
+	} /* end of fnlist iteration */
 }
 
 /*****************************************************************************/
@@ -1199,7 +1078,7 @@ x11_hostsetfont(struct X11Display *mod, struct X11Window *v, TAPTR font)
 	if (font)
 	{
 #if defined(ENABLE_XFT)
-		if (!mod->x11_use_xft)
+		if (!(mod->x11_Flags & X11FL_USE_XFT))
 #endif
 		{
 			XGCValues gcv;
@@ -1297,7 +1176,7 @@ LOCAL void x11_hostclosefont(struct X11Display *mod, TAPTR font)
 			{
 				TDBPRINTF(TDB_ERROR,
 					("attempt to close font which is currently in use\n"));
-				return;			/* do nothing */
+				return; /* do nothing */
 			}
 		}
 	}
@@ -1313,7 +1192,7 @@ LOCAL void x11_hostclosefont(struct X11Display *mod, TAPTR font)
 #if defined(ENABLE_XFT)
 	if (fn->xftfont)
 	{
-		(*mod->x11_xftiface.XftFontClose) (mod->x11_Display, fn->xftfont);
+		XftFontClose(mod->x11_Display, fn->xftfont);
 		fn->xftfont = TNULL;
 	}
 #endif
@@ -1348,11 +1227,11 @@ x11_hosttextsize(struct X11Display *mod, TAPTR font, TSTRPTR text, TINT len)
 	struct X11FontHandle *fn = (struct X11FontHandle *) font;
 
 #if defined(ENABLE_XFT)
-	if (mod->x11_use_xft)
+	if (mod->x11_Flags & X11FL_USE_XFT)
 	{
 		XGlyphInfo extents;
 
-		(*mod->x11_xftiface.XftTextExtentsUtf8) (mod->x11_Display, fn->xftfont,
+		XftTextExtentsUtf8(mod->x11_Display, fn->xftfont,
 			(FcChar8 *) text, len, &extents);
 		width = extents.xOff;	/* why not extents.width?!? */
 	}
@@ -1429,7 +1308,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 
 		case TVisual_FontAscent:
 #if defined(ENABLE_XFT)
-			if (mod->x11_use_xft)
+			if (mod->x11_Flags & X11FL_USE_XFT)
 				*((TTAG *) item->tti_Value) = fn->xftfont->ascent;
 			else
 #endif
@@ -1438,7 +1317,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 
 		case TVisual_FontDescent:
 #if defined(ENABLE_XFT)
-			if (mod->x11_use_xft)
+			if (mod->x11_Flags & X11FL_USE_XFT)
 				*((TTAG *) item->tti_Value) = fn->xftfont->descent;
 			else
 #endif
@@ -1447,7 +1326,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 
 		case TVisual_FontHeight:
 #if defined(ENABLE_XFT)
-			if (mod->x11_use_xft)
+			if (mod->x11_Flags & X11FL_USE_XFT)
 				*((TTAG *) item->tti_Value) =
 					fn->xftfont->ascent + fn->xftfont->descent;
 			else
@@ -1461,9 +1340,9 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			unsigned long ulp;
 
 #if defined(ENABLE_XFT)
-			if (mod->x11_use_xft)
+			if (mod->x11_Flags & X11FL_USE_XFT)
 			{
-				FT_Face face = (*mod->x11_xftiface.XftLockFace) (fn->xftfont);
+				FT_Face face = XftLockFace(fn->xftfont);
 
 				ulp = fn->xftfont->descent / 2;
 				if (face)
@@ -1473,7 +1352,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 						ulp = -face->underline_position *
 							fn->xftfont->height / face->units_per_EM;
 					}
-					(*mod->x11_xftiface.XftUnlockFace) (fn->xftfont);
+					XftUnlockFace(fn->xftfont);
 				}
 			}
 			else
@@ -1490,9 +1369,9 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			unsigned long ult = 1;
 
 #if defined(ENABLE_XFT)
-			if (mod->x11_use_xft)
+			if (mod->x11_Flags & X11FL_USE_XFT)
 			{
-				FT_Face face = (*mod->x11_xftiface.XftLockFace) (fn->xftfont);
+				FT_Face face = XftLockFace(fn->xftfont);
 
 				if (face)
 				{
@@ -1501,7 +1380,7 @@ x11_hostgetfattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 						ult = face->underline_thickness *
 							fn->xftfont->height / face->units_per_EM;
 					}
-					(*mod->x11_xftiface.XftUnlockFace) (fn->xftfont);
+					XftUnlockFace(fn->xftfont);
 				}
 			}
 			else

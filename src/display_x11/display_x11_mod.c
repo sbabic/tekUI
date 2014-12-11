@@ -5,6 +5,7 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
+#include <string.h>
 #include <unistd.h>
 #include <tek/inline/exec.h>
 #include "display_x11_mod.h"
@@ -67,20 +68,21 @@ static void x11_destroy(struct X11Display *mod)
 	TDestroy(mod->x11_Lock);
 }
 
-static const TUINT8 x11_endiancheck[4] = { 0x11, 0x22, 0x33, 0x44 };
+#define X11_IS_BIG_ENDIAN (*(TUINT16 *)"\0\xff" < 0x100)
 
 static TBOOL x11_getprops(struct X11Display *inst)
 {
 	int major, minor, pixmap;
-	int order = *(TUINT *) x11_endiancheck == 0x11223344 ? MSBFirst : LSBFirst;
-	TBOOL swap = ImageByteOrder(inst->x11_Display) != order;
+	int order = X11_IS_BIG_ENDIAN ? MSBFirst : LSBFirst;
 	XWindowAttributes rootwa;
 
 	inst->x11_ByteOrder = order;
-	inst->x11_SwapByteOrder = swap;
-	inst->x11_ShmAvail = (XShmQueryVersion(inst->x11_Display,
-			&major, &minor, &pixmap) == True && major > 0);
-	if (inst->x11_ShmAvail)
+	if (ImageByteOrder(inst->x11_Display) != order)
+		inst->x11_Flags |= X11FL_SWAPBYTEORDER;
+	if (XShmQueryVersion(inst->x11_Display, &major, &minor, 
+		&pixmap) == True && major > 0)
+		inst->x11_Flags |= X11FL_SHMAVAIL;
+	if (inst->x11_Flags & X11FL_SHMAVAIL)
 		inst->x11_ShmEvent = XShmGetEventBase(inst->x11_Display) +
 			ShmCompletion;
 	inst->x11_DefaultDepth = DefaultDepth(inst->x11_Display, inst->x11_Screen);
@@ -183,17 +185,29 @@ static void x11_exitinstance(struct X11Display *inst)
 		XCloseDisplay(inst->x11_Display);
 
 	x11_exitlibxft(inst);
+	
+	TDestroy(inst->x11_IReplyPort);	
 }
 
 static TBOOL x11_initinstance(struct TTask *task)
 {
-	struct X11Display *inst = TExecGetTaskData(TGetExecBase(task), task);
+	TAPTR TExecBase = TGetExecBase(task);
+	struct X11Display *inst = TGetTaskData(task);
 
 	for (;;)
 	{
 		TTAGITEM ftags[3];
 		int pipefd[2];
 		XRectangle rectangle;
+		TTAGITEM tags[2];
+
+		TInitHook(&inst->x11_IReplyHook, x11_ireplyhookfunc, inst);
+		tags[0].tti_Tag = TMsgPort_Hook;
+		tags[0].tti_Value = (TTAG) &inst->x11_IReplyHook;
+		tags[1].tti_Tag = TTAG_DONE;
+		inst->x11_IReplyPort = TCreatePort(tags);
+		if (inst->x11_IReplyPort == TNULL)
+			break;
 
 		/* list of free input messages: */
 		TInitList(&inst->x11_imsgpool);
@@ -283,7 +297,6 @@ static void x11_exit(struct X11Display *mod)
 		x11_wake(mod);
 		TDestroy(mod->x11_Task);
 	}
-	TDestroy(mod->x11_IReplyPort);
 }
 
 static TBOOL x11_init(struct X11Display *mod, TTAGITEM *tags)
@@ -294,14 +307,6 @@ static TBOOL x11_init(struct X11Display *mod, TTAGITEM *tags)
 	for (;;)
 	{
 		TTAGITEM tags[2];
-
-		TInitHook(&mod->x11_IReplyHook, x11_ireplyhookfunc, mod);
-		tags[0].tti_Tag = TMsgPort_Hook;
-		tags[0].tti_Value = (TTAG) & mod->x11_IReplyHook;
-		tags[1].tti_Tag = TTAG_DONE;
-		mod->x11_IReplyPort = TCreatePort(tags);
-		if (mod->x11_IReplyPort == TNULL)
-			break;
 
 		tags[0].tti_Tag = TTask_UserData;
 		tags[0].tti_Value = (TTAG) mod;

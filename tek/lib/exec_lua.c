@@ -18,11 +18,6 @@ static const struct TInitModule tek_lib_exec_initmodules[] =
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
-static const luaL_Reg tek_lib_exec_funcs[] =
-{
-	{NULL, NULL}
-};
-
 static int tek_lib_exec_base_gc(lua_State *L)
 {
 	TAPTR *pexec = luaL_checkudata(L, 1, "tek.lib.exec.base.meta");
