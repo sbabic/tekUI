@@ -651,7 +651,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 
 		TGetSystemTime(&nowt);
 
-		if (inst->x11_NumInterval > 0)
+		if (inst->x11_NumInterval > 0 || inst->x11_RequestInProgress)
 		{
 			if (TCmpTime(&nowt, &nextt) >= 0)
 			{
