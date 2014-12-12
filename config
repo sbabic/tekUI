@@ -137,12 +137,6 @@ FREETYPE_LIBDIR = $(FREETYPE_DIR)/lib
 FREETYPE_LIBS = -L$(FREETYPE_LIBDIR) -lfreetype  # $(CC_LD_RT)$(FREETYPE_LIBDIR)
 FREETYPE_DEFS = -I$(FREETYPE_INCDIR) -I$(FREETYPE_INCDIR)/freetype2 -I$(X11_INCDIR)/freetype2 -I/usr/include/freetype2
 
-FONTCONFIG_DIR = $(PREFIX)
-FONTCONFIG_INCDIR = $(FONTCONFIG_DIR)/include
-FONTCONFIG_LIBDIR = $(FONTCONFIG_DIR)/lib
-FONTCONFIG_LIBS = -L$(FONTCONFIG_LIBDIR) # -lfontconfig $(CC_LD_RT)$(FONTCONFIG_LIBDIR)
-FONTCONFIG_DEFS = -I$(FONTCONFIG_INCDIR)
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # X11 defines and libraries:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,7 +145,7 @@ X11_DIR = /usr/X11R6
 X11_INCDIR = $(X11_DIR)/include
 X11_LIBDIR = $(X11_DIR)/lib
 X11_LIBS = -L$(X11_LIBDIR) -lX11 -lXext -lXxf86vm
-X11_DEFS = -I$(X11_INCDIR) -DX11_PIXMAP_CACHE -DENABLE_XVID
+X11_DEFS = -I$(X11_INCDIR) -DX11_PIXMAP_CACHE -DENABLE_XSHM -DENABLE_XVID
 
 # For Xft (antialiased fonts) support:
 XFT_DIR = $(X11_DIR)
@@ -163,6 +157,11 @@ XFT_DEFS = -I$(XFT_INCDIR) -DENABLE_XFT
 X11_LIBS += $(XFT_LIBS) $(FONTCONFIG_LIBS) $(FREETYPE_LIBS)
 X11_DEFS += $(XFT_DEFS) $(FONTCONFIG_DEFS) $(FREETYPE_DEFS) 
 
+FONTCONFIG_DIR = $(PREFIX)
+FONTCONFIG_INCDIR = $(FONTCONFIG_DIR)/include
+FONTCONFIG_LIBDIR = $(FONTCONFIG_DIR)/lib
+FONTCONFIG_LIBS = -L$(FONTCONFIG_LIBDIR) # -lfontconfig $(CC_LD_RT)$(FONTCONFIG_LIBDIR)
+FONTCONFIG_DEFS = -I$(FONTCONFIG_INCDIR)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Raw framebuffer: Can be visualized on a Linux framebuffer, on another
@@ -228,11 +227,11 @@ LUADISTDIR = $(BASEDIR)/../lua-5.1.5
 WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-long-long
 OPT = -O2 -fno-strict-aliasing
 INCL = -I. -Iinclude -I$(INCDIR)
-LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
-MODCFLAGS = -shared -L $(LIBDIR)
+LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) $(CPPFLAGS) $(CFLAGS)
+MODCFLAGS = -shared -L $(LIBDIR) $(LDFLAGS)
 # For Mac OS X:
-# MODCFLAGS = -bundle -undefined dynamic_lookup -L $(LIBDIR)
-BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
+# MODCFLAGS = -bundle -undefined dynamic_lookup -L $(LIBDIR) $(LDFLAGS)
+BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) $(LDFLAGS)
 # for compilation of Lua code:
 LUAARCH = -m64 # -m32 for 32bit, -m64 for 64bit architecture
 

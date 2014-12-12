@@ -79,12 +79,14 @@ static TBOOL x11_getprops(struct X11Display *inst)
 	inst->x11_ByteOrder = order;
 	if (ImageByteOrder(inst->x11_Display) != order)
 		inst->x11_Flags |= X11FL_SWAPBYTEORDER;
+#if defined(ENABLE_XSHM)
 	if (XShmQueryVersion(inst->x11_Display, &major, &minor, 
 		&pixmap) == True && major > 0)
 		inst->x11_Flags |= X11FL_SHMAVAIL;
 	if (inst->x11_Flags & X11FL_SHMAVAIL)
 		inst->x11_ShmEvent = XShmGetEventBase(inst->x11_Display) +
 			ShmCompletion;
+#endif
 	inst->x11_DefaultDepth = DefaultDepth(inst->x11_Display, inst->x11_Screen);
 	switch (inst->x11_DefaultDepth)
 	{

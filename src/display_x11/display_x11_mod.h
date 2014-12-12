@@ -14,16 +14,21 @@
 #include <tek/lib/utf8.h>
 
 #include <X11/X.h>
-#if defined(ENABLE_XFT)
-#include <X11/Xft/Xft.h>
-#endif
 #include <X11/Xlib.h>
-#include <sys/shm.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <X11/XKBlib.h>
+
+#if defined(ENABLE_XFT)
+#include <X11/Xft/Xft.h>
+#endif
+
+#if defined(ENABLE_XSHM)
+#include <sys/shm.h>
 #include <X11/extensions/XShm.h>
+#endif
+
 #if defined(ENABLE_XVID)
 #include <X11/extensions/xf86vmode.h>
 #endif
@@ -271,12 +276,13 @@ struct X11Window
 	/* list of allocated pens: */
 	struct TList penlist;
 
+#if defined(ENABLE_XSHM)
 	XShmSegmentInfo shminfo;
+	size_t shmsize;
+#endif
 
 	/* userdata attached to this window, also propagated in messages: */
 	TTAG userdata;
-
-	size_t shmsize;
 
 	TUINT pixfmt;
 	TUINT bpp;

@@ -5,6 +5,8 @@
 #include <tek/lib/imgcache.h>
 #include <tek/inline/exec.h>
 
+#if defined(ENABLE_XSHM)
+
 static TBOOL x11_shm_available = TTRUE;
 
 static int shm_errhandler(Display *d, XErrorEvent *evt)
@@ -64,6 +66,8 @@ static TAPTR x11_getsharedmemory(struct X11Display *mod, struct X11Window *v,
 	return v->shminfo.shmaddr;
 }
 
+#endif
+
 static void x11i_freepen(struct X11Display *mod, struct X11Window *v,
 	struct X11Pen *pen)
 {
@@ -118,13 +122,13 @@ static void x11_closevisual(struct X11Display *mod, struct TVRequest *req)
 
 	x11_freeimage(mod, v);
 	TFree(v->tempbuf);
+#if defined(ENABLE_XSHM)
 	x11_releasesharedmemory(mod, v);
-
+#endif
 #if defined(ENABLE_XFT)
 	if ((mod->x11_Flags & X11FL_USE_XFT) && v->draw)
 		XftDrawDestroy(v->draw);
 #endif
-
 #if defined(ENABLE_XVID)
 	if (v->flags & X11WFL_CHANGE_VIDMODE)
 	{
@@ -1324,6 +1328,7 @@ static XImage *x11_getdrawimage(struct X11Display *mod, struct X11Window *v,
 	{
 		x11_freeimage(mod, v);
 
+#if defined(ENABLE_XSHM)
 		if (mod->x11_Flags & X11FL_SHMAVAIL)
 		{
 			/* TODO: buffer more images, not just 1 */
@@ -1343,6 +1348,7 @@ static XImage *x11_getdrawimage(struct X11Display *mod, struct X11Window *v,
 				x11_freeimage(mod, v);
 			}
 		}
+#endif
 
 		if (!v->image)
 		{
@@ -1394,6 +1400,7 @@ static XImage *x11_getdrawimage(struct X11Display *mod, struct X11Window *v,
 static void x11_putimage(struct X11Display *mod, struct X11Window *v,
 	struct TVRequest *req, TINT x0, TINT y0, TINT w, TINT h)
 {
+#if defined(ENABLE_XSHM)
 	if (v->flags & X11WFL_IMG_SHM)
 	{
 		XShmPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
@@ -1401,6 +1408,7 @@ static void x11_putimage(struct X11Display *mod, struct X11Window *v,
 		mod->x11_RequestInProgress = req;
 	}
 	else
+#endif
 		XPutImage(mod->x11_Display, v->window, v->gc, v->image, 0, 0,
 			x0, y0, w, h);
 }
