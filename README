@@ -26,10 +26,11 @@
    - 3.2.1 [[#notelinux : Linux notes]]
    - 3.2.2 [[#notefbsd : FreeBSD notes]]
    - 3.2.3 [[#notewindows : Windows notes]]
-   - 3.2.4 [[#notex11 : X11 notes]]
-   - 3.2.5 [[#noterawfb : Raw framebuffer notes]]
-   - 3.2.6 [[#notedirectfb : DirectFB notes]]
-   - 3.2.7 [[#notefloat : Floating point support]]
+   - 3.2.4 [[#notehpux : HP-UX notes]]
+   - 3.2.5 [[#notex11 : X11 notes]]
+   - 3.2.6 [[#noterawfb : Raw framebuffer notes]]
+   - 3.2.7 [[#notedirectfb : DirectFB notes]]
+   - 3.2.8 [[#notefloat : Floating point support]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
@@ -95,10 +96,10 @@ are available under a commercial license – see below.
 ==( status : 1.2. Status, requirements )==
 
 TekUI is slowly approaching feature completeness ("beta" stadium). It
-is available for Unix-like operating systems such as Linux and
-FreeBSD, and it may work on other flavours of Unix with few
-modifications. A rudimentary Windows display driver and build setup
-is included, but not very well supported at this time.
+is available for Unix-like operating systems such as Linux, FreeBSD,
+Solaris and HP-UX, and it may work on other flavours of Unix with few
+modifications. A Windows display driver and build setup is included,
+but not equally well supported at this time.
 
 Display drivers are included for X11, Linux framebuffer, Windows,
 DirectFB, and raw memory. See also [[TODO][todo.html]] for a list of
@@ -386,7 +387,16 @@ releasing the mouse button first. For reasons not yet investigated,
 this display driver feels disproportionately sluggish. For adjusting
 the build environment, see the {{config}} file.
 
-===( notex11 : 3.2.4. X11 notes )===
+===( notehpux : 3.2.4. HP-UX notes )===
+
+In addition to the HP-UX settings and notes in the {{config}} file,
+you need a Lua binary with a {{shl_load()}} patch for loading shared
+libraries, and pthreads support. For building Lua, use 
+
+  CPPFLAGS=-D_POSIX_C_SOURCE=199506L
+  LDFLAGS=-lpthread
+
+===( notex11 : 3.2.5. X11 notes )===
 
 By default, libXft and fontconfig are needed for building the x11
 driver, but tekUI falls back to the core x11 font API if they are
@@ -394,11 +404,11 @@ unavailable at runtime. Also, libXft is unnecessary if you stack
 the rawfb driver on top of the x11 driver. Disable it by removing
 {{-DENABLE_XFT}} from {{X11_DEFS}}. 
 
-The XFree86VidMode extension is linked against by default. It can
-be disabled by removing {{-DENABLE_XVID}} from {{X11_DEFS}} in the
-config file. Fullscreen support is problematic.
+The XFree86VidMode extension is no longer linked against by default.
+It can be enabled by adding {{-DENABLE_XVID}} to {{X11_DEFS}} in the
+{{config}} file. Fullscreen support is problematic.
 
-===( noterawfb : 3.2.5. Raw framebuffer notes )===
+===( noterawfb : 3.2.6. Raw framebuffer notes )===
 
 The raw framebuffer driver performs all rendering in a chunk of
 memory that can be supplied by a native display or the application.
@@ -441,14 +451,14 @@ A mouse pointer image is loaded from {{DEF_CURSORFILE}}, by default
 {{tek/ui/cursor/cursor-black.png}}, with a fallback to a small,
 built-in pointer image.
 
-===( notedirectfb : 3.2.6. DirectFB notes )===
+===( notedirectfb : 3.2.7. DirectFB notes )===
 
 The DirectFB display driver is not very actively supported at this
 time. Some adaptations are likely needed. In case of problems,
 consider using the DirectFB driver only as a rendering back-end for
 the rawfb driver.
 
-===( notefloat : 3.2.7 Floating point support )===
+===( notefloat : 3.2.8 Floating point support )===
 
 TekUI is free of floating point arithmetics and works with a 32bit
 integer version of the Lua virtual machine, with the following,

@@ -443,9 +443,13 @@ static void x11_openvisual(struct X11Display *mod, struct TVRequest *req)
 		if (v->sizehints->flags)
 			XSetWMNormalHints(mod->x11_Display, v->window, v->sizehints);
 
+#if defined(__hpux)
+		XStringListToTextProperty((char **) &v->title, 1, &title_prop);
+#else
 		if (Xutf8TextListToTextProperty(mod->x11_Display,
 				(char **) &v->title, 1, XUTF8StringStyle, &title_prop) ==
 			Success)
+#endif
 		{
 			XSetWMProperties(mod->x11_Display, v->window, &title_prop,
 				NULL, NULL, 0, NULL, NULL, NULL);

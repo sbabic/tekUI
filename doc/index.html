@@ -99,16 +99,19 @@
 											3.2.3 <a href="#notewindows">Windows notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.4 <a href="#notex11">X11 notes</a> 
+											3.2.4 <a href="#notehpux">HP-UX notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.5 <a href="#noterawfb">Raw framebuffer notes</a> 
+											3.2.5 <a href="#notex11">X11 notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.6 <a href="#notedirectfb">DirectFB notes</a> 
+											3.2.6 <a href="#noterawfb">Raw framebuffer notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.7 <a href="#notefloat">Floating point support</a> 
+											3.2.7 <a href="#notedirectfb">DirectFB notes</a> 
+										</li>
+										<li style="list-style-type: none">
+											3.2.8 <a href="#notefloat">Floating point support</a> 
 										</li>
 									</ul>
 								</blockquote>
@@ -234,10 +237,10 @@
 		<div class="node"><h2><a name="status" id="status">1.2. Status, requirements</a></h2>
 			<p>
 				TekUI is slowly approaching feature completeness (&quot;beta&quot; stadium). It
-				is available for Unix-like operating systems such as Linux and
-				FreeBSD, and it may work on other flavours of Unix with few
-				modifications. A rudimentary Windows display driver and build setup
-				is included, but not very well supported at this time.
+				is available for Unix-like operating systems such as Linux, FreeBSD,
+				Solaris and HP-UX, and it may work on other flavours of Unix with few
+				modifications. A Windows display driver and build setup is included,
+				but not equally well supported at this time.
 			</p>
 			<p>
 				Display drivers are included for X11, Linux framebuffer, Windows,
@@ -717,7 +720,18 @@
 				the build environment, see the <code>config</code> file.
 			</p>
 		</div>
-		<div class="node"><h3><a name="notex11" id="notex11">3.2.4. X11 notes</a></h3>
+		<div class="node"><h3><a name="notehpux" id="notehpux">3.2.4. HP-UX notes</a></h3>
+			<p>
+				In addition to the HP-UX settings and notes in the <code>config</code> file,
+				you need a Lua binary with a <code>shl_load()</code> patch for loading shared
+				libraries, and pthreads support. For building Lua, use
+			</p>
+<pre>
+CPPFLAGS=-D_POSIX_C_SOURCE=199506L
+LDFLAGS=-lpthread
+</pre>
+		</div>
+		<div class="node"><h3><a name="notex11" id="notex11">3.2.5. X11 notes</a></h3>
 			<p>
 				By default, libXft and fontconfig are needed for building the x11
 				driver, but tekUI falls back to the core x11 font API if they are
@@ -726,12 +740,12 @@
 				<code>-DENABLE_XFT</code> from <code>X11_DEFS</code>.
 			</p>
 			<p>
-				The XFree86VidMode extension is linked against by default. It can
-				be disabled by removing <code>-DENABLE_XVID</code> from <code>X11_DEFS</code> in the
-				config file. Fullscreen support is problematic.
+				The XFree86VidMode extension is no longer linked against by default.
+				It can be enabled by adding <code>-DENABLE_XVID</code> to <code>X11_DEFS</code> in the
+				<code>config</code> file. Fullscreen support is problematic.
 			</p>
 		</div>
-		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.5. Raw framebuffer notes</a></h3>
+		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.6. Raw framebuffer notes</a></h3>
 			<p>
 				The raw framebuffer driver performs all rendering in a chunk of
 				memory that can be supplied by a native display or the application.
@@ -781,7 +795,7 @@
 				built-in pointer image.
 			</p>
 		</div>
-		<div class="node"><h3><a name="notedirectfb" id="notedirectfb">3.2.6. DirectFB notes</a></h3>
+		<div class="node"><h3><a name="notedirectfb" id="notedirectfb">3.2.7. DirectFB notes</a></h3>
 			<p>
 				The DirectFB display driver is not very actively supported at this
 				time. Some adaptations are likely needed. In case of problems,
@@ -789,7 +803,7 @@
 				the rawfb driver.
 			</p>
 		</div>
-		<div class="node"><h3><a name="notefloat" id="notefloat">3.2.7 Floating point support</a></h3>
+		<div class="node"><h3><a name="notefloat" id="notefloat">3.2.8 Floating point support</a></h3>
 			<p>
 				TekUI is free of floating point arithmetics and works with a 32bit
 				integer version of the Lua virtual machine, with the following,

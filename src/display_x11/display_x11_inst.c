@@ -2,6 +2,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#ifdef __sun
+#include <sys/filio.h>
+#endif
 #include <sys/select.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>

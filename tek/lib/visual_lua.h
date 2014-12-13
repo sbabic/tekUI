@@ -36,7 +36,7 @@
 #endif
 
 #ifndef LOCAL
-#define LOCAL TMODINTERN
+#define LOCAL
 #endif
 
 /*****************************************************************************/

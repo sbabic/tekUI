@@ -6,7 +6,7 @@
 PLATFORM ?= posix
 
 #------------------------------------------------------------------------------
-# Dynamic link library extension [Choices: .so, .dll]:
+# Dynamic link library extension [Choices: .so, .dll, .sl, ...]:
 #------------------------------------------------------------------------------
 
 DLLEXT = .so
@@ -54,23 +54,13 @@ PLATFORM_LIBS = -pthread
 CC_LD_RT = -Wl,-rpath,
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# AIX:
+# HPPA, IA64 HPUX: Note that DLLEXT (see above) must be .sl
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# PLATFORM_LIBS = -Wl,-brtl -Wl,-blibpath:/usr/lib -lpthread
-# CC_LD_RT = -Wl,-blibpath:
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# IA64 HPUX:
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# CC_LD_RT = -Wl,+b,
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# HPPA HPUX:
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+# PLATFORM_LIBS = -D_POSIX_C_SOURCE=199506L -lpthread
 # CC_LD_RT = -Wl,+s,+b,
+# for IA64:
+# CC_LD_RT = -Wl,+b,
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Solaris:
@@ -129,7 +119,9 @@ SYS_LUA_SHARE = $(PREFIX)/share/lua/$(LUAVER)
 # Libraries:
 #------------------------------------------------------------------------------
 
-LUA_DEFS = -I$(PREFIX)/include -I/usr/local/include/lua51 -I/usr/include/lua5.1
+LUA_DIR = $(PREFIX)
+LUA_INCDIR = $(LUA_DIR)/include
+LUA_DEFS = -I$(LUA_INCDIR) -I/usr/local/include/lua51 -I/usr/include/lua5.1
 
 FREETYPE_DIR = $(PREFIX)
 FREETYPE_INCDIR = $(FREETYPE_DIR)/include
@@ -145,7 +137,7 @@ X11_DIR = /usr/X11R6
 X11_INCDIR = $(X11_DIR)/include
 X11_LIBDIR = $(X11_DIR)/lib
 X11_LIBS = -L$(X11_LIBDIR) -lX11 -lXext -lXxf86vm
-X11_DEFS = -I$(X11_INCDIR) -DX11_PIXMAP_CACHE -DENABLE_XSHM -DENABLE_XVID
+X11_DEFS = -I$(X11_INCDIR) -DX11_PIXMAP_CACHE -DENABLE_XSHM # -DENABLE_XVID
 
 # For Xft (antialiased fonts) support:
 XFT_DIR = $(X11_DIR)
@@ -183,7 +175,7 @@ RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) -DRFB_PIXMAP_C
 # Linux framebuffer support:
 RAWFB_DEFS += -DENABLE_LINUXFB
 
-# Redirect output to a different display driver:
+# Redirect input/output to a different display driver:
 # RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
 # RAWFB_SUB_DEFS = -DRFB_SUB_DEVICE=x11
 
