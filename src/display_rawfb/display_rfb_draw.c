@@ -342,7 +342,7 @@ LOCAL void fbp_drawfrect(struct rfb_Display *mod, struct rfb_Window *v,
 	TINT y;
 	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
 	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
-	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -378,7 +378,7 @@ LOCAL void fbp_drawrect(struct rfb_Display *mod, struct rfb_Window *v,
 	TINT ymax = rect[3];
 	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
 	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
-	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -445,7 +445,7 @@ LOCAL void fbp_drawline(struct rfb_Display *mod, struct rfb_Window *v,
 	TUINT dfmt = v->rfbw_PixBuf.tpb_Format;
 	TUINT p = pixconv_rgbfmt(dfmt, pen->rgb);
 
-	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -786,7 +786,7 @@ LOCAL void fbp_drawtriangle(struct rfb_Display *mod, struct rfb_Window *v,
 
 	TUINT p = pixconv_rgbfmt(v->rfbw_PixBuf.tpb_Format, pen->rgb);
 
-	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -845,7 +845,7 @@ LOCAL void fbp_drawbuffer(struct rfb_Display *mod, struct rfb_Window *v,
 	if (!rfb_getlayermask(mod, &R, v->rfbw_ClipRect.r, v, 0, 0))
 		return;
 	region_andrect(&mod->rfb_RectPool, &R, rect, 0, 0);
-	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -872,7 +872,7 @@ LOCAL void fbp_doexpose(struct rfb_Display *mod, struct rfb_Window *v,
 {
 	TINT wx = v->rfbw_WinRect.r[0];
 	TINT wy = v->rfbw_WinRect.r[1];
-	struct TNode *next, *node = L->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = L->rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -978,7 +978,7 @@ LOCAL TBOOL fbp_copyarea_int(struct rfb_Display *mod, struct rfb_Window *v,
 
 		for (i = 0, y = dy0; i < h; ++i, y -= yinc)
 		{
-			struct TNode *rnext, *rnode = r.tlh_Head;
+			struct TNode *rnext, *rnode = r.tlh_Head.tln_Succ;
 
 			for (; (rnext = rnode->tln_Succ); rnode = rnext)
 			{
@@ -987,7 +987,7 @@ LOCAL TBOOL fbp_copyarea_int(struct rfb_Display *mod, struct rfb_Window *v,
 				if (y >= rn->rn_Rect[1] && y <= rn->rn_Rect[3])
 				{
 					struct TNode *prednode = TNULL;
-					struct TNode *tnext, *tnode = t.tlh_Head;
+					struct TNode *tnext, *tnode = t.tlh_Head.tln_Succ;
 
 					for (; (tnext = tnode->tln_Succ); tnode = tnext)
 					{

@@ -40,7 +40,7 @@ dfb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 		TAPTR exec = TGetExecBase(mod);
 		struct TNode *node, *next;
 
-		node = fqh->reslist.tlh_Head;
+		node = fqh->reslist.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			struct FontQueryNode *fqn = (struct FontQueryNode *)node;
@@ -143,7 +143,7 @@ fnt_checkfqnode(struct TList *rlist, struct FontQueryNode *fqnode)
 
 	TSIZE flen = strlen(newfname);
 
-	for (node = rlist->tlh_Head; (next = node->tln_Succ); node = next)
+	for (node = rlist->tlh_Head.tln_Succ; (next = node->tln_Succ); node = next)
 	{
 		struct FontQueryNode *fqn = (struct FontQueryNode *)node;
 		flags = 0;
@@ -198,7 +198,7 @@ static void
 fnt_dumplist(struct TList *rlist)
 {
 	struct TNode *node, *next;
-	node = rlist->tlh_Head;
+	node = rlist->tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct FontQueryNode *fqn = (struct FontQueryNode *)node;
@@ -510,7 +510,7 @@ dfb_hostqueryfonts(DFBDISPLAY *mod, TTAGITEM *tags)
 		TInitHook(&fqh->handle.thn_Hook, dfb_fqhdestroy, fqh);
 		TInitList(&fqh->reslist);
 		/* init list iterator */
-		fqh->nptr = &fqh->reslist.tlh_Head;
+		fqh->nptr = &fqh->reslist.tlh_Head.tln_Succ;
 
 		hostqueryfonts(mod, fqh, &fattr);
 		TDB(TDB_INFO,(fnt_dumplist(&fqh->reslist)));
@@ -519,7 +519,7 @@ dfb_hostqueryfonts(DFBDISPLAY *mod, TTAGITEM *tags)
 		TDBPRINTF(TDB_FAIL,("out of memory :(\n"));
 
 	/* free memory of fnt_nodes */
-	for (node = fattr.fnlist.tlh_Head; (next = node->tln_Succ); node = next)
+	for (node = fattr.fnlist.tlh_Head.tln_Succ; (next = node->tln_Succ); node = next)
 	{
 		struct fnt_node *fnn = (struct fnt_node *)node;
 		TExecFree(exec, fnn->fname);
@@ -550,7 +550,7 @@ hostqueryfonts(DFBDISPLAY *mod, struct FontQueryHandle *fqh, struct fnt_attr *fa
 	if (nfont > 0)
 	{
 		/* found fonts in default font directory */
-		for (node = fattr->fnlist.tlh_Head; (next = node->tln_Succ); node = next)
+		for (node = fattr->fnlist.tlh_Head.tln_Succ; (next = node->tln_Succ); node = next)
 		{
 			struct fnt_node *fnn = (struct fnt_node *)node;
 
@@ -675,7 +675,7 @@ dfb_hostgetnextfont(DFBDISPLAY *mod, TAPTR fqhandle)
 
 	if (next->tln_Succ == TNULL)
 	{
-		fqh->nptr = &fqh->reslist.tlh_Head;
+		fqh->nptr = &fqh->reslist.tlh_Head.tln_Succ;
 		return TNULL;
 	}
 

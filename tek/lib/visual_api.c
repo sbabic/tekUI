@@ -1742,12 +1742,12 @@ tek_lib_visual_getattrs(lua_State *L)
 			case 'H':
 			case 'x':
 			case 'y':
-				lua_pushinteger(L, *((TINT *) &tags[i].tti_Value));
+				lua_pushinteger(L, tags[i].tti_Value);
 				break;
 			case 's':
 			case 'c':
 			case 'M':
-				lua_pushboolean(L, *((TINT *) &tags[i].tti_Value));
+				lua_pushboolean(L, tags[i].tti_Value);
 				break;
 		}
 	}
@@ -2264,7 +2264,7 @@ tek_lib_visual_popcliprect(lua_State *L)
 	TAddHead(&vis->vis_FreeRects, TRemTail(&vis->vis_ClipStack));
 	if (!TISLISTEMPTY(&vis->vis_ClipStack))
 	{
-		struct TNode *next, *node = vis->vis_ClipStack.tlh_Head;
+		struct TNode *next, *node = vis->vis_ClipStack.tlh_Head.tln_Succ;
 		x0 = 0;
 		y0 = 0;
 		x1 = TEKUI_HUGE;

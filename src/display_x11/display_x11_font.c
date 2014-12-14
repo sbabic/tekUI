@@ -68,7 +68,7 @@ static THOOKENTRY TTAG x11_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 		TAPTR TExecBase = TGetExecBase(mod);
 		struct TNode *node, *next;
 
-		node = fqh->reslist.tlh_Head;
+		node = fqh->reslist.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			struct X11FontQueryNode *fqn = (struct X11FontQueryNode *) node;
@@ -362,7 +362,7 @@ x11i_checkfqnode(struct TList *rlist, struct X11FontQueryNode *fqnode)
 	TBOOL newweight = (TBOOL) fqnode->tags[3].tti_Value;
 	TSIZE flen = strlen(newfname);
 
-	for (node = rlist->tlh_Head; (next = node->tln_Succ); node = next)
+	for (node = rlist->tlh_Head.tln_Succ; (next = node->tln_Succ); node = next)
 	{
 		struct X11FontQueryNode *fqn = (struct X11FontQueryNode *) node;
 
@@ -810,7 +810,7 @@ LOCAL TAPTR x11_hostqueryfonts(struct X11Display *mod, TTAGITEM *tags)
 		TInitHook(&fqh->handle.thn_Hook, x11_fqhdestroy, fqh);
 		TInitList(&fqh->reslist);
 		/* init list iterator */
-		fqh->nptr = &fqh->reslist.tlh_Head;
+		fqh->nptr = &fqh->reslist.tlh_Head.tln_Succ;
 
 #if defined(ENABLE_XFT)
 		if (mod->x11_Flags & X11FL_USE_XFT)
@@ -823,7 +823,8 @@ LOCAL TAPTR x11_hostqueryfonts(struct X11Display *mod, TTAGITEM *tags)
 		TDBPRINTF(TDB_FAIL, ("out of memory :(\n"));
 
 	/* free memory of X11FontNodes */
-	for (node = fattr.fnlist.tlh_Head; (next = node->tln_Succ); node = next)
+	for (node = fattr.fnlist.tlh_Head.tln_Succ;
+		(next = node->tln_Succ); node = next)
 	{
 		struct X11FontNode *fnn = (struct X11FontNode *) node;
 
@@ -845,7 +846,8 @@ static void x11i_hostqueryfonts_xft(struct X11Display *mod,
 	TUINT matchflg = 0;
 	TINT fcount = 0;
 
-	for (node = fattr->fnlist.tlh_Head; (next = node->tln_Succ); node = next)
+	for (node = fattr->fnlist.tlh_Head.tln_Succ;
+		(next = node->tln_Succ); node = next)
 	{
 		FcResult result;
 		FcFontSet *fontset = TNULL;
@@ -973,7 +975,8 @@ static void x11i_hostqueryfonts_xlib(struct X11Display *mod,
 	TAPTR TExecBase = TGetExecBase(mod);
 	struct TNode *node, *next;
 
-	for (node = fattr->fnlist.tlh_Head; (next = node->tln_Succ); node = next)
+	for (node = fattr->fnlist.tlh_Head.tln_Succ;
+		(next = node->tln_Succ); node = next)
 	{
 		TINT i, numfonts = 0;
 		struct X11FontNode *fnn = (struct X11FontNode *) node;
@@ -1121,7 +1124,7 @@ LOCAL TTAGITEM *x11_hostgetnextfont(struct X11Display *mod, TAPTR fqhandle)
 
 	if (next->tln_Succ == TNULL)
 	{
-		fqh->nptr = &fqh->reslist.tlh_Head;
+		fqh->nptr = &fqh->reslist.tlh_Head.tln_Succ;
 		return TNULL;
 	}
 
@@ -1166,7 +1169,7 @@ LOCAL void x11_hostclosefont(struct X11Display *mod, TAPTR font)
 	{
 		struct TNode *node, *next;
 
-		node = mod->x11_vlist.tlh_Head;
+		node = mod->x11_vlist.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			/* check if the font is currently used by another visual */

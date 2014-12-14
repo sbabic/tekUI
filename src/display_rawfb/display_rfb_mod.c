@@ -389,7 +389,7 @@ static void rfb_exittask(struct rfb_Display *mod)
 		TFree(imsg);
 
 	/* close all fonts */
-	node = mod->rfb_FontManager.openfonts.tlh_Head;
+	node = mod->rfb_FontManager.openfonts.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 		rfb_hostclosefont(mod, (TAPTR) node);
 
@@ -543,7 +543,8 @@ static void rfb_runtask(struct TTask *task)
 			{
 				/* expired; send intervals: */
 				TLock(mod->rfb_InstanceLock);
-				struct TNode *next, *node = mod->rfb_VisualList.tlh_Head;
+				struct TNode *next, 
+					*node = mod->rfb_VisualList.tlh_Head.tln_Succ;
 
 				for (; (next = node->tln_Succ); node = next)
 				{
@@ -595,7 +596,7 @@ static void rfb_runtask(struct TTask *task)
 static struct rfb_Window *rfb_findcoord(struct rfb_Display *mod, TINT x,
 	TINT y)
 {
-	struct TNode *next, *node = mod->rfb_VisualList.tlh_Head;
+	struct TNode *next, *node = mod->rfb_VisualList.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -654,7 +655,7 @@ LOCAL struct rfb_Window *rfb_passevent_by_mousexy(struct rfb_Display *mod,
 	struct rfb_Window *v = rfb_findcoord(mod, x, y);
 
 	if (v && (omsg->timsg_Type != TITYPE_MOUSEMOVE ||
-			(mod->rfb_FocusWindow == v || (v->rfbw_Flags & RFBWFL_IS_POPUP))))
+		(mod->rfb_FocusWindow == v || (v->rfbw_Flags & RFBWFL_IS_POPUP))))
 	{
 		if (focus)
 			rfb_focuswindow(mod, v);
@@ -790,7 +791,8 @@ static void rfb_processevent(struct rfb_Display *mod)
 					if (newbuf.tpb_Data == TNULL)
 						break;
 
-					struct TNode *next, *node = mod->rfb_VisualList.tlh_Head;
+					struct TNode *next, 
+						*node = mod->rfb_VisualList.tlh_Head.tln_Succ;
 
 					for (; (next = node->tln_Succ); node = next)
 					{
@@ -1070,7 +1072,7 @@ LOCAL TBOOL rfb_getlayers(struct rfb_Display *mod, struct Region *A,
 	struct RectPool *pool = &mod->rfb_RectPool;
 
 	region_init(pool, A, TNULL);
-	struct TNode *next, *node = mod->rfb_VisualList.tlh_Head;
+	struct TNode *next, *node = mod->rfb_VisualList.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -1136,7 +1138,7 @@ LOCAL TBOOL rfb_damage(struct rfb_Display *mod, TINT drect[],
 
 	/* traverse window stack; refresh B where A and B overlap ; A = A - B */
 
-	struct TNode *next, *node = mod->rfb_VisualList.tlh_Head;
+	struct TNode *next, *node = mod->rfb_VisualList.tlh_Head.tln_Succ;
 	TBOOL success = TTRUE;
 	TBOOL below = TFALSE;
 
@@ -1166,7 +1168,8 @@ LOCAL TBOOL rfb_damage(struct rfb_Display *mod, TINT drect[],
 					bv->rfbw_WinRect.r[0] - bv->rfbw_ScreenRect.r[0],
 					bv->rfbw_WinRect.r[1] - bv->rfbw_ScreenRect.r[1]);
 
-				struct TNode *next, *node = B.rg_Rects.rl_List.tlh_Head;
+				struct TNode *next, 
+					*node = B.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 				for (; (next = node->tln_Succ); node = next)
 				{
@@ -1337,7 +1340,7 @@ LOCAL void rfb_flush_clients(struct rfb_Display *mod, TBOOL also_external)
 
 	if (region_init(pool, &S, s.r))
 	{
-		struct TNode *next, *node = mod->rfb_VisualList.tlh_Head;
+		struct TNode *next, *node = mod->rfb_VisualList.tlh_Head.tln_Succ;
 
 		for (; (next = node->tln_Succ); node = next)
 		{
@@ -1351,7 +1354,8 @@ LOCAL void rfb_flush_clients(struct rfb_Display *mod, TBOOL also_external)
 
 				region_shift(R, sx, sy);
 				region_andregion(pool, R, &S);
-				struct TNode *rnext, *rnode = R->rg_Rects.rl_List.tlh_Head;
+				struct TNode *rnext, *rnode = 
+					R->rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 				for (; (rnext = rnode->tln_Succ); rnode = rnext)
 				{
@@ -1390,7 +1394,7 @@ LOCAL void rfb_flush_clients(struct rfb_Display *mod, TBOOL also_external)
 		/* flush to sub pixbuf: */
 		if (mod->rfb_Flags & RFBFL_BUFFER_DEVICE)
 		{
-			node = D->rg_Rects.rl_List.tlh_Head;
+			node = D->rg_Rects.rl_List.tlh_Head.tln_Succ;
 			for (; (next = node->tln_Succ); node = next)
 			{
 				struct RectNode *r = (struct RectNode *) node;
@@ -1422,7 +1426,7 @@ LOCAL void rfb_flush_clients(struct rfb_Display *mod, TBOOL also_external)
 			req->tvr_Op.DrawBuffer.Tags = tags;
 			req->tvr_Op.DrawBuffer.TotWidth = mod->rfb_Width;
 
-			node = D->rg_Rects.rl_List.tlh_Head;
+			node = D->rg_Rects.rl_List.tlh_Head.tln_Succ;
 			for (; (next = node->tln_Succ); node = next)
 			{
 				struct RectNode *r = (struct RectNode *) node;

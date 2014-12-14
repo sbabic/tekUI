@@ -215,7 +215,7 @@ LUADISTDIR = $(BASEDIR)/../lua-5.1.5
 # Compiler flags:
 #------------------------------------------------------------------------------
 
-# DEBUG = -g -DTDEBUG=5
+DEBUG = -DTDEBUG=5 # -g
 WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-long-long
 OPT = -O2 -fno-strict-aliasing
 INCL = -I. -Iinclude -I$(INCDIR)

@@ -863,7 +863,7 @@ static void TTASKENTRY hal_devfunc(struct TTask *task)
 
 		waittime.tdt_Int64 = 0x7fffffffffffffffULL;
 
-		node = hps->hsp_ReqList.tlh_Head;
+		node = hps->hsp_ReqList.tlh_Head.tln_Succ;
 		for (; (nnode = node->tln_Succ); node = nnode)
 		{
 			struct TTimeRequest *tr = (struct TTimeRequest *) node;

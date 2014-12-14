@@ -609,7 +609,7 @@
 									&gt;=fontconfig-2.5.0 (for the x11 driver, enabled by default)
 								</li>
 								<li>
-									XFree86VidMode extension (for the x11 driver, enabled by default)
+									XFree86VidMode extension (for the x11 driver, disabled by default)
 								</li>
 							</ul>
 						</blockquote>
@@ -734,9 +734,8 @@ LDFLAGS=-lpthread
 		<div class="node"><h3><a name="notex11" id="notex11">3.2.5. X11 notes</a></h3>
 			<p>
 				By default, libXft and fontconfig are needed for building the x11
-				driver, but tekUI falls back to the core x11 font API if they are
-				unavailable at runtime. Also, libXft is unnecessary if you stack
-				the rawfb driver on top of the x11 driver. Disable it by removing
+				driver. But libXft is unnecessary if you stack the rawfb driver on
+				top of the x11 driver. Disable it by removing
 				<code>-DENABLE_XFT</code> from <code>X11_DEFS</code>.
 			</p>
 			<p>

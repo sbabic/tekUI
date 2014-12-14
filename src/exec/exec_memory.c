@@ -546,7 +546,7 @@ exec_destroypool(struct THook *hook, TAPTR obj, TTAG msg)
 	{
 		struct TMemPool *pool = obj;
 		struct TExecBase *TExecBase = TGetExecBase(pool);
-		union TMemHead *node = (union TMemHead *) pool->tpl_List.tlh_Head;
+		union TMemHead *node = (union TMemHead *) pool->tpl_List.tlh_Head.tln_Succ;
 		struct TNode *nnode;
 		if (pool->tpl_Flags & TMEMHF_FREE)
 		{
@@ -653,7 +653,7 @@ EXPORT TAPTR exec_AllocPool(struct TExecBase *TExecBase, struct TMemPool *pool,
 
 		if (pool->tpl_Flags & TMEMHF_FIXED)
 		{
-			node = (union TMemHead *) pool->tpl_List.tlh_Head;
+			node = (union TMemHead *) pool->tpl_List.tlh_Head.tln_Succ;
 			return exec_staticalloc(node, size);
 		}
 
@@ -684,7 +684,7 @@ EXPORT TAPTR exec_AllocPool(struct TExecBase *TExecBase, struct TMemPool *pool,
 			struct TNode *tempnode;
 			TSIZE pudsize;
 
-			node = (union TMemHead *) pool->tpl_List.tlh_Head;
+			node = (union TMemHead *) pool->tpl_List.tlh_Head.tln_Succ;
 			while ((tempnode = ((struct TNode *) node)->tln_Succ))
 			{
 				if (node->tmh_Node.tmh_Flags & TMEMHF_LARGE)
@@ -735,7 +735,7 @@ EXPORT void exec_FreePool(struct TExecBase *TExecBase, struct TMemPool *pool,
 	TDBASSERT(99, (mem == TNULL) == (size == 0));
 	if (mem)
 	{
-		union TMemHead *node = (union TMemHead *) pool->tpl_List.tlh_Head;
+		union TMemHead *node = (union TMemHead *) pool->tpl_List.tlh_Head.tln_Succ;
 		if (pool->tpl_Flags & TMEMHF_FIXED)
 			exec_staticfree(node, mem, size);
 		else
@@ -792,7 +792,7 @@ EXPORT TAPTR exec_ReallocPool(struct TExecBase *TExecBase,
 			return TNULL;
 		}
 
-		node = (union TMemHead *) pool->tpl_List.tlh_Head;
+		node = (union TMemHead *) pool->tpl_List.tlh_Head.tln_Succ;
 
 		if (pool->tpl_Flags & TMEMHF_FIXED)
 		{
@@ -899,7 +899,7 @@ static void exec_mmu_msgdestroy(struct TMemManager *mmu)
 {
 	struct TExecBase *TExecBase = (TEXECBASE *) TGetExecBase(mmu);
 	TAPTR hal = TExecBase->texb_HALBase;
-	struct TNode *nextnode, *node = mmu->tmm_TrackList.tlh_Head;
+	struct TNode *nextnode, *node = mmu->tmm_TrackList.tlh_Head.tln_Succ;
 	TINT numfreed = 0;
 	while ((nextnode = node->tln_Succ))
 	{

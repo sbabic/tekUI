@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 33.3"
+_VERSION = "Display 33.4"
 local Display = _M
 Element:newClass(Display)
 
@@ -188,15 +188,15 @@ local ColorDefaults =
 --	placed in the FontsDefaults cache here.
 -------------------------------------------------------------------------------
 
-local FN_FIXED = "DejaVuSansMono/s,monospace,fixed,courier/s,VeraMono"
-local FN_FIXEDBOLD = "DejaVuSansMono-Bold,DejaVuSansMono/b,monospace/b,fixed/b,courier/bs,VeraMono/b"
-local FN_FIXEDITALIC = "DejaVuSansMono-Oblique,DejaVuSansMono/i,monospace/i,fixed/i,courier/is,VeraMono/i"
-local FN_FIXEDBOLDITALIC = "DejaVuSansMono-BoldOblique,DejaVuSansMono/bi,monospace/bi,fixed/bi,courier/bis,VeraMono/bi"
+local FN_FIXED = "DejaVuSansMono/s,monospace,fixed,courier,VeraMono"
+local FN_FIXEDBOLD = "DejaVuSansMono-Bold,DejaVuSansMono/b,monospace/b,fixed/b,courier/b,VeraMono/b"
+local FN_FIXEDITALIC = "DejaVuSansMono-Oblique,DejaVuSansMono/i,monospace/i,fixed/i,courier/i,VeraMono/i"
+local FN_FIXEDBOLDITALIC = "DejaVuSansMono-BoldOblique,DejaVuSansMono/bi,monospace/bi,fixed/bi,courier/bi,VeraMono/bi"
 
-local FN_NORMAL = "DejaVuSans/s,sans-serif,helvetica/s,arial,Vera,times"
-local FN_BOLD = "DejaVuSans-Bold,DejaVuSans/b,sans-serif/b,helvetica/sb,arial/b,Vera/b,times/b"
-local FN_ITALIC = "DejaVuSans-Oblique,DejaVuSans/i,sans-serif/i,helvetica/si,arial/i,Vera/i,times/i"
-local FN_BOLDITALIC = "DejaVuSans-BoldOblique,DejaVuSans/bi,sans-serif/bi,helvetica/bis,arial/bi,Vera/bi,times/bi"
+local FN_NORMAL = "DejaVuSans/s,sans-serif,helvetica,arial,Vera,times"
+local FN_BOLD = "DejaVuSans-Bold,DejaVuSans/b,sans-serif/b,helvetica/b,arial/b,Vera/b,times/b"
+local FN_ITALIC = "DejaVuSans-Oblique,DejaVuSans/i,sans-serif/i,helvetica/i,arial/i,Vera/i,times/i"
+local FN_BOLDITALIC = "DejaVuSans-BoldOblique,DejaVuSans/bi,sans-serif/bi,helvetica/bi,arial/bi,Vera/bi,times/bi"
 
 local fontsizes = 
 { 

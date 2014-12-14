@@ -78,7 +78,7 @@ LOCAL TTAGITEM *fb_hostgetnextfont(WINDISPLAY *mod, struct FontQueryHandle *fqh)
 	TDBPRINTF(TDB_INFO,("getnextfont\n"));
 	if (next->tln_Succ == TNULL)
 	{
-		fqh->nptr = &fqh->reslist.tlh_Head;
+		fqh->nptr = &fqh->reslist.tlh_Head.tln_Succ;
 		return TNULL;
 	}
 	fqh->nptr = (struct TNode **)next;
@@ -105,7 +105,7 @@ fb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 		WINDISPLAY *mod = fqh->handle.thn_Owner;
 		TAPTR TExecBase = TGetExecBase(mod);
 		struct TNode *node, *next;
-		node = fqh->reslist.tlh_Head;
+		node = fqh->reslist.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			struct FontQueryNode *fqn = (struct FontQueryNode *)node;
@@ -246,7 +246,7 @@ LOCAL TAPTR fb_hostqueryfonts(WINDISPLAY *mod, TTAGITEM *tags)
 			break;
 	}
 
-	fqh->nptr = &fqh->reslist.tlh_Head;
+	fqh->nptr = &fqh->reslist.tlh_Head.tln_Succ;
 	if (fqh->success)
 		return fqh;
 

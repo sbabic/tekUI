@@ -429,7 +429,7 @@ void rfb_vnc_flush(struct rfb_Display *mod, struct Region *D)
 	struct TNode *next, *node;
 	sraRegionPtr region = sraRgnCreate();
 
-	node = D->rg_Rects.rl_List.tlh_Head;
+	node = D->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;

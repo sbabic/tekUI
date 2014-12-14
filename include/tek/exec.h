@@ -37,7 +37,7 @@ struct TAtom;
 **	Lists are doubly-linked with a header acting as a "Null" node.
 **	A typical iterator for that topology may look like this:
 **
-**	struct TNode *next, *node = list->tlh_Head;
+**	struct TNode *next, *node = list->tlh_Head.tln_Succ;
 **	for (; (next = node->tln_Succ); node = next)
 **	{
 **		you can operate on 'node' here, remove it safely,
@@ -55,12 +55,10 @@ struct TNode
 
 struct TList
 {
-	/* Ptr to head node of list */
-	struct TNode *tlh_Head;
-	/* Ptr to tail node of list */
-	struct TNode *tlh_Tail;
-	/* Ptr to tail predecessor */
-	struct TNode *tlh_TailPred;
+	/* Head node of list */
+	struct TNode tlh_Head;
+	/* Tail node of list */
+	struct TNode tlh_Tail;
 };
 
 /*****************************************************************************/
@@ -498,23 +496,24 @@ struct TModInitNode
 
 /* Setup a list header */
 #define TINITLIST(l) ( \
-	(l)->tlh_Head = (struct TNode *) &(l)->tlh_Tail, \
-	(l)->tlh_Tail = TNULL, \
-	(l)->tlh_TailPred = (TAPTR) (l))
+	(l)->tlh_Head.tln_Succ = &(l)->tlh_Tail, \
+	(l)->tlh_Head.tln_Pred = TNULL, \
+	(l)->tlh_Tail.tln_Succ = TNULL, \
+	(l)->tlh_Tail.tln_Pred = &(l)->tlh_Head)
 
 /* Get first node of a list */
 #define	TFIRSTNODE(list) ( \
-	(list)->tlh_Head->tln_Succ ? \
-	(list)->tlh_Head : TNULL)
+	(list)->tlh_Head.tln_Succ->tln_Succ ? \
+	(list)->tlh_Head.tln_Succ : TNULL)
 
 /* Get last node of a list */
 #define TLASTNODE(list) ( \
-	(list)->tlh_TailPred->tln_Pred ? \
-	(list)->tlh_TailPred : TNULL)
+	(list)->tlh_Tail.tln_Pred->tln_Pred ? \
+	(list)->tlh_Tail.tln_Pred : TNULL)
 
 /* Test if a list is empty */
 #define TISLISTEMPTY(list) ( \
-	(list)->tlh_TailPred == (TAPTR) (list))
+	(list)->tlh_Tail.tln_Pred == &(list)->tlh_Head)
 
 /* Remove node from whatever list it is linked into */
 #define TREMOVE(n) ( \
@@ -525,33 +524,31 @@ struct TModInitNode
 
 /* Unlink node from head of a list */
 #define TREMHEAD(l,t) ( \
-	((t) = (l)->tlh_Head)->tln_Succ ? \
-	(l)->tlh_Head = (t)->tln_Succ, \
-	(t)->tln_Succ->tln_Pred = \
-		(struct TNode *) &(l)->tlh_Head, \
+	((t) = (l)->tlh_Head.tln_Succ)->tln_Succ ? \
+	(l)->tlh_Head.tln_Succ = (t)->tln_Succ, \
+	(t)->tln_Succ->tln_Pred = &(l)->tlh_Head, \
 	(t) : TNULL)
 
 /* Unlink node from tail of a list */
 #define TREMTAIL(l,t) ( \
-	((t) = (l)->tlh_TailPred)->tln_Pred ? \
-	(l)->tlh_TailPred = (t)->tln_Pred, \
-	(t)->tln_Pred->tln_Succ = \
-		(struct TNode *) &(l)->tlh_Tail, \
+	((t) = (l)->tlh_Tail.tln_Pred)->tln_Pred ? \
+	(l)->tlh_Tail.tln_Pred = (t)->tln_Pred, \
+	(t)->tln_Pred->tln_Succ = &(l)->tlh_Tail, \
 	(t) : TNULL)
 
 /* Add node to head of a list */
 #define TADDHEAD(l,n,t) ( \
-	(t) = (l)->tlh_Head, \
-	(l)->tlh_Head = (n), \
+	(t) = (l)->tlh_Head.tln_Succ, \
+	(l)->tlh_Head.tln_Succ = (n), \
 	(n)->tln_Succ = (t), \
-	(n)->tln_Pred = (struct TNode *) &(l)->tlh_Head, \
+	(n)->tln_Pred = &(l)->tlh_Head, \
 	(t)->tln_Pred = (n))
 
 /* Add node to tail of a list */
 #define TADDTAIL(l,n,t) ( \
-	(t) = (l)->tlh_TailPred, \
-	(l)->tlh_TailPred = (n), \
-	(n)->tln_Succ = (struct TNode *) &(l)->tlh_Tail, \
+	(t) = (l)->tlh_Tail.tln_Pred, \
+	(l)->tlh_Tail.tln_Pred = (n), \
+	(n)->tln_Succ = &(l)->tlh_Tail, \
 	(n)->tln_Pred = (t), \
 	(t)->tln_Succ = (n))
 

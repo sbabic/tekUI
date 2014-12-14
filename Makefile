@@ -46,7 +46,7 @@ help: default-help
 distclean: clean
 	-$(RMDIR) lib bin/mod
 	-find src tek -type d -name build | xargs $(RMDIR)
-	-find -name "*.so" -type f | xargs $(RM)
+	-find -name "*$(DLLEXT)" -type f | xargs $(RM)
 
 docs:
 	bin/gendoc.lua README -r manual.html --header VERSION -i 32 -n "tekUI" > doc/index.html

@@ -30,9 +30,9 @@ static THOOKENTRY TTAG exec_systaskdestroy(struct THook *hook, TAPTR obj,
 		THALLock(THALBase, &TExecBase->texb_Lock);
 		TREMOVE((struct TNode *) task);
 		THALUnlock(THALBase, &TExecBase->texb_Lock);
-		TDESTROY(&task->tsk_SyncPort);
-		TDESTROY(&task->tsk_UserPort);
-		TDESTROY(&task->tsk_HeapMemManager);
+		TDESTROY(&task->tsk_SyncPort.tmp_Handle);
+		TDESTROY(&task->tsk_UserPort.tmp_Handle);
+		TDESTROY(&task->tsk_HeapMemManager.tmm_Handle);
 		THALDestroyLock(THALBase, &task->tsk_TaskLock);
 		TFree(task);
 	}
@@ -130,11 +130,11 @@ EXPORT struct TTask *exec_CreateSysTask(struct TExecBase *TExecBase,
 							return newtask;
 						}
 
-						TDESTROY(&newtask->tsk_SyncPort);
+						TDESTROY(&newtask->tsk_SyncPort.tmp_Handle);
 					}
-					TDESTROY(&newtask->tsk_UserPort);
+					TDESTROY(&newtask->tsk_UserPort.tmp_Handle);
 				}
-				TDESTROY(&newtask->tsk_HeapMemManager);
+				TDESTROY(&newtask->tsk_HeapMemManager.tmm_Handle);
 			}
 			THALDestroyLock(hal, &newtask->tsk_TaskLock);
 		}
@@ -618,7 +618,7 @@ EXPORT TAPTR exec_WaitPort(struct TExecBase *TExecBase, struct TMsgPort *port)
 		for (;;)
 		{
 			THALLock(hal, &port->tmp_Lock);
-			node = port->tmp_MsgList.tlh_Head;
+			node = port->tmp_MsgList.tlh_Head.tln_Succ;
 			if (node->tln_Succ == TNULL)
 				node = TNULL;
 			THALUnlock(hal, &port->tmp_Lock);
@@ -1013,7 +1013,7 @@ EXPORT void exec_RemoveMsg(struct TExecBase *TExecBase, struct TMsgPort *port,
 	THALLock(TExecBase->texb_HALBase, &port->tmp_Lock);
 	#ifdef TDEBUG
 	{
-		struct TNode *next, *node = port->tmp_MsgList.tlh_Head;
+		struct TNode *next, *node = port->tmp_MsgList.tlh_Head.tln_Succ;
 
 		for (; (next = node->tln_Succ); node = next)
 		{
@@ -1144,7 +1144,7 @@ static THOOKENTRY TTAG scm_hookfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			struct ScanModHandle *hnd = obj;
 			struct TExecBase *TExecBase = hnd->handle.thn_Owner;
 			struct TNode *node, *next;
-			node = hnd->list.tlh_Head;
+			node = hnd->list.tlh_Head.tln_Succ;
 			for (; (next = node->tln_Succ); node = next)
 			{
 				struct ScanModNode *smn = (struct ScanModNode *) node;
@@ -1160,7 +1160,7 @@ static THOOKENTRY TTAG scm_hookfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			struct TNode *next = *hnd->nptr;
 			if (next->tln_Succ == TNULL)
 			{
-				hnd->nptr = &hnd->list.tlh_Head;
+				hnd->nptr = &hnd->list.tlh_Head.tln_Succ;
 				return TNULL;
 			}
 			hnd->nptr = (struct TNode **) next;
@@ -1202,7 +1202,7 @@ EXPORT TAPTR exec_ScanModules(struct TExecBase *TExecBase, TTAGITEM *tags)
 		hnd->handle.thn_Owner = TExecBase;
 		TInitHook(&hnd->handle.thn_Hook, scm_hookfunc, hnd);
 		TInitList(&hnd->list);
-		hnd->nptr = &hnd->list.tlh_Head;
+		hnd->nptr = &hnd->list.tlh_Head.tln_Succ;
 		/* scan internal modules: */
 		iatom = TLockAtom("sys.imods", TATOMF_NAME | TATOMF_SHARED);
 		if (iatom)

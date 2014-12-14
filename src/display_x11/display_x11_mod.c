@@ -154,7 +154,7 @@ static void x11_exitinstance(struct X11Display *inst)
 		TFree(imsg);
 
 	/* free queued input messages in all open visuals: */
-	node = inst->x11_vlist.tlh_Head;
+	node = inst->x11_vlist.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct X11Window *v = (struct X11Window *) node;
@@ -170,7 +170,7 @@ static void x11_exitinstance(struct X11Display *inst)
 	inst->x11_fm.defref = 0;
 
 	/* close all fonts */
-	node = inst->x11_fm.openfonts.tlh_Head;
+	node = inst->x11_fm.openfonts.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 		x11_hostclosefont(inst, (TAPTR) node);
 

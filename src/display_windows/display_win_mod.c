@@ -321,7 +321,7 @@ fb_exitinstance(WINDISPLAY *mod)
 		TFree(imsg);
 
 	/* free queued input messages in all open visuals: */
-	node = mod->fbd_VisualList.tlh_Head;
+	node = mod->fbd_VisualList.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		WINWINDOW *v = (WINWINDOW *) node;
@@ -337,7 +337,7 @@ fb_exitinstance(WINDISPLAY *mod)
 	mod->fbd_FontManager.defref = 0;
 
 	/* close all fonts */
-	node = mod->fbd_FontManager.openfonts.tlh_Head;
+	node = mod->fbd_FontManager.openfonts.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 		fb_hostclosefont(mod, (TAPTR) node);
 
@@ -542,7 +542,7 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 
 static void fb_notifywindows(WINDISPLAY *mod)
 {
-	struct TNode *next, *node = mod->fbd_VisualList.tlh_Head;
+	struct TNode *next, *node = mod->fbd_VisualList.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		WINWINDOW *v = (WINWINDOW *) node;
@@ -559,7 +559,7 @@ static void fb_notifywindows(WINDISPLAY *mod)
 LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
-	struct TNode *next, *node = mod->fbd_VisualList.tlh_Head;
+	struct TNode *next, *node = mod->fbd_VisualList.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		WINWINDOW *v = (WINWINDOW *) node;

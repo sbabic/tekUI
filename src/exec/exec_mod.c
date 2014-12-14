@@ -243,8 +243,8 @@ exec_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 	{
 		case TMSG_DESTROY:
 			THALDestroyLock(TExecBase->texb_HALBase, &TExecBase->texb_Lock);
-			TDESTROY(&TExecBase->texb_BaseMemManager);
-			TDESTROY(&TExecBase->texb_MsgMemManager);
+			TDESTROY(&TExecBase->texb_BaseMemManager.tmm_Handle);
+			TDESTROY(&TExecBase->texb_MsgMemManager.tmm_Handle);
 			break;
 		#if defined(ENABLE_EXEC_IFACE)
 		case TMSG_QUERYIFACE:
@@ -322,7 +322,7 @@ exec_init(TEXECBASE *exec, TTAGITEM *tags)
 
 				return TTRUE;
 			}
-			TDESTROY(&exec->texb_MsgMemManager);
+			TDESTROY(&exec->texb_MsgMemManager.tmm_Handle);
 		}
 		THALDestroyLock(hal, &exec->texb_Lock);
 	}

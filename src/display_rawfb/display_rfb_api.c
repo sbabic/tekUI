@@ -750,7 +750,8 @@ static void rbp_move_expose(struct rfb_Display *mod, struct rfb_Window *v,
 			{
 				if (region_andrect(pool, &L, v->rfbw_ScreenRect.r, 0, 0))
 				{
-					struct TNode *next, *node = L.rg_Rects.rl_List.tlh_Head;
+					struct TNode *next, *node = 
+						L.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 					for (; (next = node->tln_Succ); node = next)
 					{
@@ -853,7 +854,7 @@ static void rfb_movewindow(struct rfb_Display *mod, struct rfb_Window *v,
 	if (region_init(pool, &R, old.r))
 	{
 		region_subrect(pool, &R, v->rfbw_ScreenRect.r);
-		struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+		struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 		for (; (next = node->tln_Succ); node = next)
 		{
@@ -878,7 +879,7 @@ static void rfb_movewindow(struct rfb_Display *mod, struct rfb_Window *v,
 			region_subrect(pool, &R2, scr.r);
 			region_shift(&R2, dx, dy);
 			region_andrect(pool, &R2, scr.r, 0, 0);
-			struct TNode *next, *node = R2.rg_Rects.rl_List.tlh_Head;
+			struct TNode *next, *node = R2.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 			for (; (next = node->tln_Succ); node = next)
 			{
@@ -955,7 +956,8 @@ static void rfb_resizewindow(struct rfb_Display *mod, struct rfb_Window *v,
 			if (region_init(pool, &R, old.r))
 			{
 				region_subrect(pool, &R, v->rfbw_ScreenRect.r);
-				struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+				struct TNode *next, *node = 
+					R.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 				for (; (next = node->tln_Succ); node = next)
 				{

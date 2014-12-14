@@ -151,7 +151,7 @@ static void exec_loadmod(TEXECBASE *TExecBase, struct TTask *task,
 
 	/* try to open from list of internal modules: */
 
-	node = TExecBase->texb_IntModList.tlh_Head;
+	node = TExecBase->texb_IntModList.tlh_Head.tln_Succ;
 	for (; (nnode = node->tln_Succ); node = nnode)
 	{
 		struct TInitModule *im = ((struct TModInitNode *) node)->tmin_Modules;
@@ -280,7 +280,7 @@ static void exec_unloadmod(TEXECBASE *TExecBase, struct TTask *task,
 static void exec_checkmodules(TEXECBASE *TExecBase)
 {
 	TINT n = 0;
-	struct TNode *nnode, *node = TExecBase->texb_ModList.tlh_Head;
+	struct TNode *nnode, *node = TExecBase->texb_ModList.tlh_Head.tln_Succ;
 	for (; (nnode = node->tln_Succ); node = nnode)
 	{
 		struct TModule *mod = (struct TModule *) node;
@@ -342,7 +342,7 @@ static void exec_main(TEXECBASE *TExecBase, struct TTask *exectask,
 						taskmsg->tsk_Request.trq_Task.trt_Parent = taskmsg;
 						/* add request to taskexitlist */
 						TAddTail(&TExecBase->texb_TaskExitList,
-							(struct TNode *) &taskmsg->tsk_Request);
+							&taskmsg->tsk_Request.trq_Task.trt_Node);
 						/* force list processing */
 						sig |= TTASK_SIG_CHILDEXIT;
 						break;
@@ -442,7 +442,7 @@ static void exec_replymod(TEXECBASE *TExecBase, struct TTask *taskmsg)
 	struct TNode *node, *tnode;
 
 	req = &taskmsg->tsk_Request;
-	node = req->trq_Mod.trm_Waiters.tlh_Head;
+	node = req->trq_Mod.trm_Waiters.tlh_Head.tln_Succ;
 	mod = req->trq_Mod.trm_Module;
 
 	/* Unlink fake/initializing module request from modlist: */
@@ -626,11 +626,11 @@ static struct TTask *exec_createtask(TEXECBASE *TExecBase, struct THook *hook,
 						return newtask;
 					}
 
-					TDESTROY(&newtask->tsk_SyncPort);
+					TDESTROY(&newtask->tsk_SyncPort.tmp_Handle);
 				}
-				TDESTROY(&newtask->tsk_UserPort);
+				TDESTROY(&newtask->tsk_UserPort.tmp_Handle);
 			}
-			TDESTROY(&newtask->tsk_HeapMemManager);
+			TDESTROY(&newtask->tsk_HeapMemManager.tmm_Handle);
 		}
 		THALDestroyLock(hal, &newtask->tsk_TaskLock);
 	}
@@ -751,9 +751,9 @@ static void exec_destroytask(TEXECBASE *TExecBase, struct TTask *task)
 {
 	TAPTR hal = TExecBase->texb_HALBase;
 	THALDestroyThread(hal, &task->tsk_Thread);
-	TDESTROY(&task->tsk_SyncPort);
-	TDESTROY(&task->tsk_UserPort);
-	TDESTROY(&task->tsk_HeapMemManager);
+	TDESTROY(&task->tsk_SyncPort.tmp_Handle);
+	TDESTROY(&task->tsk_UserPort.tmp_Handle);
+	TDESTROY(&task->tsk_HeapMemManager.tmm_Handle);
 	THALDestroyLock(hal, &task->tsk_TaskLock);
 	TFree(task);
 }
@@ -766,7 +766,7 @@ static void exec_destroytask(TEXECBASE *TExecBase, struct TTask *task)
 static void exec_childinit(TEXECBASE *TExecBase)
 {
 	TAPTR hal = TExecBase->texb_HALBase;
-	struct TNode *nnode, *node = TExecBase->texb_TaskInitList.tlh_Head;
+	struct TNode *nnode, *node = TExecBase->texb_TaskInitList.tlh_Head.tln_Succ;
 	while ((nnode = node->tln_Succ))
 	{
 		union TTaskRequest *req = (union TTaskRequest *) node;
@@ -808,7 +808,7 @@ static void exec_childinit(TEXECBASE *TExecBase)
 static void exec_childexit(TEXECBASE *TExecBase)
 {
 	TAPTR hal = TExecBase->texb_HALBase;
-	struct TNode *nnode, *node = TExecBase->texb_TaskExitList.tlh_Head;
+	struct TNode *nnode, *node = TExecBase->texb_TaskExitList.tlh_Head.tln_Succ;
 	while ((nnode = node->tln_Succ))
 	{
 		union TTaskRequest *req = (union TTaskRequest *) node;
@@ -998,7 +998,7 @@ static void exec_unlockatom(TEXECBASE *TExecBase, struct TTask *msg)
 
 		if (mode & TATOMF_DESTROY)
 		{
-			struct TNode *nextnode, *node = atom->tatm_Waiters.tlh_Head;
+			struct TNode *nextnode, *node = atom->tatm_Waiters.tlh_Head.tln_Succ;
 			while ((nextnode = node->tln_Succ))
 			{
 				waiter = (union TTaskRequest *) node;
@@ -1031,7 +1031,7 @@ static void exec_unlockatom(TEXECBASE *TExecBase, struct TTask *msg)
 				if (waitmode & TATOMF_SHARED)
 				{
 					struct TNode *nextnode, *node =
-						atom->tatm_Waiters.tlh_Head;
+						atom->tatm_Waiters.tlh_Head.tln_Succ;
 					atom->tatm_State |= TATOMF_SHARED;
 					while ((nextnode = node->tln_Succ))
 					{

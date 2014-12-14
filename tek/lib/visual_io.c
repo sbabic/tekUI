@@ -336,7 +336,8 @@ static void tek_lib_visual_io_task(struct TTask *task)
 						char *line;
 						size_t len;
 						visual_io_reader_addbytes(&iodata->linereader, nbytes);
-						while (visual_io_readline(&iodata->linereader, &line, &len))
+						while (visual_io_readline(&iodata->linereader, &line,
+							&len))
 						{
 							if (getusermsg(vis, &imsg, TITYPE_USER, len))
 							{

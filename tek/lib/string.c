@@ -411,7 +411,7 @@ static void tek_string_compact_int(lua_State *L, tek_string *s)
 {
 	unsigned char utf8buf[6];
 	tek_size i, j;
-	struct TNode *next, *node = s->ts_List.tlh_Head;
+	struct TNode *next, *node = s->ts_List.tlh_Head.tln_Succ;
 	tek_size elen[NUMFIELDS];
 	int have_data[NUMFIELDS];
 	unsigned char *utf8[NUMFIELDS];
@@ -451,7 +451,7 @@ static void tek_string_compact_int(lua_State *L, tek_string *s)
 			tek_string_allocutf8n(L, s, j, elen[j]);
 	}
 	
-	node = s->ts_List.tlh_Head;
+	node = s->ts_List.tlh_Head.tln_Succ;
 
 	for (j = 0; j < NUMFIELDS; ++j)
 		utf8[j] = s->ts_UTF8[j];
@@ -505,7 +505,7 @@ static tek_node *tek_string_getnode(lua_State *L, tek_string *s,
 #if defined(COMPACTION)
 	tek_string_unpack(L, s);
 #endif
-	node = s->ts_List.tlh_Head;
+	node = s->ts_List.tlh_Head.tln_Succ;
 
 	if (pos > s->ts_Length)
 	{
@@ -855,7 +855,7 @@ static tek_node *tek_string_breaklist(lua_State *L, tek_string *s, int pos)
 		
 	tek_string_unhint(s, 0);
 	if (sn == TNULL)
-		return (tek_node *) s->ts_List.tlh_TailPred;
+		return (tek_node *) s->ts_List.tlh_Tail.tln_Pred;
 	node = &sn->tsn_Node;
 	splitpos = pos - p0;
 	assert(splitpos >= 0);
@@ -1076,7 +1076,7 @@ static int tek_string_overwrite(lua_State *L)
 #if defined(COMPACTION)
 	tek_string_unpack(L, s);
 #endif
-	node = s->ts_List.tlh_Head;
+	node = s->ts_List.tlh_Head.tln_Succ;
 	
 	for (; (next = node->tln_Succ); node = next)
 	{

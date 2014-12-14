@@ -26,7 +26,7 @@ static THOOKENTRY TTAG destroy_cacherecord(struct THook *hook, TAPTR obj,
 		return 0;
 	struct ImageCacheRecord *cr = obj;
 	struct THandle *cache = cr->handle.thn_Owner;
-	struct TNode *next, *node = cr->list.tlh_Head;
+	struct TNode *next, *node = cr->list.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 		TDestroy(&((struct ImageCacheNode *) node)->handle);
 	cr->iface->free(cache, cr);
@@ -51,7 +51,7 @@ TLIBAPI TINT imgcache_lookup(struct ImageCacheState *cs, struct TVImageCacheRequ
 		cs->hashvalue);
 	if (cs->cr)
 	{
-		struct TNode *next, *node = cs->cr->list.tlh_Head;
+		struct TNode *next, *node = cs->cr->list.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			struct ImageCacheNode *cn = (struct ImageCacheNode *) node;
@@ -112,7 +112,7 @@ TLIBAPI TINT imgcache_store(struct ImageCacheState *cs, struct TVImageCacheReque
 	cs->dst.tpb_Data = (TUINT8 *) (cn + 1);
 	cs->dst.tpb_BytesPerLine = cs->w * bpp;
 	cs->convert(&cs->src, &cs->dst, 0, 0, cs->w - 1, cs->h - 1, 0, 0, 0, 0);
-	struct TNode *next, *node = cr->list.tlh_Head;
+	struct TNode *next, *node = cr->list.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct ImageCacheNode *cn = (struct ImageCacheNode *) node;

@@ -42,7 +42,7 @@ static TBOOL x11_getimsg(struct X11Display *mod, struct X11Window *v,
 LOCAL void x11_sendimessages(struct X11Display *mod)
 {
 	TAPTR TExecBase = TGetExecBase(mod);
-	struct TNode *next, *node = mod->x11_vlist.tlh_Head;
+	struct TNode *next, *node = mod->x11_vlist.tlh_Head.tln_Succ;
 
 	for (; (next = node->tln_Succ); node = next)
 	{
@@ -398,7 +398,7 @@ static TBOOL x11_processvisualevent(struct X11Display *mod,
 
 		case MotionNotify:
 		{
-			struct TNode *next, *node = mod->x11_vlist.tlh_Head;
+			struct TNode *next, *node = mod->x11_vlist.tlh_Head.tln_Succ;
 
 			x11_setmousepos(mod, v, ev->xmotion.x, ev->xmotion.y);
 			v->mousex = mod->x11_ScreenMouseX - v->winleft;
@@ -475,18 +475,19 @@ static TBOOL x11_processvisualevent(struct X11Display *mod,
 		case SelectionRequest:
 		{
 			XSelectionRequestEvent *req = (XSelectionRequestEvent *) ev;
-			XSelectionEvent reply;
+			XEvent replyevent;
+			XSelectionEvent *reply = &replyevent.xselection;
+			memset(&replyevent, 0, sizeof replyevent);
 
-			memset(&reply, 0, sizeof reply);
-			reply.type = SelectionNotify;
-			reply.serial = ev->xany.send_event;
-			reply.send_event = True;
-			reply.display = req->display;
-			reply.requestor = req->requestor;
-			reply.selection = req->selection;
-			reply.property = req->property;
-			reply.target = None;
-			reply.time = req->time;
+			reply->type = SelectionNotify;
+			reply->serial = ev->xany.send_event;
+			reply->send_event = True;
+			reply->display = req->display;
+			reply->requestor = req->requestor;
+			reply->selection = req->selection;
+			reply->property = req->property;
+			reply->target = None;
+			reply->time = req->time;
 
 			if (req->target == mod->x11_XA_TARGETS)
 			{
@@ -496,11 +497,11 @@ static TBOOL x11_processvisualevent(struct X11Display *mod,
 			}
 			else if (req->target == mod->x11_XA_UTF8_STRING)
 			{
-				XSelectionEvent *rcopy = TAlloc(TNULL, sizeof reply);
+				XSelectionEvent *rcopy = TAlloc(TNULL, sizeof *reply);
 
 				if (rcopy && x11_getimsg(mod, v, &imsg, TITYPE_REQSELECTION))
 				{
-					*rcopy = reply;
+					*rcopy = *reply;
 					imsg->timsg_Requestor = (TTAG) rcopy;
 					imsg->timsg_Code =
 						req->selection == mod->x11_XA_PRIMARY ? 2 : 1;
@@ -510,10 +511,10 @@ static TBOOL x11_processvisualevent(struct X11Display *mod,
 				TFree(rcopy);
 			}
 			else
-				reply.property = None;
+				reply->property = None;
 
 			XSendEvent(mod->x11_Display, req->requestor, 0, NoEventMask,
-				(XEvent *) & reply);
+				&replyevent);
 			XSync(mod->x11_Display, False);
 			break;
 		}
@@ -547,9 +548,9 @@ static void x11_processevent(struct X11Display *mod)
 		}
 
 		/* lookup window: */
-		w = ((XAnyEvent *) & ev)->window;
+		w = ev.xany.window;
 		v = TNULL;
-		node = mod->x11_vlist.tlh_Head;
+		node = mod->x11_vlist.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			v = (struct X11Window *) node;
@@ -659,7 +660,7 @@ LOCAL void x11_taskfunc(struct TTask *task)
 			if (TCmpTime(&nowt, &nextt) >= 0)
 			{
 				/* expired; send interval: */
-				struct TNode *next, *node = inst->x11_vlist.tlh_Head;
+				struct TNode *next, *node = inst->x11_vlist.tlh_Head.tln_Succ;
 
 				for (; (next = node->tln_Succ); node = next)
 				{

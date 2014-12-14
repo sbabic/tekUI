@@ -24,9 +24,10 @@
 
 TLIBAPI void TInitList(struct TList *list)
 {
-	list->tlh_TailPred = (struct TNode *) list;
-	list->tlh_Tail = TNULL;
-	list->tlh_Head = (struct TNode *) &list->tlh_Tail;
+	list->tlh_Head.tln_Succ = &list->tlh_Tail;
+	list->tlh_Head.tln_Pred = TNULL;
+	list->tlh_Tail.tln_Succ = TNULL;
+	list->tlh_Tail.tln_Pred = &list->tlh_Head;
 }
 
 /*****************************************************************************/
@@ -37,10 +38,10 @@ TLIBAPI void TInitList(struct TList *list)
 
 TLIBAPI void TAddHead(struct TList *list, struct TNode *node)
 {
-	struct TNode *temp = list->tlh_Head;
-	list->tlh_Head = node;
+	struct TNode *temp = list->tlh_Head.tln_Succ;
+	list->tlh_Head.tln_Succ = node;
 	node->tln_Succ = temp;
-	node->tln_Pred = (struct TNode *) &list->tlh_Head;
+	node->tln_Pred = &list->tlh_Head;
 	temp->tln_Pred = node;
 }
 
@@ -52,9 +53,9 @@ TLIBAPI void TAddHead(struct TList *list, struct TNode *node)
 
 TLIBAPI void TAddTail(struct TList *list, struct TNode *node)
 {
-	struct TNode *temp = list->tlh_TailPred;
-	list->tlh_TailPred = node;
-	node->tln_Succ = (struct TNode *) &list->tlh_Tail;
+	struct TNode *temp = list->tlh_Tail.tln_Pred;
+	list->tlh_Tail.tln_Pred = node;
+	node->tln_Succ = &list->tlh_Tail;
 	node->tln_Pred = temp;
 	temp->tln_Succ = node;
 }
@@ -67,11 +68,11 @@ TLIBAPI void TAddTail(struct TList *list, struct TNode *node)
 
 TLIBAPI struct TNode *TRemHead(struct TList *list)
 {
-	struct TNode *temp = list->tlh_Head;
+	struct TNode *temp = list->tlh_Head.tln_Succ;
 	if (temp->tln_Succ)
 	{
-		list->tlh_Head = temp->tln_Succ;
-		temp->tln_Succ->tln_Pred = (struct TNode *) &list->tlh_Head;
+		list->tlh_Head.tln_Succ = temp->tln_Succ;
+		temp->tln_Succ->tln_Pred = &list->tlh_Head;
 		return temp;
 	}
 	return TNULL;
@@ -85,11 +86,11 @@ TLIBAPI struct TNode *TRemHead(struct TList *list)
 
 TLIBAPI struct TNode *TRemTail(struct TList *list)
 {
-	struct TNode *temp = list->tlh_TailPred;
+	struct TNode *temp = list->tlh_Tail.tln_Pred;
 	if (temp->tln_Pred)
 	{
-		list->tlh_TailPred = temp->tln_Pred;
-		temp->tln_Pred->tln_Succ = (struct TNode *) &list->tlh_Tail;
+		list->tlh_Tail.tln_Pred = temp->tln_Pred;
+		temp->tln_Pred->tln_Succ = &list->tlh_Tail;
 		return temp;
 	}
 	return TNULL;
@@ -183,7 +184,7 @@ TLIBAPI void TDestroy(struct THandle *handle)
 
 TLIBAPI void TDestroyList(struct TList *list)
 {
-	struct TNode *nextnode, *node = list->tlh_Head;
+	struct TNode *nextnode, *node = list->tlh_Head.tln_Succ;
 	while ((nextnode = node->tln_Succ))
 	{
 		TREMOVE(node);
@@ -349,7 +350,7 @@ TLIBAPI TTAG TGetTag(struct TTagItem *taglist, TUINT tag, TTAG defvalue)
 TLIBAPI struct THandle *TFindHandle(struct TList *list, TSTRPTR name)
 {
 	struct TNode *nnode, *node;
-	for (node = list->tlh_Head; (nnode = node->tln_Succ); node = nnode)
+	for (node = list->tlh_Head.tln_Succ; (nnode = node->tln_Succ); node = nnode)
 	{
 		TSTRPTR s1 = ((struct THandle *) node)->thn_Name;
 		if (s1 && name)

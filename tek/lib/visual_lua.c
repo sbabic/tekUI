@@ -408,7 +408,7 @@ tek_lib_visual_close(lua_State *L)
 		/* clean up message port: */
 		TInitList(&tmplist);
 		THALLock(visbase->vis_ExecBase->texb_HALBase, &port->tmp_Lock);
-		node = port->tmp_MsgList.tlh_Head;
+		node = port->tmp_MsgList.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			TIMSG *imsg = TGETMSGBODY(node);

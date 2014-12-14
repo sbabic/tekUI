@@ -83,7 +83,7 @@ static THOOKENTRY TTAG rfb_fqhdestroy(struct THook *hook, TAPTR obj, TTAG msg)
 		TAPTR TExecBase = mod->rfb_ExecBase;
 		struct TNode *node, *next;
 
-		node = fqh->reslist.tlh_Head;
+		node = fqh->reslist.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			struct rfb_FontQueryNode *fqn = (struct rfb_FontQueryNode *) node;
@@ -182,7 +182,7 @@ static TBOOL fnt_checkfqnode(struct TList *rlist,
 	TINT newpxsize = (TINT) fqnode->tags[1].tti_Value;
 	TSIZE flen = strlen(newfname);
 
-	for (node = rlist->tlh_Head; (next = node->tln_Succ); node = next)
+	for (node = rlist->tlh_Head.tln_Succ; (next = node->tln_Succ); node = next)
 	{
 		struct rfb_FontQueryNode *fqn = (struct rfb_FontQueryNode *) node;
 
@@ -500,7 +500,7 @@ LOCAL TAPTR rfb_hostqueryfonts(struct rfb_Display *mod, TTAGITEM *tags)
 		TInitHook(&fqh->handle.thn_Hook, rfb_fqhdestroy, fqh);
 		TInitList(&fqh->reslist);
 		/* init list iterator */
-		fqh->nptr = &fqh->reslist.tlh_Head;
+		fqh->nptr = &fqh->reslist.tlh_Head.tln_Succ;
 
 		hostqueryfonts(mod, fqh, &fattr);
 	}
@@ -508,7 +508,8 @@ LOCAL TAPTR rfb_hostqueryfonts(struct rfb_Display *mod, TTAGITEM *tags)
 		TDBPRINTF(20, ("out of memory :(\n"));
 
 	/* free memory of fnt_nodes */
-	for (node = fattr.fnlist.tlh_Head; (next = node->tln_Succ); node = next)
+	for (node = fattr.fnlist.tlh_Head.tln_Succ; 
+		 (next = node->tln_Succ); node = next)
 	{
 		struct fnt_node *fnn = (struct fnt_node *) node;
 
@@ -540,7 +541,7 @@ static void hostqueryfonts(struct rfb_Display *mod,
 	if (nfont > 0)
 	{
 		/* found fonts in default font directory */
-		for (node = fattr->fnlist.tlh_Head; (next = node->tln_Succ);
+		for (node = fattr->fnlist.tlh_Head.tln_Succ; (next = node->tln_Succ);
 			node = next)
 		{
 			struct fnt_node *fnn = (struct fnt_node *) node;
@@ -660,7 +661,7 @@ LOCAL TTAGITEM *rfb_hostgetnextfont(struct rfb_Display *mod, TAPTR fqhandle)
 
 	if (next->tln_Succ == TNULL)
 	{
-		fqh->nptr = &fqh->reslist.tlh_Head;
+		fqh->nptr = &fqh->reslist.tlh_Head.tln_Succ;
 		return TNULL;
 	}
 
@@ -821,7 +822,7 @@ LOCAL TVOID rfb_hostdrawtext(struct rfb_Display *mod, struct rfb_Window *v,
 		pen.y = posy + asc - sbit->top;
 		posx += sbit->xadvance;
 
-		struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head;
+		struct TNode *next, *node = R.rg_Rects.rl_List.tlh_Head.tln_Succ;
 
 		for (; (next = node->tln_Succ); node = next)
 		{

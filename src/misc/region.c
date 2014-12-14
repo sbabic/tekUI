@@ -33,13 +33,13 @@ static void region_relinklist(struct TList *dlist, struct TList *slist)
 {
 	if (!TISLISTEMPTY(slist))
 	{
-		struct TNode *first = slist->tlh_Head;
-		struct TNode *last = slist->tlh_TailPred;
-		struct TNode *dlast = dlist->tlh_TailPred;
+		struct TNode *first = slist->tlh_Head.tln_Succ;
+		struct TNode *last = slist->tlh_Tail.tln_Pred;
+		struct TNode *dlast = dlist->tlh_Tail.tln_Pred;
 		first->tln_Pred = dlast;
 		last->tln_Succ = (struct TNode *) &dlist->tlh_Tail;
 		dlast->tln_Succ = first;
-		dlist->tlh_TailPred = last;
+		dlist->tlh_Tail.tln_Pred = last;
 	}
 }
 
@@ -94,7 +94,7 @@ TLIBAPI void region_freerects(struct RectPool *p, struct RectList *list)
 TLIBAPI TBOOL region_insertrect(struct RectPool *pool, struct RectList *list,
 	TINT s0, TINT s1, TINT s2, TINT s3)
 {
-	struct TNode *temp, *next, *node = list->rl_List.tlh_Head;
+	struct TNode *temp, *next, *node = list->rl_List.tlh_Head.tln_Succ;
 	struct RectNode *rn;
 	int i;
 
@@ -192,7 +192,7 @@ static TBOOL region_cutrectlist(struct RectPool *pool, struct RectList *inlist,
 	struct RectList *outlist, const RECTINT s[4])
 {
 	TBOOL success = TTRUE;
-	struct TNode *next, *node = inlist->rl_List.tlh_Head;
+	struct TNode *next, *node = inlist->rl_List.tlh_Head.tln_Succ;
 	for (; success && (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
@@ -201,7 +201,7 @@ static TBOOL region_cutrectlist(struct RectPool *pool, struct RectList *inlist,
 		success = region_cutrect(pool, &temp, rn->rn_Rect, s);
 		if (success)
 		{
-			struct TNode *next2, *node2 = temp.rl_List.tlh_Head;
+			struct TNode *next2, *node2 = temp.rl_List.tlh_Head.tln_Succ;
 			for (; success && (next2 = node2->tln_Succ); node2 = next2)
 			{
 				struct RectNode *rn2 = (struct RectNode *) node2;
@@ -226,7 +226,7 @@ TLIBAPI TBOOL region_orrectlist(struct RectPool *pool, struct RectList *list,
 		TINT y1 = s[3];
 		TUINT64 area = 0;
 		
-		struct TNode *next, *node = list->rl_List.tlh_Head;
+		struct TNode *next, *node = list->rl_List.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			struct RectNode *rn = (struct RectNode *) node;
@@ -277,7 +277,7 @@ TLIBAPI TBOOL region_orregion(struct Region *region,
 	struct RectList *list, TBOOL opportunistic)
 {
 	TBOOL success = TTRUE;
-	struct TNode *next, *node = list->rl_List.tlh_Head;
+	struct TNode *next, *node = list->rl_List.tlh_Head.tln_Succ;
 	for (; success && (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
@@ -291,7 +291,7 @@ static TBOOL region_andrect_internal(struct RectList *temp,
 	struct Region *region, TINT s[], TINT dx, TINT dy)
 {
 	struct RectPool *pool = region->rg_Pool;
-	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	TBOOL success = TTRUE;
 	TINT s0 = s[0] + dx;
 	TINT s1 = s[1] + dy;
@@ -323,7 +323,7 @@ TLIBAPI TBOOL region_subrect(struct RectPool *pool, struct Region *region,
 	TBOOL success = TTRUE;
 
 	region_initrectlist(&r1);
-	node = region->rg_Rects.rl_List.tlh_Head;
+	node = region->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	for (; success && (next = node->tln_Succ); node = next)
 	{
 		struct TNode *next2, *node2;
@@ -333,7 +333,7 @@ TLIBAPI TBOOL region_subrect(struct RectPool *pool, struct Region *region,
 		region_initrectlist(&temp);
 		success = region_cutrect(pool, &temp, rn->rn_Rect, s);
 
-		node2 = temp.rl_List.tlh_Head;
+		node2 = temp.rl_List.tlh_Head.tln_Succ;
 		for (; success && (next2 = node2->tln_Succ); node2 = next2)
 		{
 			struct RectNode *rn2 = (struct RectNode *) node2;
@@ -359,7 +359,7 @@ TLIBAPI TBOOL region_subregion(struct RectPool *pool, struct Region *dregion,
 	struct Region *sregion)
 {
 	TBOOL success = TTRUE;
-	struct TNode *next, *node = sregion->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = sregion->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	for (; success && (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
@@ -372,7 +372,7 @@ TLIBAPI TBOOL region_subregion(struct RectPool *pool, struct Region *dregion,
 TLIBAPI TBOOL region_overlap(struct RectPool *pool, struct Region *region,
 	TINT s[])
 {
-	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
@@ -399,7 +399,7 @@ TLIBAPI TBOOL region_andrect(struct RectPool *pool, struct Region *region,
 TLIBAPI TBOOL region_andregion(struct RectPool *pool, struct Region *dregion,
 	struct Region *sregion)
 {
-	struct TNode *next, *node = sregion->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = sregion->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	TBOOL success = TTRUE;
 	struct RectList temp;
 	region_initrectlist(&temp);
@@ -443,7 +443,7 @@ TLIBAPI TBOOL region_xorrect(struct RectPool *pool, struct Region *region,
 
 	success = region_insertrect(pool, &r2, s[0], s[1], s[2], s[3]);
 
-	node = region->rg_Rects.rl_List.tlh_Head;
+	node = region->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	for (; success && (next = node->tln_Succ); node = next)
 	{
 		struct TNode *next2, *node2;
@@ -453,7 +453,7 @@ TLIBAPI TBOOL region_xorrect(struct RectPool *pool, struct Region *region,
 		region_initrectlist(&temp);
 		success = region_cutrect(pool, &temp, rn->rn_Rect, s);
 
-		node2 = temp.rl_List.tlh_Head;
+		node2 = temp.rl_List.tlh_Head.tln_Succ;
 		for (; success && (next2 = node2->tln_Succ); node2 = next2)
 		{
 			struct RectNode *rn2 = (struct RectNode *) node2;
@@ -500,7 +500,7 @@ TLIBAPI TBOOL region_getminmax(struct RectPool *pool, struct Region *region,
 	TINT miny = 1000000;
 	TINT maxx = 0;
 	TINT maxy = 0;
-	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;
@@ -568,14 +568,14 @@ TLIBAPI void region_initpool(struct RectPool *pool, TAPTR TExecBase)
 TLIBAPI void region_destroypool(struct RectPool *pool)
 {
 	TAPTR TExecBase = pool->p_ExecBase;
-	struct TNode *next, *node = pool->p_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = pool->p_Rects.rl_List.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 		TFree(node);
 }
 
 TLIBAPI void region_shift(struct Region *region, TINT sx, TINT sy)
 {
-	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		struct RectNode *rn = (struct RectNode *) node;

@@ -377,7 +377,7 @@ dfb_exitinstance(DFBDISPLAY *inst)
 		TExecFree(inst->dfb_ExecBase, imsg);
 
 	/* free queued input messages in all open visuals: */
-	node = inst->dfb_vlist.tlh_Head;
+	node = inst->dfb_vlist.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		DFBWINDOW *v = (DFBWINDOW *) node;
@@ -392,7 +392,7 @@ dfb_exitinstance(DFBDISPLAY *inst)
 	/* force closing of default font */
 	inst->dfb_fm.defref = 0;
 	/* close all fonts */
-	node = inst->dfb_fm.openfonts.tlh_Head;
+	node = inst->dfb_fm.openfonts.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 		dfb_hostclosefont(inst, (TAPTR) node);
 
@@ -492,7 +492,7 @@ static void dfb_taskfunc(struct TTask *task)
 			TExecReplyMsg(inst->dfb_ExecBase, req);
 		}
 
-		node = inst->dfb_vlist.tlh_Head;
+		node = inst->dfb_vlist.tlh_Head.tln_Succ;
 		for (; (next = node->tln_Succ); node = next)
 		{
 			v = (DFBWINDOW *) node;
@@ -583,7 +583,7 @@ dfb_processevent(DFBDISPLAY *mod)
 		if (mod->dfb_Focused)
 		{
 			DFBWindowEvent *ev = (DFBWindowEvent *)&evt;
-			struct TNode *next, *node = mod->dfb_vlist.tlh_Head;
+			struct TNode *next, *node = mod->dfb_vlist.tlh_Head.tln_Succ;
 
 			for (; (next = node->tln_Succ); node = next)
 			{
@@ -946,7 +946,7 @@ TBOOL getimsg(DFBDISPLAY *mod, DFBWINDOW *v, TIMSG **msgptr, TUINT type)
 
 LOCAL void dfb_sendimessages(DFBDISPLAY *mod, TBOOL do_interval)
 {
-	struct TNode *next, *node = mod->dfb_vlist.tlh_Head;
+	struct TNode *next, *node = mod->dfb_vlist.tlh_Head.tln_Succ;
 	for (; (next = node->tln_Succ); node = next)
 	{
 		DFBWINDOW *v = (DFBWINDOW *) node;

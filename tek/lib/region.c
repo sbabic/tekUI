@@ -272,7 +272,7 @@ static int tek_lib_region_orregion(lua_State *L)
 static int tek_lib_region_foreach(lua_State *L)
 {
 	struct Region *region = tek_lib_region_check(L, 1);
-	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head;
+	struct TNode *next, *node = region->rg_Rects.rl_List.tlh_Head.tln_Succ;
 	int narg = lua_gettop(L) - 3;
 	int i;
 	for (; (next = node->tln_Succ); node = next)

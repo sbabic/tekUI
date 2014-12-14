@@ -703,7 +703,7 @@ hal_timeproc(UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
 	{
 		TTIME curtime;
 		hal_getsystime(g_hal, &curtime);
-		node = g_hws->hsp_ReqList.tlh_Head;
+		node = g_hws->hsp_ReqList.tlh_Head.tln_Succ;
 		for (; (nnode = node->tln_Succ); node = nnode)
 		{
 			struct TTimeRequest *tr = (struct TTimeRequest *) node;
@@ -714,7 +714,7 @@ hal_timeproc(UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
 			}
 		}
 
-		node = g_ReplyList.tlh_Head;
+		node = g_ReplyList.tlh_Head.tln_Succ;
 		for (; (nnode = node->tln_Succ); node = nnode)
 		{
 			struct TTimeRequest *tr = (struct TTimeRequest *) node;
