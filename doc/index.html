@@ -684,7 +684,14 @@
 						Windows (tested: 2000, Wine)
 					</li>
 					<li>
-						Mac OS X (tested: X11 display driver)
+						Mac OS X (tested: 10.10, X11 display driver)
+					</li>
+					<li>
+						Solaris 11 (Sparc, x86, X11)
+					</li>
+					<li>
+						HPPA, IA64 HP-UX 11.31, X11 (special precautions needed, see
+						<a href="#notehpux">HP-UX notes</a>)
 					</li>
 				</ul>
 			</blockquote>
@@ -2006,12 +2013,7 @@ Class.function()
 <pre>
 local ui = require &quot;tek.ui&quot;
 ui.ThemeName = &quot;mycompany&quot; -- also implies &quot;default&quot;
-</pre>
-			<p>
-				To also disable the <code>user.css</code> file:
-			</p>
-<pre>
-ui.UserStyles = false
+ui.UserStyles = false -- to also disable the {{user.css}} file:
 </pre>
 			<p>
 				See also <a href="#extraargs">Global Lua runtime arguments</a>.

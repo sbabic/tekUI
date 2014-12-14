@@ -1,6 +1,8 @@
 
 == tekUI Changelog ==
 
+=== 1.10: ===
+
  * Exec: Changed list structure to eliminate the need for pointer aliasing
  * Improved Mac OS X support, added support for Solaris and HP-UX, improved
  configuration and flexibility with regard to custom paths to third party

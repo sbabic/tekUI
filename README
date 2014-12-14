@@ -358,7 +358,10 @@ TekUI was at some point tested and should compile and run on:
  * Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
  amd64/2007.0, ppc/2007.0)
  * Windows (tested: 2000, Wine)
- * Mac OS X (tested: X11 display driver)
+ * Mac OS X (tested: 10.10, X11 display driver)
+ * Solaris 11 (Sparc, x86, X11)
+ * HPPA, IA64 HP-UX 11.31, X11 (special precautions needed, see 
+ [[HP-UX notes][#notehpux]])
 
 If building fails for you, you may have to adjust the build
 environment, which is located in the {{config}} file on the topmost
@@ -1111,9 +1114,6 @@ by overwriting the {{THEME}} variable inside your application, e.g.:
 
   local ui = require "tek.ui"
   ui.ThemeName = "mycompany" -- also implies "default"
-
-To also disable the {{user.css}} file:
-
-  ui.UserStyles = false
+  ui.UserStyles = false -- to also disable the {{user.css}} file:
 
 See also [[Global Lua runtime arguments][#extraargs]].
