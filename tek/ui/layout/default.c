@@ -24,7 +24,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.layout.default", tek.ui.class.layout)
-_VERSION = "Default Layout 9.0"
+_VERSION = "Default Layout 9.1"
 local DefaultLayout = _M
 
 ******************************************************************************/
@@ -41,7 +41,7 @@ local DefaultLayout = _M
 #define DEFLAYOUT_CLASS_NAME "tek.ui.layout.default"
 
 /* Version: */
-#define DEFLAYOUT_CLASS_VERSION "Default Layout 9.0"
+#define DEFLAYOUT_CLASS_VERSION "Default Layout 9.1"
 
 /* Required tekui version: */
 #define DEFLAYOUT_TEKUI_VERSION 109
@@ -181,11 +181,11 @@ static void layout_calcweights(lua_State *L, layout_struct *lstruct)
 					/* weights, wx, wy, children, c, weight, wx[x] */
 					lua_rawgeti(L, -5, y);
 					/* weights, wx, wy, children, c, weight, wx[x], wy[y] */
-					lua_pushinteger(L, luaL_optint(L, -2, 0) + w);
+					lua_pushinteger(L, luaL_optinteger(L, -2, 0) + w);
 					/* weights, wx, wy, children, c, weight, wx[x], wy[y], wx' */
 					lua_rawseti(L, -8, x);
 					/* weights, wx, wy, children, c, weight, wx[x], wy[y] */
-					lua_pushinteger(L, luaL_optint(L, -1, 0) + w);
+					lua_pushinteger(L, luaL_optinteger(L, -1, 0) + w);
 					/* weights, wx, wy, children, c, weight, wx[x], wy[y], wy' */
 					lua_rawseti(L, -7, y);
 					/* weights, wx, wy, children, c, weight, wx[x], wy[y] */

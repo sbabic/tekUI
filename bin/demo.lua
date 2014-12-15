@@ -139,7 +139,7 @@ app = ui.Application:new
 					data.MaxMem = math.max(data.MaxMem or m, m)
 					local mem = self:getById("about-mem-used")
 					if mem then
-						mem:setValue("Text", ("%dk - min: %dk - max: %dk"):format(m,
+						mem:setValue("Text", ("%.0fk - min: %.0fk - max: %.0fk"):format(m,
 							data.MinMem, data.MaxMem))
 					end
 					local gauge = self:getById("about-mem-gauge")

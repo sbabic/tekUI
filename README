@@ -330,8 +330,8 @@ Development tools and libraries alongside with their tested versions
  * libpng (for PNG support, disabled by default)
  * MinGW (for building on the Windows platform)
 
-Lua 5.1, 5.2 and LuaJIT 2.0 are supported out of the box, if Lua 5.2
-is compiled with {{LUA_COMPAT_MODULE}}.
+Lua 5.1, 5.2, 5.3 and LuaJIT 2.0 are supported out of the box, if
+Lua 5.2 and 5.3 are compiled with {{LUA_COMPAT_MODULE}}.
 
 ===( luamodules : 3.1.1. External Lua modules )===
 

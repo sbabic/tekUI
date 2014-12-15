@@ -6,9 +6,10 @@ local ipairs = ipairs
 local min = math.min
 local open = io.open
 local tonumber = tonumber
+local floor = math.floor
 
 module "tek.ui.style.desktop"
-_VERSION = "Desktop Style 2.0"
+_VERSION = "Desktop Style 2.1"
 local DesktopStyle = _M
 
 -------------------------------------------------------------------------------
@@ -17,9 +18,9 @@ local DesktopStyle = _M
 
 local function fmtrgb(r, g, b, l)
 	l = l or 1
-	r = min(r * l * 255, 255)
-	g = min(g * l * 255, 255)
-	b = min(b * l * 255, 255)
+	r = floor(min(r * l * 255, 255))
+	g = floor(min(g * l * 255, 255))
+	b = floor(min(b * l * 255, 255))
 	return ("#%02x%02x%02x"):format(r, g, b)
 end
 

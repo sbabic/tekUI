@@ -23,7 +23,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 8.1"
+_VERSION = "Meter 8.2"
 local Meter = _M
 Text:newClass(Meter)
 
@@ -241,10 +241,13 @@ function Meter:drawGraph()
 				end
 				if self.Mode == "rect" then
 					local x1 = min(x1 / 0x10000, r3)
-					d:drawLine(x, y - v0, x1, y - v0, pen)
-					d:drawLine(x1, y - v0, x1, y - v1, pen)
+					d:drawLine(floor(x), floor(y - v0), floor(x1),
+						floor(y - v0), pen)
+					d:drawLine(floor(x1), floor(y - v0), floor(x1),
+						floor(y - v1), pen)
 				else
-					d:drawLine(x, y - v0, min(x1 / 0x10000, r3), y - v1, pen)
+					d:drawLine(floor(x), floor(y - v0), 
+						floor(min(x1 / 0x10000, r3)), floor(y - v1), pen)
 				end
 				x0 = x1
 				v0 = v1

@@ -199,7 +199,7 @@ function TSP:draw()
 			local y = y0 + p[i - 1][2] * h + 5
 			local x1 = x0 + p[i][1] * w + 5
 			local y1 = y0 + p[i][2] * h + 5
-			d:drawLine(x, y, x1, y1, "bright")
+			d:drawLine(floor(x), floor(y), floor(x1), floor(y1), "bright")
 		end
 	end
 end

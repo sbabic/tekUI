@@ -16,7 +16,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 5.3"
+_VERSION = "Tunnel 5.4"
 local Tunnel = _M
 Frame:newClass(Tunnel)
 
@@ -88,10 +88,10 @@ function Tunnel:draw()
 			local y = self.size[2] * self.viewz / z
 			local dx = self.dx[cx] * z / 256
 			local dy = self.dx[cy] * z / 256
-			local x0 = sx - x + dx
-			local y0 = sy - y + dy
-			local x1 = sx + x + dx
-			local y1 = sy + y + dy
+			local x0 = floor(sx - x + dx)
+			local y0 = floor(sy - y + dy)
+			local x1 = floor(sx + x + dx)
+			local y1 = floor(sy + y + dy)
 			d:drawRect(x0, y0, x1, y1, p1)
 			z = z + self.dist
 			cx = cx == self.ndx and 1 or cx + 1

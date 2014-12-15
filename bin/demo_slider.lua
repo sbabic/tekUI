@@ -39,7 +39,7 @@ local scrollbar2 = ui.ScrollBar:new
 }
 
 scrollbar2:addNotify("Value", ui.NOTIFY_ALWAYS, { ui.NOTIFY_ID, 
-	"slider-text-2", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" })
+	"slider-text-2", "setValue", "Text", ui.NOTIFY_FORMAT, "%.0f" })
 scrollbar2:addNotify("Value", ui.NOTIFY_ALWAYS, 
 	{ ui.NOTIFY_ID, "slider-slider-1", "setValue", "Value", ui.NOTIFY_VALUE })
 scrollbar2:addNotify("Value", ui.NOTIFY_ALWAYS, 
@@ -56,7 +56,7 @@ local scrollbar3 = ui.ScrollBar:new
 }
 
 scrollbar3:addNotify("Value", ui.NOTIFY_ALWAYS, { ui.NOTIFY_ID, 
-	"slider-text-3", "setValue", "Text", ui.NOTIFY_FORMAT, "%d" })
+	"slider-text-3", "setValue", "Text", ui.NOTIFY_FORMAT, "%.0f" })
 scrollbar3:addNotify("Value", ui.NOTIFY_ALWAYS,
 	{ ui.NOTIFY_ID, "slider-slider-1", "setValue", "Range", ui.NOTIFY_VALUE })
 scrollbar3:addNotify("Value", ui.NOTIFY_ALWAYS,

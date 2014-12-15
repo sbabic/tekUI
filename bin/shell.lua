@@ -2,6 +2,7 @@
 
 local String = require "tek.lib.string"
 local ui = require "tek.ui"
+local load = loadstring or load
 
 local function getline(line, color)
 	line = String.new():set(line)
@@ -81,7 +82,7 @@ print "Done."
 								table.insert(statement, s)
 							end
 							local all = table.concat(statement, "\n")
-							local func, msg = loadstring(all)
+							local func, msg = load(all)
 							if func then
 								print = function(...)
 									local t = { }

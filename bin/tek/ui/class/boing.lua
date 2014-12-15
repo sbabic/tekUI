@@ -15,7 +15,7 @@ local pi = math.pi
 local sin = math.sin
 
 module("tek.ui.class.boing", tek.ui.class.frame)
-_VERSION = "Boing 5.2"
+_VERSION = "Boing 5.3"
 local Boing = _M
 Frame:newClass(Boing)
 
@@ -84,9 +84,11 @@ function Boing:draw()
 		local x0 = (self.Boing[1] * w2) / 0x10000 + r1
 		local y0 = (self.Boing[2] * h2) / 0x10000 + r2
 		if o[1] then
-			d:fillRect(o[1], o[2], o[3], o[4], bgpen)
+			d:fillRect(floor(o[1]), floor(o[2]), floor(o[3]), floor(o[4]),
+				bgpen)
 		end
-		d:fillRect(x0, y0, x0 + w/20 - 1, y0 + h/20 - 1, "bright")
+		d:fillRect(floor(x0), floor(y0), 
+			floor(x0 + w/20 - 1), floor(y0 + h/20 - 1), "bright")
 		o[1] = x0
 		o[2] = y0
 		o[3] = x0 + w/20 - 1

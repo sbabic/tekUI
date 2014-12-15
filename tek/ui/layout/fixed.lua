@@ -33,13 +33,12 @@
 
 local ui = require "tek.ui"
 local Layout = require "tek.ui.class.layout"
-
 local tonumber = tonumber
 
 module("tek.ui.layout.fixed", tek.ui.class.layout)
-_VERSION = "Fixed Layout 2.0"
-
+_VERSION = "Fixed Layout 2.1"
 local FixedLayout = _M
+Layout:newClass(FixedLayout)
 
 function FixedLayout:layout(group, r1, r2, r3, r4, markdamage)
 	local children = group.Children
