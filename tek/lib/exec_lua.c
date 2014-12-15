@@ -25,7 +25,7 @@ static int tek_lib_exec_base_gc(lua_State *L)
 	{
 		TAPTR basetask = TExecFindTask(*pexec, TTASKNAME_ENTRY);
 		TDestroy(basetask);
-		TDBPRINTF(5,("Exec closed\n"));
+		TDBPRINTF(4,("Exec closed\n"));
 		*pexec = TNULL;
 	}
 	return 0;

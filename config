@@ -252,7 +252,7 @@ default-help:
 	@echo "all ..................... build everything that is needed"
 	@echo "libs .................... build libraries"
 	@echo "modules ................. build shared objects"
-#	@echo "tools ................... build executables"
+	@echo "tools ................... build executables"
 	@echo "install ................. install modules globally"
 	@echo "clean ................... delete temporary files"
 	@echo "help .................... show these and all extra targets for this Makefile"

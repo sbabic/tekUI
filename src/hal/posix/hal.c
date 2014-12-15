@@ -116,7 +116,7 @@ hal_exit(struct THALBase *hal)
 		TDBPRINTF(10,("*** Global memory leak: %d allocs, %d bytes pending\n",
 			allocount, bytecount));
 	}
-	TDBPRINTF(5,("*** Peak memory allocated: %d bytes\n", maxbytecount));
+	TDBPRINTF(4,("*** Peak memory allocated: %d bytes\n", maxbytecount));
 	#endif
 }
 

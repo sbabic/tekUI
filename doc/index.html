@@ -239,8 +239,8 @@
 				TekUI is slowly approaching feature completeness (&quot;beta&quot; stadium). It
 				is available for Unix-like operating systems such as Linux, FreeBSD,
 				Solaris and HP-UX, and it may work on other flavours of Unix with few
-				modifications. A Windows display driver and build setup is included,
-				but not equally well supported at this time.
+				modifications. A native Windows display driver and build setup is
+				included, but not equally well supported at this time.
 			</p>
 			<p>
 				Display drivers are included for X11, Linux framebuffer, Windows,
@@ -590,8 +590,8 @@
 		</div>
 		<div class="node"><h2><a name="requirements" id="requirements">3.1. Requirements</a></h2>
 			<p>
-				Development libraries alongside with their tested versions (as of
-				this writing) are given below:
+				Development tools and libraries alongside with their tested versions
+				(as of this writing) are given below:
 			</p>
 			<blockquote>
 				<ul>
@@ -615,7 +615,7 @@
 						</blockquote>
 					</li>
 					<li>
-						&gt;=freetype-2.3.5 (for the x11, directfb and rawfb drivers)
+						&gt;=freetype-2.3.5 (for the rawfb and directfb drivers)
 					</li>
 					<li>
 						&gt;=DirectFB-0.9.25.1 (for the directfb driver)
@@ -627,7 +627,7 @@
 						libpng (for PNG support, disabled by default)
 					</li>
 					<li>
-						MinGW (for the Windows platform)
+						MinGW (for building on the Windows platform)
 					</li>
 				</ul>
 			</blockquote>
@@ -670,28 +670,28 @@
 			<blockquote>
 				<ul>
 					<li>
-						Ubuntu Linux (tested: 9.10, 8.04 and 7.10)
+						Ubuntu Linux (tested: 14.04, 9.10, 8.04, 7.10)
 					</li>
 					<li>
-						FreeBSD 8.1, 7.0 (special precautions needed, see
-						<a href="#notefbsd">FreeBSD notes</a>)
+						FreeBSD (tested: 10.1, 8.1, 7.0), special precautions needed,
+						see <a href="#notefbsd">FreeBSD notes</a>)
 					</li>
 					<li>
 						Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
 						amd64/2007.0, ppc/2007.0)
 					</li>
 					<li>
-						Windows (tested: 2000, Wine)
+						Windows (tested: 7, 2000, Wine)
 					</li>
 					<li>
-						Mac OS X (tested: 10.10, X11 display driver)
+						Mac OS X (tested: 10.10, XQuartz)
 					</li>
 					<li>
-						Solaris 11 (Sparc, x86, X11)
+						Solaris (tested: 11, Sparc, x86)
 					</li>
 					<li>
-						HPPA, IA64 HP-UX 11.31, X11 (special precautions needed, see
-						<a href="#notehpux">HP-UX notes</a>)
+						HP-UX (tested: 11.31, HPPA, IA64), special precautions needed,
+						see <a href="#notehpux">HP-UX notes</a>)
 					</li>
 				</ul>
 			</blockquote>
@@ -899,8 +899,8 @@ LDFLAGS=-lpthread
 			<blockquote>
 				<ul>
 					<li>
-						<code>FONTDIR</code> - Raw framebuffer TTF font directory, overriding the
-						hardcoded default (<code>tek/ui/font</code>)
+						<code>FONTDIR</code> - TTF font directory for the rawfb and directfb
+						drivers, overriding the hardcoded default (<code>tek/ui/font</code>)
 					</li>
 					<li>
 						<code>FULLSCREEN</code> - <code>&quot;true&quot;</code> to try opening an application in
@@ -2013,7 +2013,7 @@ Class.function()
 <pre>
 local ui = require &quot;tek.ui&quot;
 ui.ThemeName = &quot;mycompany&quot; -- also implies &quot;default&quot;
-ui.UserStyles = false -- to also disable the {{user.css}} file:
+ui.UserStyles = false -- to also disable the user.css file
 </pre>
 			<p>
 				See also <a href="#extraargs">Global Lua runtime arguments</a>.
