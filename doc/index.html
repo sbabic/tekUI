@@ -674,7 +674,7 @@
 					</li>
 					<li>
 						FreeBSD (tested: 10.1, 8.1, 7.0), special precautions needed,
-						see <a href="#notefbsd">FreeBSD notes</a>)
+						see <a href="#notefbsd">FreeBSD notes</a> 
 					</li>
 					<li>
 						Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
@@ -691,7 +691,7 @@
 					</li>
 					<li>
 						HP-UX (tested: 11.31, HPPA, IA64), special precautions needed,
-						see <a href="#notehpux">HP-UX notes</a>)
+						see <a href="#notehpux">HP-UX notes</a> 
 					</li>
 				</ul>
 			</blockquote>
@@ -730,8 +730,8 @@
 		<div class="node"><h3><a name="notehpux" id="notehpux">3.2.4. HP-UX notes</a></h3>
 			<p>
 				In addition to the HP-UX settings and notes in the <code>config</code> file,
-				you need a Lua binary with a <code>shl_load()</code> patch for loading shared
-				libraries, and pthreads support. For building Lua, use
+				you need a Lua binary with a patch for loading shared libraries via
+				<code>shl_load()</code>, and pthreads support. For building Lua, use
 			</p>
 <pre>
 CPPFLAGS=-D_POSIX_C_SOURCE=199506L
@@ -748,7 +748,7 @@ LDFLAGS=-lpthread
 			<p>
 				The XFree86VidMode extension is no longer linked against by default.
 				It can be enabled by adding <code>-DENABLE_XVID</code> to <code>X11_DEFS</code> in the
-				<code>config</code> file. Fullscreen support is problematic.
+				<code>config</code> file. X11 fullscreen support is problematic.
 			</p>
 		</div>
 		<div class="node"><h3><a name="noterawfb" id="noterawfb">3.2.6. Raw framebuffer notes</a></h3>
@@ -805,8 +805,8 @@ LDFLAGS=-lpthread
 			<p>
 				The DirectFB display driver is not very actively supported at this
 				time. Some adaptations are likely needed. In case of problems,
-				consider using the DirectFB driver only as a rendering back-end for
-				the rawfb driver.
+				consider using the raw framebuffer driver, or the DirectFB driver
+				as a rendering back-end for the raw framebuffer driver.
 			</p>
 		</div>
 		<div class="node"><h3><a name="notefloat" id="notefloat">3.2.8 Floating point support</a></h3>

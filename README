@@ -354,14 +354,14 @@ TekUI was at some point tested and should compile and run on:
 
  * Ubuntu Linux (tested: 14.04, 9.10, 8.04, 7.10)
  * FreeBSD (tested: 10.1, 8.1, 7.0), special precautions needed,
- see [[FreeBSD notes][#notefbsd]])
+ see [[FreeBSD notes][#notefbsd]]
  * Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
  amd64/2007.0, ppc/2007.0)
  * Windows (tested: 7, 2000, Wine)
  * Mac OS X (tested: 10.10, XQuartz)
  * Solaris (tested: 11, Sparc, x86)
  * HP-UX (tested: 11.31, HPPA, IA64), special precautions needed,
- see [[HP-UX notes][#notehpux]])
+ see [[HP-UX notes][#notehpux]]
 
 If building fails for you, you may have to adjust the build
 environment, which is located in the {{config}} file on the topmost
@@ -393,8 +393,8 @@ the build environment, see the {{config}} file.
 ===( notehpux : 3.2.4. HP-UX notes )===
 
 In addition to the HP-UX settings and notes in the {{config}} file,
-you need a Lua binary with a {{shl_load()}} patch for loading shared
-libraries, and pthreads support. For building Lua, use 
+you need a Lua binary with a patch for loading shared libraries via
+{{shl_load()}}, and pthreads support. For building Lua, use 
 
   CPPFLAGS=-D_POSIX_C_SOURCE=199506L
   LDFLAGS=-lpthread
@@ -408,7 +408,7 @@ top of the x11 driver. Disable it by removing
 
 The XFree86VidMode extension is no longer linked against by default.
 It can be enabled by adding {{-DENABLE_XVID}} to {{X11_DEFS}} in the
-{{config}} file. Fullscreen support is problematic.
+{{config}} file. X11 fullscreen support is problematic.
 
 ===( noterawfb : 3.2.6. Raw framebuffer notes )===
 
@@ -457,8 +457,8 @@ built-in pointer image.
 
 The DirectFB display driver is not very actively supported at this
 time. Some adaptations are likely needed. In case of problems,
-consider using the DirectFB driver only as a rendering back-end for
-the rawfb driver.
+consider using the raw framebuffer driver, or the DirectFB driver
+as a rendering back-end for the raw framebuffer driver.
 
 ===( notefloat : 3.2.8 Floating point support )===
 

@@ -1742,12 +1742,12 @@ tek_lib_visual_getattrs(lua_State *L)
 			case 'H':
 			case 'x':
 			case 'y':
-				lua_pushinteger(L, tags[i].tti_Value);
+				lua_pushinteger(L, *((TINT *) &tags[i].tti_Value));
 				break;
 			case 's':
 			case 'c':
 			case 'M':
-				lua_pushboolean(L, tags[i].tti_Value);
+				lua_pushboolean(L, *((TBOOL *) &tags[i].tti_Value));
 				break;
 		}
 	}
