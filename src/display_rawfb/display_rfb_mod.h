@@ -18,8 +18,8 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <freetype/ftglyph.h>
-#include <freetype/ftcache.h>
+#include FT_GLYPH_H
+#include FT_CACHE_H
 
 #if defined(ENABLE_VNCSERVER)
 #include <rfb/rfb.h>

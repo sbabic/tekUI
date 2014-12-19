@@ -126,8 +126,8 @@ LUA_DEFS = -I$(LUA_INCDIR) -I/usr/local/include/lua51 -I/usr/include/lua5.1
 FREETYPE_DIR = $(PREFIX)
 FREETYPE_INCDIR = $(FREETYPE_DIR)/include
 FREETYPE_LIBDIR = $(FREETYPE_DIR)/lib
-FREETYPE_LIBS = -L$(FREETYPE_LIBDIR) -lfreetype  # $(CC_LD_RT)$(FREETYPE_LIBDIR)
-FREETYPE_DEFS = -I$(FREETYPE_INCDIR) -I$(FREETYPE_INCDIR)/freetype2 -I$(X11_INCDIR)/freetype2 -I/usr/include/freetype2
+FREETYPE_LIBS = -L$(FREETYPE_LIBDIR) -lfreetype # $(CC_LD_RT)$(FREETYPE_LIBDIR)
+FREETYPE_DEFS = -I$(FREETYPE_INCDIR)/freetype2 `freetype-config --cflags`
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # X11 defines and libraries:
@@ -140,14 +140,14 @@ X11_LIBS = -L$(X11_LIBDIR) -lX11 -lXext -lXxf86vm
 X11_DEFS = -I$(X11_INCDIR) -DX11_PIXMAP_CACHE -DENABLE_XSHM # -DENABLE_XVID
 
 # For Xft (antialiased fonts) support:
+X11_LIBS += $(XFT_LIBS) $(FONTCONFIG_LIBS) $(FREETYPE_LIBS)
+X11_DEFS += $(XFT_DEFS) $(FONTCONFIG_DEFS) $(FREETYPE_DEFS) 
+
 XFT_DIR = $(X11_DIR)
 XFT_INCDIR = $(XFT_DIR)/include
 XFT_LIBDIR = $(XFT_DIR)/lib
 XFT_LIBS = -L$(XFT_LIBDIR) -lXft # $(CC_LD_RT)$(XFT_LIBDIR)
 XFT_DEFS = -I$(XFT_INCDIR) -DENABLE_XFT
-
-X11_LIBS += $(XFT_LIBS) $(FONTCONFIG_LIBS) $(FREETYPE_LIBS)
-X11_DEFS += $(XFT_DEFS) $(FONTCONFIG_DEFS) $(FREETYPE_DEFS) 
 
 FONTCONFIG_DIR = $(PREFIX)
 FONTCONFIG_INCDIR = $(FONTCONFIG_DIR)/include
