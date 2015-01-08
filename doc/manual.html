@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="15-Dec-2014" />
+		<meta name="created" content="08-Jan-2015" />
 	</head>
 	<body>
 		<h1>
@@ -1613,7 +1613,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.visual" id="tek.lib.visual">Visual (v1.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.visual" id="tek.lib.visual">Visual (v1.1)</a></h2>
 			<div class="definition"><dfn>FUNCTIONS</dfn>
 				<blockquote>
 					<ul>
@@ -1732,7 +1732,7 @@ func(obj, x0, y0, x1, y1, ...)
 							<a href="#Visual:setTextureOrigin"><code>Visual:setTextureOrigin()</code></a> - Set texture origin
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Visual:sleep"><code>Visual.sleep()</code></a> - Wait for number of microseconds
+							<a href="#Visual:sleep"><code>Visual.sleep()</code></a> - Wait for number of milliseconds
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Visual:textSize"><code>Visual:textSize()</code></a> - Get size of text when rendered with current font
@@ -2363,7 +2363,7 @@ func(obj, x0, y0, x1, y1, ...)
 		<div class="node"><h3><a name="Visual:sleep" id="Visual:sleep"><code>Visual.sleep(ms)</code></a></h3>
 			<p>
 				Suspends the caller waiting for the specified number of
-				microseconds
+				1/1000th seconds
 			</p>
 			<hr />
 		</div>
@@ -2387,7 +2387,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v52.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v53.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -2656,6 +2656,17 @@ ui.Application:new { ...
 								</ul>
 							</blockquote>
 						</li>
+						<li style="list-style-type: none">
+							<code>MSG_SIGNAL</code> 
+							<blockquote>
+								<ul>
+									<li style="list-style-type: none">
+										System signal message. Msg code indicates type of signal;
+										<code>0</code> - abortion signal
+									</li>
+								</ul>
+							</blockquote>
+						</li>
 					</ul>
 				</blockquote>
 			</div>
@@ -2872,7 +2883,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v41.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v42.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8977,7 +8988,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v9.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.default" id="tek.ui.layout.default">DefaultLayout (v9.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -9053,7 +9064,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Mon Dec 15 20:39:04 2014
+					Document generated on Thu Jan  8 14:55:19 2015
 				</p>
 			</div>
 		</div>

@@ -24,7 +24,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.layout.default", tek.ui.class.layout)
-_VERSION = "Default Layout 9.1"
+_VERSION = "Default Layout 9.2"
 local DefaultLayout = _M
 
 ******************************************************************************/
@@ -41,7 +41,7 @@ local DefaultLayout = _M
 #define DEFLAYOUT_CLASS_NAME "tek.ui.layout.default"
 
 /* Version: */
-#define DEFLAYOUT_CLASS_VERSION "Default Layout 9.1"
+#define DEFLAYOUT_CLASS_VERSION "Default Layout 9.2"
 
 /* Required tekui version: */
 #define DEFLAYOUT_TEKUI_VERSION 109
@@ -176,7 +176,7 @@ static void layout_calcweights(lua_State *L, layout_struct *lstruct)
 				/* weights, wx, wy, children, c, weight */
 				if (lua_isnumber(L, -1))
 				{
-					lua_Integer w = lua_tointeger(L, -1);
+					lua_Integer w = lua_tonumber(L, -1);
 					lua_rawgeti(L, -5, x);
 					/* weights, wx, wy, children, c, weight, wx[x] */
 					lua_rawgeti(L, -5, y);

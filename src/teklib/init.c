@@ -221,13 +221,10 @@ init_destroyatom(TAPTR exec, TAPTR atom, TSTRPTR name)
 		TDBPRINTF(20, ("atom '%s' is still in use\n", name));
 }
 
-static THOOKENTRY TTAG
-init_destroyapptask(struct THook *hook, TAPTR apptask, TTAG msg)
+static void init_tek_destroy(TAPTR apptask)
 {
 	TAPTR exec, exectask, boot;
 	struct TEKlibInit *init;
-
-	TDBASSERT(20, msg == TMSG_DESTROY);
 
 	exec = TGetExecBase(apptask);
 	exectask = TExecFindTask(exec, TTASKNAME_EXEC);
@@ -260,7 +257,13 @@ init_destroyapptask(struct THook *hook, TAPTR apptask, TTAG msg)
 	TEKlib_Free(boot, init, sizeof(struct TEKlibInit));
 
 	TEKlib_Exit(boot);
+}
 
+static THOOKENTRY TTAG
+init_destroyapptask(struct THook *hook, TAPTR apptask, TTAG msg)
+{
+	TDBASSERT(20, msg == TMSG_DESTROY);
+	TEKlib_DoUnref(init_tek_destroy, apptask);
 	return 0;
 }
 
@@ -269,7 +272,7 @@ init_destroyapptask(struct THook *hook, TAPTR apptask, TTAG msg)
 **	Create application task in current context
 */
 
-TLIBAPI struct TTask *TEKCreate(TTAGITEM *usertags)
+static struct TTask *init_tek_create(TTAGITEM *usertags)
 {
 	struct TEKlibInit *init;
 	TAPTR boot = TEKlib_Init(usertags);
@@ -361,4 +364,9 @@ TLIBAPI struct TTask *TEKCreate(TTAGITEM *usertags)
 
 	TEKlib_Exit(boot);
 	return TNULL;
+}
+
+TLIBAPI struct TTask *TEKCreate(TTAGITEM *usertags)
+{
+	return TEKlib_DoRef(init_tek_create, usertags);
 }

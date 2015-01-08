@@ -76,6 +76,12 @@ CC_LD_RT = -Wl,-rpath,
 # CC_LD_RT = -Wl,-rpath,
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# NetBSD:
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# CC_LD_RT = -Wl,-rpath=/usr/X11R7/lib
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Windows:
 # (Assuming that lua51.dll is in the top-level directory of the distribution)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,9 +97,12 @@ CC_LD_RT = -Wl,-rpath,
 # ENABLE_FILENO - dispatches lines from a fd (normally stdin) to MSG_USER
 # ENABLE_DGRAM=portnr - enables a datagram server on addr:portnr for MSG_USER
 # ENABLE_DGRAM_ADDR=\"addr\" - set address to listen on (default 127.0.0.1)
+# TEKlib features:
+# ENABLE_LAZY_SINGLETON - multithreaded lazy creation of a TEKlib singleton,
+# allowing thread rendezvous (this breaks 100% ROM-ability)
 #------------------------------------------------------------------------------
 
-TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_PIXMAP_CACHE 
+TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_PIXMAP_CACHE
 # TEKUI_DEFS += -DENABLE_FILENO -DENABLE_DGRAM=20000
 TEKUI_LIBS =
 
@@ -102,6 +111,8 @@ PNG_INCDIR = $(PNG_DIR)/include
 PNG_LIBDIR = $(PNG_DIR)/lib
 # TEKUI_DEFS += -DENABLE_PNG -I$(PNG_INCDIR)
 # TEKUI_LIBS += -L$(PNG_LIBDIR) -lpng # $(CC_LD_RT)$(PNG_LIBDIR)
+
+TEKLIB_DEFS = -DENABLE_LAZY_SINGLETON
 
 #------------------------------------------------------------------------------
 # Installation and system paths:

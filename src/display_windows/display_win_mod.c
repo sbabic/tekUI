@@ -112,7 +112,7 @@ tek_init_display_windows(TAPTR task, struct TModule *vis, TUINT16 version,
 static TAPTR fb_modopen(WINDISPLAY *mod, TTAGITEM *tags)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
-	TBOOL success = TFALSE;
+	TBOOL success = TTRUE;
 	TLock(mod->fbd_Lock);
 	if (mod->fbd_RefCount == 0)
 		success = fb_init(mod, tags);

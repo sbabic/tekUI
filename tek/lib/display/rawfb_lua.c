@@ -5,6 +5,7 @@
 **	See copyright notice in COPYRIGHT
 */
 
+#include <string.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -44,13 +45,6 @@ static const struct TInitModule tek_lib_display_rawfb_initmodules[] =
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
-static struct TModInitNode rawfb_im_display =
-{
-	{ TNULL, TNULL },
-	(struct TInitModule *) tek_lib_display_rawfb_initmodules,
-	TNULL,
-};
-
 static const luaL_Reg tek_lib_display_rawfb_funcs[] =
 {
 	{ TNULL, TNULL }
@@ -72,8 +66,7 @@ tek_lib_display_rawfb_close(lua_State *L)
 	if (display->IsBase)
 	{
 		/* collected base; remove TEKlib module: */
-		TExecRemModules(display->ExecBase,
-			(struct TModInitNode *) &rawfb_im_display, 0);
+		TExecRemModules(display->ExecBase, &display->InitModules, 0);
 		TDBPRINTF(TDB_TRACE,("display module removed\n"));
 	}
 	return 0;
@@ -150,7 +143,9 @@ int luaopen_tek_lib_display_rawfb(lua_State *L)
 	lua_pop(L, 5);
 
 	/* Add visual module to TEKlib's internal module list: */
-	TExecAddModules(exec, (struct TModInitNode *) &rawfb_im_display, 0);
+	memset(&display->InitModules, 0, sizeof display->InitModules);
+	display->InitModules.tmin_Modules = tek_lib_display_rawfb_initmodules;
+	TExecAddModules(exec, &display->InitModules, 0);
 
 	return 1;
 }

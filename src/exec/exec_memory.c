@@ -873,6 +873,7 @@ static TAPTR exec_mmu_msgalloc(struct TMemManager *mmu, TSIZE size)
 		sizeof(struct TNode) + sizeof(struct TMessage));
 	if (mem)
 	{
+		((struct TMessage *) (mem + sizeof(struct TNode)))->tmsg_RPort = TNULL;
 		TAddTail(&mmu->tmm_TrackList, (struct TNode *) mem);
 		THALUnlock(hal, &TExecBase->texb_Lock);
 		((struct TMessage *) (mem + sizeof(struct TNode)))->tmsg_Flags =

@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 
-local visual = require "tek.lib.visual"
+local exec = require "tek.lib.exec"
 
 local PI = math.pi
 local PI2 = PI*2
@@ -21,7 +21,7 @@ while true do
 	for cx = 0, n-1 do
 		local y = ((x1 % 2) - 1 + SIN(x2) * 0.5) / 4 + 0.5
 		y = y * 0x10000
-		io.stdout:write(("%d "):format(y))
+		io.stdout:write(("%.0f "):format(y))
 		x1 = x1 + 0.08
 		x2 = x2 + 0.33
 	end
@@ -33,7 +33,7 @@ while true do
 		s2 = s2 - PI2
 	end
 
-	-- wait given number of microseconds:
-	visual.sleep(10)
+	-- wait given number of milliseconds:
+	exec.sleep(10)
 
 end

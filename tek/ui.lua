@@ -82,6 +82,9 @@
 --			- A window needs a (partial) refresh
 --		- {{MSG_USER}}
 --			- User message
+--		- {{MSG_SIGNAL}}
+--			- System signal message. Msg code indicates type of signal;
+--			{{0}} - abortion signal
 --
 --	NOTIFICATIONS::
 --		- {{NOTIFY_ALWAYS}} - see [[Object][#tek.class.object]]
@@ -133,9 +136,9 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 52.0" -- module version string
+_VERSION = "tekUI 53.0" -- module version string
 
-VERSION = 110 -- overall package version number
+VERSION = 111 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------
@@ -1101,7 +1104,8 @@ MSG_INTERVAL     = 0x0800
 MSG_KEYUP        = 0x1000
 MSG_USER         = 0x2000
 MSG_REQSELECTION = 0x4000
-MSG_ALL          = 0x571f -- not including MSG_USER, MSG_INTERVAL
+MSG_SIGNAL       = 0x8000
+MSG_ALL          = 0x571f -- not including MSG_USER, MSG_INTERVAL, MSG_SIGNAL
 
 -------------------------------------------------------------------------------
 --	Flags:

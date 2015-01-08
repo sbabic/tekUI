@@ -120,7 +120,7 @@ tek_init_display_directfb(struct TTask *task, struct TModule *vis, TUINT16 versi
 
 static TAPTR dfb_modopen(DFBDISPLAY *mod, TTAGITEM *tags)
 {
-	TBOOL success = TFALSE;
+	TBOOL success = TTRUE;
 	TExecLock(mod->dfb_ExecBase, mod->dfb_Lock);
 	if (mod->dfb_RefCount == 0)
 		success = dfb_init(mod, tags);

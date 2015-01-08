@@ -247,7 +247,7 @@ local DOMAIN = "schulze-mueller.de"
 local PROGNAME = "Lua Compiler"
 local VERSION = "1.3"
 local AUTHOR = "Timm S. Müller"
-local COPYRIGHT = "© 2009-2014, Schulze-Müller GbR"
+local COPYRIGHT = "© 2009-2015, Schulze & Müller GbR"
 
 -------------------------------------------------------------------------------
 --	FileButton class:

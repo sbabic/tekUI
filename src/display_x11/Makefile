@@ -2,7 +2,7 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
-EXTRADEFS += $(X11_DEFS)
+EXTRADEFS += $(X11_DEFS) $(TEKLIB_DEFS)
 
 ###############################################################################
 

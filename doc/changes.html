@@ -10,6 +10,51 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<blockquote>
+			<ul>
+				<li>
+					Default layouter: Fixed Weight attribute number representation problem
+					with Lua 5.3
+				</li>
+				<li>
+					Windows, RawFB, DirectFB display drivers: Slip fixed in instantiating
+					multiple times concurrently
+				</li>
+				<li>
+					X11 display driver: Workaround for Xft reinitialization b0rkedness
+				</li>
+				<li>
+					Exec: TInitmodule structure is now const, replyport field of messages is
+					now NULL on allocation, added support for silently ignoring destruction of
+					a task's own handle, allowing <a href="manual.html#TEKCreate"><code>TEKCreate()</code></a> to return a different task as the
+					basetask
+				</li>
+				<li>
+					TEKLib: Added support for mulithreaded, lazy singleton creation
+				</li>
+				<li>
+					Visual: Module instances' init requests are no longer reused, getting
+					rid of nearly incomprehensible trickery that did not work properly
+				</li>
+				<li>
+					Lua bindings of Visual and all display drivers: Module initnodes are now
+					part of the Lua state, the bindings are now fully reentrant
+				</li>
+				<li>
+					Visual module: Now registers a TEKlib atom &quot;lua.visual.iport.%p&quot; with
+					task address for message port rendezvous in local address space
+				</li>
+				<li>
+					Application, UI: Added support for MSG_SIGNAL
+				</li>
+				<li>
+					Added NetBSD support in config file and documentation
+				</li>
+				<li>
+					Minor corrections in documentation
+				</li>
+			</ul>
+		</blockquote>
 		<h3>
 			1.10:
 		</h3>

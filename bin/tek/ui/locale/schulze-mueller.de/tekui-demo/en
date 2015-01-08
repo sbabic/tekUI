@@ -272,7 +272,7 @@ SLOW_RENDERING = "Slow Rendering";
 STATUS = "Status";
 SYSTEM_INFORMATION = "System Information";
 TEKUI_COPYRIGHT_TEXT = [[
-Copyright © 2008-2014 by the authors:
+Copyright © 2008-2015 by the authors:
 
 Timm S. Müller <tmueller@schulze-mueller.de>
 Franciska Schulze <fschulze@schulze-mueller.de>

@@ -5,6 +5,7 @@
 **	See copyright notice in COPYRIGHT
 */
 
+#include <string.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -12,6 +13,7 @@
 #include <tek/debug.h>
 #include <tek/teklib.h>
 #include <tek/proto/exec.h>
+#include <tek/mod/display.h>
 
 #define TEK_LIB_DISPLAY_DFB_CLASSNAME "tek.lib.display.directfb*"
 #define TEK_LIB_DISPLAY_DFB_BASECLASSNAME "tek.lib.display.directfb.base*"
@@ -20,25 +22,10 @@ extern TMODENTRY TUINT
 tek_init_display_directfb(struct TTask *, struct TModule *, TUINT16, TTAGITEM *);
 static TCALLBACK TINT tek_lib_display_dfb_close(lua_State *L);
 
-typedef struct
-{
-	TAPTR Base;
-	TAPTR ExecBase;
-	TBOOL IsBase;
-
-} TEKDisplay;
-
-static const struct TInitModule initmodules[] =
+static const struct TInitModule tek_lib_display_directfb_initmodules[] =
 {
 	{ "display_directfb", tek_init_display_directfb, TNULL, 0 },
 	{ TNULL, TNULL, TNULL, 0 }
-};
-
-static struct TModInitNode im_display =
-{
-	{ TNULL, TNULL },
-	(struct TInitModule *) initmodules,
-	TNULL,
 };
 
 static const luaL_Reg libfuncs[] =
@@ -62,8 +49,7 @@ tek_lib_display_dfb_close(lua_State *L)
 	if (display->IsBase)
 	{
 		/* collected base; remove TEKlib module: */
-		TExecRemModules(display->ExecBase,
-			(struct TModInitNode *) &im_display, 0);
+		TExecRemModules(display->ExecBase, &display->InitModules, 0);
 		TDBPRINTF(TDB_TRACE,("display module removed\n"));
 	}
 	return 0;
@@ -112,7 +98,11 @@ int luaopen_tek_lib_display_directfb(lua_State *L)
 	/* s: exectab, execbase, libtab, libbase, libmeta, libmeta */
 	lua_setfield(L, -2, "__index");
 	/* s: exectab, execbase, libtab, libbase, libmeta */
+#if LUA_VERSION_NUM < 502
 	luaL_register(L, NULL, libmethods);
+#else
+	luaL_setfuncs(L, libmethods, 0);	
+#endif
 	/* s: exectab, execbase, libtab, libbase, libmeta */
 	lua_setmetatable(L, -2);
 	/* s: exectab, execbase, libtab, libbase */
@@ -127,7 +117,9 @@ int luaopen_tek_lib_display_directfb(lua_State *L)
 	lua_pop(L, 5);
 
 	/* Add visual module to TEKlib's internal module list: */
-	TExecAddModules(exec, (struct TModInitNode *) &im_display, 0);
+	memset(&display->InitModules, 0, sizeof display->InitModules);
+	display->InitModules.tmin_Modules = tek_lib_display_directfb_initmodules;
+	TExecAddModules(exec, &display->InitModules, 0);
 
 	return 0;
 }

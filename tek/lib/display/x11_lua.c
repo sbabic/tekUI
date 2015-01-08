@@ -5,6 +5,7 @@
 **	See copyright notice in COPYRIGHT
 */
 
+#include <string.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -25,13 +26,6 @@ static const struct TInitModule tek_lib_display_x11_initmodules[] =
 {
 	{ "display_x11", tek_init_display_x11, TNULL, 0 },
 	{ TNULL, TNULL, TNULL, 0 }
-};
-
-static struct TModInitNode x11_im_display =
-{
-	{ TNULL, TNULL },
-	(struct TInitModule *) tek_lib_display_x11_initmodules,
-	TNULL,
 };
 
 static const luaL_Reg tek_lib_display_x11_funcs[] =
@@ -55,8 +49,7 @@ tek_lib_display_x11_close(lua_State *L)
 	if (display->IsBase)
 	{
 		/* collected base; remove TEKlib module: */
-		TExecRemModules(display->ExecBase,
-			(struct TModInitNode *) &x11_im_display, 0);
+		TExecRemModules(display->ExecBase, &display->InitModules, 0);
 		TDBPRINTF(TDB_TRACE,("display module removed\n"));
 	}
 	return 0;
@@ -133,7 +126,9 @@ int luaopen_tek_lib_display_x11(lua_State *L)
 	lua_pop(L, 5);
 
 	/* Add visual module to TEKlib's internal module list: */
-	TExecAddModules(exec, (struct TModInitNode *) &x11_im_display, 0);
+	memset(&display->InitModules, 0, sizeof display->InitModules);
+	display->InitModules.tmin_Modules = tek_lib_display_x11_initmodules;
+	TExecAddModules(exec, &display->InitModules, 0);
 
 	return 1;
 }

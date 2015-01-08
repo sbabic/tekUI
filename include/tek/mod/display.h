@@ -14,6 +14,7 @@ typedef struct
 	TAPTR Base;
 	TAPTR ExecBase;
 	TBOOL IsBase;
+	struct TModInitNode InitModules;
 
 } TEKDisplay;
 

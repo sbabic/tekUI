@@ -122,7 +122,7 @@ repeat
 		local msg = visual.getMsg()
 		if msg then
 			local typ, code, mx, my = msg[2], msg[3], msg[4], msg[5]
-			if typ == 1 -- closewindow
+			if typ == 1 or typ == 0x8000 -- closewindow or abort
 				or (typ == 256 and code == 27) then -- escape key
 				abort = true
 			elseif typ == 2048 then -- interval

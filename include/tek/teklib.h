@@ -43,6 +43,8 @@ TLIBAPI TBOOL TCreateTime(TTIME *t, TINT d, TINT s, TINT us);
 TLIBAPI TBOOL TExtractTime(TTIME *t, TINT *d, TINT *s, TINT *us);
 TLIBAPI void TInitInterface(struct TInterface *iface, struct TModule *mod, TSTRPTR name, TUINT16 version);
 TLIBAPI TAPTR TGetNextEntry(struct THandle *handle);
+TLIBAPI TAPTR TEKlib_DoRef(struct TTask *(*)(struct TTagItem *), struct TTagItem *tags);
+TLIBAPI void TEKlib_DoUnref(void (*func)(TAPTR), TAPTR handle);
 
 #ifdef __cplusplus
 }

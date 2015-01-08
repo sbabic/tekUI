@@ -1177,7 +1177,7 @@ LOCAL void x11_hostclosefont(struct X11Display *mod, TAPTR font)
 
 			if (font == v->curfont)
 			{
-				TDBPRINTF(TDB_ERROR,
+				TDBPRINTF(TDB_INFO,
 					("attempt to close font which is currently in use\n"));
 				return; /* do nothing */
 			}

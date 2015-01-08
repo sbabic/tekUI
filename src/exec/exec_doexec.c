@@ -115,8 +115,8 @@ static void exec_ramlib(TEXECBASE *TExecBase, struct TTask *task,
 					break;
 
 				case TTREQ_REMMOD:
-					/* TODO: removal should only succeed if flags == 0 or
-					flags == TMODF_INITIALIZED and nestcount == 0 */
+					/* should removal only succeed if flags == 0 or
+					flags == TMODF_INITIALIZED and nestcount == 0 ? */
 					TRemove((struct TNode *)
 						taskmsg->tsk_Request.trq_AddRemMod.trm_ModInitNode);
 					taskmsg->tsk_Request.trq_AddRemMod.trm_Result = TTRUE;
@@ -146,7 +146,7 @@ static void exec_loadmod(TEXECBASE *TExecBase, struct TTask *task,
 	union TTaskRequest *req = &taskmsg->tsk_Request;
 	TSTRPTR modname = req->trq_Mod.trm_InitMod.tmd_Handle.thn_Name;
 	TUINT nsize = 0, psize = 0;
-	struct TInitModule *imod = TNULL;
+	const struct TInitModule *imod = TNULL;
 	struct TNode *nnode, *node;
 
 	/* try to open from list of internal modules: */
@@ -154,7 +154,8 @@ static void exec_loadmod(TEXECBASE *TExecBase, struct TTask *task,
 	node = TExecBase->texb_IntModList.tlh_Head.tln_Succ;
 	for (; (nnode = node->tln_Succ); node = nnode)
 	{
-		struct TInitModule *im = ((struct TModInitNode *) node)->tmin_Modules;
+		const struct TInitModule *im = 
+			((struct TModInitNode *) node)->tmin_Modules;
 		TSTRPTR tempn;
 
 		for (; (tempn = im->tinm_Name); im++)
@@ -556,10 +557,15 @@ static THOOKENTRY TTAG exec_usertaskdestroy(struct THook *h, TAPTR obj,
 		struct TTask *task = obj;
 		TEXECBASE *TExecBase = (TEXECBASE *) TGetExecBase(task);
 		struct TTask *self = THALFindSelf(TExecBase->texb_HALBase);
-		union TTaskRequest *req = &self->tsk_Request;
-		self->tsk_ReqCode = TTREQ_DESTROYTASK;
-		req->trq_Task.trt_Task = task;
-		exec_sendmsg(TExecBase, self, TExecBase->texb_ExecPort, self);
+		if (self == task)
+			TDBPRINTF(TDB_INFO,("task cannot destroy itself, ignored\n"));
+		else
+		{
+			union TTaskRequest *req = &self->tsk_Request;
+			self->tsk_ReqCode = TTREQ_DESTROYTASK;
+			req->trq_Task.trt_Task = task;
+			exec_sendmsg(TExecBase, self, TExecBase->texb_ExecPort, self);
+		}
 	}
 	return 0;
 }

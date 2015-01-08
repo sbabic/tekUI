@@ -26,13 +26,6 @@ static const struct TInitModule tek_lib_visual_initmodules[] =
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
-static struct TModInitNode im_visual = /* TODO: const */
-{
-	{ TNULL, TNULL },
-	(struct TInitModule *) tek_lib_visual_initmodules,
-	TNULL,
-};
-
 static const luaL_Reg tek_lib_visual_funcs[] =
 {
 	{ "open", tek_lib_visual_open },
@@ -372,13 +365,24 @@ tek_lib_visual_open(lua_State *L)
 
 /*****************************************************************************/
 
+static void tek_lib_visual_getatomname(struct TExecBase *TExecBase, char *buf)
+{
+	sprintf(buf, "lua.visual.iport.%p", TFindTask(TNULL));
+}
+
+/*****************************************************************************/
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_close(lua_State *L)
 {
 	TEKVisual *vis = luaL_checkudata(L, 1, TEK_LIB_VISUAL_CLASSNAME);
 	struct TExecBase *TExecBase = vis->vis_ExecBase;
+	char atomname[256];
 
 	TDBPRINTF(TDB_TRACE,("visual %08x closing\n", vis));
+
+	tek_lib_visual_getatomname(TExecBase, atomname);
+	TLockAtom(atomname, TATOMF_NAME | TATOMF_DESTROY);
 
 	TFree(vis->vis_Drawdata.pens);
 	vis->vis_Drawdata.pens = TNULL;
@@ -471,7 +475,7 @@ tek_lib_visual_close(lua_State *L)
 			TCloseModule(vis->vis_Base);
 		}
 		/* collected visual base; remove TEKlib module: */
-		TRemModules((struct TModInitNode *) &im_visual, 0);
+		TRemModules((struct TModInitNode *) &vis->vis_InitModules, 0);
 		TDBPRINTF(TDB_INFO,("visual module removed\n"));
 		
 		TFree(vis->vis_DrawBuffer);
@@ -486,6 +490,8 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 {
 	TEKVisual *vis;
 	struct TExecBase *TExecBase;
+	char atomname[256];
+	TAPTR atom;
 	
 	/* register input message */
 	luaL_newmetatable(L, "tek_msg*");
@@ -515,6 +521,11 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	lua_getfield(L, -1, "base");
 	/* s: displaytab, exectab, execbase */
 	TExecBase = *(TAPTR *) lua_touserdata(L, -1);
+
+	tek_lib_visual_getatomname(TExecBase, atomname);
+	atom = TLockAtom(atomname, TATOMF_CREATE | TATOMF_NAME | TATOMF_TRY);
+	if (!atom)
+		goto error;
 
 	/* register functions: */
 	tek_lua_register(L, "tek.lib.visual", tek_lib_visual_funcs, 0);
@@ -595,7 +606,9 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	lua_pop(L, 1);
 
 	/* Add visual module to TEKlib's internal module list: */
-	TAddModules((struct TModInitNode *) &im_visual, 0);
+	memset(&vis->vis_InitModules, 0, sizeof vis->vis_InitModules);
+	vis->vis_InitModules.tmin_Modules = tek_lib_visual_initmodules;
+	TAddModules(&vis->vis_InitModules, 0);
 
 	for (;;)
 	{
@@ -655,6 +668,9 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 			TDBPRINTF(TDB_INFO,("Driver '%s' supplied no default font\n", 
 				DISPLAY_DRIVER));
 
+		TSetAtomData(atom, (TTAG) vis->vis_IMsgPort);
+		TUnlockAtom(atom, TATOMF_KEEP);
+
 		/* success: */
 		return 1;
 	}
@@ -664,6 +680,9 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	vis->vis_IMsgPort = TNULL;
 	vis->vis_CmdRPort = TNULL;
 
+	TUnlockAtom(atom, TATOMF_DESTROY);
+
+error:
 	luaL_error(L, "Visual initialization failure");
 	return 0;
 }

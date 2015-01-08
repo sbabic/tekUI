@@ -24,7 +24,7 @@
   - 3.1.1 [[#luamodules : External Lua modules]]
   - 3.2. [[#buildenv : Adjusting the build environment]]
    - 3.2.1 [[#notelinux : Linux notes]]
-   - 3.2.2 [[#notefbsd : FreeBSD notes]]
+   - 3.2.2 [[#notebsd : BSD notes]]
    - 3.2.3 [[#notewindows : Windows notes]]
    - 3.2.4 [[#notehpux : HP-UX notes]]
    - 3.2.5 [[#notex11 : X11 notes]]
@@ -96,7 +96,7 @@ are available under a commercial license – see below.
 ==( status : 1.2. Status, requirements )==
 
 TekUI is slowly approaching feature completeness ("beta" stadium). It
-is available for Unix-like operating systems such as Linux, FreeBSD,
+is available for Unix-like operating systems such as Linux, BSD,
 Solaris and HP-UX, and it may work on other flavours of Unix with few
 modifications. A native Windows display driver and build setup is
 included, but not equally well supported at this time.
@@ -353,8 +353,8 @@ following modules are supported:
 TekUI was at some point tested and should compile and run on:
 
  * Ubuntu Linux (tested: 14.04, 9.10, 8.04, 7.10)
- * FreeBSD (tested: 10.1, 8.1, 7.0), special precautions needed,
- see [[FreeBSD notes][#notefbsd]]
+ * FreeBSD (tested: 10.1, 8.1, 7.0), NetBSD (tested: 6.0), special
+ precautions needed, see [[BSD notes][#notebsd]]
  * Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
  amd64/2007.0, ppc/2007.0)
  * Windows (tested: 7, 2000, Wine)
@@ -375,11 +375,12 @@ compile and run tekUI on Ubuntu Linux: {{lua5.1}},
 {{liblua5.1-0-dev}}, {{liblua5.1-filesystem0}}, {{libfreetype6-dev}},
 {{libxft-dev}}, {{libxext-dev}}, {{libxxf86vm-dev}}.
 
-===( notefbsd : 3.2.2. FreeBSD notes )===
+===( notebsd : 3.2.2. BSD notes )===
 
-You need a Lua binary which is linked with the {{-pthread}} option,
-as tekUI is using multithreaded code in shared libraries, which are
-dynamically loaded by the interpreter.
+On FreeBSD and NetBSD you need a Lua binary which is linked with the
+{{-pthread}} option, as tekUI is using multithreaded code in shared
+libraries, which are dynamically loaded by the interpreter. For
+linking on NetBSD uncomment the respective section in the config file.
 
 ===( notewindows : 3.2.3. Windows notes )===
 

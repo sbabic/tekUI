@@ -43,7 +43,7 @@
 --		- Visuak:getSelection() - Get visual's selection or clipboard
 --		- Visual:setShift() - Set coordinate displacement
 --		- Visual:setTextureOrigin() - Set texture origin
---		- Visual.sleep() - Wait for number of microseconds
+--		- Visual.sleep() - Wait for number of milliseconds
 --		- Visual:textSize() - Get size of text when rendered with current font
 --		- Visual:unsetClipRect() - Unset clipping rectangle
 --		- Visual.wait() - Wait for any event from any window
@@ -51,7 +51,7 @@
 -------------------------------------------------------------------------------
 
 module "tek.lib.visual"
-_VERSION = "Visual 1.0"
+_VERSION = "Visual 1.1"
 local Visual = _M
 
 -----------------------------------------------------------------------------*/
@@ -214,14 +214,15 @@ tek_lib_visual_wait(lua_State *L)
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
 	TExecBase = vis->vis_ExecBase;
-	TWait(TGetPortSignal(vis->vis_IMsgPort));
+	vis->vis_SignalsPending |= 
+		TWait(TGetPortSignal(vis->vis_IMsgPort) | TTASK_SIG_ABORT);
 	lua_pop(L, 1);
 	return 0;
 }
 
 /*-----------------------------------------------------------------------------
 --	Visual.sleep(ms): Suspends the caller waiting for the specified number of
---	microseconds
+--	1/1000th seconds
 -----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
@@ -709,7 +710,22 @@ tek_lib_visual_getmsg(lua_State *L)
 	/* s: visbase */
 	vis = lua_touserdata(L, -1);
 	TExecBase = vis->vis_ExecBase;
-	imsg = (TIMSG *) TGetMsg(vis->vis_IMsgPort);
+	
+	if (vis->vis_SignalsPending & TTASK_SIG_ABORT)
+	{
+		vis->vis_SignalsPending &= ~TTASK_SIG_ABORT;
+		imsg = TAllocMsg0(sizeof(TIMSG));
+		if (imsg)
+		{
+			imsg->timsg_Type = TITYPE_SIGNAL;
+			imsg->timsg_MouseX = -1;
+			imsg->timsg_MouseY = -1;
+			TGetSystemTime(&imsg->timsg_TimeStamp);
+		}
+	}
+	else
+		imsg = (TIMSG *) TGetMsg(vis->vis_IMsgPort);
+
 	if (imsg == TNULL)
 	{
 		lua_pop(L, 1);

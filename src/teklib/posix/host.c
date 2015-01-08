@@ -16,6 +16,9 @@
 #include <signal.h>
 #include <sys/param.h>
 #include <dlfcn.h>
+#if defined(ENABLE_LAZY_SINGLETON)
+#include <pthread.h>
+#endif
 
 #ifdef PATH_MAX
 #define MAX_PATH_LEN	PATH_MAX
@@ -72,6 +75,51 @@ TEKlib_Init(TTAGITEM *tags)
 TLIBAPI void
 TEKlib_Exit(TAPTR boot)
 {
+}
+
+/*****************************************************************************/
+/*
+**	ref/unref
+*/
+
+#if defined(ENABLE_LAZY_SINGLETON)
+static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
+static void *g_handle = TNULL;
+static int g_ref = 0;
+#endif
+
+TLIBAPI TAPTR 
+TEKlib_DoRef(struct TTask *(*func)(struct TTagItem *), struct TTagItem *tags)
+{
+#if defined(ENABLE_LAZY_SINGLETON)
+	TAPTR handle;
+	pthread_mutex_lock(&g_lock);
+	if (g_handle)
+		handle = TExecFindTask(TGetExecBase(g_handle), TNULL);
+	else
+		handle = g_handle = (*func)(tags);
+	g_ref++;
+	pthread_mutex_unlock(&g_lock);
+	return handle;
+#else
+	return (*func)(tags);
+#endif
+}
+
+TLIBAPI void 
+TEKlib_DoUnref(void (*func)(TAPTR), TAPTR handle)
+{
+#if defined(ENABLE_LAZY_SINGLETON)
+	pthread_mutex_lock(&g_lock);
+	if (--g_ref == 0)
+	{
+#endif
+		(*func)(handle);
+#if defined(ENABLE_LAZY_SINGLETON)
+		g_handle = TNULL;
+	}
+	pthread_mutex_unlock(&g_lock);
+#endif
 }
 
 /*****************************************************************************/

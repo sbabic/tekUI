@@ -130,7 +130,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 41.4"
+_VERSION = "Application 42.0"
 local Application = _M
 Family:newClass(Application)
 
@@ -139,7 +139,8 @@ Family:newClass(Application)
 -------------------------------------------------------------------------------
 
 local MSG_USER = ui.MSG_USER
-local MSGTYPES = { MSG_USER }
+local MSG_SIGNAL = ui.MSG_SIGNAL
+local MSGTYPES = { MSG_USER, MSG_SIGNAL }
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -164,7 +165,7 @@ function Application.new(class, self)
 	if t == nil or t == true then
 		self.GCControl = "step"
 	end
-	self.InputHandlers = { [MSG_USER] = { } }
+	self.InputHandlers = { [MSG_USER] = { }, [MSG_SIGNAL] = { } }
 	self.LastKey = false
 	self.ModalWindows = { } -- stack of
 	self.MsgDispatch = false
@@ -194,7 +195,12 @@ function Application.new(class, self)
 		[ui.MSG_KEYUP] = self.passMsgNoModal,
 		[ui.MSG_REQSELECTION] = self.passMsgNoModal,
 		[MSG_USER] = self.passMsg,
+		[MSG_SIGNAL] = self.passMsg,
 	}
+	
+	self:addInputHandler(MSG_USER, self, self.handleInput)
+	self:addInputHandler(MSG_SIGNAL, self, self.handleInput)
+	
 	-- Check linkage of members, connect and setup them recursively:
 	if self:connect() then
 		local d = self.Display
@@ -209,7 +215,7 @@ function Application.new(class, self)
 		db.error("Could not connect elements")
 		self.Status = "error"
 	end
-	self:addInputHandler(MSG_USER, self, self.handleInput)
+	
 	return self
 end
 
@@ -466,6 +472,7 @@ end
 
 function Application:hide()
 	dohide(self, unpack(self.Children))
+	self:remInputHandler(MSG_SIGNAL, self, self.handleInput)
 	self:remInputHandler(MSG_USER, self, self.handleInput)
 end
 
@@ -1060,11 +1067,17 @@ local MsgHandlers =
 {
 	[MSG_USER] = function(self, msg)
 		return msg
-	end
+	end,
+	[MSG_SIGNAL] = function(self, msg)
+		db.warn("received abort signal, quitting application")
+		self:quit()
+		return msg
+	end,
 }
 
 function Application:handleInput(msg)
 	MsgHandlers[msg[2]](self, msg)
+	msg:reply()
 	return false
 end
 

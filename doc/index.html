@@ -93,7 +93,7 @@
 											3.2.1 <a href="#notelinux">Linux notes</a> 
 										</li>
 										<li style="list-style-type: none">
-											3.2.2 <a href="#notefbsd">FreeBSD notes</a> 
+											3.2.2 <a href="#notebsd">BSD notes</a> 
 										</li>
 										<li style="list-style-type: none">
 											3.2.3 <a href="#notewindows">Windows notes</a> 
@@ -237,7 +237,7 @@
 		<div class="node"><h2><a name="status" id="status">1.2. Status, requirements</a></h2>
 			<p>
 				TekUI is slowly approaching feature completeness (&quot;beta&quot; stadium). It
-				is available for Unix-like operating systems such as Linux, FreeBSD,
+				is available for Unix-like operating systems such as Linux, BSD,
 				Solaris and HP-UX, and it may work on other flavours of Unix with few
 				modifications. A native Windows display driver and build setup is
 				included, but not equally well supported at this time.
@@ -673,8 +673,8 @@
 						Ubuntu Linux (tested: 14.04, 9.10, 8.04, 7.10)
 					</li>
 					<li>
-						FreeBSD (tested: 10.1, 8.1, 7.0), special precautions needed,
-						see <a href="#notefbsd">FreeBSD notes</a> 
+						FreeBSD (tested: 10.1, 8.1, 7.0), NetBSD (tested: 6.0), special
+						precautions needed, see <a href="#notebsd">BSD notes</a> 
 					</li>
 					<li>
 						Gentoo Linux (tested: amd64/13.0, x86/10.0, x86/2008.0,
@@ -710,11 +710,12 @@
 				<code>libxft-dev</code>, <code>libxext-dev</code>, <code>libxxf86vm-dev</code>.
 			</p>
 		</div>
-		<div class="node"><h3><a name="notefbsd" id="notefbsd">3.2.2. FreeBSD notes</a></h3>
+		<div class="node"><h3><a name="notebsd" id="notebsd">3.2.2. BSD notes</a></h3>
 			<p>
-				You need a Lua binary which is linked with the <code>-pthread</code> option,
-				as tekUI is using multithreaded code in shared libraries, which are
-				dynamically loaded by the interpreter.
+				On FreeBSD and NetBSD you need a Lua binary which is linked with the
+				<code>-pthread</code> option, as tekUI is using multithreaded code in shared
+				libraries, which are dynamically loaded by the interpreter. For
+				linking on NetBSD uncomment the respective section in the config file.
 			</p>
 		</div>
 		<div class="node"><h3><a name="notewindows" id="notewindows">3.2.3. Windows notes</a></h3>

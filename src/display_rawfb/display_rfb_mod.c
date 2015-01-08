@@ -939,7 +939,7 @@ static TBOOL rfb_init(struct rfb_Display *mod, TTAGITEM *tags)
 
 static TAPTR rfb_modopen(struct rfb_Display *mod, TTAGITEM *tags)
 {
-	TBOOL success = TFALSE;
+	TBOOL success = TTRUE;
 
 	TExecLock(mod->rfb_ExecBase, mod->rfb_Lock);
 	if (mod->rfb_RefCount == 0)

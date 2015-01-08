@@ -11,6 +11,14 @@
 #include <tek/proto/hal.h>
 #include <tek/proto/exec.h>
 
+
+struct LuaExecData
+{
+	struct TExecBase *exec;
+	struct TTask *basetask;
+};
+
+
 static const struct TInitModule tek_lib_exec_initmodules[] =
 {
 	{"hal", tek_init_hal, TNULL, 0},
@@ -18,32 +26,57 @@ static const struct TInitModule tek_lib_exec_initmodules[] =
 	{ TNULL, TNULL, TNULL, 0 }
 };
 
+
 static int tek_lib_exec_base_gc(lua_State *L)
 {
-	TAPTR *pexec = luaL_checkudata(L, 1, "tek.lib.exec.base.meta");
-	if (*pexec)
+	struct LuaExecData *lexec = luaL_checkudata(L, 1, "tek.lib.exec*");
+	if (lexec->exec)
 	{
-		TAPTR basetask = TExecFindTask(*pexec, TTASKNAME_ENTRY);
-		TDestroy(basetask);
-		TDBPRINTF(4,("Exec closed\n"));
-		*pexec = TNULL;
+		TDestroy((struct THandle *) lexec->basetask);
+		lexec->exec = TNULL;
 	}
 	return 0;
 }
 
+
+static int tek_lib_exec_sleep(lua_State *L)
+{
+	struct LuaExecData *lexec = lua_touserdata(L, lua_upvalueindex(1));
+	TTIME dt;
+	if (lexec->exec == TNULL)
+		luaL_error(L, "closed handle");
+	dt.tdt_Int64 = luaL_checknumber(L, 1) * 1000;
+	TExecWaitTime(lexec->exec, &dt, 0);
+	return 0;
+}
+
+
+static const luaL_Reg tek_lib_exec_funcs[] =
+{
+	{ "sleep", tek_lib_exec_sleep },
+	{ TNULL, TNULL }
+};
+
+
 TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 {
-	TAPTR *pexec;
+	struct LuaExecData *lexec;
 	TTAGITEM tags[2];
-	TAPTR basetask;
 
-	tek_lua_register(L, "tek.lib.exec", NULL, 0);
-	/* s: libtab */
-	pexec = lua_newuserdata(L, sizeof(TAPTR));
+	lexec = lua_newuserdata(L, sizeof(struct LuaExecData));
+	lexec->exec = TNULL;
+	/* s: udata */
+	lua_pushvalue(L, -1);
+	/* s: udata, udata */
+	tek_lua_register(L, "tek.lib.exec", tek_lib_exec_funcs, 1);
+	/* s: udata, libtab */
+
+	lua_pushvalue(L, -2);
+	/* s: udata, libtab, udata */
+	lua_remove(L, -3);
 	/* s: libtab, udata */
-	*pexec = TNULL;
 
-	luaL_newmetatable(L, "tek.lib.exec.base.meta");
+	luaL_newmetatable(L, "tek.lib.exec*");
 	/* s: libtab, udata, metatable */
 	lua_pushliteral(L, "__gc");
 	/* s: libtab, udata, metatable, "__gc" */
@@ -60,11 +93,10 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	tags[0].tti_Value = (TTAG) tek_lib_exec_initmodules;
 	tags[1].tti_Tag = TTAG_DONE;
 
-	basetask = TEKCreate(tags);
-	if (basetask == TNULL)
+	lexec->basetask = TEKCreate(tags);
+	if (lexec->basetask == TNULL)
 		luaL_error(L, "Failed to initialize TEKlib");
-
-	*pexec = TGetExecBase(basetask);
+	lexec->exec = TGetExecBase(lexec->basetask);
 	
 	return 1;
 }

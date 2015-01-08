@@ -350,7 +350,7 @@ struct TModInitNode
 {
 	struct TNode tmin_Node;
 	/* Ptr to an array of InitModules: */
-	struct TInitModule *tmin_Modules;
+	const struct TInitModule *tmin_Modules;
 	/* Reserved for future extensions, must be TNULL: */
 	TAPTR tmin_Extended;
 };

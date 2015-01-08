@@ -1,6 +1,6 @@
 
-#include "visual_mod.h"
 #include <tek/string.h>
+#include "visual_mod.h"
 
 /*****************************************************************************/
 
@@ -19,19 +19,7 @@ static struct TVRequest *visi_getreq(struct TVisualBase *inst, TUINT cmd,
 	{
 		if (mod == inst)
 		{
-			TLock(inst->vis_Lock);
-			if (inst->vis_InitRequest)
-			{
-				req = inst->vis_InitRequest;
-				inst->vis_InitRequest = TNULL;
-				/* when using initreq, base is in LOCKED state */
-			}
-			else
-			{
-				TUnlock(inst->vis_Lock);
-				req = TDisplayAllocReq(display);
-			}
-
+			req = TDisplayAllocReq(display);
 			if (req)
 			{
 				req->tvr_Req.io_Command = cmd;
@@ -82,20 +70,10 @@ static struct TVRequest *visi_getreq(struct TVisualBase *inst, TUINT cmd,
 static void
 visi_ungetreq(struct TVisualBase *mod, struct TVRequest *req)
 {
-	struct TExecBase *TExecBase = TGetExecBase(mod);
 	if (mod->vis_Module.tmd_ModSuper == (struct TModule *) mod)
 	{
-		TLock(mod->vis_Lock);
-		if (mod->vis_InitRequest == TNULL)
-		{
-			mod->vis_InitRequest = req;
-			/* after returning initreq, base gets UNLOCKED: */
-			TUnlock(mod->vis_Lock);
-		}
-		else
-			TDisplayFreeReq((struct TDisplayBase *)
-				req->tvr_Req.io_Device, req);
-		TUnlock(mod->vis_Lock);
+		TDisplayFreeReq((struct TDisplayBase *)
+			req->tvr_Req.io_Device, req);
 	}
 	else
 		TAddTail(&mod->vis_ReqPool, &req->tvr_Req.io_Node);

@@ -350,8 +350,10 @@ typedef struct TInputMessage
 #define	TITYPE_COOKEDKEY		TITYPE_KEYDOWN
 /* User message: */
 #define	TITYPE_USER				0x00002000
-/* Selection Request Message: */
+/* Selection Request message: */
 #define TITYPE_REQSELECTION		0x00004000
+/* Signal message: */
+#define TITYPE_SIGNAL			0x00008000
 
 /*****************************************************************************/
 /*

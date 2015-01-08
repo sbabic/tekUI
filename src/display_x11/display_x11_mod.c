@@ -183,10 +183,12 @@ static void x11_exitinstance(struct X11Display *inst)
 		close(inst->x11_fd_sigpipe_write);
 	}
 
+#if !defined(ENABLE_XFT) || !defined(ENABLE_LAZY_SINGLETON)
+	/* Xft+fontconfig have problems with reinitialization */
 	if (inst->x11_Display)
 		XCloseDisplay(inst->x11_Display);
-
 	x11_exitlibxft(inst);
+#endif
 	
 	TDestroy(inst->x11_IReplyPort);	
 }

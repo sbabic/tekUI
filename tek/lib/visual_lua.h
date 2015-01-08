@@ -114,6 +114,9 @@ typedef struct TEKVisual
 	int vis_IOFileNo;
 	
 	TBOOL vis_HaveWindowManager;
+	TUINT vis_SignalsPending;
+	
+	struct TModInitNode vis_InitModules;
 	
 #if defined(ENABLE_PIXMAP_CACHE)
 	struct THandle *vis_CacheManager;
@@ -231,5 +234,6 @@ LOCAL LUACFUNC TINT tek_msg_len(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getpaintinfo(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getpixmapattr(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_scalepixmap(lua_State *L);
 
 #endif

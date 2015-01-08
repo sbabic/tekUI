@@ -2,6 +2,8 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
+EXTRADEFS += $(TEKLIB_DEFS)
+
 ###############################################################################
 
 LIBS = \
