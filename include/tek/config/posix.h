@@ -63,7 +63,7 @@ typedef union { TINT64 tdt_Int64; } TDATE_T;
 **	Debug support
 */
 
-#define TDEBUG_PLATFORM_PUTS(s) fputs(s, stderr)
+#define TDEBUG_PLATFORM_PUTS(s) do { fputs(s, stderr); fflush(stderr); } while(0)
 #define TDEBUG_PLATFORM_FATAL() (abort(), 0)
 
 /*****************************************************************************/

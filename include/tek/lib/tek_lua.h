@@ -4,6 +4,9 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+#define TTASK_SIG_TERM	0x00000080
+#define TTASK_SIG_CHLD	0x00000040
+
 #if LUA_VERSION_NUM < 502
 #define tek_lua_register(L, classname, classfuncs, nup) \
 do { \

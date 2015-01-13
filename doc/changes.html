@@ -13,6 +13,11 @@
 		<blockquote>
 			<ul>
 				<li>
+					Lua Exec: added functions run, runstring, runfile, sleep, wait, waittime,
+					waitmsg, getmsg, getsignals, child methods abort, signal, join, sendmsg,
+					sendgui, terminate, including error propagation through running tasks
+				</li>
+				<li>
 					Default layouter: Fixed Weight attribute number representation problem
 					with Lua 5.3
 				</li>
@@ -27,7 +32,8 @@
 					Exec: TInitmodule structure is now const, replyport field of messages is
 					now NULL on allocation, added support for silently ignoring destruction of
 					a task's own handle, allowing <a href="manual.html#TEKCreate"><code>TEKCreate()</code></a> to return a different task as the
-					basetask
+					basetask, added TTask_InitData and <a href="manual.html#GetInitData"><code>GetInitData()</code></a> to free TTask_UserData for
+					user affairs in basetask
 				</li>
 				<li>
 					TEKLib: Added support for mulithreaded, lazy singleton creation

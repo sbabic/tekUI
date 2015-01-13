@@ -79,7 +79,7 @@ CC_LD_RT = -Wl,-rpath,
 # NetBSD:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# CC_LD_RT = -Wl,-rpath=/usr/X11R7/lib
+# CC_LD_RT = -Wl,-rpath=/usr/X11R7/lib:
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Windows:

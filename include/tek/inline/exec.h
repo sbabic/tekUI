@@ -214,4 +214,7 @@
 #define TScanModules(tags) \
 	(*(((TMODCALL struct THandle *(**)(TAPTR,TTAGITEM *))(TExecBase))[-78]))(TExecBase,tags)
 
+#define TGetInitData(task) \
+	(*(((TMODCALL TAPTR(**)(TAPTR,struct TTask *))(TExecBase))[-79]))(TExecBase,task)
+
 #endif /* _TEK_INLINE_EXEC_H */

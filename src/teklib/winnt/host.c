@@ -108,7 +108,6 @@ TEKlib_Exit(TAPTR handle)
 #if defined(ENABLE_LAZY_SINGLETON)
 static LONG g_lock = 0;
 static void *g_handle = TNULL;
-static LONG g_ref = 0;
 #endif
 
 TLIBAPI TAPTR 
@@ -118,14 +117,13 @@ TEKlib_DoRef(struct TTask *(*func)(struct TTagItem *), struct TTagItem *tags)
 	TAPTR handle;
 	while (InterlockedIncrement(&g_lock) > 1)
 	{
-		InterlockedDecrement(&g_lock);
 		Sleep(1);
+		InterlockedDecrement(&g_lock);
 	}
 	if (g_handle)
 		handle = TExecFindTask(TGetExecBase(g_handle), TNULL);
 	else
 		handle = g_handle = (*func)(tags);
-	g_ref++;
 	InterlockedDecrement(&g_lock);
 	return handle;
 #else
@@ -139,10 +137,10 @@ TEKlib_DoUnref(void (*func)(TAPTR), TAPTR handle)
 #if defined(ENABLE_LAZY_SINGLETON)
 	while (InterlockedIncrement(&g_lock) > 1)
 	{
-		InterlockedDecrement(&g_lock);
 		Sleep(1);
+		InterlockedDecrement(&g_lock);
 	}
-	if (--g_ref == 0)
+	if (handle == g_handle)
 	{
 #endif
 		(*func)(handle);

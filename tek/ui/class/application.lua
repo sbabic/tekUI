@@ -1069,7 +1069,7 @@ local MsgHandlers =
 		return msg
 	end,
 	[MSG_SIGNAL] = function(self, msg)
-		db.warn("received abort signal, quitting application")
+		db.warn("received signal, quit")
 		self:quit()
 		return msg
 	end,

@@ -84,8 +84,7 @@ TEKlib_Exit(TAPTR boot)
 
 #if defined(ENABLE_LAZY_SINGLETON)
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
-static void *g_handle = TNULL;
-static int g_ref = 0;
+static TAPTR g_handle = TNULL;
 #endif
 
 TLIBAPI TAPTR 
@@ -98,7 +97,6 @@ TEKlib_DoRef(struct TTask *(*func)(struct TTagItem *), struct TTagItem *tags)
 		handle = TExecFindTask(TGetExecBase(g_handle), TNULL);
 	else
 		handle = g_handle = (*func)(tags);
-	g_ref++;
 	pthread_mutex_unlock(&g_lock);
 	return handle;
 #else
@@ -111,7 +109,7 @@ TEKlib_DoUnref(void (*func)(TAPTR), TAPTR handle)
 {
 #if defined(ENABLE_LAZY_SINGLETON)
 	pthread_mutex_lock(&g_lock);
-	if (--g_ref == 0)
+	if (handle == g_handle)
 	{
 #endif
 		(*func)(handle);

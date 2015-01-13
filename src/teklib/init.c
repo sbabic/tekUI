@@ -228,7 +228,7 @@ static void init_tek_destroy(TAPTR apptask)
 
 	exec = TGetExecBase(apptask);
 	exectask = TExecFindTask(exec, TTASKNAME_EXEC);
-	init = TExecGetTaskData(exec, exectask);
+	init = TExecGetInitData(exec, exectask);
 	boot = init->tli_BootHnd;
 
 	init_destroyatom(exec, init->tli_AtomUnique, "sys.unique");
@@ -295,7 +295,7 @@ static struct TTask *init_tek_create(TTAGITEM *usertags)
 				/* place application task into current context */
 				init->tli_ExecTags[0].tti_Tag = TTask_Name;
 				init->tli_ExecTags[0].tti_Value = (TTAG) TTASKNAME_ENTRY;
-				init->tli_ExecTags[1].tti_Tag = TTask_UserData;
+				init->tli_ExecTags[1].tti_Tag = TTask_InitData;
 				init->tli_ExecTags[1].tti_Value = (TTAG) init;
 				init->tli_ExecTags[2].tti_Tag = TTAG_MORE;
 				init->tli_ExecTags[2].tti_Value = (TTAG) usertags;

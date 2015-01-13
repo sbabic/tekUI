@@ -60,6 +60,7 @@ local Visual = _M
 #include "visual_lua.h"
 #include <tek/lib/pixconv.h>
 #include <tek/lib/imgload.h>
+#include <tek/lib/tek_lua.h>
 
 /*****************************************************************************/
 /*
@@ -214,8 +215,10 @@ tek_lib_visual_wait(lua_State *L)
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_VISUAL_BASECLASSNAME);
 	vis = lua_touserdata(L, -1);
 	TExecBase = vis->vis_ExecBase;
-	vis->vis_SignalsPending |= 
-		TWait(TGetPortSignal(vis->vis_IMsgPort) | TTASK_SIG_ABORT);
+	vis->vis_SignalsPending |= TWait(TGetPortSignal(vis->vis_IMsgPort) | 
+		TTASK_SIG_ABORT | TTASK_SIG_TERM | TTASK_SIG_CHLD);
+	if (vis->vis_SignalsPending & TTASK_SIG_ABORT)
+		luaL_error(L, "received abort signal");
 	lua_pop(L, 1);
 	return 0;
 }
@@ -698,6 +701,26 @@ LOCAL LUACFUNC TINT tek_msg_index(lua_State *L)
 --		reply to messages of the type {{MSG_REQSELECTION}}
 -----------------------------------------------------------------------------*/
 
+static TIMSG *tek_lib_visual_getsigmsg(TEKVisual *vis, TUINT sig)
+{
+	TIMSG *imsg = TNULL;
+	if (vis->vis_SignalsPending & sig)
+	{
+		struct TExecBase *TExecBase = vis->vis_ExecBase;
+		vis->vis_SignalsPending &= ~sig;
+		imsg = TAllocMsg0(sizeof(TIMSG));
+		if (imsg)
+		{
+			imsg->timsg_Code = sig;
+			imsg->timsg_Type = TITYPE_SIGNAL;
+			imsg->timsg_MouseX = -1;
+			imsg->timsg_MouseY = -1;
+			TGetSystemTime(&imsg->timsg_TimeStamp);
+		}
+	}
+	return imsg;
+}
+
 LOCAL LUACFUNC TINT
 tek_lib_visual_getmsg(lua_State *L)
 {
@@ -711,19 +734,9 @@ tek_lib_visual_getmsg(lua_State *L)
 	vis = lua_touserdata(L, -1);
 	TExecBase = vis->vis_ExecBase;
 	
-	if (vis->vis_SignalsPending & TTASK_SIG_ABORT)
-	{
-		vis->vis_SignalsPending &= ~TTASK_SIG_ABORT;
-		imsg = TAllocMsg0(sizeof(TIMSG));
-		if (imsg)
-		{
-			imsg->timsg_Type = TITYPE_SIGNAL;
-			imsg->timsg_MouseX = -1;
-			imsg->timsg_MouseY = -1;
-			TGetSystemTime(&imsg->timsg_TimeStamp);
-		}
-	}
-	else
+	if (/*!(imsg = tek_lib_visual_getsigmsg(vis, TTASK_SIG_ABORT)) &&*/
+		!(imsg = tek_lib_visual_getsigmsg(vis, TTASK_SIG_CHLD)) &&
+		!(imsg = tek_lib_visual_getsigmsg(vis, TTASK_SIG_TERM)))
 		imsg = (TIMSG *) TGetMsg(vis->vis_IMsgPort);
 
 	if (imsg == TNULL)

@@ -224,4 +224,7 @@
 #define TExecScanModules(exec,tags) \
 	(*(((TMODCALL struct THandle *(**)(TAPTR,TTAGITEM *))(exec))[-78]))(exec,tags)
 
+#define TExecGetInitData(exec,task) \
+	(*(((TMODCALL TAPTR(**)(TAPTR,struct TTask *))(exec))[-79]))(exec,task)
+
 #endif /* _TEK_STDCALL_EXEC_H */

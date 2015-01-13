@@ -368,6 +368,9 @@ struct TTask
 
 	/* Task flags, see below */
 	TUINT tsk_Flags;
+
+	/* Basetask initdata */
+	TAPTR tsk_InitData;
 };
 
 /*

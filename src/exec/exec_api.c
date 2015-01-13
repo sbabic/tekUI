@@ -113,6 +113,8 @@ EXPORT struct TTask *exec_CreateSysTask(struct TExecBase *TExecBase,
 							(struct TModule *) TExecBase;
 						newtask->tsk_UserData =
 							(TAPTR) TGetTag(tags, TTask_UserData, TNULL);
+						newtask->tsk_InitData =
+							(TAPTR) TGetTag(tags, TTask_InitData, TNULL);
 						newtask->tsk_SigFree = ~((TUINT) TTASK_SIG_RESERVED);
 						newtask->tsk_SigUsed = TTASK_SIG_RESERVED;
 						newtask->tsk_Status = TTASK_RUNNING;
@@ -277,6 +279,19 @@ EXPORT TAPTR exec_GetTaskData(struct TExecBase *TExecBase, struct TTask *task)
 	if (task == TNULL)
 		task = THALFindSelf(TExecBase->texb_HALBase);
 	return task->tsk_UserData;
+}
+
+/*****************************************************************************/
+/*
+**	initdata = exec_GetInitData(exec, task)
+**	Get a task's initdata pointer (internal)
+*/
+
+EXPORT TAPTR exec_GetInitData(struct TExecBase *TExecBase, struct TTask *task)
+{
+	if (task == TNULL)
+		task = THALFindSelf(TExecBase->texb_HALBase);
+	return task->tsk_InitData;
 }
 
 /*****************************************************************************/
