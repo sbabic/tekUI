@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 33.4"
+_VERSION = "Display 33.5"
 local Display = _M
 Element:newClass(Display)
 
@@ -461,6 +461,7 @@ function Display:openFont(fontspec, override_size, override_attr)
 				font = self:openFont(aliases, size, attr ~= "" and attr)
 			end
 		end
+		db.info("trying font %s:%s/%s", realname, size, attr)
 		font = font or Visual.openFont(realname, size, attr)
 		local frec = { font, font and font:getFontAttrs { } }
 		fcache[fontspec] = frec

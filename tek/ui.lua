@@ -136,7 +136,7 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 53.0" -- module version string
+_VERSION = "tekUI 53.1" -- module version string
 
 VERSION = 111 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
@@ -148,8 +148,6 @@ VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 -- Old package path:
 OldPath = package and package.path or ""
 OldCPath = package and package.cpath or ""
--- Path Separator:
-PathSeparator = package and package.config:sub(1, 1) or "/"
 -- Operation mode: "default", "workbench"
 Mode = "default"
 -- Name of the Default Theme:
@@ -899,7 +897,11 @@ end
 
 local function getpaths(key, default)
 	local arg = _G.arg
-	local p = PathSeparator
+	-- probe path separator: test arg[0], fallback to package config and path,
+	-- check if backslash comes first -> backslash, else slash
+	local ptst = arg and arg[0] or package and (package.config or package.path)
+	local p = ptst and ptst:match("^[^/]*\\.*$") and "\\" or "/"
+	PathSeparator = p -- make available in ui library
 	if arg and arg[0] then
 		local pdir, pname = arg[0]:match(("^(.-%s?)([^%s]*)$"):format(p, p))
 		if pdir == "" then
