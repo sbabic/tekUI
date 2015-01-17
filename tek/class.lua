@@ -11,14 +11,14 @@
 --		from classes.
 --
 --	IMPLEMENTS::
---		- Class:getClass() - Returns the class of an object, or the super
+--		- object:getClass() - Returns the class of an object, or the super
 --		class of a class
---		- Class:getClassName() - Returns the class name of an object or class
---		- Class:getSuper() - Returns the super class of an object or class
---		- Class:instanceOf() - Checks if an object descends from a class
+--		- object:getClassName() - Returns the class name of an object or class
+--		- object:getSuper() - Returns the super class of an object or class
+--		- object:instanceOf() - Checks if an object descends from a class
 --		- Class.new() - Creates and returns a new object
 --		- Class.newClass() - Creates a child class from a super class
---		- Class:setClass() - Changes the class of an object, or the super
+--		- object:setClass() - Changes the class of an object, or the super
 --		class of a class
 --
 -------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ local PROXY = false
 local DEBUG = false
 
 module "tek.class"
-_VERSION = "Class 8.0"
+_VERSION = "Class 8.1"
 
 local Class = _M
 

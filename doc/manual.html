@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="08-Jan-2015" />
+		<meta name="created" content="17-Jan-2015" />
 	</head>
 	<body>
 		<h1>
@@ -237,7 +237,7 @@
 			</blockquote>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v8.0)</a></h2>
+		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v8.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -253,17 +253,17 @@
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Class:getClass"><code>Class:getClass()</code></a> - Returns the class of an object, or the super
+							<a href="#object:getClass"><code>object:getClass()</code></a> - Returns the class of an object, or the super
 							class of a class
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Class:getClassName"><code>Class:getClassName()</code></a> - Returns the class name of an object or class
+							<a href="#object:getClassName"><code>object:getClassName()</code></a> - Returns the class name of an object or class
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Class:getSuper"><code>Class:getSuper()</code></a> - Returns the super class of an object or class
+							<a href="#object:getSuper"><code>object:getSuper()</code></a> - Returns the super class of an object or class
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Class:instanceOf"><code>Class:instanceOf()</code></a> - Checks if an object descends from a class
+							<a href="#object:instanceOf"><code>object:instanceOf()</code></a> - Checks if an object descends from a class
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> - Creates and returns a new object
@@ -272,7 +272,7 @@
 							<a href="#Class:newClass"><code>Class.newClass()</code></a> - Creates a child class from a super class
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Class:setClass"><code>Class:setClass()</code></a> - Changes the class of an object, or the super
+							<a href="#object:setClass"><code>object:setClass()</code></a> - Changes the class of an object, or the super
 							class of a class
 						</li>
 					</ul>
@@ -280,7 +280,7 @@
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Class:getClass" id="Class:getClass"><code>class = object:getClass()</code></a></h3>
+		<div class="node"><h3><a name="object:getClass" id="object:getClass"><code>class = object:getClass()</code></a></h3>
 			<p>
 				This function returns the class of an <code>object</code>. If applied to a
 				class instead of an object, it returns its super class, e.g.:
@@ -290,7 +290,7 @@ superclass = Class.getClass(class)
 </pre>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Class:getClassName" id="Class:getClassName"><code>name = object:getClassName()</code></a></h3>
+		<div class="node"><h3><a name="object:getClassName" id="object:getClassName"><code>name = object:getClassName()</code></a></h3>
 			<p>
 				This function returns the <code>_NAME</code> 
 				attribute of the <code>object</code>'s class. It is also possible to apply this
@@ -298,7 +298,7 @@ superclass = Class.getClass(class)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Class:getSuper" id="Class:getSuper"><code>object:getSuper()</code></a></h3>
+		<div class="node"><h3><a name="object:getSuper" id="object:getSuper"><code>object:getSuper()</code></a></h3>
 			<p>
 				Gets the super class of an object or class.
 				For example, to forward a call to a <code>method</code> to its super class,
@@ -309,7 +309,7 @@ self:getSuper().method(self, ...)
 </pre>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Class:instanceOf" id="Class:instanceOf"><code>is_descendant = object:instanceOf(class)</code></a></h3>
+		<div class="node"><h3><a name="object:instanceOf" id="object:instanceOf"><code>is_descendant = object:instanceOf(class)</code></a></h3>
 			<p>
 				Returns <strong>true</strong> if <code>object</code> is an instance of or descends from the
 				specified <code>class</code>. It is also possible to apply this function to a class
@@ -348,7 +348,7 @@ class = superclass()
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Class:setClass" id="Class:setClass"><code>object:setClass(class)</code></a></h3>
+		<div class="node"><h3><a name="object:setClass" id="object:setClass"><code>object:setClass(class)</code></a></h3>
 			<p>
 				Changes the class of an object
 				or the super class of a class.
@@ -1262,68 +1262,68 @@ function(...) out:write(...) end
 				<blockquote>
 					<ul>
 						<li style="list-style-type: none">
-							<a href="#Region:andRect"><code>Region:andRect()</code></a> - <em>And</em>s a rectangle to a region
+							<a href="#region:andRect"><code>region:andRect()</code></a> - <em>And</em>s a rectangle to a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:andRegion"><code>Region:andRegion()</code></a> - <em>And</em>s a region to a region
+							<a href="#region:andRegion"><code>region:andRegion()</code></a> - <em>And</em>s a region to a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:checkIntersect"><code>Region:checkIntersect()</code></a> - Checks if a rectangle intersects a region
+							<a href="#region:checkIntersect"><code>region:checkIntersect()</code></a> - Checks if a rectangle intersects a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:forEach"><code>Region:forEach()</code></a> - Calls a function for each rectangle in a region
+							<a href="#region:forEach"><code>region:forEach()</code></a> - Calls a function for each rectangle in a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:get"><code>Region:get()</code></a> - Gets a region's min/max extents
+							<a href="#region:get"><code>region:get()</code></a> - Gets a region's min/max extents
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:intersect"><code>Region.intersect()</code></a> - Returns the intersection of two rectangles
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:isEmpty"><code>Region:isEmpty()</code></a> - Checks if a Region is empty
+							<a href="#region:isEmpty"><code>region:isEmpty()</code></a> - Checks if a Region is empty
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Region:new"><code>Region.new()</code></a> - Creates a new Region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:orRect"><code>Region:orRect()</code></a> - <em>Or</em>s a rectangle to a region
+							<a href="#region:orRect"><code>region:orRect()</code></a> - <em>Or</em>s a rectangle to a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:orRegion"><code>Region:orRegion()</code></a> - <em>Or</em>s a region to a region
+							<a href="#region:orRegion"><code>region:orRegion()</code></a> - <em>Or</em>s a region to a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:setRect"><code>Region:setRect()</code></a> - Resets a region to the given rectangle
+							<a href="#region:setRect"><code>region:setRect()</code></a> - Resets a region to the given rectangle
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:shift"><code>Region:shift()</code></a> - Displaces a region
+							<a href="#region:shift"><code>region:shift()</code></a> - Displaces a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:subRect"><code>Region:subRect()</code></a> - Subtracts a rectangle from a region
+							<a href="#region:subRect"><code>region:subRect()</code></a> - Subtracts a rectangle from a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:subRegion"><code>Region:subRegion()</code></a> - Subtracts a region from a region
+							<a href="#region:subRegion"><code>region:subRegion()</code></a> - Subtracts a region from a region
 						</li>
 						<li style="list-style-type: none">
-							<a href="#Region:xorRect"><code>Region:xorRect()</code></a> - <em>Exclusive Or</em>s a rectangle to a region
+							<a href="#region:xorRect"><code>region:xorRect()</code></a> - <em>Exclusive Or</em>s a rectangle to a region
 						</li>
 					</ul>
 				</blockquote>
 				<hr />
 			</div>
 		</div>
-		<div class="node"><h3><a name="Region:andRect" id="Region:andRect"><code>region:andRect(r1, r2, r3, r4)</code></a></h3>
+		<div class="node"><h3><a name="region:andRect" id="region:andRect"><code>region:andRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Logical <em>and</em>s a rectange to a region
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:andRegion" id="Region:andRegion"><code>region:andRegion(r)</code></a></h3>
+		<div class="node"><h3><a name="region:andRegion" id="region:andRegion"><code>region:andRegion(r)</code></a></h3>
 			<p>
 				Logically <em>and</em>s a region to a region
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:checkIntersect" id="Region:checkIntersect"><code>success = region:checkIntersect(x0, y0, x1, y1)</code></a></h3>
+		<div class="node"><h3><a name="region:checkIntersect" id="region:checkIntersect"><code>success = region:checkIntersect(x0, y0, x1, y1)</code></a></h3>
 			<p>
 				Returns a boolean
 				indicating whether a rectangle specified by its coordinates overlaps
@@ -1331,7 +1331,7 @@ function(...) out:write(...) end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:forEach" id="Region:forEach"><code>region:forEach(func, obj, ...)</code></a></h3>
+		<div class="node"><h3><a name="region:forEach" id="region:forEach"><code>region:forEach(func, obj, ...)</code></a></h3>
 			<p>
 				For each rectangle in a region, calls the
 				specified function according the following scheme:
@@ -1344,7 +1344,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:get" id="Region:get"><code>minx, miny, maxx, maxy = region:get()</code></a></h3>
+		<div class="node"><h3><a name="region:get" id="region:get"><code>minx, miny, maxx, maxy = region:get()</code></a></h3>
 			<p>
 				Get region's min/max extents
 			</p>
@@ -1359,7 +1359,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:isEmpty" id="Region:isEmpty"><code>region:isEmpty()</code></a></h3>
+		<div class="node"><h3><a name="region:isEmpty" id="region:isEmpty"><code>region:isEmpty()</code></a></h3>
 			<p>
 				Returns <strong>true</strong> if a region is empty.
 			</p>
@@ -1372,44 +1372,44 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:orRect" id="Region:orRect"><code>region:orRect(r1, r2, r3, r4)</code></a></h3>
+		<div class="node"><h3><a name="region:orRect" id="region:orRect"><code>region:orRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Logical <em>or</em>s a rectangle to a region
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:orRegion" id="Region:orRegion"><code>region:orRegion(r)</code></a></h3>
+		<div class="node"><h3><a name="region:orRegion" id="region:orRegion"><code>region:orRegion(r)</code></a></h3>
 			<p>
 				Logically <em>or</em>s a region to a region
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:setRect" id="Region:setRect"><code>self = region:setRect(r1, r2, r3, r4)</code></a></h3>
+		<div class="node"><h3><a name="region:setRect" id="region:setRect"><code>self = region:setRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Resets an existing region
 				to the specified rectangle.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:shift" id="Region:shift"><code>region:shift(dx, dy)</code></a></h3>
+		<div class="node"><h3><a name="region:shift" id="region:shift"><code>region:shift(dx, dy)</code></a></h3>
 			<p>
 				Shifts a region by delta x and y.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:subRect" id="Region:subRect"><code>self = region:subRect(r1, r2, r3, r4)</code></a></h3>
+		<div class="node"><h3><a name="region:subRect" id="region:subRect"><code>self = region:subRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Subtracts a rectangle from a region
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:subRegion" id="Region:subRegion"><code>region:subRegion(region2)</code></a></h3>
+		<div class="node"><h3><a name="region:subRegion" id="region:subRegion"><code>region:subRegion(region2)</code></a></h3>
 			<p>
 				Subtracts <code>region2</code> from <code>region</code>.
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Region:xorRect" id="Region:xorRect"><code>region:xorRect(r1, r2, r3, r4)</code></a></h3>
+		<div class="node"><h3><a name="region:xorRect" id="region:xorRect"><code>region:xorRect(r1, r2, r3, r4)</code></a></h3>
 			<p>
 				Logical <em>xor</em>s a rectange to a region
 			</p>
@@ -2387,7 +2387,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v53.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v53.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4870,7 +4870,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v33.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v33.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -9064,7 +9064,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Thu Jan  8 14:55:19 2015
+					Document generated on Sat Jan 17 13:40:15 2015 using gendoc.lua version 1.4
 				</p>
 			</div>
 		</div>

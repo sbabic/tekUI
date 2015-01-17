@@ -32,7 +32,7 @@ local insert = table.insert
 local remove = table.remove
 local sort = table.sort
 
-local VERSION = "1.3"
+local VERSION = "1.4"
 
 local RULE = "-------------------------------------------------------------------------------"
 local PAGE = "==============================================================================="
@@ -203,8 +203,10 @@ function processfile(state, fname)
 					block = { }
 					parser = 2
 					addblock(RULE .. "\n\n")
+					local classmethodtitle = title:match("^.-([^.:%s=]+[.:].*)%b().*$")
 					addblock("==={ %s : %s }===\n\n",
-						(shortname or classname or fname) .. ":" .. docfunc,
+						classmethodtitle and classmethodtitle:gsub("%.", ":") or 
+							((shortname or classname or fname) .. ":" .. docfunc),
 							title)
 					if doc and doc ~= "" then
 						addblock("%s\n", doc)
@@ -530,7 +532,8 @@ function processtree(state)
 	end
 
 	insert(state.documentation, "\n" .. PAGE .. "\n\n")
-	insert(state.documentation, "Document generated on " .. os.date() .. "\n")
+	insert(state.documentation, "Document generated on " .. os.date() .. 
+		" using gendoc.lua version " .. VERSION .. "\n")
 
 	if state.heading then
 		insert(state.documentation, 1, "\n= " .. state.heading .. " =\n\n")

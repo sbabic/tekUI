@@ -9,21 +9,21 @@
 --		collections of non-overlapping rectangles.
 --
 --	FUNCTIONS::
---		- Region:andRect() - ''And''s a rectangle to a region
---		- Region:andRegion() - ''And''s a region to a region
---		- Region:checkIntersect() - Checks if a rectangle intersects a region
---		- Region:forEach() - Calls a function for each rectangle in a region
---		- Region:get() - Gets a region's min/max extents
+--		- region:andRect() - ''And''s a rectangle to a region
+--		- region:andRegion() - ''And''s a region to a region
+--		- region:checkIntersect() - Checks if a rectangle intersects a region
+--		- region:forEach() - Calls a function for each rectangle in a region
+--		- region:get() - Gets a region's min/max extents
 --		- Region.intersect() - Returns the intersection of two rectangles
---		- Region:isEmpty() - Checks if a Region is empty
+--		- region:isEmpty() - Checks if a Region is empty
 --		- Region.new() - Creates a new Region
---		- Region:orRect() - ''Or''s a rectangle to a region
---		- Region:orRegion() - ''Or''s a region to a region
---		- Region:setRect() - Resets a region to the given rectangle
---		- Region:shift() - Displaces a region
---		- Region:subRect() - Subtracts a rectangle from a region
---		- Region:subRegion() - Subtracts a region from a region
---		- Region:xorRect() - ''Exclusive Or''s a rectangle to a region
+--		- region:orRect() - ''Or''s a rectangle to a region
+--		- region:orRegion() - ''Or''s a region to a region
+--		- region:setRect() - Resets a region to the given rectangle
+--		- region:shift() - Displaces a region
+--		- region:subRect() - Subtracts a rectangle from a region
+--		- region:subRegion() - Subtracts a region from a region
+--		- region:xorRect() - ''Exclusive Or''s a rectangle to a region
 --
 -------------------------------------------------------------------------------
 

@@ -26,7 +26,7 @@
 struct LuaExecData
 {
 	struct TExecBase *exec;
-	struct TTask *basetask;
+	struct TTask *task;
 };
 
 
@@ -41,9 +41,10 @@ struct LuaTaskContext
 { 
 	struct TExecBase *exec;
 	struct TTask *task;
+	struct LuaExecData *parent;
 	lua_State *L;
 	TBOOL is_ref;
-	int dumplen;
+	int chunklen;
 	char *fname;
 	int status;
 	int ref;
@@ -65,7 +66,7 @@ static int tek_lib_exec_base_gc(lua_State *L)
 	struct LuaExecData *lexec = luaL_checkudata(L, 1, TEK_LIB_EXEC_CLASSNAME);
 	if (lexec->exec)
 	{
-		TDestroy((struct THandle *) lexec->basetask);
+		TDestroy((struct THandle *) lexec->task);
 		lexec->exec = TNULL;
 	}
 	return 0;
@@ -98,8 +99,9 @@ static TUINT tek_lib_exec_string2sig(const char *ss)
 }
 
 
-static char *tek_lib_exec_sig2string(char *s, TUINT sig)
+static int tek_lib_exec_return_sig2string(lua_State *L, TUINT sig, int nret)
 {
+	char ss[5], *s = ss;
 	if (sig & TTASK_SIG_ABORT)
 		*s++ = 'a';
 	if (sig & TTASK_SIG_USER)
@@ -109,7 +111,11 @@ static char *tek_lib_exec_sig2string(char *s, TUINT sig)
 	if (sig & TTASK_SIG_CHLD)
 		*s++ = 'c';
 	*s = '\0';
-	return s;
+	if (s == ss)
+		lua_pushnil(L);
+	else
+		lua_pushstring(L, ss);
+	return nret + 1;
 }
 
 
@@ -118,9 +124,9 @@ static void tek_lib_exec_checkabort(lua_State *L, struct TExecBase *TExecBase,
 {
 	if (sig & TTASK_SIG_ABORT)
 	{
-		TAPTR parent = (TAPTR) TGetTaskData(TNULL);
+		struct LuaExecData *parent = TGetTaskData(TNULL);
 		if (parent)
-			TSignal(parent, TTASK_SIG_ABORT);
+			TSignal(parent->task, TTASK_SIG_ABORT);
 		luaL_error(L, "received abort signal");
 	}
 }
@@ -137,62 +143,46 @@ static struct LuaExecData *tek_lib_exec_check(lua_State *L)
 
 static int tek_lib_exec_getsignals(lua_State *L)
 {
-	char ss[5];
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
 	TUINT sig = tek_lib_exec_string2sig(luaL_optstring(L, 1, "atcm"));
 	sig = TExecSetSignal(lexec->exec, 0, sig);
 	tek_lib_exec_checkabort(L, lexec->exec, sig);
-	if (tek_lib_exec_sig2string(ss, sig) == ss)
-		return 0;
-	lua_pushstring(L, ss);
-	return 1;
+	return tek_lib_exec_return_sig2string(L, sig, 0);
 }
 
 
 static int tek_lib_exec_sleep(lua_State *L)
 {
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
-	TTIME dt;
+	TTIME dt, *pdt;
 	TUINT sig;
-	char ss[5];
 	dt.tdt_Int64 = luaL_optnumber(L, 1, 0) * 1000;
-	if (dt.tdt_Int64)
-		sig = TExecWaitTime(lexec->exec, &dt, TTASK_SIG_ABORT);
-	else
-		sig = TExecWait(lexec->exec, TTASK_SIG_ABORT);
+	pdt = dt.tdt_Int64 ? &dt : TNULL;
+	sig = TExecWaitTime(lexec->exec, pdt, TTASK_SIG_ABORT);
 	tek_lib_exec_checkabort(L, lexec->exec, sig);
-	tek_lib_exec_sig2string(ss, sig);
-	lua_pushstring(L, ss);
-	return 1;
+	return tek_lib_exec_return_sig2string(L, sig, 0);
 }
 
 
 static int tek_lib_exec_waittime(lua_State *L)
 {
-	char ss[5];
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
-	TUINT sig = tek_lib_exec_string2sig(luaL_optstring(L, 1, "tc"));
-	TTIME dt, *pdt;
-	dt.tdt_Int64 = luaL_optnumber(L, 2, 0) * 1000;
-	pdt = dt.tdt_Int64 ? &dt : TNULL;
-	sig = TExecWaitTime(lexec->exec, pdt, sig | TTASK_SIG_ABORT);
+	TUINT sig = tek_lib_exec_string2sig(luaL_optstring(L, 2, "tc"));
+	TTIME dt;
+	dt.tdt_Int64 = luaL_checknumber(L, 1) * 1000;
+	sig = TExecWaitTime(lexec->exec, &dt, sig | TTASK_SIG_ABORT);
 	tek_lib_exec_checkabort(L, lexec->exec, sig);
-	tek_lib_exec_sig2string(ss, sig);
-	lua_pushstring(L, ss);
-	return 1;
+	return tek_lib_exec_return_sig2string(L, sig, 0);
 }
 
 
 static int tek_lib_exec_wait(lua_State *L)
 {
-	char ss[5];
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
 	TUINT sig = tek_lib_exec_string2sig(luaL_optstring(L, 1, "tc"));
 	sig = TExecWait(lexec->exec, sig | TTASK_SIG_ABORT);
 	tek_lib_exec_checkabort(L, lexec->exec, sig);
-	tek_lib_exec_sig2string(ss, sig);
-	lua_pushstring(L, ss);
-	return 1;
+	return tek_lib_exec_return_sig2string(L, sig, 0);
 }
 
 
@@ -200,19 +190,21 @@ static int tek_lib_exec_getmsg(lua_State *L)
 {
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
 	struct TExecBase *TExecBase = lexec->exec;
+	TBOOL success = TFALSE;
 	TAPTR msg = TGetMsg(TGetUserPort(TNULL));
-	int nret = 0;
 	if (msg)
 	{
 		TSIZE size = TGetSize(msg);
 		if (size)
 		{
 			lua_pushlstring(L, msg, size);
-			nret = 1;
+			success = TTRUE;
 		}
 		TAckMsg(msg);
 	}
-	return nret;
+	if (!success)
+		lua_pushnil(L);
+	return 1;
 }
 
 
@@ -226,7 +218,8 @@ static int tek_lib_exec_waitmsg(lua_State *L)
 	ptd = dt.tdt_Int64 ? &dt : TNULL;
 	sig = TWaitTime(ptd, TTASK_SIG_USER | TTASK_SIG_ABORT);
 	tek_lib_exec_checkabort(L, TExecBase, sig);
-	return tek_lib_exec_getmsg(L);
+	tek_lib_exec_getmsg(L);
+	return tek_lib_exec_return_sig2string(L, sig, 1);
 }
 
 
@@ -355,6 +348,7 @@ static int tek_lib_exec_runchild(lua_State *L)
 	int i;
 	struct LuaTaskContext *ctx = lua_touserdata(L, 1);
 	struct TExecBase *TExecBase = ctx->exec;
+	
 	tek_lib_exec_register_task_hook(ctx->L, TExecBase);
 	
 	lua_gc(L, LUA_GCSTOP, 0);
@@ -380,9 +374,9 @@ static int tek_lib_exec_runchild(lua_State *L)
 		lua_rawseti(L, -2, 0);
 		ctx->status = luaL_loadfile(ctx->L, ctx->fname);
 	}
-	else if (ctx->dumplen)
+	else if (ctx->chunklen)
 		ctx->status = luaL_loadbuffer(L, (const char *) (ctx + 1), 
-			ctx->dumplen, "...");
+			ctx->chunklen, "...");
 	if (ctx->status == 0)
 	{
 		int narg = 0;
@@ -397,7 +391,10 @@ static int tek_lib_exec_runchild(lua_State *L)
 		lua_remove(L, base);
 	}
 	if (ctx->status)
-		TSignal(TGetTaskData(TNULL), TTASK_SIG_ABORT);
+	{
+		struct LuaExecData *parent = TGetTaskData(TNULL);
+		TSignal(parent->task, TTASK_SIG_ABORT);
+	}
 	lua_gc(L, LUA_GCCOLLECT, 0);
 	return report(L, ctx->status);
 }
@@ -415,7 +412,7 @@ tek_lib_exec_run_dispatch(struct THook *hook, TAPTR task, TTAG msg)
 		{
 			struct LuaTaskContext *ctx = hook->thk_Data;
 			struct TExecBase *TExecBase = ctx->exec;
-			TAPTR parent = (TAPTR) TGetTaskData(TNULL);
+			struct LuaExecData *parent = TGetTaskData(TNULL);
 			TUINT sig = TTASK_SIG_CHLD;
 			TUINT sigstate;
 			int status;
@@ -429,7 +426,7 @@ tek_lib_exec_run_dispatch(struct THook *hook, TAPTR task, TTAG msg)
 			/* error occured? or abort signal received? */
 			if (status || ctx->status || (sigstate & TTASK_SIG_ABORT))
 				sig |= TTASK_SIG_ABORT;
-			TSignal(parent, sig);
+			TSignal(parent->task, sig);
 			break;
 		}
 	}
@@ -441,42 +438,30 @@ static int tek_lib_exec_runtask(lua_State *L, struct LuaTaskContext *ctx)
 {
 	struct TExecBase *TExecBase = ctx->exec;
 	struct THook hook;
-	TTAGITEM tags[2];
+	TTAGITEM tags[3];
 	ctx->L = luaL_newstate();
 	if (ctx->L == TNULL)
 		luaL_error(L, "out of memory");
 	tags[0].tti_Tag = TTask_UserData;
-	tags[0].tti_Value = (TTAG) TFindTask(TNULL);
-	tags[1].tti_Tag = TTAG_DONE;
+	tags[0].tti_Value = (TTAG) ctx->parent;
+	tags[1].tti_Tag = TTask_Name;
+	tags[1].tti_Value = TNULL;
+	tags[2].tti_Tag = TTAG_DONE;
 	TInitHook(&hook, tek_lib_exec_run_dispatch, ctx);
 	ctx->task = TCreateTask(&hook, tags);
 	if (ctx->task == TNULL)
 	{
 		lua_pop(L, 1);
-		lua_pushboolean(L, TFALSE);
+		lua_pushnil(L);
 		return 1;
 	}
 	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_TASK_CLASSNAME);
 	lua_setmetatable(L, -2);
 	lua_pushvalue(L, -1);
 	ctx->ref = luaL_ref(L, lua_upvalueindex(2));
+	/* catch abort signals from child now: */
+	tek_lib_exec_register_task_hook(L, TExecBase);
 	return 1;
-}
-
-
-static int tek_lib_exec_runfile(lua_State *L)
-{
-	size_t fnamelen;
-	const char *fname = luaL_checklstring(L, 1, &fnamelen);
-	struct LuaExecData *lexec = tek_lib_exec_check(L);
-	struct LuaTaskContext *ctx = lua_newuserdata(L,
-		sizeof(struct LuaTaskContext) + fnamelen + 1);
-	memset(ctx, 0, sizeof *ctx);
-	ctx->fname = (char *) (ctx + 1);
-	strcpy(ctx->fname, (char *) fname);
-	ctx->exec = lexec->exec;
-	tek_lib_exec_getargs(L, ctx, 2, lua_gettop(L) - 2);
-	return tek_lib_exec_runtask(L, ctx);
 }
 
 
@@ -487,14 +472,11 @@ static int tek_lib_exec_write(lua_State *L, const void *p, size_t sz, void *ud)
 	return 0;
 }
 
-static int tek_lib_exec_runfunc(lua_State *L)
+
+static const char *tek_lib_exec_dump(lua_State *L, size_t *len)
 {
-	if (!lua_isfunction(L, 1) || lua_iscfunction(L, 1))
-		luaL_error(L, "not a Lua function");
-	lua_pushvalue(L, 1);
 	luaL_Buffer b;
 	luaL_buffinit(L, &b);
-
 #if LUA_VERSION_NUM < 503
 	lua_dump(L, tek_lib_exec_write, &b);
 #else
@@ -502,33 +484,69 @@ static int tek_lib_exec_runfunc(lua_State *L)
 #endif
 	luaL_pushresult(&b);
 	lua_remove(L, -2);
-	
-	size_t len;
-	const char *s = luaL_checklstring(L, -1, &len);
-	struct LuaExecData *lexec = tek_lib_exec_check(L);
-	struct LuaTaskContext *ctx = lua_newuserdata(L,
-		sizeof(struct LuaTaskContext) + len);
-	memset(ctx, 0, sizeof *ctx);
-	memcpy(ctx + 1, s, len);
-	lua_remove(L, -2); /* remove chunk */
-	ctx->dumplen = len;
-	ctx->exec = lexec->exec;
-	tek_lib_exec_getargs(L, ctx, 2, lua_gettop(L) - 2);
-	return tek_lib_exec_runtask(L, ctx);
+	return luaL_checklstring(L, -1, len);
 }
 
 
-static int tek_lib_exec_runstring(lua_State *L)
+static int tek_lib_exec_run(lua_State *L)
 {
-	size_t len;
-	const char *s = luaL_checklstring(L, 1, &len);
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
-	struct LuaTaskContext *ctx = lua_newuserdata(L,
-		sizeof(struct LuaTaskContext) + len + 1);
+	struct LuaTaskContext *ctx;
+	const char *fname = TNULL;
+	const char *chunk = TNULL;
+	size_t extralen = 0;
+	
+	for (;;)
+	{
+		if (lua_istable(L, 1))
+		{
+			lua_getfield(L, 1, "function");
+			if (!lua_isnoneornil(L, -1))
+				break;
+			lua_pop(L, 1);
+			lua_getfield(L, 1, "filename");
+			if (!lua_isnoneornil(L, -1))
+				break;
+			lua_pop(L, 1);
+			lua_getfield(L, 1, "chunk");
+			if (!lua_isnoneornil(L, -1))
+			{
+				chunk = luaL_checklstring(L, -1, &extralen);
+				break;
+			}
+			luaL_error(L, "required argument missing");
+		}
+		lua_pushvalue(L, 1);
+		break;
+	}
+	
+	if (!chunk)
+	{
+		if (lua_type(L, -1) == LUA_TSTRING)
+			fname = luaL_checklstring(L, -1, &extralen);
+		else if (lua_isfunction(L, 1) && !lua_iscfunction(L, 1))
+			chunk = tek_lib_exec_dump(L, &extralen);
+		else
+			luaL_error(L, "not a Lua function, filename or table");
+	}
+	
+	ctx = lua_newuserdata(L, sizeof(struct LuaTaskContext) + extralen + 1);
 	memset(ctx, 0, sizeof *ctx);
-	memcpy(ctx + 1, s, len);
-	ctx->dumplen = len;
 	ctx->exec = lexec->exec;
+	ctx->parent = lexec;
+	
+	if (fname)
+	{
+		ctx->fname = (char *) (ctx + 1);
+		strcpy(ctx->fname, (char *) fname);
+	}
+	else if (chunk)
+	{
+		memcpy(ctx + 1, chunk, extralen);
+		ctx->chunklen = extralen;
+	}
+	lua_remove(L, -2); /* remove chunk/filename */
+
 	tek_lib_exec_getargs(L, ctx, 2, lua_gettop(L) - 2);
 	return tek_lib_exec_runtask(L, ctx);
 }
@@ -538,14 +556,20 @@ static int tek_lib_exec_findparent(lua_State *L)
 {
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
 	struct TExecBase *TExecBase = lexec->exec;
-	struct LuaTaskContext *ctx = lua_newuserdata(L,
-		sizeof(struct LuaTaskContext));
-	memset(ctx, 0, sizeof *ctx);
-	ctx->exec = TExecBase;
-	ctx->task = TGetTaskData(TFindTask(TNULL));
-	ctx->is_ref = TTRUE;
-	lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_TASK_CLASSNAME);
-	lua_setmetatable(L, -2);
+	struct LuaExecData *parent = TGetTaskData(TFindTask(TNULL));
+	if (parent)
+	{
+		struct LuaTaskContext *ctx = lua_newuserdata(L,
+			sizeof(struct LuaTaskContext));
+		memset(ctx, 0, sizeof *ctx);
+		ctx->exec = TExecBase;
+		ctx->task = parent->task;
+		ctx->is_ref = TTRUE;
+		lua_getfield(L, LUA_REGISTRYINDEX, TEK_LIB_TASK_CLASSNAME);
+		lua_setmetatable(L, -2);
+	}
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -638,6 +662,8 @@ static int tek_lib_exec_child_sendgui(lua_State *L)
 			}
 			TUnlockAtom(atom, TATOMF_KEEP);
 		}
+		else
+			luaL_error(L, "message port not found");
 	}
 	lua_pushboolean(L, success);
 	return 1;
@@ -646,7 +672,6 @@ static int tek_lib_exec_child_sendgui(lua_State *L)
 
 static int tek_lib_exec_child_sendmsg(lua_State *L)
 {
-	TBOOL success = TFALSE;
 	struct LuaTaskContext *ctx = luaL_checkudata(L, 1, TEK_LIB_TASK_CLASSNAME);
 	if (ctx->task)
 	{
@@ -658,11 +683,13 @@ static int tek_lib_exec_child_sendmsg(lua_State *L)
 		{
 			memcpy(msg, buf, len);
 			TPutMsg(TGetUserPort(ctx->task), TNULL, msg);
-			success = TTRUE;
 		}
+		else
+			luaL_error(L, "out of memory");
 	}
-	lua_pushboolean(L, success);
-	return 1;
+	else
+		luaL_error(L, "closed handle");
+	return 0;
 }
 
 
@@ -670,10 +697,10 @@ static const luaL_Reg tek_lib_exec_child_methods[] =
 {
 	{ "__gc", tek_lib_exec_child_gc },
 	{ "abort", tek_lib_exec_child_gc },
-	{ "signal", tek_lib_exec_child_signal },
 	{ "join", tek_lib_exec_child_join },
 	{ "sendgui", tek_lib_exec_child_sendgui },
 	{ "sendmsg", tek_lib_exec_child_sendmsg },
+	{ "signal", tek_lib_exec_child_signal },
 	{ "terminate", tek_lib_exec_child_terminate },
 	{ TNULL, TNULL }
 };
@@ -681,16 +708,14 @@ static const luaL_Reg tek_lib_exec_child_methods[] =
 
 static const luaL_Reg tek_lib_exec_funcs[] =
 {
-	{ "sleep", tek_lib_exec_sleep },
-	{ "runfile", tek_lib_exec_runfile },
-	{ "runstring", tek_lib_exec_runstring },
-	{ "run", tek_lib_exec_runfunc },
-	{ "findparent", tek_lib_exec_findparent },
-	{ "wait", tek_lib_exec_wait },
-	{ "waittime", tek_lib_exec_waittime },
 	{ "getmsg", tek_lib_exec_getmsg },
-	{ "waitmsg", tek_lib_exec_waitmsg },
+	{ "findparent", tek_lib_exec_findparent },
 	{ "getsignals", tek_lib_exec_getsignals },
+	{ "run", tek_lib_exec_run },
+	{ "sleep", tek_lib_exec_sleep },
+	{ "wait", tek_lib_exec_wait },
+	{ "waitmsg", tek_lib_exec_waitmsg },
+	{ "waittime", tek_lib_exec_waittime },
 	{ TNULL, TNULL }
 };
 
@@ -725,6 +750,7 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	lexec = lua_newuserdata(L, sizeof(struct LuaExecData));
 	/* execmeta, luaexec */
 	lexec->exec = TNULL;
+	
 	lua_pushvalue(L, -1);
 	/* execmeta, luaexec, luaexec */
 	lua_pushvalue(L, -3);
@@ -749,12 +775,10 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	tags[0].tti_Value = (TTAG) tek_lib_exec_initmodules;
 	tags[1].tti_Tag = TTAG_DONE;
 
-	lexec->basetask = TEKCreate(tags);
-	if (lexec->basetask == TNULL)
+	lexec->task = TEKCreate(tags);
+	if (lexec->task == TNULL)
 		luaL_error(L, "Failed to initialize TEKlib");
-	lexec->exec = TGetExecBase(lexec->basetask);
-	
-	/* tek_lib_exec_register_task_hook(L, lexec->exec); */
+	lexec->exec = TGetExecBase(lexec->task);
 	
 	return 1;
 }
