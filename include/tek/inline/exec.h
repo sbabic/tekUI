@@ -217,4 +217,7 @@
 #define TGetInitData(task) \
 	(*(((TMODCALL TAPTR(**)(TAPTR,struct TTask *))(TExecBase))[-79]))(TExecBase,task)
 
+#define TGetMsgSender(msg) \
+	(*(((TMODCALL struct TTask *(**)(TAPTR,TAPTR))(TExecBase))[-80]))(TExecBase,msg)
+
 #endif /* _TEK_INLINE_EXEC_H */

@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="17-Jan-2015" />
+		<meta name="created" content="18-Jan-2015" />
 	</head>
 	<body>
 		<h1>
@@ -217,6 +217,9 @@
 					</li>
 					<li>
 						<a href="#tek.lib.debug">debug</a> 
+					</li>
+					<li>
+						<a href="#tek.lib.exec">Exec</a> 
 					</li>
 					<li>
 						<a href="#tek.lib.region">Region</a> 
@@ -1247,6 +1250,255 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 <pre>
 function(...) out:write(...) end
 </pre>
+			<hr class="page-break" />
+		</div>
+		<div class="node"><h2><a name="tek.lib.exec" id="tek.lib.exec">Exec (v1.0)</a></h2>
+			<div class="definition"><dfn>FUNCTIONS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#Exec:getmsg"><code>Exec.getmsg()</code></a> - Get next message from own task's message queue
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:getname"><code>Exec.getname()</code></a> - Get the own task's name
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:getsignals"><code>Exec.getsignals()</code></a> - Get and clear own task's signals
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:run"><code>Exec.run()</code></a> - Run a Lua function, file, or chunk, returning a task
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:sendmsg"><code>Exec.sendmsg()</code></a> - Send a message to a named task
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:signal"><code>Exec.signal()</code></a> - Send signals to a named task
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:sleep"><code>Exec.sleep()</code></a> - Suspend own task for a period of time
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:wait"><code>Exec.wait()</code></a> - Suspend own task waiting for signals
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:waitmsg"><code>Exec.waitmsg()</code></a> - Suspend own rask waiting for a message or timeout
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Exec:waittime"><code>Exec.waittime()</code></a> - Suspend own task waiting for signals and timeout
+						</li>
+					</ul>
+				</blockquote>
+			</div>
+			<div class="definition"><dfn>TASKS METHODS</dfn>
+				<blockquote>
+					<ul>
+						<li style="list-style-type: none">
+							<a href="#child:abort"><code>child:abort()</code></a> - Send abortion signal and wait for task completion
+						</li>
+						<li style="list-style-type: none">
+							<a href="#child:join"><code>child:join()</code></a> - Wait for task completion
+						</li>
+						<li style="list-style-type: none">
+							child:sendmsg(msg) - Send a message to a task, see <a href="#Exec:sendmsg"><code>Exec.sendmsg()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							child:signal(&#091;sigs&#093;) - Send signals to a task, see <a href="#Exec:signal"><code>Exec.signal()</code></a> 
+						</li>
+						<li style="list-style-type: none">
+							<a href="#child:terminate"><code>child:terminate()</code></a> - Send termination signal and wait for completion
+							of a task
+						</li>
+					</ul>
+				</blockquote>
+				<hr />
+			</div>
+		</div>
+		<div class="node"><h3><a name="child:abort" id="child:abort"><code>child:abort()</code></a></h3>
+			<p>
+				Sends the task the abortion signal <code>&quot;a&quot;</code> and synchronizes
+				on its completion.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:getmsg" id="Exec:getmsg"><code>msg, sender = Exec.getmsg()</code></a></h3>
+			<p>
+				Unlinks and returns the next message from the
+				task's message queue, or <strong>nil</strong> if no messages are present. If a message
+				is returned, then the second argument is the name of the task sending the
+				message. If the sender has no name, returns <code>&quot;*p&quot;</code> if the sender is the
+				parent task, or <strong>nil</strong> otherwise.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:getname" id="Exec:getname"><code>name = Exec.getname()</code></a></h3>
+			<p>
+				Returns the own task's name, or <strong>nil</strong> if the
+				task has no name.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:getsignals" id="Exec:getsignals"><code>sig = Exec.getsignals([sigset])</code></a></h3>
+			<p>
+				Gets and clears the signals in <code>sigset</code> 
+				from the own task's signal state, and returns the present signals, one
+				character per signal, concatenated to a string. If no signals are present,
+				returns <strong>nil</strong>. Possible signals and their meanings are
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>&quot;a&quot;</code> - abort, the Lua program stops due to an error
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;t&quot;</code> - terminate, the task is asked to quit
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;c&quot;</code> - child, a child task has finished
+					</li>
+					<li style="list-style-type: none">
+						<code>&quot;m&quot;</code> - message, a message is present at the task
+					</li>
+				</ul>
+			</blockquote>
+			<p>
+				The default for <code>sigset</code> is <code>&quot;tcm&quot;</code>. Notes: The abortion signal cannot
+				be cleared from a task. The termination signal is a request that a task
+				may handle, but it is not enforced.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="child:join" id="child:join"><code>child:join()</code></a></h3>
+			<p>
+				Synchronizes the caller on completion of the task.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:run" id="Exec:run"><code>child = Exec.run(what[, arg1[, ...]])</code></a></h3>
+			<p>
+				Tries to launch a Lua script,
+				function, or chunk, and returns a handle on a child task if successful.
+				The first argument can be a string denoting the filename of a Lua script,
+				a Lua function, or a table. If a table is given, either of the following
+				keys in the table is mandatory:
+			</p>
+			<blockquote>
+				<ul>
+					<li>
+						<code>&quot;func&quot;</code>, a function value to run,
+					</li>
+					<li>
+						<code>&quot;filename&quot;</code>, a string denoting the filename of a Lua script,
+					</li>
+					<li>
+						<code>&quot;chunk&quot;</code>, a string value containing a Lua chunk to run.
+					</li>
+				</ul>
+			</blockquote>
+			<p>
+				Optional keys in the table:
+			</p>
+			<blockquote>
+				<ul>
+					<li>
+						<code>&quot;taskname&quot;</code>, a string denoting the name of the task to run.
+						Task names are immutable during runtime; the top-level task's
+						implicit name is <code>&quot;entry.task&quot;</code>.
+					</li>
+				</ul>
+			</blockquote>
+			<p>
+				Additional arguments are passed to the script, in their given order.
+				Methods on the returned child task handle:
+			</p>
+			<blockquote>
+				<ul>
+					<li>
+						<a href="#child:abort"><code>child:abort()</code></a> - sends abortion signal and synchronizes on completion
+						of the task
+					</li>
+					<li>
+						<a href="#child:join"><code>child:join()</code></a> - synchronizes on completion of the task
+					</li>
+					<li>
+						child:sendmsg(msg) - sends a message to a task, see <a href="#Exec:sendmsg"><code>Exec.sendmsg()</code></a> 
+					</li>
+					<li>
+						child:signal(&#091;sigs&#093;) - sends signals to a task, see <a href="#Exec:signal"><code>Exec.signal()</code></a> 
+					</li>
+					<li>
+						<a href="#child:terminate"><code>child:terminate()</code></a> - sends termination signal and synchronizes on
+						completion of the task
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:sendmsg" id="Exec:sendmsg"><code>success = Exec.sendmsg(taskname, msg)</code></a></h3>
+			<p>
+				Sends a message to a named task.
+				The special name <code>&quot;*p&quot;</code> addresses the parent task. Returns <strong>true</strong> 
+				if the task was found and the message sent.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:signal" id="Exec:signal"><code>success = Exec.signal(taskname[, sigs])</code></a></h3>
+			<p>
+				Sends signals to a named task,
+				by default the termination signal <code>&quot;t&quot;</code>. The special name <code>&quot;*p&quot;</code> 
+				addresses the parent task. Returns <strong>true</strong> if the task was found and
+				the signals sent. See <a href="#Exec:getsignals"><code>Exec.getsignals()</code></a> for details on the signal format.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:sleep" id="Exec:sleep"><code>sig = Exec.sleep([millisecs])</code></a></h3>
+			<p>
+				Suspends the task for the given number of
+				1/1000th seconds. If no timeout is specified, sleeps indefinitely. Returns
+				<strong>nil</strong> when the timeout has expired, or <code>&quot;a&quot;</code> when an abortion signal
+				occurred or was already present at the task.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="child:terminate" id="child:terminate"><code>child:terminate()</code></a></h3>
+			<p>
+				Sends the task the termination signal <code>&quot;t&quot;</code> and
+				synchronizes on its completion.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:wait" id="Exec:wait"><code>sig = Exec.wait([sigset])</code></a></h3>
+			<p>
+				Suspends the task waiting for any signals from
+				the specified set. The signals from <code>sigset</code> that occured (or were
+				already present at the task) are returned to the caller - see
+				<a href="#Exec:getsignals"><code>Exec.getsignals()</code></a> for their format. The default signal set to wait for is
+				<code>&quot;tc&quot;</code>. Note: The abortion signal <code>&quot;a&quot;</code> is always included in the set.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:waitmsg" id="Exec:waitmsg"><code>msg, sender, sig = Exec.waitmsg([millisecs])</code></a></h3>
+			<p>
+				Suspends the task waiting
+				for the given number of 1/1000th seconds or for a message, and returns the
+				message to the caller. If no timeout is specified, waits indefinitely.
+				Returns <strong>nil</strong> when no message arrives in the given time, or when the
+				cause for returning was that only a signal showed up in the task. The
+				second return value is the name of the sender task, see <a href="#Exec:getmsg"><code>Exec.getmsg()</code></a> for
+				details. The third return value contains the possible signals (<code>&quot;m&quot;</code> 
+				and <code>&quot;a&quot;</code>) that caused this function to return, or <strong>nil</strong> if a
+				timeout occurred.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:waittime" id="Exec:waittime"><code>sig = Exec.waittime(millisecs[, sigset])</code></a></h3>
+			<p>
+				Suspends the task waiting for
+				the given number of 1/1000th seconds, or for any signals from the specified
+				set. Signals from <code>sigset</code> that occured (or were already present at
+				the task) are returned to the caller - see <a href="#Exec:getsignals"><code>Exec.getsignals()</code></a> for details.
+				The default signal set to wait for is <code>&quot;tc&quot;</code>. Note: The abortion signal
+				<code>&quot;a&quot;</code> is always included in the signal set.
+			</p>
 			<hr class="page-break" />
 		</div>
 		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v11.1)</a></h2>
@@ -9064,7 +9316,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Sat Jan 17 13:40:15 2015 using gendoc.lua version 1.4
+					Document generated on Sun Jan 18 14:30:42 2015 using gendoc.lua version 1.4
 				</p>
 			</div>
 		</div>

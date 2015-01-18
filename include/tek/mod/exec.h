@@ -474,9 +474,9 @@ struct TMessage
 	struct TNode tmsg_Node;
 	/* Port to which msg is returned */
 	struct TMsgPort *tmsg_RPort;
-	/* Sender object (reserved) */
-	TAPTR tmsg_Sender;
-	/* Proxy object (reserved) */
+	/* Sender task */
+	struct TTask *tmsg_Sender;
+	/* Proxied object (reserved) */
 	TAPTR tmsg_Proxy;
 	/* Delivery status */
 	TUINT tmsg_Flags;

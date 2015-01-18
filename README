@@ -53,8 +53,9 @@
 
 === Links ===
 
- * [[manual.html : Class Reference Manual]] – The entrypoint is the
- [[tek.ui][manual.html#tek.ui]] module. See there for a quick start.
+ * [[manual.html : Class and library reference manual]] – The
+ entrypoint is the [[tek.ui][manual.html#tek.ui]] module. See there
+ for a quick start.
  * [[changes.html : Changelog]]
 
 ---------------------------------------------------------------------

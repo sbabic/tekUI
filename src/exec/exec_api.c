@@ -690,7 +690,7 @@ EXPORT void exec_PutMsg(struct TExecBase *TExecBase, struct TMsgPort *port,
 		struct TMessage *msg = TGETMSGPTR(mem);
 
 		msg->tmsg_RPort = replyport;
-		msg->tmsg_Sender = TNULL; /* sender is local address space */
+		msg->tmsg_Sender = THALFindSelf(hal);
 
 		THALLock(hal, &port->tmp_Lock);
 		TAddTail(&port->tmp_MsgList, (struct TNode *) msg);
@@ -1265,4 +1265,10 @@ EXPORT TAPTR exec_ScanModules(struct TExecBase *TExecBase, TTAGITEM *tags)
 		}
 	}
 	return hnd;
+}
+
+EXPORT struct TTask *exec_GetMsgSender(TEXECBASE *exec, TAPTR m)
+{
+	struct TMessage *msg = TGETMSGPTR(m);
+	return msg->tmsg_Sender;
 }

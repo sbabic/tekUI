@@ -1,9 +1,10 @@
 
 == tekUI Changelog ==
 
- * Lua Exec: added functions run, runstring, runfile, sleep, wait, waittime,
- waitmsg, getmsg, getsignals, child methods abort, signal, join, sendmsg,
- sendgui, terminate, including error propagation through running tasks
+ * Luaexec: added functions getmsg, getname, getsignals, run, sendmsg,
+ signal, sleep, wait, waitmsg, waittime, child methods abort, join,
+ sendmsg, signal, terminate, including error propagation through running
+ tasks
  * Default layouter: Fixed Weight attribute number representation problem
  with Lua 5.3
  * Windows, RawFB, DirectFB display drivers: Slip fixed in instantiating

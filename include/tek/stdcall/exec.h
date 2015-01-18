@@ -227,4 +227,7 @@
 #define TExecGetInitData(exec,task) \
 	(*(((TMODCALL TAPTR(**)(TAPTR,struct TTask *))(exec))[-79]))(exec,task)
 
+#define TExecGetMsgSender(exec,task) \
+	(*(((TMODCALL struct TTask *(**)(TAPTR,TAPTR))(exec))[-80]))(exec,msg)
+
 #endif /* _TEK_STDCALL_EXEC_H */

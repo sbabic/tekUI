@@ -230,6 +230,7 @@ exec_vectors[EXEC_NUMVECTORS] =
 	(TMFPTR) exec_ScanModules,
 	
 	(TMFPTR) exec_GetInitData,
+	(TMFPTR) exec_GetMsgSender,
 };
 
 /*****************************************************************************/
@@ -501,9 +502,7 @@ LOCAL TUINT exec_sendmsg(TEXECBASE *TExecBase, struct TTask *task,
 
 	/* replyport is task's syncport */
 	msg->tmsg_RPort = &task->tsk_SyncPort;
-
-	/* sender is local address space */
-	msg->tmsg_Sender = TNULL;
+	msg->tmsg_Sender = THALFindSelf(hal);
 
 	THALLock(hal, &port->tmp_Lock);
 	TAddTail(&port->tmp_MsgList, (struct TNode *) msg);
