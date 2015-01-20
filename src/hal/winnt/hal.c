@@ -21,6 +21,8 @@
 #define USE_PERFCOUNTER
 #define USE_MMTIMER
 
+static void hal_getsystime(struct THALBase *hal, TTIME *time);
+
 /*****************************************************************************/
 /*
 **	Host Init
@@ -350,16 +352,13 @@ hal_timedwaitevent(struct THALBase *hal, struct HALThread *t,
 		waitt = *tektime;
 		hal_getsystime(hal, &curt);
 		TSubTime(&waitt, &curt);
-		if (waitt.ttm_Sec < 0)
+		if (waitt.tdt_Int64 < 0)
 			break;
 
-		if (waitt.ttm_Sec > 1000000)
+		if (waitt.tdt_Int64 > 1000000000000)
 			millis = 1000000000;
 		else
-		{
-			millis = waitt.ttm_Sec * 1000;
-			millis += waitt.ttm_USec / 1000;
-		}
+			millis = waitt.tdt_Int64 / 1000;
 
 		if (millis > 0)
 			WaitForSingleObject(wth->hth_SigEvent, millis);
@@ -809,8 +808,7 @@ static void TTASKENTRY hal_devfunc(struct TTask *task)
 	TTIME waittime, curtime;
 	struct TNode *nnode, *node;
 
- 	waittime.ttm_Sec = 2000000000;
- 	waittime.ttm_USec = 0;
+ 	waittime.tdt_Int64 = 2000000000000000;
 
 	for (;;)
 	{
@@ -829,9 +827,8 @@ static void TTASKENTRY hal_devfunc(struct TTask *task)
 			TAddTail(&hps->hsp_ReqList, (struct TNode *) msg);
 		}
 
-		waittime.ttm_Sec = 2000000000;
-		waittime.ttm_USec = 0;
-		node = hps->hsp_ReqList.tlh_Head;
+		waittime.tdt_Int64 = 2000000000000000;
+		node = hps->hsp_ReqList.tlh_Head.tln_Succ;
 		for (; (nnode = node->tln_Succ); node = nnode)
 		{
 			struct TTimeRequest *tr = (struct TTimeRequest *) node;
@@ -924,7 +921,6 @@ hal_beginio(struct THALBase *hal, struct TTimeRequest *req)
 {
 	struct HALSpecific *hws = hal->hmb_Specific;
 	TAPTR exec = hws->hsp_ExecBase;
-	struct TMessage *msg;
 	TTIME curtime;
 	TINT64 x = 0;
 
@@ -952,8 +948,9 @@ hal_beginio(struct THALBase *hal, struct TTimeRequest *req)
 			#endif
 
 		addtimereq:
+		{
 			#ifdef USE_MMTIMER
-			msg = TGETMSGPTR(req);
+			struct TMessage *msg = TGETMSGPTR(req);
 			EnterCriticalSection(&hws->hsp_DevLock);
 			msg->tmsg_Flags = TMSG_STATUS_SENT | TMSGF_QUEUED;
 			msg->tmsg_RPort = req->ttr_Req.io_ReplyPort;
@@ -964,6 +961,7 @@ hal_beginio(struct THALBase *hal, struct TTimeRequest *req)
 				req->ttr_Req.io_ReplyPort, req);
 			#endif
 			return;
+		}
 
 		/* execute synchronously */
 		default:
@@ -1015,6 +1013,8 @@ hal_abortio(struct THALBase *hal, struct TTimeRequest *req)
 		/* enforce immediate expiration */
 		req->ttr_Data.ttr_Time.tdt_Int64 = 0;
 		req->ttr_Req.io_Error = TIOERR_ABORTED;
+		TRemove(&req->ttr_Req.io_Node);
+		while (!hal_replytimereq(req));
 	}
 	LeaveCriticalSection(&hws->hsp_DevLock);
 

@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="18-Jan-2015" />
+		<meta name="created" content="20-Jan-2015" />
 	</head>
 	<body>
 		<h1>
@@ -1367,9 +1367,15 @@ function(...) out:write(...) end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="child:join" id="child:join"><code>child:join()</code></a></h3>
+		<div class="node"><h3><a name="child:join" id="child:join"><code>success, res1, ... = child:join()</code></a></h3>
 			<p>
-				Synchronizes the caller on completion of the task.
+				Synchronizes the caller on completion
+				of the child task. The first return value is boolean and indicative of
+				whether the task completed successfully. While suspended in this function
+				and if an error occurs in the child task, an error is propagated to the
+				caller also, unless error propagation is suppressed - see <a href="#Exec:run"><code>Exec.run()</code></a>. If
+				successful, return values from the child task will be converted to
+				strings and returned as additional return values.
 			</p>
 			<hr />
 		</div>
@@ -1401,8 +1407,12 @@ function(...) out:write(...) end
 				<ul>
 					<li>
 						<code>&quot;taskname&quot;</code>, a string denoting the name of the task to run.
-						Task names are immutable during runtime; the top-level task's
-						implicit name is <code>&quot;entry.task&quot;</code>.
+						Task names are immutable during runtime and must be unique; the
+						top-level task's implicit name is <code>&quot;entry.task&quot;</code>.
+					</li>
+					<li>
+						<code>&quot;abort&quot;</code>, a boolean to indicate whether errors in the child
+						should be propagated to the parent task. Default: <strong>true</strong> 
 					</li>
 				</ul>
 			</blockquote>
@@ -1431,6 +1441,14 @@ function(...) out:write(...) end
 					</li>
 				</ul>
 			</blockquote>
+			<p>
+				Note that the returned child handle is subject to garbage collection. If
+				it gets collected (at the latest when the parent task is ending) and the
+				child task is still running, the child will be sent the abortion signal,
+				causing it to raise an error. This error, like any child error, also gets
+				propagated to the parent task, unless error propagation is suppressed
+				(see above).
+			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Exec:sendmsg" id="Exec:sendmsg"><code>success = Exec.sendmsg(taskname, msg)</code></a></h3>
@@ -1459,10 +1477,11 @@ function(...) out:write(...) end
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="child:terminate" id="child:terminate"><code>child:terminate()</code></a></h3>
+		<div class="node"><h3><a name="child:terminate" id="child:terminate"><code>success, res1, ... = child:terminate()</code></a></h3>
 			<p>
-				Sends the task the termination signal <code>&quot;t&quot;</code> and
-				synchronizes on its completion.
+				This function is equivalent to
+				<a href="#child:join"><code>child:join()</code></a>, except for that it sends the child task the termination
+				signal <code>&quot;t&quot;</code> before joining.
 			</p>
 			<hr />
 		</div>
@@ -9316,7 +9335,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Sun Jan 18 14:30:42 2015 using gendoc.lua version 1.4
+					Document generated on Tue Jan 20 01:30:10 2015 using gendoc.lua version 1.4
 				</p>
 			</div>
 		</div>

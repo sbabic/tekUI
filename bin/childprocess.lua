@@ -96,9 +96,9 @@ ui.Application:new
 					{
 						ui.Text:new
 						{
-							Style = "text-align:left",
+							Style = "text-align:left; padding: 10",
 							Text = [[
-This is a POSIX specific example demonstrating a gui running
+This is a POSIX-specific example demonstrating a GUI running
 in a child process.
 
 If you click on the button below, the command will be sent

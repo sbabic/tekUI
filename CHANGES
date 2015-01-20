@@ -1,6 +1,9 @@
 
 == tekUI Changelog ==
 
+ * HAL: fix for broken timer device under Windows, MMTimer timerequest abort
+ on signal arrival did not work for ages!, corrected, giving e.g. TWaitTime()
+ in Windows display driver much better response times and smoother updates
  * Luaexec: added functions getmsg, getname, getsignals, run, sendmsg,
  signal, sleep, wait, waitmsg, waittime, child methods abort, join,
  sendmsg, signal, terminate, including error propagation through running

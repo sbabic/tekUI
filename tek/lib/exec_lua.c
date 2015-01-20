@@ -73,12 +73,10 @@ struct LuaTaskContext
 	lua_State *L;
 	char *taskname;
 	char atomname[TEK_LIB_TASK_NAME_LEN];
-	int chunklen;
+	int chunklen, status, luastatus, ref, numargs, numres;
 	char *fname;
-	int status;
-	int ref;
-	int numargs;
-	struct LuaTaskArgs *args;
+	struct LuaTaskArgs *args, *results;
+	TBOOL abort;
 };
 
 
@@ -394,43 +392,56 @@ static int msghandler (lua_State *L) {
 #endif
 
 
-static void tek_lib_exec_getargs(lua_State *L, struct LuaTaskContext *ctx,
-	int first, int narg)
+static void tek_lib_exec_allocarg(lua_State *L, struct TExecBase *TExecBase,
+	int stackidx, struct LuaTaskArgs *arg)
 {
-	struct TExecBase *TExecBase = ctx->exec;
-	int i;
-	if (narg == 0)
-		return;
-	ctx->args = TAlloc0(TNULL, sizeof(struct LuaTaskArgs) * narg);
-	if (ctx->args == TNULL)
-		luaL_error(L, "out of memory");
-	ctx->numargs = narg;
-	for (i = 0; i < narg; ++i)
+	const char *s = lua_tolstring(L, stackidx, &arg->len);
+	if (arg->len > 0)
 	{
-		const char *s = lua_tolstring(L, first + i, &ctx->args[i].len);
-		ctx->args[i].arg = TAlloc(TNULL, ctx->args[i].len);
-		if (ctx->args[i].arg == TNULL)
+		arg->arg = TAlloc(TNULL, arg->len);
+		if (arg->arg == TNULL)
 			luaL_error(L, "out of memory");
-		memcpy(ctx->args[i].arg, s, ctx->args[i].len);
+		memcpy(arg->arg, s, arg->len);
 	}
 }
 
 
-static void tek_lib_exec_freeargs(struct LuaTaskContext *ctx)
+static struct LuaTaskArgs *tek_lib_exec_getargs(lua_State *L,
+	struct TExecBase *TExecBase, int first, int narg, int extra)
 {
-	struct TExecBase *TExecBase = ctx->exec;
-	struct LuaTaskArgs *args = ctx->args;
-	if (ctx->numargs > 0 && args)
+	struct LuaTaskArgs *args = TNULL;
+	if (narg + extra > 0)
 	{
 		int i;
-		for (i = 0; i < ctx->numargs; ++i)
-		{
-			TFree(args->arg);
-			args++->arg = TNULL;
-		}
-		TFree(ctx->args);
-		ctx->args = TNULL;
+		args = TAlloc0(TNULL, sizeof(struct LuaTaskArgs) * (narg + extra));
+		if (args == TNULL)
+			luaL_error(L, "out of memory");
+		for (i = 0; i < extra; ++i)
+			tek_lib_exec_allocarg(L, TExecBase, i - extra, &args[i]);
+		for (i = extra; i < narg + extra; ++i)
+			tek_lib_exec_allocarg(L, TExecBase, first + i - extra, &args[i]);
 	}
+	return args;
+}
+
+
+static void tek_lib_exec_freeargs(struct TExecBase *TExecBase,
+	struct LuaTaskArgs *args, int numargs)
+{
+	if (numargs > 0 && args)
+	{
+		int i;
+		for (i = 0; i < numargs; ++i)
+			TFree(args[i].arg);
+		TFree(args);
+	}
+}
+
+
+static void tek_lib_exec_freectxargs(struct LuaTaskContext *ctx)
+{
+	tek_lib_exec_freeargs(ctx->exec, ctx->args, ctx->numargs);
+	ctx->args = TNULL;
 	ctx->numargs = 0;
 }
 
@@ -475,9 +486,9 @@ static int tek_lib_exec_runchild(lua_State *L)
 		if (ctx->args[i].arg == TNULL)
 			continue;
 		lua_pushlstring(L, ctx->args[i].arg, ctx->args[i].len);
-		lua_rawseti(L, -2, i + 1);
+		lua_rawseti(L, -2, i);
 	}
-	tek_lib_exec_freeargs(ctx);
+	tek_lib_exec_freectxargs(ctx);
 	
 	if (ctx->fname)
 	{
@@ -499,14 +510,22 @@ static int tek_lib_exec_runchild(lua_State *L)
 #endif
 		lua_insert(L, base);
 		tek_lib_exec_register_task_hook(ctx->L, TExecBase);
-		ctx->status = lua_pcall(L, narg, 0, base);
+		ctx->status = ctx->luastatus = lua_pcall(L, narg, LUA_MULTRET, base);
 		lua_remove(L, base);
+		if (ctx->status)
+		{
+			TDBPRINTF(TDB_TRACE,("pcall ctx->status=%d, signal to parent\n",
+				ctx->status));
+			struct LuaExecData *parent = TGetTaskData(TNULL);
+			TSignal(parent->task, TTASK_SIG_ABORT);
+		}
+		else
+		{
+			int nres = ctx->numres = lua_gettop(L) - 2;
+			ctx->results = tek_lib_exec_getargs(L, TExecBase, 3, nres, 0);
+		}
 	}
-	if (ctx->status)
-	{
-		struct LuaExecData *parent = TGetTaskData(TNULL);
-		TSignal(parent->task, TTASK_SIG_ABORT);
-	}
+	TDBPRINTF(TDB_TRACE,("collecting1...\n"));
 	lua_gc(L, LUA_GCCOLLECT, 0);
 	return report(L, ctx->status);
 }
@@ -547,17 +566,14 @@ tek_lib_exec_run_dispatch(struct THook *hook, TAPTR task, TTAG msg)
 		{
 			struct LuaExecData *parent = TGetTaskData(TNULL);
 			TUINT sig = TTASK_SIG_CHLD;
-			TUINT sigstate;
-			int status;
 			ctx->task = TFindTask(TNULL);
 			lua_pushcfunction(ctx->L, &tek_lib_exec_runchild);
 			lua_pushlightuserdata(ctx->L, ctx);
-			status = lua_pcall(ctx->L, 1, 1, 0);
-			sigstate = TSetSignal(0, 0);
-			report(ctx->L, status);
+			ctx->status = lua_pcall(ctx->L, 1, 1, 0);
+			TDBPRINTF(TDB_TRACE,("pcall2 ctx->status=%d\n", ctx->status));
+			report(ctx->L, ctx->status);
 			lua_close(ctx->L);
-			/* error occured? or abort signal received? */
-			if (status || ctx->status || (sigstate & TTASK_SIG_ABORT))
+			if (ctx->status)
 				sig |= TTASK_SIG_ABORT;
 			TSignal(parent->task, sig);
 			if (ctx->taskname)
@@ -606,8 +622,10 @@ static const char *tek_lib_exec_dump(lua_State *L, size_t *len)
 --		* {{"chunk"}}, a string value containing a Lua chunk to run.
 --	Optional keys in the table:
 --		* {{"taskname"}}, a string denoting the name of the task to run.
---		Task names are immutable during runtime; the top-level task's
---		implicit name is {{"entry.task"}}.
+--		Task names are immutable during runtime and must be unique; the
+--		top-level task's implicit name is {{"entry.task"}}.
+--		* {{"abort"}}, a boolean to indicate whether errors in the child
+--		should be propagated to the parent task. Default: '''true'''
 --	Additional arguments are passed to the script, in their given order.
 --	Methods on the returned child task handle:
 --		* child:abort() - sends abortion signal and synchronizes on completion
@@ -617,6 +635,12 @@ static const char *tek_lib_exec_dump(lua_State *L, size_t *len)
 --		* child:signal([sigs]) - sends signals to a task, see Exec.signal()
 --		* child:terminate() - sends termination signal and synchronizes on
 --		completion of the task
+--	Note that the returned child handle is subject to garbage collection. If
+--	it gets collected (at the latest when the parent task is ending) and the
+--	child task is still running, the child will be sent the abortion signal,
+--	causing it to raise an error. This error, like any child error, also gets
+--	propagated to the parent task, unless error propagation is suppressed
+--	(see above).
 -----------------------------------------------------------------------------*/
 
 static int tek_lib_exec_run(lua_State *L)
@@ -631,11 +655,16 @@ static int tek_lib_exec_run(lua_State *L)
 	struct THook hook;
 	TTAGITEM tags[3];
 	int nremove = 1;
+	TBOOL abort = TTRUE;
 	
 	for (;;)
 	{
 		if (lua_istable(L, 1))
 		{
+			lua_getfield(L, 1, "abort");
+			if (lua_isboolean(L, -1))
+				abort = lua_toboolean(L, -1);
+			lua_pop(L, 1);
 			lua_getfield(L, 1, "taskname");
 			taskname = lua_tostring(L, -1);
 			nremove = 2;
@@ -674,6 +703,7 @@ static int tek_lib_exec_run(lua_State *L)
 	ctx->exec = lexec->exec;
 	ctx->parent = lexec;
 	ctx->taskname = tek_lib_exec_taskname(ctx->atomname, taskname);
+	ctx->abort = abort;
 	
 	if (fname)
 	{
@@ -690,7 +720,22 @@ static int tek_lib_exec_run(lua_State *L)
 	while (nremove--)
 		lua_remove(L, -2);
 
-	tek_lib_exec_getargs(L, ctx, 2, lua_gettop(L) - 2);
+	ctx->numargs = lua_gettop(L) - 2;
+	
+	/* push arg[0] on the stack, will be extraarg */
+	lua_getglobal(L, "arg");
+	if (lua_istable(L, -1))
+	{
+		lua_rawgeti(L, -1, 0);
+		lua_remove(L, -2);
+	}
+	if (lua_type(L, -1) != LUA_TSTRING)
+	{
+		lua_pop(L, 1);
+		lua_pushnil(L);
+	}
+	ctx->args = tek_lib_exec_getargs(L, TExecBase, 2, ctx->numargs++, 1);
+	lua_pop(L, 1);
 	
 	ctx->L = luaL_newstate();
 	if (ctx->L == TNULL)
@@ -705,7 +750,7 @@ static int tek_lib_exec_run(lua_State *L)
 	ctx->task = TCreateTask(&hook, tags);
 	if (ctx->task == TNULL)
 	{
-		tek_lib_exec_freeargs(ctx);
+		tek_lib_exec_freectxargs(ctx);
 		lua_pop(L, 1);
 		lua_pushnil(L);
 		return 1;
@@ -715,15 +760,14 @@ static int tek_lib_exec_run(lua_State *L)
 	lua_setmetatable(L, -2);
 	lua_pushvalue(L, -1);
 	ctx->ref = luaL_ref(L, lua_upvalueindex(2));
-	/* start catching abort signals from child: */
-	tek_lib_exec_register_task_hook(L, TExecBase);
-	
+	if (ctx->abort)
+		tek_lib_exec_register_task_hook(L, TExecBase);
 	return 1;
 }
 
 
-static TAPTR tek_lib_exec_locktask(struct TExecBase *TExecBase, TSTRPTR name,
-	TAPTR *ref)
+static TAPTR tek_lib_exec_locktask(struct TExecBase *TExecBase,
+	const char *name, TAPTR *ref)
 {
 	if (name && strcmp(name, "*p") != 0)
 	{
@@ -761,7 +805,7 @@ static int tek_lib_exec_sendmsg(lua_State *L)
 {
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
 	struct TExecBase *TExecBase = lexec->exec;
-	char *taskname = luaL_checkstring(L, 1);
+	const char *taskname = luaL_checkstring(L, 1);
 	size_t msglen;
 	const char *src = luaL_checklstring(L, 2, &msglen);
 	TAPTR ref, task;
@@ -796,7 +840,7 @@ static int tek_lib_exec_signal(lua_State *L)
 {
 	struct LuaExecData *lexec = tek_lib_exec_check(L);
 	struct TExecBase *TExecBase = lexec->exec;
-	char *taskname = luaL_checkstring(L, 1);
+	const char *taskname = luaL_checkstring(L, 1);
 	TUINT sig = tek_lib_exec_string2sig(luaL_optstring(L, 2, "t"));
 	TAPTR ref;
 	TAPTR task = tek_lib_exec_locktask(TExecBase, taskname, &ref);
@@ -812,24 +856,22 @@ static int tek_lib_exec_signal(lua_State *L)
 }
 
 
-/*-----------------------------------------------------------------------------
---	child:join(): Synchronizes the caller on completion of the task.
------------------------------------------------------------------------------*/
-
-static int tek_lib_exec_child_join(lua_State *L)
+static int tek_lib_exec_child_sigjoin(lua_State *L, TUINT sig, TBOOL sigparent,
+	TBOOL do_results)
 {
 	struct LuaTaskContext *ctx = luaL_checkudata(L, 1, TEK_LIB_TASK_CLASSNAME);
 	struct TExecBase *TExecBase = ctx->exec;
 	struct TTask *self = TFindTask(TNULL);
 	union TTaskRequest *req = &self->tsk_Request;
 	TBOOL abort = TFALSE;
+	int nres = 0;
 	if (!ctx->task)
 		return 0;
-	
+	TDBPRINTF(TDB_TRACE,("child_join sig=%d sigparent=%d\n", sig, sigparent));
+	TSignal(ctx->task, sig);
 	self->tsk_ReqCode = TTREQ_DESTROYTASK;
 	req->trq_Task.trt_Task = ctx->task;
 	TPutMsg(TExecBase->texb_ExecPort, &self->tsk_SyncPort, self);
-	
 	for (;;)
 	{
 		TUINT sig = TWait(TTASK_SIG_SINGLE | TTASK_SIG_ABORT);
@@ -837,21 +879,32 @@ static int tek_lib_exec_child_join(lua_State *L)
 			break;
 		if (sig & TTASK_SIG_ABORT)
 		{
-			struct LuaExecData *parent = TGetTaskData(TNULL);
-			if (parent)
-				TSignal(parent->task, TTASK_SIG_ABORT);
 			TSignal(ctx->task, TTASK_SIG_ABORT);
-			abort = TTRUE;
+			if (sigparent)
+			{
+				struct LuaExecData *parent = TGetTaskData(TNULL);
+				if (parent)
+					TSignal(parent->task, TTASK_SIG_ABORT);
+				abort = TTRUE;
+			}
 		}
 	}
-	
 	TGetMsg(&self->tsk_SyncPort);
 	ctx->task = TNULL;
-	tek_lib_exec_freeargs(ctx);
-	luaL_unref(L, lua_upvalueindex(1), ctx->ref);	
+	tek_lib_exec_freectxargs(ctx);
+	if (!abort && do_results)
+	{
+		int i;
+		nres = ctx->numres + 1;
+		lua_pushboolean(L, ctx->luastatus == 0);
+		for (i = 0; i < ctx->numres; ++i)
+			lua_pushlstring(L, ctx->results[i].arg, ctx->results[i].len);
+	}
+	tek_lib_exec_freeargs(TExecBase, ctx->results, ctx->numres);
+	luaL_unref(L, lua_upvalueindex(1), ctx->ref);
 	if (abort)
 		luaL_error(L, "received abort signal");
-	return 0;
+	return nres;
 }
 
 
@@ -871,17 +924,15 @@ static int tek_lib_exec_child_signal(lua_State *L)
 
 
 /*-----------------------------------------------------------------------------
---	child:terminate(): Sends the task the termination signal {{"t"}} and
---	synchronizes on its completion.
+--	success, res1, ... = child:terminate(): This function is equivalent to
+--	child:join(), except for that it sends the child task the termination
+--	signal {{"t"}} before joining.
 -----------------------------------------------------------------------------*/
 
 static int tek_lib_exec_child_terminate(lua_State *L)
 {
 	struct LuaTaskContext *ctx = luaL_checkudata(L, 1, TEK_LIB_TASK_CLASSNAME);
-	if (!ctx->task)
-		return 0;
-	TExecSignal(ctx->exec, ctx->task, TTASK_SIG_TERM);
-	return tek_lib_exec_child_join(L);
+	return tek_lib_exec_child_sigjoin(L, TTASK_SIG_TERM, ctx->abort, TTRUE);
 }
 
 
@@ -890,13 +941,33 @@ static int tek_lib_exec_child_terminate(lua_State *L)
 --	on its completion.
 -----------------------------------------------------------------------------*/
 
+static int tek_lib_exec_child_abort(lua_State *L)
+{
+	return tek_lib_exec_child_sigjoin(L, TTASK_SIG_ABORT, TFALSE, TFALSE);
+}
+
+
+/*-----------------------------------------------------------------------------
+--	success, res1, ... = child:join(): Synchronizes the caller on completion
+--	of the child task. The first return value is boolean and indicative of
+--	whether the task completed successfully. While suspended in this function
+--	and if an error occurs in the child task, an error is propagated to the
+--	caller also, unless error propagation is suppressed - see Exec.run(). If
+--	successful, return values from the child task will be converted to
+--	strings and returned as additional return values.
+-----------------------------------------------------------------------------*/
+
+static int tek_lib_exec_child_join(lua_State *L)
+{
+	struct LuaTaskContext *ctx = luaL_checkudata(L, 1, TEK_LIB_TASK_CLASSNAME);
+	return tek_lib_exec_child_sigjoin(L, 0, ctx->abort, TTRUE);
+}
+
+
 static int tek_lib_exec_child_gc(lua_State *L)
 {
 	struct LuaTaskContext *ctx = luaL_checkudata(L, 1, TEK_LIB_TASK_CLASSNAME);
-	if (!ctx->task)
-		return 0;
-	TExecSignal(ctx->exec, ctx->task, TTASK_SIG_ABORT);
-	return tek_lib_exec_child_join(L);
+	return tek_lib_exec_child_sigjoin(L, TTASK_SIG_ABORT, ctx->abort, TFALSE);
 }
 
 
@@ -933,8 +1004,6 @@ static int tek_lib_exec_child_sendgui(lua_State *L)
 			}
 			TUnlockAtom(atom, TATOMF_KEEP);
 		}
-		else
-			luaL_error(L, "message port not found");
 	}
 	lua_pushboolean(L, success);
 	return 1;
@@ -971,7 +1040,7 @@ static int tek_lib_exec_child_sendmsg(lua_State *L)
 static const luaL_Reg tek_lib_exec_child_methods[] =
 {
 	{ "__gc", tek_lib_exec_child_gc },
-	{ "abort", tek_lib_exec_child_gc },
+	{ "abort", tek_lib_exec_child_abort },
 	{ "join", tek_lib_exec_child_join },
 	{ "sendgui", tek_lib_exec_child_sendgui },
 	{ "sendmsg", tek_lib_exec_child_sendmsg },
