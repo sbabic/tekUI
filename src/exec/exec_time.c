@@ -110,26 +110,33 @@ EXPORT TUINT
 exec_WaitTime(struct TExecBase *TExecBase, TTIME *timeout, TUINT sigmask)
 {
 	TUINT sig = 0;
-
-	if (timeout && (timeout->tdt_Int64))
+	
+	if (timeout)
 	{
-		struct TTask *task = TFindTask(TNULL);
-		struct TTimeRequest *tr = task->tsk_TimeReq;
-		struct TMsgPort *saverp = tr->ttr_Req.io_ReplyPort;
+		if (timeout->tdt_Int64 <= 0)
+		{
+			sig = TSetSignal(0, sigmask) & sigmask;
+		}
+		else
+		{
+			struct TTask *task = TFindTask(TNULL);
+			struct TTimeRequest *tr = task->tsk_TimeReq;
+			struct TMsgPort *saverp = tr->ttr_Req.io_ReplyPort;
 
-		tr->ttr_Req.io_ReplyPort = TGetSyncPort(TNULL);
-		tr->ttr_Req.io_Command = TTREQ_WAITTIME;
-		tr->ttr_Data.ttr_Time = *timeout;
+			tr->ttr_Req.io_ReplyPort = TGetSyncPort(TNULL);
+			tr->ttr_Req.io_Command = TTREQ_WAITTIME;
+			tr->ttr_Data.ttr_Time = *timeout;
 
-		TPutIO((struct TIORequest *) tr);
-		sig = TWait(TTASK_SIG_SINGLE | sigmask);
-		TAbortIO((struct TIORequest *) tr);
-		TWaitIO((struct TIORequest *) tr);
-		TSetSignal(0, TTASK_SIG_SINGLE);
+			TPutIO((struct TIORequest *) tr);
+			sig = TWait(TTASK_SIG_SINGLE | sigmask);
+			TAbortIO((struct TIORequest *) tr);
+			TWaitIO((struct TIORequest *) tr);
+			TSetSignal(0, TTASK_SIG_SINGLE);
 
-		tr->ttr_Req.io_ReplyPort = saverp;
+			tr->ttr_Req.io_ReplyPort = saverp;
 
-		sig &= sigmask;
+			sig &= sigmask;
+		}
 	}
 	else
 	{

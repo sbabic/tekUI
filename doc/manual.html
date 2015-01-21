@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="20-Jan-2015" />
+		<meta name="created" content="21-Jan-2015" />
 	</head>
 	<body>
 		<h1>
@@ -1272,6 +1272,9 @@ function(...) out:write(...) end
 							<a href="#Exec:sendmsg"><code>Exec.sendmsg()</code></a> - Send a message to a named task
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Exec:sendport"><code>Exec.sendport()</code></a> - Send a message to a named task and port
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Exec:signal"><code>Exec.signal()</code></a> - Send signals to a named task
 						</li>
 						<li style="list-style-type: none">
@@ -1302,6 +1305,10 @@ function(...) out:write(...) end
 							child:sendmsg(msg) - Send a message to a task, see <a href="#Exec:sendmsg"><code>Exec.sendmsg()</code></a> 
 						</li>
 						<li style="list-style-type: none">
+							child:sendport(port, msg) - Send a message to a named port in the
+							task, see <a href="#Exec:sendport"><code>Exec.sendport()</code></a> 
+						</li>
+						<li style="list-style-type: none">
 							child:signal(&#091;sigs&#093;) - Send signals to a task, see <a href="#Exec:signal"><code>Exec.signal()</code></a> 
 						</li>
 						<li style="list-style-type: none">
@@ -1325,15 +1332,13 @@ function(...) out:write(...) end
 				Unlinks and returns the next message from the
 				task's message queue, or <strong>nil</strong> if no messages are present. If a message
 				is returned, then the second argument is the name of the task sending the
-				message. If the sender has no name, returns <code>&quot;*p&quot;</code> if the sender is the
-				parent task, or <strong>nil</strong> otherwise.
+				message.
 			</p>
 			<hr />
 		</div>
 		<div class="node"><h3><a name="Exec:getname" id="Exec:getname"><code>name = Exec.getname()</code></a></h3>
 			<p>
-				Returns the own task's name, or <strong>nil</strong> if the
-				task has no name.
+				Returns the own task's name.
 			</p>
 			<hr />
 		</div>
@@ -1408,7 +1413,7 @@ function(...) out:write(...) end
 					<li>
 						<code>&quot;taskname&quot;</code>, a string denoting the name of the task to run.
 						Task names are immutable during runtime and must be unique; the
-						top-level task's implicit name is <code>&quot;entry.task&quot;</code>.
+						top-level task's implicit name is <code>&quot;main&quot;</code>.
 					</li>
 					<li>
 						<code>&quot;abort&quot;</code>, a boolean to indicate whether errors in the child
@@ -1446,7 +1451,7 @@ function(...) out:write(...) end
 				it gets collected (at the latest when the parent task is ending) and the
 				child task is still running, the child will be sent the abortion signal,
 				causing it to raise an error. This error, like any child error, also gets
-				propagated to the parent task, unless error propagation is suppressed
+				propagated back to the parent task, unless error propagation is suppressed
 				(see above).
 			</p>
 			<hr />
@@ -1456,6 +1461,14 @@ function(...) out:write(...) end
 				Sends a message to a named task.
 				The special name <code>&quot;*p&quot;</code> addresses the parent task. Returns <strong>true</strong> 
 				if the task was found and the message sent.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Exec:sendport" id="Exec:sendport"><code>success = Exec.sendport(taskname, portname, msg)</code></a></h3>
+			<p>
+				Sends the message to
+				the named message port in the named task. Returns <strong>true</strong> if the task
+				and port could be found and the message was sent.
 			</p>
 			<hr />
 		</div>
@@ -9335,7 +9348,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Tue Jan 20 01:30:10 2015 using gendoc.lua version 1.4
+					Document generated on Wed Jan 21 04:17:38 2015 using gendoc.lua version 1.4
 				</p>
 			</div>
 		</div>

@@ -31,12 +31,13 @@
 
 #include "visual_lua.h"
 
-#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
-
 #include <string.h>
+
+#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
 #include <unistd.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#endif
 
 #include <tek/lib/tek_lua.h>
 #include <tek/mod/exec.h>
@@ -207,6 +208,9 @@ getusermsg(TEKVisual *vis, TIMSG **msgptr, TUINT type, TSIZE size)
 struct IOData
 {
 	TEKVisual *vis;
+	char atomname[256];
+#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
+	struct THook mphook;
 	int fdmax;
 	/* selfpipe for communication: */
 	int fd_pipe[2];
@@ -217,14 +221,15 @@ struct IOData
 #if defined(ENABLE_DGRAM)
 	int fd_dgram;
 #endif
+#endif
 };
 
 static void tek_lib_visual_io_exit(struct TTask *task)
 {
 	struct TExecBase *TExecBase = TGetExecBase(task);
 	struct IOData *iodata = TGetTaskData(task);
+#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
 	int i;
-	
 	for (i = 0; i < 2; ++i)
 		if (iodata->fd_pipe[i] != -1)
 			close(iodata->fd_pipe[i]);
@@ -235,18 +240,41 @@ static void tek_lib_visual_io_exit(struct TTask *task)
 #if defined(ENABLE_FILENO)
 	visual_io_reader_exit(&iodata->linereader);
 #endif
-	
+#endif
+	TLockAtom(iodata->atomname, TATOMF_NAME | TATOMF_DESTROY);
 }
+
+#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
+static int tek_lib_visual_io_wake(struct IOData *iodata)
+{
+	char sig = 0;
+	return (write(iodata->fd_pipe[1], &sig, 1) == 1);
+}
+
+static THOOKENTRY TTAG tek_lib_visual_io_mphookfunc(struct THook *hook,
+	TAPTR obj, TTAG msg)
+{
+	struct IOData *iodata = hook->thk_Data;
+	tek_lib_visual_io_wake(iodata);
+	return 0;
+}
+#endif
 
 static TBOOL tek_lib_visual_io_init(struct TTask *task)
 {
 	struct TExecBase *TExecBase = TGetExecBase(task);
 	struct IOData *iodata = TGetTaskData(task);
-	TEKVisual *vis = iodata->vis;
 	
+#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
+	TEKVisual *vis = iodata->vis;
+
 	iodata->fd_pipe[0] = -1;
 	iodata->fd_pipe[1] = -1;
 	iodata->fdmax = 0;
+	
+	TInitHook(&iodata->mphook, tek_lib_visual_io_mphookfunc, iodata);
+	TSetPortHook(TGetUserPort(TNULL), &iodata->mphook);
+#endif
 
 #if defined(ENABLE_FILENO)
 	int fd = vis->vis_IOFileNo;
@@ -282,10 +310,20 @@ static TBOOL tek_lib_visual_io_init(struct TTask *task)
 	iodata->fdmax = TMAX(iodata->fdmax, iodata->fd_dgram);
 #endif
 	
+#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
 	if (pipe(iodata->fd_pipe) != 0)
 		return TFALSE;
 
 	iodata->fdmax = TMAX(iodata->fdmax, iodata->fd_pipe[0]) + 1;
+#endif
+	
+	TAPTR atom = TLockAtom(iodata->atomname, TATOMF_CREATE | TATOMF_NAME);
+	if (atom)
+	{
+		TSetAtomData(atom, (TTAG) TGetUserPort(TNULL));
+		TUnlockAtom(atom, TATOMF_KEEP);
+	}
+	
 	return TTRUE;
 }
 
@@ -295,20 +333,25 @@ static void tek_lib_visual_io_task(struct TTask *task)
 	struct IOData *iodata = TGetTaskData(task);
 	TEKVisual *vis = iodata->vis;
 	TIMSG *imsg;
-	char buf[256];
 	TUINT sig;
+	#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
+	char buf[256];
 	fd_set rset;
+	#endif
 	do
 	{
+		#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
 		FD_ZERO(&rset);
 		FD_SET(iodata->fd_pipe[0], &rset);
-	#if defined(ENABLE_FILENO)
+		#endif
+		#if defined(ENABLE_FILENO)
 		if (iodata->fd_stdin != -1)
 			FD_SET(iodata->fd_stdin, &rset);
-	#endif
-	#if defined(ENABLE_DGRAM)
+		#endif
+		#if defined(ENABLE_DGRAM)
 		FD_SET(iodata->fd_dgram, &rset);
-	#endif
+		#endif
+		#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
 		if (select(iodata->fdmax, &rset, NULL, NULL, NULL) > 0)
 		{
 			int nbytes = 0;
@@ -367,7 +410,25 @@ static void tek_lib_visual_io_task(struct TTask *task)
 			}
 			#endif
 		}
-		sig = TSetSignal(0, TTASK_SIG_ABORT);
+		sig = TSetSignal(0, TTASK_SIG_ABORT | TTASK_SIG_USER);
+		#else
+		sig = TWait(TTASK_SIG_ABORT | TTASK_SIG_USER);
+		#endif
+		if (sig & TTASK_SIG_USER)
+		{
+			TAPTR msg, uport = TGetUserPort(TNULL);
+			while ((msg = TGetMsg(uport)))
+			{
+				TSIZE len = TGetSize(msg);
+				/* repackage into user input message */
+				if (getusermsg(vis, &imsg, TITYPE_USER, len))
+				{
+					memcpy((void *) (imsg + 1), msg, len);
+					TPutMsg(vis->vis_IMsgPort, TNULL, &imsg->timsg_Node);
+				}
+				TAckMsg(msg);
+			}
+		}
 	} while (!(sig & TTASK_SIG_ABORT));
 	
 	tek_lib_visual_io_exit(task);
@@ -396,6 +457,7 @@ LOCAL TBOOL tek_lib_visual_io_open(TEKVisual *vis)
 	if (iodata)
 	{
 		TTAGITEM tags[2];
+		sprintf(iodata->atomname, "msgport.ui.%p", TFindTask(TNULL));
 		iodata->vis = vis;
 		vis->vis_IOData = iodata;
 		tags[0].tti_Tag = TTask_UserData;
@@ -417,30 +479,14 @@ LOCAL void tek_lib_visual_io_close(TEKVisual *vis)
 	if (vis->vis_IOTask)
 	{
 		struct TExecBase *TExecBase = vis->vis_ExecBase;
-		struct IOData *iodata = vis->vis_IOData;
-		char sig = 0;
 		TSignal(vis->vis_IOTask, TTASK_SIG_ABORT);
-		if (write(iodata->fd_pipe[1], &sig, 1) != 1)
-			TDBPRINTF(TDB_ERROR,("Error writing to selfpipe\n"));
+		#if defined(ENABLE_FILENO) || defined(ENABLE_DGRAM)
+		struct IOData *iodata = vis->vis_IOData;
+		tek_lib_visual_io_wake(iodata);
+		#endif
 		TDestroy((struct THandle *) vis->vis_IOTask);
 		vis->vis_IOTask = TNULL;
 		TFree(vis->vis_IOData);
 		vis->vis_IOData = TNULL;
 	}
 }
-
-#else
-
-/*****************************************************************************/
-
-LOCAL TBOOL tek_lib_visual_io_open(TEKVisual *vis)
-{
-	vis->vis_IOTask = (void *) 1;
-	return TTRUE;
-}
-
-LOCAL void tek_lib_visual_io_close(TEKVisual *vis)
-{
-}
-
-#endif /* defined(ENABLE_FILENO) || defined(ENABLE_DGRAM) */

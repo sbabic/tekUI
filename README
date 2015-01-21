@@ -486,7 +486,7 @@ The regular build procedure is invoked with
 
 ==== Building a tekui executable ====
 
-To build a standalone executable implementing a Lua interpreter,
+To build a standalone executable implementing a Lua 5.1 interpreter,
 tekUI's C libraries and Lua class library, adjust {{LUAARCH}},
 {{LUADISTDIR}} in the {{config}} file, the exact classes to be
 included in {{tek/lib/MODLIST}}, and invoke

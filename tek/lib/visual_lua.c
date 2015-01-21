@@ -365,24 +365,13 @@ tek_lib_visual_open(lua_State *L)
 
 /*****************************************************************************/
 
-static void tek_lib_visual_getatomname(struct TExecBase *TExecBase, char *buf)
-{
-	sprintf(buf, "lua.visual.iport.%p", TFindTask(TNULL));
-}
-
-/*****************************************************************************/
-
 LOCAL LUACFUNC TINT
 tek_lib_visual_close(lua_State *L)
 {
 	TEKVisual *vis = luaL_checkudata(L, 1, TEK_LIB_VISUAL_CLASSNAME);
 	struct TExecBase *TExecBase = vis->vis_ExecBase;
-	char atomname[256];
 
 	TDBPRINTF(TDB_TRACE,("visual %08x closing\n", vis));
-
-	tek_lib_visual_getatomname(TExecBase, atomname);
-	TLockAtom(atomname, TATOMF_NAME | TATOMF_DESTROY);
 
 	TFree(vis->vis_Drawdata.pens);
 	vis->vis_Drawdata.pens = TNULL;
@@ -490,8 +479,6 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 {
 	TEKVisual *vis;
 	struct TExecBase *TExecBase;
-	char atomname[256];
-	TAPTR atom;
 	
 	/* register input message */
 	luaL_newmetatable(L, "tek_msg*");
@@ -521,11 +508,6 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	lua_getfield(L, -1, "base");
 	/* s: displaytab, exectab, execbase */
 	TExecBase = *(TAPTR *) lua_touserdata(L, -1);
-
-	tek_lib_visual_getatomname(TExecBase, atomname);
-	atom = TLockAtom(atomname, TATOMF_CREATE | TATOMF_NAME | TATOMF_TRY);
-	if (!atom)
-		goto error;
 
 	/* register functions: */
 	tek_lua_register(L, "tek.lib.visual", tek_lib_visual_funcs, 0);
@@ -668,9 +650,6 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 			TDBPRINTF(TDB_INFO,("Driver '%s' supplied no default font\n", 
 				DISPLAY_DRIVER));
 
-		TSetAtomData(atom, (TTAG) vis->vis_IMsgPort);
-		TUnlockAtom(atom, TATOMF_KEEP);
-
 		/* success: */
 		return 1;
 	}
@@ -680,9 +659,6 @@ TMODENTRY int luaopen_tek_lib_visual(lua_State *L)
 	vis->vis_IMsgPort = TNULL;
 	vis->vis_CmdRPort = TNULL;
 
-	TUnlockAtom(atom, TATOMF_DESTROY);
-
-error:
 	luaL_error(L, "Visual initialization failure");
 	return 0;
 }
