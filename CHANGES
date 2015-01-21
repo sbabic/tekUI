@@ -4,10 +4,10 @@
  * HAL: fix for broken timer device under Windows, MMTimer timerequest abort
  on signal arrival did not work for ages!, corrected, giving e.g. TWaitTime()
  in Windows display driver much better response times and smoother updates
- * Luaexec: added functions getmsg, getname, getsignals, run, sendmsg,
- signal, sleep, wait, waitmsg, waittime, child methods abort, join,
- sendmsg, signal, terminate, including error propagation through running
- tasks
+ * Luaexec: added functions getmsg, getname, getsignals, run, sendport,
+ sendmsg, signal, sleep, wait, waitmsg, waittime, child methods abort, join,
+ sendport, sendmsg, signal, terminate, including error propagation through
+ running tasks
  * Default layouter: Fixed Weight attribute number representation problem
  with Lua 5.3
  * Windows, RawFB, DirectFB display drivers: Slip fixed in instantiating

@@ -1438,6 +1438,10 @@ function(...) out:write(...) end
 						child:sendmsg(msg) - sends a message to a task, see <a href="#Exec:sendmsg"><code>Exec.sendmsg()</code></a> 
 					</li>
 					<li>
+						child:sendport(port, msg) - Sends a message to a named port in
+						the task, see <a href="#Exec:sendport"><code>Exec.sendport()</code></a> 
+					</li>
+					<li>
 						child:signal(&#091;sigs&#093;) - sends signals to a task, see <a href="#Exec:signal"><code>Exec.signal()</code></a> 
 					</li>
 					<li>
@@ -9348,7 +9352,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Wed Jan 21 04:17:38 2015 using gendoc.lua version 1.4
+					Document generated on Wed Jan 21 13:57:08 2015 using gendoc.lua version 1.4
 				</p>
 			</div>
 		</div>

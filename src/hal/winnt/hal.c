@@ -115,31 +115,31 @@ hal_freeself(TAPTR boot, TAPTR mem, TUINT size)
 */
 
 EXPORT TAPTR
-hal_alloc(struct THALBase *hal, TUINT size)
+hal_alloc(struct THALBase *hal, TSIZE size)
 {
 	return malloc(size);
 }
 
 EXPORT void
-hal_free(struct THALBase *hal, TAPTR mem, TUINT size)
+hal_free(struct THALBase *hal, TAPTR mem, TSIZE size)
 {
 	free(mem);
 }
 
 EXPORT TAPTR
-hal_realloc(struct THALBase *hal, TAPTR oldmem, TUINT oldsize, TUINT newsize)
+hal_realloc(struct THALBase *hal, TAPTR oldmem, TSIZE oldsize, TSIZE newsize)
 {
 	return realloc(oldmem, newsize);
 }
 
 EXPORT void
-hal_copymem(struct THALBase *hal, TAPTR from, TAPTR to, TUINT numbytes)
+hal_copymem(struct THALBase *hal, TAPTR from, TAPTR to, TSIZE numbytes)
 {
 	CopyMemory(to, from, numbytes);
 }
 
 EXPORT void
-hal_fillmem(struct THALBase *hal, TAPTR dest, TUINT numbytes, TUINT8 fillval)
+hal_fillmem(struct THALBase *hal, TAPTR dest, TSIZE numbytes, TUINT8 fillval)
 {
 	FillMemory(dest, numbytes, fillval);
 }
@@ -218,7 +218,9 @@ hal_initthread(struct THALBase *hal, struct THALObject *thread,
 		wth->hth_SigEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 		if (wth->hth_SigEvent)
 		{
+#ifndef HAL_USE_ATOMICS
 			InitializeCriticalSection(&wth->hth_SigLock);
+#endif
 			wth->hth_SigState = 0;
 			wth->hth_HALBase = hal;
 			wth->hth_Data = data;
@@ -236,7 +238,9 @@ hal_initthread(struct THALBase *hal, struct THALObject *thread,
 				TlsSetValue(hws->hsp_TLSIndex, wth);
 				return TTRUE;
 			}
+#ifndef HAL_USE_ATOMICS
 			DeleteCriticalSection(&wth->hth_SigLock);
+#endif
 			CloseHandle(wth->hth_SigEvent);
 		}
 		THALDestroyObject(hal, wth, struct HALThread);
@@ -254,7 +258,9 @@ hal_destroythread(struct THALBase *hal, struct THALObject *thread)
 		WaitForSingleObject(wth->hth_Thread, INFINITE);
 		CloseHandle(wth->hth_Thread);
 		CloseHandle(wth->hth_SigEvent);
+#ifndef HAL_USE_ATOMICS
 		DeleteCriticalSection(&wth->hth_SigLock);
+#endif
 	}
 	THALDestroyObject(hal, wth, struct HALThread);
 }
@@ -277,6 +283,7 @@ hal_signal(struct THALBase *hal, struct THALObject *thread, TUINT signals)
 {
 	struct HALThread *wth = THALGetObject(thread, struct HALThread);
 
+#ifndef HAL_USE_ATOMICS
 	EnterCriticalSection(&wth->hth_SigLock);
 	if (signals & ~wth->hth_SigState)
 	{
@@ -284,6 +291,11 @@ hal_signal(struct THALBase *hal, struct THALObject *thread, TUINT signals)
 		SetEvent(wth->hth_SigEvent);
 	}
 	LeaveCriticalSection(&wth->hth_SigLock);
+#else
+	if (signals & ~(TUINT) InterlockedOr(&wth->hth_SigState, signals))
+		SetEvent(wth->hth_SigEvent);
+#endif
+
 }
 
 EXPORT TUINT
@@ -291,8 +303,8 @@ hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask)
 {
 	struct HALSpecific *hws = hal->hmb_Specific;
 	struct HALThread *wth = TlsGetValue(hws->hsp_TLSIndex);
+#ifndef HAL_USE_ATOMICS 
 	TUINT oldsig;
-
 	EnterCriticalSection(&wth->hth_SigLock);
 	oldsig = wth->hth_SigState;
 	wth->hth_SigState &= ~sigmask;
@@ -302,8 +314,15 @@ hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask)
 		SetEvent(wth->hth_SigEvent);
 	}
 	LeaveCriticalSection(&wth->hth_SigLock);
-
 	return oldsig;
+#else
+	TUINT cmask = ~sigmask | newsig;
+	TUINT before_consume = InterlockedAnd(&wth->hth_SigState, cmask);
+	TUINT before_publish = InterlockedOr(&wth->hth_SigState, newsig);
+	if (newsig & ~before_publish  & sigmask)
+		SetEvent(wth->hth_SigEvent);
+	return (before_consume & ~cmask) | (before_publish & cmask);
+#endif
 }
 
 EXPORT TUINT
@@ -312,17 +331,19 @@ hal_wait(struct THALBase *hal, TUINT sigmask)
 	struct HALSpecific *hws = hal->hmb_Specific;
 	struct HALThread *wth = TlsGetValue(hws->hsp_TLSIndex);
 	TUINT sig;
-
 	for (;;)
 	{
+#ifndef HAL_USE_ATOMICS
 		EnterCriticalSection(&wth->hth_SigLock);
 		sig = wth->hth_SigState & sigmask;
 		wth->hth_SigState &= ~sigmask;
 		LeaveCriticalSection(&wth->hth_SigLock);
+#else
+		sig = InterlockedAnd(&wth->hth_SigState, ~sigmask) & sigmask;
+#endif
 		if (sig) break;
 		WaitForSingleObject(wth->hth_SigEvent, INFINITE);
 	}
-
 	return sig;
 }
 
@@ -341,11 +362,14 @@ hal_timedwaitevent(struct THALBase *hal, struct HALThread *t,
 
 	for (;;)
 	{
+#ifndef HAL_USE_ATOMICS
 		EnterCriticalSection(&wth->hth_SigLock);
 		sig = wth->hth_SigState & sigmask;
 		wth->hth_SigState &= ~sigmask;
 		LeaveCriticalSection(&wth->hth_SigLock);
-
+#else
+		sig = InterlockedAnd(&wth->hth_SigState, ~sigmask) & sigmask;
+#endif
 		if (sig)
 			break;
 
@@ -675,17 +699,25 @@ static TBOOL hal_replytimereq(struct TTimeRequest *tr)
 		struct TTask *sigtask = mp->tmp_SigTask;
 		struct HALThread *t =
 			THALGetObject((TAPTR) &sigtask->tsk_Thread, struct HALThread);
+#ifndef HAL_USE_ATOMICS
 		if (TryEnterCriticalSection(&t->hth_SigLock))
+#endif
 		{
 			tr->ttr_Req.io_Error = 0;
 			msg->tmsg_Flags = TMSG_STATUS_REPLIED | TMSGF_QUEUED;
 			TAddTail(&mp->tmp_MsgList, &msg->tmsg_Node);
+#ifndef HAL_USE_ATOMICS
 			if (mp->tmp_Signal & ~t->hth_SigState)
 			{
 				t->hth_SigState |= mp->tmp_Signal;
 				SetEvent(t->hth_SigEvent);
 			}
 			LeaveCriticalSection(&t->hth_SigLock);
+#else
+			if (mp->tmp_Signal &
+					~(TUINT) InterlockedOr(&t->hth_SigState, mp->tmp_Signal))
+				SetEvent(t->hth_SigEvent);
+#endif
 			success = TTRUE;
 		}
 		LeaveCriticalSection(mplock);

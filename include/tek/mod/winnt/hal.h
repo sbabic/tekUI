@@ -14,6 +14,8 @@
 #include <winreg.h>
 #include <process.h>
 
+/*#define HAL_USE_ATOMICS*/
+
 /*****************************************************************************/
 
 struct HALSpecific
@@ -43,8 +45,12 @@ struct HALThread
 	void *hth_Data;
 	void (*hth_Function)(struct TTask *);
 	HANDLE hth_SigEvent;				/* Windows Event object */
+#ifndef HAL_USE_ATOMICS
 	CRITICAL_SECTION hth_SigLock;		/* Protection for sigstate */
 	TUINT hth_SigState;					/* State of signals */
+#else
+	volatile LONG hth_SigState;
+#endif
 };
 
 struct HALModule

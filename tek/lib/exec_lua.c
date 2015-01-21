@@ -643,6 +643,8 @@ static const char *tek_lib_exec_dump(lua_State *L, size_t *len)
 --		of the task
 --		* child:join() - synchronizes on completion of the task
 --		* child:sendmsg(msg) - sends a message to a task, see Exec.sendmsg()
+--		* child:sendport(port, msg) - Sends a message to a named port in
+--		the task, see Exec.sendport()
 --		* child:signal([sigs]) - sends signals to a task, see Exec.signal()
 --		* child:terminate() - sends termination signal and synchronizes on
 --		completion of the task
@@ -1082,8 +1084,8 @@ static const luaL_Reg tek_lib_exec_child_methods[] =
 	{ "__gc", tek_lib_exec_child_gc },
 	{ "abort", tek_lib_exec_child_abort },
 	{ "join", tek_lib_exec_child_join },
-	{ "sendport", tek_lib_exec_child_sendport },
 	{ "sendmsg", tek_lib_exec_child_sendmsg },
+	{ "sendport", tek_lib_exec_child_sendport },
 	{ "signal", tek_lib_exec_child_signal },
 	{ "terminate", tek_lib_exec_child_terminate },
 	{ TNULL, TNULL }
@@ -1097,6 +1099,7 @@ static const luaL_Reg tek_lib_exec_funcs[] =
 	{ "getsignals", tek_lib_exec_getsignals },
 	{ "run", tek_lib_exec_run },
 	{ "sendmsg", tek_lib_exec_sendmsg },
+	{ "sendport", tek_lib_exec_sendport },
 	{ "signal", tek_lib_exec_signal },
 	{ "sleep", tek_lib_exec_sleep },
 	{ "wait", tek_lib_exec_wait },
