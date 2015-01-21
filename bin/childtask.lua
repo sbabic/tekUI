@@ -108,7 +108,7 @@ end)
 
 exec.waitmsg() -- "ready"
 local wait_idle
-guitask:sendgui("idle")
+guitask:sendport("ui", "idle")
 while true do
 	local msg = exec.waitmsg(2000)
 	if msg then
@@ -116,24 +116,24 @@ while true do
 			break
 		elseif msg == "do_some_work" then
 			print "working..."
-			guitask:sendgui("doing some work.")
+			guitask:sendport("ui", "doing some work.")
 			exec.waittime(1000)
-			guitask:sendgui("doing some work..")
+			guitask:sendport("ui", "doing some work..")
 			exec.waittime(1000)
-			guitask:sendgui("doing some work...")
+			guitask:sendport("ui", "doing some work...")
 			exec.waittime(1000)
-			guitask:sendgui("doing some work....")
+			guitask:sendport("ui", "doing some work....")
 			exec.waittime(1000)
-			guitask:sendgui("work done.")
+			guitask:sendport("ui", "work done.")
 			print "work done."
 			wait_idle = true
 		else
-			guitask:sendgui("unknown command '" .. msg .. "'")
+			guitask:sendport("ui", "unknown command '" .. msg .. "'")
 			wait_idle = true
 		end
 	else
 		wait_idle = false
-		guitask:sendgui("idle")
+		guitask:sendport("ui", "idle")
 	end
 end
 
