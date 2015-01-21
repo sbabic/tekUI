@@ -10,18 +10,21 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<h3>
+			1.11:
+		</h3>
 		<blockquote>
 			<ul>
 				<li>
 					HAL: fix for broken timer device under Windows, MMTimer timerequest abort
-					on signal arrival did not work for ages!, corrected, giving e.g. <a href="manual.html#TWaitTime"><code>TWaitTime()</code></a> 
-					in Windows display driver much better response times and smoother updates
+					on signal arrival did not work for ages, corrected, giving e.g. <a href="manual.html#TWaitTime"><code>TWaitTime()</code></a> 
+					in Windows display driver much better response times and smoother updates.
 				</li>
 				<li>
 					Luaexec: added functions getmsg, getname, getsignals, run, sendport,
 					sendmsg, signal, sleep, wait, waitmsg, waittime, child methods abort, join,
 					sendport, sendmsg, signal, terminate, including error propagation through
-					running tasks
+					running tasks, added childtask example
 				</li>
 				<li>
 					Default layouter: Fixed Weight attribute number representation problem
@@ -53,7 +56,7 @@
 					part of the Lua state, the bindings are now fully reentrant
 				</li>
 				<li>
-					Visual module: Now registers a TEKlib atom &quot;lua.visual.iport.%p&quot; with
+					Visual module: Now registers a TEKlib atom &quot;msgport.ui.%p&quot; with
 					task address for message port rendezvous in local address space
 				</li>
 				<li>
