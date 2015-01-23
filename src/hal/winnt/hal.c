@@ -19,7 +19,11 @@
 #define TEKHOST_EXTLEN		4
 
 #define USE_PERFCOUNTER
+
+#if defined(ENABLE_LAZY_SINGLETON)
+/* if we are using globals anyway... */
 #define USE_MMTIMER
+#endif
 
 static void hal_getsystime(struct THALBase *hal, TTIME *time);
 
@@ -306,13 +310,12 @@ hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask)
 #ifndef HAL_USE_ATOMICS 
 	TUINT oldsig;
 	EnterCriticalSection(&wth->hth_SigLock);
+	newsig &= sigmask;
 	oldsig = wth->hth_SigState;
 	wth->hth_SigState &= ~sigmask;
 	wth->hth_SigState |= newsig;
-	if ((newsig & sigmask) & ~oldsig)
-	{
+	if (newsig & ~oldsig)
 		SetEvent(wth->hth_SigEvent);
-	}
 	LeaveCriticalSection(&wth->hth_SigLock);
 	return oldsig;
 #else
@@ -682,7 +685,8 @@ hal_scanmodules(struct THALBase *hal, TSTRPTR path, struct THook *hook)
 **	MMTimer implementation
 */
 
-/* thanks to Microsoft's excellent API design we must use globals here */
+#warning using globals for MMTimer
+
 static struct HALSpecific *g_hws;
 static struct THALBase *g_hal;
 static struct TList g_ReplyList;

@@ -83,6 +83,7 @@ TEKlib_Exit(TAPTR boot)
 */
 
 #if defined(ENABLE_LAZY_SINGLETON)
+#warning using globals for lazy multithreaded singleton
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 static TAPTR g_handle = TNULL;
 #endif

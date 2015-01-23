@@ -51,7 +51,7 @@ local Exec = _M
 #define TEK_LIB_EXEC_CLASSNAME "tek.lib.exec*"
 #define TEK_LIB_TASK_CLASSNAME "tek.lib.exec.task*"
 #define TEK_LIB_EXECBASE_REGNAME "TExecBase*"
-#define TEL_LIB_BASETASK_ATOMNAME "task.main"
+#define TEK_LIB_BASETASK_ATOMNAME "task.main"
 #define TEK_LIB_TASKNAME_LEN 64
 #define TEK_LIB_TASK_ATOMNAME "task.%s"
 #define TEK_LIB_TASK_ATOMNAME_OFFSET	5
@@ -102,7 +102,7 @@ static int tek_lib_exec_base_gc(lua_State *L)
 	struct LuaExecTask *lexec = luaL_checkudata(L, 1, TEK_LIB_EXEC_CLASSNAME);
 	if (lexec->exec)
 	{
-		TAPTR atom = TExecLockAtom(lexec->exec, TEL_LIB_BASETASK_ATOMNAME, 
+		TAPTR atom = TExecLockAtom(lexec->exec, TEK_LIB_BASETASK_ATOMNAME, 
 			TATOMF_NAME);
 		TExecUnlockAtom(lexec->exec, atom, TATOMF_DESTROY);
 		TDestroy((struct THandle *) lexec->task);
@@ -296,18 +296,12 @@ static int tek_lib_exec_getmsg(lua_State *L)
 {
 	struct LuaExecTask *lexec = tek_lib_exec_check(L);
 	struct TExecBase *TExecBase = lexec->exec;
-	TAPTR msg = TGetMsg(TGetUserPort(TNULL));
+	char *msg = TGetMsg(TGetUserPort(TNULL));
 	if (msg)
 	{
-		TSIZE size = TGetSize(msg);
-		struct LuaExecTask *sender = TGetTaskData(TGetMsgSender(msg));
+		TSIZE size = TGetSize(msg) - TEK_LIB_TASKNAME_LEN;
 		lua_pushlstring(L, msg, size);
-		/*if (sender && sender == lexec->parent)
-			lua_pushstring(L, "*p");
-		else*/ if (sender && strlen(sender->taskname))
-			lua_pushstring(L, sender->taskname);
-		else
-			lua_pushnil(L);
+		lua_pushstring(L, msg + size);
 		TAckMsg(msg);
 		return 2;
 	}
@@ -320,7 +314,7 @@ static int tek_lib_exec_getmsg(lua_State *L)
 /*-----------------------------------------------------------------------------
 --	msg, sender, sig = Exec.waitmsg([millisecs]): Suspends the task waiting
 --	for the given number of 1/1000th seconds or for a message, and returns the
---	message to the caller. If no timeout is specified, waits indefinitely.
+--	next message to the caller. If no timeout is specified, waits indefinitely.
 --	Returns '''nil''' when no message arrives in the given time, or when the
 --	cause for returning was that only a signal showed up in the task. The
 --	second return value is the name of the sender task, see Exec.getmsg() for
@@ -334,12 +328,27 @@ static int tek_lib_exec_waitmsg(lua_State *L)
 	struct LuaExecTask *lexec = tek_lib_exec_check(L);
 	struct TExecBase *TExecBase = lexec->exec;
 	TTIME dt, *ptd;
-	TUINT sig;
+	TUINT sig = 0;
 	int narg;
+	TAPTR hal = TExecBase->texb_HALBase;
+	struct TMsgPort *port = TGetUserPort(TNULL);
+    struct TNode *node;
 	dt.tdt_Int64 = luaL_optnumber(L, 1, 0) * 1000;
 	ptd = dt.tdt_Int64 ? &dt : TNULL;
-	sig = TWaitTime(ptd, TTASK_SIG_USER | TTASK_SIG_ABORT);
-	tek_lib_exec_checkabort(L, TExecBase, sig);
+	for (;;)
+	{
+		THALLock(hal, &port->tmp_Lock);
+		node = port->tmp_MsgList.tlh_Head.tln_Succ;
+		if (node->tln_Succ == TNULL)
+			node = TNULL;
+		THALUnlock(hal, &port->tmp_Lock);
+		if (node)
+			break;
+		sig = TWaitTime(ptd, TTASK_SIG_USER | TTASK_SIG_ABORT);
+		tek_lib_exec_checkabort(L, lexec->exec, sig);
+		if (sig == 0)
+			break;
+	}
 	narg = tek_lib_exec_getmsg(L);
 	return tek_lib_exec_return_sig2string(L, sig, narg);
 }
@@ -563,7 +572,10 @@ tek_lib_exec_run_dispatch(struct THook *hook, TAPTR task, TTAG msg)
 		{
 			TAPTR atom;
 			if (!ctx->taskname)
-				return TTRUE;
+			{
+				sprintf(ctx->atomname, "task.task: %p", task);
+				ctx->taskname = ctx->atomname + TEK_LIB_TASK_ATOMNAME_OFFSET;
+			}
 			atom = TLockAtom(ctx->atomname, 
 				TATOMF_CREATE | TATOMF_NAME | TATOMF_TRY);
 			if (!atom)
@@ -820,13 +832,14 @@ static int tek_lib_exec_sendmsg(lua_State *L)
 	size_t msglen;
 	const char *src = luaL_checklstring(L, 2, &msglen);
 	TAPTR ref, task;
-	TAPTR msg = TAllocMsg(msglen);
+	char *msg = TAllocMsg(msglen + TEK_LIB_TASKNAME_LEN);
 	if (msg == TNULL)
 		luaL_error(L, "out of memory");
 	task = tek_lib_exec_locktask(TExecBase, taskname, &ref);
 	if (task)
 	{
 		memcpy(msg, src, msglen);
+        strcpy(msg + msglen, lexec->taskname);
 		TPutMsg(TGetUserPort(task), TNULL, msg);
 		tek_lib_exec_unlocktask(TExecBase, ref);
 		lua_pushboolean(L, TTRUE);
@@ -1064,14 +1077,12 @@ static int tek_lib_exec_child_sendmsg(lua_State *L)
 		struct TExecBase *TExecBase = ctx->exec;
 		size_t len;
 		const char *buf = luaL_checklstring(L, 2, &len);
-		TAPTR msg = TAllocMsg(len);
-		if (msg)
-		{
-			memcpy(msg, buf, len);
-			TPutMsg(TGetUserPort(ctx->task), TNULL, msg);
-		}
-		else
+		char *msg = TAllocMsg(len + TEK_LIB_TASKNAME_LEN);
+		if (msg == TNULL)
 			luaL_error(L, "out of memory");
+		memcpy(msg, buf, len);
+		strcpy(msg + len, ctx->parent->taskname);
+		TPutMsg(TGetUserPort(ctx->task), TNULL, msg);
 	}
 	else
 		luaL_error(L, "closed handle");
@@ -1184,13 +1195,9 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 		lexec->taskname = lexec->atomname + TEK_LIB_TASK_ATOMNAME_OFFSET;
 	}
 	else
-	{
-		char buf[64];
-		sprintf(buf, "task: %p", lexec);
-		lexec->taskname = tek_lib_exec_taskname(lexec->atomname, buf);
-	}
+		lexec->taskname = tek_lib_exec_taskname(lexec->atomname, "main");
 
-	TAPTR atom = TLockAtom(TEL_LIB_BASETASK_ATOMNAME, 
+	TAPTR atom = TLockAtom(TEK_LIB_BASETASK_ATOMNAME, 
 		TATOMF_CREATE | TATOMF_NAME | TATOMF_TRY);
 	if (atom)
 	{

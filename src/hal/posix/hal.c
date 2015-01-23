@@ -377,11 +377,11 @@ hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask)
 	struct HALSpecific *hps = hal->hmb_Specific;
 	struct HALThread *t = pthread_getspecific(hps->hsp_TSDKey);
 	pthread_mutex_lock(&t->hth_SigMutex);
-
+	newsig &= sigmask;
 	oldsig = t->hth_SigState;
 	t->hth_SigState &= ~sigmask;
 	t->hth_SigState |= newsig;
-	if ((newsig & sigmask) & ~oldsig)
+	if (newsig & ~oldsig)
 	{
 		if (pthread_cond_signal(&t->hth_SigCond))
 			TDBPRINTF(20,("cond_signal\n"));
