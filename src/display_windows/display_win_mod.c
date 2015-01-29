@@ -503,6 +503,12 @@ fb_docmd(WINDISPLAY *mod, struct TVRequest *req)
 		case TVCMD_DRAWBUFFER:
 			fb_drawbuffer(mod, req);
 			break;
+		case TVCMD_GETSELECTION:
+			TDBPRINTF(20,("requesting selection\n"));
+			break;
+		case TVCMD_SETSELECTION:
+			TDBPRINTF(20,("setting selection\n"));
+			break;
 		default:
 			TDBPRINTF(TDB_INFO,("Unknown command code: %08x\n",
 			req->tvr_Req.io_Command));
@@ -527,7 +533,7 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 		msg->timsg_Instance = win;
 		msg->timsg_UserData = win->fbv_UserData;
 		msg->timsg_Type = type;
-		msg->timsg_Qualifier = win->fbv_KeyQual;
+		msg->timsg_Qualifier = mod->fbd_KeyQual;
 		msg->timsg_MouseX = win->fbv_MouseX;
 		msg->timsg_MouseY = win->fbv_MouseY;
 		TGetSystemTime(&msg->timsg_TimeStamp);
@@ -586,7 +592,7 @@ static TBOOL getqualifier(WINDISPLAY *mod, WINWINDOW *win)
 {
 	TUINT quali = TKEYQ_NONE;
 	TBOOL newquali;
-	BYTE *keystate = win->fbv_KeyState;
+	BYTE *keystate = mod->fbd_KeyState;
 	GetKeyboardState(keystate);
 	if (keystate[VK_LSHIFT] & 0x80) quali |= TKEYQ_LSHIFT;
 	if (keystate[VK_RSHIFT] & 0x80) quali |= TKEYQ_RSHIFT;
@@ -594,18 +600,18 @@ static TBOOL getqualifier(WINDISPLAY *mod, WINWINDOW *win)
 	if (keystate[VK_RCONTROL] & 0x80) quali |= TKEYQ_RCTRL;
 	if (keystate[VK_LMENU] & 0x80) quali |= TKEYQ_LALT;
 	if (keystate[VK_RMENU] & 0x80) quali |= TKEYQ_RALT;
+	if (keystate[VK_LWIN] & 0x80) quali |= TKEYQ_LPROP;
+	if (keystate[VK_RWIN] & 0x80) quali |= TKEYQ_RPROP;
 	/*if (keystate[VK_NUMLOCK] & 1) quali |= TKEYQ_NUMBLOCK;*/
-	newquali = (win->fbv_KeyQual != quali);
-	win->fbv_KeyQual = quali;
+	newquali = (mod->fbd_KeyQual != quali);
+	mod->fbd_KeyQual = quali;
 	return newquali;
 }
 
-static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type, TINT code)
+static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type, 
+	TINT code, TUINT code2)
 {
 	TIMSG *imsg;
-	TINT numchars = 0;
-	WCHAR buff[2];
-
 	getqualifier(mod, win);
 
 	switch (code)
@@ -666,39 +672,38 @@ static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type, TINT code)
 		case VK_PAUSE:
 			code = TKEYC_PAUSE;
 			break;
-		case VK_DECIMAL:
-			code = '.';
-			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
-			break;
-		case VK_ADD:
-			code = '+';
-			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
-			break;
-		case VK_SUBTRACT:
-			code = '-';
-			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
-			break;
-		case VK_MULTIPLY:
-			code = '*';
-			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
-			break;
-		case VK_DIVIDE:
-			code = '/';
-			imsg->timsg_Qualifier |= TKEYQ_NUMBLOCK;
-			break;
-
 		case VK_F1: case VK_F2: case VK_F3: case VK_F4:
 		case VK_F5: case VK_F6: case VK_F7: case VK_F8:
 		case VK_F9: case VK_F10: case VK_F11: case VK_F12:
 			code = (TUINT) (code - VK_F1) + TKEYC_F1;
 			break;
+		
+		case VK_NUMLOCK: /* numlock */
+		case 233: /* altgr */
+			code = 0;
+			
 		default:
-			numchars = ToUnicode(code, 0, win->fbv_KeyState,
-				buff, 2, 0);
-			if (numchars > 0)
+		{
+			WCHAR buff[2];
+			TINT numchars = ToUnicode(code, 0, mod->fbd_KeyState, buff, 2, 0);
+			TINT mapcode = MapVirtualKey(code, 2);
+			TUINT shift = mod->fbd_KeyQual & (TKEYQ_LSHIFT | TKEYQ_RSHIFT);
+			TUINT qualis = mod->fbd_KeyQual & ~(TKEYQ_LSHIFT | TKEYQ_RSHIFT);
+			if (qualis == 0x24)
+			{
 				code = buff[0];
+				mod->fbd_KeyQual = 0;
+			}
+			else if (qualis != 0 && code == mapcode)
+			{
+				if (code >= 'A' && code <= 'Z' && !shift)
+					code += 32;
+			}
+			else if (numchars > 0)
+				code = buff[0];
+		}
 	}
-
+	
 	if ((win->fbv_InputMask & type) &&
 		fb_getimsg(mod, win, &imsg, type))
 	{
@@ -927,21 +932,21 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				return 0;
 
 			case WM_SYSKEYDOWN:
-				processkey(mod, win, TITYPE_KEYDOWN, 0);
+				processkey(mod, win, TITYPE_KEYDOWN, 0, lParam);
 				return 0;
 
 			case WM_SYSKEYUP:
-				processkey(mod, win, TITYPE_KEYUP, 0);
+				processkey(mod, win, TITYPE_KEYUP, 0, lParam);
 				return 0;
 
 			case WM_KEYDOWN:
-				processkey(mod, win, TITYPE_KEYDOWN, wParam);
+				processkey(mod, win, TITYPE_KEYDOWN, wParam, lParam);
 				return 0;
 
 			case WM_KEYUP:
-				processkey(mod, win, TITYPE_KEYUP, wParam);
+				processkey(mod, win, TITYPE_KEYUP, wParam, lParam);
 				return 0;
-
+				
 			case 0x020a:
 				if (win->fbv_InputMask & TITYPE_MOUSEBUTTON)
 				{

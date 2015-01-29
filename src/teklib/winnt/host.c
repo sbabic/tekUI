@@ -106,7 +106,7 @@ TEKlib_Exit(TAPTR handle)
 */
 
 #if defined(ENABLE_LAZY_SINGLETON)
-#warning using globals for lazy multithreaded singleton
+#warning using globals (-DENABLE_LAZY_SINGLETON)
 static LONG g_lock = 0;
 static void *g_handle = TNULL;
 #endif

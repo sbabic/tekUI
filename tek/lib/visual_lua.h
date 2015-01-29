@@ -235,5 +235,6 @@ LOCAL LUACFUNC TINT tek_lib_visual_creategradient(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getpaintinfo(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_getpixmapattr(lua_State *L);
 LOCAL LUACFUNC TINT tek_lib_visual_scalepixmap(lua_State *L);
+LOCAL LUACFUNC TINT tek_lib_visual_setselection(lua_State *L);
 
 #endif

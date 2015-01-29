@@ -10,6 +10,34 @@
 		<h2>
 			tekUI Changelog
 		</h2>
+		<blockquote>
+			<ul>
+				<li>
+					Visual, EditWindow, Input: added setSelection, TextEdit: uses application
+					clipboard, removed class clipboard, quirky attribute retrieval corrected
+				</li>
+				<li>
+					Application: added obtainClipboard, releaseClipboard
+				</li>
+				<li>
+					Windows display: Added Unicode text rendering, added better support for
+					keyboard qualifiers, windows opened at fixed positions had wrong size
+				</li>
+				<li>
+					Changed notes about LuaJIT and some additions to documentation
+				</li>
+				<li>
+					LuaExec: Changes merged in, in <a href="manual.html#join"><code>join()</code></a> abort signals could be forwarded to
+					already dead task, corrected by freeing task after return from exec, in
+					<a href="manual.html#waitmsg"><code>waitmsg()</code></a> fixed recalculation of waittime, returned signals should be correct
+				</li>
+				<li>
+					Exec: added semi-internal function <a href="manual.html#TFreeTask"><code>TFreeTask()</code></a>, user tasks are now
+					freed in destructor context after their return from exec, minor cleanup
+					in memory functions
+				</li>
+			</ul>
+		</blockquote>
 		<h3>
 			1.11:
 		</h3>

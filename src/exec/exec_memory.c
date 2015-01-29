@@ -1,7 +1,7 @@
 
 /*
 **	$Id: exec_memory.c,v 1.6 2006/11/11 14:19:09 tmueller Exp $
-**	teklib/src/exec/exec_memory.c - Exec memory management
+**	teklib/src/exec/exec_memory.c - Recursive memory management
 **
 **	Written by Timm S. Mueller <tmueller at neoscientists.org>
 **	See copyright notice in teklib/COPYRIGHT
@@ -912,7 +912,7 @@ static void exec_mmu_msgdestroy(struct TMemManager *mmu)
 		node = nextnode;
 	}
 	if (numfreed)
-		TDBPRINTF(TDB_WARN,("freed %d pending allocations\n", numfreed));
+		TDBPRINTF(TDB_WARN,("freed %d pending messages\n", numfreed));
 }
 
 static THOOKENTRY TTAG exec_mmu_msg(struct THook *hook, TAPTR obj, TTAG m)
@@ -946,7 +946,8 @@ static THOOKENTRY TTAG exec_mmu_msg(struct THook *hook, TAPTR obj, TTAG m)
 **	static memheader allocator
 */
 
-#if 0
+#if defined(ENABLE_ADVANCED_MEMORY_MANAGERS)
+
 static TAPTR exec_mmu_staticalloc(struct TMemManager *mmu, TSIZE size)
 {
 	return exec_staticalloc(mmu->tmm_Allocator, size);
@@ -1574,7 +1575,8 @@ static THOOKENTRY TTAG exec_mmu_mmu(struct THook *hook, TAPTR obj, TTAG m)
 	}
 	return 0;
 }
-#endif
+
+#endif /* defined(ENABLE_ADVANCED_MEMORY_MANAGERS) */
 
 /*****************************************************************************/
 /*
@@ -1681,20 +1683,40 @@ LOCAL TBOOL exec_initmm(TEXECBASE *TExecBase, struct TMemManager *mmu,
 	{
 		case TMMT_MemManager:
 			/* MM on top of another MM - no additional functionality */
-			#if 0
 			if (allocator)
+			{
+#if defined(ENABLE_ADVANCED_MEMORY_MANAGERS)
 				mmu->tmm_Hook.thk_Entry = exec_mmu_mmu;
+#else
+				break;
+#endif /* defined(ENABLE_ADVANCED_MEMORY_MANAGERS) */
+			}
 			else
-			#endif
 				mmu->tmm_Hook.thk_Entry = exec_mmu_kernel;
 			return TTRUE;
 
-		#if 0
+		case TMMT_Message:
+			if (allocator == TNULL) /* must be TNULL for now */
+			{
+				/* note that we use the execbase lock */
+				TINITLIST(&mmu->tmm_TrackList);
+				mmu->tmm_Hook.thk_Entry = exec_mmu_msg;
+				return TTRUE;
+			}
+			break;
+
+		case TMMT_Void:
+			mmu->tmm_Hook.thk_Entry = exec_mmu_void;
+			mmu->tmm_Allocator = TNULL;
+			mmu->tmm_Type = TMMT_Void;
+			return TTRUE;
+
+#if defined(ENABLE_ADVANCED_MEMORY_MANAGERS)
 		case TMMT_Tracking:
 			TINITLIST(&mmu->tmm_TrackList);
 			if (allocator)
 			{
-				/* implement memory-tracking on top of another MM */
+				/* implement memory tracking on top of another MM */
 				mmu->tmm_Hook.thk_Entry = exec_mmu_track;
 				return TTRUE;
 			}
@@ -1741,19 +1763,7 @@ LOCAL TBOOL exec_initmm(TEXECBASE *TExecBase, struct TMemManager *mmu,
 				return TTRUE;
 			}
 			break;
-		#endif
 
-		case TMMT_Message:
-			if (allocator == TNULL) /* must be TNULL for now */
-			{
-				/* note that we use the execbase lock */
-				TINITLIST(&mmu->tmm_TrackList);
-				mmu->tmm_Hook.thk_Entry = exec_mmu_msg;
-				return TTRUE;
-			}
-			break;
-
-		#if 0
 		case TMMT_Static:
 			/*	MM on top of memheader */
 			if (allocator)
@@ -1795,17 +1805,10 @@ LOCAL TBOOL exec_initmm(TEXECBASE *TExecBase, struct TMemManager *mmu,
 				}
 			}
 			break;
-		#endif
-
-		case TMMT_Void:
-			mmu->tmm_Hook.thk_Entry = exec_mmu_void;
-			mmu->tmm_Allocator = TNULL;
-			mmu->tmm_Type = TMMT_Void;
-			return TTRUE;
+#endif /* defined(ENABLE_ADVANCED_MEMORY_MANAGERS) */
 	}
 
-	/* As a fallback, initialize a void MM that is incapable of allocating.
-	** This allows safe usage of an MM without checking the return value */
+	/* As a fallback, initialize a void MM that is incapable of allocating */
 
 	mmu->tmm_Hook.thk_Entry = exec_mmu_void;
 	mmu->tmm_Allocator = TNULL;

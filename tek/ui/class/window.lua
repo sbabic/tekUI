@@ -702,7 +702,7 @@ function Window:addInterval()
 		if self:checkFlags(FL_SHOW) then
 			self.Drawable:setInput(ui.MSG_INTERVAL)
 		else
-			db.warn("adding interval on closed window")
+			db.info("adding interval on closed window")
 		end
 	end
 end

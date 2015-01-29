@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="23-Jan-2015" />
+		<meta name="created" content="29-Jan-2015" />
 	</head>
 	<body>
 		<h1>
@@ -1252,7 +1252,7 @@ function(...) out:write(...) end
 </pre>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.exec" id="tek.lib.exec">Exec (v1.0)</a></h2>
+		<div class="node"><h2><a name="tek.lib.exec" id="tek.lib.exec">Exec (v0.83)</a></h2>
 			<div class="definition"><dfn>FUNCTIONS</dfn>
 				<blockquote>
 					<ul>
@@ -2014,6 +2014,9 @@ func(obj, x0, y0, x1, y1, ...)
 							<a href="#Visuak:getSelection"><code>Visuak:getSelection()</code></a> - Get visual's selection or clipboard
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Visual:setSelection"><code>Visual:setSelection()</code></a> - Set visual's selection or clipboard
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Visual:setShift"><code>Visual:setShift()</code></a> - Set coordinate displacement
 						</li>
 						<li style="list-style-type: none">
@@ -2634,6 +2637,23 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Visual:setSelection" id="Visual:setSelection"><code>Visual:setSelection(string, [type])</code></a></h3>
+			<p>
+				Sets the visual's selection
+				of the specified type:
+			</p>
+			<blockquote>
+				<ul>
+					<li style="list-style-type: none">
+						<code>1</code> - the selection (default)
+					</li>
+					<li style="list-style-type: none">
+						<code>2</code> - the clipboard
+					</li>
+				</ul>
+			</blockquote>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Visual:setShift" id="Visual:setShift"><code>Visual:setShift(sx, sy)</code></a></h3>
 			<p>
 				Set coordinate displacement in visual
@@ -2675,7 +2695,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v53.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v54.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3171,7 +3191,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v42.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v43.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3363,6 +3383,12 @@ ui.Application:new {
 							<a href="#Application:quit"><code>Application:quit()</code></a> - Quits the application
 						</li>
 						<li style="list-style-type: none">
+							<a href="#Application:obtainClipboard"><code>Application:obtainClipboard()</code></a> - Obtain application clipboard access
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Application:releaseClipboard"><code>Application:releaseClipboard()</code></a> - Release application clipboard
+						</li>
+						<li style="list-style-type: none">
 							<a href="#Application:remInputHandler"><code>Application:remInputHandler()</code></a> - Removes a registered input handler
 						</li>
 						<li style="list-style-type: none">
@@ -3474,9 +3500,22 @@ message = function(object, message)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Application:obtainClipboard" id="Application:obtainClipboard"><code>c = obtainClipboard([mode])</code></a></h3>
+			<p>
+				Obtain clipboard table, optional <code>mode</code> 
+				can be <code>&quot;empty&quot;</code>.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Application:quit" id="Application:quit"><code>quit()</code></a></h3>
 			<p>
 				Quits the application.
+			</p>
+			<hr />
+		</div>
+		<div class="node"><h3><a name="Application:releaseSetClipboard" id="Application:releaseSetClipboard"><code>releaseSetClipboard([c])</code></a></h3>
+			<p>
+				Release clipboard, optionally setting a new one.
 			</p>
 			<hr />
 		</div>
@@ -6499,7 +6538,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v4.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v4.7)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8378,7 +8417,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v20.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v21.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -9352,7 +9391,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Fri Jan 23 14:55:47 2015 using gendoc.lua version 1.4
+					Document generated on Thu Jan 29 18:30:05 2015 using gendoc.lua version 1.4
 				</p>
 			</div>
 		</div>

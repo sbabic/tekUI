@@ -64,6 +64,7 @@ vis_vectors[VISUAL_NUMVECTORS] =
 	(TMFPTR) vis_getnextdisplay,
 	
 	(TMFPTR) vis_getselection,
+	(TMFPTR) vis_setselection,
 };
 
 static void

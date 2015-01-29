@@ -89,6 +89,8 @@
 --		- Application:getGroup() - Returns the application's group
 --		- Application:getLocale() - Returns a locale for the application
 --		- Application:quit() - Quits the application
+--		- Application:obtainClipboard() - Obtain application clipboard access
+--		- Application:releaseClipboard() - Release application clipboard
 --		- Application:remInputHandler() - Removes a registered input handler
 --		- Application:requestFile() - Opens a file requester
 --		- Application:run() - Runs the application
@@ -130,7 +132,7 @@ local unpack = unpack or table.unpack
 local wait = Display.wait
 
 module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 42.0"
+_VERSION = "Application 43.0"
 local Application = _M
 Family:newClass(Application)
 
@@ -1116,5 +1118,24 @@ function Application:reconfigure()
 	local c = self.Children
 	for i = 1, #c do
 		c[i]:reconfigure()
+	end
+end
+
+-------------------------------------------------------------------------------
+--	c = obtainClipboard([mode]): Obtain clipboard table, optional {{mode}}
+--	can be {{"empty"}}.
+-------------------------------------------------------------------------------
+
+function Application:obtainClipboard(mode)
+	return mode == "empty" and { } or self.Clipboard
+end
+
+-------------------------------------------------------------------------------
+--	releaseSetClipboard([c]): Release clipboard, optionally setting a new one.
+-------------------------------------------------------------------------------
+
+function Application:releaseSetClipboard(c)
+	if c then
+		self.Clipboard = c
 	end
 end

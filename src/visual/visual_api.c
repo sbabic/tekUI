@@ -636,9 +636,25 @@ EXPORT TAPTR vis_getselection(struct TVisualBase *inst, TTAGITEM *tags)
 {
 	struct TVRequest *req = visi_getreq(inst, TVCMD_GETSELECTION,
 		inst->vis_Display, TNULL);
+	TSIZE *plen = (TSIZE *) TGetTag(tags, TVisual_SelectionLength, TNULL);
 	req->tvr_Op.GetSelection.Type = TGetTag(tags, TVisual_SelectionType, 1);
 	req->tvr_Op.GetSelection.Length = 0;
 	req->tvr_Op.GetSelection.Data = TNULL;
 	visi_dosync(inst, req);
+	if (plen) *plen = req->tvr_Op.GetSelection.Length;
 	return req->tvr_Op.GetSelection.Data;
+}
+
+/*****************************************************************************/
+
+EXPORT TINT vis_setselection(struct TVisualBase *inst, TSTRPTR selection,
+	TSIZE len, TTAGITEM *tags)
+{
+	struct TVRequest *req = visi_getreq(inst, TVCMD_SETSELECTION,
+		inst->vis_Display, TNULL);
+	req->tvr_Op.SetSelection.Type = TGetTag(tags, TVisual_SelectionType, 1);
+	req->tvr_Op.SetSelection.Length = len;
+	req->tvr_Op.SetSelection.Data = selection;
+	visi_dosync(inst, req);
+	return 0;
 }

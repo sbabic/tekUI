@@ -565,6 +565,7 @@ static THOOKENTRY TTAG exec_usertaskdestroy(struct THook *h, TAPTR obj,
 			self->tsk_ReqCode = TTREQ_DESTROYTASK;
 			req->trq_Task.trt_Task = task;
 			exec_sendmsg(TExecBase, self, TExecBase->texb_ExecPort, self);
+			exec_FreeTask(TExecBase, task);
 		}
 	}
 	return 0;
@@ -753,7 +754,7 @@ closedown:
 
 /*****************************************************************************/
 
-static void exec_destroytask(TEXECBASE *TExecBase, struct TTask *task)
+EXPORT void exec_FreeTask(TEXECBASE *TExecBase, struct TTask *task)
 {
 	TAPTR hal = TExecBase->texb_HALBase;
 	THALDestroyThread(hal, &task->tsk_Thread);
@@ -784,7 +785,7 @@ static void exec_childinit(TEXECBASE *TExecBase)
 			TREMOVE((struct TNode *) req);
 			TExecBase->texb_NumInitTasks--;
 			/* Destroy task corpse: */
-			exec_destroytask(TExecBase, task);
+			exec_FreeTask(TExecBase, task);
 			/* Fail-reply taskmsg to sender: */
 			TDropMsg(taskmsg);
 		}
@@ -826,8 +827,7 @@ static void exec_childexit(TEXECBASE *TExecBase)
 			THALLock(hal, &TExecBase->texb_Lock);
 			TREMOVE((struct TNode *) task);
 			THALUnlock(hal, &TExecBase->texb_Lock);
-			/* Destroy task: */
-			exec_destroytask(TExecBase, task);
+			/* Note that task is freed in sender context */
 			/* Unlink taskmsg from list of exiting tasks: */
 			TREMOVE((struct TNode *) req);
 			TExecBase->texb_NumTasks--;

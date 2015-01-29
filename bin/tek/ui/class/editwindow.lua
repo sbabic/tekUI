@@ -24,7 +24,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.editwindow", tek.ui.class.window)
-_VERSION = "EditWindow 7.6"
+_VERSION = "EditWindow 7.7"
 local EditWindow = _M
 Window:newClass(EditWindow)
 
@@ -365,11 +365,7 @@ function EditInput:handleSelection(msg)
 		end
 	end
 	if clip then
-		local utf8 = { }
-		for i = 1, #clip do
-			utf8[i] = tostring(clip[i])
-		end
-		msg:reply { UTF8Selection = concat(utf8, "\n") }
+		msg:reply { UTF8Selection = concat(clip, "\n") }
 		return false
 	end
 	return msg
@@ -771,8 +767,9 @@ function EditWindow.new(class, self)
 							Shortcut = "Ctrl+c",
 							onClick = function(self)
 								local editinput = window:getEditInput("activate")
-								editinput:copyMark()
-								self.Window.Drawable:setAttrs { HaveClipboard = true }
+								local clip = editinput:copyMark()
+								window.Drawable:setAttrs { HaveClipboard = true }
+								window.Drawable:setSelection(concat(clip, "\n"), 2)
 							end
 						},
 						MenuItem:new
@@ -780,7 +777,9 @@ function EditWindow.new(class, self)
 							Text = L.MENU_EDIT_MARK_CUT,
 							Shortcut = "Ctrl+x",
 							onClick = function(self)
-								window:getEditInput("activate"):cutMark()
+								local clip = window:getEditInput("activate"):cutMark()
+								window.Drawable:setAttrs { HaveClipboard = true }
+								window.Drawable:setSelection(concat(clip, "\n"), 2)
 							end
 						},
 						MenuItem:new

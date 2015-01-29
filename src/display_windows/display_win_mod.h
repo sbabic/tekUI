@@ -133,6 +133,9 @@ typedef struct
 	ATOM fbd_ClassAtomPopup;
 
 	char fbd_utf8buffer[WIN_UTF8_BUFSIZE];
+	
+	TUINT fbd_KeyQual;
+	BYTE fbd_KeyState[256];
 
 } WINDISPLAY;
 
@@ -170,11 +173,8 @@ typedef struct
 	TAPTR fbv_Task;
 	TBOOL fbv_Dirty;
 	TINT fbv_MouseX, fbv_MouseY;
-	TUINT fbv_KeyQual;
 
 	BITMAPINFOHEADER fbv_DrawBitMap;
-
-	BYTE fbv_KeyState[256];
 
 	RECT fbv_ClipRect;
 

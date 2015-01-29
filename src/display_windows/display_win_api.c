@@ -98,7 +98,8 @@ static TBOOL fb_initwindow(TAPTR task)
 			win->fbv_Top = wrect.top;
 			win->fbv_HWnd = CreateWindowEx(exstyle, classname,
 				title, style, win->fbv_Left, win->fbv_Top,
-				wrect.right - wrect.left, wrect.bottom - wrect.top,
+				wrect.right - wrect.left - win->fbv_BorderWidth, 
+				wrect.bottom - wrect.top - win->fbv_BorderHeight,
 				(HWND) NULL, (HMENU) NULL, mod->fbd_HInst, (LPVOID) NULL);
 		}
 		else
@@ -885,14 +886,16 @@ LOCAL void
 fb_drawtext(WINDISPLAY *mod, struct TVRequest *req)
 {
 	WINWINDOW *win = req->tvr_Op.Text.Window;
-	TSTRPTR text = req->tvr_Op.Text.Text;
+	const char *text = req->tvr_Op.Text.Text;
 	TINT len = req->tvr_Op.Text.Length;
 	TUINT x = req->tvr_Op.Text.X;
 	TUINT y = req->tvr_Op.Text.Y;
 	struct FBPen *fgpen = (struct FBPen *) req->tvr_Op.Text.FgPen;
-	TSTRPTR latin = fb_utf8tolatin(mod, text, len, &len);
+	int clen = utf8getlen((const unsigned char *) text, len);
+	TUINT16 wstr[2048];
+	MultiByteToWideChar(CP_UTF8, 0, text, len, (LPWSTR) &wstr, 2048);
 	SetTextColor(win->fbv_HDC, fgpen->col);
-	TextOut(win->fbv_HDC, x, y, latin, len);
+	TextOutW(win->fbv_HDC, x, y, wstr, clen);
 	win->fbv_Dirty = TTRUE;
 }
 
@@ -920,12 +923,9 @@ fb_openfont(WINDISPLAY *mod, struct TVRequest *req)
 LOCAL void
 fb_textsize(WINDISPLAY *mod, struct TVRequest *req)
 {
-	TINT len;
-	TSTRPTR text = req->tvr_Op.TextSize.Text;
-	TSTRPTR latin = fb_utf8tolatin(mod, text, 
-		req->tvr_Op.TextSize.NumChars, &len);
 	req->tvr_Op.TextSize.Width = fb_hosttextsize(mod,
-		req->tvr_Op.TextSize.Font, latin, len);
+		req->tvr_Op.TextSize.Font, req->tvr_Op.TextSize.Text, 
+		req->tvr_Op.TextSize.NumChars);
 }
 
 /*****************************************************************************/

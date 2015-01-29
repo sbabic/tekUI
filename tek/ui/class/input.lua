@@ -49,7 +49,7 @@ local tostring = tostring
 local type = type
 
 module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 4.6"
+_VERSION = "Input 4.7"
 local Input = _M
 ScrollGroup:newClass(Input)
 
@@ -168,7 +168,7 @@ function EditInput:handleSelection(msg)
 	local which = msg[3]
 	local clip 
 	if which == 1 then -- clipboard
-		clip = self:getClipboard()
+		clip = self.Application:obtainClipboard()
 	elseif which == 2 then -- selection
 		local mx0, my0, mx1, my1 = self:getMark()
 		if mx0 then
@@ -176,11 +176,7 @@ function EditInput:handleSelection(msg)
 		end
 	end
 	if clip then
-		local utf8 = { }
-		for i = 1, #clip do
-			utf8[i] = tostring(clip[i])
-		end
-		msg:reply { UTF8Selection = concat(utf8, "\n") }
+		msg:reply { UTF8Selection = concat(clip, "\n") }
 		return false
 	end
 	return msg
@@ -208,14 +204,21 @@ function EditInput:handleKeyboard(msg)
 			return false
 		end
 		if qual == 4 and code == 99 then -- CTRL-c
-			self:copyMark()
-			self.Window.Drawable:setAttrs { HaveClipboard = true }
+			local clip = self:copyMark()
+			if clip then
+				self.Window.Drawable:setAttrs { HaveClipboard = true }
+				self.Window.Drawable:setSelection(concat(clip, "\n"), 2)
+			end
 			return false -- absorb
 		elseif qual == 4 and code == 118 then -- CTRL-v
 			self:pasteClip(self:getSelection())
 			return false -- absorb
 		elseif qual == 4 and code == 120 then -- CTRL-x
-			self:cutMark()
+			local clip = self:cutMark()
+			if clip then
+				self.Window.Drawable:setAttrs { HaveClipboard = true }
+				self.Window.Drawable:setSelection(concat(clip, "\n"), 2)
+			end
 			return false -- absorb
 		elseif code == 9 and not self.MultiLine then
 			return msg -- pass msg on, but not to our superclass

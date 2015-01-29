@@ -6,6 +6,7 @@
 #include <tek/inline/exec.h>
 
 #if defined(ENABLE_XSHM)
+#warning using globals (-DENABLE_XSHM)
 
 static TBOOL x11_shm_available = TTRUE;
 
@@ -1625,6 +1626,9 @@ LOCAL void x11_docmd(struct X11Display *inst, struct TVRequest *req)
 			break;
 		case TVCMD_FLUSH:
 			XFlush(inst->x11_Display);
+			break;
+		case TVCMD_SETSELECTION:
+			/* not implemented on X11 */
 			break;
 		default:
 			TDBPRINTF(TDB_ERROR, ("Unknown command code: %d\n",

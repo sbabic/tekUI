@@ -136,9 +136,9 @@ local tostring = tostring
 local type = type
 
 module "tek.ui"
-_VERSION = "tekUI 53.1" -- module version string
+_VERSION = "tekUI 54.0" -- module version string
 
-VERSION = 111 -- overall package version number
+VERSION = 112 -- overall package version number
 VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
 
 -------------------------------------------------------------------------------

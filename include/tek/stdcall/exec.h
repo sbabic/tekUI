@@ -230,4 +230,7 @@
 #define TExecGetMsgSender(exec,task) \
 	(*(((TMODCALL struct TTask *(**)(TAPTR,TAPTR))(exec))[-80]))(exec,msg)
 
+#define TExecFreeTask(exec,task) \
+	(*(((TMODCALL void(**)(TAPTR,struct TTask *))(exec))[-81]))(exec,task)
+
 #endif /* _TEK_STDCALL_EXEC_H */

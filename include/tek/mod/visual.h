@@ -58,6 +58,7 @@ typedef TTAG TVPEN;
 #define TVisual_PopupWindow			(TVISTAGS_ + 0x018)
 #define TVisual_ScreenWidth			(TVISTAGS_ + 0x019)
 #define TVisual_ScreenHeight		(TVISTAGS_ + 0x01a)
+#define TVisual_SelectionLength		(TVISTAGS_ + 0x01b)
 
 #define	TVisual_FontName			(TVISTAGS_ + 0x100)
 #define	TVisual_FontPxSize			(TVISTAGS_ + 0x101)
@@ -146,6 +147,7 @@ struct TVRequest
 			TTAGITEM *Tags; } DrawBuffer;
 		struct { TAPTR Window; TINT Rect[4]; } Flush;
 		struct { TAPTR Window; TUINT Type; TAPTR Data; TSIZE Length; } GetSelection;
+		struct { TAPTR Window; TUINT Type; TAPTR Data; TSIZE Length; } SetSelection;
 	} tvr_Op;
 };
 
@@ -181,6 +183,7 @@ struct TVRequest
 #define TVCMD_DRAWBUFFER	0x101d
 #define TVCMD_FLUSH			0x101e
 #define TVCMD_GETSELECTION	0x101f
+#define TVCMD_SETSELECTION	0x1020
 #define TVCMD_EXTENDED		0x2000
 
 /*****************************************************************************/

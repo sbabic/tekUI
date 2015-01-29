@@ -61,7 +61,7 @@ local type = type
 local unpack = unpack or table.unpack
 
 module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 20.6"
+_VERSION = "TextEdit 21.0"
 local TextEdit = _M
 Sizeable:newClass(TextEdit)
 
@@ -108,7 +108,6 @@ function TextEdit.new(class, self)
 	self.BlinkTickInit = self.BlinkTickInit or 30
 	self.Bookmarks = { }
 	self.Changed = false
-	self.Clipboard = self.Clipboard or false
 	self.CursorMode = "active" -- "hidden", "still"
 	self.Cursor = false
 	-- cursor styles: "line", "block", "bar+line", "bar"
@@ -364,20 +363,8 @@ function TextEdit:eraseBlock(mx0, my0, mx1, my1)
 	self:setValue("Changed", true)
 end
 
-function TextEdit:getClipboard()
-	return self.Clipboard or self.Application.Clipboard
-end
-
-function TextEdit:emptyClipboard(c)
-	c = c or self:getClipboard()
-	for i = #c, 1, -1 do
-		c[i] = nil
-	end
-	return c
-end
-
 function TextEdit:toClip(mx0, my0, mx1, my1, do_erase)
-	local clip = self:emptyClipboard()
+	local clip = self.Application:obtainClipboard("empty")
 	mx0, my0, mx1, my1 = self:getMarkTopBottom(mx0, my0, mx1, my1)
 	for y = my0, my1 do
 		local line = self:newString(self:getLineText(y)) -- need a copy!
@@ -387,33 +374,35 @@ function TextEdit:toClip(mx0, my0, mx1, my1, do_erase)
 		if y == my0 then
 			line = self:newSubString(line, mx0)
 		end
---		insert(clip, line)
 		insert(clip, tostring(line))
 	end
 	if do_erase then
 		self:eraseBlock(mx0, my0, mx1, my1)
 	end
+	self.Application:releaseSetClipboard(clip)
 	return clip
 end
 
 function TextEdit:copyMark()
 	local mx0, my0, mx1, my1 = self:getMark()
 	if mx0 then
-		self:toClip(mx0, my0, mx1, my1)
+		return self:toClip(mx0, my0, mx1, my1)
 	end
 end
 
 function TextEdit:cutMark(mode)
 	local mx0, my0, mx1, my1 = self:endMark()
 	if mx0 then
+		local clip
 		if mode == "erase" then
 			self:eraseBlock(mx0, my0, mx1, my1)
 		else
-			self:toClip(mx0, my0, mx1, my1, "erase")
+			clip = self:toClip(mx0, my0, mx1, my1, "erase")
 		end
 		self:setValue("Changed", true)
 		self:setCursor(1, mx0, my0)
 		self.LockCursorX = false -- !
+		return clip
 	end
 end
 
@@ -423,7 +412,7 @@ end
 
 function TextEdit:pasteClip(c)
 	self:insertShiftMark()
-	c = c or self:getClipboard()
+	c = c or self.Application:obtainClipboard()
 	if c and c[1] then
 		local cx, cy = self.CursorX, self.CursorY
 		self:suspendWindowUpdate()
@@ -663,7 +652,7 @@ end
 function TextEdit:changeLine(lnr)
 	local line = self.Data[lnr or self.CursorY]
 	if not line then
-		db.warn("no line %s", lnr)
+		db.info("no line %s", lnr)
 		return
 	end
 	local olen = line[2]
@@ -968,7 +957,7 @@ function TextEdit:damageLine(l)
 		if x0 then
 			self.Parent:damageChild(x0, y0, x1, y1)
 		else
-			db.warn("no text in line %s", l)
+			db.info("no text in line %s", l)
 		end
 	end
 end
@@ -1227,7 +1216,7 @@ end
 function TextEdit:foreachSnippet(lnr, func)
 	local text = self:getLineText(lnr)
 	if not text then
-		db.warn("no text in line %s!", lnr)
+		db.info("no text in line %s!", lnr)
 		return
 	end
 	local idx, vx, gx = 0, 0, 0
@@ -1839,12 +1828,12 @@ function TextEdit.breakText(readfunc, data)
 		end
 		buf = buf .. nbuf
 		while true do
-			local p = buf:find("\n")
+			local p, p1 = buf:find("\r?\n")
 			if not p then
 				break
 			end
 			insert(data, buf:sub(1, p - 1))
-			buf = buf:sub(p + 1)
+			buf = buf:sub(p1 + 1)
 		end
 	end
 	insert(data, buf)
@@ -2337,7 +2326,7 @@ function TextEdit:getSelection(which)
 	which = which or 1 -- 1 = clipboard (default), 2 = selection
 	local s, c = self.Window.Drawable:getAttrs("sc")
 	if (which == 1 and c) or (which == 2 and s) then
-		-- would request clipboard/selection from self
+		db.info("denied - would request clipboard/selection from self")
 		return 
 	end
 	local clip = self.Window.Drawable:getSelection(which)
@@ -2349,7 +2338,7 @@ function TextEdit:getSelection(which)
 		end
 	end
 	if not clip and which ~= 2 then
-		clip = self:getClipboard()
+		clip = self.Application:obtainClipboard()
 	end
 	return clip
 end

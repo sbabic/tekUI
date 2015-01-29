@@ -86,12 +86,14 @@ LOCAL TTAGITEM *fb_hostgetnextfont(WINDISPLAY *mod, struct FontQueryHandle *fqh)
 }
 
 
-LOCAL TINT fb_hosttextsize(WINDISPLAY *mod, TAPTR font, TSTRPTR text,
-	TSIZE len)
+LOCAL TINT fb_hosttextsize(WINDISPLAY *mod, TAPTR font, TSTRPTR text, TSIZE len)
 {
 	SIZE sz;
 	SelectObject(mod->fbd_DeviceHDC, font);
-	GetTextExtentPoint32(mod->fbd_DeviceHDC, text, len, &sz);
+	int clen = utf8getlen((const unsigned char *) text, len);
+	TUINT16 wstr[2048];
+	MultiByteToWideChar(CP_UTF8, 0, (LPCSTR) text, len, (LPWSTR) &wstr, 2048);
+	GetTextExtentPoint32W(mod->fbd_DeviceHDC, wstr, clen, &sz);
 	return sz.cx;
 }
 

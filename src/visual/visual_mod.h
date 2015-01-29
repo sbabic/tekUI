@@ -16,9 +16,9 @@
 
 /*****************************************************************************/
 
-#define VISUAL_VERSION		4
+#define VISUAL_VERSION		5
 #define VISUAL_REVISION		0
-#define VISUAL_NUMVECTORS	42
+#define VISUAL_NUMVECTORS	43
 
 #ifndef LOCAL
 #define LOCAL
@@ -142,5 +142,6 @@ EXPORT void vis_drawbuffer(struct TVisualBase *inst,
 	TINT x, TINT y, TAPTR buf, TINT w, TINT h, TINT totw, TTAGITEM *tags);
 
 EXPORT TAPTR vis_getselection(struct TVisualBase *inst, TTAGITEM *tags);
+EXPORT TINT vis_setselection(struct TVisualBase *inst, TSTRPTR sel, TSIZE len, TTAGITEM *tags);
 
 #endif

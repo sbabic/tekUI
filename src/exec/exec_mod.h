@@ -18,9 +18,9 @@
 
 /*****************************************************************************/
 
-#define EXEC_VERSION	11
+#define EXEC_VERSION	12
 #define EXEC_REVISION	0
-#define EXEC_NUMVECTORS	80
+#define EXEC_NUMVECTORS	81
 
 /*****************************************************************************/
 
@@ -148,6 +148,7 @@ EXPORT TUINT exec_WaitDate(TEXECBASE *tmod, TDATE *date, TUINT sig);
 EXPORT TAPTR exec_ScanModules(struct TExecBase *TExecBase, TTAGITEM *tags);
 EXPORT TAPTR exec_GetInitData(TEXECBASE *exec, struct TTask *task);
 EXPORT struct TTask *exec_GetMsgSender(TEXECBASE *exec, TAPTR msg);
+EXPORT void exec_FreeTask(TEXECBASE *TExecBase, struct TTask *task);
 
 /*****************************************************************************/
 /*

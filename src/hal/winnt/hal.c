@@ -21,7 +21,7 @@
 #define USE_PERFCOUNTER
 
 #if defined(ENABLE_LAZY_SINGLETON)
-/* if we are using globals anyway... */
+#warning using globals and MMTimer (-DENABLE_LAZY_SINGLETON)
 #define USE_MMTIMER
 #endif
 
@@ -382,7 +382,7 @@ hal_timedwaitevent(struct THALBase *hal, struct HALThread *t,
 		if (waitt.tdt_Int64 < 0)
 			break;
 
-		if (waitt.tdt_Int64 > 1000000000000)
+		if (waitt.tdt_Int64 > 1000000000000LL)
 			millis = 1000000000;
 		else
 			millis = waitt.tdt_Int64 / 1000;
@@ -685,8 +685,6 @@ hal_scanmodules(struct THALBase *hal, TSTRPTR path, struct THook *hook)
 **	MMTimer implementation
 */
 
-#warning using globals for MMTimer
-
 static struct HALSpecific *g_hws;
 static struct THALBase *g_hal;
 static struct TList g_ReplyList;
@@ -844,7 +842,7 @@ static void TTASKENTRY hal_devfunc(struct TTask *task)
 	TTIME waittime, curtime;
 	struct TNode *nnode, *node;
 
- 	waittime.tdt_Int64 = 2000000000000000;
+ 	waittime.tdt_Int64 = 2000000000000000LL;
 
 	for (;;)
 	{
@@ -863,7 +861,7 @@ static void TTASKENTRY hal_devfunc(struct TTask *task)
 			TAddTail(&hps->hsp_ReqList, (struct TNode *) msg);
 		}
 
-		waittime.tdt_Int64 = 2000000000000000;
+		waittime.tdt_Int64 = 2000000000000000LL;
 		node = hps->hsp_ReqList.tlh_Head.tln_Succ;
 		for (; (nnode = node->tln_Succ); node = nnode)
 		{

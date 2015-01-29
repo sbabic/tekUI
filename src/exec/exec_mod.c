@@ -231,6 +231,7 @@ exec_vectors[EXEC_NUMVECTORS] =
 	
 	(TMFPTR) exec_GetInitData,
 	(TMFPTR) exec_GetMsgSender,
+	(TMFPTR) exec_FreeTask,
 };
 
 /*****************************************************************************/
@@ -417,7 +418,7 @@ exec_destroyport_internal(struct THook *h, TAPTR obj, TTAG msg)
 		TEXECBASE *exec = (TEXECBASE *) TGetExecBase(port);
 
 		if (!TISLISTEMPTY(&port->tmp_MsgList))
-			TDBPRINTF(TDB_FAIL,("Message queue was not empty\n"));
+			TDBPRINTF(TDB_WARN,("Message queue was not empty\n"));
 
 		exec_freesignal(exec, port->tmp_SigTask, port->tmp_Signal);
 		THALDestroyLock(exec->texb_HALBase, &port->tmp_Lock);

@@ -41,6 +41,7 @@
 --		- Visual:setFont() - Set the visual's current font
 --		- Visual:setInput() - Add input sources
 --		- Visuak:getSelection() - Get visual's selection or clipboard
+--		- Visual:setSelection() - Set visual's selection or clipboard
 --		- Visual:setShift() - Set coordinate displacement
 --		- Visual:setTextureOrigin() - Set texture origin
 --		- Visual.sleep() - Wait for number of milliseconds
@@ -1707,6 +1708,7 @@ LOCAL LUACFUNC TINT
 tek_lib_visual_getattrs(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
+	TTAG values[10];
 	TTAGITEM tags[10];
 	size_t narg = 0, i;
 	const char *opts = lua_tolstring(L, 2, &narg);
@@ -1720,8 +1722,9 @@ tek_lib_visual_getattrs(lua_State *L)
 		narg = 4;
 	}
 	
+	memset(values, 0, sizeof values);
 	for (i = 0; i < narg; ++i)
-		tags[i].tti_Value = (TTAG) &tags[i].tti_Value;
+		tags[i].tti_Value = (TTAG) &values[i];
 	tags[narg].tti_Tag = TTAG_DONE;
 	
 	for (i = 0; i < narg; ++i)
@@ -1771,12 +1774,12 @@ tek_lib_visual_getattrs(lua_State *L)
 			case 'H':
 			case 'x':
 			case 'y':
-				lua_pushinteger(L, *((TINT *) &tags[i].tti_Value));
+				lua_pushinteger(L, *((TINT *) &values[i]));
 				break;
 			case 's':
 			case 'c':
 			case 'M':
-				lua_pushboolean(L, *((TBOOL *) &tags[i].tti_Value));
+				lua_pushboolean(L, *((TBOOL *) &values[i]));
 				break;
 		}
 	}
@@ -2389,19 +2392,42 @@ tek_lib_visual_getselection(lua_State *L)
 {
 	TEKVisual *vis = checkvisptr(L, 1);
 	struct TExecBase *TExecBase = vis->vis_ExecBase;
-	struct TTagItem tags[2];
+	struct TTagItem tags[3];
 	TAPTR data;
+	TSIZE len = 0;
 	tags[0].tti_Tag = TVisual_SelectionType;
 	tags[0].tti_Value = luaL_optinteger(L, 2, 1);
-	tags[1].tti_Tag = TTAG_DONE;
+	tags[1].tti_Tag = TVisual_SelectionLength;
+	tags[1].tti_Value = (TTAG) &len;
+	tags[2].tti_Tag = TTAG_DONE;
 	data = TVisualGetSelection(vis->vis_Visual, tags);
-	if (data)
+	if (data && len > 0)
 	{
-		TSIZE len = TGetSize(data);
 		lua_pushlstring(L, data, len);
 		TFree(data);
 		return 1;		
 	}
+	return 0;
+}
+
+/*-----------------------------------------------------------------------------
+--	Visual:setSelection(string, [type]): Sets the visual's selection
+--	of the specified type:
+--		- {{1}} - the selection (default)
+--		- {{2}} - the clipboard
+-----------------------------------------------------------------------------*/
+
+LOCAL LUACFUNC TINT 
+tek_lib_visual_setselection(lua_State *L)
+{
+	TEKVisual *vis = checkvisptr(L, 1);
+	struct TTagItem tags[2];
+	size_t len;
+	const char *selection = lua_tolstring(L, 2, &len);
+	tags[0].tti_Tag = TVisual_SelectionType;
+	tags[0].tti_Value = luaL_optinteger(L, 3, 1);
+	tags[1].tti_Tag = TTAG_DONE;
+	TVisualSetSelection(vis->vis_Visual, (TSTRPTR) selection, len, tags);
 	return 0;
 }
 

@@ -109,4 +109,7 @@
 #define TVisualGetSelection(visual,tags) \
 	(*(((TMODCALL TAPTR *(**)(TAPTR,TTAGITEM *))(visual))[-42]))(visual,tags)
 
+#define TVisualSetSelection(visual,sel,len,tags) \
+	(*(((TMODCALL TINT(**)(TAPTR,TSTRPTR,TSIZE,TTAGITEM *))(visual))[-43]))(visual,sel,len,tags)
+
 #endif /* _TEK_STDCALL_VISUAL_H */

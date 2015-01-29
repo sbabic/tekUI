@@ -220,4 +220,7 @@
 #define TGetMsgSender(msg) \
 	(*(((TMODCALL struct TTask *(**)(TAPTR,TAPTR))(TExecBase))[-80]))(TExecBase,msg)
 
+#define TFreeTask(msg) \
+	(*(((TMODCALL void(**)(TAPTR,struct TTask *))(TExecBase))[-81]))(TExecBase,task)
+
 #endif /* _TEK_INLINE_EXEC_H */

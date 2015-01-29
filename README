@@ -21,7 +21,7 @@
 
  - 3. [[#buildinstall : Building and installing]]
   - 3.1. [[#requirements : Requirements]]
-  - 3.1.1 [[#luamodules : External Lua modules]]
+   - 3.1.1 [[#luamodules : External Lua modules]]
   - 3.2. [[#buildenv : Adjusting the build environment]]
    - 3.2.1 [[#notelinux : Linux notes]]
    - 3.2.2 [[#notebsd : BSD notes]]
@@ -31,6 +31,7 @@
    - 3.2.6 [[#noterawfb : Raw framebuffer notes]]
    - 3.2.7 [[#notedirectfb : DirectFB notes]]
    - 3.2.8 [[#notefloat : Floating point support]]
+   - 3.2.9 [[#noteluajit : LuaJIT support]]
   - 3.3. [[#building : Building]]
   - 3.4. [[#installation : Installation]]
   - 3.5. [[#envvariables : Environment variables]]
@@ -65,7 +66,7 @@
 TekUI is a small, freestanding and portable graphical user interface
 (GUI) toolkit written in Lua and C. It was initially developed for
 the X Window System and has been ported to Linux framebuffer, raw
-framebuffer, DirectFB, Windows, and other displays since. A 
+framebuffer, DirectFB, Windows, and other displays since. A
 [[VNC server option][#noterawfb]] is available that allows the remote
 control of tekUI applications.
 
@@ -277,6 +278,15 @@ the document generator to process the file system hierarchy.
 
 ==( embedded : 2.9. Fitness for the use in embedded systems )==
 
+TekUI is as embeddable as Lua itself. Global data is basically
+absent; there are a few extras requiring them, {{ENABLE_XSHM}}
+and {{ENABLE_LAZY_SINGLETON}}, that can be disabled or reworked.
+Resting on an OS-like abstraction, it can be taken to environments
+with no operation system at all, if just memory and a minimal
+threading API is present: create, wait, signal, and e.g. atomic
+in-/decrement. A display driver can be written on that premise and
+tekUI's C library alone.
+
 Complete solutions based on tekUI are in the reach of 512KiB ROM or
 flash memory: A typical application and the required modules, if
 compiled to Lua bytecode, can fit into 256KiB. Add to that approx.
@@ -331,8 +341,8 @@ Development tools and libraries alongside with their tested versions
  * libpng (for PNG support, disabled by default)
  * MinGW (for building on the Windows platform)
 
-Lua 5.1, 5.2, 5.3 and LuaJIT 2.0 are supported out of the box, if
-Lua 5.2 and 5.3 are compiled with {{LUA_COMPAT_MODULE}}.
+Lua 5.1, 5.2, 5.3 are supported if Lua 5.2 and 5.3 are compiled with
+{{LUA_COMPAT_MODULE}}. Regarding LuaJIT 2.0 see annotations below.
 
 ===( luamodules : 3.1.1. External Lua modules )===
 
@@ -473,6 +483,17 @@ noncritical exceptions:
  * The desktop style needs floating point support in the Lua VM to
  import GTK+ colors (falls back to the default colorscheme if
  unavailable at runtime).
+
+===( noteluajit : 3.2.9 LuaJIT support )===
+
+TekUI works with LuaJIT 2.0 - as long as tekUI's
+[[manual.html#tek.lib.exec : multitasking interface]] is not used,
+and possibly even then, provided that LuaJIT implements or can be
+made to implement {{lua_newstate()}} without reporting an error.
+On x86_64 this has been found to not be the case. Currently the
+impact of not using tekUI's multitasking API is small, and tekUI
+should correctly handle the case by reporting that it could not
+create a child task on LuaJIT.
 
 ==( building : 3.3. Building )==
 
