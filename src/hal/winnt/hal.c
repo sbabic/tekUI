@@ -25,6 +25,20 @@
 #define USE_MMTIMER
 #endif
 
+/* 
+** Some versions of MinGW appear to have an incomplete Interlocked API
+** so just use GCC-style intrinsics directly which are also supported
+** by Clang.
+**
+** Note that __MINGW32__ is defined for both 32 and 64 Bit Windows.
+** We do not change existing macros in case the runtime uses them to
+** implement the MS API.
+*/
+#if defined HAL_USE_ATOMICS && defined __MINGW32__ && !defined InterlockedAnd
+#define InterlockedAnd __sync_fetch_and_and
+#define InterlockedOr __sync_fetch_and_or
+#endif
+
 static void hal_getsystime(struct THALBase *hal, TTIME *time);
 
 /*****************************************************************************/
