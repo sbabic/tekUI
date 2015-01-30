@@ -31,7 +31,7 @@ CC = $(CROSS_COMPILE)gcc -fpic # -DTSYS_POSIX
 # For Windows using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# CC = $(CROSS_COMPILE)gcc -DWIN32
+# CC = $(CROSS_COMPILE)gcc -DWIN32 -DWINVER=0x0400 -D_WIN32_WINNT=0x0400
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Cross-build using MinGW:
