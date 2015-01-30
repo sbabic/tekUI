@@ -2,13 +2,13 @@
 # Platform to build against [Choices: posix, winnt]:
 #------------------------------------------------------------------------------
 
-PLATFORM ?= posix
+PLATFORM ?= winnt
 
 #------------------------------------------------------------------------------
 # Dynamic link library extension [Choices: .so, .dll, .sl, ...]:
 #------------------------------------------------------------------------------
 
-DLLEXT = .so
+DLLEXT = .dll
 
 #------------------------------------------------------------------------------
 # Default display driver [Choices: x11, rawfb, directfb, windows]:
@@ -16,7 +16,7 @@ DLLEXT = .so
 # and tek/lib/Makefile if you want to stack it on top of another driver.
 #------------------------------------------------------------------------------
 
-DISPLAY_DRIVER ?= x11
+DISPLAY_DRIVER ?= windows
 
 #------------------------------------------------------------------------------
 # Compiler configuration:
@@ -27,13 +27,13 @@ DISPLAY_DRIVER ?= x11
 # Uncomment TSYS_POSIX if your platform is not listed in include/tek/config.h
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-CC = $(CROSS_COMPILE)gcc -fpic # -DTSYS_POSIX
+# CC = $(CROSS_COMPILE)gcc -fpic # -DTSYS_POSIX
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # For Windows using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# CC = $(CROSS_COMPILE)gcc -DWIN32 -DWINVER=0x0400 -D_WIN32_WINNT=0x0400
+CC = $(CROSS_COMPILE)gcc -DWIN32 -DWINVER=0x0400 -D_WIN32_WINNT=0x0400
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Cross-build prefix:
@@ -41,7 +41,7 @@ CC = $(CROSS_COMPILE)gcc -fpic # -DTSYS_POSIX
 
 # CROSS_COMPILE =
 # Classic MinGW32:
-# CROSS_COMPILE = i586-mingw32-
+CROSS_COMPILE = i586-mingw32-
 # MinGW-W64 targeting 32-Bit Windows:
 # CROSS_COMPILE = i686-w64-mingw32-
 
@@ -56,8 +56,8 @@ CC = $(CROSS_COMPILE)gcc -fpic # -DTSYS_POSIX
 # POSIX:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-PLATFORM_LIBS = -pthread
-CC_LD_RT = -Wl,-rpath,
+# PLATFORM_LIBS = -pthread
+# CC_LD_RT = -Wl,-rpath,
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # HPPA, IA64 HPUX: Note that DLLEXT (see above) must be .sl
@@ -91,8 +91,8 @@ CC_LD_RT = -Wl,-rpath,
 # Windows:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# PLATFORM_LIBS = -lmsvcrt -lkernel32 -lwinmm -luser32 -lshell32 -ladvapi32
-# LUA_LIBS = -L $(BASEDIR) -llua51
+PLATFORM_LIBS = -lmsvcrt -lkernel32 -lwinmm -luser32 -lshell32 -ladvapi32
+LUA_LIBS = -L $(BASEDIR) -llua51
 
 # PLATFORM_LIBS = -lwinmm
 # LUA_LIBS = -llua5.2
@@ -135,7 +135,7 @@ LUA_DIR = $(PREFIX)
 LUA_INCDIR = $(LUA_DIR)/include
 LUA_DEFS = -I$(LUA_INCDIR) -I/usr/include/lua$(LUAVER)
 # some known paths in distributions and toolchains:
-LUA_DEFS += -I/usr/local/include/lua51 -I/usr/include/lua5.1
+# LUA_DEFS += -I/usr/local/include/lua51 -I/usr/include/lua5.1
 
 LUA_LIB = $(PREFIX)/lib/lua/$(LUAVER)
 LUA_SHARE = $(PREFIX)/share/lua/$(LUAVER)

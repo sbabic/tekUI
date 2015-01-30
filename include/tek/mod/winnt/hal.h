@@ -14,7 +14,7 @@
 #include <winreg.h>
 #include <process.h>
 
-/*#define HAL_USE_ATOMICS*/
+#define HAL_USE_ATOMICS
 
 /*****************************************************************************/
 

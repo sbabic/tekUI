@@ -1,11 +1,14 @@
 
 == tekUI Changelog ==
 
+ * Windows HAL: Atomics enabled
+ * Windows display: Added clipboard support, improved event handling, now
+ using only one thread per device instance, synchronous waiting, Win64
+ support, added Unicode text rendering, added better support for keyboard
+ qualifiers, windows opened at fixed positions had wrong size, corrected
  * Visual, EditWindow, Input: added setSelection, TextEdit: uses application
  clipboard, removed class clipboard, quirky attribute retrieval corrected
  * Application: added obtainClipboard, releaseClipboard
- * Windows display: Added Unicode text rendering, added better support for
- keyboard qualifiers, windows opened at fixed positions had wrong size
  * Changed notes about LuaJIT and some additions to documentation
  * LuaExec: Changes merged in, in join() abort signals could be forwarded to
  already dead task, corrected by freeing task after return from exec, in

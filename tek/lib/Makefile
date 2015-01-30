@@ -2,7 +2,8 @@
 BASEDIR ?= ../..
 include $(BASEDIR)/config
 
-EXTRADEFS += $(LUA_DEFS) $(TEKUI_DEFS) -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
+EXTRADEFS += $(LUA_DEFS) $(TEKUI_DEFS) $(TEKLIB_DEFS)
+EXTRADEFS += -DDISPLAY_DRIVER=\"$(DISPLAY_DRIVER)\"
 
 ###############################################################################
 

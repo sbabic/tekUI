@@ -98,13 +98,12 @@ are available under a commercial license – see below.
 ==( status : 1.2. Status, requirements )==
 
 TekUI is slowly approaching feature completeness ("beta" stadium). It
-is available for Unix-like operating systems such as Linux, BSD,
-Solaris and HP-UX, and it may work on other flavours of Unix with few
-modifications. A native Windows display driver and build setup is
-included, but not equally well supported at this time.
+is available for Windows and Unix-like operating systems such as Linux,
+BSD, Solaris and HP-UX, and it may work on other flavours of Unix with
+few modifications.
 
-Display drivers are included for X11, Linux framebuffer, Windows,
-DirectFB, and raw memory. See also [[TODO][todo.html]] for a list of
+Display drivers are included for X11, Windows, Linux framebuffer,
+raw memory, and DirectFB. See also [[TODO][todo.html]] for a list of
 known bugs and missing features, and [[#requirements]] for a list of
 the required libraries.
 
@@ -391,16 +390,22 @@ compile and run tekUI on Ubuntu Linux: {{lua5.1}},
 On FreeBSD and NetBSD you need a Lua binary which is linked with the
 {{-pthread}} option, as tekUI is using multithreaded code in shared
 libraries, which are dynamically loaded by the interpreter. For
-linking on NetBSD uncomment the respective section in the config file.
+linking on NetBSD uncomment the respective section in the {{config}}
+file. On recent versions of FreeBSD, you will possibly want to change
+the compiler to {{clang}}.
 
 ===( notewindows : 3.2.3. Windows notes )===
 
-Not much time has been spent on the Windows version yet. As a result,
-this display driver is still incomplete and in an experimental state.
-For example, it is not possible to select an entry in a popup without
-releasing the mouse button first. For reasons not yet investigated,
-this display driver feels disproportionately sluggish. For adjusting
-the build environment, see the {{config}} file.
+The native Windows driver was very incomplete and shabbily supported
+for a long time, but recently we received a number of high-class
+contributions and spent a lot of additional effort on this driver.
+Functionally it should be mostly on par and it's running more crisply
+than X11 now.
+
+For adjusting the build environment, see the {{config}} file. We can
+recommend using the MSYS shell and MinGW under Windows, or to
+cross-build for Windows using GCC or clang. An example configuration
+is provided in {{etc/}}.
 
 ===( notehpux : 3.2.4. HP-UX notes )===
 

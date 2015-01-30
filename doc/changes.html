@@ -13,15 +13,20 @@
 		<blockquote>
 			<ul>
 				<li>
+					Windows HAL: Atomics enabled
+				</li>
+				<li>
+					Windows display: Added clipboard support, improved event handling, now
+					using only one thread per device instance, synchronous waiting, Win64
+					support, added Unicode text rendering, added better support for keyboard
+					qualifiers, windows opened at fixed positions had wrong size, corrected
+				</li>
+				<li>
 					Visual, EditWindow, Input: added setSelection, TextEdit: uses application
 					clipboard, removed class clipboard, quirky attribute retrieval corrected
 				</li>
 				<li>
 					Application: added obtainClipboard, releaseClipboard
-				</li>
-				<li>
-					Windows display: Added Unicode text rendering, added better support for
-					keyboard qualifiers, windows opened at fixed positions had wrong size
 				</li>
 				<li>
 					Changed notes about LuaJIT and some additions to documentation
