@@ -335,6 +335,8 @@ hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask)
 #else
 	TUINT cmask = ~sigmask | newsig;
 	TUINT before_consume = InterlockedAnd(&wth->hth_SigState, cmask);
+	if (! newsig)
+		return before_consume;
 	TUINT before_publish = InterlockedOr(&wth->hth_SigState, newsig);
 	if (newsig & ~before_publish  & sigmask)
 		SetEvent(wth->hth_SigEvent);
