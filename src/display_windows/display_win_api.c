@@ -15,12 +15,11 @@ fb_closeall(WINDISPLAY *mod, WINWINDOW *win, TBOOL unref_font);
 
 /*****************************************************************************/
 
-static TBOOL fb_initwindow(TAPTR task)
+LOCAL void
+fb_openwindow(WINDISPLAY *mod, struct TVRequest *req)
 {
-	struct TExecBase *TExecBase = TGetExecBase(task);
-	struct TVRequest *req = TGetTaskData(task);
+	struct TExecBase *TExecBase = TGetExecBase(mod);
 	TTAGITEM *tags = req->tvr_Op.OpenWindow.Tags;
-	WINDISPLAY *mod = (WINDISPLAY *) req->tvr_Req.io_Device;
 	WINWINDOW *win;
 
 	req->tvr_Op.OpenWindow.Window = TNULL;
@@ -119,7 +118,7 @@ static TBOOL fb_initwindow(TAPTR task)
 		win->fbv_Width = wrect.right - wrect.left - win->fbv_BorderWidth;
 		win->fbv_Height = wrect.bottom - wrect.top - win->fbv_BorderHeight;
 
-		SetWindowLong(win->fbv_HWnd, GWL_USERDATA, (LONG) win);
+		SetWindowLongPtr(win->fbv_HWnd, GWLP_USERDATA, (LONG_PTR) win);
 
 		win->fbv_HDC = GetDC(win->fbv_HWnd);
 		win->fbv_Display = mod;
@@ -140,13 +139,13 @@ static TBOOL fb_initwindow(TAPTR task)
 		TInitList(&win->fbv_IMsgQueue);
 
 		req->tvr_Op.OpenWindow.Window = win;
-		win->fbv_Task = task;
-
-		TLock(mod->fbd_Lock);
 
 		/* init default font */
 		win->fbv_CurrentFont = mod->fbd_FontManager.deffont;
 		mod->fbd_FontManager.defref++;
+
+		if (win->fbv_InputMask & TITYPE_INTERVAL)
+			++mod->fbd_NumInterval;
 
 		/* register default font */
 		/*TDBPRINTF(TDB_TRACE,("Add window: %p\n", win->window));*/
@@ -154,20 +153,16 @@ static TBOOL fb_initwindow(TAPTR task)
 		/* add window on top of window stack: */
 		TAddHead(&mod->fbd_VisualList, &win->fbv_Node);
 
-		TUnlock(mod->fbd_Lock);
-
 		SetBkMode(win->fbv_HDC, TRANSPARENT);
 		
 		ShowWindow(win->fbv_HWnd, SW_SHOWNORMAL);
 		UpdateWindow(win->fbv_HWnd);
 
-		TSetTaskData(task, win);
-
 		if ((win->fbv_InputMask & TITYPE_FOCUS) &&
 			(fb_getimsg(mod, win, &imsg, TITYPE_FOCUS)))
 		{
 			imsg->timsg_Code = 1;
-			fb_sendimsg(mod, win, imsg);
+			TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 		}
 		if ((win->fbv_InputMask & TITYPE_REFRESH) &&
 			(fb_getimsg(mod, win, &imsg, TITYPE_REFRESH)))
@@ -176,78 +171,14 @@ static TBOOL fb_initwindow(TAPTR task)
 			imsg->timsg_Y = 0;
 			imsg->timsg_Width = win->fbv_Width;
 			imsg->timsg_Height = win->fbv_Height;
-			fb_sendimsg(mod, win, imsg);
+			TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 		}
 		
-		return TTRUE;
+		return;
 	}
 
 	TDBPRINTF(TDB_ERROR,("Window open failed\n"));
 	fb_closeall(mod, win, TFALSE);
-	return TFALSE;
-}
-
-static void fb_dowindow(TAPTR task)
-{
-	struct TExecBase *TExecBase = TGetExecBase(task);
-	WINWINDOW *win = TGetTaskData(task);
-	WINDISPLAY *mod = win->fbv_Display;
-	MSG msg;
-	TUINT sig;
-
-	TDBPRINTF(TDB_INFO,("DoWindow...\n"));
-
-	do
-	{
-		WaitMessage();
-
-		while (PeekMessage(&msg, win->fbv_HWnd, 0,0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		/*PostMessage(win->fbv_HWnd, WM_USER, 0, 0);*/
-		sig = TSetSignal(0, TTASK_SIG_ABORT);
-
-	} while (!(sig & TTASK_SIG_ABORT));
-
-	TDBPRINTF(TDB_INFO,("Window Done\n"));
-
-	TLock(mod->fbd_Lock);
-	TRemove(&win->fbv_Node);
-	TUnlock(mod->fbd_Lock);
-
-	fb_closeall(mod, win, TTRUE);
-}
-
-/*****************************************************************************/
-
-static THOOKENTRY TTAG
-fb_window_dispatch(struct THook *hook, TAPTR task, TTAG msg)
-{
-	switch (msg)
-	{
-		case TMSG_INITTASK:
-			return fb_initwindow(task);
-		case TMSG_RUNTASK:
-			fb_dowindow(task);
-			break;
-	}
-	return 0;
-}
-
-LOCAL void
-fb_openwindow(WINDISPLAY *mod, struct TVRequest *req)
-{
-	struct TExecBase *TExecBase = TGetExecBase(mod);
-	TTAGITEM tags[2];
-	struct THook taskhook;
-	tags[0].tti_Tag = TTask_UserData;
-	tags[0].tti_Value = (TTAG) req;
-	tags[1].tti_Tag = TTAG_DONE;
-	TInitHook(&taskhook, fb_window_dispatch, TNULL);
-	TCreateTask(&taskhook, tags);
 }
 
 /*****************************************************************************/
@@ -261,6 +192,13 @@ fb_closeall(WINDISPLAY *mod, WINWINDOW *win, TBOOL unref_font)
 	if (win->fbv_HDC)
 		ReleaseDC(win->fbv_HWnd, win->fbv_HDC);
 
+	if (mod->fbd_WindowFocussedApp == win->fbv_HWnd)
+		mod->fbd_WindowFocussedApp = NULL;
+	if (mod->fbd_WindowUnderCursor == win->fbv_HWnd)
+		mod->fbd_WindowUnderCursor = NULL;
+	if (mod->fbd_WindowActivePopup == win->fbv_HWnd)
+		mod->fbd_WindowActivePopup = NULL;
+
 	if (win->fbv_HWnd)
 		DestroyWindow(win->fbv_HWnd);
 
@@ -268,11 +206,9 @@ fb_closeall(WINDISPLAY *mod, WINWINDOW *win, TBOOL unref_font)
 		TFree(pen);
 
 	if (unref_font)
-	{
-		TLock(mod->fbd_Lock);
 		mod->fbd_FontManager.defref--;
-		TUnlock(mod->fbd_Lock);
-	}
+	if (win->fbv_InputMask & TITYPE_INTERVAL)
+		--mod->fbd_NumInterval;
 
 	TFree(win);
 }
@@ -282,13 +218,11 @@ fb_closeall(WINDISPLAY *mod, WINWINDOW *win, TBOOL unref_font)
 LOCAL void
 fb_closewindow(WINDISPLAY *mod, struct TVRequest *req)
 {
-	struct TExecBase *TExecBase = TGetExecBase(mod);
 	WINWINDOW *win = req->tvr_Op.CloseWindow.Window;
 	if (win == TNULL)
 		return;
-	TSignal(win->fbv_Task, TTASK_SIG_ABORT);
-	PostMessage(win->fbv_HWnd, WM_USER, 0, 0);
-	TDestroy(win->fbv_Task);
+	TRemove(&win->fbv_Node);
+	fb_closeall(mod, win, TTRUE);
 }
 
 /*****************************************************************************/
@@ -297,8 +231,16 @@ LOCAL void
 fb_setinput(WINDISPLAY *mod, struct TVRequest *req)
 {
 	WINWINDOW *v = req->tvr_Op.SetInput.Window;
-	req->tvr_Op.SetInput.OldMask = v->fbv_InputMask;
-	v->fbv_InputMask = req->tvr_Op.SetInput.Mask;
+	TUINT oldmask = v->fbv_InputMask;
+	TUINT newmask = req->tvr_Op.SetInput.Mask;
+
+	if (oldmask & TITYPE_INTERVAL)
+		--mod->fbd_NumInterval;
+	if (newmask & TITYPE_INTERVAL)
+		++mod->fbd_NumInterval;
+
+	req->tvr_Op.SetInput.OldMask = oldmask;
+	v->fbv_InputMask = newmask;
 	TDBPRINTF(TDB_TRACE,("Setinputmask: %08x\n", v->fbv_InputMask));
 	/* spool out possible remaining messages: */
 	fb_sendimessages(mod, TFALSE);
@@ -358,7 +300,6 @@ fb_frect(WINDISPLAY *mod, struct TVRequest *req)
 		r.right = r.left + req->tvr_Op.FRect.Rect[2];
 		r.bottom = r.top + req->tvr_Op.FRect.Rect[3];
 		FillRect(win->fbv_HDC, &r, ((struct FBPen *) pen)->brush);
-		win->fbv_Dirty = TTRUE;
 	}
 }
 
@@ -374,7 +315,6 @@ fb_line(WINDISPLAY *mod, struct TVRequest *req)
 	SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->pen);
 	LineTo(win->fbv_HDC, req->tvr_Op.Line.Rect[2],
 		req->tvr_Op.Line.Rect[3]);
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -390,7 +330,6 @@ fb_rect(WINDISPLAY *mod, struct TVRequest *req)
 		SelectObject(win->fbv_HDC, ((struct FBPen *) pen)->pen);
 		SelectObject(win->fbv_HDC, GetStockObject(NULL_BRUSH));
 		Rectangle(win->fbv_HDC, r[0], r[1], r[0] + r[2], r[1] + r[3]);
-		win->fbv_Dirty = TTRUE;
 	}
 }
 
@@ -404,7 +343,6 @@ fb_plot(WINDISPLAY *mod, struct TVRequest *req)
 	TUINT y = req->tvr_Op.Plot.Rect[1];
 	struct FBPen *fgpen = (struct FBPen *) req->tvr_Op.Plot.Pen;
 	SetPixel(win->fbv_HDC, x, y, fgpen->col);
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -460,7 +398,6 @@ fb_drawstrip(WINDISPLAY *mod, struct TVRequest *req)
 			Polygon(win->fbv_HDC, points, 3);
 		}
 	}
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -514,7 +451,6 @@ fb_drawfan(WINDISPLAY *mod, struct TVRequest *req)
 			Polygon(win->fbv_HDC, points, 3);
 		}
 	}
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -556,8 +492,6 @@ fb_copyarea(WINDISPLAY *mod, struct TVRequest *req)
 	}
 	else
 		ScrollDC(win->fbv_HDC, dx, dy, &r, &r, NULL, NULL);
-
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -606,7 +540,6 @@ fb_clear(WINDISPLAY *mod, struct TVRequest *req)
 		r.right = win->fbv_Width;
 		r.bottom = win->fbv_Height;
 		FillRect(win->fbv_HDC, &r, ((struct FBPen *) pen)->brush);
-		win->fbv_Dirty = TTRUE;
 	}
 }
 
@@ -631,7 +564,103 @@ fb_drawbuffer(WINDISPLAY *mod, struct TVRequest *req)
 		buf,
 		(const void *) bmi,
 		DIB_RGB_COLORS);
-	win->fbv_Dirty = TTRUE;
+}
+
+/*****************************************************************************/
+
+LOCAL void
+fb_getselection(WINDISPLAY *mod, struct TVRequest *req)
+{
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	LPSTR utf8 = NULL;
+	int utf8Bytes = 0;
+	HANDLE clipData;
+	LPCWSTR utf16; 
+
+	req->tvr_Op.GetSelection.Data = TNULL;
+	req->tvr_Op.GetSelection.Length = 0;
+
+	if (!IsClipboardFormatAvailable(CF_UNICODETEXT))
+	{
+		TDBPRINTF(TDB_WARN,(
+				  "no 'CF_UNICODETEXT' Windows clipboard data available\n"));
+		return;
+	}
+	if (!OpenClipboard(mod->fbd_DeviceHWnd))
+	{
+		TDBPRINTF(TDB_WARN, ("cannot open Windows clipboard\n"));
+		return;
+	}
+	clipData = GetClipboardData(CF_UNICODETEXT);
+	if (clipData != NULL)
+	{
+		utf16 = GlobalLock(clipData);
+		utf8Bytes = WideCharToMultiByte(CP_UTF8, 0, utf16, -1, 
+										NULL, 0, NULL, 0);
+		if (utf8Bytes != 0)
+		{
+			utf8 = (LPSTR) TAlloc(TNULL, utf8Bytes);
+			utf8Bytes = WideCharToMultiByte(CP_UTF8, 0, utf16, -1, 
+											utf8, utf8Bytes, NULL, 0);
+		}
+		GlobalUnlock(clipData);
+	}
+	else
+		TDBPRINTF(TDB_WARN, ("no Windows clipboard data\n"));
+	CloseClipboard();
+
+	if (!utf8Bytes)
+	{
+		TFree(utf8);
+		TDBPRINTF(TDB_WARN, (
+				  "failed encoding UTF-8 from Windows clipboard\n"));
+		return;
+	}
+	--utf8Bytes;
+	TDBPRINTF(TDB_TRACE,("get selection: N = %d S = '%s'\n", utf8Bytes, utf8));
+	req->tvr_Op.GetSelection.Data = utf8;
+	req->tvr_Op.GetSelection.Length = utf8Bytes;
+}
+
+LOCAL void
+fb_setselection(WINDISPLAY *mod, struct TVRequest *req)
+{
+	TBOOL ok = TFALSE;
+	LPSTR utf8 = (LPSTR) req->tvr_Op.SetSelection.Data;
+	int utf8Bytes = (int) req->tvr_Op.SetSelection.Length;
+	HANDLE clipData = NULL;
+	LPWSTR utf16 = NULL; 
+	int utf16Units = 0;
+
+	if (req->tvr_Op.SetSelection.Type != 2 || utf8Bytes <= 0) return;
+
+	TDBPRINTF(TDB_TRACE,("set selection: N = %d S = '%s'\n", utf8Bytes, utf8));
+
+	utf16Units = MultiByteToWideChar(CP_UTF8, 0, utf8, utf8Bytes, NULL, 0);
+	if (utf16Units != 0)
+	{
+		clipData = GlobalAlloc(GMEM_MOVEABLE, (utf16Units + 1) * sizeof(WCHAR));
+
+		utf16 = (LPWSTR) GlobalLock(clipData);
+		utf16Units = MultiByteToWideChar(CP_UTF8, 0, utf8, utf8Bytes,
+									 utf16, utf16Units);
+		utf16[utf16Units] = L'\0';
+		GlobalUnlock(clipData);
+	}
+	if (! utf16Units)
+		TDBPRINTF(TDB_WARN, (
+				  "failed decoding UTF-8 for Windows clipboard\n"));
+	else if (OpenClipboard(mod->fbd_DeviceHWnd))
+	{
+		ok = SetClipboardData(CF_UNICODETEXT, clipData) != NULL;
+		CloseClipboard();
+
+		if (! ok) TDBPRINTF(TDB_WARN, ("failed setting Windows clipboard\n"));
+	}
+	else TDBPRINTF(TDB_WARN, ("cannot open Windows clipboard\n"));
+
+	if (! ok)
+		GlobalFree(clipData);
 }
 
 /*****************************************************************************/
@@ -689,6 +718,10 @@ getattrfunc(struct THook *hook, TAPTR obj, TTAG msg)
 			break;
 		case TVisual_HaveWindowManager:
 			*((TBOOL *) item->tti_Value) = TTRUE;
+			break;
+		case TVisual_HaveClipboard:
+		case TVisual_HaveSelection:
+			*((TBOOL *) item->tti_Value) = TFALSE;
 			break;
 	}
 	data->num++;
@@ -847,10 +880,11 @@ drawtagfunc(struct THook *hook, TAPTR obj, TTAG msg)
 					break;
 
 				case TVCMD_RECT:
-				{
-					/* TODO */
+					if (data->fgpen)
+						Rectangle(data->v->fbv_HDC, data->x0, data->y0, 
+								  data->x0 + data->x1, data->y0 + data->y1);
 					break;
-				}
+
 				case TVCMD_LINE:
 					if (data->fgpen)
 					{
@@ -877,7 +911,6 @@ fb_drawtags(WINDISPLAY *mod, struct TVRequest *req)
 	data.bgpen = TNULL;
 	TInitHook(&hook, drawtagfunc, &data);
 	TForEachTag(req->tvr_Op.DrawTags.Tags, &hook);
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/
@@ -896,7 +929,6 @@ fb_drawtext(WINDISPLAY *mod, struct TVRequest *req)
 	MultiByteToWideChar(CP_UTF8, 0, text, len, (LPWSTR) &wstr, 2048);
 	SetTextColor(win->fbv_HDC, fgpen->col);
 	TextOutW(win->fbv_HDC, x, y, wstr, clen);
-	win->fbv_Dirty = TTRUE;
 }
 
 /*****************************************************************************/

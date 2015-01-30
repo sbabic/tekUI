@@ -5,6 +5,10 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
+#include <tek/mod/hal.h>
+#include <tek/mod/winnt/hal.h>
+#include "../hal/hal_mod.h"
+
 #include "display_win_mod.h"
 
 static void fb_runinstance(TAPTR task);
@@ -17,9 +21,11 @@ static TMODAPI TINT fb_abortio(WINDISPLAY *mod, struct TVRequest *req);
 static TMODAPI struct TVRequest *fb_allocreq(WINDISPLAY *mod);
 static TMODAPI void fb_freereq(WINDISPLAY *mod, struct TVRequest *req);
 static void fb_docmd(WINDISPLAY *mod, struct TVRequest *req);
+static void fb_notifywindows(WINDISPLAY *mod);
+static VOID CALLBACK
+dev_timerproc(HWND hDevWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 static LRESULT CALLBACK
 win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-static void fb_notifywindows(WINDISPLAY *mod);
 
 static const TMFPTR
 fb_vectors[FB_DISPLAY_NUMVECTORS] =
@@ -184,7 +190,6 @@ LOCAL TBOOL
 fb_init(WINDISPLAY *mod, TTAGITEM *tags)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
-// 	mod->fbd_OpenTags = tags;
 
 	for (;;)
 	{
@@ -240,7 +245,7 @@ static TBOOL fb_initinstance(TAPTR task)
 			break;
 
 		wclass.cbSize = sizeof(wclass);
-		wclass.style = 0;
+		wclass.style = CS_GLOBALCLASS;
 		wclass.lpfnWndProc = win_wndproc;
 		wclass.cbClsExtra = 0;
 		wclass.cbWndExtra = 0;
@@ -256,7 +261,7 @@ static TBOOL fb_initinstance(TAPTR task)
 			break;
 
 		pclass.cbSize = sizeof(pclass);
-		pclass.style = CS_NOCLOSE;
+		pclass.style = CS_GLOBALCLASS | CS_NOCLOSE;
 		pclass.lpfnWndProc = win_wndproc;
 		pclass.cbClsExtra = 0;
 		pclass.cbWndExtra = 0;
@@ -271,12 +276,18 @@ static TBOOL fb_initinstance(TAPTR task)
 		if (mod->fbd_ClassAtomPopup == 0)
 			break;
 
+		mod->fbd_WindowFocussedApp = NULL;
+		mod->fbd_WindowUnderCursor = NULL;
+		mod->fbd_WindowActivePopup = NULL;
+		mod->fbd_NumInterval = 0;
+
 		/* Create invisible window for this device: */
 		mod->fbd_DeviceHWnd = CreateWindowEx(0, FB_DISPLAY_CLASSNAME, NULL,
 			0, 0, 0, 0, 0, (HWND) NULL, (HMENU) NULL, mod->fbd_HInst,
 			(LPVOID) NULL);
 		if (mod->fbd_DeviceHWnd == NULL)
 			break;
+
 		mod->fbd_DeviceHDC = GetDC(mod->fbd_DeviceHWnd);
 
 		/* list of free input messages: */
@@ -355,38 +366,42 @@ static void fb_runinstance(TAPTR task)
 {
 	struct TExecBase *TExecBase = TGetExecBase(task);
 	WINDISPLAY *mod = TGetTaskData(task);
+
+	struct THALBase *hal = TGetHALBase();
+	struct HALSpecific *hws = hal->hmb_Specific;
+	struct HALThread *wth = TlsGetValue(hws->hsp_TLSIndex);
+
 	struct TVRequest *req;
 	TUINT sig;
+
+	TDBPRINTF(TDB_INFO,("Device instance running\n"));
 
 	/* interval time: 1/50s: */
 	TTIME intt = { 20000 };
 	/* next absolute time to send interval message: */
 	TTIME nextt;
 	TTIME waitt, nowt;
-
 	TGetSystemTime(&nextt);
 	TAddTime(&nextt, &intt);
-
-	TDBPRINTF(TDB_INFO,("Device instance running\n"));
 
 	do
 	{
 		TBOOL do_interval = TFALSE;
+		MSG msg;
 
+		/* process output messages: */
 		while ((req = TGetMsg(mod->fbd_CmdPort)))
 		{
 			fb_docmd(mod, req);
 			TReplyMsg(req);
 		}
 
-		fb_notifywindows(mod);
-
-		/* calculate new delta to wait: */
-		TGetSystemTime(&nowt);
-		waitt = nextt;
-		TSubTime(&waitt, &nowt);
-
-		TWaitTime(&waitt, mod->fbd_CmdPortSignal);
+		/* process input messages: */
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 
 		/* check if time interval has expired: */
 		TGetSystemTime(&nowt);
@@ -403,8 +418,27 @@ static void fb_runinstance(TAPTR task)
 			}
 		}
 
+		/* calculate new delta to wait: */
+		waitt = nextt;
+		TSubTime(&waitt, &nowt);
+
 		/* send out input messages: */
 		fb_sendimessages(mod, do_interval);
+
+		if (mod->fbd_NumInterval > 0)
+		{
+			/* unless input available sleep until output or timeout: */
+			if (!PeekMessage(& msg, NULL, 0, 0, PM_NOREMOVE))
+				TWaitTime(&waitt, mod->fbd_CmdPortSignal);
+		}
+		else
+		{
+			/* if no output is available sleep until messages arrive: */
+			sig = TSetSignal(0, mod->fbd_CmdPortSignal);
+			if (!(sig & (mod->fbd_CmdPortSignal | TTASK_SIG_ABORT)))
+				MsgWaitForMultipleObjects(1, & wth->hth_SigEvent, FALSE,
+			                          	  INFINITE, QS_ALLEVENTS);
+		}
 
 		/* get signal state: */
 		sig = TSetSignal(0, TTASK_SIG_ABORT);
@@ -503,11 +537,14 @@ fb_docmd(WINDISPLAY *mod, struct TVRequest *req)
 		case TVCMD_DRAWBUFFER:
 			fb_drawbuffer(mod, req);
 			break;
+		case TVCMD_FLUSH:
+			GdiFlush();
+			break;
 		case TVCMD_GETSELECTION:
-			TDBPRINTF(20,("requesting selection\n"));
+			fb_getselection(mod, req);
 			break;
 		case TVCMD_SETSELECTION:
-			TDBPRINTF(20,("setting selection\n"));
+			fb_setselection(mod, req);
 			break;
 		default:
 			TDBPRINTF(TDB_INFO,("Unknown command code: %08x\n",
@@ -524,7 +561,6 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 	TIMSG *msg;
 	TBOOL res = TFALSE;
 
-	TLock(mod->fbd_Lock);
 	msg = (TIMSG *) TRemHead(&mod->fbd_IMsgPool);
 	if (msg == TNULL)
 		msg = TAllocMsg0(sizeof(TIMSG));
@@ -542,24 +578,24 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 	}
 	else
 		*msgptr = TNULL;
-	TUnlock(mod->fbd_Lock);
 	return res;
 }
 
-static void fb_notifywindows(WINDISPLAY *mod)
+LOCAL WINWINDOW*
+fb_getcrossimsg(WINDISPLAY *mod, HWND hwnd, TIMSG **msgptr, TUINT type)
 {
-	struct TNode *next, *node = mod->fbd_VisualList.tlh_Head.tln_Succ;
-	for (; (next = node->tln_Succ); node = next)
-	{
-		WINWINDOW *v = (WINWINDOW *) node;
-		if (v->fbv_Dirty)
-		{
-			/* force window processing: */
-			/*GdiFlush();*/
-			v->fbv_Dirty = TFALSE;
-			PostMessage(v->fbv_HWnd, WM_USER, 0, 0);
-		}
-	}
+	WINWINDOW *win;
+
+	if (!hwnd) 
+		return NULL;
+
+	win = (WINWINDOW *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+	if (!win || !(win->fbv_InputMask & type)
+			|| !fb_getimsg(mod, win, msgptr, type))
+		return NULL;
+
+	return win;
 }
 
 LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval)
@@ -580,15 +616,10 @@ LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval)
 	}
 }
 
-LOCAL void fb_sendimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG *imsg)
-{
-	struct TExecBase *TExecBase = TGetExecBase(mod);
-	TPutMsg(win->fbv_IMsgPort, TNULL, imsg);
-}
 
 /*****************************************************************************/
 
-static TBOOL getqualifier(WINDISPLAY *mod, WINWINDOW *win)
+static TBOOL getqualifier(WINDISPLAY *mod)
 {
 	TUINT quali = TKEYQ_NONE;
 	TBOOL newquali;
@@ -612,7 +643,15 @@ static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type,
 	TINT code, TUINT code2)
 {
 	TIMSG *imsg;
-	getqualifier(mod, win);
+	getqualifier(mod);
+
+#if 0
+	/* send key events to the active application window */
+	if (mod->fbd_WindowFocussedApp != NULL)
+		win = (WINWINDOW *) GetWindowLongPtr(mod->fbd_WindowFocussedApp, 
+											 GWLP_USERDATA);
+	TDBPRINTF(TDB_TRACE,("KEY EVENT -> %p\n", win));
+#endif
 
 	switch (code)
 	{
@@ -687,7 +726,7 @@ static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type,
 			WCHAR buff[2];
 			TINT numchars = ToUnicode(code, 0, mod->fbd_KeyState, buff, 2, 0);
 			TINT mapcode = MapVirtualKey(code, 2);
-			TUINT shift = mod->fbd_KeyQual & (TKEYQ_LSHIFT | TKEYQ_RSHIFT);
+			TBOOL shift = mod->fbd_KeyQual & (TKEYQ_LSHIFT | TKEYQ_RSHIFT);
 			TUINT qualis = mod->fbd_KeyQual & ~(TKEYQ_LSHIFT | TKEYQ_RSHIFT);
 			if (qualis == 0x24)
 			{
@@ -713,7 +752,7 @@ static void processkey(WINDISPLAY *mod, WINWINDOW *win, TUINT type,
 			utf8encode(imsg->timsg_KeyCode, imsg->timsg_Code) -
 			(ptrdiff_t) imsg->timsg_KeyCode;
 		imsg->timsg_KeyCode[len] = 0;
-		fb_sendimsg(mod, win, imsg);
+		TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 	}
 }
 
@@ -746,7 +785,7 @@ LOCAL void win_getminmax(WINWINDOW *win, TINT *pm1, TINT *pm2, TINT *pm3,
 static LRESULT CALLBACK
 win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	WINWINDOW *win = (WINWINDOW *) GetWindowLong(hwnd, GWL_USERDATA);
+	WINWINDOW *win = (WINWINDOW *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	WINDISPLAY *mod = win ? win->fbv_Display : TNULL;
 	if (mod)
 	{
@@ -754,13 +793,13 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (uMsg)
 		{
 			default:
-				TDBPRINTF(TDB_TRACE,("uMsg: %08x\n", uMsg));
+				/*TDBPRINTF(TDB_TRACE,("uMsg: %08x\n", uMsg));*/
 				break;
 
 			case WM_CLOSE:
 				if ((win->fbv_InputMask & TITYPE_CLOSE) &&
 					(fb_getimsg(mod, win, &imsg, TITYPE_CLOSE)))
-					fb_sendimsg(mod, win, imsg);
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				return 0;
 
 			case WM_ERASEBKGND:
@@ -793,23 +832,83 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						TDBPRINTF(TDB_TRACE,("dirty: %d %d %d %d\n",
 							imsg->timsg_X, imsg->timsg_Y, imsg->timsg_Width,
 							imsg->timsg_Height));
-						fb_sendimsg(mod, win, imsg);
+						TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 					}
 					EndPaint(win->fbv_HWnd, &ps);
 				}
 				return 0;
 			}
 
+			case WM_SYSCOMMAND:
+				if (wParam == SC_MAXIMIZE || wParam == SC_RESTORE)
+					win_wndproc(hwnd, WM_ENTERSIZEMOVE, 0, 0);
+				break;
+
 			case WM_ACTIVATE:
-				#if 0
-				TDBPRINTF(TDB_INFO,("Window %p - Focus: %d\n", win, (LOWORD(wParam) != WA_INACTIVE)));
-				if (!win->fbv_Borderless && (win->fbv_InputMask & TITYPE_FOCUS) &&
-					(fb_getimsg(mod, win, &imsg, TITYPE_FOCUS)))
+				if (LOWORD(wParam) != WA_INACTIVE)
 				{
-					imsg->timsg_Code = (LOWORD(wParam) != WA_INACTIVE);
-					fb_sendimsg(mod, win, imsg);
+					if (win->fbv_Borderless
+							&& hwnd != mod->fbd_WindowActivePopup)
+					{
+						mod->fbd_WindowActivePopup = hwnd;
+						TDBPRINTF(TDB_TRACE, ("INPUT -> %p\n", win));
+					}
 				}
-				#endif
+				else 
+				{
+					if (mod->fbd_WindowActivePopup == hwnd)
+					{
+						mod->fbd_WindowActivePopup = NULL;
+						if (GetCapture() == hwnd)
+							ReleaseCapture();
+
+						TDBPRINTF(TDB_TRACE, ("INPUT -> NULL\n"));
+					}
+					return 0;
+				}
+				/* fall through for activate */
+
+			case WM_NCLBUTTONDOWN:
+			case WM_NCRBUTTONDOWN:
+			case WM_NCMBUTTONDOWN:
+				if (uMsg != WM_ACTIVATE && mod->fbd_WindowActivePopup == NULL)
+					break;
+			case WM_ENTERSIZEMOVE:
+				wParam = 1; /* pretend activation for refocus */
+
+			case WM_ACTIVATEAPP:
+
+				/* deactivation only via WM_ACTIVATEAPP */
+				if (uMsg == WM_ACTIVATEAPP && wParam)
+					break;
+
+				if (!win->fbv_Borderless)
+				{
+					WINWINDOW *winpf, *winnf;
+					HWND hwndpf = mod->fbd_WindowFocussedApp;
+					HWND hwndnf = wParam ? hwnd : NULL;
+
+					mod->fbd_WindowFocussedApp = hwndnf;
+
+					/* done unless focus changed or refocus enforced */
+					if (hwndnf == hwndpf && uMsg == WM_ACTIVATE)
+						return 0;
+
+					winpf = fb_getcrossimsg(mod, hwndpf, &imsg, TITYPE_FOCUS);
+					if (winpf != NULL)
+					{
+						imsg->timsg_Code = TFALSE;
+						TDBPRINTF(TDB_TRACE, ("FOCUS 0 -> %p\n", winpf));
+						TAddTail(&winpf->fbv_IMsgQueue, &imsg->timsg_Node);
+					}
+					winnf = fb_getcrossimsg(mod, hwndnf, &imsg, TITYPE_FOCUS);
+					if (winnf != NULL)
+					{
+						imsg->timsg_Code = TTRUE;
+						TDBPRINTF(TDB_TRACE, ("FOCUS 1 -> %p\n", winnf));
+						TAddTail(&winnf->fbv_IMsgQueue, &imsg->timsg_Node);
+					}
+				}
 				return 0;
 
 			case WM_SIZE:
@@ -820,64 +919,85 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				{
 					imsg->timsg_Width = win->fbv_Width;
 					imsg->timsg_Height = win->fbv_Height;
-					fb_sendimsg(mod, win, imsg);
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
-				return 0;
+				break;
 
 			case WM_CAPTURECHANGED:
-				TDBPRINTF(TDB_INFO,("Capture changed\n"));
-				break;
+				TDBPRINTF(TDB_TRACE,("Capture changed %p\n", win));
+				return 0;
 
 			case WM_MOUSEMOVE:
 			{
+				POINT scrpos;
+				HWND  hwndcp, hwndcc = mod->fbd_WindowActivePopup;
+				WINWINDOW *wincp = NULL;
 				TINT x = LOWORD(lParam);
 				TINT y = HIWORD(lParam);
 				win->fbv_MouseX = x;
 				win->fbv_MouseY = y;
+
+				/* get screen position of cursor and window underneath */
+				GetCursorPos(&scrpos);
+				hwndcp = WindowFromPoint(scrpos);
+				if (hwndcp != NULL)
+					wincp = (WINWINDOW *) GetWindowLongPtr(hwndcp, GWLP_USERDATA);
+
+				/* dispatch to current window */
 				if ((win->fbv_InputMask & TITYPE_MOUSEMOVE) &&
 					(fb_getimsg(mod, win, &imsg, TITYPE_MOUSEMOVE)))
 				{
-					imsg->timsg_MouseX = x;
-					imsg->timsg_MouseY = y;
-					fb_sendimsg(mod, win, imsg);
+					/* Copied from win in fb_getimsg:
+					** - imsg->timsg_MouseX = x;
+					** - imsg->timsg_MouseY = y;
+					*/
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
 
-				if (win->fbv_InputMask & TITYPE_MOUSEOVER)
+				/* also send move events to active popup */
+				if (hwndcc != NULL && hwnd != hwndcc)
 				{
-					POINT scrpos;
-					GetCursorPos(&scrpos);
-	// 				TDBPRINTF(20,("in window: %d\n",
-	// 					(WindowFromPoint(scrpos) == win->fbv_HWnd)));
-					#if 0
-					POINT scrpos;
-					if (GetCapture() != win->fbv_HWnd)
+					WINWINDOW *wincc = (WINWINDOW *) GetWindowLongPtr(hwndcc, GWLP_USERDATA);
+					POINT p = scrpos;
+					ScreenToClient(hwndcc, &p);
+
+					wincc->fbv_MouseX = p.x;
+					wincc->fbv_MouseY = p.y;
+					if (wincc->fbv_InputMask & TITYPE_MOUSEMOVE
+							&& fb_getimsg(mod, wincc, &imsg, TITYPE_MOUSEMOVE))
 					{
-						SetCapture(win->fbv_HWnd);
-						if (fb_getimsg(mod, win, &imsg, TITYPE_MOUSEOVER))
-						{
-							imsg->timsg_Code = 1;
-							TDBPRINTF(20,("Mouseover=true\n"));
-							fb_sendimsg(mod, win, imsg);
-						}
+						/* Copied from wincc in fb_getimsg:
+						** - imsg->timsg_MouseX = p.x;
+						** - imsg->timsg_MouseY = p.y;
+						**/
+						TAddTail(&wincc->fbv_IMsgQueue, &imsg->timsg_Node);
 					}
-					else
+				}
+
+				/* handle hover state change */
+				if (hwndcp != mod->fbd_WindowUnderCursor)
+				{
+					WINWINDOW *winpv;
+					HWND hwndpv = mod->fbd_WindowUnderCursor;
+					mod->fbd_WindowUnderCursor = hwndcp;
+
+					winpv = fb_getcrossimsg(mod, hwndpv, 
+											&imsg, TITYPE_MOUSEOVER);
+					if (winpv != NULL)
 					{
-						POINT scrpos;
-						GetCursorPos(&scrpos);
-						if ((WindowFromPoint(scrpos) != win->fbv_HWnd) ||
-							(x < 0) || (y < 0) || (x >= win->fbv_Width) ||
-							(y >= win->fbv_Height))
-						{
-							ReleaseCapture();
-							if (fb_getimsg(mod, win, &imsg, TITYPE_MOUSEOVER))
-							{
-								imsg->timsg_Code = 0;
-								TDBPRINTF(20,("Mouseover=false\n"));
-								fb_sendimsg(mod, win, imsg);
-							}
-						}
+						imsg->timsg_Code = TFALSE;
+						TDBPRINTF(TDB_TRACE, ("MOUSEOVER 0 -> %p\n", winpv));
+						TAddTail(&winpv->fbv_IMsgQueue, &imsg->timsg_Node);
 					}
-					#endif
+					if (wincp != NULL
+							&& wincp->fbv_InputMask & TITYPE_MOUSEOVER
+							&& fb_getimsg(mod, wincp, 
+										  &imsg, TITYPE_MOUSEOVER))
+					{
+						imsg->timsg_Code = TTRUE;
+						TDBPRINTF(TDB_TRACE, ("MOUSEOVER 1 -> %p\n", wincp));
+						TAddTail(&wincp->fbv_IMsgQueue, &imsg->timsg_Node);
+					}
 				}
 				return 0;
 			}
@@ -886,63 +1006,65 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
 					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 				{
+					SetCapture(hwnd);
 					imsg->timsg_Code = TMBCODE_LEFTDOWN;
-					fb_sendimsg(mod, win, imsg);
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
 				return 0;
 			case WM_LBUTTONUP:
 				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
 					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 				{
+					ReleaseCapture();
 					imsg->timsg_Code = TMBCODE_LEFTUP;
-					fb_sendimsg(mod, win, imsg);
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
 				return 0;
 			case WM_RBUTTONDOWN:
 				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
 					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 				{
+					SetCapture(hwnd);
 					imsg->timsg_Code = TMBCODE_RIGHTDOWN;
-					fb_sendimsg(mod, win, imsg);
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
 				return 0;
 			case WM_RBUTTONUP:
 				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
 					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 				{
+					ReleaseCapture();
 					imsg->timsg_Code = TMBCODE_RIGHTUP;
-					fb_sendimsg(mod, win, imsg);
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
 				return 0;
 			case WM_MBUTTONDOWN:
 				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
 					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 				{
+					SetCapture(hwnd);
 					imsg->timsg_Code = TMBCODE_MIDDLEDOWN;
-					fb_sendimsg(mod, win, imsg);
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
 				return 0;
 			case WM_MBUTTONUP:
 				if ((win->fbv_InputMask & TITYPE_MOUSEBUTTON) &&
 					fb_getimsg(mod, win, &imsg, TITYPE_MOUSEBUTTON))
 				{
+					ReleaseCapture();
 					imsg->timsg_Code = TMBCODE_MIDDLEUP;
-					fb_sendimsg(mod, win, imsg);
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
 				return 0;
 
 			case WM_SYSKEYDOWN:
-				processkey(mod, win, TITYPE_KEYDOWN, 0, lParam);
-				return 0;
-
-			case WM_SYSKEYUP:
-				processkey(mod, win, TITYPE_KEYUP, 0, lParam);
-				return 0;
-
+				wParam = 0;
 			case WM_KEYDOWN:
 				processkey(mod, win, TITYPE_KEYDOWN, wParam, lParam);
 				return 0;
 
+			case WM_SYSKEYUP:
+				wParam = 0;
 			case WM_KEYUP:
 				processkey(mod, win, TITYPE_KEYUP, wParam, lParam);
 				return 0;
@@ -956,7 +1078,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					{
 						imsg->timsg_Code = zdelta > 0 ?
 							TMBCODE_WHEELUP : TMBCODE_WHEELDOWN;
-						fb_sendimsg(mod, win, imsg);
+						TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 					}
 				}
 				return 0;
@@ -980,3 +1102,4 @@ LOCAL TSTRPTR fb_utf8tolatin(WINDISPLAY *mod, TSTRPTR utf8string, TINT utf8len,
 		*bytelen = len;
 	return (TSTRPTR) latin;
 }
+

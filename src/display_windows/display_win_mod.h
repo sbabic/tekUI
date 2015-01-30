@@ -23,12 +23,12 @@
 #define FB_DISPLAY_CLASSNAME "tek_display_windows_class"
 #define FB_DISPLAY_CLASSNAME_POPUP "tek_display_windows_popup_class"
 
-#define FB_DISPLAY_VERSION      1
-#define FB_DISPLAY_REVISION     0
-#define FB_DISPLAY_NUMVECTORS   10
+#define FB_DISPLAY_VERSION		1
+#define FB_DISPLAY_REVISION		0
+#define FB_DISPLAY_NUMVECTORS	10
 
-#define FB_DEF_WIDTH            600
-#define FB_DEF_HEIGHT           400
+#define FB_DEF_WIDTH			600
+#define FB_DEF_HEIGHT			400
 
 #ifndef LOCAL
 #define LOCAL
@@ -45,13 +45,13 @@
 **	Fonts
 */
 
-#define FNT_DEFNAME         ""
-#define FNT_DEFPXSIZE       10
+#define FNT_DEFNAME			""
+#define FNT_DEFPXSIZE		10
 
-#define	FNT_WILDCARD        "*"
+#define FNT_WILDCARD		"*"
 
 #define FNTQUERY_NUMATTR	(5+1)
-#define	FNTQUERY_UNDEFINED	-1
+#define FNTQUERY_UNDEFINED	-1
 
 struct FontManager
 {
@@ -132,6 +132,12 @@ typedef struct
 	ATOM fbd_ClassAtom;
 	ATOM fbd_ClassAtomPopup;
 
+	HWND fbd_WindowFocussedApp;
+	HWND fbd_WindowUnderCursor;
+	HWND fbd_WindowActivePopup;
+
+	TINT fbd_NumInterval;
+
 	char fbd_utf8buffer[WIN_UTF8_BUFSIZE];
 	
 	TUINT fbd_KeyQual;
@@ -170,8 +176,6 @@ typedef struct
 	HWND fbv_HWnd;
 	HDC fbv_HDC;
 
-	TAPTR fbv_Task;
-	TBOOL fbv_Dirty;
 	TINT fbv_MouseX, fbv_MouseY;
 
 	BITMAPINFOHEADER fbv_DrawBitMap;
@@ -237,7 +241,6 @@ LOCAL TBOOL fb_init(WINDISPLAY *mod, TTAGITEM *tags);
 LOCAL TBOOL fb_getimsg(WINDISPLAY *mod, WINWINDOW *v, TIMSG **msgptr,
 	TUINT type);
 LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval);
-LOCAL void fb_sendimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG *imsg);
 
 LOCAL void win_getminmax(WINWINDOW *win, TINT *pm1, TINT *pm2, TINT *pm3,
 	TINT *pm4, TBOOL windowsize);
@@ -271,7 +274,8 @@ LOCAL void fb_copyarea(WINDISPLAY *mod, struct TVRequest *req);
 LOCAL void fb_setcliprect(WINDISPLAY *mod, struct TVRequest *req);
 LOCAL void fb_unsetcliprect(WINDISPLAY *mod, struct TVRequest *req);
 LOCAL void fb_drawbuffer(WINDISPLAY *mod, struct TVRequest *req);
-LOCAL void fb_flush(WINDISPLAY *mod, struct TVRequest *req);
+LOCAL void fb_getselection(WINDISPLAY *mod, struct TVRequest *req);
+LOCAL void fb_setselection(WINDISPLAY *mod, struct TVRequest *req);
 
 LOCAL TAPTR fb_hostopenfont(WINDISPLAY *mod, TTAGITEM *tags);
 LOCAL void fb_hostclosefont(WINDISPLAY *mod, TAPTR font);
