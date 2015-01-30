@@ -324,12 +324,9 @@ hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask)
 #ifndef HAL_USE_ATOMICS 
 	TUINT oldsig;
 	EnterCriticalSection(&wth->hth_SigLock);
-	newsig &= sigmask;
 	oldsig = wth->hth_SigState;
 	wth->hth_SigState &= ~sigmask;
 	wth->hth_SigState |= newsig;
-	if (newsig & ~oldsig)
-		SetEvent(wth->hth_SigEvent);
 	LeaveCriticalSection(&wth->hth_SigLock);
 	return oldsig;
 #else
@@ -338,8 +335,6 @@ hal_setsignal(struct THALBase *hal, TUINT newsig, TUINT sigmask)
 	if (! newsig)
 		return before_consume;
 	TUINT before_publish = InterlockedOr(&wth->hth_SigState, newsig);
-	if (newsig & ~before_publish  & sigmask)
-		SetEvent(wth->hth_SigEvent);
 	return (before_consume & ~cmask) | (before_publish & cmask);
 #endif
 }
