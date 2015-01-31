@@ -3,7 +3,8 @@
 **	$Id: hal.c,v 1.1 2006/08/25 21:23:42 tmueller Exp $
 **	teklib/mods/hal/win32/hal.c - Windows implementation of the HAL layer
 **
-**	Written by Timm S. Mueller <tmueller at neoscientists.org>
+**	Written by Timm S. Mueller <tmueller@schulze-mueller.de>
+**	contributions by Tobias Schwinger <tschwinger@isonews2.com>
 **	See copyright notice in teklib/COPYRIGHT
 */
 

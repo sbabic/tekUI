@@ -4,6 +4,7 @@
 /*
 **	display_win_mod.h - Windows display driver
 **	Written by Timm S. Mueller <tmueller@schulze-mueller.de>
+**	contributions by Tobias Schwinger <tschwinger@isonews2.com>
 **	See copyright notice in teklib/COPYRIGHT
 */
 

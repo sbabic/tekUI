@@ -21,6 +21,8 @@ LOCAL TAPTR fb_hostopenfont(WINDISPLAY *mod, TTAGITEM *tags)
 	TSTRPTR name = (TSTRPTR) TGetTag(tags, TVisual_FontName, TNULL);
 	TUINT sz = (TUINT) TGetTag(tags, TVisual_FontPxSize, 0);
 	HFONT font;
+	TBOOL italic = (TBOOL) TGetTag(tags, TVisual_FontItalic, (TTAG) TFALSE);
+	TBOOL bold = (TBOOL) TGetTag(tags, TVisual_FontBold, (TTAG) TFALSE);
 
 	/* check availability: */
 	TAPTR fqh = fb_hostqueryfonts(mod, tags);
@@ -36,14 +38,14 @@ LOCAL TAPTR fb_hostopenfont(WINDISPLAY *mod, TTAGITEM *tags)
 	}
 	else
 		return TNULL;
-
+	
 	font = CreateFont(
 		sz,
 		0,
 		0,
 		0,
-		FW_NORMAL, 		/* weight */
-		0,				/* italic */
+		bold ? FW_BOLD : FW_NORMAL,
+		italic,
 		0,				/* underline */
 		0,				/* strikeout */
 		ANSI_CHARSET,	/* charset */

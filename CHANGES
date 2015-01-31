@@ -5,7 +5,8 @@
  * Windows display: Added clipboard support, improved event handling, now
  using only one thread per device instance, synchronous waiting, Win64
  support, added Unicode text rendering, added better support for keyboard
- qualifiers, windows opened at fixed positions had wrong size, corrected
+ qualifiers, windows opened at fixed positions had wrong size, corrected,
+ added support for bold and italic font styles
  * Visual, EditWindow, Input: added setSelection, TextEdit: uses application
  clipboard, removed class clipboard, quirky attribute retrieval corrected
  * Application: added obtainClipboard, releaseClipboard
