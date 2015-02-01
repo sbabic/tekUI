@@ -7,8 +7,7 @@ EXTRADEFS += $(DIRECTFB_DEFS) -DDEF_FONTDIR=\"$(LUA_SHARE)/tek/ui/font/\" \
 
 ###############################################################################
 
-LIBS = \
-	$(LIBDIR)/libdisplay_directfb.a
+LIBS = $(LIBDIR)/libdisplay_directfb.a
 
 $(OBJDIR)/display_dfb_mod.lo: \
 	display_dfb_mod.c display_dfb_mod.h

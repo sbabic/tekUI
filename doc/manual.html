@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="30-Jan-2015" />
+		<meta name="created" content="01-Feb-2015" />
 	</head>
 	<body>
 		<h1>
@@ -213,10 +213,10 @@
 			<blockquote>
 				<ul>
 					<li>
-						<a href="#tek.lib.args">args</a> 
+						<a href="#tek.lib.args">Args</a> 
 					</li>
 					<li>
-						<a href="#tek.lib.debug">debug</a> 
+						<a href="#tek.lib.debug">Debug</a> 
 					</li>
 					<li>
 						<a href="#tek.lib.exec">Exec</a> 
@@ -233,14 +233,11 @@
 					<li>
 						<a href="#tek.ui">ui</a> 
 					</li>
-					<li>
-						DesktopStyle
-					</li>
 				</ul>
 			</blockquote>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v8.1)</a></h2>
+		<div class="node"><h2><a name="tek.class" id="tek.class">Class (v9.0)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -267,6 +264,9 @@
 						</li>
 						<li style="list-style-type: none">
 							<a href="#object:instanceOf"><code>object:instanceOf()</code></a> - Checks if an object descends from a class
+						</li>
+						<li style="list-style-type: none">
+							<a href="#Class:module"><code>Class.module()</code></a> - Creates a new class from a superclass
 						</li>
 						<li style="list-style-type: none">
 							<a href="#Class:new"><code>Class.new()</code></a> - Creates and returns a new object
@@ -323,6 +323,15 @@ Class.instanceOf(Button, Area)
 </pre>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="Class:module" id="Class:module"><code>class, superclass = Class.module(classname, superclassname)</code></a></h3>
+			<p>
+				Creates a new
+				class from the specified superclass. <code>superclassname</code> is being loaded
+				and its method <a href="#Class:newClass"><code>Class:newClass()</code></a> invoked with the <code>_NAME</code> field set to
+				<code>classname</code>. Both class and superclass will be returned.
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="Class:new" id="Class:new"><code>object = Class.new(class[, object])</code></a></h3>
 			<p>
 				Creates and returns a new object of the given <code>class</code>. Optionally,
@@ -358,7 +367,7 @@ class = superclass()
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.list" id="tek.class.list">List (v3.1)</a></h2>
+		<div class="node"><h2><a name="tek.class.list" id="tek.class.list">List (v3.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -459,7 +468,7 @@ class = superclass()
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.markup" id="tek.class.markup">Markup (v3.2)</a></h2>
+		<div class="node"><h2><a name="tek.class.markup" id="tek.class.markup">Markup (v3.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -702,7 +711,7 @@ class = superclass()
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v14.2)</a></h2>
+		<div class="node"><h2><a name="tek.class.object" id="tek.class.object">Object (v14.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -886,7 +895,7 @@ method(object, arg1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">args (v2.3)</a></h2>
+		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">Args (v2.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1034,7 +1043,7 @@ SOURCE=-s/A/M,DEST=-d/A/K
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">debug (v5.2)</a></h2>
+		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">Debug (v5.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1537,7 +1546,7 @@ function(...) out:write(...) end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v11.1)</a></h2>
+		<div class="node"><h2><a name="tek.lib.region" id="tek.lib.region">Region (v11.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3191,7 +3200,7 @@ ui.Application:new { ...
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v43.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.application" id="tek.ui.class.application">Application (v43.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -3618,7 +3627,7 @@ message = function(object, message)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v57.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.area" id="tek.ui.class.area">Area (v57.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4548,7 +4557,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v2.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.button" id="tek.ui.class.button">Button (v2.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4589,7 +4598,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v37.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.canvas" id="tek.ui.class.canvas">Canvas (v37.6)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4848,7 +4857,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v9.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.checkmark" id="tek.ui.class.checkmark">CheckMark (v9.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -4916,7 +4925,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v17.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.dirlist" id="tek.ui.class.dirlist">DirList (v17.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5197,7 +5206,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v33.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.display" id="tek.ui.class.display">Display (v33.6)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5493,7 +5502,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v20.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.element" id="tek.ui.class.element">Element (v20.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5716,7 +5725,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.family" id="tek.ui.class.family">Family (v2.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.family" id="tek.ui.class.family">Family (v2.7)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5776,7 +5785,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v22.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.floattext" id="tek.ui.class.floattext">FloatText (v22.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -5925,7 +5934,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v24.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.frame" id="tek.ui.class.frame">Frame (v24.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6199,7 +6208,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.gauge" id="tek.ui.class.gauge">Gauge (v17.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6254,7 +6263,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v35.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.group" id="tek.ui.class.group">Group (v35.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6423,7 +6432,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v7.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.handle" id="tek.ui.class.handle">Handle (v7.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6468,7 +6477,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.imagewidget" id="tek.ui.class.imagewidget">ImageWidget (v15.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.imagewidget" id="tek.ui.class.imagewidget">ImageWidget (v15.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6538,7 +6547,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v4.7)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.input" id="tek.ui.class.input">Input (v4.8)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6606,7 +6615,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.layout" id="tek.ui.class.layout">Layout (v1.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.layout" id="tek.ui.class.layout">Layout (v1.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -6655,7 +6664,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v32.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.lister" id="tek.ui.class.lister">Lister (v32.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7025,7 +7034,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v6.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.listview" id="tek.ui.class.listview">ListView (v6.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7083,7 +7092,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v11.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.menuitem" id="tek.ui.class.menuitem">MenuItem (v11.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7129,7 +7138,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v5.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.numeric" id="tek.ui.class.numeric">Numeric (v5.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7286,7 +7295,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.6)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.pagegroup" id="tek.ui.class.pagegroup">PageGroup (v19.7)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7375,7 +7384,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v26.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popitem" id="tek.ui.class.popitem">PopItem (v26.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7495,7 +7504,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.5)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.poplist" id="tek.ui.class.poplist">PopList (v13.6)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7588,7 +7597,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v5.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.popupwindow" id="tek.ui.class.popupwindow">PopupWindow (v5.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7626,7 +7635,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v6.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.radiobutton" id="tek.ui.class.radiobutton">RadioButton (v6.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7661,7 +7670,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v15.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollbar" id="tek.ui.class.scrollbar">ScrollBar (v15.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7816,7 +7825,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v19.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.scrollgroup" id="tek.ui.class.scrollgroup">ScrollGroup (v19.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7935,7 +7944,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v11.3)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.sizeable" id="tek.ui.class.sizeable">Sizeable (v11.4)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -7991,7 +8000,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v27.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.slider" id="tek.ui.class.slider">Slider (v27.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8153,7 +8162,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v2.2)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.spacer" id="tek.ui.class.spacer">Spacer (v2.3)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8182,7 +8191,7 @@ end
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v29.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.text" id="tek.ui.class.text">Text (v29.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8417,7 +8426,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v21.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.textedit" id="tek.ui.class.textedit">TextEdit (v21.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8502,7 +8511,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v31.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.widget" id="tek.ui.class.widget">Widget (v31.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -8954,7 +8963,7 @@ end
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v46.4)</a></h2>
+		<div class="node"><h2><a name="tek.ui.class.window" id="tek.ui.class.window">Window (v46.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -9350,7 +9359,7 @@ message = function(object, message)
 				<hr class="page-break" />
 			</div>
 		</div>
-		<div class="node"><h2><a name="tek.ui.layout.fixed" id="tek.ui.layout.fixed">FixedLayout (v2.1)</a></h2>
+		<div class="node"><h2><a name="tek.ui.layout.fixed" id="tek.ui.layout.fixed">FixedLayout (v2.2)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -9391,7 +9400,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Fri Jan 30 12:55:14 2015 using gendoc.lua version 1.4
+					Document generated on Sun Feb  1 21:29:47 2015 using gendoc.lua version 1.5
 				</p>
 			</div>
 		</div>

@@ -5,7 +5,7 @@
 --	See copyright notice in COPYRIGHT
 --
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local db = require "tek.lib.debug"
 local Frame = ui.Frame
 
@@ -15,10 +15,8 @@ local min = math.min
 local pi = math.pi
 local sin = math.sin
 
-module("tek.ui.class.tunnel", tek.ui.class.frame)
-_VERSION = "Tunnel 5.4"
-local Tunnel = _M
-Frame:newClass(Tunnel)
+local Tunnel = Frame.module("tek.ui.class.tunnel", "tek.ui.class.frame")
+_VERSION = "Tunnel 5.5"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -113,3 +111,5 @@ function Tunnel:updateInterval(msg)
 	self:setFlags(ui.FL_REDRAW)
 	return msg
 end
+
+return Tunnel

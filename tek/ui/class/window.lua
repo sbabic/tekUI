@@ -89,7 +89,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(109)
+local ui = require "tek.ui".checkVersion(112)
 local Display = ui.require("display", 25)
 local Widget = ui.require("widget", 26)
 local Group = ui.require("group", 31)
@@ -110,10 +110,8 @@ local tonumber = tonumber
 local type = type
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.window", tek.ui.class.group)
-_VERSION = "Window 46.4"
-local Window = _M
-Group:newClass(Window)
+local Window = Group.module("tek.ui.class.window", "tek.ui.class.group")
+Window._VERSION = "Window 46.5"
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -140,11 +138,13 @@ local FL_ISWINDOW = ui.FL_ISWINDOW
 -------------------------------------------------------------------------------
 
 function Window.addClassNotifications(proto)
-	addNotify(proto, "Status", NOTIFY_ALWAYS, { NOTIFY_SELF, "onChangeStatus"})
+	Window.addNotify(proto, "Status", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onChangeStatus"})
 	return Group.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Window.ClassNotifications = 
+	Window.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	DragButton
@@ -218,7 +218,8 @@ DragButton.getPseudoClass = getpseudoclass
 --	SizeButton
 -------------------------------------------------------------------------------
 
-local SizeButton = ui.ImageWidget:newClass { _NAME = "_window-decoration-sizebutton" }
+local SizeButton = 
+	ui.ImageWidget:newClass { _NAME = "_window-decoration-sizebutton" }
 
 function SizeButton.new(class, self)
 	self = self or { }
@@ -275,7 +276,8 @@ end
 SizeButton.getPseudoClass = getpseudoclass
 
 
-local SizeBottom = ui.Widget:newClass { _NAME = "_window-decoration-sizebottom" }
+local SizeBottom = 
+	ui.Widget:newClass { _NAME = "_window-decoration-sizebottom" }
 
 function SizeBottom.new(class, self)
 	self = self or { }
@@ -293,7 +295,8 @@ SizeBottom.getPseudoClass = getpseudoclass
 --	CloseButton
 -------------------------------------------------------------------------------
 
-local CloseButton = ui.ImageWidget:newClass { _NAME = "_window-decoration-closebutton" }
+local CloseButton =
+	ui.ImageWidget:newClass { _NAME = "_window-decoration-closebutton" }
 
 function CloseButton.new(class, self)
 	self = self or { }
@@ -506,7 +509,8 @@ function Window.new(class, self)
 		})
 	end
 	
-	self:addNotify("WindowFocus", NOTIFY_ALWAYS, { NOTIFY_SELF, NOTIFY_FUNCTION, function()
+	self:addNotify("WindowFocus", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, ui.NOTIFY_FUNCTION, function()
 		if dragbutton then
 			dragbutton:setState()
 		end
@@ -954,13 +958,13 @@ local MsgHandlers =
 				self:setFocusElement(self:getNextElement(fe, true))
 			end
 			return
-		elseif qual == 0 and (key == 61459 or key == 61457) then -- cursor down, right:
+		elseif qual == 0 and (key == 61459 or key == 61457) then -- down, right
 			local nfe = self:getNextElement(fe)
 			if nfe and nfe:checkFlags(ui.FL_CURSORFOCUS) then
 				self:setFocusElement(nfe)
 				return
 			end
-		elseif qual == 0 and (key == 61458 or key == 61456) then -- cursor up, left:
+		elseif qual == 0 and (key == 61458 or key == 61456) then -- up, left
 			local nfe = self:getNextElement(fe, true)
 			if nfe and nfe:checkFlags(ui.FL_CURSORFOCUS) then
 				self:setFocusElement(nfe)
@@ -1563,7 +1567,8 @@ function Window:addBlit(x0, y0, x1, y1, dx, dy, c1, c2, c3, c4)
 			if ca[key] then
 				ca[key][3]:orRect(x0, y0, x1, y1)
 			else
-				ca[key] = { dx, dy, Region.new(x0, y0, x1, y1), c1, c2, c3, c4 }
+				ca[key] = { dx, dy, 
+					Region.new(x0, y0, x1, y1), c1, c2, c3, c4 }
 			end
 		else
 			db.warn("illegal blitrect: %s %s %s %s", x0, y0, x1, y1)
@@ -1589,7 +1594,5 @@ function Window:onSetInvisible()
 	-- no effect on windows
 	self.Invisible = false
 end
-
-
 
 return Window

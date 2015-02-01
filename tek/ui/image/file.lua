@@ -10,8 +10,7 @@
 
 local ui = require "tek.ui"
 local Image = ui.Image
-module("tek.ui.image.file", tek.ui.class.image)
-Image:newClass(_M)
+local FileImage = Image.module("tek.ui.image.file", "tek.ui.class.image")
 
 local coords =
 {
@@ -39,6 +38,8 @@ local primitives =
 	{ 0x2000, 3, { 12,13,14 }, "outline" },
 }
 
-function new(class, num)
+function FileImage.new(class, num)
 	return Image.new(class, { coords, false, false, true, primitives })
 end
+
+return FileImage

@@ -6,7 +6,7 @@
 --
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Text = ui.Text
 local Region = require "tek.lib.region"
 
@@ -22,16 +22,14 @@ local sort = table.sort
 local tonumber = tonumber
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.meter", tek.ui.class.text)
-_VERSION = "Meter 8.2"
-local Meter = _M
-Text:newClass(Meter)
+local Meter = Text.module("tek.ui.class.meter", "tek.ui.class.text")
+Meter._VERSION = "Meter 8.3"
 
 -------------------------------------------------------------------------------
 --	Class style properties:
 -------------------------------------------------------------------------------
 
-Properties = {
+Meter.Properties = {
 	["padding-top"] = 0,
 	["padding-right"] = 0,
 	["padding-bottom"] = 0,
@@ -288,3 +286,5 @@ function Meter:draw()
 	end
 	return res
 end
+
+return Meter

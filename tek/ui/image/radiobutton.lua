@@ -10,8 +10,7 @@
 
 local ui = require "tek.ui"
 local Image = ui.Image
-module("tek.ui.image.radiobutton", tek.ui.class.image)
-Image:newClass(_M)
+local RadioImage = Image.module("tek.ui.image.radiobutton", "tek.ui.class.image")
 
 local coords =
 {
@@ -53,7 +52,10 @@ local primitives =
 	}
 }
 
-function new(class, num)
+function RadioImage.new(class, num)
 	return Image.new(class, { coords, false, false, true,
 		primitives[num] or primitives[1] } )
 end
+
+return RadioImage
+

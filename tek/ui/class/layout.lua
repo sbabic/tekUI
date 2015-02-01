@@ -21,14 +21,12 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Class = require "tek.class"
 local error = error
 
-module("tek.ui.class.layout", tek.class)
-_VERSION = "Layout 1.0"
-local Layout = _M
-Class:newClass(Layout)
+local Layout = Class.module("tek.ui.class.layout", "tek.class")
+Layout._VERSION = "Layout 1.1"
 
 -------------------------------------------------------------------------------
 --	Layout:layout(group, x0, y0, x1, y1[, markdamage]):
@@ -46,3 +44,4 @@ Class:newClass(Layout)
 --	its size requirements.
 -------------------------------------------------------------------------------
 
+return Layout

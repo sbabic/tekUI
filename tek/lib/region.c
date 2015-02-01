@@ -28,7 +28,7 @@
 -------------------------------------------------------------------------------
 
 module "tek.lib.region"
-_VERSION = "Region 11.1"
+_VERSION = "Region 11.3"
 local Region = _M
 
 ******************************************************************************/
@@ -40,7 +40,7 @@ local Region = _M
 #include <tek/lib/region.h>
 #include <tek/proto/exec.h>
 
-#define TEK_LIB_REGION_VERSION "Region 11.1"
+#define TEK_LIB_REGION_VERSION "Region 11.3"
 #define TEK_LIB_REGION_NAME "tek.lib.region"
 #define TEK_LIB_REGION_POOL_NAME "tek.lib.pool*"
 

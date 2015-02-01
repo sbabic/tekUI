@@ -87,7 +87,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(110)
+local ui = require "tek.ui".checkVersion(112)
 
 local Element = ui.require("element", 17)
 local Visual = ui.loadLibrary("visual", 4)
@@ -98,10 +98,8 @@ local pairs = pairs
 local tonumber = tonumber
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.display", tek.ui.class.element)
-_VERSION = "Display 33.5"
-local Display = _M
-Element:newClass(Display)
+local Display = Element.module("tek.ui.class.display", "tek.ui.class.element")
+Display._VERSION = "Display 33.6"
 
 -------------------------------------------------------------------------------
 --	Class data and constants:
@@ -274,7 +272,7 @@ function Display.getPaint(imgspec, display, width, height)
 	if imgtype == "url" then
 		local f = open(location, "rb")
 		if f then
-			paint, w, h, trans = createPixmap(f, width, height)
+			paint, w, h, trans = Display.createPixmap(f, width, height)
 			f:close()
 		else
 			db.warn("cannot load image '%s'", location)
@@ -295,7 +293,7 @@ function Display.getPaint(imgspec, display, width, height)
 			if r0 and r1 then
 				local rgb0 = r0 * 65536 + g0 * 256 + b0
 				local rgb1 = r1 * 65536 + g1 * 256 + b1
-				paint = createGradient(x0, y0, x1, y1, rgb0, rgb1)
+				paint = Display.createGradient(x0, y0, x1, y1, rgb0, rgb1)
 			end
 		else
 			db.error("Invalid gradient arguments: '%s'", location)
@@ -502,3 +500,5 @@ function Display:flushCaches()
 	PixmapCache = { }
 	self.FontCache = { }
 end
+
+return Display

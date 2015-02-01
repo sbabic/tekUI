@@ -76,7 +76,7 @@
 local db = require "tek.lib.debug"
 local _, lfs = pcall(require, "lfs")
 local List = require "tek.class.list"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 
 local Group = ui.require("group", 31)
 local Lister = ui.require("lister", 30)
@@ -88,10 +88,8 @@ local pairs = pairs
 local pcall = pcall
 local sort = table.sort
 
-module("tek.ui.class.dirlist", tek.ui.class.group)
-_VERSION = "DirList 17.3"
-local DirList = _M
-Group:newClass(DirList)
+local DirList = Group.module("tek.ui.class.dirlist", "tek.ui.class.group")
+DirList._VERSION = "DirList 17.4"
 
 -------------------------------------------------------------------------------
 --	basepath = getBasePath()
@@ -459,8 +457,8 @@ function DirList.new(class, self)
 
 	self = Group.new(class, self)
 
-	self:addNotify("Path", NOTIFY_ALWAYS,
-		{ self.PathField, "setValue", "Enter", NOTIFY_VALUE })
+	self:addNotify("Path", ui.NOTIFY_ALWAYS,
+		{ self.PathField, "setValue", "Enter", ui.NOTIFY_VALUE })
 
 	return self
 end
@@ -703,3 +701,5 @@ end
 function DirList:reload()
 	self:scanDir(self.PathField:getText())
 end
+
+return DirList

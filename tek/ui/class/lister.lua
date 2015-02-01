@@ -110,7 +110,7 @@
 
 local db = require "tek.lib.debug"
 local List = require "tek.class.list"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(112)
 local Region = ui.loadLibrary("region", 10)
 local Text = ui.require("text", 28)
 
@@ -128,10 +128,8 @@ local tostring = tostring
 local type = type
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.lister", tek.ui.class.text)
-_VERSION = "Lister 32.0"
-local Lister = _M
-Text:newClass(Lister)
+local Lister = Text.module("tek.ui.class.lister", "tek.ui.class.text")
+Lister._VERSION = "Lister 32.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -146,20 +144,21 @@ local MSG_KEYUP = ui.MSG_KEYUP
 -------------------------------------------------------------------------------
 
 function Lister.addClassNotifications(proto)
-	addNotify(proto, "CursorLine", NOTIFY_ALWAYS,
-		{ NOTIFY_SELF, "onSetCursor" })
-	addNotify(proto, "SelectedLine", NOTIFY_ALWAYS,
-		{ NOTIFY_SELF, "onSelectLine" })
+	Lister.addNotify(proto, "CursorLine", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onSetCursor" })
+	Lister.addNotify(proto, "SelectedLine", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onSelectLine" })
 	return Text.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Lister.ClassNotifications =
+	Lister.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	Class style properties:
 -------------------------------------------------------------------------------
 
-Properties = {
+Lister.Properties = {
 	["border-top-width"] = 0,
 	["border-right-width"] = 0,
 	["border-bottom-width"] = 0,
@@ -1030,3 +1029,5 @@ function Lister:clear()
 		lo:clear()
 	end
 end
+
+return Lister

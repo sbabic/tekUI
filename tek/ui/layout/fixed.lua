@@ -31,14 +31,12 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Layout = require "tek.ui.class.layout"
 local tonumber = tonumber
 
-module("tek.ui.layout.fixed", tek.ui.class.layout)
-_VERSION = "Fixed Layout 2.1"
-local FixedLayout = _M
-Layout:newClass(FixedLayout)
+local FixedLayout = Layout.module("tek.ui.layout.fixed", "tek.ui.class.layout")
+FixedLayout._VERSION = "Fixed Layout 2.2"
 
 function FixedLayout:layout(group, r1, r2, r3, r4, markdamage)
 	local children = group.Children
@@ -63,3 +61,5 @@ function FixedLayout:askMinMax(group, m1, m2, m3, m4)
 	end
 	return m1 or 0, m2 or 0, m3 or 0, m4 or 0
 end
+
+return FixedLayout

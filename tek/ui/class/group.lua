@@ -65,7 +65,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui".checkVersion(109)
+local ui = require "tek.ui".checkVersion(112)
 local Family = ui.require("family", 2)
 local Widget = ui.require("widget", 29)
 local Region = ui.loadLibrary("region", 10)
@@ -73,10 +73,8 @@ local assert = assert
 local intersect = Region.intersect
 local type = type
 
-module("tek.ui.class.group", tek.ui.class.widget)
-_VERSION = "Group 35.1"
-local Group = _M
-Widget:newClass(Group)
+local Group = Widget.module("tek.ui.class.group", "tek.ui.class.widget")
+Group._VERSION = "Group 35.2"
 
 -------------------------------------------------------------------------------
 --	constants:
@@ -428,3 +426,5 @@ function Group:reconfigure()
 	Widget.reconfigure(self)
 	self:forEachChild("reconfigure")
 end
+
+return Group

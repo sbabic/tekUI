@@ -8,9 +8,8 @@ local open = io.open
 local tonumber = tonumber
 local floor = math.floor
 
-module "tek.ui.style.desktop"
-_VERSION = "Desktop Style 2.1"
-local DesktopStyle = _M
+local DesktopStyle = { }
+DesktopStyle._VERSION = "Desktop Style 2.2"
 
 -------------------------------------------------------------------------------
 --	GTK+ settings import:
@@ -179,3 +178,5 @@ function DesktopStyle.importConfiguration(s)
 	end
 	return false
 end
+
+return DesktopStyle

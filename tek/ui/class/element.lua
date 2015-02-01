@@ -62,7 +62,7 @@
 -------------------------------------------------------------------------------
 
 local Object = require "tek.class.object"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local db = require "tek.lib.debug"
 
 local assert = assert
@@ -75,35 +75,33 @@ local sort = table.sort
 local tonumber = tonumber
 local type = type
 
-module("tek.ui.class.element", tek.class.object)
-_VERSION = "Element 20.1"
-local Element = _M
-Object:newClass(Element)
+local Element = Object.module("tek.ui.class.element", "tek.class.object")
+Element._VERSION = "Element 20.2"
 
 -------------------------------------------------------------------------------
 --	Placeholders for notification arguments:
 -------------------------------------------------------------------------------
 
 -- inserts the Window:
-NOTIFY_WINDOW = function(a, n)
+Element.NOTIFY_WINDOW = function(a, n)
 	a[a[-3]] = a[-1].Window
 	return 1
 end
 
 -- inserts the Application:
-NOTIFY_APPLICATION = function(a, n)
+Element.NOTIFY_APPLICATION = function(a, n)
 	a[a[-3]] = a[-1].Application
 	return 1
 end
 
 -- inserts an object of the given Id:
-NOTIFY_ID = function(a, n)
+Element.NOTIFY_ID = function(a, n)
 	a[a[-3]] = a[-1].Application:getById(n)
 	return 2
 end
 
 -- denotes insertion of a function value as a new coroutine:
-NOTIFY_COROUTINE = function(a, n)
+Element.NOTIFY_COROUTINE = function(a, n)
 	a[a[-3]] = function(...) a[-1].Application:addCoroutine(n, ...) end
 	return 2
 end
@@ -113,12 +111,15 @@ end
 -------------------------------------------------------------------------------
 
 function Element.addClassNotifications(proto)
-	addNotify(proto, "Style", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetStyle" })
-	addNotify(proto, "Class", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetClass" })
+	Element.addNotify(proto, "Style", Element.NOTIFY_ALWAYS,
+		{ Element.NOTIFY_SELF, "onSetStyle" })
+	Element.addNotify(proto, "Class", Element.NOTIFY_ALWAYS,
+		{ Element.NOTIFY_SELF, "onSetClass" })
 	return Object.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Element.ClassNotifications =
+	Element.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -401,3 +402,5 @@ end
 function Element:getPseudoClass()
 	return ""
 end
+
+return Element

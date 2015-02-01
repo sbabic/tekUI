@@ -53,31 +53,32 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
-
+local ui = require "tek.ui".checkVersion(112)
 local Widget = ui.require("widget", 25)
 
 local floor = math.floor
 local max = math.max
 local min = math.min
 
-module("tek.ui.class.numeric", tek.ui.class.widget)
-_VERSION = "Numeric 5.1"
-local Numeric = _M
-Widget:newClass(Numeric)
+local Numeric = Widget.module("tek.ui.class.numeric", "tek.ui.class.widget")
+Numeric._VERSION = "Numeric 5.2"
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
 -------------------------------------------------------------------------------
 
 function Numeric.addClassNotifications(proto)
-	addNotify(proto, "Value", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetValue" })
-	addNotify(proto, "Min", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetMin" })
-	addNotify(proto, "Max", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetMax" })
+	Numeric.addNotify(proto, "Value", ui.NOTIFY_ALWAYS, 
+		{ ui.NOTIFY_SELF, "onSetValue" })
+	Numeric.addNotify(proto, "Min", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onSetMin" })
+	Numeric.addNotify(proto, "Max", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onSetMax" })
 	return Widget.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Numeric.ClassNotifications = 
+	Numeric.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -151,3 +152,5 @@ function Numeric:onSetMax()
 	end
 	self:setValue("Value", self.Value)
 end
+
+return Numeric

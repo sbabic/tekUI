@@ -8,10 +8,8 @@ local max = math.max
 local min = math.min
 local type = type
 
-module("tek.ui.hook.ripple", tek.ui.class.drawhook)
-_VERSION = "RippleHook 5.1"
-local RippleHook = _M
-DrawHook:newClass(RippleHook)
+local RippleHook = DrawHook.module("tek.ui.class.ripple", "tek.ui.class.drawhook")
+RippleHook._VERSION = "RippleHook 5.1"
 
 function RippleHook.new(class, self)
 	self = self or { }
@@ -120,3 +118,5 @@ function RippleHook.drawDot(d, x, y, p1, p2)
 	d:drawPoint(x - 1, y, p1)
 	d:drawPoint(x, y, p2)
 end
+
+return RippleHook

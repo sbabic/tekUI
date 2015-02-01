@@ -24,7 +24,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(109)
+local ui = require "tek.ui".checkVersion(112)
 local Layout = require "tek.ui.class.layout"
 local band = ui.band
 local assert = assert
@@ -37,10 +37,8 @@ local max = math.max
 local tonumber = tonumber
 local HUGE = ui.HUGE
 
-module("tek.ui.layout.default", tek.ui.class.layout)
-_VERSION = "Default Layout 9.0"
-local DefaultLayout = _M
-Layout:newClass(DefaultLayout)
+local DefaultLayout = Layout.module("tek.ui.layout.default", "tek.ui.class.layout")
+DefaultLayout._VERSION = "Default Layout 9.2"
 
 local INDICES =
 {
@@ -473,3 +471,5 @@ function DefaultLayout:askMinMax(group, m1, m2, m3, m4)
 
 	return m[1], m[2], m[3], m[4]
 end
+
+return DefaultLayout

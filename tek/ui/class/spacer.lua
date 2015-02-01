@@ -21,13 +21,11 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Frame = ui.require("frame", 21)
 
-module("tek.ui.class.spacer", tek.ui.class.frame)
-_VERSION = "Spacer 2.2"
-local Spacer = _M
-Frame:newClass(Spacer)
+local Spacer = Frame.module("tek.ui.class.spacer", "tek.ui.class.frame")
+Spacer._VERSION = "Spacer 2.3"
 
 -------------------------------------------------------------------------------
 --	setup: overrides
@@ -43,3 +41,5 @@ function Spacer:setup(app, win)
 	end
 	Frame.setup(self, app, win)
 end
+
+return Spacer

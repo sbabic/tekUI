@@ -198,7 +198,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 57.3"
+_VERSION = "Area 57.5"
 local Area = _M
 Element:newClass(Area)
 
@@ -217,10 +217,10 @@ Element:newClass(Area)
 #define AREA_CLASS_NAME "tek.ui.class.area"
 
 /* Version string: */
-#define AREA_CLASS_VERSION "Area 57.3"
+#define AREA_CLASS_VERSION "Area 57.5"
 
 /* Required tekui version: */
-#define AREA_TEKUI_VERSION 109
+#define AREA_TEKUI_VERSION 112
 
 /* Required major version of the Region library: */
 #define REGION_VERSION	10

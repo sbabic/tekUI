@@ -218,10 +218,8 @@ local stdin = io.stdin
 local stdout = io.stdout
 local ipairs = ipairs
 
-module("tek.class.markup", tek.class)
-_VERSION = "Markup 3.2"
-local Markup = _M
-Class:newClass(Markup)
+local Markup = Class.module("tek.class.markup", "tek.class")
+Markup._VERSION = "Markup 3.3"
 
 -------------------------------------------------------------------------------
 --	iterate over lines in a string
@@ -1199,3 +1197,5 @@ function Markup.new(class, self)
 
 	return Class.new(class, self)
 end
+
+return Markup

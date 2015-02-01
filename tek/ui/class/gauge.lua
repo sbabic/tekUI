@@ -31,7 +31,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Numeric = ui.require("numeric", 1)
 local Region = ui.loadLibrary("region", 9)
 
@@ -39,10 +39,8 @@ local floor = math.floor
 local max = math.max
 local min = math.min
 
-module("tek.ui.class.gauge", tek.ui.class.numeric)
-_VERSION = "Gauge 17.4"
-local Gauge = _M
-Numeric:newClass(Gauge)
+local Gauge = Numeric.module("tek.ui.class.gauge", "tek.ui.class.numeric")
+Gauge._VERSION = "Gauge 17.5"
 
 -------------------------------------------------------------------------------
 -- Gauge:
@@ -225,3 +223,5 @@ function Gauge:onSetValue()
 	Numeric.onSetValue(self)
 	self:rethinkLayout(2)
 end
+
+return Gauge

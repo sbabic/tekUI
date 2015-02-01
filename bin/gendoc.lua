@@ -32,7 +32,7 @@ local insert = table.insert
 local remove = table.remove
 local sort = table.sort
 
-local VERSION = "1.4"
+local VERSION = "1.5"
 
 local RULE = "-------------------------------------------------------------------------------"
 local PAGE = "==============================================================================="
@@ -248,18 +248,26 @@ function processfile(state, fname)
 			end
 
 			if not classname then
-				local p, n, b =
-					line:match(
-						'^%-*%s*module%s*%(%s*"([%w.]*)%.([%w]+)"%s*,%s*([%w.]+)%s*%)')
-				if p and n then
+				local s, p, n, b = line:match(
+					'^%-*%s*local%s+(%w+)%s*=%s*%w+%s*%.%s*module%s*%(%s*"([%w.]*)%.([%w]+)"%s*,%s*"([%w.]+)"%s*%)')
+				if p then
 					classname = p .. "." .. n
-					shortname = n
+					shortname = s
 					superclass = b
 				else
-					local p, n = line:match('^%-*%s*module%s*"([%w.]*)%.([%w]+)"')
+					local p, n, b =
+						line:match(
+							'^%-*%s*module%s*%(%s*"([%w.]*)%.([%w]+)"%s*,%s*([%w.]+)%s*%)')
 					if p and n then
 						classname = p .. "." .. n
 						shortname = n
+						superclass = b
+					else
+						local p, n = line:match('^%-*%s*module%s*"([%w.]*)%.([%w]+)"')
+						if p and n then
+							classname = p .. "." .. n
+							shortname = n
+						end
 					end
 				end
 			else
@@ -270,6 +278,9 @@ function processfile(state, fname)
 				end
 				if not version then
 					version = line:match('^%s*_VERSION%s*=%s*"(.*)"%s*$')
+				end
+				if not version and shortname then
+					version = line:match('^%s*'..shortname..'%._VERSION%s*=%s*"(.*)"%s*$')
 				end
 			end
 

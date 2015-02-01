@@ -42,7 +42,7 @@
 
 local db = require "tek.lib.debug"
 local String = require "tek.lib.string"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(112)
 local Region = ui.loadLibrary("region", 9)
 local Sizeable = ui.require("sizeable", 10)
 
@@ -60,10 +60,8 @@ local tostring = tostring
 local type = type
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.textedit", tek.ui.class.sizeable)
-_VERSION = "TextEdit 21.0"
-local TextEdit = _M
-Sizeable:newClass(TextEdit)
+local TextEdit = Sizeable.module("tek.ui.class.textedit", "tek.ui.class.sizeable")
+TextEdit._VERSION = "TextEdit 21.1"
 
 local LNR_HUGE = 1000000000
 local FAKECANVASWIDTH = 1000000000 --30000
@@ -77,16 +75,16 @@ local PENIDX_MARK = 64
 --	Constants & Class data:
 -------------------------------------------------------------------------------
 
-local NOTIFY_CURSORX = { NOTIFY_SELF, "onSetCursorX", NOTIFY_VALUE }
-local NOTIFY_CURSORY = { NOTIFY_SELF, "onSetCursorY", NOTIFY_VALUE }
-local NOTIFY_FILENAME = { NOTIFY_SELF, "onSetFileName", NOTIFY_VALUE }
-local NOTIFY_CHANGED = { NOTIFY_SELF, "onSetChanged", NOTIFY_VALUE }
+local NOTIFY_CURSORX = { ui.NOTIFY_SELF, "onSetCursorX", ui.NOTIFY_VALUE }
+local NOTIFY_CURSORY = { ui.NOTIFY_SELF, "onSetCursorY", ui.NOTIFY_VALUE }
+local NOTIFY_FILENAME = { ui.NOTIFY_SELF, "onSetFileName", ui.NOTIFY_VALUE }
+local NOTIFY_CHANGED = { ui.NOTIFY_SELF, "onSetChanged", ui.NOTIFY_VALUE }
 
 -------------------------------------------------------------------------------
 --	Class style properties:
 -------------------------------------------------------------------------------
 
-Properties = {
+TextEdit.Properties = {
 	["border-top-width"] = 0,
 	["border-right-width"] = 0,
 	["border-bottom-width"] = 0,
@@ -1847,7 +1845,7 @@ end
 function TextEdit:loadText(fname)
 	local f = open(fname)
 	if f then
-		local data = breakText(function() return f:read(4096) end)
+		local data = self.breakText(function() return f:read(4096) end)
 		self:newText(data)
 		self:setValue("FileName", fname)
 		return true
@@ -2350,3 +2348,5 @@ end
 function TextEdit:onDisable()
 	self:onFocus()
 end
+
+return TextEdit

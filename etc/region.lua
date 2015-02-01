@@ -34,13 +34,10 @@ local min = math.min
 local setmetatable = setmetatable
 local unpack = unpack or table.unpack
 
-module "tek.lib.region"
+local Region = { }
+Region._VERSION = "Region 11.3"
 
-_VERSION = "Region 11.1"
-
-local Region = _M
-
-__index = Region
+Region.__index = Region
 
 -------------------------------------------------------------------------------
 --	x0, y0, x1, y1 = Region.intersect(d1, d2, d3, d4, s1, s2, s3, s4):
@@ -50,7 +47,7 @@ __index = Region
 --	the rectangles do not overlap.
 -------------------------------------------------------------------------------
 
-function intersect(d1, d2, d3, d4, s1, s2, s3, s4)
+function Region.intersect(d1, d2, d3, d4, s1, s2, s3, s4)
 	if s3 >= d1 and s1 <= d3 and s4 >= d2 and s2 <= d4 then
 		return max(s1, d1), max(s2, d2), min(s3, d3), min(s4, d4)
 	end
@@ -90,7 +87,7 @@ end
 -------------------------------------------------------------------------------
 
 local function cutrect(d1, d2, d3, d4, s1, s2, s3, s4)
-	if not intersect(d1, d2, d3, d4, s1, s2, s3, s4) then
+	if not Region.intersect(d1, d2, d3, d4, s1, s2, s3, s4) then
 		return { { d1, d2, d3, d4 } }
 	end
 	local r = { }
@@ -176,7 +173,7 @@ function Region:andRect(s1, s2, s3, s4)
 	local r = { }
 	for _, d in ipairs(self.region) do
 		local t1, t2, t3, t4 =
-			intersect(d[1], d[2], d[3], d[4], s1, s2, s3, s4)
+			Region.intersect(d[1], d[2], d[3], d[4], s1, s2, s3, s4)
 		if t1 then
 			insertrect(r, t1, t2, t3, t4)
 		end
@@ -240,7 +237,7 @@ end
 
 function Region:checkIntersect(s1, s2, s3, s4)
 	for _, d in ipairs(self.region) do
-		if intersect(d[1], d[2], d[3], d[4], s1, s2, s3, s4) then
+		if Region.intersect(d[1], d[2], d[3], d[4], s1, s2, s3, s4) then
 			return true
 		end
 	end
@@ -268,7 +265,8 @@ function Region:andRegion(s)
 	for _, s in ipairs(s.region) do
 		for _, d in ipairs(self.region) do
 			local t1, t2, t3, t4 =
-				intersect(d[1], d[2], d[3], d[4], s[1], s[2], s[3], s[4])
+				Region.intersect(d[1], d[2], d[3], d[4],
+					s[1], s[2], s[3], s[4])
 			if t1 then
 				insertrect(r, t1, t2, t3, t4)
 			end
@@ -330,3 +328,5 @@ function Region:get()
 		return minx, miny, maxx, maxy
 	end
 end
+
+return Region

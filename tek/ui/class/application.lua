@@ -105,7 +105,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(109)
+local ui = require "tek.ui".checkVersion(112)
 local Display = ui.require("display", 31)
 local Family = ui.require("family", 2)
 
@@ -131,10 +131,8 @@ local type = type
 local unpack = unpack or table.unpack
 local wait = Display.wait
 
-module("tek.ui.class.application", tek.ui.class.family)
-_VERSION = "Application 43.0"
-local Application = _M
-Family:newClass(Application)
+local Application = Family.module("tek.ui.class.application", "tek.ui.class.family")
+Application._VERSION = "Application 43.1"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -1139,3 +1137,5 @@ function Application:releaseSetClipboard(c)
 		self.Clipboard = c
 	end
 end
+
+return Application

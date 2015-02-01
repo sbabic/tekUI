@@ -26,15 +26,13 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Window = ui.require("window", 33)
 
 local max = math.max
 
-module("tek.ui.class.popupwindow", tek.ui.class.window)
-_VERSION = "PopupWindow 5.2"
-local PopupWindow = _M
-Window:newClass(PopupWindow)
+local PopupWindow = Window.module("tek.ui.class.popupwindow", "tek.ui.class.window")
+PopupWindow._VERSION = "PopupWindow 5.3"
 
 -------------------------------------------------------------------------------
 --	PopupWindow class:
@@ -135,3 +133,5 @@ function PopupWindow:updateInterval(msg)
 	end
 	return msg
 end
+
+return PopupWindow

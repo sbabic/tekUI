@@ -25,13 +25,11 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local CheckMark = ui.require("checkmark", 9)
 
-module("tek.ui.class.radiobutton", tek.ui.class.checkmark)
-_VERSION = "RadioButton 6.1"
-local RadioButton = _M
-CheckMark:newClass(RadioButton)
+local RadioButton = CheckMark.module("tek.ui.class.radiobutton", "tek.ui.class.checkmark")
+RadioButton._VERSION = "RadioButton 6.2"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -70,3 +68,5 @@ function RadioButton:onSelect()
 	end
 	CheckMark.onSelect(self)
 end
+
+return RadioButton

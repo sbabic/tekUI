@@ -10,16 +10,14 @@
 
 local Class = require "tek.class"
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Display = ui.require("display", 21)
 
 local assert = assert
 local type = type
 
-module("tek.ui.class.image", tek.class)
-_VERSION = "Image 3.0"
-local Image = _M
-Class:newClass(Image)
+local Image = Class.module("tek.ui.class.image", "tek.class")
+Image._VERSION = "Image 3.1"
 
 function Image.new(class, image)
 	if type(image) == "string" then
@@ -50,3 +48,5 @@ function Image:getPixmap()
 		return self[1], self[2], self[3], self[4]
 	end
 end
+
+return Image

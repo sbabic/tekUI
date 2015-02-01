@@ -5,7 +5,7 @@
 --	See copyright notice in COPYRIGHT
 --
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Frame = ui.Frame
 
 local cos = math.cos
@@ -16,10 +16,8 @@ local pi = math.pi
 local sin = math.sin
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.plasma", tek.ui.class.frame)
-_VERSION = "Plasma 6.4"
-local Plasma = _M
-Frame:newClass(Plasma)
+local Plasma = Frame.module("tek.ui.class.plasma", "tek.ui.class.frame")
+Plasma._VERSION = "Plasma 6.5"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -64,8 +62,8 @@ function Plasma.new(class, self)
 	self.W = self.W or 80
 	self.H = self.H or 50
 	
-	addgradient(self, 209,219,155, 79,33,57, 68)
-	addgradient(self, 79,33,57, 209,130,255, 60)
+	Plasma.addgradient(self, 209,219,155, 79,33,57, 68)
+	Plasma.addgradient(self, 79,33,57, 209,130,255, 60)
 	local sintab = self.SinTab
 	for i = 0, 1023 do
 		sintab[i] = sin(i / 1024 * pi * 2)
@@ -138,3 +136,5 @@ function Plasma:updateInterval(msg)
 	self:setFlags(ui.FL_REDRAW)
 	return msg
 end
+
+return Plasma

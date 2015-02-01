@@ -193,9 +193,10 @@
 		<blockquote>
 			<ul>
 				<li>
-					<a href="manual.html">Class and library reference manual</a> &#8211; The
-					entrypoint is the <a href="manual.html#tek.ui">tek.ui</a> module. See there
-					for a quick start.
+					<a href="manual.html#tek.ui">tek.ui</a> module - library entrypoint
+				</li>
+				<li>
+					<a href="manual.html">Complete class and library reference manual</a> 
 				</li>
 				<li>
 					<a href="changes.html">Changelog</a> 
@@ -613,7 +614,7 @@
 			<blockquote>
 				<ul>
 					<li>
-						&gt;=Lua-5.1.2
+						Lua 5.1/5.2/5.3
 					</li>
 					<li>
 						&gt;=libX11-1.1.3 (for the x11 driver)
@@ -649,8 +650,7 @@
 				</ul>
 			</blockquote>
 			<p>
-				Lua 5.1, 5.2, 5.3 are supported if Lua 5.2 and 5.3 are compiled with
-				<code>LUA_COMPAT_MODULE</code>. Regarding LuaJIT 2.0 see annotations below.
+				Regarding LuaJIT 2.0 see annotations below.
 			</p>
 		</div>
 		<div class="node"><h3><a name="luamodules" id="luamodules">3.1.1. External Lua modules</a></h3>
@@ -1900,22 +1900,21 @@ local DEBUG = true
 		</div>
 		<div class="node"><h2><a name="classsetup" id="classsetup">5.4. Class setup</a></h2>
 			<p>
-				A class is usually set up in a prologue like this:
+				A class (in a module) is usually set up in a prologue like this:
 			</p>
 <pre>
 local Widget = require &quot;tek.ui.class.widget&quot;
-module(&quot;tek.ui.class.button&quot;, tek.ui.class.widget)
-_VERSION = &quot;Button Widget 1.0&quot;
-local Button = _M
-Widget:newClass(Button)
+local Button = Widget.module(&quot;tek.ui.class.button&quot;, &quot;tek.ui.class.widget&quot;)
+Button._VERSION = &quot;Button Widget 1.0&quot;
+...
+return Button
 </pre>
 			<p>
-				The second argument to <code>module</code> is the super class to derive the
-				new class from (see also <a href="manual.html#tek.class">tek.class</a> for
-				details on how this is supposed to work). By convention, we then put
-				the module table (the class) into a local variable. The last line is
-				for compatibility with Lua 5.2, as the second argument to module
-				doesn't work with Lua 5.2 anymore.
+				This first argument to <a href="manual.html#Class:module">Class.module()</a> 
+				is the name of the class to be created. The second argument is the
+				name of its superclass, the class  to derive the new class from. The
+				result is the class table that should be the module's return value
+				also.
 			</p>
 			<p>
 				Finally, methods in the newly created class may look like this (note
@@ -1942,15 +1941,8 @@ end
 			<p>
 				Don't stray off too far from the class setup described in the
 				previous section, as it contains valuable informations for tekUI's
-				documentation generator.
-			</p>
-			<p>
-				Most notably, the second argument to <code>module</code> should be written out
-				in full &#8211; in the example above, one might be tempted to use
-				<code>Widget</code> instead of <code>tek.ui.class.widget</code>; but then, the path
-				information would be lost for the source code parser, which tries to
-				assemble a self-contained class hierarchy from individual class /
-				child class relations.
+				documentation generator, which tries to assemble a self-contained
+				class hierarchy from individual class / child class relations.
 			</p>
 			<h3>
 				Tokens for markup

@@ -31,16 +31,14 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local PopItem = ui.require("popitem", 22)
 
 local max = math.max
 local floor = math.floor
 
-module("tek.ui.class.menuitem", tek.ui.class.popitem)
-_VERSION = "MenuItem 11.0"
-local MenuItem = _M
-PopItem:newClass(MenuItem)
+local MenuItem = PopItem.module("tek.ui.class.menuitem", "tek.ui.class.popitem")
+MenuItem._VERSION = "MenuItem 11.1"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -118,3 +116,5 @@ function MenuItem:endPopup()
 	PopItem.endPopup(self)
 	self:setValue("Focus", false)
 end
+
+return MenuItem

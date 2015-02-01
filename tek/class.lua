@@ -16,6 +16,7 @@
 --		- object:getClassName() - Returns the class name of an object or class
 --		- object:getSuper() - Returns the super class of an object or class
 --		- object:instanceOf() - Checks if an object descends from a class
+--		- Class.module() - Creates a new class from a superclass
 --		- Class.new() - Creates and returns a new object
 --		- Class.newClass() - Creates a child class from a super class
 --		- object:setClass() - Changes the class of an object, or the super
@@ -25,6 +26,7 @@
 
 local assert = assert
 local error = error
+local require = require
 local tostring = tostring
 local getmetatable = getmetatable
 local setmetatable = setmetatable
@@ -34,11 +36,14 @@ local PROXY = false
 -- in proxied mode, trace uninitialized variable accesses:
 local DEBUG = false
 
+--[[ header token for documentation generator:
 module "tek.class"
-_VERSION = "Class 8.1"
-
 local Class = _M
+]]
 
+local Class = { }
+Class._NAME = "tek.class"
+Class._VERSION = "Class 9.0"
 Class.__index = Class
 
 if PROXY then
@@ -187,8 +192,15 @@ function Class:instanceOf(ancestor)
 end
 
 -------------------------------------------------------------------------------
---	make Class and its descendants functors:
+--	class, superclass = Class.module(classname, superclassname): Creates a new
+--	class from the specified superclass. {{superclassname}} is being loaded
+--	and its method Class:newClass() invoked with the {{_NAME}} field set to
+--	{{classname}}. Both class and superclass will be returned.
 -------------------------------------------------------------------------------
 
-__call = newClass
-setmetatable(Class, { __call = newClass })
+function Class.module(classname, superclassname)
+	local superclass = require(superclassname)
+	return superclass:newClass { _NAME = classname }, superclass
+end
+
+return Class

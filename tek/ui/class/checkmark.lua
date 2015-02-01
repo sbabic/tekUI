@@ -34,17 +34,15 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Text = ui.require("text", 28)
 
 local floor = math.floor
 local max = math.max
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.checkmark", tek.ui.class.text)
-_VERSION = "CheckMark 9.3"
-local CheckMark = _M
-Text:newClass(CheckMark)
+local CheckMark = Text.module("tek.ui.class.checkmark", "tek.ui.class.text")
+CheckMark._VERSION = "CheckMark 9.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -145,3 +143,5 @@ function CheckMark:setState(bg, fg)
 	end
 	Text.setState(self, bg, fg)
 end
+
+return CheckMark

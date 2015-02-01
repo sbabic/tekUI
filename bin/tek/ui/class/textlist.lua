@@ -1,5 +1,5 @@
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local db = require "tek.lib.debug"
 local ScrollGroup = ui.ScrollGroup
 local TextEdit = ui.TextEdit
@@ -9,10 +9,8 @@ local max = math.max
 local min = math.min
 local tostring = tostring
 
-module("tek.ui.class.textlist", tek.ui.class.scrollgroup)
-_VERSION = "TextList 2.5"
-local TextList = _M
-ScrollGroup:newClass(TextList)
+local TextList = ScrollGroup.module("tek.ui.class.textlist", "tek.ui.class.scrollgroup")
+TextList._VERSION = "TextList 2.6"
 
 local MSG_MOUSEBUTTON = ui.MSG_MOUSEBUTTON
 local MSG_MOUSEMOVE = ui.MSG_MOUSEMOVE
@@ -338,3 +336,5 @@ end
 function TextList:getLineText(lnr)
 	return self.ListText:getLineText(lnr)
 end
+
+return TextList

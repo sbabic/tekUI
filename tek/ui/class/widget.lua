@@ -131,16 +131,13 @@
 --
 -------------------------------------------------------------------------------
 
--- local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Frame = ui.require("frame", 17)
 
 local bor = ui.bor
 
-module("tek.ui.class.widget", tek.ui.class.frame)
-_VERSION = "Widget 31.0"
-local Widget = _M
-Frame:newClass(Widget)
+local Widget = Frame.module("tek.ui.class.widget", "tek.ui.class.frame")
+Widget._VERSION = "Widget 31.1"
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -163,18 +160,27 @@ local FL_POPITEM = ui.FL_POPITEM
 -------------------------------------------------------------------------------
 
 function Widget.addClassNotifications(proto)
-	addNotify(proto, "DblClick", NOTIFY_ALWAYS, { NOTIFY_SELF, "onDblClick" })
-	addNotify(proto, "Disabled", NOTIFY_ALWAYS, { NOTIFY_SELF, "onDisable" })
-	addNotify(proto, "Hilite", NOTIFY_ALWAYS, { NOTIFY_SELF, "onHilite" })
-	addNotify(proto, "Selected", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSelect" })
-	addNotify(proto, "Hold", NOTIFY_ALWAYS, { NOTIFY_SELF, "onHold" })
-	addNotify(proto, "Active", NOTIFY_ALWAYS, { NOTIFY_SELF, "onActivate" })
-	addNotify(proto, "Pressed", NOTIFY_ALWAYS, { NOTIFY_SELF, "onPress" })
-	addNotify(proto, "Focus", NOTIFY_ALWAYS, { NOTIFY_SELF, "onFocus" })
+	Widget.addNotify(proto, "DblClick", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onDblClick" })
+	Widget.addNotify(proto, "Disabled", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onDisable" })
+	Widget.addNotify(proto, "Hilite", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onHilite" })
+	Widget.addNotify(proto, "Selected", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onSelect" })
+	Widget.addNotify(proto, "Hold", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onHold" })
+	Widget.addNotify(proto, "Active", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onActivate" })
+	Widget.addNotify(proto, "Pressed", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onPress" })
+	Widget.addNotify(proto, "Focus", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onFocus" })
 	return Frame.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Widget.ClassNotifications = 
+	Widget.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -554,3 +560,5 @@ function Widget:beginPopup(baseitem)
 	self.Active = false
 	self.Pressed = false
 end
+
+return Widget

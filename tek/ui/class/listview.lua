@@ -35,7 +35,7 @@
 -------------------------------------------------------------------------------
 
 local List = require "tek.class.list"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 
 local Canvas = ui.require("canvas", 30)
 local Widget = ui.require("widget", 25)
@@ -47,10 +47,8 @@ local ScrollGroup = ui.require("scrollgroup", 17)
 local Text = ui.Text
 local unpack = unpack
 
-module("tek.ui.class.listview", tek.ui.class.group)
-_VERSION = "ListView 6.3"
-local ListView = _M
-Group:newClass(ListView)
+local ListView = Group.module("tek.ui.class.listview", "tek.ui.class.group")
+ListView._VERSION = "ListView 6.4"
 
 -------------------------------------------------------------------------------
 --	HeadItem:
@@ -194,3 +192,5 @@ function ListView.new(class, self)
 
 	return Group.new(class, self)
 end
+
+return ListView

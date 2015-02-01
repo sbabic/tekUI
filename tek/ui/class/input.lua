@@ -39,7 +39,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Canvas = ui.require("canvas", 36)
 local Display = ui.require("display", 0)
 local TextEdit = ui.require("textedit", 17)
@@ -48,10 +48,8 @@ local concat = table.concat
 local tostring = tostring
 local type = type
 
-module("tek.ui.class.input", tek.ui.class.scrollgroup)
-_VERSION = "Input 4.7"
-local Input = _M
-ScrollGroup:newClass(Input)
+local Input = ScrollGroup.module("tek.ui.class.input", "tek.ui.class.scrollgroup")
+Input._VERSION = "Input 4.8"
 
 local MSG_MOUSEBUTTON = ui.MSG_MOUSEBUTTON
 local MSG_MOUSEMOVE = ui.MSG_MOUSEMOVE
@@ -259,13 +257,16 @@ end
 -------------------------------------------------------------------------------
 
 function Input.addClassNotifications(proto)
-	addNotify(proto, "Enter", NOTIFY_ALWAYS, { NOTIFY_SELF, "onEnter" })
-	addNotify(proto, "Text", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetText" })
-	addNotify(proto, "Changed", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetChanged" })
+	Input.addNotify(proto, "Enter", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onEnter" })
+	Input.addNotify(proto, "Text", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onSetText" })
+	Input.addNotify(proto, "Changed", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onSetChanged" })
 	return ScrollGroup.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Input.ClassNotifications = Input.addClassNotifications { Notifications = { } }
 
 
 function Input.new(class, self)
@@ -437,3 +438,5 @@ end
 function Input:cursorEOL()
 	return self.EditInput:cursorEOL()
 end
+
+return Input

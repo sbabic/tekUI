@@ -58,17 +58,15 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(109)
+local ui = require "tek.ui".checkVersion(112)
 local PopupWindow = ui.require("popupwindow", 5)
 local Text = ui.require("text", 28)
 ui.require("widget", 26)
 local floor = math.floor
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.popitem", tek.ui.class.text)
-_VERSION = "PopItem 26.1"
-local PopItem = _M
-Text:newClass(PopItem)
+local PopItem = Text.module("tek.ui.class.popitem", "tek.ui.class.text")
+PopItem._VERSION = "PopItem 26.2"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -80,20 +78,24 @@ local DEF_POPUPFADEOUTDELAY = 10
 local FL_POPITEM = ui.FL_POPITEM
 local FL_ACTIVATERMB = ui.FL_ACTIVATERMB
 
-local NOTIFY_ACTIVE = { NOTIFY_SELF, "onActivate" }
+local NOTIFY_ACTIVE = { ui.NOTIFY_SELF, "onActivate" }
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
 -------------------------------------------------------------------------------
 
 function PopItem.addClassNotifications(proto)
-	addNotify(proto, "Hilite", NOTIFY_ALWAYS, { NOTIFY_SELF, "doSubMenu" })
-	addNotify(proto, "Selected", true, { NOTIFY_SELF, "selectPopup" })
-	addNotify(proto, "Selected", false, { NOTIFY_SELF, "unselectPopup" })
+	PopItem.addNotify(proto, "Hilite", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "doSubMenu" })
+	PopItem.addNotify(proto, "Selected", true,
+		{ ui.NOTIFY_SELF, "selectPopup" })
+	PopItem.addNotify(proto, "Selected", false,
+		{ ui.NOTIFY_SELF, "unselectPopup" })
 	return Text.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+PopItem.ClassNotifications = 
+	PopItem.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -309,7 +311,7 @@ function PopItem:beginPopup(baseitem)
 	self.PopupWindow:setValue("Status", "show")
 
 	self.Window:addNotify("Status", "hide", self.FocusNotification)
-	self.Window:addNotify("WindowFocus", NOTIFY_ALWAYS, self.FocusNotification)
+	self.Window:addNotify("WindowFocus", ui.NOTIFY_ALWAYS, self.FocusNotification)
 
 end
 
@@ -328,7 +330,7 @@ function PopItem:endPopup()
 	base:setValue("Focus", true)
 	
 	self:setState()
-	self.Window:remNotify("WindowFocus", NOTIFY_ALWAYS,
+	self.Window:remNotify("WindowFocus", ui.NOTIFY_ALWAYS,
 		self.FocusNotification)
 	self.Window:remNotify("Status", "hide", self.FocusNotification)
 	
@@ -443,7 +445,7 @@ function PopItem:connectPopItems(app, window)
 		end
 	elseif self:getAttr("popup-collapse") then
 		-- special treatment so that clicking the element collapses the popup:
-		self:addNotify("Active", NOTIFY_ALWAYS, NOTIFY_ACTIVE)
+		self:addNotify("Active", ui.NOTIFY_ALWAYS, ui.NOTIFY_ACTIVE)
 	end
 	self:setFlags(FL_POPITEM)
 end
@@ -467,7 +469,7 @@ function PopItem:disconnectPopItems(window)
 			end
 		end
 	elseif self:getAttr("popup-collapse") then
-		self:remNotify("Active", NOTIFY_ALWAYS, NOTIFY_ACTIVE)
+		self:remNotify("Active", ui.NOTIFY_ALWAYS, ui.NOTIFY_ACTIVE)
 	end
 end
 
@@ -490,3 +492,5 @@ end
 function PopItem:getChildren(mode)
 	return mode == "init" and self.Children
 end
+
+return PopItem

@@ -43,7 +43,6 @@ local Exec = _M
 #include <tek/proto/hal.h>
 #include <tek/proto/exec.h>
 #include <tek/inline/exec.h>
-#include <tek/mod/visual.h>
 #include "lualib.h"
 
 
@@ -1066,7 +1065,7 @@ static TBOOL tek_lib_exec_sendtaskport(struct TTask *task,
 		TAPTR imsgport = (TAPTR) TGetAtomData(atom);
 		if (imsgport)
 		{
-			TIMSG *msg = TAllocMsg0(len);
+			TAPTR msg = TAllocMsg0(len);
 			if (msg)
 			{
 				memcpy(msg, buf, len);

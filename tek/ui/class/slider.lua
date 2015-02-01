@@ -64,7 +64,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(112)
 local Area = ui.require("area", 55)
 local Numeric = ui.require("numeric", 5)
 local Region = ui.loadLibrary("region", 10)
@@ -74,10 +74,8 @@ local floor = math.floor
 local max = math.max
 local min = math.min
 
-module("tek.ui.class.slider", tek.ui.class.numeric)
-_VERSION = "Slider 27.0"
-local Slider = _M
-Numeric:newClass(Slider)
+local Slider = Numeric.module("tek.ui.class.slider", "tek.ui.class.numeric")
+Slider._VERSION = "Slider 27.1"
 
 local FL_REDRAW = ui.FL_REDRAW
 
@@ -86,11 +84,13 @@ local FL_REDRAW = ui.FL_REDRAW
 -------------------------------------------------------------------------------
 
 function Slider.addClassNotifications(proto)
-	addNotify(proto, "Range", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetRange" })
+	Slider.addNotify(proto, "Range", Slider.NOTIFY_ALWAYS, 
+		{ Slider.NOTIFY_SELF, "onSetRange" })
 	return Numeric.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Slider.ClassNotifications = 
+	Slider.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -579,3 +579,5 @@ function Slider:reconfigure()
 	Numeric.reconfigure(self)
 	self.Child:reconfigure()
 end
+
+return Slider

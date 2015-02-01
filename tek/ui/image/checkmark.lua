@@ -10,8 +10,8 @@
 
 local ui = require "tek.ui"
 local Image = ui.Image
-module("tek.ui.image.checkmark", tek.ui.class.image)
-Image:newClass(_M)
+
+local CheckImage = Image.module("tek.ui.image.checkmark", "tek.ui.class.image")
 
 local coords =
 {
@@ -56,7 +56,9 @@ local primitives =
 	}
 }
 
-function new(class, num)
+function CheckImage.new(class, num)
 	return Image.new(class, { coords, false, false, true,
 		primitives[num] or primitives[1] } )
 end
+
+return CheckImage

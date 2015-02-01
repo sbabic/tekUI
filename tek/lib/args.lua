@@ -65,13 +65,17 @@ local tonumber = tonumber
 local type = type
 
 -- for testing (see below):
-
 -- local pairs = pairs
 -- local print = print
 -- local ipairs = ipairs
 
+--[[ header token for documentation generator:
 module "tek.lib.args"
-_VERSION = "Args 2.3"
+local Args = _M
+]]
+
+local Args = { }
+Args._VERSION = "Args 2.4"
 
 -------------------------------------------------------------------------------
 --	parsetemplate: check validity and parse option template into a table
@@ -148,7 +152,7 @@ end
 --	'''nil''' followed by an error message.
 -------------------------------------------------------------------------------
 
-function read(template, args)
+function Args.read(template, args)
 	local tmpl, msg = parsetemplate(template)
 	if not tmpl then
 		return nil, msg
@@ -424,3 +428,5 @@ end
 -- 		print("*** " .. msg)
 -- 	end
 -- end
+
+return Args

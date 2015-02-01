@@ -6,8 +6,7 @@ EXTRADEFS += $(RAWFB_DEFS) $(TEKUI_DEFS)
 
 ###############################################################################
 
-LIBS = \
-	$(LIBDIR)/libdisplay_rawfb.a
+LIBS = $(LIBDIR)/libdisplay_rawfb.a
 
 # $(OBJDIR)/display_rfb_mod.lo: \
 # 	display_rfb_mod.c display_rfb_mod.h

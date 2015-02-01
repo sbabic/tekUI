@@ -82,7 +82,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(112)
 local Widget = ui.require("widget", 25)
 
 local bor = ui.bor
@@ -93,10 +93,8 @@ local min = math.min
 local remove = table.remove
 local type = type
 
-module("tek.ui.class.text", tek.ui.class.widget)
-_VERSION = "Text 29.0"
-local Text = _M
-Widget:newClass(Text)
+local Text = Widget.module("tek.ui.class.text", "tek.ui.class.widget")
+Text._VERSION = "Text 29.1"
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -113,11 +111,11 @@ local FL_KEEPMINHEIGHT = ui.FL_KEEPMINHEIGHT
 -------------------------------------------------------------------------------
 
 function Text.addClassNotifications(proto)
-	addNotify(proto, "Text", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetText" })
+	Text.addNotify(proto, "Text", ui.NOTIFY_ALWAYS, { ui.NOTIFY_SELF, "onSetText" })
 	return Widget.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Text.ClassNotifications = Text.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -422,3 +420,5 @@ function Text:reconfigure()
 	self.InitialHeight = false
 	self:makeTextRecords(self.Text)
 end
+
+return Text

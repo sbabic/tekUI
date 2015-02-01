@@ -53,34 +53,39 @@ local traceback = debug.traceback
 local type = type
 local unpack = unpack or table.unpack
 
+--[[ header token for documentation generator:
 module "tek.lib.debug"
-_VERSION = "Debug 5.2"
+local Debug = _M
+]]
+
+local Debug = { }
+Debug._VERSION = "Debug 5.3"
 
 -- symbolic:
 
-TRACE = 2
-INFO = 4
-WARN = 5
-ERROR = 10
-FAIL = 20
+Debug.TRACE = 2
+Debug.INFO = 4
+Debug.WARN = 5
+Debug.ERROR = 10
+Debug.FAIL = 20
 
 -- global defaults:
 
-level = WARN
-out = stderr
+Debug.level = Debug.WARN
+Debug.out = stderr
 
 -------------------------------------------------------------------------------
 --	debug.wrout(...): Debug output function, by default
 --			function(...) out:write(...) end
 -------------------------------------------------------------------------------
 
-wrout = function(...) out:write(...) end
+Debug.wrout = function(...) Debug.out:write(...) end
 
 -------------------------------------------------------------------------------
 --	debug.format(lvl, msg, ...): Format error message
 -------------------------------------------------------------------------------
 
-function format(lvl, msg, ...)
+function Debug.format(lvl, msg, ...)
 	local t = getinfo(4, "lS")
 	return ("(%02d %s:%d) " .. msg .. "\n"):format(lvl, t.short_src,
 		t.currentline, ...)
@@ -91,14 +96,14 @@ end
 --	is less or equal the specified level.
 -------------------------------------------------------------------------------
 
-function print(lvl, msg, ...)
-	if level and lvl >= level then
+function Debug.print(lvl, msg, ...)
+	if Debug.level and lvl >= Debug.level then
 		local arg = { }
 		for i = 1, select('#', ...) do
 			local v = select(i, ...)
 			arg[i] = v ~= nil and tostring(v) or v or "<nil>"
 		end
-		wrout(format(lvl, msg, unpack(arg)))
+		Debug.wrout(Debug.format(lvl, msg, unpack(arg)))
 	end
 end
 
@@ -107,8 +112,8 @@ end
 --	global debug level is less or equal the specified level.
 -------------------------------------------------------------------------------
 
-function execute(lvl, func, ...)
-	if level and lvl >= level then
+function Debug.execute(lvl, func, ...)
+	if Debug.level and lvl >= Debug.level then
 		return func(...)
 	end
 end
@@ -118,32 +123,32 @@ end
 --	level
 -------------------------------------------------------------------------------
 
-function trace(msg, ...) print(2, msg, ...) end
+function Debug.trace(msg, ...) Debug.print(2, msg, ...) end
 
 -------------------------------------------------------------------------------
 --	debug.info(msg, ...): Prints formatted debug info with {{INFO}} debug level
 -------------------------------------------------------------------------------
 
-function info(msg, ...) print(4, msg, ...) end
+function Debug.info(msg, ...) Debug.print(4, msg, ...) end
 
 -------------------------------------------------------------------------------
 --	debug.warn(msg, ...): Prints formatted debug info with {{WARN}} debug level
 -------------------------------------------------------------------------------
 
-function warn(msg, ...) print(5, msg, ...) end
+function Debug.warn(msg, ...) Debug.print(5, msg, ...) end
 
 -------------------------------------------------------------------------------
 --	debug.error(msg, ...): Prints formatted debug info with {{ERROR}} debug
 --	level
 -------------------------------------------------------------------------------
 
-function error(msg, ...) print(10, msg, ...) end
+function Debug.error(msg, ...) Debug.print(10, msg, ...) end
 
 -------------------------------------------------------------------------------
 --	debug.fail(msg, ...): Prints formatted debug info with {{FAIL}} debug level
 -------------------------------------------------------------------------------
 
-function fail(msg, ...) print(20, msg, ...) end
+function Debug.fail(msg, ...) Debug.print(20, msg, ...) end
 
 -------------------------------------------------------------------------------
 --	debug.stacktrace(debuglevel[, stacklevel]): Prints a stacktrace starting at
@@ -152,21 +157,21 @@ function fail(msg, ...) print(20, msg, ...) end
 --	or equal the specified {{debuglevel}}.
 -------------------------------------------------------------------------------
 
-function stacktrace(lvl, level)
-	print(lvl, traceback("", level or 1 + 1))
+function Debug.stacktrace(lvl, level)
+	Debug.print(lvl, traceback("", level or 1 + 1))
 end
 
 -------------------------------------------------------------------------------
 --	debug.console(): Enters debug console.
 -------------------------------------------------------------------------------
 
-function console()
-	wrout('Entering the debug console.\n')
-	wrout('To redirect the output, e.g.:\n')
-	wrout('  tek.lib.debug.out = io.open("logfile", "w")\n')
-	wrout('To dump a table, e.g.:\n')
-	wrout('  tek.lib.debug.dump(app)\n')
-	wrout('Use "cont" to continue.\n')
+function Debug.console()
+	Debug.wrout('Entering the debug console.\n')
+	Debug.wrout('To redirect the output, e.g.:\n')
+	Debug.wrout('  tek.lib.debug.out = io.open("logfile", "w")\n')
+	Debug.wrout('To dump a table, e.g.:\n')
+	Debug.wrout('  tek.lib.debug.dump(app)\n')
+	Debug.wrout('Use "cont" to continue.\n')
 	debug.debug()
 end
 
@@ -218,6 +223,8 @@ local function dumpr(tab, indent, outfunc, saved)
 	end
 end
 
-function dump(tab, outf)
-	dumpr(tab, 0, outf or wrout, { })
+function Debug.dump(tab, outf)
+	dumpr(tab, 0, outf or Debug.wrout, { })
 end
+
+return Debug

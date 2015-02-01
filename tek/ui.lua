@@ -135,60 +135,67 @@ local tonumber = tonumber
 local tostring = tostring
 local type = type
 
+--[[ document generator token:
 module "tek.ui"
-_VERSION = "tekUI 54.0" -- module version string
+local ui = _M
+]]
 
-VERSION = 112 -- overall package version number
-VERSIONSTRING = ("%d.%02d"):format(floor(VERSION / 100), VERSION % 100)
+local ui = { }
+package.loaded["tek.ui"] = ui
+ui._VERSION = "tekUI 54.0" -- module version string
+
+ui.VERSION = 112 -- overall package version number
+ui.VERSIONSTRING = 
+	("%d.%02d"):format(floor(ui.VERSION / 100), ui.VERSION % 100)
 
 -------------------------------------------------------------------------------
 --	Initialization of globals:
 -------------------------------------------------------------------------------
 
 -- Old package path:
-OldPath = package and package.path or ""
-OldCPath = package and package.cpath or ""
+ui.OldPath = package and package.path or ""
+ui.OldCPath = package and package.cpath or ""
 -- Operation mode: "default", "workbench"
-Mode = "default"
+ui.Mode = "default"
 -- Name of the Default Theme:
-ThemeName = getenv("THEME") or "desktop"
+ui.ThemeName = getenv("THEME") or "desktop"
 -- Open in fullscreen mode by default?:
-FullScreen = getenv("FULLSCREEN")
-FullScreen = FullScreen or false
+ui.FullScreen = getenv("FULLSCREEN")
+ui.FullScreen = ui.FullScreen or false
 -- No mouse pointer:
-NoCursor = getenv("NOCURSOR") == "true"
+ui.NoCursor = getenv("NOCURSOR") == "true"
 -- Standard shortcut marker:
-ShortcutMark = "_"
+ui.ShortcutMark = "_"
 -- Input message fileno (-1 = default/stdin):
-MsgFileNo = -1
+ui.MsgFileNo = -1
 -- Extra arguments:
-ExtraArgs = "" -- e.g. "vnc_portnumber=11111"
+ui.ExtraArgs = "" -- e.g. "vnc_portnumber=11111"
 -- Name of the user stylesheet file:
-UserStyles = "user"
+ui.UserStyles = "user"
 
 -------------------------------------------------------------------------------
 --	copyTable: create copy of a table
 -------------------------------------------------------------------------------
 
-copyTable = support.copyTable
+ui.copyTable = support.copyTable
 
 -------------------------------------------------------------------------------
 --	band: Bitwise and
 -------------------------------------------------------------------------------
 
-band = support.band
+ui.band = support.band
 
 -------------------------------------------------------------------------------
 --	bor: Bitwise or
 -------------------------------------------------------------------------------
 
-bor = support.bor
+ui.bor = support.bor
 
 -------------------------------------------------------------------------------
 --	bnot: Bitwise not
 -------------------------------------------------------------------------------
 
-bnot = support.bnot
+ui.bnot = support.bnot
 
 -------------------------------------------------------------------------------
 --	class = ui.loadClass(realm, classname[, min_version]):
@@ -252,7 +259,7 @@ local LoaderPaths =
 	["lib"] = "tek.lib.",
 }
 
-function loadClass(realm, name, version, loader)
+function ui.loadClass(realm, name, version, loader)
 	if name and name ~= "" and realm and LoaderPaths[realm] then
 		if not version then
 			local name2
@@ -264,9 +271,9 @@ function loadClass(realm, name, version, loader)
 		end
 		name = LoaderPaths[realm] .. name
 		db.trace("Loading module %s v%s...", name, version or "?")
-		package.path, package.cpath = LocalPath, LocalCPath
+		package.path, package.cpath = ui.LocalPath, ui.LocalCPath
 		local success, result = (loader or loadProtected)(name, version)
-		package.path, package.cpath = OldPath, OldCPath
+		package.path, package.cpath = ui.OldPath, ui.OldCPath
 		if success then
 			return result
 		end
@@ -281,8 +288,8 @@ end
 --	{{ui.loadClass("class", ...)}} - see ui.loadClass() for more details.
 -------------------------------------------------------------------------------
 
-function require(name, version)
-	return loadClass("class", name, version, loadSimple)
+function ui.require(name, version)
+	return ui.loadClass("class", name, version, loadSimple)
 end
 
 -------------------------------------------------------------------------------
@@ -291,12 +298,12 @@ end
 --	  ui = require "tek.ui".checkVersion(107)
 -------------------------------------------------------------------------------
 
-function checkVersion(version)
+function ui.checkVersion(version)
 	assert(version)
-	if VERSION < version then
+	if ui.VERSION < version then
 		error("Need at least tek.ui version " .. version)
 	end
-	return _M
+	return ui
 end
 
 -------------------------------------------------------------------------------
@@ -305,8 +312,8 @@ end
 --	{{tek/lib}}.
 -------------------------------------------------------------------------------
 
-function loadLibrary(name, version)
-	return loadClass("lib", name, version, loadSimple)
+function ui.loadLibrary(name, version)
+	return ui.loadClass("lib", name, version, loadSimple)
 end
 
 -------------------------------------------------------------------------------
@@ -315,8 +322,8 @@ end
 --	arguments are passed on as {{imageclass:new(...)}}.
 -------------------------------------------------------------------------------
 
-function getStockImage(name, ...)
-	local class = loadClass("image", name)
+function ui.getStockImage(name, ...)
+	local class = ui.loadClass("image", name)
 	if class then
 		return class:new(...)
 	end
@@ -329,16 +336,16 @@ end
 --	build configuration.)
 -------------------------------------------------------------------------------
 
-function loadImage(file, w, h)
+function ui.loadImage(file, w, h)
 	local img, trans
 	if type(file) == "string" then
 		-- this uses the picture cache
-		img, w, h, trans = Display.getPaint("url("..file..")", nil, w, h)
+		img, w, h, trans = ui.Display.getPaint("url("..file..")", nil, w, h)
 	else -- assuming an open file
-		img, w, h, trans = Display.createPixmap(file, w, h)
+		img, w, h, trans = ui.Display.createPixmap(file, w, h)
 	end
 	if img then
-		return Image:new { img, w, h, trans }
+		return ui.Image:new { img, w, h, trans }
 	end
 end
 
@@ -351,8 +358,8 @@ end
 --	also to ui.loadClass() for further details.
 -------------------------------------------------------------------------------
 
-function createHook(realm, name, parent, object)
-	local child = name ~= "none" and loadClass(realm, name)
+function ui.createHook(realm, name, parent, object)
+	local child = name ~= "none" and ui.loadClass(realm, name)
 	if child then
 		local app = parent.Application
 		child = child:new(object or { })
@@ -369,7 +376,7 @@ end
 --	its {{cleanup()}} and {{disconnect()}} methods. Always returns '''false'''.
 -------------------------------------------------------------------------------
 
-function destroyHook(object)
+function ui.destroyHook(object)
 	if object then
 		object:cleanup()
 		object:disconnect()
@@ -385,7 +392,7 @@ local function f_encodeurl(c)
 	return ("%%%02x"):format(c:byte())
 end
 
-function encodeURL(s)
+function ui.encodeURL(s)
 	s = s:gsub(
 	'[%z\001-\032\127-\255%$%&%+%,%/%:%;%=%?%@%"%<%>%#%%%{%}%|%\\%^%~%[%]%`%]]',
 		f_encodeurl)
@@ -403,7 +410,7 @@ end
 --	caller, or '''nil''' followed by an error message.
 -------------------------------------------------------------------------------
 
-function sourceTable(file, env)
+function ui.sourceTable(file, env)
 	local msg
 	if type(file) == "string" then
 		file = open(file)
@@ -430,7 +437,7 @@ end
 
 local function openUIPath(fname)
 	local fullname, f, msg
-	for p in LocalPath:gmatch("([^;]-)%?%.lua;?") do
+	for p in ui.LocalPath:gmatch("([^;]-)%?%.lua;?") do
 		fullname = p .. fname
 		db.info("Trying to open '%s'", fullname)
 		f, msg = open(fullname)
@@ -448,12 +455,12 @@ end
 --	table. If unsuccessful, returns '''nil''' followed by an error message.
 -------------------------------------------------------------------------------
 
-function loadTable(fname)
+function ui.loadTable(fname)
 	local f, msg = openUIPath(fname)
 	if f then
 		db.info("Trying to load table '%s'", fname)
 		local tab
-		tab, msg = sourceTable(f)
+		tab, msg = ui.sourceTable(f)
 		if tab then
 			return tab
 		end
@@ -465,7 +472,7 @@ end
 --	lang = getLanguage()
 -------------------------------------------------------------------------------
 
-function getLanguage()
+function ui.getLanguage()
 	local lang
 	lang = getenv("LC_MESSAGES")
 	lang = lang or getenv("LC_ALL")
@@ -485,7 +492,7 @@ end
 
 local LocaleCache = { }
 
-function loadLocale(l, lang)
+function ui.loadLocale(l, lang)
 	local msg
 	local m1 = getmetatable(l)
 	local keys = m1.__index
@@ -498,7 +505,7 @@ function loadLocale(l, lang)
 		if keys then
 			db.trace("Found cache copy for locale '%s'", key)
 		else
-			keys, msg = loadTable(key)
+			keys, msg = ui.loadTable(key)
 		end
 		if keys then
 			setmetatable(keys, m2)
@@ -525,15 +532,15 @@ end
 --	{{catalog.HELLO_WORLD}} would return the string {{"HELLO WORLD"}}.
 -------------------------------------------------------------------------------
 
-function getLocale(appname, vendorname, deflang, lang)
+function ui.getLocale(appname, vendorname, deflang, lang)
 	local l = { }
 	local m1 = { }
 	local keys = { }
 	m1.__index = keys
 	setmetatable(l, m1)
 	local m2 = { }
-	m2.vendor = encodeURL(vendorname or "unknown")
-	m2.app = encodeURL(appname or "unnown")
+	m2.vendor = ui.encodeURL(vendorname or "unknown")
+	m2.app = ui.encodeURL(appname or "unnown")
 	m2.__index = function(tab, key)
 		db.warn("Locale key not found: %s", key)
 		local key2 = key and key:gsub("_", " ")
@@ -541,12 +548,12 @@ function getLocale(appname, vendorname, deflang, lang)
 		return key2 or ""
 	end
 	setmetatable(keys, m2)
-	lang = lang or getLanguage()
-	if not loadLocale(l, lang) then
+	lang = lang or ui.getLanguage()
+	if not ui.loadLocale(l, lang) then
 		db.warn("Preferred locale not found: '%s'", lang)
 		deflang = deflang or "en"
 		if lang ~= deflang then
-			loadLocale(l, deflang)
+			ui.loadLocale(l, deflang)
 		end
 	end
 	return l
@@ -638,7 +645,7 @@ local matchkeys =
 -- 	["border"] = { { "^(%d+)%s+(%S+)%s+(%S+)$", addborder3 } },
 }
 
-function unpackProperty(props, key, value, pclass)
+function ui.unpackProperty(props, key, value, pclass)
 	local replace = matchkeys[key]
 	if replace then
 		value = tostring(value)
@@ -660,11 +667,11 @@ end
 --	ui.unpackStyleSheet(stylesheet)
 -------------------------------------------------------------------------------
 
-function unpackStyleSheet(stylesheet)
+function ui.unpackStyleSheet(stylesheet)
 	for name, props in pairs(stylesheet) do
 		local newprops = { }
 		for key, val in pairs(props) do
-			unpackProperty(newprops, key, val, "")
+			ui.unpackProperty(newprops, key, val, "")
 		end
 		stylesheet[name] = newprops
 	end
@@ -679,7 +686,7 @@ end
 --	message.
 -------------------------------------------------------------------------------
 
-function loadStyleSheet(file)
+function ui.loadStyleSheet(file)
 	local fh, msg
 	db.info("loadstylesheet: '%s'", file)
 	if type(file) == "string" then
@@ -756,7 +763,7 @@ function loadStyleSheet(file)
 					local key, val, r =
 						buf:match("^([%a%d%-%:]+)%s*%:%s*([^;]-)%s*;(.*)")
 					if key then
-						unpackProperty(props, key, val, pclass)
+						ui.unpackProperty(props, key, val, pclass)
 						buf = r
 					else
 						res = false
@@ -874,11 +881,11 @@ local DEF_STYLESHEET_DEFAULT =
 --	named style sheet file.
 -------------------------------------------------------------------------------
 
-function getStyleSheet(themename)
+function ui.getStyleSheet(themename)
 	if not themename or themename == "minimal" then
-		return unpackStyleSheet(DEF_STYLESHEET_DEFAULT)
+		return ui.unpackStyleSheet(DEF_STYLESHEET_DEFAULT)
 	end
-	local s, msg = loadStyleSheet(themename)
+	local s, msg = ui.loadStyleSheet(themename)
 	if themename == "desktop" then
 		local success, res = pcall(int_require, "tek.ui.style.desktop")
 		if success then
@@ -901,18 +908,18 @@ local function getpaths(key, default)
 	-- check if backslash comes first -> backslash, else slash
 	local ptst = arg and arg[0] or package and (package.config or package.path)
 	local p = ptst and ptst:match("^[^/]*\\.*$") and "\\" or "/"
-	PathSeparator = p -- make available in ui library
+	ui.PathSeparator = p -- make available in ui library
 	if arg and arg[0] then
 		local pdir, pname = arg[0]:match(("^(.-%s?)([^%s]*)$"):format(p, p))
 		if pdir == "" then
 			pdir = "." .. p
 		end
-		ProgDir, ProgName = pdir, pname
+		ui.ProgDir, ui.ProgName = pdir, pname
 		-- Modified package path to find modules in the local program directory:
-		LocalPath = pdir .. "?.lua;" .. OldPath
-		LocalCPath = pdir .. "?.so;" .. OldCPath
+		ui.LocalPath = pdir .. "?.lua;" .. ui.OldPath
+		ui.LocalCPath = pdir .. "?.so;" .. ui.OldCPath
 	end
-	return rawget(_M, key) or default
+	return rawget(ui, key) or default
 end
 
 local accessors = 
@@ -927,20 +934,20 @@ local accessors =
 		return getpaths("ProgName", "")
 	end,
 	LocalPath = function() 
-		return getpaths("LocalPath", OldPath)
+		return getpaths("LocalPath", ui.OldPath)
 	end,
 	LocalCPath = function() 
-		return getpaths("LocalCPath", OldCPath)
+		return getpaths("LocalCPath", ui.OldCPath)
 	end,
 }
 
-setmetatable(_M, {
+setmetatable(ui, {
 	__index = function(tab, key)
 		if accessors[key] then
 			return accessors[key]()
 		end
 		local pname = key:lower()
-		local class = loadClass("class", pname, nil, loadSimple)
+		local class = ui.loadClass("class", pname, nil, loadSimple)
 		if class then
 			db.info("Loaded class '%s'", pname)
 			tab[pname] = class
@@ -956,7 +963,7 @@ setmetatable(_M, {
 --	Keycode aliases:
 -------------------------------------------------------------------------------
 
-KeyAliases =
+ui.KeyAliases =
 {
 	["IgnoreAltShift"] = { 0x0000, 0x00, 0x10, 0x20, 0x30 },
 	["IgnoreCase"] = { 0x0000, 0x00, 0x01, 0x02 },
@@ -1006,7 +1013,7 @@ KeyAliases =
 -------------------------------------------------------------------------------
 
 local function addqual(key, quals, s)
-	local a = KeyAliases[s]
+	local a = ui.KeyAliases[s]
 	if a then
 		if a[1] ~= 0 then
 			key = String.encodeutf8(a[1])
@@ -1029,7 +1036,7 @@ local function addqual(key, quals, s)
 	return key
 end
 
-function resolveKeyCode(code)
+function ui.resolveKeyCode(code)
 	local quals, key = { 0 }, ""
 	local ignorecase
 	local have_shift_already
@@ -1054,7 +1061,7 @@ end
 --	from a string. The default shortcut marker is an underscore.
 -------------------------------------------------------------------------------
 
-function extractKeyCode(s, m)
+function ui.extractKeyCode(s, m)
 	m = m or "_"
 	s = s:match("^[^" .. m .. "]*" .. m .. "(.)")
 	return s and s:lower() or false
@@ -1064,73 +1071,75 @@ end
 --	Constants: 
 -------------------------------------------------------------------------------
 
-DEBUG = false
-HUGE = 1000000
+ui.DEBUG = false
+ui.HUGE = 1000000
 
 -- Double click time limit, in microseconds:
-DBLCLICKTIME = 320000 -- 600000 for touch screens
+ui.DBLCLICKTIME = 320000 -- 600000 for touch screens
 -- Max. square pixel distance between clicks:
-DBLCLICKJITTER = 70 -- 3000 for touch screens
+ui.DBLCLICKJITTER = 70 -- 3000 for touch screens
 
 -------------------------------------------------------------------------------
 --	Placeholders for notifications
 -------------------------------------------------------------------------------
 
-local Element = require("element", 17)
+local Element = ui.require("element", 17)
 
-NOTIFY_ALWAYS = Element.NOTIFY_ALWAYS
-NOTIFY_VALUE = Element.NOTIFY_VALUE
-NOTIFY_TOGGLE = Element.NOTIFY_TOGGLE
-NOTIFY_FORMAT = Element.NOTIFY_FORMAT
-NOTIFY_SELF = Element.NOTIFY_SELF
-NOTIFY_OLDVALUE = Element.NOTIFY_OLDVALUE
-NOTIFY_FUNCTION = Element.NOTIFY_FUNCTION
-NOTIFY_WINDOW = Element.NOTIFY_WINDOW
-NOTIFY_APPLICATION = Element.NOTIFY_APPLICATION
-NOTIFY_ID = Element.NOTIFY_ID
-NOTIFY_COROUTINE = Element.NOTIFY_COROUTINE
+ui.NOTIFY_ALWAYS = Element.NOTIFY_ALWAYS
+ui.NOTIFY_VALUE = Element.NOTIFY_VALUE
+ui.NOTIFY_TOGGLE = Element.NOTIFY_TOGGLE
+ui.NOTIFY_FORMAT = Element.NOTIFY_FORMAT
+ui.NOTIFY_SELF = Element.NOTIFY_SELF
+ui.NOTIFY_OLDVALUE = Element.NOTIFY_OLDVALUE
+ui.NOTIFY_FUNCTION = Element.NOTIFY_FUNCTION
+ui.NOTIFY_WINDOW = Element.NOTIFY_WINDOW
+ui.NOTIFY_APPLICATION = Element.NOTIFY_APPLICATION
+ui.NOTIFY_ID = Element.NOTIFY_ID
+ui.NOTIFY_COROUTINE = Element.NOTIFY_COROUTINE
 
 -------------------------------------------------------------------------------
 --	Message types:
 -------------------------------------------------------------------------------
 
-MSG_CLOSE        = 0x0001
-MSG_FOCUS        = 0x0002
-MSG_NEWSIZE      = 0x0004
-MSG_REFRESH      = 0x0008
-MSG_MOUSEOVER    = 0x0010
-MSG_KEYDOWN      = 0x0100
-MSG_MOUSEMOVE    = 0x0200
-MSG_MOUSEBUTTON  = 0x0400
-MSG_INTERVAL     = 0x0800
-MSG_KEYUP        = 0x1000
-MSG_USER         = 0x2000
-MSG_REQSELECTION = 0x4000
-MSG_SIGNAL       = 0x8000
-MSG_ALL          = 0x571f -- not including MSG_USER, MSG_INTERVAL, MSG_SIGNAL
+ui.MSG_CLOSE        = 0x0001
+ui.MSG_FOCUS        = 0x0002
+ui.MSG_NEWSIZE      = 0x0004
+ui.MSG_REFRESH      = 0x0008
+ui.MSG_MOUSEOVER    = 0x0010
+ui.MSG_KEYDOWN      = 0x0100
+ui.MSG_MOUSEMOVE    = 0x0200
+ui.MSG_MOUSEBUTTON  = 0x0400
+ui.MSG_INTERVAL     = 0x0800
+ui.MSG_KEYUP        = 0x1000
+ui.MSG_USER         = 0x2000
+ui.MSG_REQSELECTION = 0x4000
+ui.MSG_SIGNAL       = 0x8000
+ui.MSG_ALL          = 0x571f -- not including MSG_USER, MSG_INTERVAL, MSG_SIGNAL
 
 -------------------------------------------------------------------------------
 --	Flags:
 -------------------------------------------------------------------------------
 
-FL_LAYOUT        = 0x0000001 -- element has been layouted
-FL_REDRAW        = 0x0000002 -- element needs a repaint
-FL_REDRAWBORDER  = 0x0000004 -- element needs a border repaint
-FL_SETUP         = 0x0000008 -- element is setup
-FL_SHOW          = 0x0000010 -- element is being shown
-FL_CHANGED       = 0x0000020 -- element has seen structural changes
-FL_POPITEM       = 0x0000040 -- used to identify elements in popups
-FL_UPDATE        = 0x0000080 -- flag bubbled up on setting REDRAW, CHANGED, ...
-FL_RECVINPUT     = 0x0000100 -- element receives input
-FL_RECVMOUSEMOVE = 0x0000200 -- element receives mouse movement events
-FL_CURSORFOCUS   = 0x0000400 -- element can receive the focus using cursor keys
-FL_AUTOPOSITION  = 0x0000800 -- element positioned automatically when focused
-FL_ERASEBG       = 0x0001000 -- the element erases its background automatically
-FL_TRACKDAMAGE   = 0x0002000 -- the element tracks intra-area damages
-FL_ACTIVATERMB   = 0x0004000 -- (also) activate on right mouse button
-FL_INITIALFOCUS  = 0x0008000 -- element is receiving the focus during show()
-FL_ISWINDOW      = 0x0010000 -- the element is a window
-FL_DONOTBLIT     = 0x0020000 -- redrawing the element should not initiate blits
-FL_KEEPMINWIDTH  = 0x0040000 -- element maintains its minimal width
-FL_KEEPMINHEIGHT = 0x0080000 -- element maintains its minimal height
-FL_NOFOCUS       = 0x0100000 -- element does not accept the input focus
+ui.FL_LAYOUT        = 0x0000001 -- element has been layouted
+ui.FL_REDRAW        = 0x0000002 -- element needs a repaint
+ui.FL_REDRAWBORDER  = 0x0000004 -- element needs a border repaint
+ui.FL_SETUP         = 0x0000008 -- element is setup
+ui.FL_SHOW          = 0x0000010 -- element is being shown
+ui.FL_CHANGED       = 0x0000020 -- element has seen structural changes
+ui.FL_POPITEM       = 0x0000040 -- used to identify elements in popups
+ui.FL_UPDATE        = 0x0000080 -- flag bubbled up on setting REDRAW, CHANGED, ...
+ui.FL_RECVINPUT     = 0x0000100 -- element receives input
+ui.FL_RECVMOUSEMOVE = 0x0000200 -- element receives mouse movement events
+ui.FL_CURSORFOCUS   = 0x0000400 -- element can receive the focus using cursor keys
+ui.FL_AUTOPOSITION  = 0x0000800 -- element positioned automatically when focused
+ui.FL_ERASEBG       = 0x0001000 -- the element erases its background automatically
+ui.FL_TRACKDAMAGE   = 0x0002000 -- the element tracks intra-area damages
+ui.FL_ACTIVATERMB   = 0x0004000 -- (also) activate on right mouse button
+ui.FL_INITIALFOCUS  = 0x0008000 -- element is receiving the focus during show()
+ui.FL_ISWINDOW      = 0x0010000 -- the element is a window
+ui.FL_DONOTBLIT     = 0x0020000 -- redrawing the element should not initiate blits
+ui.FL_KEEPMINWIDTH  = 0x0040000 -- element maintains its minimal width
+ui.FL_KEEPMINHEIGHT = 0x0080000 -- element maintains its minimal height
+ui.FL_NOFOCUS       = 0x0100000 -- element does not accept the input focus
+
+return ui

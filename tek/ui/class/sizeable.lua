@@ -29,7 +29,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Canvas = ui.require("canvas", 35)
 local Widget = ui.require("widget", 29)
 local Region = ui.loadLibrary("region", 10)
@@ -37,10 +37,8 @@ local bor = ui.bor
 local max = math.max
 local min = math.min
 
-module("tek.ui.class.sizeable", tek.ui.class.widget)
-_VERSION = "Sizeable 11.3"
-local Sizeable = _M
-Widget:newClass(Sizeable)
+local Sizeable = Widget.module("tek.ui.class.sizeable", "tek.ui.class.widget")
+Sizeable._VERSION = "Sizeable 11.4"
 
 local FL_TRACKDAMAGE = ui.FL_TRACKDAMAGE
 local FL_DONOTBLIT = ui.FL_DONOTBLIT
@@ -266,3 +264,5 @@ function Sizeable:resize(dx, dy, insx, insy)
 		c:rethinkLayout()
 	end
 end
+
+return Sizeable

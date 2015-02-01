@@ -184,7 +184,7 @@ end
 
 function TSP:draw()
 	if Frame.draw(self) then
-		local t = 15 - (1 - math.log10(self.Threshold))
+		local t = 15 - (1 - math.log(self.Threshold, 10))
 		self:getById("gauge-thresh"):setValue("Value", t)
 		self:getById("text-length"):setValue("Text", ("%.4f"):format(self.Length))
 		self:getById("text-iter"):setValue("Text", self.Iterations)

@@ -6,8 +6,7 @@ include $(BASEDIR)/config
 
 ###############################################################################
 
-LIBS = \
-	$(LIBDIR)/libvisual.a
+LIBS = $(LIBDIR)/libvisual.a
 
 $(OBJDIR)/visual_mod.lo: \
 	visual_all.c $(INCDIR)/tek/mod/visual.h visual_api.c visual_mod.c visual_mod.h

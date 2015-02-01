@@ -81,7 +81,7 @@
 -------------------------------------------------------------------------------
 
 module("tek.ui.class.frame", tek.ui.class.area)
-_VERSION = "Frame 24.0"
+_VERSION = "Frame 24.2"
 local Frame = _M
 Area:newClass(Frame)
 
@@ -99,10 +99,10 @@ Area:newClass(Frame)
 #define FRAME_CLASS_NAME "tek.ui.class.frame"
 
 /* Version string: */
-#define FRAME_CLASS_VERSION "Frame 24.0"
+#define FRAME_CLASS_VERSION "Frame 24.2"
 
 /* Required tekui version: */
-#define FRAME_TEKUI_VERSION 108
+#define FRAME_TEKUI_VERSION 112
 
 /* Required major version of the Region library: */
 #define FRAME_REGION_VERSION	10

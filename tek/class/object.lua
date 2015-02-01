@@ -39,35 +39,33 @@ local setmetatable = setmetatable
 local type = type
 local unpack = unpack or table.unpack
 
-module("tek.class.object", tek.class)
-_VERSION = "Object 14.2"
-local Object = _M
-Class:newClass(Object)
+local Object = Class.module("tek.class.object", "tek.class")
+Object._VERSION = "Object 14.3"
 
 -------------------------------------------------------------------------------
 --	constants & class data:
 -------------------------------------------------------------------------------
 
 -- denotes that any value causes an object to be notified:
-NOTIFY_ALWAYS = { }
+Object.NOTIFY_ALWAYS = { }
 
 -- denotes insertion of the object itself:
-NOTIFY_SELF = function(a, n) a[a[-3]] = a[-1] return 1  end
+Object.NOTIFY_SELF = function(a, n) a[a[-3]] = a[-1] return 1  end
 
 -- denotes insertion of the value that triggered the notification:
-NOTIFY_VALUE = function(a, n) a[a[-3]] = a[0] return 1  end
+Object.NOTIFY_VALUE = function(a, n) a[a[-3]] = a[0] return 1  end
 
 -- denotes insertion of the attribute's previous value:
-NOTIFY_OLDVALUE = function(a, n) a[a[-3]] = a[-2] return 1 end
+Object.NOTIFY_OLDVALUE = function(a, n) a[a[-3]] = a[-2] return 1 end
 
 -- denotes insertion of logical negation of the value:
-NOTIFY_TOGGLE = function(a, n) a[a[-3]] = not a[0] return 1 end
+Object.NOTIFY_TOGGLE = function(a, n) a[a[-3]] = not a[0] return 1 end
 
 -- denotes insertion of the value, using the next argument as format string:
-NOTIFY_FORMAT = function(a, n) a[a[-3]] = n:format(a[0]) return 2 end
+Object.NOTIFY_FORMAT = function(a, n) a[a[-3]] = n:format(a[0]) return 2 end
 
 -- denotes insertion of a function value:
-NOTIFY_FUNCTION = function(a, n) a[a[-3]] = n return 2 end
+Object.NOTIFY_FUNCTION = function(a, n) a[a[-3]] = n return 2 end
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -151,7 +149,7 @@ function Object:setValue(key, val, notify)
 		if val ~= oldval or notify then
 			self[key] = val
 			local args = { [-2] = oldval, [-1] = self, [0] = val }
-			local n2 = n[NOTIFY_ALWAYS]
+			local n2 = n[Object.NOTIFY_ALWAYS]
 			for i = 1, 2 do
 				if n2 then
 					assert(#n2 > 0)
@@ -295,4 +293,7 @@ function Object.addClassNotifications(proto)
 	return readonly(proto.Notifications, 3)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Object.ClassNotifications = 
+	Object.addClassNotifications { Notifications = { } }
+
+return Object

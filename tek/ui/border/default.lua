@@ -1,5 +1,5 @@
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Border = require "tek.ui.class.border"
 local assert = assert
 local floor = math.floor
@@ -8,10 +8,8 @@ local min = math.min
 local tonumber = tonumber
 local unpack = unpack or table.unpack
 
-module("tek.ui.border.default", tek.ui.class.border)
-_VERSION = "DefaultBorder 9.3"
-local DefaultBorder = _M
-Border:newClass(DefaultBorder)
+local DefaultBorder = Border.module("tek.ui.border.default", "tek.ui.class.border")
+DefaultBorder._VERSION = "DefaultBorder 9.4"
 
 function DefaultBorder.new(class, self)
 	self = self or { }
@@ -185,3 +183,5 @@ function DefaultBorder:alignText(x0, x1, tw)
 	end
 	return x0, min(x1, x0 + tw - 1)
 end
+
+return DefaultBorder

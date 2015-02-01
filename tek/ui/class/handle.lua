@@ -27,7 +27,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Widget = ui.require("widget", 25)
 
 local floor = math.floor
@@ -36,10 +36,8 @@ local ipairs = ipairs
 local max = math.max
 local min = math.min
 
-module("tek.ui.class.handle", tek.ui.class.widget)
-_VERSION = "Handle 7.1"
-local Handle = _M
-Widget:newClass(Handle)
+local Handle = Widget.module("tek.ui.class.handle", "tek.ui.class.widget")
+Handle._VERSION = "Handle 7.2"
 
 -------------------------------------------------------------------------------
 -- Class implementation:
@@ -265,3 +263,5 @@ end
 function Handle:checkFocus()
 	return false
 end
+
+return Handle

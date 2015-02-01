@@ -35,7 +35,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(112)
 local Widget = ui.require("widget", 25)
 local Region = ui.loadLibrary("region", 10)
 local floor = math.floor
@@ -44,21 +44,21 @@ local tonumber = tonumber
 local type = type
 local unpack = unpack or table.unpack
 
-module("tek.ui.class.imagewidget", tek.ui.class.widget)
-_VERSION = "ImageWidget 15.1"
-local ImageWidget = _M
-Widget:newClass(ImageWidget)
+local ImageWidget = Widget.module("tek.ui.class.imagewidget", "tek.ui.class.widget")
+ImageWidget._VERSION = "ImageWidget 15.2"
 
 -------------------------------------------------------------------------------
 --	addClassNotifications: overrides
 -------------------------------------------------------------------------------
 
 function ImageWidget.addClassNotifications(proto)
-	addNotify(proto, "Image", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetImage" })
+	ImageWidget.addNotify(proto, "Image", ui.NOTIFY_ALWAYS, 
+		{ ui.NOTIFY_SELF, "onSetImage" })
 	return Widget.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+ImageWidget.ClassNotifications = 
+	ImageWidget.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -220,3 +220,5 @@ end
 function ImageWidget:onSetImage()
 	self:setImage(self.Image)
 end
+
+return ImageWidget

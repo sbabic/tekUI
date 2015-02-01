@@ -6,8 +6,7 @@ EXTRADEFS += $(WINDOWS_DEFS)
 
 ###############################################################################
 
-LIBS = \
-	$(LIBDIR)/libdisplay_win.a
+LIBS = $(LIBDIR)/libdisplay_win.a
 
 $(OBJDIR)/display_win_mod.lo: \
 	display_win_mod.c display_win_mod.h

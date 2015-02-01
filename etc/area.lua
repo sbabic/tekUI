@@ -197,7 +197,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(109)
+local ui = require "tek.ui".checkVersion(112)
 local Element = ui.require("element", 19)
 local Region = ui.loadLibrary("region", 10)
 
@@ -212,10 +212,8 @@ local newregion = Region.new
 local tonumber = tonumber
 local type = type
 
-module("tek.ui.class.area", tek.ui.class.element)
-_VERSION = "Area 57.3"
-local Area = _M
-Element:newClass(Area)
+local Area = Element.module("tek.ui.class.area", "tek.ui.class.element")
+Area._VERSION = "Area 57.5"
 
 local FL_REDRAW = ui.FL_REDRAW
 local FL_LAYOUT = ui.FL_LAYOUT
@@ -234,11 +232,12 @@ local FL_DONOTBLIT = ui.FL_DONOTBLIT
 local HUGE = ui.HUGE
 
 function Area.addClassNotifications(proto)
-	addNotify(proto, "Invisible", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetInvisible" })
+	Area.addNotify(proto, "Invisible", ui.NOTIFY_ALWAYS, 
+		{ ui.NOTIFY_SELF, "onSetInvisible" })
 	return Element.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Area.ClassNotifications = Area.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -1060,3 +1059,5 @@ function Area:onSetInvisible()
 	end
 	self:getGroup():rethinkLayout(2, true)
 end
+
+return Area

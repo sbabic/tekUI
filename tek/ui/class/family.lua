@@ -27,10 +27,8 @@ local Object = require "tek.class.object"
 local insert = table.insert
 local remove = table.remove
 
-module("tek.ui.class.family", tek.class.object)
-_VERSION = "Family 2.6"
-local Family = _M
-Object:newClass(Family)
+local Family = Object.module("tek.ui.class.family", "tek.class.object")
+Family._VERSION = "Family 2.7"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -78,3 +76,5 @@ function Family:remMember(child)
 		end
 	end
 end
+
+return Family

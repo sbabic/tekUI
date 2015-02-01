@@ -1,14 +1,12 @@
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local DrawHook = ui.require("drawhook", 3)
 local Region = ui.loadLibrary("region", 9)
 local unpack = unpack
 local newregion = Region.new
 
-module("tek.ui.class.border", tek.ui.class.drawhook)
-_VERSION = "Border 7.4"
-local Border = _M
-DrawHook:newClass(Border)
+local Border = DrawHook.module("tek.ui.class.border", "tek.ui.class.drawhook")
+Border._VERSION = "Border 7.5"
 
 function Border.new(class, self)
 	self = self or { }
@@ -36,3 +34,5 @@ function Border:getRegion()
 	b:subRect(x0, y0, x1, y1)
 	return b, x0, y0, x1, y1
 end
+
+return Border

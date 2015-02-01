@@ -53,7 +53,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(112)
 local Group = ui.require("group", 31)
 local Region = ui.loadLibrary("region", 10)
 local ScrollBar = ui.require("scrollbar", 13)
@@ -66,10 +66,8 @@ local max = math.max
 local min = math.min
 local remove = table.remove
 
-module("tek.ui.class.scrollgroup", tek.ui.class.group)
-_VERSION = "ScrollGroup 19.2"
-local ScrollGroup = _M
-Group:newClass(ScrollGroup)
+local ScrollGroup = Group.module("tek.ui.class.scrollgroup", "tek.ui.class.group")
+ScrollGroup._VERSION = "ScrollGroup 19.3"
 
 local FL_DRAW = ui.FL_SETUP + ui.FL_SHOW + ui.FL_LAYOUT
 local FL_DONOTBLIT = ui.FL_DONOTBLIT
@@ -91,11 +89,11 @@ function ScrollGroup.new(class, self)
 	self.HSliderEnabled = false
 	self.HSliderGroup = self.HSliderGroup or false
 	self.HSliderMode = self.HSliderMode or "off"
-	self.HSliderNotify = { self, "onSetSliderLeft", NOTIFY_VALUE }
-	self.NotifyHeight = { self, "onSetCanvasHeight", NOTIFY_VALUE }
-	self.NotifyLeft = { self, "onSetCanvasLeft", NOTIFY_VALUE }
-	self.NotifyTop = { self, "onSetCanvasTop", NOTIFY_VALUE }
-	self.NotifyWidth = { self, "onSetCanvasWidth", NOTIFY_VALUE }
+	self.HSliderNotify = { self, "onSetSliderLeft", ui.NOTIFY_VALUE }
+	self.NotifyHeight = { self, "onSetCanvasHeight", ui.NOTIFY_VALUE }
+	self.NotifyLeft = { self, "onSetCanvasLeft", ui.NOTIFY_VALUE }
+	self.NotifyTop = { self, "onSetCanvasTop", ui.NOTIFY_VALUE }
+	self.NotifyWidth = { self, "onSetCanvasWidth", ui.NOTIFY_VALUE }
 	self.Orientation = "horizontal"
 	self.Increment = self.Increment or 10
 	self.HIncrement = self.HIncrement or self.Increment
@@ -106,7 +104,7 @@ function ScrollGroup.new(class, self)
 	self.VSliderEnabled = false
 	self.VSliderGroup = self.VSliderGroup or false
 	self.VSliderMode = self.VSliderMode or "off"
-	self.VSliderNotify = { self, "onSetSliderTop", NOTIFY_VALUE }
+	self.VSliderNotify = { self, "onSetSliderTop", ui.NOTIFY_VALUE }
 	
 	local hslider, vslider
 
@@ -172,16 +170,16 @@ end
 function ScrollGroup:setup(app, window)
 	Group.setup(self, app, window)
 	local c = self.Child
-	c:addNotify("CanvasLeft", NOTIFY_ALWAYS, self.NotifyLeft)
-	c:addNotify("CanvasTop", NOTIFY_ALWAYS, self.NotifyTop)
-	c:addNotify("CanvasWidth", NOTIFY_ALWAYS, self.NotifyWidth)
-	c:addNotify("CanvasHeight", NOTIFY_ALWAYS, self.NotifyHeight)
+	c:addNotify("CanvasLeft", ui.NOTIFY_ALWAYS, self.NotifyLeft)
+	c:addNotify("CanvasTop", ui.NOTIFY_ALWAYS, self.NotifyTop)
+	c:addNotify("CanvasWidth", ui.NOTIFY_ALWAYS, self.NotifyWidth)
+	c:addNotify("CanvasHeight", ui.NOTIFY_ALWAYS, self.NotifyHeight)
 	if self.HSliderGroup then
-		self.HSliderGroup.Slider:addNotify("Value", NOTIFY_ALWAYS,
+		self.HSliderGroup.Slider:addNotify("Value", ui.NOTIFY_ALWAYS,
 			self.HSliderNotify)
 	end
 	if self.VSliderGroup then
-		self.VSliderGroup.Slider:addNotify("Value", NOTIFY_ALWAYS,
+		self.VSliderGroup.Slider:addNotify("Value", ui.NOTIFY_ALWAYS,
 			self.VSliderNotify)
 	end
 end
@@ -192,18 +190,18 @@ end
 
 function ScrollGroup:cleanup()
 	if self.VSliderGroup then
-		self.VSliderGroup.Slider:remNotify("Value", NOTIFY_ALWAYS,
+		self.VSliderGroup.Slider:remNotify("Value", ui.NOTIFY_ALWAYS,
 			self.VSliderNotify)
 	end
 	if self.HSliderGroup then
-		self.HSliderGroup.Slider:remNotify("Value", NOTIFY_ALWAYS,
+		self.HSliderGroup.Slider:remNotify("Value", ui.NOTIFY_ALWAYS,
 			self.HSliderNotify)
 	end
 	local c = self.Child
-	c:remNotify("CanvasHeight", NOTIFY_ALWAYS, self.NotifyHeight)
-	c:remNotify("CanvasWidth", NOTIFY_ALWAYS, self.NotifyWidth)
-	c:remNotify("CanvasTop", NOTIFY_ALWAYS, self.NotifyTop)
-	c:remNotify("CanvasLeft", NOTIFY_ALWAYS, self.NotifyLeft)
+	c:remNotify("CanvasHeight", ui.NOTIFY_ALWAYS, self.NotifyHeight)
+	c:remNotify("CanvasWidth", ui.NOTIFY_ALWAYS, self.NotifyWidth)
+	c:remNotify("CanvasTop", ui.NOTIFY_ALWAYS, self.NotifyTop)
+	c:remNotify("CanvasLeft", ui.NOTIFY_ALWAYS, self.NotifyLeft)
 	Group.cleanup(self)
 end
 
@@ -496,3 +494,5 @@ end
 function ScrollGroup:onSetSliderLeft(val)
 	self:onSetCanvasLeft(val)
 end
+
+return ScrollGroup

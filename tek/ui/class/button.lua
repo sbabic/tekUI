@@ -33,13 +33,11 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Text = ui.require("text", 28)
 
-module("tek.ui.class.button", tek.ui.class.text)
-_VERSION = "Button 2.0"
-local Button = _M
-Text:newClass(Button)
+local Button = Text.module("tek.ui.class.button", "tek.ui.class.text")
+Button._VERSION = "Button 2.1"
 
 -------------------------------------------------------------------------------
 --	Class implementation:
@@ -55,3 +53,5 @@ function Button.new(class, self)
 	self:addStyleClass("button")
 	return self
 end
+
+return Button

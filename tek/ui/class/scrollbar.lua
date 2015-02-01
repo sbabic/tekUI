@@ -55,7 +55,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Group = ui.require("group", 31)
 local ImageWidget = ui.require("imagewidget", 13)
 local Slider = ui.require("slider", 24)
@@ -63,10 +63,8 @@ local Slider = ui.require("slider", 24)
 local max = math.max
 local min = math.min
 
-module("tek.ui.class.scrollbar", tek.ui.class.group)
-_VERSION = "ScrollBar 15.3"
-local ScrollBar = _M
-Group:newClass(ScrollBar)
+local ScrollBar = Group.module("tek.ui.class.scrollbar", "tek.ui.class.group")
+ScrollBar._VERSION = "ScrollBar 15.4"
 
 -------------------------------------------------------------------------------
 --	Constants & Class data:
@@ -162,14 +160,19 @@ end
 -------------------------------------------------------------------------------
 
 function ScrollBar.addClassNotifications(proto)
-	addNotify(proto, "Value", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetValue" })
-	addNotify(proto, "Min", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetMin" })
-	addNotify(proto, "Max", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetMax" })
-	addNotify(proto, "Range", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetRange" })
+	ScrollBar.addNotify(proto, "Value", ScrollBar.NOTIFY_ALWAYS,
+		{ ScrollBar.NOTIFY_SELF, "onSetValue" })
+	ScrollBar.addNotify(proto, "Min", ScrollBar.NOTIFY_ALWAYS,
+		{ ScrollBar.NOTIFY_SELF, "onSetMin" })
+	ScrollBar.addNotify(proto, "Max", ScrollBar.NOTIFY_ALWAYS,
+		{ ScrollBar.NOTIFY_SELF, "onSetMax" })
+	ScrollBar.addNotify(proto, "Range", ScrollBar.NOTIFY_ALWAYS,
+		{ ScrollBar.NOTIFY_SELF, "onSetRange" })
 	return Group.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+ScrollBar.ClassNotifications = 
+ScrollBar.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -334,3 +337,5 @@ function ScrollBar:onSetRange()
 	self.Slider:setValue("Range", self.Range)
 	self.Range = self.Slider.Range
 end
+
+return ScrollBar

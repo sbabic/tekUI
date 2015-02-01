@@ -40,7 +40,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 
 local Frame = ui.require("frame", 21)
 local Widget = ui.require("widget", 25)
@@ -56,10 +56,8 @@ local tonumber = tonumber
 local tostring = tostring
 local type = type
 
-module("tek.ui.class.pagegroup", tek.ui.class.group)
-_VERSION = "PageGroup 19.6"
-local PageGroup = _M
-Group:newClass(PageGroup)
+local PageGroup = Group.module("tek.ui.class.pagegroup", "tek.ui.class.group")
+PageGroup._VERSION = "PageGroup 19.7"
 
 -------------------------------------------------------------------------------
 --	PageContainerGroup:
@@ -228,12 +226,14 @@ end
 -------------------------------------------------------------------------------
 
 function PageGroup.addClassNotifications(proto)
-	addNotify(proto, "PageNumber", NOTIFY_ALWAYS,
-		{ NOTIFY_SELF, "onSetPageNumber", ui.NOTIFY_VALUE, ui.NOTIFY_OLDVALUE })
+	PageGroup.addNotify(proto, "PageNumber", ui.NOTIFY_ALWAYS,
+		{ ui.NOTIFY_SELF, "onSetPageNumber", ui.NOTIFY_VALUE,
+		ui.NOTIFY_OLDVALUE })
 	return Group.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+PageGroup.ClassNotifications = 
+	PageGroup.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -358,3 +358,5 @@ function PageGroup:disablePage(num, onoff)
 		self.TabButtons[num + 1]:setValue("Disabled", onoff or false)
 	end
 end
+
+return PageGroup

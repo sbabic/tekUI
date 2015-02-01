@@ -53,7 +53,7 @@
 --
 -------------------------------------------------------------------------------
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 
 local Frame = ui.require("frame", 22)
 local Region = ui.loadLibrary("region", 9)
@@ -64,10 +64,8 @@ local max = math.max
 local intersect = Region.intersect
 local remove = table.remove
 
-module("tek.ui.class.floattext", tek.ui.class.frame)
-_VERSION = "FloatText 22.0"
-local FloatText = _M
-Frame:newClass(FloatText)
+local FloatText = Frame.module("tek.ui.class.floattext", "tek.ui.class.frame")
+FloatText._VERSION = "FloatText 22.1"
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -81,17 +79,17 @@ local FL_LAYOUT = ui.FL_LAYOUT
 -------------------------------------------------------------------------------
 
 function FloatText.addClassNotifications(proto)
-	addNotify(proto, "Text", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetText" })
+	FloatText.addNotify(proto, "Text", ui.NOTIFY_ALWAYS, { ui.NOTIFY_SELF, "onSetText" })
 	return Frame.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+FloatText.ClassNotifications = FloatText.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	Class style properties:
 -------------------------------------------------------------------------------
 
-Properties = {
+FloatText.Properties = {
 	["border-top-width"] = 0,
 	["border-right-width"] = 0,
 	["border-bottom-width"] = 0,
@@ -402,3 +400,5 @@ function FloatText:reconfigure()
 	self:initFont()
 	self:prepareText()
 end
+
+return FloatText

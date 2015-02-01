@@ -1,7 +1,7 @@
 
 local lfs = require "lfs"
 local db = require "tek.lib.debug"
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 
 local CheckMark = ui.require("checkmark", 9)
 local Display = ui.require("display", 0)
@@ -23,10 +23,8 @@ local tonumber = tonumber
 local tostring = tostring
 local type = type
 
-module("tek.ui.class.editwindow", tek.ui.class.window)
-_VERSION = "EditWindow 7.7"
-local EditWindow = _M
-Window:newClass(EditWindow)
+local EditWindow = Window.module("tek.ui.class.editwindow", "tek.ui.class.window")
+EditWindow._VERSION = "EditWindow 7.8"
 
 local MSG_MOUSEBUTTON = ui.MSG_MOUSEBUTTON
 local MSG_MOUSEMOVE = ui.MSG_MOUSEMOVE
@@ -1046,3 +1044,5 @@ end
 function EditWindow:setup(app, win)
 	Window.setup(self, app, win)
 end
+
+return EditWindow

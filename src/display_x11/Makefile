@@ -6,8 +6,7 @@ EXTRADEFS += $(X11_DEFS) $(TEKLIB_DEFS)
 
 ###############################################################################
 
-LIBS = \
-	$(LIBDIR)/libdisplay_x11.a
+LIBS = $(LIBDIR)/libdisplay_x11.a
 
 # $(OBJDIR)/display_x11_mod.lo: \
 # 	display_x11_mod.c display_x11_mod.h

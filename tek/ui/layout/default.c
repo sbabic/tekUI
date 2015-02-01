@@ -44,7 +44,7 @@ local DefaultLayout = _M
 #define DEFLAYOUT_CLASS_VERSION "Default Layout 9.2"
 
 /* Required tekui version: */
-#define DEFLAYOUT_TEKUI_VERSION 109
+#define DEFLAYOUT_TEKUI_VERSION 112
 
 /*****************************************************************************/
 

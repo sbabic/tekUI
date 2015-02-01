@@ -33,10 +33,8 @@ local max = math.max
 local min = math.min
 local remove = table.remove
 
-module("tek.class.list", tek.class)
-_VERSION = "List 3.1"
-local List = _M
-Class:newClass(List)
+local List = Class.module("tek.class.list", "tek.class")
+List._VERSION = "List 3.2"
 
 -------------------------------------------------------------------------------
 --	new: overrides
@@ -113,3 +111,5 @@ end
 function List:clear()
 	self.Items = { }
 end
+
+return List

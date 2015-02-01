@@ -86,7 +86,7 @@
 -------------------------------------------------------------------------------
 
 local db = require "tek.lib.debug"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(112)
 local Application = ui.require("application", 29)
 local Area = ui.require("area", 56)
 local Element = ui.require("element", 16)
@@ -99,10 +99,8 @@ local min = math.min
 local intersect = Region.intersect
 local tonumber = tonumber
 
-module("tek.ui.class.canvas", tek.ui.class.frame)
-_VERSION = "Canvas 37.5"
-local Canvas = _M
-Frame:newClass(Canvas)
+local Canvas = Frame.module("tek.ui.class.canvas", "tek.ui.class.frame")
+Canvas._VERSION = "Canvas 37.6"
 
 -------------------------------------------------------------------------------
 --	constants & class data:
@@ -121,11 +119,11 @@ local FL_KEEPMINHEIGHT = ui.FL_KEEPMINHEIGHT
 -------------------------------------------------------------------------------
 
 function Canvas.addClassNotifications(proto)
-	addNotify(proto, "Child", NOTIFY_ALWAYS, { NOTIFY_SELF, "onSetChild" })
+	Canvas.addNotify(proto, "Child", ui.NOTIFY_ALWAYS, { ui.NOTIFY_SELF, "onSetChild" })
 	return Frame.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+Canvas.ClassNotifications = Canvas.addClassNotifications { Notifications = { } }
 
 -------------------------------------------------------------------------------
 --	init: overrides
@@ -702,3 +700,5 @@ function Canvas:reconfigure()
 	Frame.reconfigure(self)
 	self.Child:reconfigure()
 end
+
+return Canvas

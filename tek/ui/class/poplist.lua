@@ -41,7 +41,7 @@
 
 local db = require "tek.lib.debug"
 local List = require "tek.class.list"
-local ui = require "tek.ui".checkVersion(108)
+local ui = require "tek.ui".checkVersion(112)
 
 local Canvas = ui.require("canvas", 36)
 local Widget = ui.require("widget", 25)
@@ -54,10 +54,8 @@ local assert = assert
 local insert = table.insert
 local max = math.max
 
-module("tek.ui.class.poplist", tek.ui.class.popitem)
-_VERSION = "PopList 13.5"
-local PopList = _M
-PopItem:newClass(PopList)
+local PopList = PopItem.module("tek.ui.class.poplist", "tek.ui.class.popitem")
+PopList._VERSION = "PopList 13.6"
 
 local FL_KEEPMINWIDTH = ui.FL_KEEPMINWIDTH
 
@@ -158,12 +156,12 @@ end
 -------------------------------------------------------------------------------
 
 function PopList.addClassNotifications(proto)
-	addNotify(proto, "SelectedLine", 
-		NOTIFY_ALWAYS, { NOTIFY_SELF, "onSelectLine" })
+	PopList.addNotify(proto, "SelectedLine", 
+		ui.NOTIFY_ALWAYS, { ui.NOTIFY_SELF, "onSelectLine" })
 	return PopItem.addClassNotifications(proto)
 end
 
-ClassNotifications = addClassNotifications { Notifications = { } }
+PopList.ClassNotifications = PopList.addClassNotifications { Notifications = { } }
 
 function PopList.new(class, self)
 	self = self or { }
@@ -262,3 +260,5 @@ function PopList:decodeProperties(p)
 	self.Lister:decodeProperties(p)
 	PopItem.decodeProperties(self, p)
 end
+
+return PopList

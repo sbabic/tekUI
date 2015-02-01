@@ -5,7 +5,7 @@
 --	See copyright notice in COPYRIGHT
 --
 
-local ui = require "tek.ui"
+local ui = require "tek.ui".checkVersion(112)
 local Frame = ui.Frame
 
 local floor = math.floor
@@ -14,10 +14,8 @@ local min = math.min
 local pi = math.pi
 local sin = math.sin
 
-module("tek.ui.class.boing", tek.ui.class.frame)
-_VERSION = "Boing 5.3"
-local Boing = _M
-Frame:newClass(Boing)
+local Boing = Frame.module("tek.ui.class.boing", "tek.ui.class.frame")
+Boing._VERSION = "Boing 5.4"
 
 -------------------------------------------------------------------------------
 --	Constants and class data:
@@ -119,3 +117,5 @@ end
 
 function Boing:onSetYPos(ypos)
 end
+
+return Boing
