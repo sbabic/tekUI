@@ -158,7 +158,8 @@ interface elements can be created with little effort.
  * Supplied with a documentation system supporting tekUI's object
  model
  * Support for textures, color gradients and transparency
- * A text editor is included as an example.
+ * A text editor is included as an example
+ * Inbuilt support for preemptive tasks
  
 ==( uielements : 2.2. Supported interface elements )==
 

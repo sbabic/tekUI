@@ -4,18 +4,18 @@
  * Changes to the class system, module loader and documentation system,
  no longer requires Lua 5.2, 5.3 to be compiled with LUA_COMPAT_MODULE
  * Windows HAL: Atomics enabled
- * Windows display: Added clipboard support, improved event handling, now
- using only one thread per device instance, synchronous waiting, Win64
- support, added Unicode text rendering, added better support for keyboard
- qualifiers, windows opened at fixed positions had wrong size, corrected,
- added support for bold and italic font styles
+ * Windows display: Added clipboard support, improved event handling, Win64
+ support, synchronous waiting, added Unicode text rendering, added better
+ support for keyboard qualifiers, windows opened at fixed positions had
+ wrong size, corrected, added support for bold and italic font styles
  * Visual, EditWindow, Input: added setSelection, TextEdit: uses application
  clipboard, removed class clipboard, quirky attribute retrieval corrected
  * Application: added obtainClipboard, releaseClipboard
  * Changed notes about LuaJIT and some additions to documentation
  * LuaExec: Changes merged in, in join() abort signals could be forwarded to
  already dead task, corrected by freeing task after return from exec, in
- waitmsg() fixed recalculation of waittime, returned signals should be correct
+ waitmsg() fixed recalculation of waittime, returned signals should be
+ correct now, childnotify example added to demonstrate GUI signal handlers
  * Exec: added semi-internal function TFreeTask(), user tasks are now
  freed in destructor context after their return from exec, minor cleanup
  in memory functions

@@ -20,11 +20,10 @@
 					Windows HAL: Atomics enabled
 				</li>
 				<li>
-					Windows display: Added clipboard support, improved event handling, now
-					using only one thread per device instance, synchronous waiting, Win64
-					support, added Unicode text rendering, added better support for keyboard
-					qualifiers, windows opened at fixed positions had wrong size, corrected,
-					added support for bold and italic font styles
+					Windows display: Added clipboard support, improved event handling, Win64
+					support, synchronous waiting, added Unicode text rendering, added better
+					support for keyboard qualifiers, windows opened at fixed positions had
+					wrong size, corrected, added support for bold and italic font styles
 				</li>
 				<li>
 					Visual, EditWindow, Input: added setSelection, TextEdit: uses application
@@ -39,7 +38,8 @@
 				<li>
 					LuaExec: Changes merged in, in <a href="manual.html#join"><code>join()</code></a> abort signals could be forwarded to
 					already dead task, corrected by freeing task after return from exec, in
-					<a href="manual.html#waitmsg"><code>waitmsg()</code></a> fixed recalculation of waittime, returned signals should be correct
+					<a href="manual.html#waitmsg"><code>waitmsg()</code></a> fixed recalculation of waittime, returned signals should be
+					correct now, childnotify example added to demonstrate GUI signal handlers
 				</li>
 				<li>
 					Exec: added semi-internal function <a href="manual.html#TFreeTask"><code>TFreeTask()</code></a>, user tasks are now
