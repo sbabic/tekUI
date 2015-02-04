@@ -117,14 +117,14 @@ typedef struct
 	/* screen size: */
 	TINT fbd_ScreenWidth, fbd_ScreenHeight;
 	
-	/* pooled input messages: */
-	struct TList fbd_IMsgPool;
 	/* list of all visuals: */
 	struct TList fbd_VisualList;
 	/* Module global memory manager (thread safe): */
 	struct TMemManager *fbd_MemMgr;
 
 	struct FontManager fbd_FontManager;
+
+	struct TTask *fbd_InputTask;
 
 	HWND fbd_DeviceHWnd;
 	HDC fbd_DeviceHDC;
@@ -154,10 +154,9 @@ typedef struct
 	WINDISPLAY *fbv_Display;
 
 	/* Window extents: */
+	CRITICAL_SECTION fbv_LockExtents;
 	TUINT fbv_Left, fbv_Top;
 	TUINT fbv_Width, fbv_Height;
-
-	TINT fbv_PixelPerLine;
 
 	/* list of allocated pens: */
 	struct TList penlist;
@@ -241,7 +240,7 @@ LOCAL unsigned char *encodeutf8(unsigned char *buf, int c);
 LOCAL TBOOL fb_init(WINDISPLAY *mod, TTAGITEM *tags);
 LOCAL TBOOL fb_getimsg(WINDISPLAY *mod, WINWINDOW *v, TIMSG **msgptr,
 	TUINT type);
-LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval);
+LOCAL void fb_sendimessages(WINDISPLAY *mod);
 
 LOCAL void win_getminmax(WINWINDOW *win, TINT *pm1, TINT *pm2, TINT *pm3,
 	TINT *pm4, TBOOL windowsize);

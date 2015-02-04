@@ -6,6 +6,8 @@
 **	See copyright notice in teklib/COPYRIGHT
 */
 
+#include <tek/exec.h>
+#include <tek/mod/exec.h>
 #include <tek/mod/hal.h>
 #include <tek/mod/winnt/hal.h>
 #include "../hal/hal_mod.h"
@@ -22,11 +24,16 @@ static TMODAPI TINT fb_abortio(WINDISPLAY *mod, struct TVRequest *req);
 static TMODAPI struct TVRequest *fb_allocreq(WINDISPLAY *mod);
 static TMODAPI void fb_freereq(WINDISPLAY *mod, struct TVRequest *req);
 static void fb_docmd(WINDISPLAY *mod, struct TVRequest *req);
-static void fb_notifywindows(WINDISPLAY *mod);
+static void fb_forwardreq(WINDISPLAY *mod, struct TVRequest *req);
+static void fb_dointaskcmd(WINDISPLAY *mod, struct TVRequest *req);
+static void fb_intaskflush(WINDISPLAY *mod);
+LOCAL void fb_sendinterval(WINDISPLAY *mod);
 static VOID CALLBACK
 dev_timerproc(HWND hDevWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 static LRESULT CALLBACK
 win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+static THOOKENTRY TTAG
+fb_intask(struct THook *hook, TAPTR obj, TTAG msg);
 
 static const TMFPTR
 fb_vectors[FB_DISPLAY_NUMVECTORS] =
@@ -204,9 +211,6 @@ fb_init(WINDISPLAY *mod, TTAGITEM *tags)
 			tags);
 		if (mod->fbd_Task == TNULL) break;
 
-		mod->fbd_CmdPort = TGetUserPort(mod->fbd_Task);
-		mod->fbd_CmdPortSignal = TGetPortSignal(mod->fbd_CmdPort);
-
 		return TTRUE;
 	}
 
@@ -237,9 +241,12 @@ static TBOOL fb_initinstance(TAPTR task)
 
 	for (;;)
 	{
+		struct THook ithook;
 		TTAGITEM ftags[3];
 		WNDCLASSEX wclass, pclass;
 		RECT rect;
+
+		mod->fbd_InputTask = NULL;
 
 		mod->fbd_HInst = GetModuleHandle(NULL);
 		if (mod->fbd_HInst == TNULL)
@@ -291,9 +298,6 @@ static TBOOL fb_initinstance(TAPTR task)
 
 		mod->fbd_DeviceHDC = GetDC(mod->fbd_DeviceHWnd);
 
-		/* list of free input messages: */
-		TInitList(&mod->fbd_IMsgPool);
-
 		/* list of all open visuals: */
 		TInitList(&mod->fbd_VisualList);
 
@@ -314,6 +318,14 @@ static TBOOL fb_initinstance(TAPTR task)
 		mod->fbd_ScreenWidth = rect.right;
 		mod->fbd_ScreenHeight = rect.bottom;
 
+		TInitHook(&ithook, &fb_intask, mod);
+		mod->fbd_InputTask = TCreateTask(&ithook, NULL);
+		if (! mod->fbd_InputTask)
+			break;
+
+		mod->fbd_CmdPort = TGetUserPort(mod->fbd_Task);
+		mod->fbd_CmdPortSignal = TGetPortSignal(mod->fbd_CmdPort);
+
 		TDBPRINTF(TDB_TRACE,("Instance init successful\n"));
 		return TTRUE;
 	}
@@ -328,9 +340,12 @@ fb_exitinstance(WINDISPLAY *mod)
 	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TNode *imsg, *node, *next;
 
-	/* free pooled input messages: */
-	while ((imsg = TRemHead(&mod->fbd_IMsgPool)))
-		TFree(imsg);
+	/* signal and wait for termination of input task: */
+	if (mod->fbd_InputTask != NULL)
+	{
+		TSignal(mod->fbd_InputTask, TTASK_SIG_ABORT);
+		TDestroy((struct THandle *) mod->fbd_InputTask);
+	}
 
 	/* free queued input messages in all open visuals: */
 	node = mod->fbd_VisualList.tlh_Head.tln_Succ;
@@ -368,10 +383,6 @@ static void fb_runinstance(TAPTR task)
 	struct TExecBase *TExecBase = TGetExecBase(task);
 	WINDISPLAY *mod = TGetTaskData(task);
 
-	struct THALBase *hal = TGetHALBase();
-	struct HALSpecific *hws = hal->hmb_Specific;
-	struct HALThread *wth = TlsGetValue(hws->hsp_TLSIndex);
-
 	struct TVRequest *req;
 	TUINT sig;
 
@@ -387,29 +398,29 @@ static void fb_runinstance(TAPTR task)
 
 	do
 	{
-		TBOOL do_interval = TFALSE;
-		MSG msg;
+		TBOOL reqServiced = TFALSE;
+		TTIME *timeout = TNULL;
 
-		/* process output messages: */
+		/* process commands */
 		while ((req = TGetMsg(mod->fbd_CmdPort)))
 		{
 			fb_docmd(mod, req);
 			TReplyMsg(req);
-		}
 
-		/* process input messages: */
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			reqServiced = TTRUE;
+
+			/* promote bulk processing */
+			#ifdef YieldProcessor
+			YieldProcessor();
+			#endif
+			Sleep(0);
 		}
 
 		/* check if time interval has expired: */
 		TGetSystemTime(&nowt);
 		if (TCmpTime(&nowt, &nextt) > 0)
 		{
-			/* expired; send interval: */
-			do_interval = TTRUE;
+			/* expired; schedule next interval message: */
 			TAddTime(&nextt, &intt);
 			if (TCmpTime(&nowt, &nextt) >= 0)
 			{
@@ -417,32 +428,25 @@ static void fb_runinstance(TAPTR task)
 				nextt = nowt;
 				TAddTime(&nextt, &intt);
 			}
+			/* send interval messages to subscribers: */
+			if (mod->fbd_NumInterval > 0)
+				fb_sendinterval(mod);
 		}
 
-		/* calculate new delta to wait: */
-		waitt = nextt;
-		TSubTime(&waitt, &nowt);
-
-		/* send out input messages: */
-		fb_sendimessages(mod, do_interval);
-
+		/* calculate timeout when subscribers for interval messages: */
 		if (mod->fbd_NumInterval > 0)
 		{
-			/* unless input available sleep until output or timeout: */
-			if (!PeekMessage(& msg, NULL, 0, 0, PM_NOREMOVE))
-				TWaitTime(&waitt, mod->fbd_CmdPortSignal);
-		}
-		else
-		{
-			/* if no output is available sleep until messages arrive: */
-			sig = TSetSignal(0, mod->fbd_CmdPortSignal);
-			if (!(sig & (mod->fbd_CmdPortSignal | TTASK_SIG_ABORT)))
-				MsgWaitForMultipleObjects(1, & wth->hth_SigEvent, FALSE,
-			                          	  INFINITE, QS_ALLEVENTS);
+			waitt = nextt;
+			TSubTime(&waitt, &nowt);
+			timeout = &waitt;
 		}
 
-		/* get signal state: */
-		sig = TSetSignal(0, TTASK_SIG_ABORT);
+		/* wake up input thread (to process invalidation?): */
+		if (reqServiced)
+			TSignal(mod->fbd_InputTask, TTASK_SIG_USER);
+
+		/* sleep until incoming messages or timeout: */
+		sig = TWaitTime(timeout, mod->fbd_CmdPortSignal | TTASK_SIG_ABORT);
 
 	} while (!(sig & TTASK_SIG_ABORT));
 
@@ -452,16 +456,82 @@ static void fb_runinstance(TAPTR task)
 
 /*****************************************************************************/
 
-static void
-fb_docmd(WINDISPLAY *mod, struct TVRequest *req)
+static THOOKENTRY TTAG
+fb_intask(struct THook *hook, TAPTR obj, TTAG msg)
 {
+	WINDISPLAY *mod = (WINDISPLAY *) hook->thk_Data;
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	struct THALBase *hal = TGetHALBase();
+	struct HALSpecific *hws = hal->hmb_Specific;
+	struct HALThread *wth = TlsGetValue(hws->hsp_TLSIndex);
+	struct TMsgPort* cmdPort;
+	TUINT cmdPortSignal;
+	TUINT sig = 0;
+
+	if (msg != TMSG_RUNTASK)
+		return TTRUE;
+
+	cmdPort = TGetUserPort(TNULL);
+	cmdPortSignal = TGetPortSignal(cmdPort);
+
+	do
+	{
+		MSG msg;
+
+		/* queue input messages: */
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE | PM_NOYIELD))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		fb_intaskflush(mod);
+
+		/* consume and eventually process pending signals: */
+		sig = TSetSignal(0, cmdPortSignal | TTASK_SIG_ABORT);
+		if (!(sig & (cmdPortSignal | TTASK_SIG_ABORT)))
+		{
+			/* wait for the arrival of messages or signals: */
+			MsgWaitForMultipleObjects(1, & wth->hth_SigEvent, FALSE,
+									  INFINITE, QS_ALLEVENTS);
+
+			sig = TSetSignal(0, TTASK_SIG_ABORT);
+		}
+
+	} while (!(sig & TTASK_SIG_ABORT));
+
+	return 0;
+}
+
+static void fb_intaskflush(WINDISPLAY *mod)
+{
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	struct TMsgPort* cmdPort = TGetUserPort(TNULL);
+	struct TVRequest *req;
+
+	/* flush queue: */
+	fb_sendimessages(mod);
+
+	/* process certain commands in this thread: */
+	while ((req = TGetMsg(cmdPort)))
+	{
+		fb_dointaskcmd(mod, req);
+		TReplyMsg(req);
+	}
+}
+
+/*****************************************************************************/
+
+static void fb_docmd(WINDISPLAY *mod, struct TVRequest *req)
+{
+	/*TDBPRINTF(20,("Command: %08x\n", req->tvr_Req.io_Command));*/
 	switch (req->tvr_Req.io_Command)
 	{
 		case TVCMD_OPENWINDOW:
-			fb_openwindow(mod, req);
-			break;
 		case TVCMD_CLOSEWINDOW:
-			fb_closewindow(mod, req);
+		case TVCMD_SETINPUT:
+		case TVCMD_SETATTRS:
+			fb_forwardreq(mod, req);
 			break;
 		case TVCMD_OPENFONT:
 			fb_openfont(mod, req);
@@ -481,14 +551,8 @@ fb_docmd(WINDISPLAY *mod, struct TVRequest *req)
 		case TVCMD_GETNEXTFONT:
 			fb_getnextfont(mod, req);
 			break;
-		case TVCMD_SETINPUT:
-			fb_setinput(mod, req);
-			break;
 		case TVCMD_GETATTRS:
 			fb_getattrs(mod, req);
-			break;
-		case TVCMD_SETATTRS:
-			fb_setattrs(mod, req);
 			break;
 		case TVCMD_ALLOCPEN:
 			fb_allocpen(mod, req);
@@ -553,33 +617,70 @@ fb_docmd(WINDISPLAY *mod, struct TVRequest *req)
 	}
 }
 
+static void fb_forwardreq(WINDISPLAY *mod, struct TVRequest *req)
+{
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	struct TMsgPort* port = TGetUserPort(mod->fbd_InputTask);
+	struct TVRequest *fwd = TAllocMsg(sizeof(struct TVRequest));
+	TCopyMem(req, fwd, sizeof(struct TVRequest));
+	TSendMsg(port, fwd);
+	switch (req->tvr_Req.io_Command)
+	{
+		case TVCMD_OPENWINDOW:
+			req->tvr_Op.OpenWindow.Window = fwd->tvr_Op.OpenWindow.Window;
+			break;
+		case TVCMD_CLOSEWINDOW:
+			break;
+		case TVCMD_SETINPUT:
+			req->tvr_Op.SetInput.OldMask = fwd->tvr_Op.SetInput.OldMask;
+			break;
+		case TVCMD_SETATTRS:
+			req->tvr_Op.SetAttrs.Num = fwd->tvr_Op.SetAttrs.Num;
+			break;
+	}
+	TFree(fwd);
+}
+
+static void fb_dointaskcmd(WINDISPLAY *mod, struct TVRequest *req)
+{
+	switch (req->tvr_Req.io_Command)
+	{
+		case TVCMD_OPENWINDOW:
+			fb_openwindow(mod, req);
+			break;
+		case TVCMD_CLOSEWINDOW:
+			fb_closewindow(mod, req);
+			break;
+		case TVCMD_SETINPUT:
+			fb_setinput(mod, req);
+			break;
+		case TVCMD_SETATTRS:
+			fb_setattrs(mod, req);
+			break;
+	}
+}
+
 /*****************************************************************************/
 
 LOCAL TBOOL
 fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
-	TIMSG *msg;
-	TBOOL res = TFALSE;
-
-	msg = (TIMSG *) TRemHead(&mod->fbd_IMsgPool);
-	if (msg == TNULL)
-		msg = TAllocMsg0(sizeof(TIMSG));
-	if (msg)
+	TIMSG *msg = TAllocMsg0(sizeof(TIMSG));
+	if (!msg)
 	{
-		msg->timsg_Instance = win;
-		msg->timsg_UserData = win->fbv_UserData;
-		msg->timsg_Type = type;
-		msg->timsg_Qualifier = mod->fbd_KeyQual;
-		msg->timsg_MouseX = win->fbv_MouseX;
-		msg->timsg_MouseY = win->fbv_MouseY;
-		TGetSystemTime(&msg->timsg_TimeStamp);
-		*msgptr = msg;
-		res = TTRUE;
-	}
-	else
 		*msgptr = TNULL;
-	return res;
+		return TFALSE;
+	}
+	msg->timsg_Instance = win;
+	msg->timsg_UserData = win->fbv_UserData;
+	msg->timsg_Type = type;
+	msg->timsg_Qualifier = mod->fbd_KeyQual;
+	msg->timsg_MouseX = win->fbv_MouseX;
+	msg->timsg_MouseY = win->fbv_MouseY;
+	TGetSystemTime(&msg->timsg_TimeStamp);
+	*msgptr = msg;
+	return  TTRUE;
 }
 
 LOCAL WINWINDOW*
@@ -599,7 +700,7 @@ fb_getcrossimsg(WINDISPLAY *mod, HWND hwnd, TIMSG **msgptr, TUINT type)
 	return win;
 }
 
-LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval)
+LOCAL void fb_sendimessages(WINDISPLAY *mod)
 {
 	struct TExecBase *TExecBase = TGetExecBase(mod);
 	struct TNode *next, *node = mod->fbd_VisualList.tlh_Head.tln_Succ;
@@ -607,16 +708,24 @@ LOCAL void fb_sendimessages(WINDISPLAY *mod, TBOOL do_interval)
 	{
 		WINWINDOW *v = (WINWINDOW *) node;
 		TIMSG *imsg;
-
-		if (do_interval && (v->fbv_InputMask & TITYPE_INTERVAL) &&
-			fb_getimsg(mod, v, &imsg, TITYPE_INTERVAL))
-			TPutMsg(v->fbv_IMsgPort, TNULL, imsg);
-
 		while ((imsg = (TIMSG *) TRemHead(&v->fbv_IMsgQueue)))
 			TPutMsg(v->fbv_IMsgPort, TNULL, imsg);
 	}
 }
 
+LOCAL void fb_sendinterval(WINDISPLAY *mod)
+{
+	struct TExecBase *TExecBase = TGetExecBase(mod);
+	struct TNode *next, *node = mod->fbd_VisualList.tlh_Head.tln_Succ;
+	for (; (next = node->tln_Succ); node = next)
+	{
+		WINWINDOW *v = (WINWINDOW *) node;
+		TIMSG *imsg;
+		if ((v->fbv_InputMask & TITYPE_INTERVAL)
+				&& fb_getimsg(mod, v, &imsg, TITYPE_INTERVAL))
+			TPutMsg(v->fbv_IMsgPort, TNULL, imsg);
+	}
+}
 
 /*****************************************************************************/
 
@@ -810,7 +919,9 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				LPMINMAXINFO mm = (LPMINMAXINFO) lParam;
 				TINT m1, m2, m3, m4;
+				EnterCriticalSection(&win->fbv_LockExtents);
 				win_getminmax(win, &m1, &m2, &m3, &m4, TTRUE);
+				LeaveCriticalSection(&win->fbv_LockExtents);
 				mm->ptMinTrackSize.x = m1;
 				mm->ptMinTrackSize.y = m2;
 				mm->ptMaxTrackSize.x = m3;
@@ -837,6 +948,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					}
 					EndPaint(win->fbv_HWnd, &ps);
 				}
+				fb_intaskflush(mod);
 				return 0;
 			}
 
@@ -912,17 +1024,47 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				return 0;
 
+			case WM_MOVE:
+			{
+				TUINT w, h;
+				EnterCriticalSection(&win->fbv_LockExtents);
+				win->fbv_Left = LOWORD(lParam);
+				win->fbv_Top = HIWORD(lParam);
+				w = win->fbv_Width;
+				h = win->fbv_Height;
+				LeaveCriticalSection(&win->fbv_LockExtents);
+
+				if ((win->fbv_InputMask & TITYPE_REFRESH) &&
+					(fb_getimsg(mod, win, &imsg, TITYPE_REFRESH)))
+				{
+					imsg->timsg_X = 0;
+					imsg->timsg_Y = 0;
+					imsg->timsg_Width = w;
+					imsg->timsg_Height = h;
+					TDBPRINTF(TDB_TRACE,("dirty: %d %d %d %d\n",
+						imsg->timsg_X, imsg->timsg_Y, imsg->timsg_Width,
+						imsg->timsg_Height));
+					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
+				}
+				fb_intaskflush(mod);
+				return 0;
+			}
+
 			case WM_SIZE:
+				EnterCriticalSection(&win->fbv_LockExtents);
 				win->fbv_Width = LOWORD(lParam);
 				win->fbv_Height = HIWORD(lParam);
+				LeaveCriticalSection(&win->fbv_LockExtents);
+
 				if ((win->fbv_InputMask & TITYPE_NEWSIZE) &&
 					(fb_getimsg(mod, win, &imsg, TITYPE_NEWSIZE)))
 				{
-					imsg->timsg_Width = win->fbv_Width;
-					imsg->timsg_Height = win->fbv_Height;
+					imsg->timsg_Width = LOWORD(lParam);
+					imsg->timsg_Height = HIWORD(lParam);
 					TAddTail(&win->fbv_IMsgQueue, &imsg->timsg_Node);
 				}
-				break;
+				fb_intaskflush(mod);
+				return 0;
 
 			case WM_CAPTURECHANGED:
 				TDBPRINTF(TDB_TRACE,("Capture changed %p\n", win));

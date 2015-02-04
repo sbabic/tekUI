@@ -41,6 +41,8 @@ fb_openwindow(WINDISPLAY *mod, struct TVRequest *req)
 
 		TInitList(&win->penlist);
 
+		InitializeCriticalSection(&win->fbv_LockExtents);
+
 		win->fbv_Width = (TUINT) TGetTag(tags, TVisual_Width, FB_DEF_WIDTH);
 		win->fbv_Height = (TUINT) TGetTag(tags, TVisual_Height, FB_DEF_HEIGHT);
 		win->fbv_Left = (TUINT) TGetTag(tags, TVisual_WinLeft, 0xffffffff);
@@ -244,7 +246,7 @@ fb_setinput(WINDISPLAY *mod, struct TVRequest *req)
 	v->fbv_InputMask = newmask;
 	TDBPRINTF(TDB_TRACE,("Setinputmask: %08x\n", v->fbv_InputMask));
 	/* spool out possible remaining messages: */
-	fb_sendimessages(mod, TFALSE);
+	fb_sendimessages(mod);
 }
 
 /*****************************************************************************/
@@ -522,8 +524,10 @@ fb_unsetcliprect(WINDISPLAY *mod, struct TVRequest *req)
 	SelectClipRgn(win->fbv_HDC, NULL);
 	cr->left = 0;
 	cr->top = 0;
+	EnterCriticalSection(&win->fbv_LockExtents);
 	cr->right = win->fbv_Width;
 	cr->bottom = win->fbv_Height;
+	LeaveCriticalSection(&win->fbv_LockExtents);
 }
 
 /*****************************************************************************/
@@ -538,8 +542,10 @@ fb_clear(WINDISPLAY *mod, struct TVRequest *req)
 		RECT r;
 		r.left = 0;
 		r.top = 0;
+		EnterCriticalSection(&win->fbv_LockExtents);
 		r.right = win->fbv_Width;
 		r.bottom = win->fbv_Height;
+		LeaveCriticalSection(&win->fbv_LockExtents);
 		FillRect(win->fbv_HDC, &r, ((struct FBPen *) pen)->brush);
 	}
 }
@@ -734,7 +740,6 @@ fb_getattrs(WINDISPLAY *mod, struct TVRequest *req)
 {
 	struct attrdata data;
 	struct THook hook;
-	RECT wrect;
 	WINWINDOW *win = req->tvr_Op.GetAttrs.Window;
 
 	data.v = win;
@@ -742,14 +747,10 @@ fb_getattrs(WINDISPLAY *mod, struct TVRequest *req)
 	data.mod = mod;
 	TInitHook(&hook, getattrfunc, &data);
 
-	GetWindowRect(win->fbv_HWnd, &wrect);
-
-	win->fbv_Left = wrect.left + win->fbv_BorderLeft;
-	win->fbv_Top = wrect.top + win->fbv_BorderHeight;
-	win->fbv_Width = wrect.right - wrect.left - win->fbv_BorderWidth;
-	win->fbv_Height = wrect.bottom - wrect.top - win->fbv_BorderHeight;
-
+	EnterCriticalSection(&win->fbv_LockExtents);
 	TForEachTag(req->tvr_Op.GetAttrs.Tags, &hook);
+	LeaveCriticalSection(&win->fbv_LockExtents);
+
 	req->tvr_Op.GetAttrs.Num = data.num;
 }
 
@@ -794,29 +795,41 @@ fb_setattrs(WINDISPLAY *mod, struct TVRequest *req)
 	struct attrdata data;
 	struct THook hook;
 	WINWINDOW *win = req->tvr_Op.SetAttrs.Window;
-	TINT neww, newh;
+	TINT noww, nowh, neww, newh, minw, minh;
 	data.v = win;
 	data.num = 0;
 	data.mod = mod;
 	data.neww = -1;
 	data.newh = -1;
 	TInitHook(&hook, setattrfunc, &data);
+
+	EnterCriticalSection(&win->fbv_LockExtents);
+
 	TForEachTag(req->tvr_Op.SetAttrs.Tags, &hook);
-	req->tvr_Op.SetAttrs.Num = data.num;
 
 	win_getminmax(win, &win->fbv_MinWidth, &win->fbv_MinHeight,
 		&win->fbv_MaxWidth, &win->fbv_MaxHeight, TFALSE);
-	neww = data.neww < 0 ? (TINT) win->fbv_Width : data.neww;
-	newh = data.newh < 0 ? (TINT) win->fbv_Height : data.newh;
 
-	if (neww < win->fbv_MinWidth || newh < win->fbv_MinHeight)
+	noww = (TINT) win->fbv_Width;
+	nowh = (TINT) win->fbv_Height;
+	minw = (TINT) win->fbv_MinWidth;
+	minh = (TINT) win->fbv_MinHeight;
+
+	LeaveCriticalSection(&win->fbv_LockExtents);
+
+	neww = data.neww < 0 ? noww : data.neww;
+	newh = data.newh < 0 ? nowh : data.newh;
+
+	if (neww < minw || newh < minh)
 	{
-		neww = TMAX(neww, win->fbv_MinWidth);
-		newh = TMAX(newh, win->fbv_MinHeight);
+		neww = TMAX(neww, minw);
+		newh = TMAX(newh, minh);
 		neww += win->fbv_BorderWidth;
 		newh += win->fbv_BorderHeight;
 		SetWindowPos(win->fbv_HWnd, NULL, 0, 0, neww, newh, SWP_NOMOVE);
 	}
+
+	req->tvr_Op.SetAttrs.Num = data.num;
 }
 
 /*****************************************************************************/
