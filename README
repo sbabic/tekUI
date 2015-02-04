@@ -5,7 +5,7 @@
   - 1.1. [[#license : License]]
   - 1.2. [[#status : Status, requirements]]
   - 1.3. [[#support : Support and services]]
-  - 1.4. [[#authors : Authors and contact]]
+  - 1.4. [[#authors : Authors, links, downloads]]
 
  - 2. [[#overview : Technical overview]]
   - 2.1. [[#features : General features]]
@@ -17,7 +17,8 @@
   - 2.7. [[#xmlapps : Writing applications in XML]]
   - 2.8. [[#documentation : Documentation system]]
   - 2.9. [[#embedded : Fitness for the use in embedded systems]]
-  - 2.10. [[#futureplans : Future plans]]
+  - 2.10. [[#multitasking : Multitasking interface]]
+  - 2.11. [[#futureplans : Future plans]]
 
  - 3. [[#buildinstall : Building and installing]]
   - 3.1. [[#requirements : Requirements]]
@@ -97,9 +98,9 @@ are available under a commercial license – see below.
 ==( status : 1.2. Status, requirements )==
 
 TekUI is slowly approaching feature completeness ("beta" stadium). It
-is available for Windows and Unix-like operating systems such as Linux,
-BSD, Solaris and HP-UX, and it may work on other flavours of Unix with
-few modifications.
+is available for Windows and Unix-like operating systems such as
+Linux, BSD, Mac OS X, Solaris and HP-UX, and it may work on other
+flavours of Unix with few modifications.
 
 Display drivers are included for X11, Windows, Linux framebuffer,
 raw memory, and DirectFB. See also [[TODO][todo.html]] for a list of
@@ -113,20 +114,24 @@ elements, and support and services for the integration of tekUI into
 your products are available from the authors – see below. A
 commercially licensed and supported version is available on request.
 
-==( authors : 1.4. Authors and contact )==
+==( authors : 1.4. Authors, links, downloads )==
 
-Authors:
+Authors and contributors:
  - Timm S. Müller <tmueller at schulze-mueller.de>
  - Franciska Schulze <fschulze at schulze-mueller.de>
+ - Tobias Schwinger <tschwinger at isonews2.com>
 
 Open source project website:
  - http://tekui.neoscientists.org/
 
-Product website:
- - http://www.schulze-mueller.de/products.html
+Release downloads:
+ - http://tekui.neoscientists.org/releases/
 
 Mailing list:
  - http://lists.neoscientists.org/mailman/listinfo/tekui-devel
+
+Product website:
+ - http://www.schulze-mueller.de/products.html
 
 ---------------------------------------------------------------------
 
@@ -150,7 +155,7 @@ interface elements can be created with little effort.
  * Allows for multi-windowed, tabbed and fullscreen applications
  * Incremental refresh logic with minimal overdraw
  * Concurrency thanks to inbuilt support for dispatching to
- coroutines
+ coroutines, preemptive tasks also supported
  * Applications can be written in Lua code, nested expressions, or
  XML. The XML launcher can validate against the actual implementation
  * Works unmodified with stock (double precision), single precision
@@ -159,7 +164,6 @@ interface elements can be created with little effort.
  model
  * Support for textures, color gradients and transparency
  * A text editor is included as an example
- * Inbuilt support for preemptive tasks
  
 ==( uielements : 2.2. Supported interface elements )==
 
@@ -185,14 +189,20 @@ interface elements can be created with little effort.
 
 ==( deployment : 2.3. Deployment )==
 
-The only language currently supported for writing applications in is
-Lua, and application programmers will have to use existing Lua
-modules or create their own C bindings for communicating with their
-host. 
+Languages and formats currently supported for writing applications in
+are Lua, and to some lesser extent, XML. Applications can communicate
+with their host using
 
-The package comes with examples that demonstrate the communication
-via file streams, datagram sockets (using Luasocket), and pipes
-between parent and child processes (using luaposix).
+ * C bindings
+ * I/O streams (see meter example)
+ * datagram sockets (see socketmessage example, using LuaSocket)
+ * pipes between parent and child process (see childprocess example,
+ using luaposix)
+ * inter-task messages and signals (see childtask and childnotify
+ examples)
+ 
+See also [[#futureplans : Future plans]] and 
+[[#xmlapps : Writing applications in XML]].
 
 ==( themes : 2.4. Style sheets and themes )==
 
@@ -281,9 +291,9 @@ TekUI is as embeddable as Lua itself. Global data is basically
 absent; there are a few extras requiring them, {{ENABLE_XSHM}}
 and {{ENABLE_LAZY_SINGLETON}}, that can be disabled or reworked.
 Resting on an OS-like abstraction, it can be taken to environments
-with no operation system at all, if just memory and a minimal
-threading API is present: create, wait, signal, and e.g. atomic
-in-/decrement. A display driver can be written on that premise and
+with no operating system at all, if just memory and a minimal
+threading API is present (create, wait, signal, and e.g. atomic
+in-/decrement). A display driver can be written on that premise and
 tekUI's C library alone.
 
 Complete solutions based on tekUI are in the reach of 512KiB ROM or
@@ -300,7 +310,22 @@ expensive features like style sheet support, by porting certain
 classes to C, using display drivers which are more tightly connected
 to the hardware, etc.
 
-==( futureplans : 2.10. Future plans )===
+==( multitasking : 2.10. LuaExec multitasking interface )==
+
+TekUI rests on a C library that can provide preemptive multitasking
+not only to GUI programs, but to all kinds of Lua applications. It
+is fully contained in the tekUI package, but it can be used
+independently and is also available as a separate project,
+[[LuaExec][http://luaexec.neoscientists.org/]], which also provides
+a [[tutorial and primer][http://luaexec.neoscientists.org/#tutorial]]
+on multitasking.
+
+==( futureplans : 2.11. Future plans )===
+
+Since version 1.12 tekUI supports messaging and signals between
+preemptive tasks. While these are already available to Lua programs,
+future versions shall additionally provide a C library interface for
+the same purpose. See also above on tekUI's multitasking interface.
 
 One future development goal is to fold the tekUI framework into
 a freestanding C library, which enables applications to create
@@ -329,7 +354,7 @@ between GUI elements as well as many application tasks.
 Development tools and libraries alongside with their tested versions
 (as of this writing) are given below:
 
- * Lua 5.1/5.2/5.3
+ * Lua 5.1, 5.2 or 5.3
  * >=libX11-1.1.3 (for the x11 driver)
   * >=libXft-2.1.12 (for the x11 driver, enabled by default)
   * >=fontconfig-2.5.0 (for the x11 driver, enabled by default)
@@ -395,11 +420,10 @@ the compiler to {{clang}}.
 
 ===( notewindows : 3.2.3. Windows notes )===
 
-The native Windows driver was very incomplete and shabbily supported
-for a long time, but recently we received a number of high-class
-contributions and spent a lot of additional effort on this driver.
-Functionally it should be mostly on par and it's running more crisply
-than X11 now.
+The native Windows display driver was incomplete, slow and shabbily
+supported for a long time, but we have received a number of
+high-class contributions and spent some additional effort on this
+driver. It is functionally on par now and runs crisply.
 
 For adjusting the build environment, see the {{config}} file. We can
 recommend using the MSYS shell and MinGW under Windows, or to
@@ -491,7 +515,7 @@ noncritical exceptions:
 ===( noteluajit : 3.2.9 LuaJIT support )===
 
 TekUI works with LuaJIT 2.0 - as long as tekUI's
-[[manual.html#tek.lib.exec : multitasking interface]] is not used,
+[[#multitasking : multitasking interface]] is not used,
 and possibly even then, provided that LuaJIT implements or can be
 made to implement {{lua_newstate()}} without reporting an error.
 On x86_64 this has been found to not be the case. Currently the

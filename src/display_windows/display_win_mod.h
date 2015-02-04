@@ -39,8 +39,6 @@
 #define EXPORT TMODAPI
 #endif
 
-#define WIN_UTF8_BUFSIZE 4096
-
 /*****************************************************************************/
 /*
 **	Fonts
@@ -139,8 +137,6 @@ typedef struct
 
 	TINT fbd_NumInterval;
 
-	char fbd_utf8buffer[WIN_UTF8_BUFSIZE];
-	
 	TUINT fbd_KeyQual;
 	BYTE fbd_KeyState[256];
 
@@ -285,8 +281,5 @@ LOCAL TINT fb_hosttextsize(WINDISPLAY *mod, TAPTR font, TSTRPTR text, TSIZE len)
 LOCAL THOOKENTRY TTAG fb_hostgetfattrfunc(struct THook *hook, TAPTR obj,
 	TTAG msg);
 LOCAL TAPTR fb_hostqueryfonts(WINDISPLAY *mod, TTAGITEM *tags);
-
-LOCAL TSTRPTR fb_utf8tolatin(WINDISPLAY *mod, TSTRPTR utf8string, TINT len,
-	TINT *bytelen);
 
 #endif /* _TEK_DISPLAY_WINDOWS_MOD_H */

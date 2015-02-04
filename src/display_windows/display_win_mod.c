@@ -1230,19 +1230,3 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-/*****************************************************************************/
-/*
-**	convert an utf8 encoded string to latin-1
-*/
-
-LOCAL TSTRPTR fb_utf8tolatin(WINDISPLAY *mod, TSTRPTR utf8string, TINT utf8len,
-	TINT *bytelen)
-{
-	TUINT8 *latin = (TUINT8 *) mod->fbd_utf8buffer;
-	size_t len = utf8tolatin((const unsigned char *) utf8string, utf8len,
-		latin, WIN_UTF8_BUFSIZE, 0xbf);
-	if (bytelen)
-		*bytelen = len;
-	return (TSTRPTR) latin;
-}
-
