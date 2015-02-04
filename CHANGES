@@ -1,6 +1,8 @@
 
 == tekUI Changelog ==
 
+=== 1.12: ===
+
  * Changes to the class system, module loader and documentation system,
  no longer requires Lua 5.2, 5.3 to be compiled with LUA_COMPAT_MODULE
  * Windows HAL: Atomics enabled
