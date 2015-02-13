@@ -99,7 +99,7 @@ local tonumber = tonumber
 local unpack = unpack or table.unpack
 
 local Display = Element.module("tek.ui.class.display", "tek.ui.class.element")
-Display._VERSION = "Display 33.6"
+Display._VERSION = "Display 33.7"
 
 -------------------------------------------------------------------------------
 --	Class data and constants:
@@ -180,18 +180,18 @@ local ColorDefaults =
 
 -------------------------------------------------------------------------------
 --	setup fonts:
---	style attributes (/b = bold, /i = italic, /bi = bold+italic, /s = scalable)
+--	style attributes (/b = bold, /i = italic, /bi = bold+italic)
 --	are passed on to the display driver, which may or may not implement them.
 --	Alternatively, mappings from styles to distinguished fontnames can be
 --	placed in the FontsDefaults cache here.
 -------------------------------------------------------------------------------
 
-local FN_FIXED = "DejaVuSansMono/s,monospace,fixed,courier,VeraMono"
-local FN_FIXEDBOLD = "DejaVuSansMono-Bold,DejaVuSansMono/b,monospace/b,fixed/b,courier/b,VeraMono/b"
-local FN_FIXEDITALIC = "DejaVuSansMono-Oblique,DejaVuSansMono/i,monospace/i,fixed/i,courier/i,VeraMono/i"
-local FN_FIXEDBOLDITALIC = "DejaVuSansMono-BoldOblique,DejaVuSansMono/bi,monospace/bi,fixed/bi,courier/bi,VeraMono/bi"
+local FN_FIXED = "DejaVuSansMono,monospace,fixed,courier new,courier,VeraMono"
+local FN_FIXEDBOLD = "DejaVuSansMono-Bold,DejaVuSansMono/b,monospace/b,fixed/b,courier new/b,courier/b,VeraMono/b"
+local FN_FIXEDITALIC = "DejaVuSansMono-Oblique,DejaVuSansMono/i,monospace/i,fixed/i,courier new/i,courier/i,VeraMono/i"
+local FN_FIXEDBOLDITALIC = "DejaVuSansMono-BoldOblique,DejaVuSansMono/bi,monospace/bi,fixed/bi,courier new/bi,courier/bi,VeraMono/bi"
 
-local FN_NORMAL = "DejaVuSans/s,sans-serif,helvetica,arial,Vera,times"
+local FN_NORMAL = "DejaVuSans,sans-serif,helvetica,arial,Vera,times"
 local FN_BOLD = "DejaVuSans-Bold,DejaVuSans/b,sans-serif/b,helvetica/b,arial/b,Vera/b,times/b"
 local FN_ITALIC = "DejaVuSans-Oblique,DejaVuSans/i,sans-serif/i,helvetica/i,arial/i,Vera/i,times/i"
 local FN_BOLDITALIC = "DejaVuSans-BoldOblique,DejaVuSans/bi,sans-serif/bi,helvetica/bi,arial/bi,Vera/bi,times/bi"
@@ -442,7 +442,7 @@ function Display:openFont(fontspec, override_size, override_attr)
 		size = tonumber(size)
 	end
 	local props = self.Properties
-	for fname in fnames:gmatch("%s*([^,]*)%s*,?") do
+	for fname in (fnames or ""):gmatch("%s*([^,]*)%s*,?") do
 		local realname, attr = fname:match("^([^/]*)/?(.*)$")
 		if override_attr then
 			attr = override_attr
@@ -460,7 +460,7 @@ function Display:openFont(fontspec, override_size, override_attr)
 			end
 		end
 		db.info("trying font %s:%s/%s", realname, size, attr)
-		font = font or Visual.openFont(realname, size, attr)
+		font = font or Visual.openFont(realname, size, attr .. "s")
 		local frec = { font, font and font:getFontAttrs { } }
 		fcache[fontspec] = frec
 		fcache[fcachename] = frec

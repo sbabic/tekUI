@@ -203,7 +203,8 @@ if p then
 	end
 end
 local pd = package.config:sub(1, 1) or "/"
-local path = tek and tek.ui and tek.ui.LocalPath or package.path
+local _, ui = pcall(function() return require "tek.ui" end)
+local path = ui and ui.LocalPath or package.path
 local f = io.open(".luac_sample.txt", "wb")
 for pkg in pairs(package.loaded) do
 	local mod = pkg:gsub("%.", pd)
