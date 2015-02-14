@@ -81,7 +81,7 @@ fb_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 TMODENTRY TUINT
-tek_init_display_windows(TAPTR task, struct TModule *vis, TUINT16 version,
+tek_init_display_windows(struct TTask *task, struct TModule *vis, TUINT16 version,
 	TTAGITEM *tags)
 {
 	WINDISPLAY *mod = (WINDISPLAY *) vis;

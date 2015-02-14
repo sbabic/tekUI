@@ -8,10 +8,7 @@ all: libs modules # tools
 libs:
 	cd src && $(MAKE) $@
 
-tek/lib/tekui_classlib.c:
-	bin/compiler.lua -o $@ -l $$(cat tek/lib/MODLIST) -c -s
-
-dll: modules tek/lib/tekui_classlib.c
+dll: modules
 	cd tek/lib && $(MAKE) $@
 
 modules: libs

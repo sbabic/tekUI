@@ -87,29 +87,48 @@ $(OBJDIR)/rawfb_lua.lo: display/rawfb_lua.c
 #
 #	tekui executable
 
-LUA_TEKUI_EXE_STANDALONE = $(BASEDIR)/tekui
+LUAEXE_TEKUI = $(BASEDIR)/tekui.exe
+LUAEXE_BUILD = $(BASEDIR)/lua_build.exe
 
-LUA_TEKUI_DEFS = $(LIBCFLAGS) -I $(LUADISTDIR)/src -I../../src/hal -DLUA_TEKUI_INCLUDE_CLASS_LIBRARY
+LUA_TEKUI_DEFS = $(LIBCFLAGS) -I $(LUADISTDIR)/src -I../../src/hal
 LUA_TEKUI_LIBS = -L$(LIBDIR) $(TEKUI_LIBS)
+
+# Linux:
+LUA_TEKUI_DEFS += -DLUA_USE_LINUX 
+LUA_TEKUI_LIBS += -Wl,-E -lreadline -lm -ldl -pthread
+# x11:
 LUA_TEKUI_DEFS += -I../../display_x11 $(X11_DEFS)
 LUA_TEKUI_LIBS += $(X11_LIBS)
+# Rawfb:
 # LUA_TEKUI_DEFS += -I../../display_rawfb $(RAWFB_DEFS)
 # LUA_TEKUI_LIBS += $(RAWFB_LIBS) 
+# Windows:
+# LUA_TEKUI_DEFS += -I../../display_windows
+# LUA_TEKUI_LIBS += $(WIN_LIBS)
 
 $(OBJDIR)/linit_tekui.lo: linit_tekui.c
-	$(CC) -DLUA_USE_LINUX $(LUA_TEKUI_DEFS) -o $@ -c linit_tekui.c
+	$(CC) $(LUA_TEKUI_DEFS) -o $@ -c linit_tekui.c
+
+tekui_classlib.c:
+	cd $(BASEDIR) && $(EXECUTE) ./lua_build.exe bin/compiler.lua -o tek/lib/tekui_classlib.c -l $$(cat tek/lib/MODLIST) -i -c -s
+	
+$(OBJDIR)/linit_tekui_classlib.lo: linit_tekui.c tekui_classlib.c
+	$(CC) $(LUA_TEKUI_DEFS) -DLUA_TEKUI_INCLUDE_CLASS_LIBRARY -o $@ -c linit_tekui.c 
 
 $(OBJDIR)/luatekui.lo: $(LUADISTDIR)/src/lua.c
-	$(CC) -DLUA_USE_LINUX $(LUA_TEKUI_DEFS) -c -o $@ $(LUADISTDIR)/src/lua.c
+	$(CC) $(LUA_TEKUI_DEFS) -c -o $@ $(LUADISTDIR)/src/lua.c
 
-$(LUA_TEKUI_EXE_STANDALONE): $(OBJDIR)/linit_tekui.lo $(OBJDIR)/luatekui.lo
-	$(CC) -o $@ $(OBJDIR)/luatekui.lo $(OBJDIR)/linit_tekui.lo -L$(BASEDIR) $(LUA_TEKUI_LIBS) -Wl,-E -lreadline -lm -ldl -pthread
+$(LUAEXE_TEKUI): $(LUAEXE_BUILD) $(OBJDIR)/linit_tekui_classlib.lo $(OBJDIR)/luatekui.lo
+	$(CC) -o $@ $(OBJDIR)/luatekui.lo $(OBJDIR)/linit_tekui_classlib.lo -L$(BASEDIR) $(LUA_TEKUI_LIBS)
+
+$(LUAEXE_BUILD): $(OBJDIR)/linit_tekui.lo $(OBJDIR)/luatekui.lo
+	$(CC) -o $@ $(OBJDIR)/luatekui.lo $(OBJDIR)/linit_tekui.lo -L$(BASEDIR) $(LUA_TEKUI_LIBS)
 	
 ###############################################################################
 
 dll: $(OBJDIR) $(LUA_TEKUI_DLL)
 
-tools: dll $(OBJDIR) $(LUA_TEKUI_EXE_STANDALONE) $(LUA_TEKUI_EXE_DLL)
+tools: dll $(OBJDIR) $(LUAEXE_TEKUI) $(LUA_TEKUI_EXE_DLL)
 
 modules: $(OBJDIR) $(MODS) $(DISPLAYS)
 
@@ -121,5 +140,5 @@ install:
 	$(INSTALL_F) debug.lua args.lua $(LUA_SHARE)/tek/lib
 
 clean: FORCE
-	-$(RM) $(MODS) $(DISPLAYS) $(LIBS) $(LUA_TEKUI_DLL) $(LUA_TEKUI_EXE_DLL) $(LUA_TEKUI_EXE_STANDALONE)
+	-$(RM) $(MODS) $(DISPLAYS) $(LIBS) $(LUA_TEKUI_DLL) $(LUA_TEKUI_EXE_DLL) $(LUAEXE_TEKUI) $(LUAEXE_BUILD)
 	-$(RMDIR) $(OBJDIR)

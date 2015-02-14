@@ -14,8 +14,6 @@
 #include <winreg.h>
 #include <process.h>
 
-#define HAL_USE_ATOMICS
-
 /*****************************************************************************/
 
 struct HALSpecific

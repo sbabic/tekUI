@@ -55,7 +55,7 @@ local function link(fname, arg)
 	o:write("local _ENV = _ENV\n")
 	for i = 1, #arg do
 		local modname, fname = arg[i]:match("^([^:]*):(.*)$")
-		local s = io.open(fname)
+		local s = io.open(fname, "rb")
 		if not s then
 			error("cannot open " .. fname)
 		end
@@ -67,7 +67,7 @@ local function link(fname, arg)
 		o:write("end\n")
 		s:close()
 	end
-	local s = srcname and io.open(srcname)
+	local s = srcname and io.open(srcname, "rb")
 	if s then
 		o:write("do\n")
 		local lnr = 0
@@ -86,9 +86,16 @@ end
 -------------------------------------------------------------------------------
 
 function tocsource(outname)
-	local tmpname = outname .. ".tmp"
-	local b = io.open(outname):read("*a")
-	local f = io.open(tmpname, "wb")
+	local b
+	local f = io.open(outname, "rb")
+	if f then
+		b = f:read("*a")
+		f:close()
+	end
+	if not b then
+		return false
+	end
+	f = io.open(outname, "wb")
 	if f then
 		local size = b:len()
 		local out = function(...) f:write(...) end
@@ -102,17 +109,38 @@ function tocsource(outname)
 		end
 		out("\n};\n")
 		f:close()
-		os.rename(tmpname, outname)
 		return true
 	end
 end
 
 -------------------------------------------------------------------------------
 
-function compile(outname, strip)
+function compile(outname, strip, internal)
+	outname = outname:gsub("\\", "\\\\")
 	local tmpname = outname .. ".tmp"
+	local ver, rev = _VERSION:match("^Lua (%d+)%.(%d+)$")
+	ver = tonumber(ver)
+	rev = tonumber(rev)
+	if internal or not strip or ver > 5 or (ver == 5 and rev >= 3) then
+		local c = loadfile(outname)
+		if c then
+			c = string.dump(c, strip)
+			local f = io.open(tmpname, "wb")
+			local success
+			if f then
+				success = f:write(c)
+				f:close()
+				if success then
+					os.remove(outname)
+					os.rename(tmpname, outname)
+					return true
+				end
+			end
+		end
+		return false
+	end
 	local cmd = ('luac %s -o "%s" "%s"'):format(strip and "-s" or "",
-		tmpname:gsub("\\", "\\\\"), outname:gsub("\\", "\\\\"))
+		tmpname, outname)
 	if os.execute(cmd) and stat(tmpname, "mode") == "file" then
 		os.remove(outname)
 		os.rename(tmpname, outname)
@@ -120,23 +148,23 @@ function compile(outname, strip)
 	end
 end
 
-
 -------------------------------------------------------------------------------
 --	main
 -------------------------------------------------------------------------------
 
-local template = "-f=FROM,-o=TO,-c=SOURCE/S,-nc=LUA/S,-s=STRIP/S,-l=LINK/M,-h=HELP/S"
+local template = "-f=FROM,-o=TO,-c=SOURCE/S,-nc=LUA/S,-s=STRIP/S,-i=INTERNAL/S,-l=LINK/M,-h=HELP/S"
 local args = Args.read(template, arg)
 if not args or args["-h"] then
 	print "Lua linker and compiler, with optional GUI"
 	print "Available options:"
-	print "  -f=FROM      Lua source file name"
-	print "  -o=TO        Lua bytecode output file name"
-	print "  -c=SOURCE/S  Output as C source"
-	print "  -nc=LUA/S    Do not compile, output Lua"
-	print "  -s=STRIP/S   Strip debug information"
-	print "  -l=LINK/M    List of modules to link, each as modname:filename"
-	print "  -h=HELP/S    This help"
+	print "  -f=FROM       Lua source file name"
+	print "  -o=TO         Lua bytecode output file name"
+	print "  -c=SOURCE/S   Output as C source"
+	print "  -nc=LUA/S     Do not compile, output Lua"
+	print "  -s=STRIP/S    Strip debug information"
+	print "  -i=INTERNAL/S Do not call luac"
+	print "  -l=LINK/M     List of modules to link, each as modname:filename"
+	print "  -h=HELP/S     This help"
 	return
 end
 
@@ -161,7 +189,7 @@ if from or (to and mods) then
 	link(to, t)
 
 	if not args["-nc"] then
-		compile(to, args["-s"])
+		compile(to, args["-s"], args["-i"])
 	end
 
 	if args["-c"] then
@@ -192,7 +220,7 @@ local function startsample(fname)
 			local mod = pkg:gsub("%.", pd)
 			for mname in path:gmatch("([^;]+);?") do
 				local fname = mname:gsub("?", mod)
-				if io.open(fname) then
+				if io.open(fname, "rb") then
 					table.insert(mods, ("%s = %s"):format(pkg, fname))
 					break
 				end
@@ -340,7 +368,7 @@ function CompilerApp:getExcludeList()
 	local exclude = { }	
 	local excludefname = self:getById("text-exclude-filename"):getText()
 	if excludefname then
-		local f = io.open(excludefname)
+		local f = io.open(excludefname, "rb")
 		if f then
 			for line in f:lines() do
 				line = line:match("^(.*)%:.*$")
@@ -407,7 +435,7 @@ function CompilerApp:compile()
 
 			local success, msg = true
 
-			if io.open(outname) then
+			if io.open(outname, "rb") then
 				success = self:easyRequest("Overwrite File",
 					("%s\nalready exists. Overwrite it?"):format(outname),
 					"_Overwrite", "_Cancel") == 1
@@ -424,7 +452,7 @@ function CompilerApp:compile()
 					if checkbutton.Selected then
 						local classname = checkbutton.Text
 						local filename = modgroup[i + 1]:getText()
-						if io.open(filename) then
+						if io.open(filename, "rb") then
 							table.insert(mods, ("%s:%s"):format(classname, filename))
 						else
 							local text =
@@ -700,7 +728,7 @@ borrow from the method shown in lua-amalg by Philipp Janda.
 									onEnter = function(self)
 										Input.onEnter(self)
 										local text = self:getText()
-										local notexist = io.open(text) == nil
+										local notexist = io.open(text, "rb") == nil
 										local app = self.Application
 										app:getById("button-run"):setValue("Disabled", notexist)
 										app:getById("button-compile"):setValue("Disabled", notexist)
