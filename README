@@ -164,6 +164,7 @@ interface elements can be created with little effort.
  model
  * Support for textures, color gradients and transparency
  * A text editor is included as an example
+ * A graphical Lua compiler/linker/amalgamization tool is included
  
 ==( uielements : 2.2. Supported interface elements )==
 
@@ -535,12 +536,16 @@ The regular build procedure is invoked with
 
 ==== Building a tekui executable ====
 
-To build a standalone executable implementing a Lua 5.1 interpreter,
-tekUI's C libraries and Lua class library, adjust {{LUAARCH}},
-{{LUADISTDIR}} in the {{config}} file, the exact classes to be
-included in {{tek/lib/MODLIST}}, and invoke
+To build a standalone executable implementing a Lua interpreter,
+tekUI's C libraries and Lua class library, adjust {{LUADISTDIR}} in
+the {{config}} file to point to the Lua 5.1/5.2/5.3 source directory,
+the exact classes to be included in {{tek/lib/MODLIST}}, and invoke
 
   # make tools
+  
+Please note that {{tek/lib/MODLIST}} is also the list of modules to
+be excluded from linking to a standalone Lua program, when tekUI's
+compiler tool is used, {{bin/compiler.lua}}.
 
 ==( installation : 3.4. Installation )==
 

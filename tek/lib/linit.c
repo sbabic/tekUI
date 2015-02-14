@@ -1,9 +1,7 @@
-/*
-** $Id: linit.c,v 1.14.1.1 2007/12/27 13:02:25 roberto Exp $
-** Initialization of libraries for lua.c
-** See Copyright Notice in lua.h
-*/
 
+/*
+**	Lua library initialization
+*/
 
 #define linit_c
 #define LUA_LIB
@@ -18,13 +16,26 @@
 #endif
 
 static const luaL_Reg lualibs[] = {
+#if LUA_VERSION_NUM < 502
   {"", luaopen_base},
+#else
+  {"_G", luaopen_base},
+#endif
   {LUA_LOADLIBNAME, luaopen_package},
+#if LUA_VERSION_NUM >= 502
+  {LUA_COLIBNAME, luaopen_coroutine},
+#endif
   {LUA_TABLIBNAME, luaopen_table},
   {LUA_IOLIBNAME, luaopen_io},
   {LUA_OSLIBNAME, luaopen_os},
   {LUA_STRLIBNAME, luaopen_string},
+#if LUA_VERSION_NUM == 502 || (LUA_VERSION_NUM > 502 && defined(LUA_COMPAT_BITLIB))
+  {LUA_BITLIBNAME, luaopen_bit32},
+#endif
   {LUA_MATHLIBNAME, luaopen_math},
+#if LUA_VERSION_NUM > 502
+  {LUA_UTF8LIBNAME, luaopen_utf8},
+#endif
   {LUA_DBLIBNAME, luaopen_debug},
   {NULL, NULL}
 };
@@ -43,24 +54,27 @@ static const luaL_Reg lualibs2[] = {
   {NULL, NULL}
 };
 
-LUALIB_API void luaL_openlibs (lua_State *L) {
-  const luaL_Reg *lib = lualibs;
-  for (; lib->func; lib++) {
-    lua_pushcfunction(L, lib->func);
-    lua_pushstring(L, lib->name);
-    lua_call(L, 1, 0);
-  }
-  
-#if defined(LUA_TEKUI_INCLUDE_CLASS_LIBRARY)
-  luaL_loadbuffer(L, (const char *) bytecode, sizeof(bytecode),
-  	"tekUI class library");
-  lua_call(L, 0, 0);
+static void luali_openlibs(lua_State *L, const luaL_Reg *lib)
+{
+	for (; lib->func; lib++) {
+#if LUA_VERSION_NUM < 502
+		lua_pushcfunction(L, lib->func);
+		lua_pushstring(L, lib->name);
+		lua_call(L, 1, 0);
+#else
+	    luaL_requiref(L, lib->name, lib->func, 1);
+    	lua_pop(L, 1);  /* remove lib */
 #endif
-  
-  lib = lualibs2;
-  for (; lib->func; lib++) {
-    lua_pushcfunction(L, lib->func);
-    lua_pushstring(L, lib->name);
-    lua_call(L, 1, 0);
-  }
+	}
+}
+
+LUALIB_API void luaL_openlibs (lua_State *L) 
+{
+	luali_openlibs(L, lualibs);
+#if defined(LUA_TEKUI_INCLUDE_CLASS_LIBRARY)
+	luaL_loadbuffer(L, (const char *) bytecode, sizeof(bytecode),
+  		"tekUI class library");
+	lua_call(L, 0, 0);
+#endif
+	luali_openlibs(L, lualibs2);
 }

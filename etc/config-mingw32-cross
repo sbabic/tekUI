@@ -247,8 +247,6 @@ MODCFLAGS = -shared -L $(LIBDIR) $(LDFLAGS)
 # For Mac OS X:
 # MODCFLAGS = -bundle -undefined dynamic_lookup -L $(LIBDIR) $(LDFLAGS)
 BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) $(LDFLAGS)
-# for compilation of Lua code:
-LUAARCH = -m64 # -m32 for 32bit, -m64 for 64bit architecture
 
 #------------------------------------------------------------------------------
 # Build tools:

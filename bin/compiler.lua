@@ -9,6 +9,7 @@
 --	Luiz Henrique de Figueiredo <lhf@tecgraf.puc-rio.br>
 --
 
+local exec = require "tek.lib.exec"
 local Args = require "tek.lib.args"
 local lfs = require "lfs"
 local unpack = unpack or table.unpack
@@ -18,10 +19,6 @@ local loadstring = loadstring or load
 
 local PS = package and package.config:sub(1, 1) or "/"
 local PM = "^(" .. PS .. "?.-)" .. PS .. "*([^" .. PS .. "]*)" .. PS .. "+$"
-
-function shellquote(s)
-	return s:gsub('["$\\`!]', "\\%1")
-end
 
 function splitpath(path)
 	local part
@@ -40,57 +37,50 @@ end
 
 -------------------------------------------------------------------------------
 
-local function compile(fname, arg, m64)
-
-	local MARK = "////////"
-	local NAME = "luac"
-	NAME = "=(" .. NAME .. ")"
-
-	local n = #arg
-	local m = n
-	local b
-
-	for i = 1, n do
-		if arg[i] == "-L" then
-			m = i - 1
+local function link(fname, arg)
+	local srcname
+	while true do
+		local arg = table.remove(arg, 1)
+		if not arg or arg == "-L" then
 			break
 		end
+		srcname = arg
 	end
-
-	if m + 2 <= n then
-		b = { "local t=package.preload;" }
-	else
-		b = { "local t;" }
+	local o = io.open(fname, "wb")
+	if not o then
+		s:close()
+		io.stderr:write("cannot open ", fname, "\n")
+		return
 	end
-
-	for i = m + 2, n do
-		local mod, fname = arg[i]:match("^%s*([^%s:]+)%s*:%s*(.+)%s*$")
-		mod = mod:gsub("^.-([^" .. PS .. "]+)$", "t['%1']=function()end")
-		table.insert(b, mod)
-		arg[i] = string.sub(string.dump(assert(loadfile(fname))), 13)
+	o:write("local _ENV = _ENV\n")
+	for i = 1, #arg do
+		local modname, fname = arg[i]:match("^([^:]*):(.*)$")
+		local s = io.open(fname)
+		if not s then
+			error("cannot open " .. fname)
+		end
+		o:write('package.preload["' .. modname .. 
+			'"] = function(...) local arg = _G.arg\n')
+		for l in s:lines() do
+			o:write(l, "\n")
+		end
+		o:write("end\n")
+		s:close()
 	end
-
-	table.insert(b, "t='" .. MARK .. "'")
-
-	for i = 1, m do
-		table.insert(b, "(function()end)()")
-		arg[i] = string.sub(string.dump(assert(loadfile(arg[i]))), 13)
+	local s = srcname and io.open(srcname)
+	if s then
+		o:write("do\n")
+		local lnr = 0
+		for l in s:lines() do
+			lnr = lnr + 1
+			if lnr > 1 or not l:match("^#!") then
+				o:write(l, "\n")
+			end
+		end
+		o:write("end\n")
+		s:close()
 	end
-
-	b = string.dump(assert(loadstring(table.concat(b, "\n"), NAME)))
-	local x, y = string.find(b, MARK)
-	b = string.sub(b, 1, x - 6 - (m64 and 4 or 0)) .. "\0" .. string.sub(b, y + 2, y + 5)
-
-	f = assert(io.open(fname, "wb"))
-	assert(f:write(b))
-	for i = m + 2, n do
-		assert(f:write(arg[i]))
-	end
-	for i = 1, m do
-		assert(f:write(arg[i]))
-	end
-	assert(f:write(string.rep("\0", 12)))
-	assert(f:close())
+	o:close()
 end
 
 -------------------------------------------------------------------------------
@@ -119,11 +109,11 @@ end
 
 -------------------------------------------------------------------------------
 
-function strip(outname)
+function compile(outname, strip)
 	local tmpname = outname .. ".tmp"
-	local cmd = ('luac -s -o "%s" "%s"'):format(tmpname:gsub("\\", "\\\\"),
-		outname:gsub("\\", "\\\\"))
-	if os.execute(cmd) == 0 and stat(tmpname, "mode") == "file" then
+	local cmd = ('luac %s -o "%s" "%s"'):format(strip and "-s" or "",
+		tmpname:gsub("\\", "\\\\"), outname:gsub("\\", "\\\\"))
+	if os.execute(cmd) and stat(tmpname, "mode") == "file" then
 		os.remove(outname)
 		os.rename(tmpname, outname)
 		return true
@@ -135,7 +125,7 @@ end
 --	main
 -------------------------------------------------------------------------------
 
-local template = "-f=FROM,-o=TO,-c=SOURCE/S,-s=STRIP/S,-l=LINK/M,-m64/S,-m32/S,-h=HELP/S"
+local template = "-f=FROM,-o=TO,-c=SOURCE/S,-nc=LUA/S,-s=STRIP/S,-l=LINK/M,-h=HELP/S"
 local args = Args.read(template, arg)
 if not args or args["-h"] then
 	print "Lua linker and compiler, with optional GUI"
@@ -143,10 +133,9 @@ if not args or args["-h"] then
 	print "  -f=FROM      Lua source file name"
 	print "  -o=TO        Lua bytecode output file name"
 	print "  -c=SOURCE/S  Output as C source"
+	print "  -nc=LUA/S    Do not compile, output Lua"
 	print "  -s=STRIP/S   Strip debug information"
 	print "  -l=LINK/M    List of modules to link, each as modname:filename"
-	print "  -m32/S       32 bit architecture (default)"
-	print "  -m64/S       64 bit architecture"
 	print "  -h=HELP/S    This help"
 	return
 end
@@ -169,10 +158,10 @@ if from or (to and mods) then
 		end
 	end
 
-	compile(to, t, args["-m64"])
+	link(to, t)
 
-	if args["-s"] then
-		strip(to)
+	if not args["-nc"] then
+		compile(to, args["-s"])
 	end
 
 	if args["-c"] then
@@ -186,53 +175,45 @@ end
 --	Run application to sample modules:
 -------------------------------------------------------------------------------
 
-local function sample(fname)
-	local f = io.open(".luac_sample.lua", "wb")
-	local mods = { }
-	if f then
-
-		fname = fname:gsub("\\", "\\\\")
-
-		f:write([[
-arg[0] = "]] .. fname .. [["
-local p = loadfile("]] .. fname .. [[")
-if p then
-	local success, res = pcall(p)
-	if not success then
-		io.stderr:write(res .. "\n")
-	end
-end
-local pd = package.config:sub(1, 1) or "/"
-local _, ui = pcall(function() return require "tek.ui" end)
-local path = ui and ui.LocalPath or package.path
-local f = io.open(".luac_sample.txt", "wb")
-for pkg in pairs(package.loaded) do
-	local mod = pkg:gsub("%.", pd)
-	for mname in path:gmatch("([^;]+);?") do
-		local fname = mname:gsub("?", mod)
-		if io.open(fname) then
-			f:write(pkg, " = ", fname, "\n")
-			break
+local function startsample(fname)
+	return exec.run(function()
+		local mods = { }
+		local fname = arg[1]
+		arg[0] = fname
+		arg[1] = nil
+		local func = loadfile(fname)
+		if func then
+			pcall(func)
 		end
-	end
-end
-]])
-		f:close()
-
-		os.execute("lua .luac_sample.lua")
-
-		f = io.open(".luac_sample.txt")
-		if f then
-			for line in f:lines() do
-				table.insert(mods, line)
+		local pd = package.config:sub(1, 1) or "/"
+		local _, ui = pcall(function() return require "tek.ui" end)
+		local path = ui and ui.LocalPath or package.path
+		for pkg in pairs(package.loaded) do
+			local mod = pkg:gsub("%.", pd)
+			for mname in path:gmatch("([^;]+);?") do
+				local fname = mname:gsub("?", mod)
+				if io.open(fname) then
+					table.insert(mods, ("%s = %s"):format(pkg, fname))
+					break
+				end
 			end
-			f:close()
-			table.sort(mods)
 		end
+		return table.concat(mods, "\n")	
+	end, fname)
+end
 
-		os.remove(".luac_sample.lua")
-		os.remove(".luac_sample.txt")
+local function finishsample(c)
+	local success, res = c:join()
+	local mods = { }
+	if res then
+		for mod in res:gmatch("([^\n]*)\n?") do
+			if mod ~= "" then
+				table.insert(mods, mod)	
+			end
+		end
 	end
+	-- absorb signals so that they won't raise exceptions later:
+	exec.getsignals("actm")
 	return mods
 end
 
@@ -246,7 +227,7 @@ local Input = ui.Input
 local APP_ID = "lua-compiler"
 local DOMAIN = "schulze-mueller.de"
 local PROGNAME = "Lua Compiler"
-local VERSION = "1.3"
+local VERSION = "2.0"
 local AUTHOR = "Timm S. Müller"
 local COPYRIGHT = "© 2009-2015, Schulze & Müller GbR"
 
@@ -379,7 +360,8 @@ function CompilerApp:sample()
 	local fname = filefield:getText()
 	local exclude = self:getById("check-exclude-modules").Selected and self:getExcludeList()
 	self:addCoroutine(function()
-		local mods = sample(fname)
+		local c = startsample(fname)
+		local mods = finishsample(c)
 		local n = 0
 		for _, mod in ipairs(mods) do
 			local classname, filename = mod:match("^(.-)%s*=%s*(.*)$")
@@ -394,11 +376,9 @@ function CompilerApp:compile()
 
 	self:addCoroutine(function()
 
-		local m64 = self:getById("popitem-architecture").SelectedLine == 2
-	
-		local savemode = -- 1 = binary, 2 == source
+		local savemode = -- 1=lua, 2=bytecode, 3=csource
 			self:getById("popitem-savemode").SelectedLine
-		local ext = savemode == 1 and ".luac" or ".c"
+		local ext = savemode == 3 and ".c" or ".luac"
 
 		local srcname = self:getById("text-filename"):getText()
 		local outname = self.Settings.OutFileName
@@ -462,15 +442,16 @@ function CompilerApp:compile()
 				end
 
 				if success then
-					success, msg = pcall(compile, outname,
-						{ srcname, "-L", unpack(mods) }, m64)
+					success, msg = pcall(link, outname,
+						{ srcname, "-L", unpack(mods) })
 					if not success then
 						self:easyRequest("Error",
 							"Compilation failed:\n" .. msg, "_Okay")
 					else
 						local tmpname = outname .. ".tmp"
-						if self:getById("check-strip").Selected then
-							if not strip(outname) then
+						if savemode > 1 then
+							local strip = self:getById("check-strip").Selected
+							if not compile(outname, strip) then
 								self:easyRequest("Error",
 									"Error stripping file:\n" .. outname, "_Okay")
 								success = false
@@ -478,12 +459,14 @@ function CompilerApp:compile()
 						end
 						if success then
 							local size = stat(outname, "size")
-							if savemode == 2 then
+							if savemode == 3 then
 								if tocsource(outname) then
 									self:setStatus("C source saved, binary size: %d bytes", size)
 								end
+							elseif savemode == 2 then
+								self:setStatus("Bytecode saved, size: %d bytes", size)
 							else
-								self:setStatus("Binary saved, size: %d bytes", size)
+								self:setStatus("Lua saved, size: %d bytes", size)
 							end
 						else
 							self:setStatus("Error saving file.")
@@ -588,6 +571,7 @@ CompilerApp:new
 					{
 						ui.Group:new
 						{
+							Orientation = "vertical",
 							Legend = "Application Information",
 							Children =
 							{
@@ -607,6 +591,22 @@ CompilerApp:new
 												{ { "Author", AUTHOR } },
 												{ { "Copyright", COPYRIGHT } },
 											}
+										}
+									}
+								},
+								ui.ScrollGroup:new
+								{
+									VSliderMode = "auto",
+									Child = ui.Canvas:new 
+									{
+										AutoWidth = true,
+										Child = ui.FloatText:new
+										{
+											Text = [[
+Earlier versions of this program were based on
+luac.lua by Luiz Henrique de Figueiredo, recent versions
+borrow from the method shown in lua-amalg by Philipp Janda.
+											]]
 										}
 									}
 								}
@@ -799,39 +799,20 @@ CompilerApp:new
 												ui.Text:new
 												{
 													Class = "caption",
-													Text = "_Architecture",
-													KeyCode = true,
-												},
-												ui.PopList:new
-												{
-													SelectedLine = 1,
-													Id = "popitem-architecture",
-													KeyCode = "a",
-													ListObject = List:new
-													{
-														Items =
-														{
-															{ { "32 bit" } },
-															{ { "64 bit" } },
-														}
-													}
-												},
-												ui.Text:new
-												{
-													Class = "caption",
 													Text = "Save _Format",
 													KeyCode = true,
 												},
 												ui.PopList:new
 												{
-													SelectedLine = 1,
+													SelectedLine = 2,
 													Id = "popitem-savemode",
 													KeyCode = "f",
 													ListObject = List:new
 													{
 														Items =
 														{
-															{ { "Binary" } },
+															{ { "Lua Source" } },
+															{ { "Bytecode" } },
 															{ { "C Source" } },
 														}
 													}

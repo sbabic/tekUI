@@ -1,6 +1,10 @@
 
 == tekUI Changelog ==
 
+ * Compiler tool: Now works with Lua 5.1/5.2/5.3 using the method shown in
+ lua-amalg by Philipp Janda, LUAARCH switch is no longer needed, module
+ sampling is now done in a LuaExec task, no module statistics files needed
+
 === 1.12: ===
 
  * Changes to the class system, module loader and documentation system,

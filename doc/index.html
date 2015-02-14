@@ -384,6 +384,9 @@
 					<li>
 						A text editor is included as an example
 					</li>
+					<li>
+						A graphical Lua compiler/linker/amalgamization tool is included
+					</li>
 				</ul>
 			</blockquote>
 		</div>
@@ -934,14 +937,19 @@ LDFLAGS=-lpthread
 				Building a tekui executable
 			</h4>
 			<p>
-				To build a standalone executable implementing a Lua 5.1 interpreter,
-				tekUI's C libraries and Lua class library, adjust <code>LUAARCH</code>,
-				<code>LUADISTDIR</code> in the <code>config</code> file, the exact classes to be
-				included in <code>tek/lib/MODLIST</code>, and invoke
+				To build a standalone executable implementing a Lua interpreter,
+				tekUI's C libraries and Lua class library, adjust <code>LUADISTDIR</code> in
+				the <code>config</code> file to point to the Lua 5.1/5.2/5.3 source directory,
+				the exact classes to be included in <code>tek/lib/MODLIST</code>, and invoke
 			</p>
 <pre>
 # make tools
 </pre>
+			<p>
+				Please note that <code>tek/lib/MODLIST</code> is also the list of modules to
+				be excluded from linking to a standalone Lua program, when tekUI's
+				compiler tool is used, <code>bin/compiler.lua</code>.
+			</p>
 		</div>
 		<div class="node"><h2><a name="installation" id="installation">3.4. Installation</a></h2>
 			<p>
