@@ -683,20 +683,22 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 	return  TTRUE;
 }
 
+static WINWINDOW *fb_getwindowptr(WINDISPLAY *mod, HWND hwnd)
+{
+	if (hwnd == NULL)
+		return TNULL;
+	if ((HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE) != mod->fbd_HInst)
+		return TNULL;
+	return (WINWINDOW *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+}
+
 LOCAL WINWINDOW*
 fb_getcrossimsg(WINDISPLAY *mod, HWND hwnd, TIMSG **msgptr, TUINT type)
 {
-	WINWINDOW *win;
-
-	if (!hwnd) 
-		return NULL;
-
-	win = (WINWINDOW *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
+	WINWINDOW *win = fb_getwindowptr(mod, hwnd);
 	if (!win || !(win->fbv_InputMask & type)
 			|| !fb_getimsg(mod, win, msgptr, type))
 		return NULL;
-
 	return win;
 }
 
@@ -1084,7 +1086,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				GetCursorPos(&scrpos);
 				hwndcp = WindowFromPoint(scrpos);
 				if (hwndcp != NULL)
-					wincp = (WINWINDOW *) GetWindowLongPtr(hwndcp, GWLP_USERDATA);
+					wincp = fb_getwindowptr(mod, hwndcp);
 
 				/* dispatch to current window */
 				if ((win->fbv_InputMask & TITYPE_MOUSEMOVE) &&
@@ -1100,7 +1102,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				/* also send move events to active popup */
 				if (hwndcc != NULL && hwnd != hwndcc)
 				{
-					WINWINDOW *wincc = (WINWINDOW *) GetWindowLongPtr(hwndcc, GWLP_USERDATA);
+					WINWINDOW *wincc = fb_getwindowptr(mod, hwndcc);
 					POINT p = scrpos;
 					ScreenToClient(hwndcc, &p);
 

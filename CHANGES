@@ -9,6 +9,8 @@
  * Building a standalone tekUI executable now works under Windows and using
  cross-compilation
  * Some X11 font issues corrected
+ * Windows display driver could try to send tekUI messages to foreign
+ windows, leading to a crash, corrected
 
 === 1.12: ===
 
