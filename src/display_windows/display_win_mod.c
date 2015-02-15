@@ -81,7 +81,7 @@ fb_dispatch(struct THook *hook, TAPTR obj, TTAG msg)
 }
 
 TMODENTRY TUINT
-tek_init_display_windows(TAPTR task, struct TModule *vis, TUINT16 version,
+tek_init_display_windows(struct TTask *task, struct TModule *vis, TUINT16 version,
 	TTAGITEM *tags)
 {
 	WINDISPLAY *mod = (WINDISPLAY *) vis;
@@ -683,20 +683,22 @@ fb_getimsg(WINDISPLAY *mod, WINWINDOW *win, TIMSG **msgptr, TUINT type)
 	return  TTRUE;
 }
 
+static WINWINDOW *fb_getwindowptr(WINDISPLAY *mod, HWND hwnd)
+{
+	if (hwnd == NULL)
+		return TNULL;
+	if ((HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE) != mod->fbd_HInst)
+		return TNULL;
+	return (WINWINDOW *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+}
+
 LOCAL WINWINDOW*
 fb_getcrossimsg(WINDISPLAY *mod, HWND hwnd, TIMSG **msgptr, TUINT type)
 {
-	WINWINDOW *win;
-
-	if (!hwnd) 
-		return NULL;
-
-	win = (WINWINDOW *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
+	WINWINDOW *win = fb_getwindowptr(mod, hwnd);
 	if (!win || !(win->fbv_InputMask & type)
 			|| !fb_getimsg(mod, win, msgptr, type))
 		return NULL;
-
 	return win;
 }
 
@@ -1083,8 +1085,7 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				/* get screen position of cursor and window underneath */
 				GetCursorPos(&scrpos);
 				hwndcp = WindowFromPoint(scrpos);
-				if (hwndcp != NULL)
-					wincp = (WINWINDOW *) GetWindowLongPtr(hwndcp, GWLP_USERDATA);
+				wincp = fb_getwindowptr(mod, hwndcp);
 
 				/* dispatch to current window */
 				if ((win->fbv_InputMask & TITYPE_MOUSEMOVE) &&
@@ -1098,22 +1099,26 @@ win_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 
 				/* also send move events to active popup */
-				if (hwndcc != NULL && hwnd != hwndcc)
+				if (hwnd != hwndcc)
 				{
-					WINWINDOW *wincc = (WINWINDOW *) GetWindowLongPtr(hwndcc, GWLP_USERDATA);
-					POINT p = scrpos;
-					ScreenToClient(hwndcc, &p);
-
-					wincc->fbv_MouseX = p.x;
-					wincc->fbv_MouseY = p.y;
-					if (wincc->fbv_InputMask & TITYPE_MOUSEMOVE
-							&& fb_getimsg(mod, wincc, &imsg, TITYPE_MOUSEMOVE))
+					WINWINDOW *wincc = fb_getwindowptr(mod, hwndcc);
+					if (wincc != NULL)
 					{
-						/* Copied from wincc in fb_getimsg:
-						** - imsg->timsg_MouseX = p.x;
-						** - imsg->timsg_MouseY = p.y;
-						**/
-						TAddTail(&wincc->fbv_IMsgQueue, &imsg->timsg_Node);
+						POINT p = scrpos;
+						ScreenToClient(hwndcc, &p);
+						wincc->fbv_MouseX = p.x;
+						wincc->fbv_MouseY = p.y;
+
+						if ((wincc->fbv_InputMask & TITYPE_MOUSEMOVE)
+								&& fb_getimsg(mod, wincc, &imsg, 
+											  TITYPE_MOUSEMOVE))
+						{
+							/* Copied from wincc in fb_getimsg:
+							** - imsg->timsg_MouseX = p.x;
+							** - imsg->timsg_MouseY = p.y;
+							**/
+							TAddTail(&wincc->fbv_IMsgQueue, &imsg->timsg_Node);
+						}
 					}
 				}
 
