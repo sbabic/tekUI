@@ -225,6 +225,21 @@ DIRECTFB_DEFS = $(FREETYPE_DEFS) `pkg-config --cflags directfb`
 WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 
 #------------------------------------------------------------------------------
+# Lua/tekUI standalone:
+#------------------------------------------------------------------------------
+
+# Lua distribution path:
+LUADISTDIR = $(BASEDIR)/../lua-5.1.5
+
+# Linux:
+LUAEXE_DEFS = $(X11_DEFS) $(TEKUI_DEFS)
+LUAEXE_LIBS = $(X11_LIBS) -Wl,-E -lreadline -lm -ldl -pthread
+
+# Windows:
+# LUAEXE_DEFS = $(TEKUI_DEFS)
+# LUAEXE_LIBS = $(WIN_LIBS)
+
+#------------------------------------------------------------------------------
 # Build paths:
 #------------------------------------------------------------------------------
 
@@ -234,7 +249,6 @@ LIBDIR = $(BASEDIR)/lib/$(PLATFORM)
 OBJDIR = build/$(PLATFORM)
 BINDIR = $(BASEDIR)/bin
 MODDIR = $(BINDIR)/mod
-LUADISTDIR = $(BASEDIR)/../lua-5.1.5
 
 #------------------------------------------------------------------------------
 # Compiler flags:
@@ -263,6 +277,7 @@ INSTALL_B = install
 INSTALL_F = install
 INSTALL_D = install -d
 INSTALL_S = install -s
+STRIP = $(CROSS_COMPILE)strip -s
 
 #------------------------------------------------------------------------------
 # Predefined targets:

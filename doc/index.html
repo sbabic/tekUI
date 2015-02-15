@@ -385,7 +385,7 @@
 						A text editor is included as an example
 					</li>
 					<li>
-						A graphical Lua compiler/linker/amalgamization tool is included
+						A graphical Lua compiler/linker/amalgamation tool is included
 					</li>
 				</ul>
 			</blockquote>
@@ -934,21 +934,26 @@ LDFLAGS=-lpthread
 # make all
 </pre>
 			<h4>
-				Building a tekui executable
+				Building a tekUI executable
 			</h4>
 			<p>
-				To build a standalone executable implementing a Lua interpreter,
-				tekUI's C libraries and Lua class library, adjust <code>LUADISTDIR</code> in
-				the <code>config</code> file to point to the Lua 5.1/5.2/5.3 source directory,
-				the exact classes to be included in <code>tek/lib/MODLIST</code>, and invoke
+				To build a standalone executable implementing a Lua 5.1/5.2/5.3
+				interpreter, tekUI's C libraries and parts of its class library,
+				adjust <code>LUADISTDIR</code>, <code>LUAEXE_DEFS</code> and <code>LUAEXE_LIBS</code> in the
+				<code>config</code> file, and invoke
 			</p>
 <pre>
 # make tools
 </pre>
 			<p>
-				Please note that <code>tek/lib/MODLIST</code> is also the list of modules to
-				be excluded from linking to a standalone Lua program, when tekUI's
-				compiler tool is used, <code>bin/compiler.lua</code>.
+				The resulting executable can then be found in <code>bin/tekui.exe</code>.
+				If this executable is present, the <code>bin/compiler.lua</code> tool will
+				additionally offer to save Lua programs into standalone executables.
+			</p>
+			<p>
+				The exact classes to be built into the executable can be adjusted
+				in <code>tek/lib/MODLIST</code>. This list will also be taken into account
+				by <code>bin/compiler.lua</code> to avoid linking modules twice.
 			</p>
 		</div>
 		<div class="node"><h2><a name="installation" id="installation">3.4. Installation</a></h2>

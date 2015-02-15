@@ -40,6 +40,8 @@ static const luaL_Reg lualibs[] = {
   {NULL, NULL}
 };
 
+#if defined(LUA_TEKUI_INCLUDE_CLASS_LIBRARY)
+
 static const luaL_Reg lualibs2[] = {
   { "tek.lib.exec", luaopen_tek_lib_exec },
   { "tek.lib.region", luaopen_tek_lib_region },
@@ -57,6 +59,8 @@ static const luaL_Reg lualibs2[] = {
   { "tek.ui.class.frame", luaopen_tek_ui_class_frame },
   {NULL, NULL}
 };
+
+#endif
 
 static void luali_openlibs(lua_State *L, const luaL_Reg *lib)
 {
@@ -79,6 +83,6 @@ LUALIB_API void luaL_openlibs (lua_State *L)
 	luaL_loadbuffer(L, (const char *) bytecode, sizeof(bytecode),
   		"tekUI class library");
 	lua_call(L, 0, 0);
-#endif
 	luali_openlibs(L, lualibs2);
+#endif
 }

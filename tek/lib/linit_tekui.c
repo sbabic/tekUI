@@ -1,4 +1,6 @@
 
+#include <stdio.h>
+
 #define loslib_c
 #define luaall_c
 #define lobject_c
@@ -8,6 +10,7 @@
 /* LoadString() conflicts with Windows */
 #include "lundump.c"
 
+#if defined(LUA_TEKUI_INCLUDE_CLASS_LIBRARY)
 
 #define EXPORT static TMODAPI
 #define LOCAL static
@@ -39,6 +42,8 @@
 #include "../../src/display_windows/display_win_api.c"
 #include "../../src/display_windows/display_win_font.c"
 #include "../../src/display_windows/display_win_mod.c"
+#endif
+
 #endif
 
 
@@ -82,6 +87,8 @@
 #include "lvm.c"
 #include "lzio.c"
 
+#if defined(LUA_TEKUI_INCLUDE_CLASS_LIBRARY)
+
 #include "exec_lua.c"
 #include "visual_api.c"
 #include "visual_io.c"
@@ -107,5 +114,7 @@
 #include "../ui/layout/default.c"
 #include "../ui/class/area.c"
 #include "../ui/class/frame.c"
+
+#endif
 
 #include "linit.c"

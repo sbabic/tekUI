@@ -5,15 +5,14 @@
 --	Written by Timm S. Mueller <tmueller at schulze-mueller.de>
 --	See copyright notice in COPYRIGHT
 --
---	Compiler based on luac.lua by
---	Luiz Henrique de Figueiredo <lhf@tecgraf.puc-rio.br>
---
 
-local exec = require "tek.lib.exec"
 local Args = require "tek.lib.args"
-local lfs = require "lfs"
+local _, exec = pcall(function() return require "tek.lib.exec" end)
+local _, lfs = pcall(function() return require "lfs" end)
 local unpack = unpack or table.unpack
 local loadstring = loadstring or load
+local floor = math.floor
+local char = string.char
 
 -------------------------------------------------------------------------------
 
@@ -115,30 +114,27 @@ end
 
 -------------------------------------------------------------------------------
 
-function compile(outname, strip, internal)
-	outname = outname:gsub("\\", "\\\\")
+local function compile_internal(outname, strip)
 	local tmpname = outname .. ".tmp"
-	local ver, rev = _VERSION:match("^Lua (%d+)%.(%d+)$")
-	ver = tonumber(ver)
-	rev = tonumber(rev)
-	if internal or not strip or ver > 5 or (ver == 5 and rev >= 3) then
-		local c = loadfile(outname)
-		if c then
-			c = string.dump(c, strip)
-			local f = io.open(tmpname, "wb")
-			local success
-			if f then
-				success = f:write(c)
-				f:close()
-				if success then
-					os.remove(outname)
-					os.rename(tmpname, outname)
-					return true
-				end
+	local c = loadfile(outname)
+	if c then
+		c = string.dump(c, strip)
+		local f = io.open(tmpname, "wb")
+		local success
+		if f then
+			success = f:write(c)
+			f:close()
+			if success then
+				os.remove(outname)
+				os.rename(tmpname, outname)
+				return true
 			end
 		end
-		return false
 	end
+end
+
+local function compile_external(outname, strip)
+	local tmpname = outname .. ".tmp"
 	local cmd = ('luac %s -o "%s" "%s"'):format(strip and "-s" or "",
 		tmpname, outname)
 	if os.execute(cmd) and stat(tmpname, "mode") == "file" then
@@ -148,11 +144,66 @@ function compile(outname, strip, internal)
 	end
 end
 
+function compile(outname, strip, internal)
+	outname = outname:gsub("\\", "\\\\")
+	local tmpname = outname .. ".tmp"
+	local ver, rev = _VERSION:match("^Lua (%d+)%.(%d+)$")
+	ver = tonumber(ver)
+	rev = tonumber(rev)
+	if internal or not strip or ver > 5 or (ver == 5 and rev >= 3) then
+		return compile_internal(outname, strip)
+	end
+	if compile_external(outname, strip) then
+		return true
+	end
+	io.stderr:write("error calling luac, compiling internally,\n")
+	io.stderr:write("stripping may not be possible with Lua < 5.3\n")
+	return compile_internal(outname, strip)
+end
+
+-------------------------------------------------------------------------------
+
+local function ntobin(n)
+	return char(floor(n / 0x1000000)) ..
+		char(floor((n % 0x1000000) / 0x10000)) ..
+		char(floor((n % 0x10000) / 0x100)) ..
+		char(floor(n % 0x100))
+end
+
+local function toexecutable(outname, exe)
+	if not exe then
+		return false
+	end
+	local add, success
+	local f = io.open(outname, "rb")
+	if f then
+		add = f:read("*a")
+		f:close()
+	end
+	if not add then
+		return false
+	end
+	local tmpname = outname .. ".tmp"
+	f = io.open(tmpname, "wb")
+	if not f then
+		return false
+	end
+	f:write(exe)
+	f:write(add)
+	f:write(ntobin(add:len()))
+	success = f:write("lo" .. char(0) .. char(0))
+	f:close()
+	if success then
+		os.remove(outname)
+		return os.rename(tmpname, outname)
+	end
+end
+
 -------------------------------------------------------------------------------
 --	main
 -------------------------------------------------------------------------------
 
-local template = "-f=FROM,-o=TO,-c=SOURCE/S,-nc=LUA/S,-s=STRIP/S,-i=INTERNAL/S,-l=LINK/M,-h=HELP/S"
+local template = "-f=FROM,-o=TO,-c=SOURCE/S,-nc=LUA/S,-s=STRIP/S,-i=INTERNAL/S,-l=LINK/M,-e=EXE/K,-h=HELP/S"
 local args = Args.read(template, arg)
 if not args or args["-h"] then
 	print "Lua linker and compiler, with optional GUI"
@@ -164,6 +215,7 @@ if not args or args["-h"] then
 	print "  -s=STRIP/S    Strip debug information"
 	print "  -i=INTERNAL/S Do not call luac"
 	print "  -l=LINK/M     List of modules to link, each as modname:filename"
+	print "  -e=EXE/K      Executable file to which bytecode is appended"
 	print "  -h=HELP/S     This help"
 	return
 end
@@ -195,8 +247,17 @@ if from or (to and mods) then
 	if args["-c"] then
 		tocsource(to)
 	end
+	
+	if args["-e"] then
+		local f = io.open(args["-e"], "rb")
+		local exe = f and f:read("*a")
+		if exe then
+			toexecutable(to, exe)
+			f:close()
+		end
+	end
 
-	return
+	return 0
 end
 
 -------------------------------------------------------------------------------
@@ -258,6 +319,12 @@ local PROGNAME = "Lua Compiler"
 local VERSION = "2.0"
 local AUTHOR = "Timm S. Müller"
 local COPYRIGHT = "© 2009-2015, Schulze & Müller GbR"
+
+local f = io.open(ui.ProgDir .. "tekui.exe", "rb")
+local tekui_exe = f and f:read("*a")
+if f then
+	f:close()
+end
 
 -------------------------------------------------------------------------------
 --	FileButton class:
@@ -404,9 +471,14 @@ function CompilerApp:compile()
 
 	self:addCoroutine(function()
 
-		local savemode = -- 1=lua, 2=bytecode, 3=csource
+		local savemode = -- 1=lua, 2=bytecode, 3=csource, 4=executable
 			self:getById("popitem-savemode").SelectedLine
-		local ext = savemode == 3 and ".c" or ".luac"
+		local ext = ".luac"
+		if savemode == 3 then
+			ext = ".c"
+		elseif savemode == 4 then
+			ext = ".exe"
+		end
 
 		local srcname = self:getById("text-filename"):getText()
 		local outname = self.Settings.OutFileName
@@ -487,7 +559,12 @@ function CompilerApp:compile()
 						end
 						if success then
 							local size = stat(outname, "size")
-							if savemode == 3 then
+							if savemode == 4 then
+								if toexecutable(outname, tekui_exe) then
+									size = stat(outname, "size")
+									self:setStatus("Executable saved, size: %d bytes", size)
+								end
+							elseif savemode == 3 then
 								if tocsource(outname) then
 									self:setStatus("C source saved, binary size: %d bytes", size)
 								end
@@ -842,6 +919,7 @@ borrow from the method shown in lua-amalg by Philipp Janda.
 															{ { "Lua Source" } },
 															{ { "Bytecode" } },
 															{ { "C Source" } },
+															tekui_exe and { { "Executable" } } or nil
 														}
 													}
 												}

@@ -14,7 +14,9 @@
 #define LOCAL static
 #endif
 
+#if !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE 500
+#endif
 
 #include "display_x11_mod.c"
 #include "display_x11_api.c"
