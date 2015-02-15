@@ -686,7 +686,7 @@ static TBOOL x11i_hostopenfont(struct X11Display *mod,
 			(fattr->fitalic ? XFT_SLANT_ITALIC : XFT_SLANT_ROMAN),
 			XFT_WEIGHT, XftTypeInteger,
 			(fattr->fbold ? XFT_WEIGHT_BOLD : XFT_WEIGHT_MEDIUM),
-			XFT_SCALABLE, XftTypeBool, fattr->fscale,
+			/*XFT_SCALABLE, XftTypeBool, fattr->fscale,*/
 			XFT_ENCODING, XftTypeString, X11FNT_DEFREGENC,
 			XFT_ANTIALIAS, XftTypeBool, TTRUE, NULL);
 
