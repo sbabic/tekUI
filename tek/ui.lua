@@ -142,7 +142,7 @@ local ui = _M
 
 local ui = { }
 package.loaded["tek.ui"] = ui
-ui._VERSION = "tekUI 54.0" -- module version string
+ui._VERSION = "tekUI 54.1" -- module version string
 
 ui.VERSION = 112 -- overall package version number
 ui.VERSIONSTRING = 
@@ -916,8 +916,9 @@ local function getpaths(key, default)
 		end
 		ui.ProgDir, ui.ProgName = pdir, pname
 		-- Modified package path to find modules in the local program directory:
+		local dllext = package.cpath:match("%.dll") and "dll" or "so"
 		ui.LocalPath = pdir .. "?.lua;" .. ui.OldPath
-		ui.LocalCPath = pdir .. "?.so;" .. ui.OldCPath
+		ui.LocalCPath = pdir .. "?." .. dllext .. ";" .. ui.OldCPath
 	end
 	return rawget(ui, key) or default
 end

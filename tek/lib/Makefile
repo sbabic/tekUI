@@ -101,7 +101,7 @@ $(OBJDIR)/linit_tekui_classlib.lo: linit_tekui.c tekui_classlib.c
 
 $(LUAEXE_TEKUI): $(OBJDIR)/linit_tekui_classlib.lo luamain.c
 	$(CC) -I$(LUADISTDIR)/src -o $@ luamain.c $(OBJDIR)/linit_tekui_classlib.lo -L$(BASEDIR) -L$(LIBDIR) $(TEKUI_LIBS) $(LUAEXE_LIBS)
-	$(STRIP) $@
+# 	$(STRIP) $@
 
 ###############################################################################
 

@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #define loslib_c
-#define luaall_c
 #define lobject_c
 #define lvm_c
 #define lua_c
