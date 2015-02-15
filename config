@@ -231,9 +231,9 @@ WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 # Lua distribution path:
 LUADISTDIR = $(BASEDIR)/../lua-5.1.5
 
-# Linux:
+# Mac OS X, Linux:
 LUAEXE_DEFS = $(X11_DEFS) $(TEKUI_DEFS)
-LUAEXE_LIBS = $(X11_LIBS) -Wl,-E -lreadline -lm -ldl -pthread
+LUAEXE_LIBS = $(X11_LIBS) -lreadline -lm -ldl -pthread
 
 # Windows:
 # LUAEXE_DEFS = $(TEKUI_DEFS)
@@ -277,7 +277,7 @@ INSTALL_B = install
 INSTALL_F = install
 INSTALL_D = install -d
 INSTALL_S = install -s
-STRIP = $(CROSS_COMPILE)strip -s
+STRIP = $(CROSS_COMPILE)strip
 
 #------------------------------------------------------------------------------
 # Predefined targets:
