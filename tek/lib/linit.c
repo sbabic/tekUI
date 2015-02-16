@@ -57,6 +57,13 @@ static const luaL_Reg lualibs2[] = {
   { "tek.ui.layout.default", luaopen_tek_ui_layout_default },
   { "tek.ui.class.area", luaopen_tek_ui_class_area },
   { "tek.ui.class.frame", luaopen_tek_ui_class_frame },
+  
+/**
+* 
+* 	place for additional C libraries
+* 
+**/
+  
   {NULL, NULL}
 };
 
