@@ -75,7 +75,7 @@ local Args = _M
 ]]
 
 local Args = { }
-Args._VERSION = "Args 2.4"
+Args._VERSION = "Args 2.5"
 
 -------------------------------------------------------------------------------
 --	parsetemplate: check validity and parse option template into a table
@@ -182,7 +182,7 @@ function Args.read(template, args)
 				break
 			end
 			
-			if t[2] then
+			if t[2] and not t.m then
 				break -- current argument already filled
 			end
 			
@@ -303,7 +303,7 @@ end
 -- 		print(status .. ': argparse("'..template..'", "'..args..'")')
 -- 		return status
 -- 	end
--- 	local res = read(template, args)
+-- 	local res = Args.read(template, args)
 -- 	if res == expected then
 -- 		return result("ok")
 -- 	elseif not res or not expected then
@@ -377,56 +377,22 @@ end
 -- test("src=-s/m/a,dst=-d/a", "1 2 3 4", {src={"1","2","3"},dst="4"})
 -- test("src=-s/m/a,dst=-d/a", "1 2 3 -d 4", {src={"1","2","3"},dst="4"})
 -- test("src=-s/m/a,dst=-d/a", "1 2 -d 3 4", {src={"1","2","4"},dst="3"})
--- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={"4","1","2"},dst="3"})
+-- test("src=-s/m/a/k,dst=-d/a/k", "-s 1 -s 2 -d 3", {src={"1","2"},dst="3"})
+-- test("src=-s/m/a/k,dst=-d/a/k", "1 2 -d 3", false)
 -- test("foo/a,bar/k/m", "eins zwei", false)
 -- test("src=-s/m/a/k,dst=-d/a/k", "1 2 -d 3", false)
 -- test("hallo", "hallo", false)
+-- -- test("src=-s/m/a/k,dst=-d/a/k", "1 -d 3 -s 2", {src={"1","2"},dst="3"})
+-- test("src=-s/m/a/k,dst=-d/a/k", "1 -d 3 -s 2", {src={"2","1"},dst="3"})
+-- -- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={"1","2","4"},dst="3"})
+-- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={"4","1","2"},dst="3"})
+-- test("SOURCE=-s/A/M,DEST=-d/A/K", "SOURCE one two three DEST foo", {source={"one","two","three"},dest="foo"})
+-- test("IP/A,MASK/K,DNS/M", "IP 1 MASK 2 DNS 3 4", {ip="1", mask="2", dns={"3", "4"}})
+-- test("IP/A,MASK/K,DNS/K/M", "IP 1 MASK 2 DNS 3 4", {ip="1", mask="2", dns={"3", "4"}})
 -- test("src=-s/m/a/k,dst=-d/a/k", "1 -d 3 -s 2", {src={"2","1"},dst="3"})
 -- test("src=-s/m/a,dst=-d/a", "1 2 3 -s 4", {src={"4","1","2"},dst="3"})
-
--------------------------------------------------------------------------------
---	Test tool:
--------------------------------------------------------------------------------
---
--- template = "-h=HELP/S,-t=TEMPLATE/A,-a=ARGS/F"
--- args, msg = argparse(template, table.concat(arg, " "))
--- if not args or args[1] == true then
--- 	print("Argument parser test tool")
--- 	print("Usage: " .. template)
--- 	if msg then
--- 		print("*** " .. msg)
--- 	end
--- 	return
--- end
---
--- template = args[2]
--- argstring = args[3]
--- print("=======================================")
--- args, msg = argparse(template, argstring)
--- if args then
--- 	local _, numarg = template:gsub(",", ",")
--- 	numarg = numarg + 1
--- 	for i = 1, numarg do
--- 		local v = args[i]
--- 		if type(v) == "table" then
--- 			for _, v in ipairs(v) do
--- 				print("multi:", v)
--- 			end
--- 		elseif type(v) == "number" then
--- 			print("number:", v)
--- 		elseif type(v) == "boolean" then
--- 			print("bool:", v)
--- 		elseif type(v) == "string" then
--- 			print("string:", v)
--- 		else
--- 			print("not set")
--- 		end
--- 	end
--- else
--- 	print("*** Arguments do not match template " .. template)
--- 	if msg then
--- 		print("*** " .. msg)
--- 	end
--- end
+-- test("src=-s/m/a/k,dst=-d/a/k", "-s 1 2 -d 3", {src={"1","2"},dst="3"})
+-- test("src=-s/m/a/k,dst=-d/a/k", "-d 3 -s 1 2", {src={"1","2"},dst="3"})
+-- test("src=-s/m/a,dst=-d/a", "-s 1 -s 2 -d 3 4", {src={"1","2","4"},dst="3"})
 
 return Args

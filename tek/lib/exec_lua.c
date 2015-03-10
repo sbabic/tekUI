@@ -63,6 +63,12 @@ local Exec = _M
 #endif
 
 
+struct SharedState
+{
+	struct THandle handle;
+};
+
+
 struct LuaExecTask
 {
 	struct TExecBase *exec;
@@ -71,6 +77,7 @@ struct LuaExecTask
 	struct LuaExecTask *parent;
 	char *taskname;
 	char atomname[TEK_LIB_TASKNAME_LEN];
+	struct SharedState *shared;
 #endif
 };
 
@@ -86,12 +93,17 @@ static const struct TInitModule tek_lib_exec_initmodules[] =
 static int tek_lib_exec_base_gc(lua_State *L)
 {
 	struct LuaExecTask *lexec = luaL_checkudata(L, 1, TEK_LIB_EXEC_CLASSNAME);
-	if (lexec->exec)
+	struct TExecBase *TExecBase = lexec->exec;
+	if (TExecBase)
 	{
 #if defined(ENABLE_TASKS)
-		TAPTR atom = TExecLockAtom(lexec->exec, TEK_LIB_BASETASK_ATOMNAME, 
-			TATOMF_NAME);
-		TExecUnlockAtom(lexec->exec, atom, TATOMF_DESTROY);
+		TAPTR atom = TLockAtom(TEK_LIB_BASETASK_ATOMNAME, TATOMF_NAME);
+		TUnlockAtom(atom, TATOMF_DESTROY);
+		if (lexec->parent == TNULL)
+		{
+			/* free shared state */
+			TFree(lexec->shared);
+		}
 #endif
 		TDestroy((struct THandle *) lexec->task);
 		lexec->exec = TNULL;
@@ -1146,7 +1158,7 @@ static int tek_lib_exec_child_sendmsg(lua_State *L)
 }
 
 
-static void tek_lib_exec_init_link_to_parent(lua_State *L, 
+static TBOOL tek_lib_exec_init_link_to_parent(lua_State *L, 
 	struct LuaExecTask *lexec)
 {
 	struct TExecBase *TExecBase = lexec->exec;
@@ -1162,12 +1174,19 @@ static void tek_lib_exec_init_link_to_parent(lua_State *L,
 	lexec->parent = ctx ? ctx->parent : TNULL;
 	if (ctx && ctx->taskname)
 	{
+		/* child context */
 		strcpy(lexec->atomname, ctx->atomname);
 		lexec->taskname = lexec->atomname + TEK_LIB_TASK_ATOMNAME_OFFSET;
+		lexec->shared = ctx->parent->shared;
 	}
 	else
+	{
+		/* root context */
 		lexec->taskname = tek_lib_exec_taskname(lexec->atomname, "main");
-
+		lexec->shared = TAlloc(TNULL, sizeof(struct SharedState));
+		if (lexec->shared == TNULL)
+			return TFALSE;
+	}
 	atom = TLockAtom(TEK_LIB_BASETASK_ATOMNAME, 
 		TATOMF_CREATE | TATOMF_NAME | TATOMF_TRY);
 	if (atom)
@@ -1175,6 +1194,8 @@ static void tek_lib_exec_init_link_to_parent(lua_State *L,
 		TSetAtomData(atom, (TTAG) lexec->task);
 		TUnlockAtom(atom, TATOMF_KEEP);
 	}
+
+	return TTRUE;
 }
 
 
@@ -1277,7 +1298,11 @@ TMODENTRY int luaopen_tek_lib_exec(lua_State *L)
 	lexec->exec = TExecBase = TGetExecBase(lexec->task);
 
 #if defined(ENABLE_TASKS)
-	tek_lib_exec_init_link_to_parent(L, lexec);
+	if (!tek_lib_exec_init_link_to_parent(L, lexec))
+	{
+		lua_pop(L, 1);
+		return 0;
+	}
 #endif
 
 	return 1;

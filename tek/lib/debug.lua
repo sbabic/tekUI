@@ -8,7 +8,8 @@
 --		Debug library - implements debug output and debug levels:
 --
 --		2  || TRACE || used for trace messages
---		4  || INFO  || informational messages, notices
+--		3  || INFO  || informational messages, notices
+--		4  || NOTE  || important notices
 --		5  || WARN  || something unexpected happened
 --		10 || ERROR || something went wrong, e.g. resource unavailable
 --		20 || FAIL  || something went wrong that cannot be coped with
@@ -30,6 +31,7 @@
 --		- debug.execute() - Executes a function in the specified debug level
 --		- debug.fail() - Prints a text in the {{FAIL}} debug level
 --		- debug.info() - Prints a text in the {{INFO}} debug level
+--		- debug.note() - Prints a text in the {{NOTE}} debug level
 --		- debug.print() - Prints a text in the specified debug level
 --		- debug.stacktrace() - Prints a stacktrace in the specified debug level
 --		- debug.trace() - Prints a text in the {{TRACE}} debug level
@@ -59,12 +61,13 @@ local Debug = _M
 ]]
 
 local Debug = { }
-Debug._VERSION = "Debug 5.3"
+Debug._VERSION = "Debug 6.1"
 
 -- symbolic:
 
 Debug.TRACE = 2
-Debug.INFO = 4
+Debug.INFO = 3
+Debug.NOTE = 4
 Debug.WARN = 5
 Debug.ERROR = 10
 Debug.FAIL = 20
@@ -75,11 +78,11 @@ Debug.level = Debug.WARN
 Debug.out = stderr
 
 -------------------------------------------------------------------------------
---	debug.wrout(...): Debug output function, by default
+--	debug.wrout(lvl, ...): Debug output function, by default
 --			function(...) out:write(...) end
 -------------------------------------------------------------------------------
 
-Debug.wrout = function(...) Debug.out:write(...) end
+Debug.wrout = function(lvl, ...) Debug.out:write(...) end
 
 -------------------------------------------------------------------------------
 --	debug.format(lvl, msg, ...): Format error message
@@ -98,12 +101,13 @@ end
 
 function Debug.print(lvl, msg, ...)
 	if Debug.level and lvl >= Debug.level then
+		local t = getinfo(3, "lS")
 		local arg = { }
 		for i = 1, select('#', ...) do
 			local v = select(i, ...)
-			arg[i] = v ~= nil and tostring(v) or v or "<nil>"
+			arg[i] = v and type(v) ~= "number" and tostring(v) or v or 0
 		end
-		Debug.wrout(Debug.format(lvl, msg, unpack(arg)))
+		Debug.wrout(lvl, Debug.format(lvl, msg, unpack(arg)))
 	end
 end
 
@@ -129,7 +133,13 @@ function Debug.trace(msg, ...) Debug.print(2, msg, ...) end
 --	debug.info(msg, ...): Prints formatted debug info with {{INFO}} debug level
 -------------------------------------------------------------------------------
 
-function Debug.info(msg, ...) Debug.print(4, msg, ...) end
+function Debug.info(msg, ...) Debug.print(3, msg, ...) end
+
+-------------------------------------------------------------------------------
+--	debug.note(msg, ...): Prints formatted debug info with {{NOTE}} debug level
+-------------------------------------------------------------------------------
+
+function Debug.note(msg, ...) Debug.print(4, msg, ...) end
 
 -------------------------------------------------------------------------------
 --	debug.warn(msg, ...): Prints formatted debug info with {{WARN}} debug level
@@ -166,12 +176,13 @@ end
 -------------------------------------------------------------------------------
 
 function Debug.console()
-	Debug.wrout('Entering the debug console.\n')
-	Debug.wrout('To redirect the output, e.g.:\n')
-	Debug.wrout('  tek.lib.debug.out = io.open("logfile", "w")\n')
-	Debug.wrout('To dump a table, e.g.:\n')
-	Debug.wrout('  tek.lib.debug.dump(app)\n')
-	Debug.wrout('Use "cont" to continue.\n')
+	Debug.wrout(10, 'Entering the debug console.\n')
+	Debug.wrout(10, 'To redirect the output, e.g.:\n')
+	Debug.wrout(10, '  db = require "tek.lib.debug"\n')
+	Debug.wrout(10, '  db.out = io.open("logfile", "w")\n')
+	Debug.wrout(10, 'To dump a table, e.g.:\n')
+	Debug.wrout(10, '  db.dump(app)\n')
+	Debug.wrout(10, 'Use "cont" to continue.\n')
 	debug.debug()
 end
 
@@ -224,7 +235,10 @@ local function dumpr(tab, indent, outfunc, saved)
 end
 
 function Debug.dump(tab, outf)
-	dumpr(tab, 0, outf or Debug.wrout, { })
+	if not outf then
+		outf = function(...) Debug.wrout(10, ...) end
+	end
+	dumpr(tab, 0, outf, { })
 end
 
 return Debug
