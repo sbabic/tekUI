@@ -5,7 +5,7 @@
 	<head>
 		<title>tekUI Class Reference Manual</title>
 		<link rel="stylesheet" href="manual.css" />
-		<meta name="created" content="14-Feb-2015" />
+		<meta name="created" content="14-Mar-2015" />
 	</head>
 	<body>
 		<h1>
@@ -895,7 +895,7 @@ method(object, arg1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">Args (v2.4)</a></h2>
+		<div class="node"><h2><a name="tek.lib.args" id="tek.lib.args">Args (v2.5)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1043,7 +1043,7 @@ SOURCE=-s/A/M,DEST=-d/A/K
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">Debug (v5.3)</a></h2>
+		<div class="node"><h2><a name="tek.lib.debug" id="tek.lib.debug">Debug (v6.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -1063,13 +1063,24 @@ SOURCE=-s/A/M,DEST=-d/A/K
 						</tr>
 						<tr>
 							<td class="column1">
-								4
+								3
 							</td>
 							<td class="column2">
 								INFO
 							</td>
 							<td class="column3">
 								informational messages, notices
+							</td>
+						</tr>
+						<tr>
+							<td class="column1">
+								4
+							</td>
+							<td class="column2">
+								NOTE
+							</td>
+							<td class="column3">
+								important notices
 							</td>
 						</tr>
 						<tr>
@@ -1144,6 +1155,9 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 						</li>
 						<li style="list-style-type: none">
 							<a href="#debug:info"><code>debug.info()</code></a> - Prints a text in the <code>INFO</code> debug level
+						</li>
+						<li style="list-style-type: none">
+							<a href="#debug:note"><code>debug.note()</code></a> - Prints a text in the <code>NOTE</code> debug level
 						</li>
 						<li style="list-style-type: none">
 							<a href="#debug:print"><code>debug.print()</code></a> - Prints a text in the specified debug level
@@ -1223,6 +1237,12 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 			</p>
 			<hr />
 		</div>
+		<div class="node"><h3><a name="debug:note" id="debug:note"><code>debug.note(msg, ...)</code></a></h3>
+			<p>
+				Prints formatted debug info with <code>NOTE</code> debug level
+			</p>
+			<hr />
+		</div>
 		<div class="node"><h3><a name="debug:print" id="debug:print"><code>debug.print(lvl, msg, ...)</code></a></h3>
 			<p>
 				Prints formatted text if the global debug level
@@ -1252,7 +1272,7 @@ db.out = io.open(&quot;logfile&quot;, &quot;w&quot;)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="debug:wrout" id="debug:wrout"><code>debug.wrout(...)</code></a></h3>
+		<div class="node"><h3><a name="debug:wrout" id="debug:wrout"><code>debug.wrout(lvl, ...)</code></a></h3>
 			<p>
 				Debug output function, by default
 			</p>
@@ -1910,7 +1930,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.lib.visual" id="tek.lib.visual">Visual (v1.1)</a></h2>
+		<div class="node"><h2><a name="tek.lib.visual" id="tek.lib.visual">Visual (v1.2)</a></h2>
 			<div class="definition"><dfn>FUNCTIONS</dfn>
 				<blockquote>
 					<ul>
@@ -2147,14 +2167,14 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr />
 		</div>
-		<div class="node"><h3><a name="Visual:drawRGB" id="Visual:drawRGB"><code>Visual:drawRGB(table, x, y, w, h[, pw[, ph[, has_alpha]])</code></a></h3>
+		<div class="node"><h3><a name="Visual:drawRGB" id="Visual:drawRGB"><code>Visual:drawRGB(table, x, y, w, h[, pw[, ph[, has_alpha[, x0]]])</code></a></h3>
 			<p>
-				Draw a table
-				of RGB values as pixels. The table index starts at <code>0</code>. <code>pw</code> and <code>ph</code> 
-				are the &quot;thickness&quot; of pixels, whih allows to stretch the output by the
-				given factor. The default is <code>1</code> respectively. The boolean <code>has_alpha</code> 
-				determines whether the pixel values are to be interpreted as ARGB and
-				be rendered with alpha channel.
+				Draw a
+				table of RGB values as pixels. The table starts at index <code>x0</code>, default
+				<code>0</code>. <code>pw</code> and <code>ph</code> are the &quot;thickness&quot; of pixels, whih allows to
+				stretch the output by the given factor. The default is <code>1</code> respectively.
+				The boolean <code>has_alpha</code> determines whether the pixel values are to be
+				interpreted as ARGB and be rendered with alpha channel.
 			</p>
 			<hr />
 		</div>
@@ -2704,7 +2724,7 @@ func(obj, x0, y0, x1, y1, ...)
 			</p>
 			<hr class="page-break" />
 		</div>
-		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v54.0)</a></h2>
+		<div class="node"><h2><a name="tek.ui" id="tek.ui">ui (v54.1)</a></h2>
 			<div class="definition"><dfn>OVERVIEW</dfn>
 				<blockquote>
 					<p>
@@ -9400,7 +9420,7 @@ ui.Window:new {
 				</blockquote>
 				<hr class="page-break" />
 				<p>
-					Document generated on Sat Feb 14 14:12:32 2015 using gendoc.lua version 1.5
+					Document generated on Sat Mar 14 11:20:19 2015 using gendoc.lua version 1.5
 				</p>
 			</div>
 		</div>

@@ -52,7 +52,7 @@
 -------------------------------------------------------------------------------
 
 module "tek.lib.visual"
-_VERSION = "Visual 1.1"
+_VERSION = "Visual 1.2"
 local Visual = _M
 
 -----------------------------------------------------------------------------*/
@@ -2108,12 +2108,12 @@ tek_lib_visual_setshift(lua_State *L)
 }
 
 /*-----------------------------------------------------------------------------
---	Visual:drawRGB(table, x, y, w, h[, pw[, ph[, has_alpha]]): Draw a table
---	of RGB values as pixels. The table index starts at {{0}}. {{pw}} and {{ph}}
---	are the "thickness" of pixels, whih allows to stretch the output by the
---	given factor. The default is {{1}} respectively. The boolean {{has_alpha}}
---	determines whether the pixel values are to be interpreted as ARGB and
---	be rendered with alpha channel.
+--	Visual:drawRGB(table, x, y, w, h[, pw[, ph[, has_alpha[, x0]]]): Draw a
+--	table of RGB values as pixels. The table starts at index {{x0}}, default
+--	{{0}}. {{pw}} and {{ph}} are the "thickness" of pixels, whih allows to
+--	stretch the output by the given factor. The default is {{1}} respectively.
+--	The boolean {{has_alpha}} determines whether the pixel values are to be
+--	interpreted as ARGB and be rendered with alpha channel.
 -----------------------------------------------------------------------------*/
 
 LOCAL LUACFUNC TINT
@@ -2129,6 +2129,8 @@ tek_lib_visual_drawrgb(lua_State *L)
 	TINT pw = luaL_optinteger(L, 7, 1);
 	TINT ph = luaL_optinteger(L, 8, 1);
 	TBOOL has_alpha = lua_toboolean(L, 9);
+	TINT i0 = luaL_optinteger(L, 10, 0);
+
 	TUINT *buf;
 	TINT bw = w * pw;
 	TINT bh = h * ph;
@@ -2140,7 +2142,7 @@ tek_lib_visual_drawrgb(lua_State *L)
 	{
 		TUINT rgb;
 		TUINT *p = buf;
-		TINT i = 0;
+		TINT i = i0;
 		TINT xx, yy, x, y;
 
 		for (y = 0; y < h; ++y)
