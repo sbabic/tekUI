@@ -32,7 +32,7 @@ local insert = table.insert
 local remove = table.remove
 local sort = table.sort
 
-local VERSION = "1.5"
+local VERSION = "1.7"
 
 local RULE = "-------------------------------------------------------------------------------"
 local PAGE = "==============================================================================="
@@ -444,13 +444,16 @@ function processtree(state)
 
 	state.showtree = true
 
-	local mode = fs.stat(state.from, "mode")
-	if mode == "directory" then
-		recursedir(function(filename)
-			processfile(state, filename)
-		end, state.from, "file", "^.*%.(%a+)$", { lua=true, c=true })
-	elseif mode == "file" then
-		processfile(state, state.from)
+	for i = 1, #state.from do
+		local from = state.from[i]
+		local mode = fs.stat(from, "mode")
+		if mode == "directory" then
+			recursedir(function(filename)
+				processfile(state, filename)
+			end, from, "file", "^.*%.(%a+)$", { lua=true, c=true })
+		elseif mode == "file" then
+			processfile(state, from)
+		end
 	end
 
 	if state.showtree then
@@ -611,7 +614,7 @@ end
 --	main
 -------------------------------------------------------------------------------
 
-local template = "-f=FROM/A,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S," ..
+local template = "-f=FROM/A/M,-p=PLAIN/S,-i=IINDENT/N/K,-h=HELP/S," ..
 	"-e=EMPTY/S,--heading/K,--header/K/M,--author/K,--created/K," ..
 	"--adddate/S,-r=REFDOC/K,-n=NAME/K,--nomacros/S,--footer/K"
 
@@ -670,9 +673,9 @@ else
 		state.textdoc = concat(h)
 	end
 	
-	if args["-f"] and fs.stat(args["-f"], "mode") == "file" then
+	if args["-f"] and fs.stat(args["-f"][1], "mode") == "file" then
 		-- read existing text file with markup:
-		state.textdoc = state.textdoc .. io.open(args["-f"]):read("*a")
+		state.textdoc = state.textdoc .. io.open(args["-f"][1]):read("*a")
 	else
 		-- scan filesystem:
 		processtree(state)

@@ -318,7 +318,7 @@ local DOMAIN = "schulze-mueller.de"
 local PROGNAME = "Lua Compiler"
 local VERSION = "2.0"
 local AUTHOR = "Timm S. Müller"
-local COPYRIGHT = "© 2009-2015, Schulze & Müller GbR"
+local COPYRIGHT = "© 2009-2016, Schulze & Müller GbR"
 
 local f = io.open(ui.ProgDir .. "tekui.exe", "rb")
 local tekui_exe = f and f:read("*a")

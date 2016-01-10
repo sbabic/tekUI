@@ -61,10 +61,11 @@ local Debug = _M
 ]]
 
 local Debug = { }
-Debug._VERSION = "Debug 6.1"
+Debug._VERSION = "Debug 6.2"
 
 -- symbolic:
 
+Debug.ALWAYS = 0
 Debug.TRACE = 2
 Debug.INFO = 3
 Debug.NOTE = 4

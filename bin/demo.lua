@@ -105,7 +105,7 @@ app = ui.Application:new
 {
 	ProgramName = "tekUI Demo",
 	Author = "Timm S. Müller",
-	Copyright = "Copyright © 2008-2013, Schulze-Müller GbR",
+	Copyright = "Copyright © 2008-2016, Schulze-Müller GbR",
 	ApplicationId = APP_ID,
 	Domain = VENDOR,
 	Children =

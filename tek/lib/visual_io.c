@@ -37,6 +37,9 @@
 #include <unistd.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#ifdef __sun
+#include <sys/filio.h>
+#endif
 #endif
 
 #include <tek/lib/tek_lua.h>

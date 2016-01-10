@@ -237,7 +237,7 @@ MODDIR = $(BINDIR)/mod
 #------------------------------------------------------------------------------
 
 DEBUG = -DTDEBUG=5 -g # TDEBUG: the lower, the more verbose. 5 = WARN
-WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-long-long
+WARN = -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-long-long -Wno-unused-value
 OPT = -O2 -fno-strict-aliasing
 INCL = -I. -Iinclude -I$(INCDIR)
 LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS) $(CPPFLAGS) $(CFLAGS)

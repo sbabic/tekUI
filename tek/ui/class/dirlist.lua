@@ -89,7 +89,7 @@ local pcall = pcall
 local sort = table.sort
 
 local DirList = Group.module("tek.ui.class.dirlist", "tek.ui.class.group")
-DirList._VERSION = "DirList 17.4"
+DirList._VERSION = "DirList 17.5"
 
 -------------------------------------------------------------------------------
 --	basepath = getBasePath()
@@ -312,7 +312,7 @@ function DirList.new(class, self)
 		SelectMode = self.SelectMode or "single",
 		ListObject = self.DirList,
 		onPress = function(lister)
-			if self.Pressed then
+			if lister.Pressed then
 				self:clickList()
 			end
 		end,
