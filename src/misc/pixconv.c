@@ -37,8 +37,7 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			case ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
 			case ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
 			case ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
-				for (y = 0; y < h; ++y, dp += dst->tpb_BytesPerLine, sp += src->tpb_BytesPerLine)
-					memcpy(dp, sp, w * 4);
+				memcpy(dp, sp, w * 4);
 				break;
 				
 			case ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
