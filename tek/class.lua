@@ -43,7 +43,7 @@ local Class = _M
 
 local Class = { }
 Class._NAME = "tek.class"
-Class._VERSION = "Class 9.0"
+Class._VERSION = "Class 9.1"
 Class.__index = Class
 
 if PROXY then
@@ -56,7 +56,7 @@ if PROXY then
 		if DEBUG then
 			function mt.__index(tab, key)
 				local val = mt[key]
-				if not val then
+				if val == nil then
 					error(("Uninitialized read: %s.%s"):format(
 						tab:getClassName(), key), 2)
 				end
