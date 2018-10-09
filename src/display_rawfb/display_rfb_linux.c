@@ -21,6 +21,7 @@
 
 #define EVNOTIFYPATH "/dev/input"
 #define EVPATH "/dev/input/by-path/"
+#define FBDEV "/dev/fb0"
 
 static TUINT rfb_processmouseinput(struct rfb_Display *mod,
 	struct input_event *ev);
@@ -515,6 +516,8 @@ static TBOOL rfb_setvinfopixfmt(struct fb_var_screeninfo *vinfo, TUINT pixfmt)
 
 LOCAL TBOOL rfb_linux_init(struct rfb_Display *mod)
 {
+	char *env;
+
 	for (;;)
 	{
 		int pipefd[2];
@@ -554,7 +557,10 @@ LOCAL TBOOL rfb_linux_init(struct rfb_Display *mod)
 			TDBPRINTF(TDB_WARN, ("Cannot access console device\n"));
 
 		/* open framebuffer device */
-		mod->rfb_fbhnd = open("/dev/fb0", O_RDWR);
+		env = getenv("FBDEV");
+		if (!env)
+			env = FBDEV;
+		mod->rfb_fbhnd = open(env, O_RDWR);
 		if (mod->rfb_fbhnd == -1)
 		{
 			TDBPRINTF(TDB_ERROR, ("Cannot open framebuffer device\n"));
