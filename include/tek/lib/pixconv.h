@@ -9,6 +9,12 @@
 
 #include <tek/mod/visual.h>
 
+typedef TUINT8 *(TLIBTRANSFORM) (struct TVPixBuf *src, TINT x, TINT y, void *data);
+
+TLIBAPI TINT pixconv_transform_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
+	TINT x0, TINT y0, TINT x1, TINT y1, TINT sx, TINT sy, TBOOL alpha, 
+	TBOOL swap_byteorder, TLIBTRANSFORM fn, void *data);
+
 TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 	TINT x0, TINT y0, TINT x1, TINT y1, TINT sx, TINT sy, TBOOL alpha, 
 	TBOOL swap_byteorder);

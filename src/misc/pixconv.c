@@ -11,22 +11,31 @@
 #include <tek/debug.h>
 #include <tek/lib/pixconv.h>
 
-TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
-	TINT x0, TINT y0, TINT x1, TINT y1, TINT sx, TINT sy, TBOOL alpha, 
-	TBOOL swap)
+TUINT8 *tvpb_getaddress(struct TVPixBuf *buf, TINT x, TINT y, TLIBTRANSFORM fn, void *data)
+{
+	if (!fn)
+		return TVPB_GETADDRESS(buf, x, y);
+	return fn(buf, x, y, data);
+}
+
+TLIBAPI TINT pixconv_transform_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
+	TINT x0, TINT y0, TINT x1, TINT y1, TINT sx, TINT sy, TBOOL alpha,
+	TBOOL swap, TLIBTRANSFORM fn, void *data)
 {
 	TINT w = x1 - x0 + 1;
 	TINT h = y1 - y0 + 1;
 	TINT x, y;
 	TUINT c = (alpha << 17) | (swap << 16) | ((src->tpb_Format & 0xff) << 8) | (dst->tpb_Format & 0xff);
 	TUINT8 *sp = TVPB_GETADDRESS(src, sx, sy);
-	TUINT8 *dp = TVPB_GETADDRESS(dst, x0, y0);
+	TUINT8 *dp = tvpb_getaddress(dst, x0, y0, fn, data);
 	
-	TDBPRINTF(TDB_DEBUG,("conversion %08x: alpha=%d swap=%d src=%08x dst=%08x\n", 
+	TDBPRINTF(TDB_DEBUG,("conversion %08x: alpha=%d swap=%d src=%08x dst=%08x\n",
 		c, alpha, swap, src->tpb_Format, dst->tpb_Format));
 	
 	for (y = 0; y < h; ++y, dp += dst->tpb_BytesPerLine, sp += src->tpb_BytesPerLine)
 	{
+		for (x = 0; x < w; ++x) {
+		dp = tvpb_getaddress(dst, x0 + x, y0 + y, fn, data);
 		switch(c)
 		{
 			/* 24/32 bit -> 24/32 bit */
@@ -37,21 +46,19 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			case ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
 			case ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
 			case ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
-				memcpy(dp, sp, w * 4);
+					*((TUINT *)dp) = ((TUINT *)sp)[x];
 				break;
 				
 			case ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
-				for (x = 0; x < w; ++x)
-					((TUINT *)dp)[x] = ((TUINT *)sp)[x] & 0x00ffffff;
+					*((TUINT *)dp) = ((TUINT *)sp)[x] & 0x00ffffff;
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
 			case 0x10000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT *)dp)[x] = TVPIXFMT_ARGB32_SWAP(p);
+					*((TUINT *)dp) = TVPIXFMT_ARGB32_SWAP(p);
 				}
 				break;
 				
@@ -61,19 +68,17 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			case 0x10000 | ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
 			case 0x10000 | ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
 			case 0x10000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT *)dp)[x] = TVPIXFMT_0RGB32_SWAP(p);
+					*((TUINT *)dp) = TVPIXFMT_0RGB32_SWAP(p);
 				}
 				break;
 				
 			case ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
 			case ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT *)dp)[x] = TVPIXFMT_ARGB32_TO_ABGR32(p);
+					*((TUINT *)dp) = TVPIXFMT_ARGB32_TO_ABGR32(p);
 				}
 				break;
 				
@@ -81,10 +86,9 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			case ((TVPIXFMT_08R8G8B8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
 			case ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT *)dp)[x] = TVPIXFMT_0RGB32_TO_0BGR32(p);
+					*((TUINT *)dp) = TVPIXFMT_0RGB32_TO_0BGR32(p);
 				}
 				break;
 
@@ -92,39 +96,35 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			
 			case ((TVPIXFMT_08R8G8B8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
 			case ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT16 *)dp)[x] = TVPIXFMT_ARGB32_TO_RGB16(p);
+					*((TUINT16 *)dp) = TVPIXFMT_ARGB32_TO_RGB16(p);
 				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_08R8G8B8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
 			case 0x10000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
 					TUINT p2 = TVPIXFMT_ARGB32_TO_RGB16(p);
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p2);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p2);
 				}
 				break;
 				
 			case ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
 			case ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT16 *)dp)[x] = TVPIXFMT_ABGR32_TO_RGB16(p);
+					*((TUINT16 *)dp) = TVPIXFMT_ABGR32_TO_RGB16(p);
 				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
 			case 0x10000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
 					TUINT p2 = TVPIXFMT_ABGR32_TO_RGB16(p);
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p2);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p2);
 				}
 				break;
 			
@@ -132,58 +132,52 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			
 			case ((TVPIXFMT_08R8G8B8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
 			case ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT16 *)dp)[x] = TVPIXFMT_ARGB32_TO_RGB15(p);
+					*((TUINT16 *)dp) = TVPIXFMT_ARGB32_TO_RGB15(p);
 				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_08R8G8B8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
 			case 0x10000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
 					TUINT16 p2 = TVPIXFMT_ARGB32_TO_RGB15(p);
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p2);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p2);
 				}
 				break;
 				
 			case ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
 			case ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT16 *)dp)[x] = TVPIXFMT_ABGR32_TO_RGB15(p);
+					*((TUINT16 *)dp) = TVPIXFMT_ABGR32_TO_RGB15(p);
 				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_08B8G8R8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
 			case 0x10000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
 					TUINT p2 = TVPIXFMT_ABGR32_TO_RGB15(p);
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p2);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p2);
 				}
 				break;
 				
 			case ((TVPIXFMT_08R8G8B8 & 0xff) << 8) | (TVPIXFMT_0B5G5R5 & 0xff):
 			case ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_0B5G5R5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
-					((TUINT16 *)dp)[x] = TVPIXFMT_ARGB32_TO_BGR15(p);
+					*((TUINT16 *)dp) = TVPIXFMT_ARGB32_TO_BGR15(p);
 				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_08R8G8B8 & 0xff) << 8) | (TVPIXFMT_0B5G5R5 & 0xff):
 			case 0x10000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_0B5G5R5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT p = ((TUINT *)sp)[x];
 					TUINT16 p2 = TVPIXFMT_ARGB32_TO_BGR15(p);
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p2);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p2);
 				}
 				break;
 			
@@ -192,26 +186,26 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			case ((TVPIXFMT_R5G6B5 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
 			case ((TVPIXFMT_0R5G5B5 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
 			case ((TVPIXFMT_0B5G5R5 & 0xff) << 8) | (TVPIXFMT_0B5G5R5 & 0xff):
-				memcpy(dp, sp, w * 2);
+				{
+					*((TUINT16 *)dp) = ((TUINT16 *)sp)[x];;
+				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_R5G6B5 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
 			case 0x10000 | ((TVPIXFMT_0R5G5B5 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
 			case 0x10000 | ((TVPIXFMT_0B5G5R5 & 0xff) << 8) | (TVPIXFMT_0B5G5R5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT16 p = ((TUINT16 *)sp)[x];
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p);
 				}
 				break;
 			
 			/* 15 bit -> 16 bit */
 			
 			case ((TVPIXFMT_0B5G5R5 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT16 p = ((TUINT16 *)sp)[x];
-					((TUINT16 *)dp)[x] = TVPIXFMT_BGR15_TO_RGB16(p);
+					*((TUINT16 *)dp) = TVPIXFMT_BGR15_TO_RGB16(p);
 				}
 				break;
 			
@@ -219,39 +213,35 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			
 			case ((TVPIXFMT_0R5G5B5 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case ((TVPIXFMT_0R5G5B5 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT16 p = ((TUINT16 *)sp)[x];
-					((TUINT *)dp)[x] = TVPIXFMT_RGB15_TO_ARGB32(p);
+					*((TUINT *)dp) = TVPIXFMT_RGB15_TO_ARGB32(p);
 				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_0R5G5B5 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case 0x10000 | ((TVPIXFMT_0R5G5B5 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT16 p = ((TUINT16 *)sp)[x];
 					TUINT32 p2 = TVPIXFMT_RGB15_TO_ARGB32(p);
-					((TUINT *)dp)[x] = TVPIXFMT_0RGB32_SWAP(p2);
+					*((TUINT *)dp) = TVPIXFMT_0RGB32_SWAP(p2);
 				}
 				break;
 				
 			case ((TVPIXFMT_0B5G5R5 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case ((TVPIXFMT_0B5G5R5 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT16 p = ((TUINT16 *)sp)[x];
-					((TUINT *)dp)[x] = TVPIXFMT_BGR15_TO_ARGB32(p);
+					*((TUINT *)dp) = TVPIXFMT_BGR15_TO_ARGB32(p);
 				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_0B5G5R5 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case 0x10000 | ((TVPIXFMT_0B5G5R5 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT16 p = ((TUINT16 *)sp)[x];
 					TUINT32 p2 = TVPIXFMT_BGR15_TO_ARGB32(p);
-					((TUINT *)dp)[x] = TVPIXFMT_0RGB32_SWAP(p2);
+					*((TUINT *)dp) = TVPIXFMT_0RGB32_SWAP(p2);
 				}
 				break;
 			
@@ -259,20 +249,18 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			
 			case ((TVPIXFMT_R5G6B5 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case ((TVPIXFMT_R5G6B5 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT16 p = ((TUINT16 *)sp)[x];
-					((TUINT *)dp)[x] = TVPIXFMT_RGB16_TO_ARGB32(p);
+					*((TUINT *)dp) = TVPIXFMT_RGB16_TO_ARGB32(p);
 				}
 				break;
 				
 			case 0x10000 | ((TVPIXFMT_R5G6B5 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case 0x10000 | ((TVPIXFMT_R5G6B5 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT16 p = ((TUINT16 *)sp)[x];
 					TUINT32 p2 = TVPIXFMT_RGB16_TO_ARGB32(p);
-					((TUINT *)dp)[x] = TVPIXFMT_0RGB32_SWAP(p2);
+					*((TUINT *)dp) = TVPIXFMT_0RGB32_SWAP(p2);
 				}
 				break;
 			
@@ -282,7 +270,6 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			case 0x20000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case 0x20000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
 			case 0x20000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ARGB32_GET_ALPHA8(spix);
@@ -296,7 +283,7 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dr += ((r - dr) * a) >> 8;
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
-					((TUINT *)dp)[x] = TVPIXFMT_R_G_B_TO_ARGB32(dr, dg, db);
+					*((TUINT *)dp) = TVPIXFMT_R_G_B_TO_ARGB32(dr, dg, db);
 				}
 				break;
 				
@@ -304,7 +291,6 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			case 0x30000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
 			case 0x30000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8B8G8R8 & 0xff):
 			case 0x30000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ARGB32_GET_ALPHA8(spix);
@@ -319,7 +305,7 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
 					TUINT p = TVPIXFMT_R_G_B_TO_ARGB32(dr, dg, db);
-					((TUINT *)dp)[x] = TVPIXFMT_0RGB32_SWAP(p);
+					*((TUINT *)dp) = TVPIXFMT_0RGB32_SWAP(p);
 				}
 				break;
 			
@@ -327,7 +313,6 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 			case 0x20000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_08B8G8R8 & 0xff):
 			case 0x20000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_A8R8G8B8 & 0xff):
 			case 0x20000 | ((TVPIXFMT_A8B8G8R8 & 0xff) << 8) | (TVPIXFMT_08R8G8B8 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ABGR32_GET_ALPHA8(spix);
@@ -341,14 +326,13 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dr += ((r - dr) * a) >> 8;
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
-					((TUINT *)dp)[x] = TVPIXFMT_R_G_B_TO_ARGB32(dr, dg, db);
+					*((TUINT *)dp) = TVPIXFMT_R_G_B_TO_ARGB32(dr, dg, db);
 				}
 				break;
 			
 			/* 32+alpha -> 15 bit */
 			
 			case 0x20000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ARGB32_GET_ALPHA8(spix);
@@ -362,12 +346,11 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dr += ((r - dr) * a) >> 8;
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
-					((TUINT16 *)dp)[x] = TVPIXFMT_R_G_B_TO_RGB15(dr, dg, db);
+					*((TUINT16 *)dp) = TVPIXFMT_R_G_B_TO_RGB15(dr, dg, db);
 				}
 				break;
 				
 			case 0x30000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_0R5G5B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ARGB32_GET_ALPHA8(spix);
@@ -382,12 +365,11 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
 					TUINT16 p = TVPIXFMT_R_G_B_TO_RGB15(dr, dg, db);
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p);
 				}
 				break;
 				
 			case 0x20000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_0B5G5R5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ARGB32_GET_ALPHA8(spix);
@@ -401,12 +383,11 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dr += ((r - dr) * a) >> 8;
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
-					((TUINT16 *)dp)[x] = TVPIXFMT_R_G_B_TO_BGR15(dr, dg, db);
+					*((TUINT16 *)dp) = TVPIXFMT_R_G_B_TO_BGR15(dr, dg, db);
 				}
 				break;
 				
 			case 0x30000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_0B5G5R5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ARGB32_GET_ALPHA8(spix);
@@ -421,14 +402,14 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
 					TUINT16 p = TVPIXFMT_R_G_B_TO_BGR15(dr, dg, db);
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p);
 				}
 				break;
 			
 			/* 32+alpha -> 16 bit */
 			
 			case 0x20000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
-				for (x = 0; x < w; ++x)
+				// This tested with udlfb
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ARGB32_GET_ALPHA8(spix);
@@ -442,12 +423,12 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dr += ((r - dr) * a) >> 8;
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
-					((TUINT16 *)dp)[x] = TVPIXFMT_R_G_B_TO_RGB16(dr, dg, db);
+					dp = tvpb_getaddress(dst, x0 + x, y0 + y, fn, data);
+					*((TUINT16 *)dp) = TVPIXFMT_R_G_B_TO_RGB16(dr, dg, db);
 				}
 				break;
 				
 			case 0x30000 | ((TVPIXFMT_A8R8G8B8 & 0xff) << 8) | (TVPIXFMT_R5G6B5 & 0xff):
-				for (x = 0; x < w; ++x)
 				{
 					TUINT32 spix = ((TUINT *)sp)[x];
 					TUINT a = TVPIXFMT_ARGB32_GET_ALPHA8(spix);
@@ -462,17 +443,26 @@ TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
 					dg += ((g - dg) * a) >> 8;
 					db += ((b - db) * a) >> 8;
 					TUINT16 p = TVPIXFMT_R_G_B_TO_RGB16(dr, dg, db);
-					((TUINT16 *)dp)[x] = TVPIXFMT_RGB16_SWAP(p);
+					*((TUINT16 *)dp) = TVPIXFMT_RGB16_SWAP(p);
 				}
 				break;
 			
 			default:
-				TDBPRINTF(TDB_WARN,("unsupported conversion %08x: alpha=%d swap=%d src=%08x dst=%08x\n", 
+				TDBPRINTF(TDB_WARN,("unsupported conversion %08x: alpha=%d swap=%d src=%08x dst=%08x\n",
 					c, alpha, swap, src->tpb_Format, dst->tpb_Format));
 				return 1;
 		}
+		}
 	}
 	return 0;
+}
+
+TLIBAPI TINT pixconv_convert(struct TVPixBuf *src, struct TVPixBuf *dst,
+	TINT x0, TINT y0, TINT x1, TINT y1, TINT sx, TINT sy, TBOOL alpha,
+	TBOOL swap)
+{
+	return pixconv_transform_convert(src, dst, x0, y0, x1, y1, sx, sy,
+						alpha, swap, NULL, NULL);
 }
 
 TLIBAPI void pixconv_writealpha(TUINT8 *dbuf, TUINT8 *sbuf, TINT w, TUINT dfmt, TINT r, TINT g, TINT b)
