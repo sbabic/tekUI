@@ -273,6 +273,7 @@ struct rfb_Display
 	struct RawKey *rfb_RawKeys[256];
 	int rfb_fd_inotify_input;
 	int rfb_fd_watch_input;
+	int rfb_rotation;
 #endif
 
 };

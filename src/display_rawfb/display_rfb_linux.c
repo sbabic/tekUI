@@ -32,6 +32,29 @@ static void rfb_processkbdinput(struct rfb_Display *mod,
 
 /*****************************************************************************/
 
+static TUINT rfb_getrotation(void)
+{
+	TUINT angle;
+	char *env = getenv("SCREEN_ORIENTATION_ANGLE");
+
+	if (!env)
+		return 0;
+
+	angle = strtoul(env, NULL, 10);
+
+	/* check for correctness, just 0,90,180,270 are allowed */
+
+	switch (angle) {
+	case 0:
+	case 90:
+	case 180:
+	case 270:
+		return angle;
+	default:
+		return 0;
+	}
+}
+
 static TBOOL rfb_findeventinput(const char *path, const char *what,
 	char *fullname, size_t len)
 {
@@ -608,9 +631,10 @@ LOCAL TBOOL rfb_linux_init(struct rfb_Display *mod)
 			break;
 		}
 
-		mod->rfb_DevWidth = mod->rfb_vinfo.xres;
-		mod->rfb_DevHeight = mod->rfb_vinfo.yres;
-		mod->rfb_DevBuf.tpb_BytesPerLine = mod->rfb_finfo.line_length;
+		/*
+		 * Add support for monitor rotation
+		 */
+		mod->rfb_rotation = rfb_getrotation();
 		mod->rfb_DevBuf.tpb_Format = pixfmt;
 		mod->rfb_DevBuf.tpb_Data = mmap(0, mod->rfb_finfo.smem_len,
 			PROT_READ | PROT_WRITE, MAP_SHARED, mod->rfb_fbhnd, 0);
@@ -618,7 +642,47 @@ LOCAL TBOOL rfb_linux_init(struct rfb_Display *mod)
 			break;
 		memset(mod->rfb_DevBuf.tpb_Data, 0, mod->rfb_finfo.smem_len);
 
+		/*
+		 * Default if not rotate, pixbuf point to the mmaped framebuffer
+		 */
+		mod->rfb_DevWidth = mod->rfb_vinfo.xres;
+		mod->rfb_DevHeight = mod->rfb_vinfo.yres;
+		mod->rfb_DevBuf.tpb_BytesPerLine = mod->rfb_finfo.line_length;
 		mod->rfb_PixBuf = mod->rfb_DevBuf;
+
+		if (mod->rfb_rotation != 0) {
+			mod->rfb_PixBuf.tpb_Data = malloc(mod->rfb_finfo.smem_len);
+			memset(mod->rfb_PixBuf.tpb_Data, 0, mod->rfb_finfo.smem_len);
+		}
+
+		/*
+		 * Set values for a virtual framebuffer that
+		 * has the same properties as the rotate framebuffer
+		 * The real framebuffer is then used just for mmapping
+		 */
+		switch (mod->rfb_rotation) {
+		case 0:
+		case 180:
+			break;
+		case 90:
+		case 270:
+			mod->rfb_DevWidth = mod->rfb_vinfo.yres;
+			mod->rfb_DevHeight = mod->rfb_vinfo.xres;
+			mod->rfb_DevBuf.tpb_BytesPerLine =
+				mod->rfb_finfo.line_length / mod->rfb_vinfo.xres * mod->rfb_DevWidth;
+			mod->rfb_PixBuf.tpb_BytesPerLine =
+				mod->rfb_finfo.line_length / mod->rfb_vinfo.xres * mod->rfb_DevWidth;
+			break;
+		}
+
+		TDBPRINTF(TDB_DEBUG, ("Geometry: defwidth %d defheight %d xres %d yres %d linelen %d pixbuf %p devbuf %p\n",
+				 mod->rfb_DevWidth,
+				 mod->rfb_DevHeight,
+				 mod->rfb_vinfo.xres,
+				 mod->rfb_vinfo.yres,
+				 mod->rfb_finfo.line_length,
+				 mod->rfb_PixBuf.tpb_Data,
+				 mod->rfb_DevBuf.tpb_Data));
 
 		rfb_updateinput(mod);
 		rfb_initkeytable(mod);

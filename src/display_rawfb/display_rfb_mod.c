@@ -47,6 +47,45 @@ static const TUINT rfb_defptrimg[] =
 	_mpB, _mpB, _mpE, _mpE, _mpE, _mpB, _mpB, _mpE,
 };
 
+#define TVPB_GETADDRESS_ROTATE(b, x, y, BytesPerLine) \
+         ((b)->tpb_Data + (y) * BytesPerLine + \
+         (x) * TVPIXFMT_BYTES_PER_PIXEL((b)->tpb_Format))
+
+LOCAL void rfb_rotate(TINT *x, TINT *y, TUINT rot, int displaywidth, int displayheight)
+{
+	TINT tmp;
+
+	switch (rot) {
+	case 0:
+		break;
+	case 90:
+		tmp = *x;
+		*x = *y;
+		*y = displayheight - tmp - 1;
+		break;
+	case 180:
+		*x = displaywidth - *x - 1;
+		*y = displayheight - *y - 1;
+		break;
+	case 270:
+		tmp = *x;
+		*x = displaywidth - *y - 1;
+		*y = tmp;
+		break;
+	}
+}
+
+LOCAL TUINT8 *rfb_address_rotate(struct TVPixBuf *buf, TINT x, TINT y, void *data)
+{
+	struct rfb_Display *mod = (struct rfb_Display *)data;
+	if (!mod->rfb_rotation)
+		return TVPB_GETADDRESS(buf, x, y);
+	rfb_rotate(&x, &y, mod->rfb_rotation, mod->rfb_vinfo.xres,  mod->rfb_vinfo.yres);
+
+	return TVPB_GETADDRESS_ROTATE(buf, x, y, mod->rfb_finfo.line_length);
+}
+
+
 static void rfb_initdefpointer(struct rfb_Display *mod)
 {
 	mod->rfb_PtrImage.tpb_Data = (TUINT8 *) rfb_defptrimg;
@@ -1392,7 +1431,7 @@ LOCAL void rfb_flush_clients(struct rfb_Display *mod, TBOOL also_external)
 			rfb_vnc_flush(mod, D);
 #endif
 		/* flush to sub pixbuf: */
-		if (mod->rfb_Flags & RFBFL_BUFFER_DEVICE)
+		if (mod->rfb_Flags & RFBFL_BUFFER_DEVICE || mod->rfb_rotation)
 		{
 			node = D->rg_Rects.rl_List.tlh_Head.tln_Succ;
 			for (; (next = node->tln_Succ); node = next)
@@ -1403,8 +1442,13 @@ LOCAL void rfb_flush_clients(struct rfb_Display *mod, TBOOL also_external)
 				TINT x1 = r->rn_Rect[2];
 				TINT y1 = r->rn_Rect[3];
 
-				pixconv_convert(&mod->rfb_PixBuf, &mod->rfb_DevBuf,
-					x0, y0, x1, y1, x0, y0, TFALSE, TFALSE);
+				if (!mod->rfb_rotation)
+					pixconv_convert(&mod->rfb_PixBuf, &mod->rfb_DevBuf,
+						x0, y0, x1, y1, x0, y0, TFALSE, TFALSE);
+				else
+					pixconv_transform_convert(&mod->rfb_PixBuf, &mod->rfb_DevBuf,
+						x0, y0, x1, y1, x0, y0, TFALSE, TFALSE,
+						rfb_address_rotate, mod);
 			}
 		}
 
