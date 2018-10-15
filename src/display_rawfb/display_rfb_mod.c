@@ -133,22 +133,36 @@ LOCAL TBOOL rfb_initpointer(struct rfb_Display *mod)
 	return TFALSE;
 }
 
+#define SWAP(x, y, TYPE) do { TYPE SWAP = x; x = y; y = SWAP; } while (0)
+
 static void rfb_storebackbuf(struct rfb_Display *mod,
 	struct rfb_BackBuffer *bbuf, TINT x0, TINT y0, TINT x1, TINT y1)
 {
 	TUINT8 *bkdst = bbuf->data;
-	TUINT8 *bksrc = TVPB_GETADDRESS(&mod->rfb_DevBuf, x0, y0);
+	TUINT8 *bksrc;
 	TUINT bpl = mod->rfb_DevBuf.tpb_BytesPerLine;
 	TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_DevBuf.tpb_Format);
 	TUINT srcbpl = mod->rfb_PtrWidth * bpp;
-	TINT y;
+	TINT y, x;
 
-	for (y = y0; y <= y1; ++y)
-	{
-		memcpy(bkdst, bksrc, srcbpl);
-		bksrc += bpl;
-		bkdst += srcbpl;
+	if (!mod->rfb_rotation) {
+		bksrc = TVPB_GETADDRESS(&mod->rfb_DevBuf, x0, y0);
+		for (y = y0; y <= y1; ++y)
+		{
+			memcpy(bkdst, bksrc, srcbpl);
+			bksrc += bpl;
+			bkdst += srcbpl;
+		}
+	} else {
+		for (x = x0; x <= x1; ++x) {
+			for (y = y0; y <= y1; ++y) {
+				bksrc = rfb_address_rotate(&mod->rfb_DevBuf, x, y, mod);
+				memcpy(bkdst, bksrc, bpp);
+				bkdst += bpp;
+			}
+		}
 	}
+
 	bbuf->rect[0] = x0;
 	bbuf->rect[1] = y0;
 	bbuf->rect[2] = x1;
@@ -164,13 +178,23 @@ static void rfb_restorebackbuf(struct rfb_Display *mod,
 	TUINT bpl = mod->rfb_DevBuf.tpb_BytesPerLine;
 	TUINT bpp = TVPIXFMT_BYTES_PER_PIXEL(mod->rfb_DevBuf.tpb_Format);
 	TUINT srcbpl = mod->rfb_PtrWidth * bpp;
-	TINT y;
+	TINT y, x;
 
-	for (y = bbuf->rect[1]; y <= bbuf->rect[3]; ++y)
-	{
-		memcpy(bkdst, bksrc, srcbpl);
-		bkdst += bpl;
-		bksrc += srcbpl;
+	if (!mod->rfb_rotation) {
+		for (y = bbuf->rect[1]; y <= bbuf->rect[3]; ++y)
+		{
+			memcpy(bkdst, bksrc, srcbpl);
+			bkdst += bpl;
+			bksrc += srcbpl;
+		}
+	} else {
+		for (x = bbuf->rect[0]; x <= bbuf->rect[2]; ++x) {
+			for (y = bbuf->rect[1]; y <= bbuf->rect[3]; ++y) {
+				bkdst = rfb_address_rotate(&mod->rfb_DevBuf, x, y, mod);
+				memcpy(bkdst, bksrc, bpp);
+				bksrc += bpp;
+			}
+		}
 	}
 }
 
@@ -203,8 +227,9 @@ static void rfb_drawpointer(struct rfb_Display *mod)
 		x1 = TMIN(x1, s2);
 		y1 = TMIN(y1, s3);
 		rfb_storebackbuf(mod, &mod->rfb_PtrBackBuffer, x0, y0, x1, y1);
-		pixconv_convert(&mod->rfb_PtrImage, &dst, x0, y0, x1, y1, 0, 0,
-			TTRUE, TFALSE);
+		pixconv_transform_convert(&mod->rfb_PtrImage, &dst, x0, y0, x1, y1, 0, 0,
+			TTRUE, TFALSE,
+			rfb_address_rotate, mod);
 	}
 
 	mod->rfb_Flags |= RFBFL_PTR_VISIBLE;

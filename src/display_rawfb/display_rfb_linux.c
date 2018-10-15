@@ -323,10 +323,44 @@ static void rfb_processkbdinput(struct rfb_Display *mod,
 
 /*****************************************************************************/
 
+static void rfb_transform_mouse_coord(struct rfb_Display *mod, struct input_event *ev)
+{
+	if (!mod->rfb_rotation)
+		return;
+
+	switch (ev->type) {
+	case EV_KEY:
+		break;
+	case EV_ABS:
+		switch (mod->rfb_rotation) {
+		case 180:
+			if (ev->code == ABS_Y)
+				ev->value = mod->rfb_vinfo.yres - ev->value;
+			break;
+		case 90:
+		case 270:
+			break;
+		}
+		break;
+	case EV_REL:
+		switch (mod->rfb_rotation) {
+		case 180:
+			if (ev->code == REL_Y)
+				ev->value = - ev->value;
+			break;
+		case 90:
+		case 270:
+			break;
+		}
+	}
+}
+
 static TUINT rfb_processmouseinput(struct rfb_Display *mod,
 	struct input_event *ev)
 {
 	TUINT input_pending = 0;
+
+	rfb_transform_mouse_coord(mod, ev);
 
 	switch (ev->type)
 	{
