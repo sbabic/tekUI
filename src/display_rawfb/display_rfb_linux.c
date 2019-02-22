@@ -149,6 +149,17 @@ static void rfb_updateinput(struct rfb_Display *mod)
 		ioctl(fd_mouse, EVIOCGABS(1), &mod->rfb_absinfo[1]);
 	}
 
+	/*
+	 * In case monitor is rotated, swap X and Y
+	 */
+	if (mod->rfb_rotation == 90 || mod->rfb_rotation == 270)
+	{
+		struct input_absinfo tmp;
+		tmp = mod->rfb_absinfo[0];
+		mod->rfb_absinfo[0] = mod->rfb_absinfo[1];
+		mod->rfb_absinfo[1] = tmp;
+	}
+
 	fd_max = TMAX(mod->rfb_fd_sigpipe_read, mod->rfb_fd_inotify_input);
 	fd_max = TMAX(fd_max, fd_mouse);
 	fd_max = TMAX(fd_max, fd_kbd);
@@ -325,20 +336,66 @@ static void rfb_processkbdinput(struct rfb_Display *mod,
 
 static void rfb_transform_mouse_coord(struct rfb_Display *mod, struct input_event *ev)
 {
-	if (!mod->rfb_rotation)
-		return;
-
 	switch (ev->type) {
 	case EV_KEY:
 		break;
 	case EV_ABS:
+		if (ev->value < 0)
+			break;
 		switch (mod->rfb_rotation) {
 		case 180:
-			if (ev->code == ABS_Y)
+			switch (ev->code) {
+			case ABS_Y:
 				ev->value = mod->rfb_vinfo.yres - ev->value;
+				break;
+			case ABS_X:
+				ev->value = mod->rfb_vinfo.xres - ev->value;
+				break;
+			default:
+				TDBPRINTF(TDB_DEBUG, ("Unknow ec->code %x\n", ev->code));
+			}
 			break;
 		case 90:
+			switch (ev->code) {
+			case ABS_Y:
+				ev->code = ABS_X;
+				ev->value = (ev->value > 0) ? mod->rfb_vinfo.yres - ev->value : ev->value;
+				break;
+			case ABS_MT_POSITION_Y:
+				ev->code = ABS_MT_POSITION_X;
+				ev->value = (ev->value > 0) ? mod->rfb_vinfo.yres - ev->value : ev->value;
+				break;
+			case ABS_X:
+				ev->code = ABS_Y;
+				break;
+			case ABS_MT_POSITION_X:
+				ev->code = ABS_MT_POSITION_Y;
+				break;
+			default:
+				TDBPRINTF(TDB_DEBUG, ("Unknow ec->code %x\n", ev->code));
+			}
+			break;
 		case 270:
+			switch (ev->code) {
+			case ABS_Y:
+				ev->code = ABS_X;
+				ev->value = (ev->value > 0) ? ev->value - 1 : ev->value;
+				break;
+			case ABS_MT_POSITION_Y:
+				ev->code = ABS_MT_POSITION_X;
+				ev->value = (ev->value > 0) ? ev->value - 1 : ev->value;
+				break;
+			case ABS_X:
+				ev->code = ABS_Y;
+				ev->value = mod->rfb_vinfo.xres - ev->value - 1;
+				break;
+			case ABS_MT_POSITION_X:
+				ev->code = ABS_MT_POSITION_Y;
+				ev->value = mod->rfb_vinfo.xres - ev->value - 1;
+				break;
+			default:
+				TDBPRINTF(TDB_DEBUG, ("Unknow ec->code %x\n", ev->code));
+			}
 			break;
 		}
 		break;
@@ -362,6 +419,8 @@ static TUINT rfb_processmouseinput(struct rfb_Display *mod,
 
 	rfb_transform_mouse_coord(mod, ev);
 
+	TDBPRINTF(TDB_DEBUG, ("Ev: %x code %x value %d\n", ev->type, ev->code, ev->value));
+
 	switch (ev->type)
 	{
 		case EV_KEY:
@@ -382,14 +441,40 @@ static TUINT rfb_processmouseinput(struct rfb_Display *mod,
 
 				case BTN_TOOL_FINGER:
 				case BTN_TOUCH:
-					TDBPRINTF(TDB_DEBUG, ("TOUCH %d\n", ev->value));
 					mod->rfb_button_touch = ev->value;
+					bc = ev->value ? TMBCODE_LEFTDOWN : TMBCODE_LEFTUP;
+					bc = 0;
 					if (ev->value)
 					{
+						TIMSG *msg;
 						mod->rfb_absstart[0] = mod->rfb_abspos[0];
 						mod->rfb_absstart[1] = mod->rfb_abspos[1];
 						mod->rfb_startmouse[0] = mod->rfb_MouseX;
 						mod->rfb_startmouse[1] = mod->rfb_MouseY;
+
+						if (rfb_getimsg(mod, TNULL, &msg, TITYPE_MOUSEBUTTON))
+						{
+							rfb_passevent_mousebutton(mod, msg);
+							rfb_putbackmsg(mod, msg);
+						}
+					} else {
+						TIMSG *msg, *msg1;
+						mod->rfb_absstart[0] = mod->rfb_abspos[0];
+						mod->rfb_absstart[1] = mod->rfb_abspos[1];
+						mod->rfb_startmouse[0] = mod->rfb_MouseX;
+						mod->rfb_startmouse[1] = mod->rfb_MouseY;
+						if (rfb_getimsg(mod, TNULL, &msg, TITYPE_MOUSEBUTTON)) {
+							msg->timsg_Code = TMBCODE_LEFTDOWN ;
+							rfb_passevent_mousebutton(mod, msg);
+							rfb_putbackmsg(mod, msg);
+						}
+						mod->rfb_button_touch = 0;
+						if (rfb_getimsg(mod, TNULL, &msg1, TITYPE_MOUSEBUTTON)) {
+							msg1->timsg_Code = TMBCODE_LEFTUP ;
+							rfb_passevent_mousebutton(mod, msg1);
+							rfb_putbackmsg(mod, msg1);
+						}
+
 					}
 					break;
 			}
@@ -412,32 +497,36 @@ static TUINT rfb_processmouseinput(struct rfb_Display *mod,
 			{
 				case ABS_X:
 				{
+					int mx = ev->value - mod->rfb_absstart[0];
 					mod->rfb_abspos[0] = ev->value;
+
+					mx = mx * mod->rfb_Width / 
+						(mod->rfb_absinfo[0].maximum -
+						mod->rfb_absinfo[0].minimum);
+					mod->rfb_MouseX = TCLAMP(0,
+						mx + mod->rfb_startmouse[0], (int)mod->rfb_Width - 1);
+
 					if (mod->rfb_button_touch)
 					{
-						int mx = ev->value - mod->rfb_absstart[0];
 
-						mx = mx * mod->rfb_Width /
-							(mod->rfb_absinfo[0].maximum -
-							mod->rfb_absinfo[0].minimum);
-						mod->rfb_MouseX = TCLAMP(0,
-							mx + mod->rfb_startmouse[0], mod->rfb_Width - 1);
 						input_pending |= TITYPE_MOUSEMOVE;
 					}
+
 					break;
 				}
 				case ABS_Y:
 				{
 					mod->rfb_abspos[1] = ev->value;
+					int my = ev->value - mod->rfb_absstart[1];
+
+					my = my * mod->rfb_Height / 
+						(mod->rfb_absinfo[1].maximum -
+						mod->rfb_absinfo[1].minimum);
+					mod->rfb_MouseY = TCLAMP(0,
+						my + mod->rfb_startmouse[1], (int)mod->rfb_Height - 1);
+
 					if (mod->rfb_button_touch)
 					{
-						int my = ev->value - mod->rfb_absstart[1];
-
-						my = my * mod->rfb_Height /
-							(mod->rfb_absinfo[1].maximum -
-							mod->rfb_absinfo[1].minimum);
-						mod->rfb_MouseY = TCLAMP(0,
-							my + mod->rfb_startmouse[1], mod->rfb_Height - 1);
 						input_pending |= TITYPE_MOUSEMOVE;
 					}
 					break;
