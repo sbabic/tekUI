@@ -119,6 +119,7 @@ function ListView.new(class, self)
 	self.HSliderMode = self.HSliderMode or "on"
 	self.VSliderGroup = false
 	self.VSliderMode = self.VSliderMode or "on"
+	self.VIncrement = self.VIncrement or 1
 
 	if self.Headers and not self.HeaderGroup then
 		local c = { }
@@ -130,7 +131,7 @@ function ListView.new(class, self)
 	end
 
 	if self.HeaderGroup then
-		self.VSliderGroup = ScrollBar:new { Orientation = "vertical", Min = 0 }
+		self.VSliderGroup = ScrollBar:new { Orientation = "vertical", Min = 0, Increment = self.VIncrement }
 		self.Child.HeaderGroup = self.HeaderGroup
 		self.Children =
 		{
