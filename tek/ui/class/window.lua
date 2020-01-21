@@ -617,6 +617,11 @@ function Window:show()
 		self.Application:openWindow(self)
 		Group.show(self, d)
 		self:layout()
+
+		-- Makes the window have the correct placement of popups at the start
+		local _, _, dx, dy = self.Drawable:getAttrs()
+		self.Drawable:setAttrs { Left = dx+1, Top = dy }
+		self.Drawable:setAttrs { Left = dx, Top = dy }
 	end
 end
 
