@@ -1945,7 +1945,9 @@ function TextEdit:handleKeyboard(msg)
 				-- db.warn("ctrl+delete")
 				break
 			end
-			if qual > 3 or code == 27 then -- ctrl, alt, esc, ...
+			
+			-- allowing the qual 256 makes the right numpad work
+			if (qual > 3 and qual ~= 256) or code == 27 then -- ctrl, alt, esc, ...
 				if ml and (code == 0xf023 or code == 0xf024) then
 					-- relinquish qual+pageup/down
 				else
