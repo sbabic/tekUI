@@ -23,6 +23,10 @@ function Border:layout(x0, y0, x1, y1)
 	if not x0 then
 		x0, y0, x1, y1 = self.Parent:getRect()
 	end
+	if not x0 then
+		-- Prevent crash
+		x0, y0, x1, y1 = 0, 0, 0, 0
+	end
 	self.Rect:setRect(x0, y0, x1, y1)
 	return x0, y0, x1, y1
 end
