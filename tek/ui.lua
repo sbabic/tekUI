@@ -690,7 +690,13 @@ function ui.loadStyleSheet(file)
 	local fh, msg
 	db.info("loadstylesheet: '%s'", file)
 	if type(file) == "string" then
-		fh, msg = openUIPath(("tek/ui/style/%s.css"):format(file))
+		-- Check if its running in Windows
+		if package.config:sub(1,1) == "\\" then
+			fh, msg = openUIPath(("tek\\ui\\style\\%s.css"):format(file))
+		else
+			fh, msg = openUIPath(("tek/ui/style/%s.css"):format(file))
+		end
+
 		if not fh then
 			return nil, msg
 		end
